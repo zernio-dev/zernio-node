@@ -2222,6 +2222,10 @@ export type GetDailyMetricsData = {
          */
         profileId?: string;
         /**
+         * Filter by post origin. "late" for posts published via Late, "external" for posts imported from platforms.
+         */
+        source?: 'all' | 'late' | 'external';
+        /**
          * Inclusive end date (ISO 8601). Defaults to now.
          */
         toDate?: string;
@@ -2277,6 +2281,10 @@ export type GetBestTimeToPostData = {
          * Filter by profile ID. Omit for all profiles.
          */
         profileId?: string;
+        /**
+         * Filter by post origin. "late" for posts published via Late, "external" for posts imported from platforms.
+         */
+        source?: 'all' | 'late' | 'external';
     };
 };
 
@@ -2318,6 +2326,10 @@ export type GetContentDecayData = {
          * Filter by profile ID. Omit for all profiles.
          */
         profileId?: string;
+        /**
+         * Filter by post origin. "late" for posts published via Late, "external" for posts imported from platforms.
+         */
+        source?: 'all' | 'late' | 'external';
     };
 };
 
@@ -2359,6 +2371,10 @@ export type GetPostingFrequencyData = {
          * Filter by profile ID. Omit for all profiles.
          */
         profileId?: string;
+        /**
+         * Filter by post origin. "late" for posts published via Late, "external" for posts imported from platforms.
+         */
+        source?: 'all' | 'late' | 'external';
     };
 };
 
@@ -2573,6 +2589,14 @@ export type ListPostsData = {
         page?: number;
         platform?: string;
         profileId?: string;
+        /**
+         * Search posts by text content.
+         */
+        search?: string;
+        /**
+         * Sort order for results.
+         */
+        sortBy?: 'scheduled-desc' | 'scheduled-asc' | 'created-desc' | 'created-asc' | 'status' | 'platform';
         status?: 'draft' | 'scheduled' | 'published' | 'failed';
     };
 };
@@ -2900,6 +2924,10 @@ export type ListAccountsData = {
          */
         includeOverLimit?: boolean;
         /**
+         * Filter accounts by platform (e.g. "instagram", "twitter").
+         */
+        platform?: string;
+        /**
          * Filter accounts by profile ID
          */
         profileId?: string;
@@ -3213,6 +3241,10 @@ export type GetConnectUrlData = {
         platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'reddit' | 'pinterest' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat';
     };
     query: {
+        /**
+         * When true, the user is redirected to your redirect_url with raw OAuth data (code, state) instead of Late's default account selection UI. Use this to build a custom connect experience.
+         */
+        headless?: boolean;
         /**
          * Your Late profile ID (get from /v1/profiles)
          */
@@ -5016,6 +5048,10 @@ export type PreviewQueueData = {
     query: {
         count?: number;
         profileId: string;
+        /**
+         * Filter by specific queue ID. Omit to use the default queue.
+         */
+        queueId?: string;
     };
 };
 
@@ -5234,6 +5270,10 @@ export type ListPostsLogsData = {
          * Filter by platform
          */
         platform?: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'all';
+        /**
+         * Search through log entries by text content.
+         */
+        search?: string;
         /**
          * Number of logs to skip (for pagination)
          */
