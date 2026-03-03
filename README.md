@@ -209,6 +209,7 @@ try {
 | `analytics.getLinkedInAggregateAnalytics()` | Get LinkedIn aggregate stats |
 | `analytics.getLinkedInPostAnalytics()` | Get LinkedIn post stats |
 | `analytics.getPostingFrequency()` | Get posting frequency vs engagement |
+| `analytics.getPostTimeline()` | Get post analytics timeline |
 | `analytics.getYouTubeDailyViews()` | Get YouTube daily views |
 
 ### Account Groups

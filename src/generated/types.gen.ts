@@ -2407,6 +2407,84 @@ export type GetPostingFrequencyError = ({
     requiresAddon?: boolean;
 });
 
+export type GetPostTimelineData = {
+    query: {
+        /**
+         * Start of date range (ISO 8601). Defaults to 90 days ago.
+         */
+        fromDate?: string;
+        /**
+         * The post to fetch timeline for. Accepts an ExternalPost ID, a platformPostId, or a Late Post ID.
+         *
+         */
+        postId: string;
+        /**
+         * End of date range (ISO 8601). Defaults to now.
+         */
+        toDate?: string;
+    };
+};
+
+export type GetPostTimelineResponse = ({
+    /**
+     * The postId that was requested
+     */
+    postId?: string;
+    timeline?: Array<{
+        /**
+         * Date in YYYY-MM-DD format
+         */
+        date?: string;
+        /**
+         * Platform name (e.g. instagram, tiktok)
+         */
+        platform?: string;
+        /**
+         * Platform-specific post ID
+         */
+        platformPostId?: string;
+        /**
+         * Total impressions on this date
+         */
+        impressions?: number;
+        /**
+         * Total reach on this date
+         */
+        reach?: number;
+        /**
+         * Total likes on this date
+         */
+        likes?: number;
+        /**
+         * Total comments on this date
+         */
+        comments?: number;
+        /**
+         * Total shares on this date
+         */
+        shares?: number;
+        /**
+         * Total saves on this date
+         */
+        saves?: number;
+        /**
+         * Total clicks on this date
+         */
+        clicks?: number;
+        /**
+         * Total views on this date
+         */
+        views?: number;
+    }>;
+});
+
+export type GetPostTimelineError = ({
+    error?: string;
+} | {
+    error?: string;
+    code?: string;
+});
+
 export type ListAccountGroupsResponse = ({
     groups?: Array<{
         _id?: string;

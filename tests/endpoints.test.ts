@@ -108,6 +108,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getPostingFrequency).toBeTypeOf('function');
     });
 
+    it('should have getPostTimeline method', () => {
+      expect(client.analytics.getPostTimeline).toBeDefined();
+      expect(client.analytics.getPostTimeline).toBeTypeOf('function');
+    });
+
     it('should have getLinkedInAggregateAnalytics method', () => {
       expect(client.analytics.getLinkedInAggregateAnalytics).toBeDefined();
       expect(client.analytics.getLinkedInAggregateAnalytics).toBeTypeOf('function');

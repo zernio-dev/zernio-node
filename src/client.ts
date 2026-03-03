@@ -64,6 +64,7 @@ import {
   getPinterestBoards,
   getPost,
   getPostLogs,
+  getPostTimeline,
   getPostingFrequency,
   getProfile,
   getRedditFeed,
@@ -237,6 +238,7 @@ export class Late {
     getBestTimeToPost: getBestTimeToPost,
     getContentDecay: getContentDecay,
     getPostingFrequency: getPostingFrequency,
+    getPostTimeline: getPostTimeline,
     getLinkedInAggregateAnalytics: getLinkedInAggregateAnalytics,
     getLinkedInPostAnalytics: getLinkedInPostAnalytics,
   };
