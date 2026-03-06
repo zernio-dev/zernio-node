@@ -788,6 +788,11 @@ export type Post = {
     metadata?: {
         [key: string]: unknown;
     };
+    recycling?: RecyclingState;
+    /**
+     * ID of the original post if this post was created via recycling
+     */
+    recycledFromPostId?: string;
     /**
      * Profile ID if the post was scheduled via the queue
      */
@@ -1038,6 +1043,98 @@ export type QueueUpdateResponse = {
     schedule?: QueueSchedule;
     nextSlots?: Array<(string)>;
     reshuffledCount?: number;
+};
+
+/**
+ * Configure automatic post recycling (reposting at regular intervals).
+ * After the post is published, the system creates new scheduled copies at the
+ * specified interval until expiration conditions are met. Supports weekly or
+ * monthly intervals. Maximum 10 active recycling posts per account.
+ * YouTube and TikTok platforms are excluded from recycling.
+ * Content variations are recommended for Twitter and Pinterest to avoid duplicate flags.
+ *
+ */
+export type RecyclingConfig = {
+    /**
+     * Set to false to disable recycling on this post
+     */
+    enabled?: boolean;
+    /**
+     * Number of interval units between each repost. Required when enabling recycling.
+     */
+    gap?: number;
+    /**
+     * Interval unit for the gap. Defaults to 'month'.
+     */
+    gapFreq?: 'week' | 'month';
+    /**
+     * When to start the recycling cycle. Defaults to the post's scheduledFor date.
+     */
+    startDate?: string;
+    /**
+     * Stop recycling after this many copies have been created
+     */
+    expireCount?: number;
+    /**
+     * Stop recycling after this date, regardless of count
+     */
+    expireDate?: string;
+    /**
+     * Array of content variations for recycled copies. On each recycle, the next
+     * variation is used in round-robin order. Recommended for Twitter and Pinterest
+     * to avoid duplicate content flags. If omitted, the original post content is
+     * used for all recycled copies. Send an empty array [] to clear existing
+     * variations. Must have 2+ entries when setting variations. Platform-level
+     * customContent still overrides the base content per platform.
+     *
+     */
+    contentVariations?: Array<(string)>;
+};
+
+/**
+ * Interval unit for the gap. Defaults to 'month'.
+ */
+export type gapFreq = 'week' | 'month';
+
+/**
+ * Current recycling configuration and state on a post
+ */
+export type RecyclingState = {
+    /**
+     * Whether recycling is currently active
+     */
+    enabled?: boolean;
+    /**
+     * Number of interval units between reposts
+     */
+    gap?: number;
+    /**
+     * Interval unit (week or month)
+     */
+    gapFreq?: 'week' | 'month';
+    startDate?: string;
+    expireCount?: number;
+    expireDate?: string;
+    /**
+     * Content variations for recycled copies (if configured)
+     */
+    contentVariations?: Array<(string)>;
+    /**
+     * Current position in the content variations rotation (read-only)
+     */
+    contentVariationIndex?: number;
+    /**
+     * How many recycled copies have been created so far (read-only)
+     */
+    recycleCount?: number;
+    /**
+     * When the next recycled copy will be created (read-only)
+     */
+    nextRecycleAt?: string;
+    /**
+     * When the last recycled copy was created (read-only)
+     */
+    lastRecycledAt?: string;
 };
 
 /**
@@ -1337,7 +1434,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -1371,7 +1468,7 @@ export type WebhookLog = {
      * Name of the webhook that was triggered
      */
     webhookName?: string;
-    event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
+    event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
     url?: string;
     status?: 'success' | 'failed';
     /**
@@ -1403,7 +1500,7 @@ export type WebhookLog = {
     createdAt?: string;
 };
 
-export type event = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
+export type event = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
 
 export type status5 = 'success' | 'failed';
 
@@ -1657,7 +1754,7 @@ export type status6 = 'active' | 'archived';
  * Webhook payload for post events
  */
 export type WebhookPayloadPost = {
-    event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial';
+    event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled';
     post?: {
         id?: string;
         content?: string;
@@ -1674,7 +1771,7 @@ export type WebhookPayloadPost = {
     timestamp?: string;
 };
 
-export type event6 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial';
+export type event6 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled';
 
 export type YouTubeDailyViewsResponse = {
     success?: boolean;
@@ -2731,6 +2828,7 @@ export type CreatePostData = {
          * Root-level TikTok settings applied to all TikTok platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
          */
         tiktokSettings?: TikTokPlatformData;
+        recycling?: RecyclingConfig;
         /**
          * Profile ID to schedule via queue. When provided without scheduledFor, the post is auto-assigned to the next available slot. Do not call /v1/queue/next-slot and use that time in scheduledFor, as that bypasses queue locking.
          */
@@ -2786,7 +2884,8 @@ export type UpdatePostData = {
          * Root-level TikTok settings applied to all TikTok platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
          */
         tiktokSettings?: TikTokPlatformData;
-        [key: string]: unknown | string | TikTokPlatformData;
+        recycling?: RecyclingConfig;
+        [key: string]: unknown | string | TikTokPlatformData | RecyclingConfig;
     };
     path: {
         postId: string;
@@ -5196,7 +5295,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -5240,7 +5339,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -5306,7 +5405,7 @@ export type GetWebhookLogsData = {
         /**
          * Filter by event type
          */
-        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
+        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
         /**
          * Maximum number of logs to return (max 100)
          */
