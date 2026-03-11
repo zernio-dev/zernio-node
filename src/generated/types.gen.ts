@@ -1333,9 +1333,13 @@ export type TranscriptSegment = {
 
 export type TwitterPlatformData = {
     /**
-     * Controls who can reply to the tweet. "following" allows only people you follow, "mentionedUsers" allows only mentioned users, "subscribers" allows only subscribers. Omit for default (everyone can reply). For threads, applies to the first tweet only.
+     * ID of an existing tweet to reply to. The published tweet will appear as a reply in that tweet's thread. For threads, only the first tweet replies to the target; subsequent tweets chain normally.
      */
-    replySettings?: 'following' | 'mentionedUsers' | 'subscribers';
+    replyToTweetId?: string;
+    /**
+     * Controls who can reply to the tweet. "following" allows only people you follow, "mentionedUsers" allows only mentioned users, "subscribers" allows only subscribers, "verified" allows only verified users. Omit for default (everyone can reply). For threads, applies to the first tweet only. Cannot be combined with replyToTweetId.
+     */
+    replySettings?: 'following' | 'mentionedUsers' | 'subscribers' | 'verified';
     /**
      * Sequence of tweets in a thread. First item is the root tweet.
      */
@@ -1346,9 +1350,9 @@ export type TwitterPlatformData = {
 };
 
 /**
- * Controls who can reply to the tweet. "following" allows only people you follow, "mentionedUsers" allows only mentioned users, "subscribers" allows only subscribers. Omit for default (everyone can reply). For threads, applies to the first tweet only.
+ * Controls who can reply to the tweet. "following" allows only people you follow, "mentionedUsers" allows only mentioned users, "subscribers" allows only subscribers, "verified" allows only verified users. Omit for default (everyone can reply). For threads, applies to the first tweet only. Cannot be combined with replyToTweetId.
  */
-export type replySettings = 'following' | 'mentionedUsers' | 'subscribers';
+export type replySettings = 'following' | 'mentionedUsers' | 'subscribers' | 'verified';
 
 export type UploadedFile = {
     type?: 'image' | 'video' | 'document';
