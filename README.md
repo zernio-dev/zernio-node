@@ -308,6 +308,7 @@ try {
 | `connect.updateRedditSubreddits()` | Set default subreddit |
 | `connect.completeTelegramConnect()` | Check Telegram status |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |
+| `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
 | `connect.selectFacebookPage()` | Select Facebook page |

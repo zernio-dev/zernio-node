@@ -4583,6 +4583,52 @@ export type ConnectBlueskyCredentialsError = (unknown | {
     error?: string;
 });
 
+export type ConnectWhatsAppCredentialsData = {
+    body: {
+        /**
+         * Your Late profile ID
+         */
+        profileId: string;
+        /**
+         * Permanent System User access token from Meta Business Suite
+         */
+        accessToken: string;
+        /**
+         * WhatsApp Business Account ID from Meta
+         */
+        wabaId: string;
+        /**
+         * Phone Number ID from Meta WhatsApp Manager
+         */
+        phoneNumberId: string;
+    };
+};
+
+export type ConnectWhatsAppCredentialsResponse = ({
+    message?: string;
+    account?: {
+        accountId?: string;
+        platform?: 'whatsapp';
+        /**
+         * Display phone number
+         */
+        username?: string;
+        /**
+         * Meta-verified business name
+         */
+        displayName?: string;
+        isActive?: boolean;
+        phoneNumber?: string;
+        verifiedName?: string;
+        /**
+         * GREEN, YELLOW, or RED
+         */
+        qualityRating?: string;
+    };
+});
+
+export type ConnectWhatsAppCredentialsError = (unknown);
+
 export type GetTelegramConnectStatusData = {
     query: {
         /**
@@ -7384,10 +7430,38 @@ export type CreateWhatsAppTemplateData = {
          */
         language: string;
         /**
-         * Template components (header, body, footer, buttons)
+         * Template components (header, body, footer, buttons). Required for custom templates, omit when using library_template_name.
          */
-        components: Array<{
+        components?: Array<{
             [key: string]: unknown;
+        }>;
+        /**
+         * Name of a pre-built template from Meta's template library (e.g., "appointment_reminder",
+         * "auto_pay_reminder_1", "address_update"). When provided, the template is pre-approved
+         * by Meta with no review wait. Omit `components` when using this field.
+         *
+         */
+        library_template_name?: string;
+        /**
+         * Optional body customizations for library templates. Available options depend on the
+         * template (e.g., add_contact_number, add_learn_more_link, add_security_recommendation,
+         * add_track_package_link, code_expiration_minutes).
+         *
+         */
+        library_template_body_inputs?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Optional button customizations for library templates. Each item specifies button type
+         * and configuration (e.g., URL, phone number, quick reply).
+         *
+         */
+        library_template_button_inputs?: Array<{
+            type?: 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER';
+            url?: {
+                base_url?: string;
+            };
+            phone_number?: string;
         }>;
     };
 };
@@ -7397,6 +7471,9 @@ export type CreateWhatsAppTemplateResponse = ({
     template?: {
         id?: string;
         name?: string;
+        /**
+         * APPROVED for library templates, PENDING for custom
+         */
         status?: string;
         category?: string;
         language?: string;
