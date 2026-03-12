@@ -1437,6 +1437,10 @@ export type UsageStats = {
     planName?: string;
     billingPeriod?: 'monthly' | 'yearly';
     signupDate?: string;
+    /**
+     * Day of month (1-31) when the billing cycle resets
+     */
+    billingAnchorDay?: number;
     limits?: {
         uploads?: number;
         profiles?: number;
