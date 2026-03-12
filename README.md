@@ -420,11 +420,13 @@ try {
 | `whatsapp.getWhatsAppBusinessProfile()` | Get business profile |
 | `whatsapp.getWhatsAppContact()` | Get contact |
 | `whatsapp.getWhatsAppContacts()` | List contacts |
+| `whatsapp.getWhatsAppDisplayName()` | Get display name and review status |
 | `whatsapp.getWhatsAppGroups()` | List contact groups |
 | `whatsapp.getWhatsAppTemplate()` | Get template |
 | `whatsapp.getWhatsAppTemplates()` | List templates |
 | `whatsapp.updateWhatsAppBusinessProfile()` | Update business profile |
 | `whatsapp.updateWhatsAppContact()` | Update contact |
+| `whatsapp.updateWhatsAppDisplayName()` | Request display name change |
 | `whatsapp.updateWhatsAppTemplate()` | Update template |
 | `whatsapp.deleteWhatsAppBroadcast()` | Delete broadcast |
 | `whatsapp.deleteWhatsAppContact()` | Delete contact |
@@ -438,6 +440,7 @@ try {
 | `whatsapp.scheduleWhatsAppBroadcast()` | Schedule broadcast |
 | `whatsapp.sendWhatsAppBroadcast()` | Send broadcast |
 | `whatsapp.sendWhatsAppBulk()` | Bulk send template messages |
+| `whatsapp.uploadWhatsAppProfilePhoto()` | Upload profile picture |
 
 ### WhatsApp Phone Numbers
 | Method | Description |

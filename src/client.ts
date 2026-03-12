@@ -95,6 +95,7 @@ import {
   getWhatsAppBusinessProfile,
   getWhatsAppContact,
   getWhatsAppContacts,
+  getWhatsAppDisplayName,
   getWhatsAppGroups,
   getWhatsAppPhoneNumber,
   getWhatsAppPhoneNumbers,
@@ -169,7 +170,9 @@ import {
   updateWebhookSettings,
   updateWhatsAppBusinessProfile,
   updateWhatsAppContact,
+  updateWhatsAppDisplayName,
   updateWhatsAppTemplate,
+  uploadWhatsAppProfilePhoto,
   validateMedia,
   validatePost,
   validatePostLength,
@@ -582,6 +585,9 @@ export class Late {
     removeWhatsAppBroadcastRecipients: removeWhatsAppBroadcastRecipients,
     getWhatsAppBusinessProfile: getWhatsAppBusinessProfile,
     updateWhatsAppBusinessProfile: updateWhatsAppBusinessProfile,
+    uploadWhatsAppProfilePhoto: uploadWhatsAppProfilePhoto,
+    getWhatsAppDisplayName: getWhatsAppDisplayName,
+    updateWhatsAppDisplayName: updateWhatsAppDisplayName,
   };
 
   /**

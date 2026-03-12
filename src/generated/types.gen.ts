@@ -31,6 +31,57 @@ export type AccountWithFollowerStats = SocialAccount & {
      * Number of historical snapshots
      */
     dataPoints?: number;
+    /**
+     * Platform-specific account stats from the latest daily snapshot.
+     * Fields vary by platform. Only present if metadata has been captured.
+     *
+     */
+    accountStats?: {
+        /**
+         * Number of accounts being followed
+         */
+        followingCount?: number;
+        /**
+         * Total media posts (Instagram)
+         */
+        mediaCount?: number;
+        /**
+         * Total videos (YouTube
+         */
+        videoCount?: number;
+        /**
+         * Total tweets (X/Twitter)
+         */
+        tweetCount?: number;
+        /**
+         * Total posts (Bluesky)
+         */
+        postsCount?: number;
+        /**
+         * Total pins (Pinterest)
+         */
+        pinCount?: number;
+        /**
+         * Total channel views (YouTube)
+         */
+        totalViews?: number;
+        /**
+         * Total likes received (TikTok)
+         */
+        likesCount?: number;
+        /**
+         * Monthly profile views (Pinterest)
+         */
+        monthlyViews?: number;
+        /**
+         * Lists the user appears on (X/Twitter)
+         */
+        listedCount?: number;
+        /**
+         * Total boards (Pinterest)
+         */
+        boardCount?: number;
+    };
 };
 
 export type AnalyticsListResponse = {
@@ -8120,6 +8171,85 @@ export type UpdateWhatsAppBusinessProfileResponse = ({
 });
 
 export type UpdateWhatsAppBusinessProfileError = (unknown | {
+    error?: string;
+});
+
+export type UploadWhatsAppProfilePhotoData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Image file (JPEG or PNG, max 5MB, recommended 640x640)
+         */
+        file: (Blob | File);
+    };
+};
+
+export type UploadWhatsAppProfilePhotoResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type UploadWhatsAppProfilePhotoError = (unknown | {
+    error?: string;
+});
+
+export type GetWhatsAppDisplayNameData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppDisplayNameResponse = ({
+    success?: boolean;
+    displayName?: {
+        /**
+         * Current verified display name
+         */
+        name?: string;
+        /**
+         * Meta review status for the display name
+         */
+        status?: 'APPROVED' | 'PENDING_REVIEW' | 'DECLINED' | 'NONE';
+        /**
+         * Display phone number
+         */
+        phoneNumber?: string;
+    };
+});
+
+export type GetWhatsAppDisplayNameError = ({
+    error?: string;
+} | unknown);
+
+export type UpdateWhatsAppDisplayNameData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * New display name (must follow WhatsApp naming guidelines)
+         */
+        displayName: string;
+    };
+};
+
+export type UpdateWhatsAppDisplayNameResponse = ({
+    success?: boolean;
+    message?: string;
+    displayName?: {
+        name?: string;
+        status?: 'PENDING_REVIEW';
+    };
+});
+
+export type UpdateWhatsAppDisplayNameError = (unknown | {
     error?: string;
 });
 
