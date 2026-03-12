@@ -3687,6 +3687,10 @@ export type GetGoogleBusinessReviewsData = {
     };
     query?: {
         /**
+         * Override which location to query. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+        /**
          * Number of reviews to fetch per page (max 50)
          */
         pageSize?: number;
@@ -3762,6 +3766,12 @@ export type GetGoogleBusinessFoodMenusData = {
          */
         accountId: string;
     };
+    query?: {
+        /**
+         * Override which location to query. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
 };
 
 export type GetGoogleBusinessFoodMenusResponse = ({
@@ -3796,6 +3806,12 @@ export type UpdateGoogleBusinessFoodMenusData = {
          */
         accountId: string;
     };
+    query?: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
 };
 
 export type UpdateGoogleBusinessFoodMenusResponse = ({
@@ -3818,6 +3834,10 @@ export type GetGoogleBusinessLocationDetailsData = {
         accountId: string;
     };
     query?: {
+        /**
+         * Override which location to query. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
         /**
          * Comma-separated fields to return. Available: name, title, phoneNumbers, categories, storefrontAddress, websiteUri, regularHours, specialHours, serviceArea, profile, openInfo, metadata, moreHours.
          */
@@ -3924,6 +3944,12 @@ export type UpdateGoogleBusinessLocationDetailsData = {
          */
         accountId: string;
     };
+    query?: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
 };
 
 export type UpdateGoogleBusinessLocationDetailsResponse = ({
@@ -3941,6 +3967,10 @@ export type ListGoogleBusinessMediaData = {
         accountId: string;
     };
     query?: {
+        /**
+         * Override which location to query. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
         /**
          * Number of items to return (max 100)
          */
@@ -3999,6 +4029,12 @@ export type CreateGoogleBusinessMediaData = {
     path: {
         accountId: string;
     };
+    query?: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
 };
 
 export type CreateGoogleBusinessMediaResponse = ({
@@ -4015,6 +4051,10 @@ export type DeleteGoogleBusinessMediaData = {
         accountId: string;
     };
     query: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
         /**
          * The media item ID to delete
          */
@@ -4033,6 +4073,12 @@ export type DeleteGoogleBusinessMediaError = (ErrorResponse);
 export type GetGoogleBusinessAttributesData = {
     path: {
         accountId: string;
+    };
+    query?: {
+        /**
+         * Override which location to query. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
     };
 };
 
@@ -4077,6 +4123,12 @@ export type UpdateGoogleBusinessAttributesData = {
     path: {
         accountId: string;
     };
+    query?: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
 };
 
 export type UpdateGoogleBusinessAttributesResponse = ({
@@ -4095,6 +4147,10 @@ export type ListGoogleBusinessPlaceActionsData = {
         accountId: string;
     };
     query?: {
+        /**
+         * Override which location to query. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
         pageSize?: number;
         pageToken?: string;
     };
@@ -4136,6 +4192,12 @@ export type CreateGoogleBusinessPlaceActionData = {
     path: {
         accountId: string;
     };
+    query?: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
 };
 
 export type CreateGoogleBusinessPlaceActionResponse = ({
@@ -4155,6 +4217,10 @@ export type DeleteGoogleBusinessPlaceActionData = {
         accountId: string;
     };
     query: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
         /**
          * The resource name of the place action link (e.g. locations/123/placeActionLinks/456)
          */
