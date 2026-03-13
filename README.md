@@ -12,10 +12,10 @@
 </p>
 
 <p align="center">
-  <strong>One API to post everywhere. 13 platforms, zero headaches.</strong>
+  <strong>One API to post everywhere. 14 platforms, zero headaches.</strong>
 </p>
 
-The official Node.js SDK for the [Late API](https://getlate.dev) — schedule and publish social media posts across Instagram, TikTok, YouTube, LinkedIn, X/Twitter, Facebook, Pinterest, Threads, Bluesky, Reddit, Snapchat, Telegram, and Google Business Profile with a single integration.
+The official Node.js SDK for the [Late API](https://getlate.dev) — schedule and publish social media posts across Instagram, TikTok, YouTube, LinkedIn, X/Twitter, Facebook, Pinterest, Threads, Bluesky, Reddit, Snapchat, Telegram, WhatsApp, and Google Business Profile with a single integration.
 
 ## Installation
 
