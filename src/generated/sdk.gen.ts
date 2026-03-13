@@ -1617,7 +1617,7 @@ export const deleteInboxComment = <ThrowOnError extends boolean = false>(options
  * Hide comment
  * Hide a comment on a post. Supported by Facebook, Instagram, Threads, and X/Twitter.
  * Hidden comments are only visible to the commenter and page admin.
- * For X/Twitter, the reply must belong to a conversation started by the authenticated user. Requires the tweet.moderate.write scope and X API Basic tier or higher.
+ * For X/Twitter, the reply must belong to a conversation started by the authenticated user.
  *
  */
 export const hideInboxComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<HideInboxCommentData, ThrowOnError>) => {
@@ -1678,7 +1678,7 @@ export const sendPrivateReplyToComment = <ThrowOnError extends boolean = false>(
 
 /**
  * Retweet a post
- * Retweet (repost) a tweet by ID. Requires X API Basic tier ($200/mo) or higher.
+ * Retweet (repost) a tweet by ID.
  * Rate limit: 50 requests per 15-min window. Shares the 300/3hr creation limit with tweet creation.
  *
  */
@@ -1703,7 +1703,7 @@ export const undoRetweet = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Bookmark a tweet
- * Bookmark a tweet by ID. Requires X API Basic tier ($200/mo) or higher.
+ * Bookmark a tweet by ID.
  * Requires the bookmark.write OAuth scope.
  * Rate limit: 50 requests per 15-min window.
  *
@@ -1729,7 +1729,7 @@ export const removeBookmark = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Follow a user
- * Follow a user on X/Twitter. Requires X API Basic tier ($200/mo) or higher.
+ * Follow a user on X/Twitter.
  * Requires the follows.write OAuth scope.
  * For protected accounts, a follow request is sent instead (pending_follow will be true).
  *
