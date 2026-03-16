@@ -2902,6 +2902,9 @@ export type CreatePostData = {
         }>;
         scheduledFor?: string;
         publishNow?: boolean;
+        /**
+         * When true, saves the post as a draft. When none of scheduledFor, publishNow, or queuedFromProfile are provided, the post defaults to draft automatically.
+         */
         isDraft?: boolean;
         timezone?: string;
         /**
