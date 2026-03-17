@@ -103,6 +103,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish to npm as @zernio/node
+        if: steps.changes.outputs.has_changes == 'true'
+        run: |
+          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@zernio/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create GitHub Release
         if: steps.changes.outputs.has_changes == 'true'
         uses: softprops/action-gh-release@v1
@@ -117,6 +125,8 @@ jobs:
 
             ```bash
             npm install @getlatedev/node@${{ steps.version.outputs.new_version }}
+            # or
+            npm install @zernio/node@${{ steps.version.outputs.new_version }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
