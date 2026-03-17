@@ -91,13 +91,11 @@ jobs:
             ## Installation
 
             ```bash
-            npm install @getlatedev/node@${{ github.ref_name }}
-            # or
             npm install @zernio/node@${{ github.ref_name }}
             ```
 
             ## Changelog
 
-            See the [full changelog](https://github.com/getlatedev/late-node/blob/main/CHANGELOG.md) for details.
+            See the [full changelog](https://github.com/zernio-dev/zernio-node/blob/main/CHANGELOG.md) for details.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

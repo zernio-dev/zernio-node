@@ -124,8 +124,6 @@ jobs:
             This release was automatically generated from the latest OpenAPI spec.
 
             ```bash
-            npm install @getlatedev/node@${{ steps.version.outputs.new_version }}
-            # or
             npm install @zernio/node@${{ steps.version.outputs.new_version }}
             ```
         env:
