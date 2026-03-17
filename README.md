@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://zernio.com">
-    <img src="https://zernio.com/images/icon_light.svg" alt="Zernio" width="60">
+    <img src="https://zernio.com/brand/icon-primary.png" alt="Zernio" width="60">
   </a>
 </p>
 
