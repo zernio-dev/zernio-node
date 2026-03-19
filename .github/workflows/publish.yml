@@ -66,18 +66,18 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm as @zernio/node
+      - name: Publish to npm as @getlatedev/node (legacy, backwards compat)
         if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
-          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@zernio/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
+          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@getlatedev/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Dry run (@zernio/node)
+      - name: Dry run (@getlatedev/node)
         if: ${{ github.event.inputs.dry_run == 'true' }}
         run: |
-          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@zernio/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
+          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@getlatedev/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
           npm publish --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
