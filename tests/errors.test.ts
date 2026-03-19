@@ -1,75 +1,82 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
+  ZernioApiError,
   LateApiError,
   RateLimitError,
   ValidationError,
   parseApiError,
 } from '../src/errors';
 
-describe('LateApiError', () => {
+describe('ZernioApiError', () => {
   it('should create error with all properties', () => {
-    const error = new LateApiError('Test error', 400, 'test_code', {
+    const error = new ZernioApiError('Test error', 400, 'test_code', {
       foo: 'bar',
     });
     expect(error.message).toBe('Test error');
     expect(error.statusCode).toBe(400);
     expect(error.code).toBe('test_code');
     expect(error.details).toEqual({ foo: 'bar' });
-    expect(error.name).toBe('LateApiError');
+    expect(error.name).toBe('ZernioApiError');
   });
 
   it('should check rate limited status', () => {
-    const rateLimited = new LateApiError('Rate limited', 429);
-    const notRateLimited = new LateApiError('Bad request', 400);
+    const rateLimited = new ZernioApiError('Rate limited', 429);
+    const notRateLimited = new ZernioApiError('Bad request', 400);
 
     expect(rateLimited.isRateLimited()).toBe(true);
     expect(notRateLimited.isRateLimited()).toBe(false);
   });
 
   it('should check auth error status', () => {
-    const authError = new LateApiError('Unauthorized', 401);
-    const notAuthError = new LateApiError('Bad request', 400);
+    const authError = new ZernioApiError('Unauthorized', 401);
+    const notAuthError = new ZernioApiError('Bad request', 400);
 
     expect(authError.isAuthError()).toBe(true);
     expect(notAuthError.isAuthError()).toBe(false);
   });
 
   it('should check forbidden status', () => {
-    const forbidden = new LateApiError('Forbidden', 403);
-    const notForbidden = new LateApiError('Bad request', 400);
+    const forbidden = new ZernioApiError('Forbidden', 403);
+    const notForbidden = new ZernioApiError('Bad request', 400);
 
     expect(forbidden.isForbidden()).toBe(true);
     expect(notForbidden.isForbidden()).toBe(false);
   });
 
   it('should check not found status', () => {
-    const notFound = new LateApiError('Not found', 404);
-    const found = new LateApiError('Bad request', 400);
+    const notFound = new ZernioApiError('Not found', 404);
+    const found = new ZernioApiError('Bad request', 400);
 
     expect(notFound.isNotFound()).toBe(true);
     expect(found.isNotFound()).toBe(false);
   });
 
   it('should check validation error status', () => {
-    const validationError = new LateApiError('Bad request', 400);
-    const serverError = new LateApiError('Server error', 500);
+    const validationError = new ZernioApiError('Bad request', 400);
+    const serverError = new ZernioApiError('Server error', 500);
 
     expect(validationError.isValidationError()).toBe(true);
     expect(serverError.isValidationError()).toBe(false);
   });
 
   it('should check payment required status', () => {
-    const paymentRequired = new LateApiError('Payment required', 402);
-    const notPaymentRequired = new LateApiError('Bad request', 400);
+    const paymentRequired = new ZernioApiError('Payment required', 402);
+    const notPaymentRequired = new ZernioApiError('Bad request', 400);
 
     expect(paymentRequired.isPaymentRequired()).toBe(true);
     expect(notPaymentRequired.isPaymentRequired()).toBe(false);
   });
 
   it('should be instanceof Error', () => {
-    const error = new LateApiError('Test', 400);
+    const error = new ZernioApiError('Test', 400);
     expect(error instanceof Error).toBe(true);
-    expect(error instanceof LateApiError).toBe(true);
+    expect(error instanceof ZernioApiError).toBe(true);
+  });
+
+  it('LateApiError should be an alias for ZernioApiError', () => {
+    expect(LateApiError).toBe(ZernioApiError);
+    const error = new LateApiError('Test', 400);
+    expect(error instanceof ZernioApiError).toBe(true);
   });
 });
 
@@ -109,9 +116,9 @@ describe('RateLimitError', () => {
     expect(error.getSecondsUntilReset()).toBeUndefined();
   });
 
-  it('should be instanceof LateApiError', () => {
+  it('should be instanceof ZernioApiError', () => {
     const error = new RateLimitError('Rate limited');
-    expect(error instanceof LateApiError).toBe(true);
+    expect(error instanceof ZernioApiError).toBe(true);
     expect(error instanceof RateLimitError).toBe(true);
   });
 });
@@ -131,9 +138,9 @@ describe('ValidationError', () => {
     expect(error.fields).toEqual(fields);
   });
 
-  it('should be instanceof LateApiError', () => {
+  it('should be instanceof ZernioApiError', () => {
     const error = new ValidationError('Validation failed');
-    expect(error instanceof LateApiError).toBe(true);
+    expect(error instanceof ZernioApiError).toBe(true);
     expect(error instanceof ValidationError).toBe(true);
   });
 });
