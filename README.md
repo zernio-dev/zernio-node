@@ -26,12 +26,12 @@ npm install @zernio/node
 ## Quick Start
 
 ```typescript
-import Late from '@zernio/node';
+import Zernio from '@zernio/node';
 
-const late = new Late(); // Uses LATE_API_KEY env var
+const zernio = new Zernio(); // Uses ZERNIO_API_KEY env var
 
 // Publish to multiple platforms with one call
-const { data: post } = await late.posts.createPost({
+const { data: post } = await zernio.posts.createPost({
   body: {
     content: 'Hello world from Zernio!',
     platforms: [
@@ -49,8 +49,8 @@ console.log(`Published to ${post.platforms.length} platforms!`);
 ## Configuration
 
 ```typescript
-const late = new Late({
-  apiKey: 'your-api-key', // Defaults to process.env['LATE_API_KEY']
+const zernio = new Zernio({
+  apiKey: 'your-api-key', // Defaults to process.env['ZERNIO_API_KEY']
   baseURL: 'https://zernio.com/api',
   timeout: 60000,
 });
@@ -61,7 +61,7 @@ const late = new Late({
 ### Schedule a Post
 
 ```typescript
-const { data: post } = await late.posts.createPost({
+const { data: post } = await zernio.posts.createPost({
   body: {
     content: 'This post will go live tomorrow at 10am',
     platforms: [{ platform: 'instagram', accountId: 'acc_xxx' }],
@@ -75,7 +75,7 @@ const { data: post } = await late.posts.createPost({
 Customize content per platform while posting to all at once:
 
 ```typescript
-const { data: post } = await late.posts.createPost({
+const { data: post } = await zernio.posts.createPost({
   body: {
     content: 'Default content',
     platforms: [
@@ -99,7 +99,7 @@ const { data: post } = await late.posts.createPost({
 
 ```typescript
 // 1. Get presigned upload URL
-const { data: presign } = await late.media.getMediaPresignedUrl({
+const { data: presign } = await zernio.media.getMediaPresignedUrl({
   body: { filename: 'video.mp4', contentType: 'video/mp4' },
 });
 
@@ -111,7 +111,7 @@ await fetch(presign.uploadUrl, {
 });
 
 // 3. Create post with media
-const { data: post } = await late.posts.createPost({
+const { data: post } = await zernio.posts.createPost({
   body: {
     content: 'Check out this video!',
     mediaUrls: [presign.publicUrl],
@@ -127,7 +127,7 @@ const { data: post } = await late.posts.createPost({
 ### Get Analytics
 
 ```typescript
-const { data } = await late.analytics.getAnalytics({
+const { data } = await zernio.analytics.getAnalytics({
   query: { postId: 'post_xxx' },
 });
 
@@ -139,7 +139,7 @@ console.log('Engagement Rate:', data.analytics.engagementRate);
 ### List Connected Accounts
 
 ```typescript
-const { data } = await late.accounts.listAccounts();
+const { data } = await zernio.accounts.listAccounts();
 
 for (const account of data.accounts) {
   console.log(`${account.platform}: @${account.username}`);
@@ -149,16 +149,16 @@ for (const account of data.accounts) {
 ## Error Handling
 
 ```typescript
-import Late, { LateApiError, RateLimitError, ValidationError } from '@zernio/node';
+import Zernio, { ZernioApiError, RateLimitError, ValidationError } from '@zernio/node';
 
 try {
-  await late.posts.createPost({ body: { /* ... */ } });
+  await zernio.posts.createPost({ body: { /* ... */ } });
 } catch (error) {
   if (error instanceof RateLimitError) {
     console.log(`Rate limited. Retry in ${error.getSecondsUntilReset()}s`);
   } else if (error instanceof ValidationError) {
     console.log('Invalid request:', error.fields);
-  } else if (error instanceof LateApiError) {
+  } else if (error instanceof ZernioApiError) {
     console.log(`Error ${error.statusCode}: ${error.message}`);
   }
 }

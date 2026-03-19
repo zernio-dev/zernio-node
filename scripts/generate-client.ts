@@ -195,13 +195,13 @@ function generateClientCode(namespaces: Map<string, OperationInfo[]>): string {
 ${allFunctions.map(f => `  ${f},`).join('\n')}
 } from './generated/sdk.gen';
 
-import { LateApiError, parseApiError } from './errors';`;
+import { ZernioApiError, parseApiError } from './errors';`;
 
   // Generate interface
   const interfaceCode = `
 export interface ClientOptions {
   /**
-   * API key for authentication. Defaults to process.env['LATE_API_KEY'].
+   * API key for authentication. Defaults to process.env['ZERNIO_API_KEY'] (falls back to LATE_API_KEY).
    */
   apiKey?: string | undefined;
 
@@ -272,20 +272,20 @@ export interface ClientOptions {
   // Generate class
   const classCode = `
 /**
- * API Client for the Late API.
+ * API Client for the Zernio API.
  *
  * @example
  * \`\`\`typescript
- * import Late from '@getlatedev/node';
+ * import Zernio from '@zernio/node';
  *
- * const late = new Late({
- *   apiKey: process.env['LATE_API_KEY'], // This is the default and can be omitted
+ * const zernio = new Zernio({
+ *   apiKey: process.env['ZERNIO_API_KEY'], // This is the default and can be omitted
  * });
  *
  * async function main() {
- *   const post = await late.posts.create({
+ *   const post = await zernio.posts.create({
  *     body: {
- *       content: 'Hello from the Late SDK!',
+ *       content: 'Hello from the Zernio SDK!',
  *       platforms: [{ platform: 'twitter', accountId: 'acc_123' }],
  *       publishNow: true,
  *     },
@@ -296,7 +296,7 @@ export interface ClientOptions {
  * main();
  * \`\`\`
  */
-export class Late {
+export class Zernio {
   private _options: ClientOptions;
 
   /**
@@ -312,16 +312,17 @@ export class Late {
 ${namespaceProps.join('\n\n')}
 
   /**
-   * Create a new Late API client.
+   * Create a new Zernio API client.
    *
    * @param options - Configuration options for the client
    */
   constructor(options: ClientOptions = {}) {
-    const apiKey = options.apiKey ?? process.env['LATE_API_KEY'];
+    // Check ZERNIO_API_KEY first, fall back to LATE_API_KEY for backwards compatibility
+    const apiKey = options.apiKey ?? process.env['ZERNIO_API_KEY'] ?? process.env['LATE_API_KEY'];
 
     if (!apiKey) {
-      throw new LateApiError(
-        "The LATE_API_KEY environment variable is missing or empty; either provide it, or instantiate the Late client with an apiKey option, like new Late({ apiKey: 'sk_...' }).",
+      throw new ZernioApiError(
+        "The ZERNIO_API_KEY environment variable is missing or empty; either provide it, or instantiate the Zernio client with an apiKey option, like new Zernio({ apiKey: 'sk_...' }). LATE_API_KEY is also supported for backwards compatibility.",
         401,
         'missing_api_key'
       );
@@ -363,8 +364,11 @@ ${namespaceProps.join('\n\n')}
   }
 }
 
+/** @deprecated Use Zernio instead */
+export const Late = Zernio;
+
 // Default export for convenient usage
-export default Late;
+export default Zernio;
 `;
 
   return imports + interfaceCode + classCode;

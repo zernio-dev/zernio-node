@@ -1,7 +1,7 @@
 {
-  "name": "@getlatedev/node",
-  "version": "0.1.58",
-  "description": "The official Node.js library for the Late API",
+  "name": "@zernio/node",
+  "version": "0.2.0",
+  "description": "The official Node.js library for the Zernio API",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -37,7 +37,7 @@
     "fetch-spec": "curl -o openapi.yaml https://zernio.com/openapi.yaml"
   },
   "keywords": [
-    "late",
+    "zernio",
     "social-media",
     "scheduling",
     "api",
@@ -55,7 +55,7 @@
     "snapchat",
     "telegram"
   ],
-  "author": "Late <support@zernio.com>",
+  "author": "Zernio <support@zernio.com>",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

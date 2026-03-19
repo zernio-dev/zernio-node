@@ -1,7 +1,7 @@
 /**
- * Base error class for Late API errors
+ * Base error class for Zernio API errors
  */
-export class LateApiError extends Error {
+export class ZernioApiError extends Error {
   public readonly statusCode: number;
   public readonly code?: string;
   public readonly details?: Record<string, unknown>;
@@ -13,14 +13,14 @@ export class LateApiError extends Error {
     details?: Record<string, unknown>
   ) {
     super(message);
-    this.name = 'LateApiError';
+    this.name = 'ZernioApiError';
     this.statusCode = statusCode;
     this.code = code;
     this.details = details;
 
     // Maintains proper stack trace for where error was thrown
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, LateApiError);
+      Error.captureStackTrace(this, ZernioApiError);
     }
   }
 
@@ -67,10 +67,13 @@ export class LateApiError extends Error {
   }
 }
 
+/** @deprecated Use ZernioApiError instead */
+export const LateApiError = ZernioApiError;
+
 /**
  * Rate limit error with additional rate limit info
  */
-export class RateLimitError extends LateApiError {
+export class RateLimitError extends ZernioApiError {
   public readonly limit?: number;
   public readonly remaining?: number;
   public readonly resetAt?: Date;
@@ -100,7 +103,7 @@ export class RateLimitError extends LateApiError {
 /**
  * Validation error with field-specific details
  */
-export class ValidationError extends LateApiError {
+export class ValidationError extends ZernioApiError {
   public readonly fields?: Record<string, string[]>;
 
   constructor(message: string, fields?: Record<string, string[]>) {
@@ -116,7 +119,7 @@ export class ValidationError extends LateApiError {
 export function parseApiError(
   response: Response,
   body?: { error?: string; message?: string; code?: string; details?: Record<string, unknown> }
-): LateApiError {
+): ZernioApiError {
   const message = body?.error || body?.message || response.statusText || 'Unknown error';
   const code = body?.code;
   const details = body?.details;
@@ -140,5 +143,5 @@ export function parseApiError(
     return new ValidationError(message, details.fields as Record<string, string[]>);
   }
 
-  return new LateApiError(message, response.status, code, details);
+  return new ZernioApiError(message, response.status, code, details);
 }

@@ -1,13 +1,13 @@
 /**
- * Late - Official Node.js library for the Late API
+ * Zernio - Official Node.js library for the Zernio API
  *
  * @example
  * ```typescript
- * import Late from 'late';
+ * import Zernio from '@zernio/node';
  *
- * const late = new Late();
+ * const zernio = new Zernio();
  *
- * const post = await late.posts.create({
+ * const post = await zernio.posts.create({
  *   body: {
  *     content: 'Hello world!',
  *     platforms: [{ platform: 'twitter', accountId: 'acc_123' }],
@@ -19,11 +19,12 @@
  * @packageDocumentation
  */
 
-// Main client export
-export { Late, Late as default, type ClientOptions } from './client';
+// Main client export (Zernio is primary, Late is kept for backwards compatibility)
+export { Zernio, Zernio as default, Late, type ClientOptions } from './client';
 
-// Error exports
+// Error exports (ZernioApiError is primary, LateApiError is kept for backwards compatibility)
 export {
+  ZernioApiError,
   LateApiError,
   RateLimitError,
   ValidationError,
