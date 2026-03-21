@@ -1419,7 +1419,7 @@ export type TikTokPlatformData = {
      */
     videoCoverTimestampMs?: number;
     /**
-     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). The image is prepended as a 1-second still frame to the video and used as the cover. Overrides videoCoverTimestampMs when provided.
+     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). The image is stitched as a single frame at the start of the video and used as the cover. Overrides videoCoverTimestampMs when provided.
      */
     videoCoverImageUrl?: string;
     /**
