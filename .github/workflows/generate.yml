@@ -97,16 +97,18 @@ jobs:
           - Version: $NEW_VERSION"
           git push
 
-      - name: Publish to npm
+      - name: Publish to npm as @zernio/node
         if: steps.changes.outputs.has_changes == 'true'
+        continue-on-error: true
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm as @zernio/node
+      - name: Publish to npm as @getlatedev/node (legacy)
         if: steps.changes.outputs.has_changes == 'true'
+        continue-on-error: true
         run: |
-          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@zernio/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
+          node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@getlatedev/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
