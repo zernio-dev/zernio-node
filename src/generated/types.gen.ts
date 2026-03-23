@@ -9290,7 +9290,18 @@ export type CreateBroadcastData = {
     };
 };
 
-export type CreateBroadcastResponse = (unknown);
+export type CreateBroadcastResponse = ({
+    success?: boolean;
+    broadcast?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        platform?: string;
+        accountId?: string;
+        status?: string;
+        createdAt?: string;
+    };
+});
 
 export type CreateBroadcastError = ({
     error?: string;
@@ -9599,7 +9610,18 @@ export type CreateSequenceData = {
     };
 };
 
-export type CreateSequenceResponse = (unknown);
+export type CreateSequenceResponse = ({
+    success?: boolean;
+    sequence?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        platform?: string;
+        status?: string;
+        stepsCount?: number;
+        createdAt?: string;
+    };
+});
 
 export type CreateSequenceError = ({
     error?: string;
