@@ -2357,7 +2357,7 @@ export const releaseWhatsAppPhoneNumber = <ThrowOnError extends boolean = false>
  * List contacts
  * List and search contacts for a profile. Supports filtering by tags, platform, subscription status, and full-text search.
  */
-export const listContacts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListContactsData, ThrowOnError>) => {
+export const listContacts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListContactsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListContactsResponse, ListContactsError, ThrowOnError>({
         ...options,
         url: '/v1/contacts'
@@ -2449,7 +2449,7 @@ export const clearContactFieldValue = <ThrowOnError extends boolean = false>(opt
 /**
  * List custom field definitions
  */
-export const listCustomFields = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCustomFieldsData, ThrowOnError>) => {
+export const listCustomFields = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListCustomFieldsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListCustomFieldsResponse, ListCustomFieldsError, ThrowOnError>({
         ...options,
         url: '/v1/custom-fields'
@@ -2489,7 +2489,7 @@ export const deleteCustomField = <ThrowOnError extends boolean = false>(options:
 /**
  * List broadcasts
  */
-export const listBroadcasts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListBroadcastsData, ThrowOnError>) => {
+export const listBroadcasts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListBroadcastsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListBroadcastsResponse, ListBroadcastsError, ThrowOnError>({
         ...options,
         url: '/v1/broadcasts'
@@ -2589,7 +2589,7 @@ export const addBroadcastRecipients = <ThrowOnError extends boolean = false>(opt
 /**
  * List sequences
  */
-export const listSequences = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListSequencesData, ThrowOnError>) => {
+export const listSequences = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListSequencesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListSequencesResponse, ListSequencesError, ThrowOnError>({
         ...options,
         url: '/v1/sequences'
@@ -2690,7 +2690,7 @@ export const listSequenceEnrollments = <ThrowOnError extends boolean = false>(op
  * List comment-to-DM automations
  * List all comment-to-DM automations for a profile. Returns automations with their stats.
  */
-export const listCommentAutomations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCommentAutomationsData, ThrowOnError>) => {
+export const listCommentAutomations = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListCommentAutomationsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListCommentAutomationsResponse, ListCommentAutomationsError, ThrowOnError>({
         ...options,
         url: '/v1/comment-automations'

@@ -8971,11 +8971,14 @@ export type ReleaseWhatsAppPhoneNumberError = (unknown | {
 });
 
 export type ListContactsData = {
-    query: {
+    query?: {
         isSubscribed?: 'true' | 'false';
         limit?: number;
         platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp';
-        profileId: string;
+        /**
+         * Filter by profile. Omit to list across all profiles
+         */
+        profileId?: string;
         search?: string;
         skip?: number;
         tag?: string;
@@ -9126,8 +9129,11 @@ export type ClearContactFieldValueError = ({
 });
 
 export type ListCustomFieldsData = {
-    query: {
-        profileId: string;
+    query?: {
+        /**
+         * Filter by profile. Omit to list across all profiles
+         */
+        profileId?: string;
     };
 };
 
@@ -9188,10 +9194,13 @@ export type DeleteCustomFieldError = ({
 });
 
 export type ListBroadcastsData = {
-    query: {
+    query?: {
         limit?: number;
         platform?: string;
-        profileId: string;
+        /**
+         * Filter by profile. Omit to list across all profiles
+         */
+        profileId?: string;
         skip?: number;
         status?: 'draft' | 'scheduled' | 'sending' | 'completed' | 'failed' | 'cancelled';
     };
@@ -9354,9 +9363,12 @@ export type AddBroadcastRecipientsError = ({
 });
 
 export type ListSequencesData = {
-    query: {
+    query?: {
         limit?: number;
-        profileId: string;
+        /**
+         * Filter by profile. Omit to list across all profiles
+         */
+        profileId?: string;
         skip?: number;
         status?: 'draft' | 'active' | 'paused';
     };
@@ -9507,11 +9519,11 @@ export type ListSequenceEnrollmentsError = ({
 });
 
 export type ListCommentAutomationsData = {
-    query: {
+    query?: {
         /**
-         * Profile ID
+         * Filter by profile. Omit to list across all profiles
          */
-        profileId: string;
+        profileId?: string;
     };
 };
 
