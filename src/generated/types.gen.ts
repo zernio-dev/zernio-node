@@ -6526,6 +6526,14 @@ export type SendInboxMessageData = {
          */
         message?: string;
         /**
+         * URL of the attachment to send (image, video, audio, or file). The URL must be publicly accessible. For binary file uploads, use multipart/form-data instead.
+         */
+        attachmentUrl?: string;
+        /**
+         * Type of attachment. Defaults to file if not specified.
+         */
+        attachmentType?: 'image' | 'video' | 'audio' | 'file';
+        /**
          * Quick reply buttons. Mutually exclusive with buttons. Max 13 items.
          */
         quickReplies?: Array<{
