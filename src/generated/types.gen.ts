@@ -9000,7 +9000,40 @@ export type ListContactsData = {
     };
 };
 
-export type ListContactsResponse = (unknown);
+export type ListContactsResponse = ({
+    success?: boolean;
+    contacts?: Array<{
+        id?: string;
+        name?: string;
+        email?: string;
+        company?: string;
+        avatarUrl?: string;
+        tags?: Array<(string)>;
+        isSubscribed?: boolean;
+        isBlocked?: boolean;
+        lastMessageSentAt?: string;
+        lastMessageReceivedAt?: string;
+        messagesSentCount?: number;
+        messagesReceivedCount?: number;
+        customFields?: {
+            [key: string]: unknown;
+        };
+        notes?: string;
+        createdAt?: string;
+        platform?: string;
+        platformIdentifier?: string;
+        displayIdentifier?: string;
+    }>;
+    filters?: {
+        tags?: Array<(string)>;
+    };
+    pagination?: {
+        total?: number;
+        limit?: number;
+        skip?: number;
+        hasMore?: boolean;
+    };
+});
 
 export type ListContactsError = ({
     error?: string;
@@ -9025,7 +9058,33 @@ export type CreateContactData = {
     };
 };
 
-export type CreateContactResponse = (unknown);
+export type CreateContactResponse = ({
+    success?: boolean;
+    contact?: {
+        id?: string;
+        name?: string;
+        email?: string;
+        company?: string;
+        tags?: Array<(string)>;
+        isSubscribed?: boolean;
+        isBlocked?: boolean;
+        customFields?: {
+            [key: string]: unknown;
+        };
+        notes?: string;
+        createdAt?: string;
+    };
+    /**
+     * Created when accountId, platform, and platformIdentifier are provided
+     */
+    channel?: {
+        id?: string;
+        platform?: string;
+        platformIdentifier?: string;
+        displayIdentifier?: string;
+    };
+    warning?: string;
+});
 
 export type CreateContactError = ({
     error?: string;
@@ -9037,7 +9096,36 @@ export type GetContactData = {
     };
 };
 
-export type GetContactResponse = (unknown);
+export type GetContactResponse = ({
+    success?: boolean;
+    contact?: {
+        id?: string;
+        name?: string;
+        email?: string;
+        company?: string;
+        avatarUrl?: string;
+        tags?: Array<(string)>;
+        isSubscribed?: boolean;
+        isBlocked?: boolean;
+        customFields?: {
+            [key: string]: unknown;
+        };
+        notes?: string;
+        conversationIds?: Array<(string)>;
+        createdAt?: string;
+        updatedAt?: string;
+    };
+    channels?: Array<{
+        id?: string;
+        accountId?: string;
+        platform?: string;
+        platformIdentifier?: string;
+        displayIdentifier?: string;
+        isSubscribed?: boolean;
+        conversationId?: string;
+        createdAt?: string;
+    }>;
+});
 
 export type GetContactError = ({
     error?: string;
@@ -9059,7 +9147,21 @@ export type UpdateContactData = {
     };
 };
 
-export type UpdateContactResponse = (unknown);
+export type UpdateContactResponse = ({
+    success?: boolean;
+    contact?: {
+        id?: string;
+        name?: string;
+        email?: string;
+        company?: string;
+        avatarUrl?: string;
+        tags?: Array<(string)>;
+        isSubscribed?: boolean;
+        isBlocked?: boolean;
+        notes?: string;
+        updatedAt?: string;
+    };
+});
 
 export type UpdateContactError = ({
     error?: string;
@@ -9083,7 +9185,22 @@ export type GetContactChannelsData = {
     };
 };
 
-export type GetContactChannelsResponse = (unknown);
+export type GetContactChannelsResponse = ({
+    success?: boolean;
+    channels?: Array<{
+        id?: string;
+        accountId?: string;
+        platform?: string;
+        platformIdentifier?: string;
+        displayIdentifier?: string;
+        isSubscribed?: boolean;
+        conversationId?: string;
+        metadata?: {
+            [key: string]: unknown;
+        };
+        createdAt?: string;
+    }>;
+});
 
 export type GetContactChannelsError = ({
     error?: string;
@@ -9105,7 +9222,15 @@ export type BulkCreateContactsData = {
     };
 };
 
-export type BulkCreateContactsResponse = (unknown);
+export type BulkCreateContactsResponse = ({
+    success?: boolean;
+    created?: number;
+    skipped?: number;
+    errors?: Array<{
+        [key: string]: unknown;
+    }>;
+    total?: number;
+});
 
 export type BulkCreateContactsError = ({
     error?: string;
@@ -9152,7 +9277,17 @@ export type ListCustomFieldsData = {
     };
 };
 
-export type ListCustomFieldsResponse = (unknown);
+export type ListCustomFieldsResponse = ({
+    success?: boolean;
+    fields?: Array<{
+        id?: string;
+        name?: string;
+        slug?: string;
+        type?: 'text' | 'number' | 'date' | 'boolean' | 'select';
+        options?: Array<(string)>;
+        createdAt?: string;
+    }>;
+});
 
 export type ListCustomFieldsError = ({
     error?: string;
@@ -9174,7 +9309,17 @@ export type CreateCustomFieldData = {
     };
 };
 
-export type CreateCustomFieldResponse = (unknown);
+export type CreateCustomFieldResponse = ({
+    success?: boolean;
+    field?: {
+        id?: string;
+        name?: string;
+        slug?: string;
+        type?: 'text' | 'number' | 'date' | 'boolean' | 'select';
+        options?: Array<(string)>;
+        createdAt?: string;
+    };
+});
 
 export type CreateCustomFieldError = ({
     error?: string;
@@ -9190,7 +9335,16 @@ export type UpdateCustomFieldData = {
     };
 };
 
-export type UpdateCustomFieldResponse = (unknown);
+export type UpdateCustomFieldResponse = ({
+    success?: boolean;
+    field?: {
+        id?: string;
+        name?: string;
+        slug?: string;
+        type?: string;
+        options?: Array<(string)>;
+    };
+});
 
 export type UpdateCustomFieldError = ({
     error?: string;
@@ -9901,7 +10055,26 @@ export type CreateCommentAutomationData = {
     };
 };
 
-export type CreateCommentAutomationResponse = (unknown);
+export type CreateCommentAutomationResponse = ({
+    success?: boolean;
+    automation?: {
+        id?: string;
+        name?: string;
+        platform?: string;
+        platformPostId?: string;
+        keywords?: Array<(string)>;
+        matchMode?: 'exact' | 'contains';
+        dmMessage?: string;
+        commentReply?: string;
+        isActive?: boolean;
+        stats?: {
+            totalTriggered?: number;
+            totalSent?: number;
+            totalFailed?: number;
+        };
+        createdAt?: string;
+    };
+});
 
 export type CreateCommentAutomationError = (unknown | {
     error?: string;
@@ -9913,7 +10086,40 @@ export type GetCommentAutomationData = {
     };
 };
 
-export type GetCommentAutomationResponse = (unknown);
+export type GetCommentAutomationResponse = ({
+    success?: boolean;
+    automation?: {
+        id?: string;
+        name?: string;
+        platform?: string;
+        accountId?: string;
+        platformPostId?: string;
+        postId?: string;
+        postTitle?: string;
+        keywords?: Array<(string)>;
+        matchMode?: 'exact' | 'contains';
+        dmMessage?: string;
+        commentReply?: string;
+        isActive?: boolean;
+        stats?: {
+            totalTriggered?: number;
+            totalSent?: number;
+            totalFailed?: number;
+        };
+        createdAt?: string;
+        updatedAt?: string;
+    };
+    logs?: Array<{
+        id?: string;
+        commentId?: string;
+        commenterId?: string;
+        commenterName?: string;
+        commentText?: string;
+        status?: 'sent' | 'failed' | 'skipped';
+        error?: string;
+        createdAt?: string;
+    }>;
+});
 
 export type GetCommentAutomationError = ({
     error?: string;
@@ -9933,7 +10139,19 @@ export type UpdateCommentAutomationData = {
     };
 };
 
-export type UpdateCommentAutomationResponse = (unknown);
+export type UpdateCommentAutomationResponse = ({
+    success?: boolean;
+    automation?: {
+        id?: string;
+        name?: string;
+        keywords?: Array<(string)>;
+        matchMode?: 'exact' | 'contains';
+        dmMessage?: string;
+        commentReply?: string;
+        isActive?: boolean;
+        updatedAt?: string;
+    };
+});
 
 export type UpdateCommentAutomationError = ({
     error?: string;
@@ -9965,7 +10183,25 @@ export type ListCommentAutomationLogsData = {
     };
 };
 
-export type ListCommentAutomationLogsResponse = (unknown);
+export type ListCommentAutomationLogsResponse = ({
+    success?: boolean;
+    logs?: Array<{
+        id?: string;
+        commentId?: string;
+        commenterId?: string;
+        commenterName?: string;
+        commentText?: string;
+        status?: 'sent' | 'failed' | 'skipped';
+        error?: string;
+        createdAt?: string;
+    }>;
+    pagination?: {
+        total?: number;
+        limit?: number;
+        skip?: number;
+        hasMore?: boolean;
+    };
+});
 
 export type ListCommentAutomationLogsError = ({
     error?: string;
