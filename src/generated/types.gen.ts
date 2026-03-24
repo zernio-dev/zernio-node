@@ -1443,6 +1443,10 @@ export type parseMode = 'HTML' | 'Markdown' | 'MarkdownV2';
  */
 export type ThreadsPlatformData = {
     /**
+     * Topic tag for post categorization and discoverability on Threads. Must be 1-50 characters, cannot contain periods (.) or ampersands (&). Overrides auto-extraction from content hashtags when provided.
+     */
+    topic_tag?: string;
+    /**
      * Sequence of posts in a Threads thread (root then replies in order).
      */
     threadItems?: Array<{
