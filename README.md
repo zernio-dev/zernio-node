@@ -482,10 +482,14 @@ try {
 ### WhatsApp
 | Method | Description |
 |--------|-------------|
+| `whatsapp.listWhatsAppGroupChats()` | List active groups |
+| `whatsapp.listWhatsAppGroupJoinRequests()` | List join requests |
 | `whatsapp.bulkDeleteWhatsAppContacts()` | Bulk delete contacts |
 | `whatsapp.bulkUpdateWhatsAppContacts()` | Bulk update contacts |
 | `whatsapp.createWhatsAppBroadcast()` | Create broadcast |
 | `whatsapp.createWhatsAppContact()` | Create contact |
+| `whatsapp.createWhatsAppGroupChat()` | Create group |
+| `whatsapp.createWhatsAppGroupInviteLink()` | Create invite link |
 | `whatsapp.createWhatsAppTemplate()` | Create template |
 | `whatsapp.getWhatsAppBroadcast()` | Get broadcast |
 | `whatsapp.getWhatsAppBroadcastRecipients()` | List recipients |
@@ -494,21 +498,28 @@ try {
 | `whatsapp.getWhatsAppContact()` | Get contact |
 | `whatsapp.getWhatsAppContacts()` | List contacts |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name and review status |
+| `whatsapp.getWhatsAppGroupChat()` | Get group info |
 | `whatsapp.getWhatsAppGroups()` | List contact groups |
 | `whatsapp.getWhatsAppTemplate()` | Get template |
 | `whatsapp.getWhatsAppTemplates()` | List templates |
 | `whatsapp.updateWhatsAppBusinessProfile()` | Update business profile |
 | `whatsapp.updateWhatsAppContact()` | Update contact |
 | `whatsapp.updateWhatsAppDisplayName()` | Request display name change |
+| `whatsapp.updateWhatsAppGroupChat()` | Update group settings |
 | `whatsapp.updateWhatsAppTemplate()` | Update template |
 | `whatsapp.deleteWhatsAppBroadcast()` | Delete broadcast |
 | `whatsapp.deleteWhatsAppContact()` | Delete contact |
 | `whatsapp.deleteWhatsAppGroup()` | Delete group |
+| `whatsapp.deleteWhatsAppGroupChat()` | Delete group |
 | `whatsapp.deleteWhatsAppTemplate()` | Delete template |
 | `whatsapp.addWhatsAppBroadcastRecipients()` | Add recipients |
+| `whatsapp.addWhatsAppGroupParticipants()` | Add participants |
+| `whatsapp.approveWhatsAppGroupJoinRequests()` | Approve join requests |
 | `whatsapp.cancelWhatsAppBroadcastSchedule()` | Cancel scheduled broadcast |
 | `whatsapp.importWhatsAppContacts()` | Bulk import contacts |
+| `whatsapp.rejectWhatsAppGroupJoinRequests()` | Reject join requests |
 | `whatsapp.removeWhatsAppBroadcastRecipients()` | Remove recipients |
+| `whatsapp.removeWhatsAppGroupParticipants()` | Remove participants |
 | `whatsapp.renameWhatsAppGroup()` | Rename group |
 | `whatsapp.scheduleWhatsAppBroadcast()` | Schedule broadcast |
 | `whatsapp.sendWhatsAppBroadcast()` | Send broadcast |

@@ -9062,6 +9062,355 @@ export type ReleaseWhatsAppPhoneNumberError = (unknown | {
     error?: string;
 });
 
+export type ListWhatsAppGroupChatsData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Pagination cursor
+         */
+        after?: string;
+        /**
+         * Max groups to return
+         */
+        limit?: number;
+    };
+};
+
+export type ListWhatsAppGroupChatsResponse = ({
+    groups?: Array<{
+        /**
+         * Group ID
+         */
+        id?: string;
+        /**
+         * Group name
+         */
+        subject?: string;
+        /**
+         * Group creation timestamp
+         */
+        createdAt?: string;
+    }>;
+    paging?: {
+        cursors?: {
+            after?: string;
+            before?: string;
+        };
+    };
+});
+
+export type ListWhatsAppGroupChatsError = ({
+    error?: string;
+});
+
+export type CreateWhatsAppGroupChatData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Group name (max 128 characters)
+         */
+        subject: string;
+        /**
+         * Group description (max 2048 characters)
+         */
+        description?: string;
+        /**
+         * Whether users need approval to join via invite link
+         */
+        joinApprovalMode?: 'approval_required' | 'auto_approve';
+    };
+};
+
+export type CreateWhatsAppGroupChatResponse = ({
+    success?: boolean;
+    group?: {
+        groupId?: string;
+        inviteLink?: string;
+    };
+});
+
+export type CreateWhatsAppGroupChatError = ({
+    error?: string;
+});
+
+export type GetWhatsAppGroupChatData = {
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppGroupChatResponse = ({
+    success?: boolean;
+    group?: {
+        id?: string;
+        subject?: string;
+        description?: string;
+        joinApprovalMode?: string;
+        participants?: Array<{
+            /**
+             * Phone number
+             */
+            user?: string;
+            admin?: string;
+        }>;
+        participantCount?: number;
+        /**
+         * UNIX timestamp
+         */
+        createdAt?: number;
+        isSuspended?: boolean;
+    };
+});
+
+export type GetWhatsAppGroupChatError = ({
+    error?: string;
+});
+
+export type UpdateWhatsAppGroupChatData = {
+    body: {
+        subject?: string;
+        description?: string;
+        joinApprovalMode?: 'approval_required' | 'auto_approve';
+    };
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type UpdateWhatsAppGroupChatResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type UpdateWhatsAppGroupChatError = ({
+    error?: string;
+});
+
+export type DeleteWhatsAppGroupChatData = {
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteWhatsAppGroupChatResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type DeleteWhatsAppGroupChatError = ({
+    error?: string;
+});
+
+export type AddWhatsAppGroupParticipantsData = {
+    body: {
+        /**
+         * Phone numbers in E.164 format (max 8)
+         */
+        phoneNumbers: Array<(string)>;
+    };
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type AddWhatsAppGroupParticipantsResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type AddWhatsAppGroupParticipantsError = ({
+    error?: string;
+});
+
+export type RemoveWhatsAppGroupParticipantsData = {
+    body: {
+        /**
+         * Phone numbers to remove
+         */
+        phoneNumbers: Array<(string)>;
+    };
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type RemoveWhatsAppGroupParticipantsResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type RemoveWhatsAppGroupParticipantsError = ({
+    error?: string;
+});
+
+export type CreateWhatsAppGroupInviteLinkData = {
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type CreateWhatsAppGroupInviteLinkResponse = ({
+    success?: boolean;
+    inviteLink?: string;
+});
+
+export type CreateWhatsAppGroupInviteLinkError = ({
+    error?: string;
+});
+
+export type ListWhatsAppGroupJoinRequestsData = {
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type ListWhatsAppGroupJoinRequestsResponse = ({
+    success?: boolean;
+    joinRequests?: Array<{
+        /**
+         * Phone number
+         */
+        user?: string;
+        /**
+         * UNIX timestamp of request
+         */
+        timestamp?: number;
+    }>;
+});
+
+export type ListWhatsAppGroupJoinRequestsError = ({
+    error?: string;
+});
+
+export type ApproveWhatsAppGroupJoinRequestsData = {
+    body: {
+        /**
+         * Phone numbers to approve
+         */
+        phoneNumbers: Array<(string)>;
+    };
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type ApproveWhatsAppGroupJoinRequestsResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type ApproveWhatsAppGroupJoinRequestsError = ({
+    error?: string;
+});
+
+export type RejectWhatsAppGroupJoinRequestsData = {
+    body: {
+        /**
+         * Phone numbers to reject
+         */
+        phoneNumbers: Array<(string)>;
+    };
+    path: {
+        /**
+         * Group ID
+         */
+        groupId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type RejectWhatsAppGroupJoinRequestsResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type RejectWhatsAppGroupJoinRequestsError = ({
+    error?: string;
+});
+
 export type ListContactsData = {
     query?: {
         isSubscribed?: 'true' | 'false';
