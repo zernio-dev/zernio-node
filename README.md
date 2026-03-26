@@ -174,6 +174,7 @@ try {
 | `posts.createPost()` | Create post |
 | `posts.getPost()` | Get post |
 | `posts.updatePost()` | Update post |
+| `posts.updatePostMetadata()` | Update post metadata |
 | `posts.deletePost()` | Delete post |
 | `posts.retryPost()` | Retry failed post |
 | `posts.unpublishPost()` | Unpublish post |

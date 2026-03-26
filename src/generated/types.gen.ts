@@ -3336,6 +3336,48 @@ export type UnpublishPostError = (unknown | {
     error?: string;
 });
 
+export type UpdatePostMetadataData = {
+    body: {
+        /**
+         * The platform to update metadata on
+         */
+        platform: 'youtube';
+        /**
+         * New video title (max 100 characters for YouTube)
+         */
+        title?: string;
+        /**
+         * New video description
+         */
+        description?: string;
+        /**
+         * Array of keyword tags (max 500 characters combined for YouTube)
+         */
+        tags?: Array<(string)>;
+        /**
+         * YouTube video category ID
+         */
+        categoryId?: string;
+        /**
+         * Video privacy setting
+         */
+        privacyStatus?: 'public' | 'private' | 'unlisted';
+    };
+    path: {
+        postId: string;
+    };
+};
+
+export type UpdatePostMetadataResponse = ({
+    success?: boolean;
+    message?: string;
+    updatedFields?: Array<(string)>;
+});
+
+export type UpdatePostMetadataError = (unknown | {
+    error?: string;
+});
+
 export type ListUsersResponse = ({
     currentUserId?: string;
     users?: Array<{

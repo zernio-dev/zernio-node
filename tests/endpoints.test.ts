@@ -407,6 +407,11 @@ describe('Endpoint Methods', () => {
       expect(client.posts.unpublishPost).toBeTypeOf('function');
     });
 
+    it('should have updatePostMetadata method', () => {
+      expect(client.posts.updatePostMetadata).toBeDefined();
+      expect(client.posts.updatePostMetadata).toBeTypeOf('function');
+    });
+
   });
 
   describe('profiles', () => {

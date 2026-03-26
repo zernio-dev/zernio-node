@@ -211,6 +211,7 @@ import {
   updateLinkedInOrganization,
   updatePinterestBoards,
   updatePost,
+  updatePostMetadata,
   updateProfile,
   updateQueueSlot,
   updateRedditSubreddits,
@@ -376,6 +377,7 @@ export class Zernio {
     bulkUploadPosts: bulkUploadPosts,
     retryPost: retryPost,
     unpublishPost: unpublishPost,
+    updatePostMetadata: updatePostMetadata,
   };
 
   /**
