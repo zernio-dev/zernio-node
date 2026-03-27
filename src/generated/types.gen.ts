@@ -1678,7 +1678,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -1712,7 +1712,7 @@ export type WebhookLog = {
      * Name of the webhook that was triggered
      */
     webhookName?: string;
-    event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
+    event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
     url?: string;
     status?: 'success' | 'failed';
     /**
@@ -1744,7 +1744,7 @@ export type WebhookLog = {
     createdAt?: string;
 };
 
-export type event = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
+export type event = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
 
 export type status7 = 'success' | 'failed';
 
@@ -1752,21 +1752,25 @@ export type status7 = 'success' | 'failed';
  * Webhook payload for account connected events
  */
 export type WebhookPayloadAccountConnected = {
-    event?: 'account.connected';
-    account?: {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'account.connected';
+    account: {
         /**
          * The account's unique identifier (same as used in /v1/accounts/{accountId})
          */
-        accountId?: string;
+        accountId: string;
         /**
          * The profile's unique identifier this account belongs to
          */
-        profileId?: string;
-        platform?: string;
-        username?: string;
+        profileId: string;
+        platform: string;
+        username: string;
         displayName?: string;
     };
-    timestamp?: string;
+    timestamp: string;
 };
 
 export type event2 = 'account.connected';
@@ -1775,29 +1779,33 @@ export type event2 = 'account.connected';
  * Webhook payload for account disconnected events
  */
 export type WebhookPayloadAccountDisconnected = {
-    event?: 'account.disconnected';
-    account?: {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'account.disconnected';
+    account: {
         /**
          * The account's unique identifier (same as used in /v1/accounts/{accountId})
          */
-        accountId?: string;
+        accountId: string;
         /**
          * The profile's unique identifier this account belongs to
          */
-        profileId?: string;
-        platform?: string;
-        username?: string;
+        profileId: string;
+        platform: string;
+        username: string;
         displayName?: string;
         /**
          * Whether the disconnection was intentional (user action) or unintentional (token expired/revoked)
          */
-        disconnectionType?: 'intentional' | 'unintentional';
+        disconnectionType: 'intentional' | 'unintentional';
         /**
          * Human-readable reason for the disconnection
          */
-        reason?: string;
+        reason: string;
     };
-    timestamp?: string;
+    timestamp: string;
 };
 
 export type event3 = 'account.disconnected';
@@ -1811,63 +1819,67 @@ export type disconnectionType = 'intentional' | 'unintentional';
  * Webhook payload for comment received events (Instagram, Facebook, Twitter/X, YouTube, LinkedIn, Bluesky, Reddit)
  */
 export type WebhookPayloadComment = {
-    event?: 'comment.received';
-    comment?: {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'comment.received';
+    comment: {
         /**
          * Platform comment ID
          */
-        id?: string;
+        id: string;
         /**
          * Internal post ID
          */
-        postId?: string;
+        postId: string;
         /**
          * Platform's post ID
          */
-        platformPostId?: string;
-        platform?: 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
+        platformPostId: string;
+        platform: 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
         /**
          * Comment text content
          */
-        text?: string;
-        author?: {
+        text: string;
+        author: {
             /**
              * Author's platform ID
              */
-            id?: string;
+            id: string;
             username?: string;
             name?: string;
             picture?: (string) | null;
         };
-        createdAt?: string;
+        createdAt: string;
         /**
          * Whether this is a reply to another comment
          */
-        isReply?: boolean;
+        isReply: boolean;
         /**
          * Parent comment ID if this is a reply
          */
-        parentCommentId?: (string) | null;
+        parentCommentId: (string) | null;
     };
-    post?: {
+    post: {
         /**
          * Internal post ID
          */
-        id?: string;
+        id: string;
         /**
          * Platform's post ID
          */
-        platformPostId?: string;
+        platformPostId: string;
     };
-    account?: {
+    account: {
         /**
          * Social account ID
          */
-        id?: string;
-        platform?: string;
-        username?: string;
+        id: string;
+        platform: string;
+        username: string;
     };
-    timestamp?: string;
+    timestamp: string;
 };
 
 export type event4 = 'comment.received';
@@ -1875,38 +1887,42 @@ export type event4 = 'comment.received';
 export type platform2 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
 
 /**
- * Webhook payload for message received events (DMs from Instagram, Facebook, Telegram, Bluesky, Reddit)
+ * Webhook payload for message received events
  */
 export type WebhookPayloadMessage = {
-    event?: 'message.received';
-    message?: {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'message.received';
+    message: {
         /**
          * Internal message ID
          */
-        id?: string;
+        id: string;
         /**
          * Internal conversation ID
          */
-        conversationId?: string;
-        platform?: 'instagram' | 'facebook' | 'telegram' | 'bluesky' | 'reddit';
+        conversationId: string;
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
         /**
          * Platform's message ID
          */
-        platformMessageId?: string;
-        direction?: 'incoming';
+        platformMessageId: string;
+        direction: 'incoming' | 'outgoing';
         /**
          * Message text content
          */
-        text?: (string) | null;
-        attachments?: Array<{
+        text: (string) | null;
+        attachments: Array<{
             /**
              * Attachment type (image, video, file, sticker, audio)
              */
-            type?: string;
+            type: string;
             /**
              * Attachment URL (may expire for Meta platforms)
              */
-            url?: string;
+            url: string;
             /**
              * Additional attachment metadata
              */
@@ -1914,8 +1930,8 @@ export type WebhookPayloadMessage = {
                 [key: string]: unknown;
             };
         }>;
-        sender?: {
-            id?: string;
+        sender: {
+            id: string;
             name?: string;
             username?: string;
             picture?: string;
@@ -1939,31 +1955,27 @@ export type WebhookPayloadMessage = {
                  * Whether the sender is a verified Instagram user
                  */
                 isVerified?: (boolean) | null;
-            } | null;
+            };
         };
-        sentAt?: string;
-        isRead?: boolean;
+        sentAt: string;
+        isRead: boolean;
     };
-    conversation?: {
-        id?: string;
-        platformConversationId?: string;
+    conversation: {
+        id: string;
+        platformConversationId: string;
         participantId?: string;
         participantName?: string;
         participantUsername?: string;
         participantPicture?: string;
-        /**
-         * X/Twitter verified badge type. Only present for Twitter/X conversations.
-         */
-        participantVerifiedType?: ('blue' | 'government' | 'business' | 'none') | null;
-        status?: 'active' | 'archived';
+        status: 'active' | 'archived';
     };
-    account?: {
+    account: {
         /**
          * Social account ID
          */
-        id?: string;
-        platform?: string;
-        username?: string;
+        id: string;
+        platform: string;
+        username: string;
         displayName?: string;
     };
     /**
@@ -1987,19 +1999,14 @@ export type WebhookPayloadMessage = {
          */
         callbackData?: string;
     } | null;
-    timestamp?: string;
+    timestamp: string;
 };
 
 export type event5 = 'message.received';
 
-export type platform3 = 'instagram' | 'facebook' | 'telegram' | 'bluesky' | 'reddit';
+export type platform3 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
 
-export type direction = 'incoming';
-
-/**
- * X/Twitter verified badge type. Only present for Twitter/X conversations.
- */
-export type participantVerifiedType = 'blue' | 'government' | 'business' | 'none';
+export type direction = 'incoming' | 'outgoing';
 
 export type status8 = 'active' | 'archived';
 
@@ -2007,24 +2014,47 @@ export type status8 = 'active' | 'archived';
  * Webhook payload for post events
  */
 export type WebhookPayloadPost = {
-    event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled';
-    post?: {
-        id?: string;
-        content?: string;
-        status?: string;
-        scheduledFor?: string;
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+    post: {
+        id: string;
+        content: string;
+        status: string;
+        scheduledFor: string;
         publishedAt?: string;
-        platforms?: Array<{
-            platform?: string;
-            status?: string;
+        platforms: Array<{
+            platform: string;
+            status: string;
+            platformPostId?: string;
             publishedUrl?: string;
             error?: string;
         }>;
     };
-    timestamp?: string;
+    timestamp: string;
 };
 
-export type event6 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled';
+export type event6 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+
+/**
+ * Webhook payload for test deliveries
+ */
+export type WebhookPayloadTest = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'webhook.test';
+    /**
+     * Human-readable test message
+     */
+    message: string;
+    timestamp: string;
+};
+
+export type event7 = 'webhook.test';
 
 export type YouTubeDailyViewsResponse = {
     success?: boolean;
@@ -6093,7 +6123,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -6137,7 +6167,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -6203,7 +6233,7 @@ export type GetWebhookLogsData = {
         /**
          * Filter by event type
          */
-        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
+        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'account.connected' | 'account.disconnected' | 'message.received' | 'comment.received' | 'webhook.test';
         /**
          * Maximum number of logs to return (max 100)
          */
