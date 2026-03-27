@@ -8,6 +8,10 @@ on:
   # Allow manual trigger
   workflow_dispatch:
 
+concurrency:
+  group: regenerate-sdk
+  cancel-in-progress: false
+
 jobs:
   generate:
     name: Regenerate from OpenAPI
@@ -97,15 +101,29 @@ jobs:
           - Version: $NEW_VERSION"
           git push
 
-      - name: Publish to npm as @zernio/node
+      - name: Check if version already published
         if: steps.changes.outputs.has_changes == 'true'
+        id: check_published
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          if npm view "@zernio/node@${CURRENT_VERSION}" version 2>/dev/null; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Version ${CURRENT_VERSION} already on npm, skipping publish."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm as @zernio/node
+        if: steps.changes.outputs.has_changes == 'true' && steps.check_published.outputs.skip != 'true'
         continue-on-error: true
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm as @getlatedev/node (legacy)
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true' && steps.check_published.outputs.skip != 'true'
         continue-on-error: true
         run: |
           node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@getlatedev/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
