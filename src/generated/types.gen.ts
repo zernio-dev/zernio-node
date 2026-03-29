@@ -6871,6 +6871,150 @@ export type EditInboxMessageError = (unknown | {
     error?: string;
 });
 
+export type DeleteInboxMessageData = {
+    path: {
+        /**
+         * The conversation ID
+         */
+        conversationId: string;
+        /**
+         * The platform message ID to delete
+         */
+        messageId: string;
+    };
+    query: {
+        /**
+         * Social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteInboxMessageResponse = ({
+    success?: boolean;
+});
+
+export type DeleteInboxMessageError = (unknown | {
+    error?: string;
+});
+
+export type SendTypingIndicatorData = {
+    body: {
+        /**
+         * Social account ID
+         */
+        accountId: string;
+    };
+    path: {
+        /**
+         * The conversation ID
+         */
+        conversationId: string;
+    };
+};
+
+export type SendTypingIndicatorResponse = ({
+    success?: boolean;
+});
+
+export type SendTypingIndicatorError = ({
+    error?: string;
+} | unknown);
+
+export type AddMessageReactionData = {
+    body: {
+        /**
+         * Social account ID
+         */
+        accountId: string;
+        /**
+         * Emoji character (e.g. "👍", "❤️")
+         */
+        emoji: string;
+    };
+    path: {
+        /**
+         * The conversation ID
+         */
+        conversationId: string;
+        /**
+         * The platform message ID to react to
+         */
+        messageId: string;
+    };
+};
+
+export type AddMessageReactionResponse = ({
+    success?: boolean;
+});
+
+export type AddMessageReactionError = (unknown | {
+    error?: string;
+});
+
+export type RemoveMessageReactionData = {
+    path: {
+        /**
+         * The conversation ID
+         */
+        conversationId: string;
+        /**
+         * The platform message ID
+         */
+        messageId: string;
+    };
+    query: {
+        /**
+         * Social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type RemoveMessageReactionResponse = ({
+    success?: boolean;
+});
+
+export type RemoveMessageReactionError = (unknown | {
+    error?: string;
+});
+
+export type UploadMediaDirectData = {
+    body: {
+        /**
+         * The file to upload (max 25MB)
+         */
+        file: (Blob | File);
+        /**
+         * Override MIME type (e.g. "image/jpeg"). Auto-detected from file if not provided.
+         */
+        contentType?: string;
+    };
+};
+
+export type UploadMediaDirectResponse = ({
+    /**
+     * Publicly accessible URL for the uploaded file
+     */
+    url?: string;
+    /**
+     * Generated unique filename
+     */
+    filename?: string;
+    /**
+     * MIME type of the file
+     */
+    contentType?: string;
+    /**
+     * File size in bytes
+     */
+    size?: number;
+});
+
+export type UploadMediaDirectError = (unknown | {
+    error?: string;
+});
+
 export type GetMessengerMenuData = {
     path: {
         accountId: string;

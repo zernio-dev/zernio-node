@@ -437,8 +437,13 @@ try {
 | `messages.getInboxConversation()` | Get conversation |
 | `messages.getInboxConversationMessages()` | List messages |
 | `messages.updateInboxConversation()` | Update conversation status |
+| `messages.deleteInboxMessage()` | Delete message |
+| `messages.addMessageReaction()` | Add reaction |
 | `messages.editInboxMessage()` | Edit message |
+| `messages.removeMessageReaction()` | Remove reaction |
 | `messages.sendInboxMessage()` | Send message |
+| `messages.sendTypingIndicator()` | Send typing indicator |
+| `messages.uploadMediaDirect()` | Upload media file |
 
 ### Reviews (Inbox)
 | Method | Description |
