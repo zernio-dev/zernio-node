@@ -2082,10 +2082,14 @@ export type WhatsAppBodyComponent = {
     };
 };
 
+export type type4 = 'BODY';
+
 export type WhatsAppButtonsComponent = {
     type: 'BUTTONS';
     buttons: Array<WhatsAppTemplateButton>;
 };
+
+export type type5 = 'BUTTONS';
 
 export type WhatsAppFooterComponent = {
     type: 'FOOTER';
@@ -2098,6 +2102,8 @@ export type WhatsAppFooterComponent = {
      */
     code_expiration_minutes?: number;
 };
+
+export type type6 = 'FOOTER';
 
 export type WhatsAppHeaderComponent = {
     type: 'HEADER';
@@ -2119,6 +2125,8 @@ export type WhatsAppHeaderComponent = {
         ];
     };
 };
+
+export type type7 = 'HEADER';
 
 export type format = 'TEXT' | 'IMAGE' | 'VIDEO' | 'GIF' | 'DOCUMENT' | 'LOCATION';
 
@@ -2151,7 +2159,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type4 = 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER' | 'OTP' | 'FLOW' | 'MPM' | 'CATALOG';
+export type type8 = 'QUICK_REPLY' | 'URL' | 'PHONE_NUMBER' | 'OTP' | 'FLOW' | 'MPM' | 'CATALOG';
 
 /**
  * Required when type is OTP
