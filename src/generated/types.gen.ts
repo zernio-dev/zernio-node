@@ -1420,6 +1420,20 @@ export type SocialAccount = {
      * Last time follower count was updated (only included if user has analytics add-on)
      */
     followersLastUpdated?: string;
+    /**
+     * Platform-specific metadata. Fields vary by platform. For WhatsApp accounts, includes:
+     * - `qualityRating`: Phone number quality rating from Meta (`GREEN`, `YELLOW`, `RED`, or `UNKNOWN`)
+     * - `nameStatus`: Display name review status (`APPROVED`, `PENDING_REVIEW`, `DECLINED`, or `NONE`). Messages cannot be sent until the display name is approved by Meta.
+     * - `messagingLimitTier`: Maximum unique business-initiated conversations per 24h rolling window (`TIER_250`, `TIER_1K`, `TIER_10K`, `TIER_100K`, or `TIER_UNLIMITED`). Scales automatically as quality rating improves.
+     * - `verifiedName`: Meta-verified business display name
+     * - `displayPhoneNumber`: Formatted phone number (e.g., "+1 555-123-4567")
+     * - `wabaId`: WhatsApp Business Account ID
+     * - `phoneNumberId`: Meta phone number ID
+     *
+     */
+    metadata?: {
+        [key: string]: unknown;
+    };
 };
 
 /**
@@ -5421,12 +5435,10 @@ export type ConnectWhatsAppCredentialsResponse = ({
          */
         displayName?: string;
         isActive?: boolean;
-        phoneNumber?: string;
-        verifiedName?: string;
         /**
-         * GREEN, YELLOW, or RED
+         * The connected phone number
          */
-        qualityRating?: string;
+        selectedPhoneNumber?: string;
     };
 });
 
