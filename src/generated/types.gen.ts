@@ -3526,6 +3526,18 @@ export type UpdatePostMetadataData = {
          * Public URL of a custom thumbnail image (JPEG, PNG, or GIF, max 2 MB, recommended 1280x720). Works on any video you own, including existing videos not published through Zernio. The channel must be verified (phone verification) to set custom thumbnails.
          */
         thumbnailUrl?: string;
+        /**
+         * COPPA compliance flag. Set true for child-directed content (restricts comments, notifications, ad targeting).
+         */
+        madeForKids?: boolean;
+        /**
+         * AI-generated content disclosure. Set true if the video contains synthetic content that could be mistaken for real. YouTube may add a label.
+         */
+        containsSyntheticMedia?: boolean;
+        /**
+         * YouTube playlist ID to add the video to (e.g. 'PLxxxxxxxxxxxxx'). Use GET /v1/accounts/{id}/youtube-playlists to list available playlists. Only playlists owned by the channel are supported.
+         */
+        playlistId?: string;
     };
     path: {
         /**
