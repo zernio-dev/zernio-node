@@ -173,6 +173,9 @@ export type AdMetrics = {
      */
     cpm?: number;
     engagement?: number;
+    /**
+     * Present on individual ads only, not on campaign aggregations
+     */
     lastSyncedAt?: string;
 };
 
@@ -11183,6 +11186,10 @@ export type UpdateAdCampaignStatusResponse = ({
      */
     skipped?: number;
     skippedReasons?: Array<(string)>;
+    /**
+     * Human-readable summary (present when no ads were actionable)
+     */
+    message?: string;
 });
 
 export type UpdateAdCampaignStatusError = (unknown | {
@@ -11466,7 +11473,7 @@ export type SyncExternalAdsResponse = ({
      */
     synced?: number;
     /**
-     * Already-synced ads updated
+     * Already-known ads (skipped import
      */
     skipped?: number;
     /**
