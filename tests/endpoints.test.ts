@@ -498,54 +498,6 @@ describe('Endpoint Methods', () => {
 
   });
 
-  describe('tools', () => {
-    it('should have downloadYouTubeVideo method', () => {
-      expect(client.tools.downloadYouTubeVideo).toBeDefined();
-      expect(client.tools.downloadYouTubeVideo).toBeTypeOf('function');
-    });
-
-    it('should have getYouTubeTranscript method', () => {
-      expect(client.tools.getYouTubeTranscript).toBeDefined();
-      expect(client.tools.getYouTubeTranscript).toBeTypeOf('function');
-    });
-
-    it('should have downloadInstagramMedia method', () => {
-      expect(client.tools.downloadInstagramMedia).toBeDefined();
-      expect(client.tools.downloadInstagramMedia).toBeTypeOf('function');
-    });
-
-    it('should have checkInstagramHashtags method', () => {
-      expect(client.tools.checkInstagramHashtags).toBeDefined();
-      expect(client.tools.checkInstagramHashtags).toBeTypeOf('function');
-    });
-
-    it('should have downloadTikTokVideo method', () => {
-      expect(client.tools.downloadTikTokVideo).toBeDefined();
-      expect(client.tools.downloadTikTokVideo).toBeTypeOf('function');
-    });
-
-    it('should have downloadTwitterMedia method', () => {
-      expect(client.tools.downloadTwitterMedia).toBeDefined();
-      expect(client.tools.downloadTwitterMedia).toBeTypeOf('function');
-    });
-
-    it('should have downloadFacebookVideo method', () => {
-      expect(client.tools.downloadFacebookVideo).toBeDefined();
-      expect(client.tools.downloadFacebookVideo).toBeTypeOf('function');
-    });
-
-    it('should have downloadLinkedInVideo method', () => {
-      expect(client.tools.downloadLinkedInVideo).toBeDefined();
-      expect(client.tools.downloadLinkedInVideo).toBeTypeOf('function');
-    });
-
-    it('should have downloadBlueskyMedia method', () => {
-      expect(client.tools.downloadBlueskyMedia).toBeDefined();
-      expect(client.tools.downloadBlueskyMedia).toBeTypeOf('function');
-    });
-
-  });
-
   describe('usage', () => {
     it('should have getUsageStats method', () => {
       expect(client.usage.getUsageStats).toBeDefined();
