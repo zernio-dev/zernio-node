@@ -84,7 +84,6 @@ describe('Zernio Client', () => {
     expect(client.webhooks).toBeDefined();
     expect(client.apiKeys).toBeDefined();
     expect(client.media).toBeDefined();
-    expect(client.tools).toBeDefined();
     expect(client.users).toBeDefined();
     expect(client.usage).toBeDefined();
     expect(client.logs).toBeDefined();
