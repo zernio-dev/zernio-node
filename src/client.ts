@@ -28,6 +28,7 @@ import {
   createCustomField,
   createGoogleBusinessMedia,
   createGoogleBusinessPlaceAction,
+  createInboxConversation,
   createInviteToken,
   createPost,
   createProfile,
@@ -71,6 +72,7 @@ import {
   deleteWhatsAppTemplate,
   deprecateWhatsAppFlow,
   editInboxMessage,
+  editPost,
   enrollContacts,
   followUser,
   getAccountHealth,
@@ -405,6 +407,7 @@ export class Zernio {
     bulkUploadPosts: bulkUploadPosts,
     retryPost: retryPost,
     unpublishPost: unpublishPost,
+    editPost: editPost,
     updatePostMetadata: updatePostMetadata,
   };
 
@@ -589,6 +592,7 @@ export class Zernio {
    */
   messages = {
     listInboxConversations: listInboxConversations,
+    createInboxConversation: createInboxConversation,
     getInboxConversation: getInboxConversation,
     updateInboxConversation: updateInboxConversation,
     getInboxConversationMessages: getInboxConversationMessages,

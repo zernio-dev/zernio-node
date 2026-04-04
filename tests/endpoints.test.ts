@@ -432,6 +432,11 @@ describe('Endpoint Methods', () => {
       expect(client.posts.unpublishPost).toBeTypeOf('function');
     });
 
+    it('should have editPost method', () => {
+      expect(client.posts.editPost).toBeDefined();
+      expect(client.posts.editPost).toBeTypeOf('function');
+    });
+
     it('should have updatePostMetadata method', () => {
       expect(client.posts.updatePostMetadata).toBeDefined();
       expect(client.posts.updatePostMetadata).toBeTypeOf('function');

@@ -537,6 +537,10 @@ export type ErrorResponse = {
  */
 export type FacebookPlatformData = {
     /**
+     * When true, creates the post as an unpublished draft visible in Facebook Publishing Tools instead of publishing immediately. Supported for feed posts (text, link, image, video) and reels. Not supported for stories. Drafts expire after ~30 days.
+     */
+    draft?: boolean;
+    /**
      * Set to 'story' for Page Stories (24h ephemeral) or 'reel' for Reels (short vertical video). Defaults to feed post if omitted.
      */
     contentType?: 'story' | 'reel';
@@ -545,7 +549,7 @@ export type FacebookPlatformData = {
      */
     title?: string;
     /**
-     * Optional first comment to post immediately after publishing (feed posts only, not stories or reels)
+     * Optional first comment to post immediately after publishing (feed posts only, not stories or reels). Skipped when draft is true.
      */
     firstComment?: string;
     /**
@@ -1735,6 +1739,10 @@ export type TwitterPlatformData = {
          */
         duration_minutes: number;
     };
+    /**
+     * Enable long video uploads (over 140 seconds) using amplify_video media category. Requires the connected X account to have an active X Premium subscription. When true, videos are uploaded with the amplify_video category which supports longer durations (up to 10 minutes via API). When false or omitted, the standard tweet_video category is used (140 second limit). Note that not all Premium accounts have API long-video access, as X may require separate allowlisting.
+     */
+    longVideo?: boolean;
 };
 
 /**
@@ -3428,6 +3436,10 @@ export type CreatePostData = {
          * Root-level TikTok settings applied to all TikTok platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
          */
         tiktokSettings?: TikTokPlatformData;
+        /**
+         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
+         */
+        facebookSettings?: FacebookPlatformData;
         recycling?: RecyclingConfig;
         /**
          * Profile ID to schedule via queue. When provided without scheduledFor, the post is auto-assigned to the next available slot. Do not call /v1/queue/next-slot and use that time in scheduledFor, as that bypasses queue locking.
@@ -3484,8 +3496,12 @@ export type UpdatePostData = {
          * Root-level TikTok settings applied to all TikTok platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
          */
         tiktokSettings?: TikTokPlatformData;
+        /**
+         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
+         */
+        facebookSettings?: FacebookPlatformData;
         recycling?: RecyclingConfig;
-        [key: string]: unknown | string | TikTokPlatformData | RecyclingConfig;
+        [key: string]: unknown | string | TikTokPlatformData | FacebookPlatformData | RecyclingConfig;
     };
     path: {
         postId: string;
@@ -3575,6 +3591,39 @@ export type UnpublishPostResponse = ({
 });
 
 export type UnpublishPostError = (unknown | {
+    error?: string;
+});
+
+export type EditPostData = {
+    body: {
+        /**
+         * The platform to edit the post on. Currently only twitter is supported.
+         */
+        platform: 'twitter';
+        /**
+         * The new tweet text content
+         */
+        content: string;
+    };
+    path: {
+        postId: string;
+    };
+};
+
+export type EditPostResponse = ({
+    success?: boolean;
+    /**
+     * New tweet ID assigned by X after edit
+     */
+    id?: string;
+    /**
+     * URL of the edited tweet
+     */
+    url?: string;
+    message?: string;
+});
+
+export type EditPostError = (unknown | {
     error?: string;
 });
 
@@ -6778,6 +6827,67 @@ export type ListInboxConversationsResponse = ({
 export type ListInboxConversationsError = ({
     error?: string;
 } | unknown);
+
+export type CreateInboxConversationData = {
+    body: {
+        /**
+         * The social account ID to send from
+         */
+        accountId: string;
+        /**
+         * Twitter numeric user ID of the recipient. Provide either this or `participantUsername`.
+         */
+        participantId?: string;
+        /**
+         * Twitter username (with or without @) of the recipient. Resolved to a user ID via lookup. Provide either this or `participantId`.
+         */
+        participantUsername?: string;
+        /**
+         * Text content of the message. At least one of `message` or attachment is required.
+         */
+        message?: string;
+        /**
+         * Skip the `receives_your_dm` eligibility check before sending. Use if you have already verified the recipient accepts DMs.
+         */
+        skipDmCheck?: boolean;
+    };
+};
+
+export type CreateInboxConversationResponse = ({
+    success?: boolean;
+    data?: {
+        /**
+         * Platform message ID (dm_event_id)
+         */
+        messageId?: string;
+        /**
+         * Platform conversation ID (dm_conversation_id)
+         */
+        conversationId?: string;
+        /**
+         * Twitter numeric user ID of the recipient
+         */
+        participantId?: string;
+        /**
+         * Display name of the recipient
+         */
+        participantName?: (string) | null;
+        /**
+         * Twitter username of the recipient
+         */
+        participantUsername?: (string) | null;
+    };
+});
+
+export type CreateInboxConversationError = ({
+    error?: string;
+    code?: 'PLATFORM_NOT_SUPPORTED';
+} | {
+    error?: string;
+} | unknown | {
+    error?: string;
+    code?: 'DM_NOT_ALLOWED';
+});
 
 export type GetInboxConversationData = {
     path: {

@@ -176,6 +176,7 @@ try {
 | `posts.updatePost()` | Update post |
 | `posts.updatePostMetadata()` | Update post metadata |
 | `posts.deletePost()` | Delete post |
+| `posts.editPost()` | Edit published post |
 | `posts.retryPost()` | Retry failed post |
 | `posts.unpublishPost()` | Unpublish post |
 
@@ -456,6 +457,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `messages.listInboxConversations()` | List conversations |
+| `messages.createInboxConversation()` | Create conversation |
 | `messages.getInboxConversation()` | Get conversation |
 | `messages.getInboxConversationMessages()` | List messages |
 | `messages.updateInboxConversation()` | Update conversation status |
