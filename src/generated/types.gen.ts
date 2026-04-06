@@ -1533,6 +1533,58 @@ export type RedditPlatformData = {
 };
 
 /**
+ * A normalized Reddit post returned by the feed and search endpoints
+ */
+export type RedditPost = {
+    /**
+     * Reddit post ID (without type prefix)
+     */
+    id?: string;
+    /**
+     * Reddit fullname (e.g. t3_abc123)
+     */
+    fullname?: string;
+    title?: string;
+    author?: string;
+    subreddit?: string;
+    /**
+     * Post URL (may be a gallery URL
+     */
+    url?: string;
+    /**
+     * Full permalink to the Reddit post
+     */
+    permalink?: string;
+    /**
+     * Self-post body text (empty string for link posts)
+     */
+    selftext?: string;
+    /**
+     * Unix timestamp of post creation
+     */
+    createdUtc?: number;
+    score?: number;
+    numComments?: number;
+    /**
+     * Whether the post is marked NSFW
+     */
+    over18?: boolean;
+    stickied?: boolean;
+    /**
+     * Link flair text if set
+     */
+    flairText?: (string) | null;
+    /**
+     * Whether the post is a gallery with multiple images
+     */
+    isGallery?: boolean;
+    /**
+     * Individual image URLs for gallery posts (only present when isGallery is true)
+     */
+    galleryImages?: Array<(string)>;
+};
+
+/**
  * Requires a Public Profile. Single media item only. Content types: story (ephemeral 24h), saved_story (permanent, title max 45 chars), spotlight (video, max 160 chars).
  */
 export type SnapchatPlatformData = {
@@ -2551,6 +2603,10 @@ export type ValidateMediaError = unknown;
 export type ValidateSubredditData = {
     query: {
         /**
+         * Reddit social account ID for authenticated lookup (recommended for reliable results)
+         */
+        accountId?: string;
+        /**
          * Subreddit name (with or without "r/" prefix)
          */
         name: string;
@@ -3301,18 +3357,9 @@ export type SearchRedditData = {
 };
 
 export type SearchRedditResponse = ({
-    posts?: Array<{
-        id?: string;
-        title?: string;
-        selftext?: string;
-        author?: string;
-        subreddit?: string;
-        score?: number;
-        num_comments?: number;
-        created_utc?: number;
-        permalink?: string;
-    }>;
-    after?: string;
+    items?: Array<RedditPost>;
+    after?: (string) | null;
+    before?: (string) | null;
 });
 
 export type SearchRedditError = (unknown | {
@@ -3331,10 +3378,9 @@ export type GetRedditFeedData = {
 };
 
 export type GetRedditFeedResponse = ({
-    posts?: Array<{
-        [key: string]: unknown;
-    }>;
-    after?: string;
+    items?: Array<RedditPost>;
+    after?: (string) | null;
+    before?: (string) | null;
 });
 
 export type GetRedditFeedError = (unknown | {

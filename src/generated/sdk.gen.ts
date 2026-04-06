@@ -57,7 +57,7 @@ export const validateMedia = <ThrowOnError extends boolean = false>(options: Opt
  * Check subreddit existence
  * Check if a subreddit exists and return basic info (title, subscriber count, NSFW status, post types allowed).
  *
- * Uses Reddit's public JSON API (no Reddit auth needed). Returns `exists: false` for private, banned, or nonexistent subreddits.
+ * When accountId is provided, uses authenticated Reddit OAuth API with automatic token refresh (recommended). Falls back to Reddit's public JSON API, which may be unreliable from server IPs. Returns `exists: false` for private, banned, or nonexistent subreddits.
  *
  */
 export const validateSubreddit = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ValidateSubredditData, ThrowOnError>) => {
