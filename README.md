@@ -498,6 +498,12 @@ try {
 | `gmbServices.getGoogleBusinessServices()` | Get services |
 | `gmbServices.updateGoogleBusinessServices()` | Replace services |
 
+### Instagram
+| Method | Description |
+|--------|-------------|
+| `instagram.listInstagramStories()` | List active Instagram stories |
+| `instagram.getInstagramStoryInsights()` | Get Instagram story insights |
+
 ### Messages (Inbox)
 | Method | Description |
 |--------|-------------|

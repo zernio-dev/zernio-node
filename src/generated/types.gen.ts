@@ -9045,6 +9045,114 @@ export type GetLinkedInMentionsError = ({
     error?: string;
 });
 
+export type ListInstagramStoriesData = {
+    path: {
+        /**
+         * The Instagram account ID
+         */
+        accountId: string;
+    };
+};
+
+export type ListInstagramStoriesResponse = ({
+    data: Array<{
+        /**
+         * Instagram media ID of the story.
+         */
+        id: string;
+        /**
+         * IMAGE / VIDEO / CAROUSEL_ALBUM
+         */
+        mediaType?: (string) | null;
+        /**
+         * Always 'STORY' for this endpoint.
+         */
+        mediaProductType?: (string) | null;
+        /**
+         * Direct media URL. Null if Meta flagged the story for copyright. URL expires when the story expires.
+         */
+        mediaUrl?: (string) | null;
+        /**
+         * Public Instagram permalink to the story (only viewable while live).
+         */
+        permalink?: (string) | null;
+        /**
+         * Thumbnail URL for video stories.
+         */
+        thumbnailUrl?: (string) | null;
+        /**
+         * When the story was posted.
+         */
+        timestamp?: (string) | null;
+    }>;
+});
+
+export type ListInstagramStoriesError = (unknown | {
+    error?: string;
+});
+
+export type GetInstagramStoryInsightsData = {
+    path: {
+        /**
+         * The Instagram account ID
+         */
+        accountId: string;
+        /**
+         * The Instagram media ID of the story.
+         */
+        storyId: string;
+    };
+};
+
+export type GetInstagramStoryInsightsResponse = ({
+    data: {
+        source: 'live' | 'cached' | 'unavailable';
+        metrics: {
+            /**
+             * Total story plays. Replaces deprecated 'impressions' for media created after 2024-07-02.
+             */
+            views: number;
+            /**
+             * Unique accounts that saw the story.
+             */
+            reach: number;
+            /**
+             * DMs sent in reply to the story.
+             */
+            replies: number;
+            shares: number;
+            /**
+             * Total nav actions (tapsForward + tapsBack + exits + swipesForward).
+             */
+            navigation: number;
+            /**
+             * Tapped right to next slide of SAME story.
+             */
+            tapsForward: number;
+            /**
+             * Tapped left to previous slide.
+             */
+            tapsBack: number;
+            /**
+             * Closed Stories interface entirely.
+             */
+            exits: number;
+            /**
+             * Swiped left to next account's story.
+             */
+            swipesForward: number;
+            profileVisits: number;
+            follows: number;
+            reposts: number;
+            totalInteractions: number;
+        };
+    };
+});
+
+export type GetInstagramStoryInsightsError = (unknown | {
+    error?: string;
+});
+
 export type GetPinterestBoardsData = {
     path: {
         accountId: string;

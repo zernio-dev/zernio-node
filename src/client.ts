@@ -119,6 +119,7 @@ import {
   getInstagramDemographics,
   getInstagramFollowerHistory,
   getInstagramIceBreakers,
+  getInstagramStoryInsights,
   getLinkedInAggregateAnalytics,
   getLinkedInMentions,
   getLinkedInOrgAggregateAnalytics,
@@ -188,6 +189,7 @@ import {
   listInboxComments,
   listInboxConversations,
   listInboxReviews,
+  listInstagramStories,
   listLinkedInOrganizations,
   listLogs,
   listPinterestBoardsForSelection,
@@ -599,6 +601,14 @@ export class Zernio {
   gmbservices = {
     getGoogleBusinessServices: getGoogleBusinessServices,
     updateGoogleBusinessServices: updateGoogleBusinessServices,
+  };
+
+  /**
+   * instagram API
+   */
+  instagram = {
+    listInstagramStories: listInstagramStories,
+    getInstagramStoryInsights: getInstagramStoryInsights,
   };
 
   /**
