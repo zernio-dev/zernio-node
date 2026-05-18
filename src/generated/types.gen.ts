@@ -13479,6 +13479,10 @@ export type ListBroadcastRecipientsResponse = ({
         status?: 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
         messageId?: string;
         error?: string;
+        /**
+         * Meta WhatsApp error code (e.g. 131049 for antispam, 131021 for invalid phone, 131026 for re-engagement required). Only populated for status=failed.
+         */
+        errorCode?: (number) | null;
         sentAt?: string;
         deliveredAt?: string;
         readAt?: string;
