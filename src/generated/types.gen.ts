@@ -6429,7 +6429,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp';
         /**
          * Filter by profile ID
          */
@@ -6707,7 +6707,7 @@ export type GetConnectUrlData = {
         /**
          * Social media platform to connect
          */
-        platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'reddit' | 'pinterest' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord';
+        platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'reddit' | 'pinterest' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp';
     };
     query: {
         /**
