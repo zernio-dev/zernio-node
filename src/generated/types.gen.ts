@@ -5704,9 +5704,23 @@ export type GetXApiPricingError = ({
     error?: string;
 });
 
+export type GetUsageStatsData = {
+    query?: {
+        /**
+         * For Stripe subscription users, `true` forces a subscription
+         * reconciliation pass even when cached plan data looks complete.
+         * Omit the parameter, or pass `false`, to use the default
+         * first-time-only reconciliation behavior. Invalid boolean values are
+         * rejected.
+         *
+         */
+        reconcile?: boolean;
+    };
+};
+
 export type GetUsageStatsResponse = (UsageStats);
 
-export type GetUsageStatsError = ({
+export type GetUsageStatsError = (unknown | {
     error?: string;
 });
 
