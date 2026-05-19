@@ -13355,6 +13355,38 @@ export type GetBroadcastError = ({
 });
 
 export type UpdateBroadcastData = {
+    body?: {
+        name?: string;
+        description?: string;
+        /**
+         * Generic message payload (used for non-WhatsApp platforms).
+         */
+        message?: {
+            text?: string;
+        };
+        /**
+         * WhatsApp template payload (used when platform is `whatsapp`).
+         */
+        template?: {
+            name?: string;
+            language?: string;
+            /**
+             * Maps template variable positions to contact fields. Keys are position strings ("1", "2"); values are { field, customValue }.
+             */
+            variableMapping?: {
+                [key: string]: {
+                    field?: 'name' | 'phone' | 'email' | 'company' | 'custom';
+                    customValue?: string;
+                };
+            };
+        };
+        /**
+         * Recipient segment filters (tags, channels, subscription state).
+         */
+        segmentFilters?: {
+            [key: string]: unknown;
+        };
+    };
     path: {
         broadcastId: string;
     };
@@ -13680,6 +13712,32 @@ export type GetSequenceError = ({
 });
 
 export type UpdateSequenceData = {
+    body?: {
+        name?: string;
+        description?: string;
+        /**
+         * Replace the full step list. Only allowed while the sequence is draft or paused.
+         */
+        steps?: Array<{
+            order: number;
+            delayMinutes: number;
+            message?: {
+                text?: string;
+            };
+            template?: {
+                name?: string;
+                language?: string;
+                variableMapping?: {
+                    [key: string]: {
+                        field?: 'name' | 'phone' | 'email' | 'company' | 'custom';
+                        customValue?: string;
+                    };
+                };
+            };
+        }>;
+        exitOnReply?: boolean;
+        exitOnUnsubscribe?: boolean;
+    };
     path: {
         sequenceId: string;
     };

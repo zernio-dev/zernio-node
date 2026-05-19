@@ -3190,7 +3190,7 @@ export const getSequence = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Update sequence
- * Update a sequence's name, steps, or exit conditions. Active sequences can be updated without pausing.
+ * Update a sequence's name, steps, or exit conditions. Steps can only be modified while the sequence is draft or paused.
  */
 export const updateSequence = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateSequenceData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateSequenceResponse, UpdateSequenceError, ThrowOnError>({
