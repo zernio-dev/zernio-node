@@ -190,8 +190,8 @@ function generateClientCode(namespaces: Map<string, OperationInfo[]>): string {
   allFunctions.sort();
 
   // Generate imports
-  const imports = `import {
-  client,
+  const imports = `import { client } from './generated/client.gen';
+import {
 ${allFunctions.map(f => `  ${f},`).join('\n')}
 } from './generated/sdk.gen';
 
