@@ -15648,7 +15648,7 @@ export type ListAdAudiencesData = {
          * Platform ad account ID
          */
         adAccountId: string;
-        platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'pinterest';
+        platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads';
     };
 };
 

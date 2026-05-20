@@ -3769,7 +3769,7 @@ export const searchAdTargetingLocations = <ThrowOnError extends boolean = false>
 
 /**
  * List custom audiences
- * Returns custom audiences for the given ad account. Supports Meta, Google, TikTok, and Pinterest.
+ * Returns custom audiences for the given ad account. Supports Meta, Google, TikTok, Pinterest, LinkedIn, and X (Twitter).
  */
 export const listAdAudiences = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdAudiencesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdAudiencesResponse, ListAdAudiencesError, ThrowOnError>({
