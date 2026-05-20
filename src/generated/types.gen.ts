@@ -786,6 +786,67 @@ export type BlueskyPlatformData = {
 };
 
 /**
+ * Result of a CSV bulk upload. The same shape is returned for `200` (all rows
+ * succeeded or all failed) and `207` (mixed). Per-row outcomes live in `results`;
+ * the row's success is `ok`, and failures carry machine-readable codes in `errors`.
+ *
+ */
+export type BulkUploadResult = {
+    /**
+     * Number of data rows processed from the CSV
+     */
+    total?: number;
+    /**
+     * Count of rows that succeeded (results[].ok === true)
+     */
+    valid?: number;
+    /**
+     * Count of rows that failed (total - valid)
+     */
+    invalid?: number;
+    /**
+     * One entry per CSV data row, in row order.
+     */
+    results?: Array<{
+        /**
+         * 1-based index of the CSV data row (header excluded)
+         */
+        rowIndex?: number;
+        /**
+         * Whether the row was created successfully
+         */
+        ok?: boolean;
+        /**
+         * ID of the created post. Present only when `ok` is true and not a dry run.
+         */
+        createdPostId?: string;
+        /**
+         * Machine-readable failure codes for this row. Present only when `ok` is false.
+         * Examples: `unknown_profile:<id>`, `no_account_for_platform:<platform>`,
+         * `schedule_time_missing`, `rate_limited:<platform>:@<username>:<remaining>`.
+         *
+         */
+        errors?: Array<(string)>;
+    }>;
+    /**
+     * Top-level advisory warnings (e.g. `rows_exceed_advisory_limit:500`). Empty when none.
+     */
+    warnings?: Array<(string)>;
+    /**
+     * Present only when one or more rows targeted an account currently in cooldown.
+     * Lets callers map `rate_limited:*` row errors back to structured metadata without
+     * parsing the error strings.
+     *
+     */
+    rateLimitedAccounts?: Array<{
+        accountId?: string;
+        platform?: string;
+        username?: string;
+        rateLimitedUntil?: string;
+    }>;
+};
+
+/**
  * TikTok Business Center entity. Returned by `GET /v1/ads/business-centers`. BCs are
  * TikTok's agency container — one BC owns N advertisers (ad accounts). Most solo
  * advertisers don't have one; the agency token uses BCs to roll up multi-client access.
@@ -5923,17 +5984,7 @@ export type BulkUploadPostsData = {
     };
 };
 
-export type BulkUploadPostsResponse = ({
-    success?: boolean;
-    totalRows?: number;
-    created?: number;
-    failed?: number;
-    errors?: Array<{
-        row?: number;
-        error?: string;
-    }>;
-    posts?: Array<Post>;
-} | unknown);
+export type BulkUploadPostsResponse = (BulkUploadResult);
 
 export type BulkUploadPostsError = (unknown | {
     error?: string;
