@@ -1,5 +1,5 @@
+import { client } from './generated/client.gen';
 import {
-  client,
   activateSequence,
   addBroadcastRecipients,
   addConversionAssociations,

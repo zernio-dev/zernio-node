@@ -2,20 +2,20 @@
   "name": "@zernio/node",
   "version": "0.2.157",
   "description": "The official Node.js library for the Zernio API",
-  "main": "dist/index.js",
+  "main": "dist/index.cjs",
   "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "types": "dist/index.d.cts",
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    },
-    "./_shims/*": {
-      "types": "./dist/_shims/*.d.ts",
-      "import": "./dist/_shims/*.mjs",
-      "require": "./dist/_shims/*.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "files": [
@@ -25,10 +25,10 @@
     "LICENSE"
   ],
   "scripts": {
-    "generate": "openapi-ts -i openapi.yaml -o src/generated -c @hey-api/client-fetch && npm run generate:client",
+    "generate": "openapi-ts && npm run generate:client",
     "generate:client": "npx tsx scripts/generate-client.ts",
-    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
-    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsdown src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsdown src/index.ts --format cjs,esm --dts --watch",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -69,13 +69,12 @@
     "node": ">=18"
   },
   "devDependencies": {
-    "@hey-api/client-fetch": "^0.6.0",
-    "@hey-api/openapi-ts": "^0.61.0",
+    "@hey-api/openapi-ts": "^0.97.2",
     "@types/node": "^20.11.0",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "eslint": "^8.56.0",
-    "tsup": "^8.0.1",
+    "tsdown": "^0.22.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3",
     "vitest": "^1.2.0",
