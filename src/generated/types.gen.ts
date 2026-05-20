@@ -6219,11 +6219,25 @@ export type GetXApiPricingResponse = GetXApiPricingResponses[keyof GetXApiPricin
 export type GetUsageStatsData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        /**
+         * For Stripe subscription users, `true` forces a subscription
+         * reconciliation pass even when cached plan data looks complete.
+         * Omit the parameter, or pass `false`, to use the default
+         * first-time-only reconciliation behavior. Invalid boolean values are
+         * rejected.
+         *
+         */
+        reconcile?: boolean;
+    };
     url: '/v1/usage-stats';
 };
 
 export type GetUsageStatsErrors = {
+    /**
+     * Invalid query parameter
+     */
+    400: unknown;
     /**
      * Unauthorized
      */
@@ -18626,7 +18640,38 @@ export type GetBroadcastResponses = {
 export type GetBroadcastResponse = GetBroadcastResponses[keyof GetBroadcastResponses];
 
 export type UpdateBroadcastData = {
-    body?: never;
+    body?: {
+        name?: string;
+        description?: string;
+        /**
+         * Generic message payload (used for non-WhatsApp platforms).
+         */
+        message?: {
+            text?: string;
+        };
+        /**
+         * WhatsApp template payload (used when platform is `whatsapp`).
+         */
+        template?: {
+            name?: string;
+            language?: string;
+            /**
+             * Maps template variable positions to contact fields. Keys are position strings ("1", "2"); values are { field, customValue }.
+             */
+            variableMapping?: {
+                [key: string]: {
+                    field?: 'name' | 'phone' | 'email' | 'company' | 'custom';
+                    customValue?: string;
+                };
+            };
+        };
+        /**
+         * Recipient segment filters (tags, channels, subscription state).
+         */
+        segmentFilters?: {
+            [key: string]: unknown;
+        };
+    };
     path: {
         broadcastId: string;
     };
@@ -19176,7 +19221,32 @@ export type GetSequenceResponses = {
 export type GetSequenceResponse = GetSequenceResponses[keyof GetSequenceResponses];
 
 export type UpdateSequenceData = {
-    body?: never;
+    body?: {
+        name?: string;
+        description?: string;
+        /**
+         * Replace the full step list. Only allowed while the sequence is draft or paused.
+         */
+        steps?: Array<{
+            order: number;
+            delayMinutes: number;
+            message?: {
+                text?: string;
+            };
+            template?: {
+                name?: string;
+                language?: string;
+                variableMapping?: {
+                    [key: string]: {
+                        field?: 'name' | 'phone' | 'email' | 'company' | 'custom';
+                        customValue?: string;
+                    };
+                };
+            };
+        }>;
+        exitOnReply?: boolean;
+        exitOnUnsubscribe?: boolean;
+    };
     path: {
         sequenceId: string;
     };

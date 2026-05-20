@@ -3474,7 +3474,11 @@ export const getBroadcast = <ThrowOnError extends boolean = false>(options: Opti
 export const updateBroadcast = <ThrowOnError extends boolean = false>(options: Options<UpdateBroadcastData, ThrowOnError>) => (options.client ?? client).patch<UpdateBroadcastResponses, UpdateBroadcastErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/broadcasts/{broadcastId}',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
@@ -3591,12 +3595,16 @@ export const getSequence = <ThrowOnError extends boolean = false>(options: Optio
 /**
  * Update sequence
  *
- * Update a sequence's name, steps, or exit conditions. Active sequences can be updated without pausing.
+ * Update a sequence's name, steps, or exit conditions. Steps can only be modified while the sequence is draft or paused.
  */
 export const updateSequence = <ThrowOnError extends boolean = false>(options: Options<UpdateSequenceData, ThrowOnError>) => (options.client ?? client).patch<UpdateSequenceResponses, UpdateSequenceErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }],
     url: '/v1/sequences/{sequenceId}',
-    ...options
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**
