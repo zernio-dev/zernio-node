@@ -10746,6 +10746,33 @@ export type SendTypingIndicatorError = ({
     error?: string;
 } | unknown);
 
+export type MarkConversationReadData = {
+    body: {
+        /**
+         * Social account ID
+         */
+        accountId: string;
+    };
+    path: {
+        /**
+         * The conversation ID
+         */
+        conversationId: string;
+    };
+};
+
+export type MarkConversationReadResponse = ({
+    success?: boolean;
+    /**
+     * Number of messages marked read by this call
+     */
+    markedCount?: number;
+});
+
+export type MarkConversationReadError = ({
+    error?: string;
+} | unknown);
+
 export type AddMessageReactionData = {
     body: {
         /**

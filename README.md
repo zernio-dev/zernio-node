@@ -515,6 +515,7 @@ try {
 | `messages.deleteInboxMessage()` | Delete message |
 | `messages.addMessageReaction()` | Add reaction |
 | `messages.editInboxMessage()` | Edit message |
+| `messages.markConversationRead()` | Mark a conversation as read |
 | `messages.removeMessageReaction()` | Remove reaction |
 | `messages.sendInboxMessage()` | Send message |
 | `messages.sendTypingIndicator()` | Send typing indicator |
