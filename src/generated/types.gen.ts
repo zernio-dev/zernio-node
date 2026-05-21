@@ -13646,6 +13646,18 @@ export type CreateBroadcastData = {
             name?: string;
             language?: string;
             components?: unknown[];
+            /**
+             * Maps template variable positions ("1", "2") to contact fields or static values. Resolved per recipient at send time.
+             */
+            variableMapping?: {
+                [key: string]: {
+                    field?: 'name' | 'phone' | 'email' | 'company' | 'custom';
+                    /**
+                     * Static value used when field is "custom"
+                     */
+                    customValue?: string;
+                };
+            };
         };
         segmentFilters?: {
             tags?: Array<(string)>;
