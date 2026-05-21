@@ -3158,7 +3158,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -4163,6 +4163,71 @@ export type WebhookPayloadPostPlatform = {
 export type event12 = 'post.platform.published' | 'post.platform.failed';
 
 /**
+ * Webhook payload for reaction received events (WhatsApp, Telegram)
+ */
+export type WebhookPayloadReaction = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'reaction.received';
+    reaction: {
+        /**
+         * The emoji reacted with. May be an empty string when `action` is
+         * `removed` on WhatsApp (Meta does not report which emoji was removed).
+         *
+         */
+        emoji: string;
+        action: 'added' | 'removed';
+        /**
+         * Internal Zernio message ID of the reacted-to message, when resolvable from the platform ID.
+         */
+        messageId?: string;
+        /**
+         * Platform-native ID of the reacted-to message (e.g. WhatsApp wamid).
+         */
+        platformMessageId: string;
+        /**
+         * The participant who added or removed the reaction.
+         */
+        sender: {
+            id: string;
+            name?: string;
+            username?: string;
+            picture?: string;
+            /**
+             * WhatsApp only. Sender's phone number in E.164 format (with leading `+`), when available.
+             */
+            phoneNumber?: (string) | null;
+        };
+        reactedAt: string;
+    };
+    conversation: {
+        id: string;
+        platformConversationId: string;
+        participantId?: string;
+        participantName?: string;
+        participantUsername?: string;
+        participantPicture?: string;
+        status: 'active' | 'archived';
+    };
+    account: {
+        /**
+         * Social account ID
+         */
+        id: string;
+        platform: string;
+        username: string;
+        displayName?: string;
+    };
+    timestamp: string;
+};
+
+export type event13 = 'reaction.received';
+
+export type action = 'added' | 'removed';
+
+/**
  * Webhook payload for the review.new event (new review posted on a connected account).
  */
 export type WebhookPayloadReviewNew = {
@@ -4180,7 +4245,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event13 = 'review.new';
+export type event14 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits
@@ -4204,7 +4269,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event14 = 'review.updated';
+export type event15 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -4222,7 +4287,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event15 = 'webhook.test';
+export type event16 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.template.status_updated` event.
@@ -4277,7 +4342,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event16 = 'whatsapp.template.status_updated';
+export type event17 = 'whatsapp.template.status_updated';
 
 export type platform8 = 'whatsapp';
 
@@ -9743,7 +9808,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -9787,7 +9852,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
         /**
          * Enable or disable webhook delivery
          */
