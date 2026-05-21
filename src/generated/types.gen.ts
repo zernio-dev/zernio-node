@@ -7318,6 +7318,208 @@ export type GetGoogleBusinessReviewsError = (ErrorResponse | {
     error?: string;
 });
 
+export type GetGoogleBusinessVerificationsData = {
+    path: {
+        /**
+         * The Zernio account ID (from /v1/accounts)
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Override which location to query. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
+};
+
+export type GetGoogleBusinessVerificationsResponse = ({
+    success?: boolean;
+    accountId?: string;
+    locationId?: string;
+    /**
+     * Raw Voice of Merchant state from Google.
+     */
+    voiceOfMerchantState?: {
+        /**
+         * True when the listing is verified and published (eligible to surface reviews
+         */
+        hasVoiceOfMerchant?: boolean;
+        /**
+         * True when the authenticated user has owner/manager authority over the listing.
+         */
+        hasBusinessAuthority?: boolean;
+        /**
+         * Present when verification is the path to Voice of Merchant.
+         */
+        verify?: {
+            /**
+             * True when a verification is already in progress.
+             */
+            hasPendingVerification?: boolean;
+        };
+    };
+    /**
+     * Verification history, newest first. Empty when none exist.
+     */
+    verifications?: Array<{
+        /**
+         * Resource name, e.g. "locations/123/verifications/0T1776879124712". The last segment is the verificationId.
+         */
+        name?: string;
+        /**
+         * Method used (omitted on some entries).
+         */
+        method?: 'ADDRESS' | 'EMAIL' | 'PHONE_CALL' | 'SMS' | 'AUTO' | 'VETTED_PARTNER';
+        state?: 'PENDING' | 'COMPLETED' | 'FAILED';
+        createTime?: string;
+    }>;
+});
+
+export type GetGoogleBusinessVerificationsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type StartGoogleBusinessVerificationData = {
+    body: {
+        /**
+         * The verification method. Selects which method-specific field below is required.
+         */
+        method: 'ADDRESS' | 'EMAIL' | 'PHONE_CALL' | 'SMS' | 'AUTO' | 'VETTED_PARTNER';
+        languageCode?: string;
+        /**
+         * For PHONE_CALL / SMS.
+         */
+        phoneNumber?: string;
+        /**
+         * For EMAIL.
+         */
+        emailAddress?: string;
+        /**
+         * For ADDRESS (postcard) verification.
+         */
+        mailerContact?: {
+            [key: string]: unknown;
+        };
+        /**
+         * ServiceBusinessContext (e.g. service address). Required for service-area businesses.
+         */
+        context?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        /**
+         * The Zernio account ID (from /v1/accounts)
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location.
+         */
+        locationId?: string;
+    };
+};
+
+export type StartGoogleBusinessVerificationResponse = ({
+    success?: boolean;
+    accountId?: string;
+    locationId?: string;
+    verification?: {
+        name?: string;
+        method?: 'ADDRESS' | 'EMAIL' | 'PHONE_CALL' | 'SMS' | 'AUTO' | 'VETTED_PARTNER';
+        state?: 'PENDING' | 'COMPLETED' | 'FAILED';
+        createTime?: string;
+    };
+});
+
+export type StartGoogleBusinessVerificationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type FetchGoogleBusinessVerificationOptionsData = {
+    body: {
+        languageCode: string;
+        /**
+         * ServiceBusinessContext. Required for service-area businesses (must include the service address).
+         */
+        context?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        /**
+         * The Zernio account ID (from /v1/accounts)
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Override which location to query. If omitted, uses the account's selected location.
+         */
+        locationId?: string;
+    };
+};
+
+export type FetchGoogleBusinessVerificationOptionsResponse = ({
+    success?: boolean;
+    accountId?: string;
+    locationId?: string;
+    options?: Array<{
+        verificationMethod?: 'ADDRESS' | 'EMAIL' | 'PHONE_CALL' | 'SMS' | 'AUTO' | 'VETTED_PARTNER';
+        /**
+         * Present for PHONE_CALL / SMS.
+         */
+        phoneNumber?: string;
+    }>;
+});
+
+export type FetchGoogleBusinessVerificationOptionsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CompleteGoogleBusinessVerificationData = {
+    body: {
+        /**
+         * The code Google sent to the business.
+         */
+        pin: string;
+    };
+    path: {
+        /**
+         * The Zernio account ID (from /v1/accounts)
+         */
+        accountId: string;
+        /**
+         * The last segment of a verification `name` from GET /gmb-verifications.
+         */
+        verificationId: string;
+    };
+    query?: {
+        /**
+         * Override which location to target. If omitted, uses the account's selected location.
+         */
+        locationId?: string;
+    };
+};
+
+export type CompleteGoogleBusinessVerificationResponse = ({
+    success?: boolean;
+    accountId?: string;
+    locationId?: string;
+    verification?: {
+        name?: string;
+        method?: 'ADDRESS' | 'EMAIL' | 'PHONE_CALL' | 'SMS' | 'AUTO' | 'VETTED_PARTNER';
+        state?: 'PENDING' | 'COMPLETED' | 'FAILED';
+        createTime?: string;
+    };
+});
+
+export type CompleteGoogleBusinessVerificationError = (ErrorResponse | {
+    error?: string;
+});
+
 export type GetGoogleBusinessFoodMenusData = {
     path: {
         /**
@@ -15738,7 +15940,7 @@ export type CreateAdAudienceData = {
     body: {
         accountId: string;
         /**
-         * Must start with act_
+         * Platform ad account ID. Must start with act_ for Meta; bare platform id for others (Google customer id, X/TikTok/LinkedIn/Pinterest account id).
          */
         adAccountId: string;
         name: string;

@@ -16,6 +16,7 @@ import {
   bulkUploadPosts,
   cancelBroadcast,
   clearContactFieldValue,
+  completeGoogleBusinessVerification,
   completeTelegramConnect,
   completeWhatsAppPhoneSelection,
   configureTikTokAdsBrandIdentity,
@@ -79,6 +80,7 @@ import {
   editInboxMessage,
   editPost,
   enrollContacts,
+  fetchGoogleBusinessVerificationOptions,
   followUser,
   getAccountHealth,
   getAd,
@@ -112,6 +114,7 @@ import {
   getGoogleBusinessReviews,
   getGoogleBusinessSearchKeywords,
   getGoogleBusinessServices,
+  getGoogleBusinessVerifications,
   getInboxConversation,
   getInboxConversationMessages,
   getInboxPostComments,
@@ -244,6 +247,7 @@ import {
   setInstagramIceBreakers,
   setMessengerMenu,
   setTelegramCommands,
+  startGoogleBusinessVerification,
   testWebhook,
   undoRetweet,
   unenrollContact,
@@ -551,6 +555,16 @@ export class Zernio {
       initiateTelegramConnect: initiateTelegramConnect,
       completeTelegramConnect: completeTelegramConnect,
     },
+  };
+
+  /**
+   * gmbverifications API
+   */
+  gmbverifications = {
+    getGoogleBusinessVerifications: getGoogleBusinessVerifications,
+    startGoogleBusinessVerification: startGoogleBusinessVerification,
+    fetchGoogleBusinessVerificationOptions: fetchGoogleBusinessVerificationOptions,
+    completeGoogleBusinessVerification: completeGoogleBusinessVerification,
   };
 
   /**

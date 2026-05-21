@@ -498,6 +498,14 @@ try {
 | `gmbServices.getGoogleBusinessServices()` | Get services |
 | `gmbServices.updateGoogleBusinessServices()` | Replace services |
 
+### GMB Verifications
+| Method | Description |
+|--------|-------------|
+| `gmbVerifications.getGoogleBusinessVerifications()` | Get verification state |
+| `gmbVerifications.completeGoogleBusinessVerification()` | Complete a verification |
+| `gmbVerifications.fetchGoogleBusinessVerificationOptions()` | Fetch verification options |
+| `gmbVerifications.startGoogleBusinessVerification()` | Start a verification |
+
 ### Instagram
 | Method | Description |
 |--------|-------------|
