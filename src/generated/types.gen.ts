@@ -11467,6 +11467,63 @@ export type GetInboxPostCommentsResponse = ({
          */
         rootCid?: (string) | null;
     }>;
+    /**
+     * (Reddit only) Metadata for the target post, returned alongside the comments in Reddit's
+     * single round-trip. Lets integrators render a preview of the post the user is commenting on
+     * without an additional request. Absent for non-Reddit platforms and when the upstream
+     * response is missing the post listing (deleted post, malformed response).
+     *
+     */
+    post?: {
+        /**
+         * Reddit post base36 id (e.g. "1tjtj26")
+         */
+        id?: string;
+        /**
+         * Fullname with type prefix (e.g. "t3_1tjtj26")
+         */
+        fullname?: string;
+        title?: string;
+        /**
+         * Body text for self-posts (empty for link posts)
+         */
+        selftext?: string;
+        /**
+         * Reddit username
+         */
+        author?: string;
+        /**
+         * Subreddit name
+         */
+        subreddit?: string;
+        /**
+         * Absolute URL to the post on reddit.com
+         */
+        permalink?: string;
+        /**
+         * For link posts
+         */
+        url?: string;
+        /**
+         * Net upvotes (upvotes minus downvotes)
+         */
+        score?: number;
+        numComments?: number;
+        /**
+         * Unix timestamp in seconds
+         */
+        createdUtc?: number;
+        over18?: boolean;
+        stickied?: boolean;
+        /**
+         * Link flair text if any
+         */
+        flairText?: (string) | null;
+        /**
+         * True if the post is a Reddit gallery (multiple images)
+         */
+        isGallery?: boolean;
+    } | null;
     pagination?: {
         hasMore?: boolean;
         cursor?: (string) | null;
