@@ -389,9 +389,10 @@ try {
 | `ads.deleteConversionDestination()` | Soft-delete a conversion destination |
 | `ads.addConversionAssociations()` | Associate campaigns with a conversion destination |
 | `ads.boostPost()` | Boost post as ad |
+| `ads.estimateAdReach()` | Estimate audience reach |
 | `ads.removeConversionAssociations()` | Remove campaign↔conversion associations |
-| `ads.searchAdInterests()` | Search targeting interests |
-| `ads.searchAdTargetingLocations()` | Search geo targeting locations (Meta) |
+| `ads.searchAdInterests()` | Search targeting interests (deprecated) |
+| `ads.searchAdTargeting()` | Search targeting options |
 | `ads.sendConversions()` | Send conversion events to an ad platform |
 
 ### Broadcasts

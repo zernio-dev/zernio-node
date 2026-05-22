@@ -2691,6 +2691,169 @@ export type SocialAccount = {
 export type platform5 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads';
 
 /**
+ * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
+ * empty object targets the platform's default broadest audience. Field names are
+ * camelCase and identical across `POST /v1/ads/create` (the `targeting` object),
+ * `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences, so a
+ * spec resolved once can be reused verbatim.
+ *
+ * Entity ids (`regions[].key`, `cities[].key`, `zips[].key`, `metros[].key`,
+ * `interests[].id`, `behaviors[].id`) are the platform's opaque identifiers
+ * resolved via `GET /v1/ads/targeting/search`. A spec is therefore meaningful only
+ * for the platform it was built against, except the portable fields (`countries`,
+ * `ageMin`/`ageMax`, `gender`, `incomeTier`, `languages`) which carry across
+ * platforms. Fields a platform cannot honour are rejected at create time with
+ * `INVALID_FIELD_VALUE` naming the offending field (not silently dropped).
+ *
+ */
+export type TargetingSpec = {
+    /**
+     * ISO 3166-1 alpha-2 country codes (e.g. ['US']).
+     */
+    countries?: Array<(string)>;
+    /**
+     * Region/state targeting. `key` is the platform location ID from /v1/ads/targeting/search?dimension=geo&geoType=region.
+     */
+    regions?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    /**
+     * City targeting. Optional `radius` + `distanceUnit` extend beyond the city limits; both must be set together or both omitted. `radius` is only honoured on platforms whose capability map allows city radius (Meta).
+     */
+    cities?: Array<{
+        key: string;
+        name?: string;
+        /**
+         * Radius around the city. Requires distanceUnit.
+         */
+        radius?: number;
+        /**
+         * Required if radius is set.
+         */
+        distanceUnit?: 'mile' | 'kilometer';
+    }>;
+    /**
+     * Postal/ZIP targeting. `key` is the platform's postal location ID (e.g. Meta `US:94304`). Supported on Meta, Google, TikTok, Pinterest, X.
+     */
+    zips?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    /**
+     * DMA / metro-area targeting. `key` is the platform's metro ID (e.g. Meta `DMA:807`).
+     */
+    metros?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    /**
+     * Point-radius (lat/lng) targeting (Meta custom_locations / Google proximity). Honoured only where the capability map allows radius (Meta).
+     */
+    customLocations?: Array<{
+        latitude: number;
+        longitude: number;
+        /**
+         * Positive radius around the point.
+         */
+        radius: number;
+        distanceUnit: 'mile' | 'kilometer';
+        name?: string;
+        address?: string;
+    }>;
+    /**
+     * Geo to exclude from the audience. A subset of the inclusion geo shape.
+     */
+    excludedLocations?: {
+        countries?: Array<(string)>;
+        regions?: Array<{
+            key: string;
+            name?: string;
+        }>;
+        cities?: Array<{
+            key: string;
+            name?: string;
+        }>;
+        zips?: Array<{
+            key: string;
+            name?: string;
+        }>;
+    };
+    ageMin?: number;
+    ageMax?: number;
+    /**
+     * Restrict by gender. 'all' (default) targets everyone.
+     */
+    gender?: 'all' | 'male' | 'female';
+    /**
+     * Normalized household-income tier (ZIP/percentile based). Meta and TikTok
+     * express all four. Google maps only `top_10` (its INCOME_RANGE_90_UP); other
+     * tiers on Google, and any income tier on LinkedIn / X / Pinterest, are rejected.
+     * On Meta, income/zip targeting requires the relevant `specialAdCategories` to be
+     * unset (housing/employment/credit ads cannot use it).
+     *
+     */
+    incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
+    /**
+     * Language codes (e.g. ['en']).
+     */
+    languages?: Array<(string)>;
+    /**
+     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id.
+     */
+    interests?: Array<{
+        id: string;
+        name?: string;
+    }>;
+    /**
+     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta and TikTok.
+     */
+    behaviors?: Array<{
+        id: string;
+        name?: string;
+    }>;
+    /**
+     * LinkedIn B2B only. Industry URN id fragments.
+     */
+    industries?: Array<(string)>;
+    /**
+     * LinkedIn B2B only.
+     */
+    companySizes?: Array<(string)>;
+    /**
+     * LinkedIn B2B only.
+     */
+    seniorities?: Array<(string)>;
+    /**
+     * LinkedIn B2B only.
+     */
+    jobFunctions?: Array<(string)>;
+    /**
+     * Platform audience IDs to include.
+     */
+    audienceInclude?: Array<(string)>;
+    /**
+     * Platform audience IDs to exclude.
+     */
+    audienceExclude?: Array<(string)>;
+};
+
+/**
+ * Restrict by gender. 'all' (default) targets everyone.
+ */
+export type gender = 'all' | 'male' | 'female';
+
+/**
+ * Normalized household-income tier (ZIP/percentile based). Meta and TikTok
+ * express all four. Google maps only `top_10` (its INCOME_RANGE_90_UP); other
+ * tiers on Google, and any income tier on LinkedIn / X / Pinterest, are rejected.
+ * On Meta, income/zip targeting requires the relevant `specialAdCategories` to be
+ * unset (housing/employment/credit ads cannot use it).
+ *
+ */
+export type incomeTier = 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
+
+/**
  * Text, images (up to 10), videos (up to 10), and mixed media albums. Captions up to 1024 chars for media, 4096 for text-only.
  */
 export type TelegramPlatformData = {
@@ -15675,6 +15838,63 @@ export type CreateStandaloneAdData = {
             name: string;
         }>;
         /**
+         * Postal/ZIP geo targeting. `key` is the platform's postal location ID from /v1/ads/targeting/search?dimension=geo&geoType=zip. Supported on Meta, Google, TikTok, Pinterest, X.
+         */
+        zips?: Array<{
+            key: string;
+            name?: string;
+        }>;
+        /**
+         * DMA / metro-area geo targeting. `key` is the platform's metro ID from /v1/ads/targeting/search?dimension=geo&geoType=metro.
+         */
+        metros?: Array<{
+            key: string;
+            name?: string;
+        }>;
+        /**
+         * Point-radius (lat/lng) geo targeting. Meta only (custom_locations). Rejected on platforms without radius support.
+         */
+        customLocations?: Array<{
+            latitude: number;
+            longitude: number;
+            radius: number;
+            distanceUnit: 'mile' | 'kilometer';
+            name?: string;
+            address?: string;
+        }>;
+        /**
+         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta and TikTok. Each must include id.
+         */
+        behaviors?: Array<{
+            id: string;
+            name?: string;
+        }>;
+        /**
+         * Normalized household-income tier. Meta and TikTok express all four; Google maps only
+         * `top_10`; rejected on LinkedIn, X, and Pinterest. On Meta, income targeting is incompatible
+         * with housing/employment/credit `specialAdCategories`.
+         *
+         */
+        incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
+        /**
+         * Language codes (e.g. ['en']). Restricts the audience by language.
+         */
+        languages?: Array<(string)>;
+        /**
+         * ID of a `saved_targeting` audience (created via POST /v1/ads/audiences). When set, its stored
+         * TargetingSpec is expanded as the base targeting; inline fields on this body merge on top. Lets you
+         * reuse a named targeting preset without re-sending every field.
+         *
+         */
+        savedTargetingId?: string;
+        /**
+         * Meta only. Declares the ad's special category, required for housing, employment, credit, or
+         * political/social-issue ads (Meta enforces restricted targeting for these). Note: setting a special
+         * category disables income/zip targeting on Meta.
+         *
+         */
+        specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS')>;
+        /**
          * Required for lifetime budgets
          */
         endDate?: string;
@@ -15911,58 +16131,112 @@ export type SearchAdInterestsError = ({
     error?: string;
 } | unknown);
 
-export type SearchAdTargetingLocationsData = {
+export type SearchAdTargetingData = {
     query: {
         /**
-         * Social account ID (must be a connected Facebook or Instagram account).
+         * Social account ID (a connected account on the target ad platform).
          */
         accountId: string;
         /**
-         * ISO 3166-1 alpha-2 country code (e.g. NL) to scope the search.
+         * ISO 3166-1 alpha-2 country code (e.g. NL) to scope a geo search.
          */
         countryCode?: string;
+        /**
+         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities, `income` resolves income-tier options. Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
+         */
+        dimension?: 'geo' | 'interest' | 'behavior' | 'income';
+        /**
+         * Only used when `dimension=geo`. The kind of location to resolve. Defaults to `city`.
+         */
+        geoType?: 'country' | 'region' | 'city' | 'zip' | 'metro';
         /**
          * Maximum results to return.
          */
         limit?: number;
         /**
-         * Location name. Locality only — no region/country suffix.
+         * Search query. For geo, the locality name only (no region/country suffix).
          */
         q: string;
-        /**
-         * Type of location to search. Defaults to city.
-         */
-        type?: 'country' | 'region' | 'city' | 'subcity' | 'neighborhood' | 'zip' | 'metro_area' | 'geo_market';
     };
 };
 
-export type SearchAdTargetingLocationsResponse = ({
+export type SearchAdTargetingResponse = ({
     results?: Array<{
         /**
-         * Meta's opaque location ID. Use this in targeting.cities[].key / regions[].key.
+         * The platform's opaque id. Use as a geo `key` (regions/cities/zips/metros) or an entity `id` (interests/behaviors) in TargetingSpec.
          */
-        key: string;
+        id: string;
+        /**
+         * Human-readable label.
+         */
         name: string;
         /**
-         * Location type as returned by Meta (city, region, country, etc.).
+         * What the result is (e.g. city, region, country, zip, metro, interest, behavior, income).
          */
         type: string;
-        countryCode?: string;
-        countryName?: string;
         /**
-         * Parent region/state name (cities only).
+         * Optional breadcrumb of parent labels (e.g. ['United States', 'California', 'Los Angeles']). Disambiguates same-named results.
          */
-        region?: string;
+        path?: Array<(string)>;
         /**
-         * Parent region ID (cities only).
+         * Optional estimated reachable users for this option, when the platform returns it.
          */
-        regionId?: (string | number);
-        supportsRegion?: boolean;
-        supportsCity?: boolean;
+        audienceSize?: (number) | null;
     }>;
 });
 
-export type SearchAdTargetingLocationsError = (unknown | {
+export type SearchAdTargetingError = (unknown | {
+    error?: string;
+});
+
+export type EstimateAdReachData = {
+    body: {
+        /**
+         * Social account ID on the target ad platform.
+         */
+        accountId: string;
+        /**
+         * The targeting spec to estimate. Same shape used by POST /v1/ads/create.
+         */
+        spec: (TargetingSpec);
+        /**
+         * Optional. The optimization goal the estimate should assume (platform's
+         * own vocabulary, e.g. Meta `REACH`, `LINK_CLICKS`, `OFFSITE_CONVERSIONS`).
+         * Some platforms vary the estimate by goal; omit to use the platform default.
+         *
+         */
+        optimizationGoal?: string;
+    };
+};
+
+export type EstimateAdReachResponse = ({
+    /**
+     * Whether a pre-flight estimate is available on this platform. False for Google and TikTok.
+     */
+    available: boolean;
+    /**
+     * Lower bound of the estimated reachable audience. Present only when available.
+     */
+    lower?: (number) | null;
+    /**
+     * Upper bound of the estimated reachable audience. Present only when available.
+     */
+    upper?: (number) | null;
+    /**
+     * Optional estimated daily reach/results at the given budget, when the platform returns it.
+     */
+    daily?: (number) | null;
+    /**
+     * Currency of any monetary fields in the estimate, when applicable.
+     */
+    currency?: (string) | null;
+    /**
+     * Meta only. False when Meta is still computing the estimate (the audience is too new); retry shortly.
+     */
+    estimateReady?: (boolean) | null;
+});
+
+export type EstimateAdReachError = (unknown | {
     error?: string;
 });
 
@@ -15977,6 +16251,10 @@ export type ListAdAudiencesData = {
          */
         adAccountId: string;
         platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads';
+        /**
+         * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences (each item carries a `spec`); the other types return uploaded/derived audiences.
+         */
+        type?: 'customer_list' | 'website' | 'lookalike' | 'saved_targeting';
     };
 };
 
@@ -15986,7 +16264,11 @@ export type ListAdAudiencesResponse = ({
         platformAudienceId?: string;
         name?: string;
         description?: string;
-        type?: 'customer_list' | 'website' | 'lookalike';
+        type?: 'customer_list' | 'website' | 'lookalike' | 'saved_targeting';
+        /**
+         * Present (and the only meaningful payload) when `type` is `saved_targeting`. Null for uploaded/derived audience types.
+         */
+        spec?: ((TargetingSpec) | null);
         platform?: string;
         size?: number;
         status?: string;
@@ -15998,46 +16280,58 @@ export type ListAdAudiencesError = ({
 } | unknown);
 
 export type CreateAdAudienceData = {
-    body: {
-        accountId: string;
-        /**
-         * Platform ad account ID. Must start with act_ for Meta; bare platform id for others (Google customer id, X/TikTok/LinkedIn/Pinterest account id).
-         */
-        adAccountId: string;
-        name: string;
-        description?: string;
-        type: 'customer_list' | 'website' | 'lookalike';
-        /**
-         * Required for website audiences
-         */
-        pixelId?: string;
-        /**
-         * Required for website audiences
-         */
-        retentionDays?: number;
-        /**
-         * Required for lookalike audiences
-         */
-        sourceAudienceId?: string;
-        /**
-         * 2-letter code, required for lookalike audiences
-         */
-        country?: string;
-        /**
-         * Required for lookalike audiences
-         */
-        ratio?: number;
-        /**
-         * Pixel event rule for website audiences (optional)
-         */
-        rule?: {
-            [key: string]: unknown;
-        };
-        /**
-         * Data source declaration for GDPR compliance (customer_list only)
-         */
-        customerFileSource?: string;
+    body: ({
+    accountId: string;
+    /**
+     * Platform ad account ID. Must start with act_ for Meta; bare platform id for others (Google customer id, X/TikTok/LinkedIn/Pinterest account id).
+     */
+    adAccountId: string;
+    name: string;
+    description?: string;
+    type: 'customer_list' | 'website' | 'lookalike';
+    /**
+     * Required for website audiences
+     */
+    pixelId?: string;
+    /**
+     * Required for website audiences
+     */
+    retentionDays?: number;
+    /**
+     * Required for lookalike audiences
+     */
+    sourceAudienceId?: string;
+    /**
+     * 2-letter code, required for lookalike audiences
+     */
+    country?: string;
+    /**
+     * Required for lookalike audiences
+     */
+    ratio?: number;
+    /**
+     * Pixel event rule for website audiences (optional)
+     */
+    rule?: {
+        [key: string]: unknown;
     };
+    /**
+     * Data source declaration for GDPR compliance (customer_list only)
+     */
+    customerFileSource?: string;
+} | {
+    type: 'saved_targeting';
+    /**
+     * Social account ID on the target ad platform.
+     */
+    accountId: string;
+    name: string;
+    description?: string;
+    /**
+     * The targeting spec to store.
+     */
+    spec: (TargetingSpec);
+});
 };
 
 export type CreateAdAudienceResponse = ({
