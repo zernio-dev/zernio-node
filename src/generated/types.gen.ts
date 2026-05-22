@@ -5899,10 +5899,7 @@ export type CreatePostData = {
          * Post caption/text. Optional when media is attached or all platforms have customContent. Required for text-only posts.
          */
         content?: string;
-        mediaItems?: Array<{
-            type?: 'image' | 'video' | 'gif' | 'document';
-            url?: string;
-        }>;
+        mediaItems?: Array<MediaItem>;
         /**
          * Target platforms and accounts for this post. Required for non-draft posts (returns 400 if empty). Drafts can omit platforms.
          */
@@ -5913,10 +5910,7 @@ export type CreatePostData = {
              * Platform-specific text override. When set, this content is used instead of the top-level post content for this platform. Useful for tailoring captions per platform (e.g. keeping tweets under 280 characters).
              */
             customContent?: string;
-            customMedia?: Array<{
-                type?: 'image' | 'video' | 'gif' | 'document';
-                url?: string;
-            }>;
+            customMedia?: Array<MediaItem>;
             /**
              * Optional per-platform scheduled time override. When omitted, the top-level scheduledFor is used.
              */
