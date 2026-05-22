@@ -4703,18 +4703,12 @@ export type ValidatePostData = {
             platformSpecificData?: {
                 [key: string]: unknown;
             };
-            customMedia?: Array<{
-                url?: string;
-                type?: 'image' | 'video';
-            }>;
+            customMedia?: Array<MediaItem>;
         }>;
         /**
          * Root media items shared across platforms
          */
-        mediaItems?: Array<{
-            url?: string;
-            type?: 'image' | 'video';
-        }>;
+        mediaItems?: Array<MediaItem>;
     };
 };
 
