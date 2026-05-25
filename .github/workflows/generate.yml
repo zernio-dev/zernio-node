@@ -122,9 +122,13 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # NOTE: no continue-on-error here. A failed primary publish (e.g. an
+      # expired NPM_TOKEN) must fail the run loudly — otherwise the version
+      # still bumps and the GitHub release still cuts while npm silently
+      # freezes (this exact failure went unnoticed 2026-05-19 → 2026-05-25,
+      # 12 versions behind). Keep the legacy publish below best-effort.
       - name: Publish to npm as @zernio/node
         if: steps.changes.outputs.has_changes == 'true' && steps.check_published.outputs.skip != 'true'
-        continue-on-error: true
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
