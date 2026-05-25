@@ -2236,6 +2236,14 @@ export type PostAnalytics = {
     saves?: number;
     clicks?: number;
     views?: number;
+    /**
+     * Instagram Reels only: average watch time per play, in milliseconds. 0 for non-Reels media and other platforms.
+     */
+    igReelsAvgWatchTime?: number;
+    /**
+     * Instagram Reels only: total watch time including replays, in milliseconds. 0 for non-Reels media and other platforms.
+     */
+    igReelsVideoViewTotalTime?: number;
     engagementRate?: number;
     lastUpdated?: string;
 };
