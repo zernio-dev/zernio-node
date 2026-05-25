@@ -15710,9 +15710,13 @@ export type CreateStandaloneAdData = {
          */
         callToAction?: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW';
         /**
-         * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`.
+         * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`. NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead of a destination).
          */
         linkUrl?: string;
+        /**
+         * Meta Lead Gen forms only (facebook/instagram). The leadgen_forms ID to attach to the ad's creative — create one via POST /v1/ads/lead-forms. REQUIRED when `goal` is `lead_generation`; ignored otherwise. The ad set's promoted_object.page_id + LEAD_GENERATION optimization are derived automatically from the goal.
+         */
+        leadGenFormId?: string;
         /**
          * Image creative for Meta/Google/Pinterest/LinkedIn on legacy + attach shapes (mutually exclusive with `video`). Required for LinkedIn ads unless `video` is set. Not required for Google Search campaigns. For TikTok, this field carries the VIDEO URL (the TikTok ads endpoint is video-only; the field retains the `imageUrl` name for cross-platform consistency). Ignored for X/Twitter. For Google Display, treated as the landscape image (alias of `images.landscape`); supply `images.square` alongside or the request is rejected. For LinkedIn the image is uploaded to LinkedIn under the authoring Company Page (see `organizationId`); recommended ratio 1.91:1 (e.g. 1200×627).
          */
@@ -16103,6 +16107,249 @@ export type CreateStandaloneAdResponse = (({
 }));
 
 export type CreateStandaloneAdError = (unknown | {
+    error?: string;
+});
+
+export type ListLeadsData = {
+    query?: {
+        /**
+         * Filter to a single connected account.
+         */
+        accountId?: string;
+        /**
+         * Keyset cursor from a previous response's pagination.cursor.
+         */
+        cursor?: string;
+        /**
+         * Filter to a single lead form.
+         */
+        formId?: string;
+        limit?: number;
+        /**
+         * Unix seconds; only leads created at/after this Meta timestamp.
+         */
+        since?: number;
+    };
+};
+
+export type ListLeadsResponse = ({
+    status?: string;
+    leads?: Array<{
+        /**
+         * Zernio lead id.
+         */
+        id?: string;
+        /**
+         * Meta lead id.
+         */
+        leadgenId?: string;
+        formId?: string;
+        formName?: (string) | null;
+        accountId?: string;
+        adId?: (string) | null;
+        adsetId?: (string) | null;
+        campaignId?: (string) | null;
+        isOrganic?: boolean;
+        /**
+         * ISO 8601.
+         */
+        createdTime?: (string) | null;
+        /**
+         * Question key → answer.
+         */
+        fields?: {
+            [key: string]: (string);
+        };
+        /**
+         * Raw Meta field_data.
+         */
+        fieldData?: Array<{
+            [key: string]: unknown;
+        }>;
+    }>;
+    pagination?: {
+        hasMore?: boolean;
+        cursor?: (string) | null;
+    };
+});
+
+export type ListLeadsError = ({
+    error?: string;
+} | unknown);
+
+export type ListLeadFormsData = {
+    query: {
+        /**
+         * Connected facebook account id.
+         */
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+    };
+};
+
+export type ListLeadFormsResponse = ({
+    status?: string;
+    forms?: Array<{
+        [key: string]: unknown;
+    }>;
+    pagination?: {
+        hasMore?: boolean;
+        cursor?: (string) | null;
+    };
+});
+
+export type ListLeadFormsError = ({
+    error?: string;
+} | unknown);
+
+export type CreateLeadFormData = {
+    body: {
+        accountId: string;
+        name: string;
+        questions: Array<{
+            /**
+             * EMAIL, PHONE, FULL_NAME, FIRST_NAME, LAST_NAME, CUSTOM, …
+             */
+            type: string;
+            /**
+             * CUSTOM questions only.
+             */
+            key?: string;
+            /**
+             * CUSTOM questions only.
+             */
+            label?: string;
+            options?: Array<{
+                key?: string;
+                value?: string;
+            }>;
+            inline_context?: string;
+        }>;
+        privacyPolicyUrl: string;
+        privacyPolicyLinkText?: string;
+        followUpActionUrl?: string;
+        locale?: string;
+        thankYouTitle?: string;
+        thankYouBody?: string;
+        thankYouButtonText?: string;
+        thankYouButtonType?: string;
+        thankYouWebsiteUrl?: string;
+        isOptimizedForQuality?: boolean;
+    };
+};
+
+export type CreateLeadFormResponse = ({
+    status?: string;
+    form?: {
+        id?: string;
+        name?: string;
+    };
+});
+
+export type CreateLeadFormError = ({
+    error?: string;
+} | unknown);
+
+export type GetLeadFormData = {
+    path: {
+        formId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type GetLeadFormResponse = ({
+    status?: string;
+    form?: {
+        [key: string]: unknown;
+    };
+});
+
+export type GetLeadFormError = ({
+    error?: string;
+});
+
+export type ArchiveLeadFormData = {
+    path: {
+        formId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type ArchiveLeadFormResponse = ({
+    status?: string;
+    formId?: string;
+    archived?: boolean;
+});
+
+export type ArchiveLeadFormError = ({
+    error?: string;
+});
+
+export type ListFormLeadsData = {
+    path: {
+        formId: string;
+    };
+    query: {
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+        /**
+         * Unix seconds.
+         */
+        since?: number;
+    };
+};
+
+export type ListFormLeadsResponse = ({
+    status?: string;
+    leads?: Array<{
+        id?: string;
+        createdTime?: (string) | null;
+        adId?: (string) | null;
+        formId?: string;
+        fields?: {
+            [key: string]: (string);
+        };
+        fieldData?: Array<{
+            [key: string]: unknown;
+        }>;
+    }>;
+    pagination?: {
+        hasMore?: boolean;
+        cursor?: (string) | null;
+    };
+});
+
+export type ListFormLeadsError = ({
+    error?: string;
+});
+
+export type CreateTestLeadData = {
+    body: {
+        accountId: string;
+        fieldData: Array<{
+            name: string;
+            values: Array<(string)>;
+        }>;
+    };
+    path: {
+        formId: string;
+    };
+};
+
+export type CreateTestLeadResponse = ({
+    status?: string;
+    testLead?: {
+        id?: string;
+    };
+});
+
+export type CreateTestLeadError = ({
     error?: string;
 });
 

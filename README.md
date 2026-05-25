@@ -375,19 +375,26 @@ try {
 | `ads.listAdsBusinessCenters()` | List TikTok Business Centers |
 | `ads.listConversionAssociations()` | List campaigns associated with a conversion destination |
 | `ads.listConversionDestinations()` | List destinations for the Conversions API |
+| `ads.listFormLeads()` | List leads for a single form |
+| `ads.listLeadForms()` | List Lead Gen (Instant) forms |
+| `ads.listLeads()` | List submitted leads (cross-form CRM view) |
 | `ads.createConversionDestination()` | Create a conversion destination (LinkedIn) |
 | `ads.createCtwaAd()` | Create Click-to-WhatsApp ad(s) |
+| `ads.createLeadForm()` | Create a Lead Gen (Instant) form |
 | `ads.createStandaloneAd()` | Create standalone ad |
+| `ads.createTestLead()` | Create a synthetic test lead |
 | `ads.getAd()` | Get ad details |
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
 | `ads.getConversionDestination()` | Fetch a single conversion destination |
 | `ads.getConversionMetrics()` | Fetch attribution metrics for a conversion destination |
+| `ads.getLeadForm()` | Get a single Lead Gen form |
 | `ads.updateAd()` | Update ad |
 | `ads.updateConversionDestination()` | Update a conversion destination |
 | `ads.deleteAd()` | Cancel an ad |
 | `ads.deleteConversionDestination()` | Soft-delete a conversion destination |
 | `ads.addConversionAssociations()` | Associate campaigns with a conversion destination |
+| `ads.archiveLeadForm()` | Archive a Lead Gen form |
 | `ads.boostPost()` | Boost post as ad |
 | `ads.estimateAdReach()` | Estimate audience reach |
 | `ads.removeConversionAssociations()` | Remove campaign↔conversion associations |
