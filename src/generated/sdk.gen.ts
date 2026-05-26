@@ -1932,9 +1932,9 @@ export const listInboxConversations = <ThrowOnError extends boolean = false>(opt
  * Create conversation
  * Initiate a new direct message conversation with a specified user. If a conversation already exists with the recipient, the message is added to the existing thread.
  *
- * Currently supported platforms: Twitter/X only. Other platforms will return PLATFORM_NOT_SUPPORTED.
+ * Supported platforms: X/Twitter, Bluesky, Reddit, and WhatsApp. Other platforms return PLATFORM_NOT_SUPPORTED. For WhatsApp, a conversation can only be started with an approved template (provide templateName, templateLanguage, and any templateParams) — freeform initial messages are not permitted by WhatsApp; a missing template returns TEMPLATE_REQUIRED.
  *
- * DM eligibility: Before sending, the endpoint checks if the recipient accepts DMs from your account (via the receives_your_dm field). If not, a 422 error with code DM_NOT_ALLOWED is returned. You can skip this check with skipDmCheck: true if you have already verified eligibility.
+ * DM eligibility (X/Twitter): Before sending, the endpoint checks if the recipient accepts DMs from your account (via the receives_your_dm field). If not, a 422 error with code DM_NOT_ALLOWED is returned. You can skip this check with skipDmCheck: true if you have already verified eligibility.
  *
  * X API tier requirement: DM write endpoints require X API Pro tier ($5,000/month) or Enterprise access. This applies to BYOK (Bring Your Own Key) users who provide their own X API credentials.
  *
