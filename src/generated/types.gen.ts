@@ -10852,6 +10852,17 @@ export type GetInboxConversationMessagesResponse = ({
             fromMe?: boolean;
             reactedAt?: string;
         }>;
+        /**
+         * Platform-specific extras. Free-form, but commonly includes:
+         * `quotedMessageId` (platformMessageId this message replies to),
+         * `waInteractive` (a compact descriptor of WhatsApp interactive
+         * content sent: buttons / list / cta_url / flow), and for inbound
+         * interactive taps `interactiveType` / `interactiveId`.
+         *
+         */
+        metadata?: {
+            [key: string]: unknown;
+        };
     }>;
     lastUpdated?: string;
 });
