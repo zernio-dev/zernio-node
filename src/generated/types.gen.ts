@@ -10841,6 +10841,17 @@ export type GetInboxConversationMessagesResponse = ({
             title?: string;
             message?: string;
         } | null;
+        /**
+         * Emoji reactions on this message (WhatsApp / Telegram). At most one per party in a 1:1 thread.
+         */
+        reactions?: Array<{
+            emoji?: string;
+            /**
+             * true if the connected account reacted
+             */
+            fromMe?: boolean;
+            reactedAt?: string;
+        }>;
     }>;
     lastUpdated?: string;
 });
@@ -11117,6 +11128,51 @@ export type SendInboxMessageData = {
          * Platform message ID to quote-reply to. For WhatsApp, pass the wamid (available in message.platformMessageId from webhooks). For Telegram, pass the Telegram message ID.
          */
         replyTo?: string;
+        /**
+         * WhatsApp-only. Send a location pin.
+         */
+        location?: {
+            /**
+             * Latitude in decimal degrees.
+             */
+            latitude: number;
+            /**
+             * Longitude in decimal degrees.
+             */
+            longitude: number;
+            /**
+             * Optional location name.
+             */
+            name?: string;
+            /**
+             * Optional street address.
+             */
+            address?: string;
+        };
+        /**
+         * WhatsApp-only. Send one or more contact cards.
+         */
+        contacts?: Array<{
+            name: {
+                /**
+                 * Full display name.
+                 */
+                formatted_name: string;
+                first_name?: string;
+                last_name?: string;
+            };
+            phones?: Array<{
+                phone?: string;
+                /**
+                 * e.g. CELL, WORK, HOME.
+                 */
+                type?: string;
+            }>;
+            emails?: Array<{
+                email?: string;
+                type?: string;
+            }>;
+        }>;
     };
     path: {
         /**
