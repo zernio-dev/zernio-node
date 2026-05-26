@@ -190,7 +190,8 @@ function generateClientCode(namespaces: Map<string, OperationInfo[]>): string {
   allFunctions.sort();
 
   // Generate imports
-  const imports = `import {
+  const imports = `import packageJson from '../package.json';
+import {
   client,
 ${allFunctions.map(f => `  ${f},`).join('\n')}
 } from './generated/sdk.gen';
@@ -332,19 +333,21 @@ ${namespaceProps.join('\n\n')}
     this.baseURL = options.baseURL ?? 'https://zernio.com/api';
     this._options = options;
 
-    // Configure the generated client
+    // Configure the generated client. User-Agent and defaultHeaders are
+    // applied at config time (not via the interceptor) because Node 20's
+    // undici treats User-Agent as a forbidden header on already-constructed
+    // Request objects, silently dropping \`headers.set('User-Agent', …)\`.
     client.setConfig({
       baseUrl: this.baseURL,
+      headers: {
+        'User-Agent': \`zernio-node/\${packageJson.version}\`,
+        ...(options.defaultHeaders ?? {}),
+      },
     });
 
     // Add auth interceptor
     client.interceptors.request.use((request) => {
       request.headers.set('Authorization', \`Bearer \${this.apiKey}\`);
-      if (options.defaultHeaders) {
-        for (const [key, value] of Object.entries(options.defaultHeaders)) {
-          request.headers.set(key, value);
-        }
-      }
       return request;
     });
 

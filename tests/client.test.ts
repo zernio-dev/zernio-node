@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import Zernio, { Late, ZernioApiError, LateApiError } from '../src';
+import packageJson from '../package.json';
 
 describe('Zernio Client', () => {
   it('should throw error when no API key is provided', () => {
@@ -70,6 +71,45 @@ describe('Zernio Client', () => {
       baseURL: 'https://custom.example.com/api',
     });
     expect(client.baseURL).toBe('https://custom.example.com/api');
+  });
+
+  it('should include the SDK version in the user agent', async () => {
+    const client = new Zernio({ apiKey: 'test_key' });
+    let request: Request | undefined;
+
+    await client.posts.listPosts({
+      fetch: async (input) => {
+        request = input instanceof Request ? input : new Request(input);
+        return new Response('{}', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      },
+    });
+
+    expect(request?.headers.get('User-Agent')).toBe(`zernio-node/${packageJson.version}`);
+  });
+
+  it('should allow the user agent to be overridden', async () => {
+    const client = new Zernio({
+      apiKey: 'test_key',
+      defaultHeaders: {
+        'User-Agent': 'custom-agent',
+      },
+    });
+    let request: Request | undefined;
+
+    await client.posts.listPosts({
+      fetch: async (input) => {
+        request = input instanceof Request ? input : new Request(input);
+        return new Response('{}', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      },
+    });
+
+    expect(request?.headers.get('User-Agent')).toBe('custom-agent');
   });
 
   it('should have all resource namespaces', () => {
