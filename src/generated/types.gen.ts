@@ -13236,6 +13236,14 @@ export type ListWhatsAppFlowsResponse = ({
         validation_errors?: Array<{
             [key: string]: unknown;
         }>;
+        /**
+         * 1-based version within the flow's clone lineage (Zernio-tracked; Meta has no native versioning). Standalone flows are version 1.
+         */
+        version?: number;
+        /**
+         * Stable group key for the flow's version lineage (the root flow's ID).
+         */
+        lineageId?: string;
     }>;
 });
 
@@ -13258,9 +13266,13 @@ export type CreateWhatsAppFlowData = {
          */
         categories: Array<('SIGN_UP' | 'SIGN_IN' | 'APPOINTMENT_BOOKING' | 'LEAD_GENERATION' | 'CONTACT_US' | 'CUSTOMER_SUPPORT' | 'SURVEY' | 'OTHER')>;
         /**
-         * Optional: ID of an existing flow to clone
+         * Optional: ID of an existing flow to clone the Flow JSON from
          */
         cloneFlowId?: string;
+        /**
+         * When cloning, true keeps the clone in cloneFlowId's version lineage (auto-numbered next version); false/absent creates an independent flow. Ignored without cloneFlowId.
+         */
+        asVersion?: boolean;
     };
 };
 
@@ -13271,6 +13283,14 @@ export type CreateWhatsAppFlowResponse = ({
         name?: string;
         status?: string;
         categories?: Array<(string)>;
+        /**
+         * Version within the clone lineage
+         */
+        version?: number;
+        /**
+         * Version-lineage group key
+         */
+        lineageId?: string;
     };
 });
 
@@ -13441,6 +13461,67 @@ export type UploadWhatsAppFlowJsonResponse = ({
 export type UploadWhatsAppFlowJsonError = (unknown | {
     error?: string;
 });
+
+export type GetWhatsAppFlowPreviewData = {
+    path: {
+        /**
+         * Flow ID
+         */
+        flowId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Mint a fresh preview link (default false)
+         */
+        invalidate?: boolean;
+    };
+};
+
+export type GetWhatsAppFlowPreviewResponse = ({
+    preview_url?: (string) | null;
+    expires_at?: (string) | null;
+});
+
+export type GetWhatsAppFlowPreviewError = ({
+    error?: string;
+} | unknown);
+
+export type ListWhatsAppFlowVersionsData = {
+    path: {
+        /**
+         * Flow ID
+         */
+        flowId: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type ListWhatsAppFlowVersionsResponse = ({
+    versions?: Array<{
+        flowId?: string;
+        version?: number;
+        parentFlowId?: (string) | null;
+        name?: (string) | null;
+        status?: (string) | null;
+        /**
+         * True when Meta no longer has this flow
+         */
+        missing?: boolean;
+    }>;
+});
+
+export type ListWhatsAppFlowVersionsError = ({
+    error?: string;
+} | unknown);
 
 export type PublishWhatsAppFlowData = {
     body: {

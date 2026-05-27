@@ -618,9 +618,11 @@ try {
 | Method | Description |
 |--------|-------------|
 | `whatsappFlows.listWhatsAppFlows()` | List flows |
+| `whatsappFlows.listWhatsAppFlowVersions()` | List flow versions |
 | `whatsappFlows.createWhatsAppFlow()` | Create flow |
 | `whatsappFlows.getWhatsAppFlow()` | Get flow |
 | `whatsappFlows.getWhatsAppFlowJson()` | Get flow JSON asset |
+| `whatsappFlows.getWhatsAppFlowPreview()` | Get flow preview URL |
 | `whatsappFlows.updateWhatsAppFlow()` | Update flow |
 | `whatsappFlows.deleteWhatsAppFlow()` | Delete flow |
 | `whatsappFlows.deprecateWhatsAppFlow()` | Deprecate flow |
