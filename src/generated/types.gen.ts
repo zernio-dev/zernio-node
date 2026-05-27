@@ -12595,6 +12595,40 @@ export type DeleteWhatsAppTemplateError = (unknown | {
     error?: string;
 });
 
+export type GetWhatsAppLibraryTemplateData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Exact library template name
+         */
+        name: string;
+    };
+};
+
+export type GetWhatsAppLibraryTemplateResponse = ({
+    template?: {
+        name?: string;
+        language?: string;
+        category?: string;
+        body?: string;
+        body_params?: Array<(string)>;
+        buttons?: Array<{
+            /**
+             * QUICK_REPLY, URL, PHONE_NUMBER, OTP, FLOW, ...
+             */
+            type?: string;
+            text?: string;
+        }>;
+    } | null;
+});
+
+export type GetWhatsAppLibraryTemplateError = (unknown | {
+    error?: string;
+});
+
 export type GetWhatsAppBusinessProfileData = {
     query: {
         /**

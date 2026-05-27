@@ -163,6 +163,7 @@ import {
   getWhatsAppFlowJson,
   getWhatsAppFlowPreview,
   getWhatsAppGroupChat,
+  getWhatsAppLibraryTemplate,
   getWhatsAppPhoneNumber,
   getWhatsAppPhoneNumbers,
   getWhatsAppTemplate,
@@ -773,6 +774,13 @@ export class Zernio {
     approveWhatsAppGroupJoinRequests: approveWhatsAppGroupJoinRequests,
     rejectWhatsAppGroupJoinRequests: rejectWhatsAppGroupJoinRequests,
     sendWhatsAppConversion: sendWhatsAppConversion,
+  };
+
+  /**
+   * whatsapptemplates API
+   */
+  whatsapptemplates = {
+    getWhatsAppLibraryTemplate: getWhatsAppLibraryTemplate,
   };
 
   /**

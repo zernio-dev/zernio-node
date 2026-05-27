@@ -639,6 +639,11 @@ try {
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |
 | `whatsappPhoneNumbers.releaseWhatsAppPhoneNumber()` | Release phone number |
 
+### WhatsApp Templates
+| Method | Description |
+|--------|-------------|
+| `whatsappTemplates.getWhatsAppLibraryTemplate()` | Look up a library template |
+
 ### Invites
 | Method | Description |
 |--------|-------------|
