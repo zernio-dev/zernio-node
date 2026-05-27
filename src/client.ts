@@ -164,6 +164,7 @@ import {
   getWhatsAppFlowPreview,
   getWhatsAppGroupChat,
   getWhatsAppLibraryTemplate,
+  getWhatsAppNumberInfo,
   getWhatsAppPhoneNumber,
   getWhatsAppPhoneNumbers,
   getWhatsAppTemplate,
@@ -787,6 +788,7 @@ export class Zernio {
    * whatsappphonenumbers API
    */
   whatsappphonenumbers = {
+    getWhatsAppNumberInfo: getWhatsAppNumberInfo,
     getWhatsAppPhoneNumbers: getWhatsAppPhoneNumbers,
     purchaseWhatsAppPhoneNumber: purchaseWhatsAppPhoneNumber,
     getWhatsAppPhoneNumber: getWhatsAppPhoneNumber,

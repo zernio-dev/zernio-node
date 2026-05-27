@@ -634,6 +634,7 @@ try {
 ### WhatsApp Phone Numbers
 | Method | Description |
 |--------|-------------|
+| `whatsappPhoneNumbers.getWhatsAppNumberInfo()` | Get number status |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumber()` | Get phone number |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumbers()` | List phone numbers |
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |

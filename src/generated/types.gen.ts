@@ -12789,6 +12789,73 @@ export type UpdateWhatsAppDisplayNameError = (unknown | {
     error?: string;
 });
 
+export type GetWhatsAppNumberInfoData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppNumberInfoResponse = ({
+    phone?: {
+        display_phone_number?: string;
+        verified_name?: string;
+        /**
+         * APPROVED, AVAILABLE_WITHOUT_REVIEW, PENDING_REVIEW, DECLINED, EXPIRED, NONE
+         */
+        name_status?: string;
+        /**
+         * GREEN, YELLOW, RED, UNKNOWN
+         */
+        quality_rating?: string;
+        /**
+         * e.g. TIER_250, TIER_1K, TIER_UNLIMITED
+         */
+        messaging_limit_tier?: string;
+        throughput?: {
+            /**
+             * STANDARD or HIGH
+             */
+            level?: string;
+        };
+        /**
+         * e.g. CONNECTED
+         */
+        status?: string;
+        is_official_business_account?: boolean;
+        /**
+         * e.g. CLOUD_API
+         */
+        platform_type?: string;
+        /**
+         * Meta's can_send_message health object (messaging + calling signals)
+         */
+        health_status?: {
+            [key: string]: unknown;
+        };
+    };
+    waba?: {
+        name?: string;
+        /**
+         * verified, not_verified, pending, ...
+         */
+        business_verification_status?: string;
+        /**
+         * Meta integer timezone-enum id
+         */
+        timezone_id?: string;
+        health_status?: {
+            [key: string]: unknown;
+        };
+    } | null;
+});
+
+export type GetWhatsAppNumberInfoError = (unknown | {
+    error?: string;
+});
+
 export type GetWhatsAppPhoneNumbersData = {
     query?: {
         /**
