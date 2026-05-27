@@ -215,6 +215,7 @@ import {
   listTrackingTagSharedAccounts,
   listTrackingTags,
   listUsers,
+  listWhatsAppFlowResponses,
   listWhatsAppFlowVersions,
   listWhatsAppFlows,
   listWhatsAppGroupChats,
@@ -800,6 +801,7 @@ export class Zernio {
     publishWhatsAppFlow: publishWhatsAppFlow,
     deprecateWhatsAppFlow: deprecateWhatsAppFlow,
     sendWhatsAppFlowMessage: sendWhatsAppFlowMessage,
+    listWhatsAppFlowResponses: listWhatsAppFlowResponses,
   };
 
   /**

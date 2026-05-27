@@ -13592,7 +13592,7 @@ export type SendWhatsAppFlowMessageData = {
          */
         flow_action?: 'navigate' | 'data_exchange';
         /**
-         * Unique token to correlate responses. Auto-generated UUID if omitted.
+         * Unique token to correlate responses. If omitted, auto-generated as '<flowId>:<uuid>' so the response can be attributed to this flow in the Flow Responses view.
          */
         flow_token?: string;
         flow_action_payload?: {
@@ -13637,6 +13637,54 @@ export type SendWhatsAppFlowMessageResponse = ({
 export type SendWhatsAppFlowMessageError = (unknown | {
     error?: string;
 });
+
+export type ListWhatsAppFlowResponsesData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Scope to responses for this flow
+         */
+        flowId?: string;
+        /**
+         * Max responses to return
+         */
+        limit?: number;
+    };
+};
+
+export type ListWhatsAppFlowResponsesResponse = ({
+    responses?: Array<{
+        /**
+         * Message ID
+         */
+        id?: string;
+        receivedAt?: string;
+        /**
+         * Sender wa_id / phone
+         */
+        from?: (string) | null;
+        senderName?: (string) | null;
+        conversationId?: (string) | null;
+        flowToken?: (string) | null;
+        /**
+         * Submitted field values (flow_token removed)
+         */
+        data?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Raw response_json string
+         */
+        raw?: (string) | null;
+    }>;
+});
+
+export type ListWhatsAppFlowResponsesError = ({
+    error?: string;
+} | unknown);
 
 export type ListContactsData = {
     query?: {

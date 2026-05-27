@@ -617,6 +617,7 @@ try {
 ### WhatsApp Flows
 | Method | Description |
 |--------|-------------|
+| `whatsappFlows.listWhatsAppFlowResponses()` | List flow responses |
 | `whatsappFlows.listWhatsAppFlows()` | List flows |
 | `whatsappFlows.listWhatsAppFlowVersions()` | List flow versions |
 | `whatsappFlows.createWhatsAppFlow()` | Create flow |
