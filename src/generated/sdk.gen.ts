@@ -1981,11 +1981,12 @@ export const updateInboxConversation = <ThrowOnError extends boolean = false>(op
  *
  * Sort order: defaults to `asc` (oldest first, chat style). For the
  * "show me the latest messages" pattern, pass `?sortOrder=desc&limit=N`.
- * For Twitter, Facebook and Bluesky, the upstream APIs only return
- * newest-first and have no order parameter — sort order is best-effort
- * and only reverses items within a single page (pages still walk
- * newest→oldest). The response field `sortOrderApplied` tells you what
- * was actually applied.
+ * Twitter, Instagram, Telegram, WhatsApp and Reddit honor the requested
+ * order from the local message store. For Facebook and Bluesky, the
+ * upstream APIs only return newest-first and have no order parameter —
+ * sort order is best-effort and only reverses items within a single page
+ * (pages still walk newest→oldest). The response field `sortOrderApplied`
+ * tells you what was actually applied.
  *
  * Reddit threads are paginated client-side because Reddit's API has no
  * per-thread cursor. Very long threads may be upstream-truncated by

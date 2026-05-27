@@ -10731,9 +10731,10 @@ export type GetInboxConversationMessagesData = {
         limit?: number;
         /**
          * Order of returned messages. Default `asc` (oldest first, chat style).
-         * For Twitter, Facebook and Bluesky, only intra-page ordering is
-         * affected — pages always walk newest→oldest. See `sortOrderApplied`
-         * in the response.
+         * Twitter, Instagram, Telegram, WhatsApp and Reddit honor this order
+         * across cursor pages. For Facebook and Bluesky, only intra-page
+         * ordering is affected — pages always walk newest→oldest. See
+         * `sortOrderApplied` in the response.
          *
          */
         sortOrder?: 'asc' | 'desc';
@@ -10754,8 +10755,8 @@ export type GetInboxConversationMessagesResponse = ({
     };
     /**
      * Sort order actually applied to the returned page. May
-     * differ from the requested `sortOrder` for Twitter,
-     * Facebook and Bluesky (always `desc` regardless of request).
+     * differ from the requested `sortOrder` for Facebook and
+     * Bluesky (always `desc` regardless of request).
      *
      */
     sortOrderApplied?: 'asc' | 'desc';
