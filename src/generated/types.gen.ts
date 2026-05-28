@@ -1574,6 +1574,16 @@ export type InboxWebhookConversation = {
     participantUsername?: string;
     participantPicture?: string;
     status: 'active' | 'archived';
+    /**
+     * Zernio CRM Contact ID for the participant, when one exists. Resolved by
+     * joining `participantId` to the ContactChannel collection. Best-effort:
+     * omitted when no channel matches or `participantId` is absent. Lets
+     * integrators join any inbox webhook back to the CRM Contact without
+     * needing to look at the sender — which matters for outgoing and
+     * delivery-status events whose sender is the business.
+     *
+     */
+    contactId?: string;
 };
 
 export type status3 = 'active' | 'archived';
@@ -3803,6 +3813,16 @@ export type WebhookPayloadConversationStarted = {
         participantUsername?: string;
         participantPicture?: string;
         status: 'active' | 'archived';
+        /**
+         * Zernio CRM Contact ID for the participant, when one exists. Resolved by
+         * joining `participantId` to the ContactChannel collection (same join
+         * used by message.*, reaction.received, and call.* webhooks). Best-effort:
+         * omitted when no channel matches or `participantId` is absent. Lets
+         * integrators seed the CRM straight from `conversation.started` without
+         * waiting for the first `message.*` event.
+         *
+         */
+        contactId?: string;
     };
     account: InboxWebhookAccount;
     /**
@@ -3996,24 +4016,8 @@ export type WebhookPayloadMessage = {
         sentAt: string;
         isRead: boolean;
     };
-    conversation: {
-        id: string;
-        platformConversationId: string;
-        participantId?: string;
-        participantName?: string;
-        participantUsername?: string;
-        participantPicture?: string;
-        status: 'active' | 'archived';
-    };
-    account: {
-        /**
-         * Social account ID
-         */
-        id: string;
-        platform: string;
-        username: string;
-        displayName?: string;
-    };
+    conversation: InboxWebhookConversation;
+    account: InboxWebhookAccount;
     /**
      * Interactive message metadata (present when message is a quick reply tap, postback button tap, or inline keyboard callback)
      */
@@ -4334,24 +4338,8 @@ export type WebhookPayloadMessageSent = {
         sentAt: string;
         isRead: boolean;
     };
-    conversation: {
-        id: string;
-        platformConversationId: string;
-        participantId?: string;
-        participantName?: string;
-        participantUsername?: string;
-        participantPicture?: string;
-        status: 'active' | 'archived';
-    };
-    account: {
-        /**
-         * Social account ID
-         */
-        id: string;
-        platform: string;
-        username: string;
-        displayName?: string;
-    };
+    conversation: InboxWebhookConversation;
+    account: InboxWebhookAccount;
     timestamp: string;
 };
 
@@ -4505,24 +4493,8 @@ export type WebhookPayloadReaction = {
         };
         reactedAt: string;
     };
-    conversation: {
-        id: string;
-        platformConversationId: string;
-        participantId?: string;
-        participantName?: string;
-        participantUsername?: string;
-        participantPicture?: string;
-        status: 'active' | 'archived';
-    };
-    account: {
-        /**
-         * Social account ID
-         */
-        id: string;
-        platform: string;
-        username: string;
-        displayName?: string;
-    };
+    conversation: InboxWebhookConversation;
+    account: InboxWebhookAccount;
     timestamp: string;
 };
 
