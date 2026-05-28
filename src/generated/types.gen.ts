@@ -3688,6 +3688,155 @@ export type event4 = 'ad.status_changed';
 export type level = 'CAMPAIGN' | 'AD_SET' | 'AD';
 
 /**
+ * Webhook payload for the `call.ended` event. Fires on call hangup
+ * with the duration and a zero-markup billing breakdown.
+ *
+ */
+export type WebhookPayloadCallEnded = {
+    id: string;
+    event: 'call.ended';
+    call: {
+        id?: string;
+        metaCallId?: (string) | null;
+        accountId?: string;
+        phoneNumberId?: string;
+        direction?: 'inbound' | 'outbound';
+        from?: string;
+        to?: string;
+        startedAt?: string;
+        endedAt?: string;
+        durationSeconds?: number;
+        endReason?: 'hangup' | 'no_answer' | 'rejected' | 'error';
+        recordingUrl?: string;
+        recordingExpiresAt?: string;
+        billing?: {
+            metaCostUSD?: number;
+            telnyxCostUSD?: number;
+            recordingCostUSD?: number;
+            totalCostUSD?: number;
+        };
+    };
+    account: InboxWebhookAccount;
+    timestamp: string;
+};
+
+export type event5 = 'call.ended';
+
+export type direction2 = 'inbound' | 'outbound';
+
+export type endReason = 'hangup' | 'no_answer' | 'rejected' | 'error';
+
+/**
+ * Webhook payload for the `call.failed` event. Fired when a call
+ * setup or in-progress call fails.
+ *
+ */
+export type WebhookPayloadCallFailed = {
+    id: string;
+    event: 'call.failed';
+    call: {
+        id?: string;
+        metaCallId?: (string) | null;
+        accountId?: string;
+        phoneNumberId?: string;
+        direction?: 'inbound' | 'outbound';
+        from?: string;
+        to?: string;
+        failedAt?: string;
+        error?: {
+            code?: number;
+            message?: string;
+        };
+    };
+    account: InboxWebhookAccount;
+    timestamp: string;
+};
+
+export type event6 = 'call.failed';
+
+/**
+ * Webhook payload for the `call.permission_request` event. Fires
+ * when a consumer accepts or rejects an interactive
+ * `call_permission_request` message.
+ *
+ */
+export type WebhookPayloadCallPermissionRequest = {
+    id: string;
+    event: 'call.permission_request';
+    permission: {
+        /**
+         * Consumer wa_id who replied
+         */
+        from?: string;
+        response?: 'accept' | 'reject';
+        isPermanent?: boolean;
+        /**
+         * Present only when temporary
+         */
+        expirationTimestamp?: string;
+        /**
+         * Meta's response source, typically `user_action`
+         */
+        responseSource?: string;
+    };
+    account: InboxWebhookAccount;
+    timestamp: string;
+};
+
+export type event7 = 'call.permission_request';
+
+export type response = 'accept' | 'reject';
+
+/**
+ * Webhook payload for the `call.received` event. Fires for both
+ * inbound (UIC) and outbound (BIC) calls; branch on
+ * `call.direction` to tell them apart.
+ *
+ */
+export type WebhookPayloadCallReceived = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'call.received';
+    call: {
+        /**
+         * Internal Zernio Call doc id
+         */
+        id?: string;
+        /**
+         * Meta wacid.* call id when known
+         */
+        metaCallId?: (string) | null;
+        accountId?: string;
+        /**
+         * Meta phone_number_id
+         */
+        phoneNumberId?: string;
+        direction?: 'inbound' | 'outbound';
+        /**
+         * Consumer wa_id / E.164
+         */
+        from?: string;
+        /**
+         * Business number (E.164)
+         */
+        to?: string;
+        /**
+         * Destination snapshot at routing time
+         */
+        forwardTo?: string;
+        contactId?: string;
+        conversationId?: string;
+        startedAt?: string;
+    };
+    account: InboxWebhookAccount;
+    timestamp: string;
+};
+
+export type event8 = 'call.received';
+
+/**
  * Webhook payload for comment received events (Instagram, Facebook, Twitter/X, YouTube, LinkedIn, Bluesky, Reddit)
  */
 export type WebhookPayloadComment = {
@@ -3778,7 +3927,7 @@ export type WebhookPayloadComment = {
     timestamp: string;
 };
 
-export type event5 = 'comment.received';
+export type event9 = 'comment.received';
 
 export type platform7 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
 
@@ -3832,7 +3981,7 @@ export type WebhookPayloadConversationStarted = {
     timestamp: string;
 };
 
-export type event6 = 'conversation.started';
+export type event10 = 'conversation.started';
 
 export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky';
 
@@ -3894,7 +4043,7 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event7 = 'lead.received';
+export type event11 = 'lead.received';
 
 export type platform9 = 'facebook';
 
@@ -4170,7 +4319,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event8 = 'message.received';
+export type event12 = 'message.received';
 
 /**
  * WhatsApp only. Which kind of interactive reply the user sent:
@@ -4202,7 +4351,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event9 = 'message.deleted';
+export type event13 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, and
@@ -4237,7 +4386,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event10 = 'message.delivered' | 'message.read' | 'message.failed';
+export type event14 = 'message.delivered' | 'message.read' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -4279,7 +4428,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event11 = 'message.edited';
+export type event15 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API)
@@ -4343,7 +4492,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event12 = 'message.sent';
+export type event16 = 'message.sent';
 
 /**
  * Webhook payload for post events
@@ -4371,7 +4520,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event13 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event17 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -4447,7 +4596,7 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event14 = 'post.platform.published' | 'post.platform.failed';
+export type event18 = 'post.platform.published' | 'post.platform.failed';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram)
@@ -4498,7 +4647,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event15 = 'reaction.received';
+export type event19 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -4520,7 +4669,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event16 = 'review.new';
+export type event20 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits
@@ -4544,7 +4693,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event17 = 'review.updated';
+export type event21 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -4562,7 +4711,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event18 = 'webhook.test';
+export type event22 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.template.status_updated` event.
@@ -4617,7 +4766,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event19 = 'whatsapp.template.status_updated';
+export type event23 = 'whatsapp.template.status_updated';
 
 export type platform10 = 'whatsapp';
 
@@ -12639,6 +12788,262 @@ export type DeleteWhatsAppTemplateResponse = ({
 });
 
 export type DeleteWhatsAppTemplateError = (unknown | {
+    error?: string;
+});
+
+export type GetWhatsAppCallingConfigData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppCallingConfigResponse = ({
+    /**
+     * WhatsAppPhoneNumber Mongo ID (use on /v1/whatsapp/phone-numbers/{id}/calling)
+     */
+    phoneNumberDocId?: string;
+    phoneNumber?: string;
+    callingEnabled?: boolean;
+    /**
+     * tel:+E164 / sip:... / wss://... destination
+     */
+    forwardTo?: (string) | null;
+    recordingEnabled?: boolean;
+    sipAuthUsername?: (string) | null;
+    /**
+     * True when a SIP digest password is stored. The plaintext is never returned.
+     */
+    sipAuthPasswordConfigured?: boolean;
+    callIconCountries?: Array<(string)> | null;
+});
+
+export type GetWhatsAppCallingConfigError = ({
+    error?: string;
+} | unknown);
+
+export type EnableWhatsAppCallingData = {
+    body: {
+        accountId: string;
+        /**
+         * tel:+E164 / sip:... / wss://... destination
+         */
+        forwardTo: string;
+        sipAuthUsername?: string;
+        /**
+         * Stored encrypted
+         */
+        sipAuthPassword?: string;
+        recordingEnabled?: boolean;
+        callIconCountries?: Array<(string)>;
+    };
+    path: {
+        /**
+         * WhatsAppPhoneNumber Mongo ID
+         */
+        id: string;
+    };
+};
+
+export type EnableWhatsAppCallingResponse = ({
+    success?: boolean;
+    callingEnabled?: boolean;
+    sipHostname?: string;
+    forwardTo?: string;
+});
+
+export type EnableWhatsAppCallingError = ({
+    error?: string;
+} | unknown);
+
+export type UpdateWhatsAppCallingData = {
+    body: {
+        accountId: string;
+        forwardTo?: string;
+        sipAuthUsername?: (string) | null;
+        sipAuthPassword?: (string) | null;
+        recordingEnabled?: boolean;
+        callIconCountries?: Array<(string)> | null;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type UpdateWhatsAppCallingResponse = (unknown);
+
+export type UpdateWhatsAppCallingError = ({
+    error?: string;
+} | unknown);
+
+export type DisableWhatsAppCallingData = {
+    path: {
+        id: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type DisableWhatsAppCallingResponse = (unknown);
+
+export type DisableWhatsAppCallingError = ({
+    error?: string;
+} | unknown);
+
+export type GetWhatsAppCallPermissionsData = {
+    query: {
+        accountId: string;
+        /**
+         * Consumer wa_id (E.164
+         */
+        to: string;
+    };
+};
+
+export type GetWhatsAppCallPermissionsResponse = ({
+    permission?: {
+        status?: 'temporary' | 'no_permission' | 'permanent';
+        /**
+         * Unix seconds when temporary
+         */
+        expiration_time?: number;
+    };
+    actions?: Array<{
+        action_name?: 'send_call_permission_request' | 'start_call';
+        can_perform_action?: boolean;
+    }>;
+});
+
+export type GetWhatsAppCallPermissionsError = ({
+    error?: string;
+} | unknown);
+
+export type InitiateWhatsAppCallData = {
+    body: {
+        accountId: string;
+        /**
+         * Consumer wa_id (E.164
+         */
+        to: string;
+        /**
+         * Per-call destination override. Same accepted shape as the
+         * number's stored forwardTo (tel:+E164, sip:..., wss://...).
+         *
+         */
+        forwardTo?: string;
+        recordOverride?: boolean;
+        /**
+         * Accepted for forward compatibility. Not currently echoed
+         * back in webhook payloads (SIP-first flow does not pass
+         * through Meta's Graph API where Meta would echo this).
+         *
+         */
+        biz_opaque_callback_data?: string;
+    };
+};
+
+export type InitiateWhatsAppCallResponse = ({
+    success?: boolean;
+    /**
+     * Internal Call doc ID
+     */
+    callId?: string;
+    /**
+     * Telnyx call_control_id of the outbound leg
+     */
+    telnyxCallControlId?: string;
+    status?: 'dialing';
+    direction?: 'outbound';
+    to?: string;
+    forwardTo?: (string) | null;
+    recordingEnabled?: boolean;
+});
+
+export type InitiateWhatsAppCallError = ({
+    error?: string;
+} | unknown);
+
+export type ListWhatsAppCallsData = {
+    query: {
+        accountId: string;
+        direction?: 'inbound' | 'outbound';
+        limit?: number;
+        since?: string;
+        status?: 'ringing' | 'answered' | 'ended' | 'failed';
+        until?: string;
+    };
+};
+
+export type ListWhatsAppCallsResponse = ({
+    calls?: Array<{
+        _id?: string;
+        direction?: 'inbound' | 'outbound';
+        from?: string;
+        to?: string;
+        status?: 'ringing' | 'answered' | 'ended' | 'failed';
+        startedAt?: string;
+        endedAt?: string;
+        durationSeconds?: number;
+        endReason?: 'hangup' | 'no_answer' | 'rejected' | 'error';
+        recordingUrl?: string;
+        billing?: {
+            metaCostUSD?: number;
+            telnyxCostUSD?: number;
+            recordingCostUSD?: number;
+            totalCostUSD?: number;
+            currency?: string;
+        };
+    }>;
+});
+
+export type ListWhatsAppCallsError = ({
+    error?: string;
+});
+
+export type GetWhatsAppCallData = {
+    path: {
+        callId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppCallResponse = ({
+    call?: {
+        [key: string]: unknown;
+    };
+});
+
+export type GetWhatsAppCallError = ({
+    error?: string;
+} | unknown);
+
+export type GetWhatsAppCallEstimateData = {
+    query: {
+        accountId: string;
+        minutes?: number;
+        recording?: boolean;
+        to: string;
+    };
+};
+
+export type GetWhatsAppCallEstimateResponse = ({
+    destinationCountry?: (string) | null;
+    perMinuteUsd?: number;
+    breakdown?: {
+        metaMinutes?: number;
+        metaCostUSD?: number;
+        telnyxCostUSD?: number;
+        recordingCostUSD?: number;
+        totalCostUSD?: number;
+    };
+});
+
+export type GetWhatsAppCallEstimateError = ({
     error?: string;
 });
 

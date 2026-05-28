@@ -81,9 +81,11 @@ import {
   deleteWhatsAppGroupChat,
   deleteWhatsAppTemplate,
   deprecateWhatsAppFlow,
+  disableWhatsAppCalling,
   duplicateAdCampaign,
   editInboxMessage,
   editPost,
+  enableWhatsAppCalling,
   enrollContacts,
   estimateAdReach,
   fetchGoogleBusinessVerificationOptions,
@@ -159,6 +161,10 @@ import {
   getUser,
   getWebhookSettings,
   getWhatsAppBusinessProfile,
+  getWhatsAppCall,
+  getWhatsAppCallEstimate,
+  getWhatsAppCallPermissions,
+  getWhatsAppCallingConfig,
   getWhatsAppDataset,
   getWhatsAppDisplayName,
   getWhatsAppFlow,
@@ -179,6 +185,7 @@ import {
   handleOAuthCallback,
   hideInboxComment,
   initiateTelegramConnect,
+  initiateWhatsAppCall,
   likeInboxComment,
   listAccountGroups,
   listAccounts,
@@ -219,6 +226,7 @@ import {
   listTrackingTagSharedAccounts,
   listTrackingTags,
   listUsers,
+  listWhatsAppCalls,
   listWhatsAppConversions,
   listWhatsAppFlowResponses,
   listWhatsAppFlowVersions,
@@ -304,6 +312,7 @@ import {
   updateTrackingTag,
   updateWebhookSettings,
   updateWhatsAppBusinessProfile,
+  updateWhatsAppCalling,
   updateWhatsAppDisplayName,
   updateWhatsAppFlow,
   updateWhatsAppGroupChat,
@@ -781,6 +790,21 @@ export class Zernio {
     rejectWhatsAppGroupJoinRequests: rejectWhatsAppGroupJoinRequests,
     listWhatsAppConversions: listWhatsAppConversions,
     sendWhatsAppConversion: sendWhatsAppConversion,
+  };
+
+  /**
+   * whatsappcalling API
+   */
+  whatsappcalling = {
+    getWhatsAppCallingConfig: getWhatsAppCallingConfig,
+    enableWhatsAppCalling: enableWhatsAppCalling,
+    updateWhatsAppCalling: updateWhatsAppCalling,
+    disableWhatsAppCalling: disableWhatsAppCalling,
+    getWhatsAppCallPermissions: getWhatsAppCallPermissions,
+    initiateWhatsAppCall: initiateWhatsAppCall,
+    listWhatsAppCalls: listWhatsAppCalls,
+    getWhatsAppCall: getWhatsAppCall,
+    getWhatsAppCallEstimate: getWhatsAppCallEstimate,
   };
 
   /**

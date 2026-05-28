@@ -617,6 +617,19 @@ try {
 | `whatsapp.sendWhatsAppConversion()` | Send WhatsApp conversion event |
 | `whatsapp.uploadWhatsAppProfilePhoto()` | Upload profile picture |
 
+### WhatsApp Calling
+| Method | Description |
+|--------|-------------|
+| `whatsappCalling.listWhatsAppCalls()` | List call history for an account |
+| `whatsappCalling.getWhatsAppCall()` | Get a single call |
+| `whatsappCalling.getWhatsAppCallEstimate()` | Estimate per-minute cost for a destination |
+| `whatsappCalling.getWhatsAppCallingConfig()` | Get calling config for an account |
+| `whatsappCalling.getWhatsAppCallPermissions()` | Check call permission for a consumer |
+| `whatsappCalling.updateWhatsAppCalling()` | Update calling config |
+| `whatsappCalling.disableWhatsAppCalling()` | Disable calling on a number |
+| `whatsappCalling.enableWhatsAppCalling()` | Enable calling on a number |
+| `whatsappCalling.initiateWhatsAppCall()` | Initiate outbound call |
+
 ### WhatsApp Flows
 | Method | Description |
 |--------|-------------|
