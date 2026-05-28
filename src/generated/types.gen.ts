@@ -1624,6 +1624,16 @@ export type InboxWebhookMessage = {
          *
          */
         id: string;
+        /**
+         * Zernio CRM Contact id for this sender, when one exists (joined via
+         * the ContactChannel mapping). Lets integrators link a message straight
+         * to a Contact without a follow-up Contacts API call. Omitted when the
+         * sender isn't a tracked contact (e.g. outgoing messages where the
+         * sender is the business, or first-touch messages before the contact
+         * is created).
+         *
+         */
+        contactId?: string;
         name?: string;
         username?: string;
         picture?: string;
@@ -3876,6 +3886,10 @@ export type WebhookPayloadMessage = {
              *
              */
             id: string;
+            /**
+             * Zernio CRM Contact id for this sender, when one exists (omitted for outgoing/business sender).
+             */
+            contactId?: string;
             name?: string;
             username?: string;
             picture?: string;
@@ -4265,6 +4279,10 @@ export type WebhookPayloadMessageSent = {
         }>;
         sender: {
             id: string;
+            /**
+             * Zernio CRM Contact id for this sender, when one exists.
+             */
+            contactId?: string;
             name?: string;
             username?: string;
             picture?: string;
@@ -4429,6 +4447,10 @@ export type WebhookPayloadReaction = {
          */
         sender: {
             id: string;
+            /**
+             * Zernio CRM Contact id for this sender, when one exists.
+             */
+            contactId?: string;
             name?: string;
             username?: string;
             picture?: string;
