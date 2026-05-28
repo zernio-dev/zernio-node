@@ -3773,6 +3773,50 @@ export type event5 = 'comment.received';
 export type platform7 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
 
 /**
+ * Fired once when a new conversation begins, in either direction. A conversation
+ * starts the first time an account and a contact exchange a message on any DM
+ * platform (Instagram, Messenger/Facebook, Telegram, WhatsApp, Twitter, Reddit,
+ * Bluesky). Platform-agnostic — one subscription covers every DM platform.
+ *
+ */
+export type WebhookPayloadConversationStarted = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'conversation.started';
+    conversation: {
+        /**
+         * Internal conversation ID
+         */
+        id: string;
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky';
+        platformConversationId: string;
+        /**
+         * Contact's platform identifier (IGSID
+         */
+        participantId?: string;
+        participantName: string;
+        /**
+         * Contact's handle when the platform exposes one
+         */
+        participantUsername?: string;
+        participantPicture?: string;
+        status: 'active' | 'archived';
+    };
+    account: InboxWebhookAccount;
+    /**
+     * When the conversation document was created.
+     */
+    startedAt: string;
+    timestamp: string;
+};
+
+export type event6 = 'conversation.started';
+
+export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky';
+
+/**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
  */
 export type WebhookPayloadLead = {
@@ -3830,9 +3874,9 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event6 = 'lead.received';
+export type event7 = 'lead.received';
 
-export type platform8 = 'facebook';
+export type platform9 = 'facebook';
 
 /**
  * Webhook payload for message received events
@@ -4122,7 +4166,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event7 = 'message.received';
+export type event8 = 'message.received';
 
 /**
  * WhatsApp only. Which kind of interactive reply the user sent:
@@ -4154,7 +4198,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event8 = 'message.deleted';
+export type event9 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, and
@@ -4189,7 +4233,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event9 = 'message.delivered' | 'message.read' | 'message.failed';
+export type event10 = 'message.delivered' | 'message.read' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -4231,7 +4275,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event10 = 'message.edited';
+export type event11 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API)
@@ -4311,7 +4355,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event11 = 'message.sent';
+export type event12 = 'message.sent';
 
 /**
  * Webhook payload for post events
@@ -4339,7 +4383,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event12 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event13 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -4415,7 +4459,7 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event13 = 'post.platform.published' | 'post.platform.failed';
+export type event14 = 'post.platform.published' | 'post.platform.failed';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram)
@@ -4482,7 +4526,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event14 = 'reaction.received';
+export type event15 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -4504,7 +4548,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event15 = 'review.new';
+export type event16 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits
@@ -4528,7 +4572,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event16 = 'review.updated';
+export type event17 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -4546,7 +4590,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event17 = 'webhook.test';
+export type event18 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.template.status_updated` event.
@@ -4601,9 +4645,9 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event18 = 'whatsapp.template.status_updated';
+export type event19 = 'whatsapp.template.status_updated';
 
-export type platform9 = 'whatsapp';
+export type platform10 = 'whatsapp';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
