@@ -4345,10 +4345,14 @@ export const listWhatsAppConversions = <ThrowOnError extends boolean = false>(op
  * the conversation and replays it on every event so Meta can attribute
  * the conversion back to the Click-to-WhatsApp ad that drove the chat.
  *
- * Configuration prerequisites on the WhatsApp account metadata:
- * - `metaCapiDatasetId`: the Meta Pixel/Dataset ID linked to the WABA.
- * - `connectedFacebookPageId`: the Facebook Page paired with the
- * WhatsApp Business number.
+ * Configuration prerequisite on the WhatsApp account metadata:
+ * - `metaCapiDatasetId`: the Meta dataset ID linked to the WABA.
+ * Provision one with `POST /v1/whatsapp/dataset`.
+ *
+ * The WABA ID (already set automatically at connect time) is forwarded as
+ * `user_data.whatsapp_business_account_id`, which is the per-channel
+ * attribution identifier Meta requires for WhatsApp events. No Facebook
+ * Page ID is needed (that field is the Messenger-branch identifier).
  *
  * Identify the conversation by either `conversationId` (preferred) or
  * `phoneE164` (digits only, no `+`). At least one is required. If the
