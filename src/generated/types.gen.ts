@@ -12856,6 +12856,50 @@ export type GetWhatsAppNumberInfoError = (unknown | {
     error?: string;
 });
 
+export type GetWhatsAppDatasetData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppDatasetResponse = ({
+    /**
+     * Meta dataset ID linked to the WABA, or null if not provisioned yet
+     */
+    datasetId?: (string) | null;
+});
+
+export type GetWhatsAppDatasetError = ({
+    error?: string;
+} | unknown);
+
+export type CreateWhatsAppDatasetData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type CreateWhatsAppDatasetResponse = ({
+    /**
+     * Meta dataset ID linked to the WABA
+     */
+    datasetId?: string;
+    /**
+     * True if Meta created a new dataset on this call; false if one already existed
+     */
+    created?: boolean;
+});
+
+export type CreateWhatsAppDatasetError = ({
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppPhoneNumbersData = {
     query?: {
         /**

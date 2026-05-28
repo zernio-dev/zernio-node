@@ -593,10 +593,12 @@ try {
 |--------|-------------|
 | `whatsapp.listWhatsAppGroupChats()` | List active groups |
 | `whatsapp.listWhatsAppGroupJoinRequests()` | List join requests |
+| `whatsapp.createWhatsAppDataset()` | Provision CTWA conversions dataset |
 | `whatsapp.createWhatsAppGroupChat()` | Create group |
 | `whatsapp.createWhatsAppGroupInviteLink()` | Create invite link |
 | `whatsapp.createWhatsAppTemplate()` | Create template |
 | `whatsapp.getWhatsAppBusinessProfile()` | Get business profile |
+| `whatsapp.getWhatsAppDataset()` | Get CTWA conversions dataset |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name status |
 | `whatsapp.getWhatsAppGroupChat()` | Get group info |
 | `whatsapp.getWhatsAppTemplate()` | Get template |
