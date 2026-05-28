@@ -591,6 +591,7 @@ try {
 ### WhatsApp
 | Method | Description |
 |--------|-------------|
+| `whatsapp.listWhatsAppConversions()` | List recent WhatsApp conversion events |
 | `whatsapp.listWhatsAppGroupChats()` | List active groups |
 | `whatsapp.listWhatsAppGroupJoinRequests()` | List join requests |
 | `whatsapp.createWhatsAppDataset()` | Provision CTWA conversions dataset |

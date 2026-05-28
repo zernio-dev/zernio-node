@@ -17502,6 +17502,50 @@ export type GetConversionMetricsError = (unknown | {
     error?: string;
 });
 
+export type ListWhatsAppConversionsData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Max events to return (1-200, default 50).
+         */
+        limit?: number;
+    };
+};
+
+export type ListWhatsAppConversionsResponse = ({
+    events?: Array<{
+        /**
+         * When the event was sent to Meta.
+         */
+        timestamp?: string;
+        /**
+         * One of LeadSubmitted, Purchase, AddToCart, InitiateCheckout, ViewContent.
+         */
+        eventName?: string;
+        conversationId?: (string) | null;
+        /**
+         * Number of events Meta accepted on this send (usually 1).
+         */
+        eventsReceived?: (number) | null;
+        /**
+         * Number of events Meta rejected (usually 0).
+         */
+        eventsFailed?: (number) | null;
+        /**
+         * Meta fbtrace_id for cross-referencing in Events Manager.
+         */
+        traceId?: (string) | null;
+        durationMs?: (number) | null;
+    }>;
+});
+
+export type ListWhatsAppConversionsError = ({
+    error?: string;
+} | unknown);
+
 export type SendWhatsAppConversionData = {
     body: {
         /**

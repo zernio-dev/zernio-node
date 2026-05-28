@@ -219,6 +219,7 @@ import {
   listTrackingTagSharedAccounts,
   listTrackingTags,
   listUsers,
+  listWhatsAppConversions,
   listWhatsAppFlowResponses,
   listWhatsAppFlowVersions,
   listWhatsAppFlows,
@@ -778,6 +779,7 @@ export class Zernio {
     listWhatsAppGroupJoinRequests: listWhatsAppGroupJoinRequests,
     approveWhatsAppGroupJoinRequests: approveWhatsAppGroupJoinRequests,
     rejectWhatsAppGroupJoinRequests: rejectWhatsAppGroupJoinRequests,
+    listWhatsAppConversions: listWhatsAppConversions,
     sendWhatsAppConversion: sendWhatsAppConversion,
   };
 
