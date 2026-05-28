@@ -17828,9 +17828,65 @@ export type CreateCtwaAdData = {
          */
         endDate?: string;
         /**
-         * ISO 3166-1 alpha-2 country codes. Defaults to `["US"]`.
+         * ISO 3166-1 alpha-2 country codes. Defaults to `["US"]` only
+         * when no other geo (`cities`, `regions`, `zips`, `metros`,
+         * `customLocations`) is supplied.
+         *
          */
         countries?: Array<(string)>;
+        /**
+         * City-level geo targeting for local CTWA campaigns (e.g.
+         * 25km radius around Milan). Each entry maps to Meta's
+         * TargetingGeoLocationCity. `key` is Meta's city ID
+         * (lookupable via GET /v1/ads/targeting/search). `radius`
+         * and `distance_unit` are coupled: set both or neither.
+         *
+         */
+        cities?: Array<{
+            key: string;
+            radius?: number;
+            distance_unit?: 'mile' | 'kilometer';
+        }>;
+        /**
+         * Region / state-level geo targeting. `key` is Meta's region
+         * ID (lookupable via GET /v1/ads/targeting/search?type=region).
+         *
+         */
+        regions?: Array<{
+            key: string;
+        }>;
+        /**
+         * ZIP / postal-code geo targeting. `key` is the platform's
+         * postal id resolved via /v1/ads/targeting/search.
+         *
+         */
+        zips?: Array<{
+            key: string;
+            name?: string;
+        }>;
+        /**
+         * DMA / metro-area geo targeting. `key` is Meta's metro id
+         * (e.g. `DMA:807`).
+         *
+         */
+        metros?: Array<{
+            key: string;
+            name?: string;
+        }>;
+        /**
+         * Point-radius geo (Meta `geo_locations.custom_locations`).
+         * Use for targeting a radius around a specific lat/long when
+         * no Meta city/region key fits. `distanceUnit` is required.
+         *
+         */
+        customLocations?: Array<{
+            latitude: number;
+            longitude: number;
+            radius: number;
+            distanceUnit: 'mile' | 'kilometer';
+            name?: string;
+            address?: string;
+        }>;
         ageMin?: number;
         ageMax?: number;
         interests?: Array<{
