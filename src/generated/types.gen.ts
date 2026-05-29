@@ -3710,9 +3710,19 @@ export type WebhookPayloadCallEnded = {
         recordingUrl?: string;
         recordingExpiresAt?: string;
         billing?: {
+            /**
+             * Meta per-minute charge. Billed by Meta DIRECTLY to your WhatsApp Business Account payment method (your separate Meta invoice). Zernio does NOT charge this. Display only.
+             */
             metaCostUSD?: number;
             telnyxCostUSD?: number;
             recordingCostUSD?: number;
+            /**
+             * The amount Zernio bills you = Telnyx leg + recording. Excludes Meta (billed by Meta directly).
+             */
+            billableCostUSD?: number;
+            /**
+             * Full economic cost incl. the Meta portion you pay directly (Meta + Telnyx + recording). Display only, not the Zernio-billed amount.
+             */
             totalCostUSD?: number;
         };
     };
@@ -13080,9 +13090,19 @@ export type ListWhatsAppCallsResponse = ({
         endReason?: 'hangup' | 'no_answer' | 'rejected' | 'error';
         recordingUrl?: string;
         billing?: {
+            /**
+             * Meta per-minute charge, billed by Meta directly to your WABA. Display only; not billed by Zernio.
+             */
             metaCostUSD?: number;
             telnyxCostUSD?: number;
             recordingCostUSD?: number;
+            /**
+             * Amount Zernio bills you = Telnyx leg + recording (excludes Meta).
+             */
+            billableCostUSD?: number;
+            /**
+             * Full cost incl. the Meta portion you pay directly. Display only.
+             */
             totalCostUSD?: number;
             currency?: string;
         };
@@ -13126,9 +13146,19 @@ export type GetWhatsAppCallEstimateResponse = ({
     perMinuteUsd?: number;
     breakdown?: {
         metaMinutes?: number;
+        /**
+         * Estimated Meta per-minute charge, billed by Meta directly to your WABA. Display only; not billed by Zernio.
+         */
         metaCostUSD?: number;
         telnyxCostUSD?: number;
         recordingCostUSD?: number;
+        /**
+         * Estimated amount Zernio bills you = Telnyx leg + recording (excludes Meta).
+         */
+        billableCostUSD?: number;
+        /**
+         * Estimated full cost incl. the Meta portion you pay directly. Display only.
+         */
         totalCostUSD?: number;
     };
 });
