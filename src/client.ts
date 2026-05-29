@@ -51,6 +51,7 @@ import {
   createWhatsAppFlow,
   createWhatsAppGroupChat,
   createWhatsAppGroupInviteLink,
+  createWhatsAppSandboxSession,
   createWhatsAppTemplate,
   deleteAccount,
   deleteAccountGroup,
@@ -79,6 +80,7 @@ import {
   deleteWebhookSettings,
   deleteWhatsAppFlow,
   deleteWhatsAppGroupChat,
+  deleteWhatsAppSandboxSession,
   deleteWhatsAppTemplate,
   deprecateWhatsAppFlow,
   disableWhatsAppCalling,
@@ -234,6 +236,7 @@ import {
   listWhatsAppGroupChats,
   listWhatsAppGroupJoinRequests,
   listWhatsAppPhoneNumbers,
+  listWhatsAppSandboxSessions,
   markConversationRead,
   moveAccountToProfile,
   pauseSequence,
@@ -823,6 +826,15 @@ export class Zernio {
     purchaseWhatsAppPhoneNumber: purchaseWhatsAppPhoneNumber,
     getWhatsAppPhoneNumber: getWhatsAppPhoneNumber,
     releaseWhatsAppPhoneNumber: releaseWhatsAppPhoneNumber,
+  };
+
+  /**
+   * whatsappsandbox API
+   */
+  whatsappsandbox = {
+    listWhatsAppSandboxSessions: listWhatsAppSandboxSessions,
+    createWhatsAppSandboxSession: createWhatsAppSandboxSession,
+    deleteWhatsAppSandboxSession: deleteWhatsAppSandboxSession,
   };
 
   /**

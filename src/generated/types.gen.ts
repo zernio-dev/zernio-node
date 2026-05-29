@@ -4836,6 +4836,49 @@ export type WhatsAppHeaderComponent = {
 
 export type format = 'text' | 'image' | 'video' | 'gif' | 'document' | 'location';
 
+/**
+ * A per-user activation session against the shared WhatsApp sandbox number.
+ * Transitions `pending → active` when the inbound webhook receives a reply
+ * from the matching phone (the reply itself proves ownership).
+ *
+ */
+export type WhatsAppSandboxSession = {
+    /**
+     * Session id. Use this to revoke via DELETE.
+     */
+    id: string;
+    /**
+     * Digits-only E.164 form (no +, spaces, or dashes).
+     */
+    phoneE164: string;
+    /**
+     * `pending` until the phone replies to the activation template, then
+     * `active`. Expired sessions are pruned by TTL and never appear in
+     * list responses.
+     *
+     */
+    status: 'pending' | 'active';
+    /**
+     * UTC timestamp at which the session becomes invalid. Pending sessions
+     * get a 24h window; activated sessions get 7 days.
+     *
+     */
+    expiresAt: string;
+    /**
+     * When the session transitioned `pending → active`, or null.
+     */
+    activatedAt?: (string) | null;
+    createdAt?: (string) | null;
+};
+
+/**
+ * `pending` until the phone replies to the activation template, then
+ * `active`. Expired sessions are pruned by TTL and never appear in
+ * list responses.
+ *
+ */
+export type status9 = 'pending' | 'active';
+
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'flow' | 'mpm' | 'catalog';
     text: string;
@@ -13379,6 +13422,22 @@ export type GetWhatsAppPhoneNumbersResponse = ({
         metaVerificationStatus?: string;
         createdAt?: string;
     }>;
+    /**
+     * The shared WhatsApp sandbox (one Zernio-owned number, all users test
+     * against it). Present when the sandbox is configured; null otherwise.
+     * The `accountId` lets you address the sandbox in compose endpoints.
+     * `template` is the only template a sandbox send is allowed to use.
+     *
+     */
+    sandbox?: {
+        phoneNumber?: string;
+        accountId?: (string) | null;
+        template?: {
+            name?: string;
+            language?: string;
+        };
+        isSandbox?: boolean;
+    } | null;
 });
 
 export type GetWhatsAppPhoneNumbersError = ({
@@ -13462,6 +13521,53 @@ export type ReleaseWhatsAppPhoneNumberResponse = ({
 });
 
 export type ReleaseWhatsAppPhoneNumberError = (unknown | {
+    error?: string;
+});
+
+export type ListWhatsAppSandboxSessionsResponse = ({
+    sessions?: Array<WhatsAppSandboxSession>;
+    /**
+     * The shared sandbox phone number in E.164 form.
+     */
+    sandboxNumber?: (string) | null;
+});
+
+export type ListWhatsAppSandboxSessionsError = ({
+    error?: string;
+} | unknown);
+
+export type CreateWhatsAppSandboxSessionData = {
+    body: {
+        /**
+         * Recipient phone in international format. Digits, spaces, dashes and a leading `+` are all accepted; the server normalizes to E.164 digits-only.
+         */
+        phone: string;
+    };
+};
+
+export type CreateWhatsAppSandboxSessionResponse = ({
+    session?: WhatsAppSandboxSession;
+    sandboxNumber?: string;
+});
+
+export type CreateWhatsAppSandboxSessionError = (unknown | {
+    error?: string;
+});
+
+export type DeleteWhatsAppSandboxSessionData = {
+    path: {
+        /**
+         * The session id returned by POST /v1/whatsapp/sandbox/sessions.
+         */
+        sessionId: string;
+    };
+};
+
+export type DeleteWhatsAppSandboxSessionResponse = ({
+    success?: boolean;
+});
+
+export type DeleteWhatsAppSandboxSessionError = (unknown | {
     error?: string;
 });
 

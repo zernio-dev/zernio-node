@@ -656,6 +656,13 @@ try {
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |
 | `whatsappPhoneNumbers.releaseWhatsAppPhoneNumber()` | Release phone number |
 
+### WhatsApp Sandbox
+| Method | Description |
+|--------|-------------|
+| `whatsappSandbox.listWhatsAppSandboxSessions()` | List your sandbox sessions |
+| `whatsappSandbox.createWhatsAppSandboxSession()` | Start a sandbox activation for a phone |
+| `whatsappSandbox.deleteWhatsAppSandboxSession()` | Revoke a sandbox session |
+
 ### WhatsApp Templates
 | Method | Description |
 |--------|-------------|
