@@ -14558,6 +14558,22 @@ export type GetContactResponse = ({
         tags?: Array<(string)>;
         isSubscribed?: boolean;
         isBlocked?: boolean;
+        /**
+         * Messages sent to the contact, derived live from message history across all linked conversations.
+         */
+        messagesSentCount?: number;
+        /**
+         * Messages received from the contact, derived live from message history across all linked conversations.
+         */
+        messagesReceivedCount?: number;
+        /**
+         * Timestamp of the most recent outgoing message, or null if none.
+         */
+        lastMessageSentAt?: (string) | null;
+        /**
+         * Timestamp of the most recent incoming message, or null if none.
+         */
+        lastMessageReceivedAt?: (string) | null;
         customFields?: {
             [key: string]: unknown;
         };
@@ -14574,6 +14590,10 @@ export type GetContactResponse = ({
         displayIdentifier?: string;
         isSubscribed?: boolean;
         conversationId?: string;
+        /**
+         * Most recent message (either direction) in this channel's conversation, or null if none.
+         */
+        lastActiveAt?: (string) | null;
         createdAt?: string;
     }>;
 });
