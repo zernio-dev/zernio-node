@@ -4918,6 +4918,53 @@ export type otp_type = 'copy_code' | 'one_tap' | 'zero_tap';
 export type WhatsAppTemplateComponent = WhatsAppHeaderComponent | WhatsAppBodyComponent | WhatsAppFooterComponent | WhatsAppButtonsComponent;
 
 /**
+ * A directed edge between two nodes.
+ */
+export type WorkflowEdge = {
+    id: string;
+    /**
+     * Source node id
+     */
+    source: string;
+    /**
+     * Target node id
+     */
+    target: string;
+    /**
+     * Selects a branch output of a multi-output node: a condition rule id or 'default'; 'reply' or 'timeout' for wait_for_reply; 'success' or 'error' for webhook. Null = the node's single/default output.
+     *
+     */
+    sourceHandle?: (string) | null;
+};
+
+/**
+ * A node in a workflow graph. `config` shape depends on `type`.
+ */
+export type WorkflowNode = {
+    /**
+     * Stable node id referenced by edges
+     */
+    id: string;
+    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'handoff' | 'end';
+    /**
+     * Type-specific settings. trigger: { keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean }. send_message: { messageType: text|template|media|interactive, text, template:{name,language,variableMapping}, media:{mediaType,url,caption}, interactive } (template/interactive are WhatsApp-only). wait_for_reply: { timeoutMinutes:int, saveAs:string }. condition: { rules:[{ id, variable, operator: equals|not_equals|contains|not_contains|starts_with|ends_with|exists|not_exists|matches, value }] }. set_variable: { assignments:[{ name, value }] }. delay: { delayMinutes:int }. webhook: { url, method, headers, bodyTemplate, saveAs }. handoff: { note, assignTo }. String fields support {{variable}} interpolation.
+     *
+     */
+    config?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Canvas coordinates (ignored by the executor; used by the future visual builder).
+     */
+    position?: {
+        x?: number;
+        y?: number;
+    };
+};
+
+export type type7 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'handoff' | 'end';
+
+/**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
  */
 export type XApiOperation = {
@@ -15129,6 +15176,275 @@ export type AddBroadcastRecipientsResponse = ({
 });
 
 export type AddBroadcastRecipientsError = ({
+    error?: string;
+});
+
+export type ListWorkflowsData = {
+    query?: {
+        limit?: number;
+        /**
+         * Filter by profile. Omit to list across all profiles
+         */
+        profileId?: string;
+        skip?: number;
+        status?: 'draft' | 'active' | 'paused';
+    };
+};
+
+export type ListWorkflowsResponse = ({
+    success?: boolean;
+    workflows?: Array<{
+        id?: string;
+        name?: string;
+        description?: string;
+        platform?: string;
+        accountId?: string;
+        accountName?: string;
+        status?: 'draft' | 'active' | 'paused';
+        nodeCount?: number;
+        totalStarted?: number;
+        totalCompleted?: number;
+        totalExited?: number;
+        createdAt?: string;
+    }>;
+    pagination?: {
+        total?: number;
+        limit?: number;
+        skip?: number;
+        hasMore?: boolean;
+    };
+});
+
+export type ListWorkflowsError = ({
+    error?: string;
+});
+
+export type CreateWorkflowData = {
+    body: {
+        profileId: string;
+        accountId: string;
+        platform?: 'whatsapp' | 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit';
+        name: string;
+        description?: string;
+        nodes?: Array<WorkflowNode>;
+        edges?: Array<WorkflowEdge>;
+        /**
+         * The trigger node id; derived from the single trigger node if omitted
+         */
+        entryNodeId?: string;
+    };
+};
+
+export type CreateWorkflowResponse = ({
+    success?: boolean;
+    workflow?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        platform?: string;
+        status?: string;
+        nodeCount?: number;
+        entryNodeId?: string;
+        createdAt?: string;
+    };
+});
+
+export type CreateWorkflowError = (unknown | {
+    error?: string;
+});
+
+export type GetWorkflowData = {
+    path: {
+        workflowId: string;
+    };
+};
+
+export type GetWorkflowResponse = ({
+    success?: boolean;
+    workflow?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        platform?: string;
+        accountId?: string;
+        profileId?: string;
+        status?: 'draft' | 'active' | 'paused';
+        entryNodeId?: string;
+        nodes?: Array<WorkflowNode>;
+        edges?: Array<WorkflowEdge>;
+        totalStarted?: number;
+        totalCompleted?: number;
+        totalExited?: number;
+        createdAt?: string;
+        updatedAt?: string;
+    };
+});
+
+export type GetWorkflowError = ({
+    error?: string;
+});
+
+export type UpdateWorkflowData = {
+    body?: {
+        name?: string;
+        description?: string;
+        nodes?: Array<WorkflowNode>;
+        edges?: Array<WorkflowEdge>;
+        entryNodeId?: (string) | null;
+    };
+    path: {
+        workflowId: string;
+    };
+};
+
+export type UpdateWorkflowResponse = ({
+    success?: boolean;
+    workflow?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        status?: string;
+        entryNodeId?: string;
+        nodeCount?: number;
+        updatedAt?: string;
+    };
+});
+
+export type UpdateWorkflowError = (unknown | {
+    error?: string;
+});
+
+export type DeleteWorkflowData = {
+    path: {
+        workflowId: string;
+    };
+};
+
+export type DeleteWorkflowResponse = (unknown);
+
+export type DeleteWorkflowError = ({
+    error?: string;
+});
+
+export type ActivateWorkflowData = {
+    path: {
+        workflowId: string;
+    };
+};
+
+export type ActivateWorkflowResponse = ({
+    success?: boolean;
+    workflow?: {
+        id?: string;
+        status?: string;
+        entryNodeId?: string;
+    };
+});
+
+export type ActivateWorkflowError = (unknown | {
+    error?: string;
+});
+
+export type PauseWorkflowData = {
+    path: {
+        workflowId: string;
+    };
+};
+
+export type PauseWorkflowResponse = ({
+    success?: boolean;
+    workflow?: {
+        id?: string;
+        status?: string;
+    };
+});
+
+export type PauseWorkflowError = ({
+    error?: string;
+});
+
+export type ListWorkflowExecutionsData = {
+    path: {
+        workflowId: string;
+    };
+    query?: {
+        limit?: number;
+        skip?: number;
+        status?: 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+    };
+};
+
+export type ListWorkflowExecutionsResponse = ({
+    success?: boolean;
+    executions?: Array<{
+        id?: string;
+        status?: 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+        currentNodeId?: string;
+        waitingFor?: {
+            kind?: 'timer' | 'reply';
+            nodeId?: string;
+        } | null;
+        variables?: {
+            [key: string]: unknown;
+        };
+        platformIdentifier?: string;
+        conversationId?: string;
+        stepCount?: number;
+        lastError?: (string) | null;
+        resumeAt?: (string) | null;
+        createdAt?: string;
+        updatedAt?: string;
+        completedAt?: (string) | null;
+    }>;
+    pagination?: {
+        total?: number;
+        limit?: number;
+        skip?: number;
+        hasMore?: boolean;
+    };
+});
+
+export type ListWorkflowExecutionsError = ({
+    error?: string;
+});
+
+export type TriggerWorkflowData = {
+    body: {
+        /**
+         * Recipient phone (WhatsApp only)
+         */
+        to?: string;
+        /**
+         * An existing conversation to run in (required for non-WhatsApp workflows)
+         */
+        conversationId?: string;
+        /**
+         * Simulated inbound text
+         */
+        text?: string;
+    };
+    path: {
+        workflowId: string;
+    };
+};
+
+export type TriggerWorkflowResponse = ({
+    success?: boolean;
+    execution?: {
+        id?: string;
+        status?: string;
+        currentNodeId?: string;
+        waitingFor?: {
+            [key: string]: unknown;
+        } | null;
+        variables?: {
+            [key: string]: unknown;
+        };
+        conversationId?: string;
+    } | null;
+});
+
+export type TriggerWorkflowError = (unknown | {
     error?: string;
 });
 

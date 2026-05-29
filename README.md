@@ -668,6 +668,19 @@ try {
 |--------|-------------|
 | `whatsappTemplates.getWhatsAppLibraryTemplate()` | Look up a library template |
 
+### Workflows
+| Method | Description |
+|--------|-------------|
+| `workflows.listWorkflowExecutions()` | List workflow runs |
+| `workflows.listWorkflows()` | List workflows |
+| `workflows.createWorkflow()` | Create workflow |
+| `workflows.getWorkflow()` | Get workflow with graph |
+| `workflows.updateWorkflow()` | Update workflow |
+| `workflows.deleteWorkflow()` | Delete workflow |
+| `workflows.activateWorkflow()` | Activate workflow |
+| `workflows.pauseWorkflow()` | Pause workflow |
+| `workflows.triggerWorkflow()` | Manually start a workflow run |
+
 ### Invites
 | Method | Description |
 |--------|-------------|

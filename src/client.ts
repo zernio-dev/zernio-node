@@ -2,6 +2,7 @@ import packageJson from '../package.json';
 import {
   client,
   activateSequence,
+  activateWorkflow,
   addBroadcastRecipients,
   addConversionAssociations,
   addMessageReaction,
@@ -53,6 +54,7 @@ import {
   createWhatsAppGroupInviteLink,
   createWhatsAppSandboxSession,
   createWhatsAppTemplate,
+  createWorkflow,
   deleteAccount,
   deleteAccountGroup,
   deleteAd,
@@ -82,6 +84,7 @@ import {
   deleteWhatsAppGroupChat,
   deleteWhatsAppSandboxSession,
   deleteWhatsAppTemplate,
+  deleteWorkflow,
   deprecateWhatsAppFlow,
   disableWhatsAppCalling,
   duplicateAdCampaign,
@@ -179,6 +182,7 @@ import {
   getWhatsAppPhoneNumbers,
   getWhatsAppTemplate,
   getWhatsAppTemplates,
+  getWorkflow,
   getXApiPricing,
   getYouTubeChannelInsights,
   getYouTubeDailyViews,
@@ -237,9 +241,12 @@ import {
   listWhatsAppGroupJoinRequests,
   listWhatsAppPhoneNumbers,
   listWhatsAppSandboxSessions,
+  listWorkflowExecutions,
+  listWorkflows,
   markConversationRead,
   moveAccountToProfile,
   pauseSequence,
+  pauseWorkflow,
   previewQueue,
   publishWhatsAppFlow,
   purchaseWhatsAppPhoneNumber,
@@ -277,6 +284,7 @@ import {
   setTelegramCommands,
   startGoogleBusinessVerification,
   testWebhook,
+  triggerWorkflow,
   undoRetweet,
   unenrollContact,
   unfollowUser,
@@ -320,6 +328,7 @@ import {
   updateWhatsAppFlow,
   updateWhatsAppGroupChat,
   updateWhatsAppTemplate,
+  updateWorkflow,
   updateYoutubeDefaultPlaylist,
   uploadMediaDirect,
   uploadWhatsAppFlowJson,
@@ -895,6 +904,21 @@ export class Zernio {
     cancelBroadcast: cancelBroadcast,
     listBroadcastRecipients: listBroadcastRecipients,
     addBroadcastRecipients: addBroadcastRecipients,
+  };
+
+  /**
+   * workflows API
+   */
+  workflows = {
+    listWorkflows: listWorkflows,
+    createWorkflow: createWorkflow,
+    getWorkflow: getWorkflow,
+    updateWorkflow: updateWorkflow,
+    deleteWorkflow: deleteWorkflow,
+    activateWorkflow: activateWorkflow,
+    pauseWorkflow: pauseWorkflow,
+    listWorkflowExecutions: listWorkflowExecutions,
+    triggerWorkflow: triggerWorkflow,
   };
 
   /**
