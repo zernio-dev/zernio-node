@@ -650,11 +650,15 @@ try {
 ### WhatsApp Phone Numbers
 | Method | Description |
 |--------|-------------|
+| `whatsappPhoneNumbers.listWhatsAppNumberCountries()` | List offerable number countries |
 | `whatsappPhoneNumbers.getWhatsAppNumberInfo()` | Get number status |
+| `whatsappPhoneNumbers.getWhatsAppNumberKycForm()` | Get regulated-number KYC form spec |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumber()` | Get phone number |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumbers()` | List phone numbers |
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |
 | `whatsappPhoneNumbers.releaseWhatsAppPhoneNumber()` | Release phone number |
+| `whatsappPhoneNumbers.searchAvailableWhatsAppNumbers()` | Search available numbers to purchase |
+| `whatsappPhoneNumbers.submitWhatsAppNumberKyc()` | Submit regulated-number KYC |
 
 ### WhatsApp Sandbox
 | Method | Description |

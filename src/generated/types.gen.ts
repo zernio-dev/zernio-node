@@ -3357,7 +3357,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -10526,7 +10526,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -10570,7 +10570,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -13485,7 +13485,7 @@ export type GetWhatsAppPhoneNumbersData = {
         /**
          * Filter by status (by default excludes released numbers)
          */
-        status?: 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
+        status?: 'provisioning' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'active' | 'suspended' | 'releasing' | 'released';
     };
 };
 
@@ -13494,13 +13494,27 @@ export type GetWhatsAppPhoneNumbersResponse = ({
         _id?: string;
         phoneNumber?: string;
         country?: string;
-        status?: 'pending_payment' | 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
+        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
+        /**
+         * Per-country monthly price in cents ($2..$25).
+         */
+        monthlyCents?: number;
         profileId?: {
             [key: string]: unknown;
         };
         provisionedAt?: string;
         metaPreverifiedId?: string;
         metaVerificationStatus?: string;
+        /**
+         * For regulated (Tier 3/4) numbers with an Onfido ID-verification step — the link to forward to the end user. Set once the order is placed; null otherwise. Poll this field after submitting KYC.
+         */
+        onfidoVerificationUrl?: (string) | null;
+        endUserFirstName?: (string) | null;
+        endUserLastName?: (string) | null;
+        /**
+         * Reviewer rejection reason when status is regulatory_declined.
+         */
+        regulatoryDeclineReason?: (string) | null;
         createdAt?: string;
     }>;
     /**
@@ -13531,6 +13545,11 @@ export type PurchaseWhatsAppPhoneNumberData = {
          * Profile to associate the number with
          */
         profileId: string;
+        /**
+         * ISO 3166-1 alpha-2 country for the number (default US). International numbers require usage-based billing. Tier 3/4 countries return 202 { status: "kyc_required", kycUrl } — the customer must complete KYC at that URL before the number is ordered. See GET /v1/whatsapp/phone-numbers/countries.
+         *
+         */
+        country?: string;
     };
 };
 
@@ -13548,9 +13567,162 @@ export type PurchaseWhatsAppPhoneNumberResponse = (({
         metaPreverifiedId?: string;
         metaVerificationStatus?: string;
     };
-}));
+}) | {
+    status?: 'kyc_required';
+    country?: string;
+    kycUrl?: string;
+});
 
 export type PurchaseWhatsAppPhoneNumberError = (unknown | {
+    error?: string;
+});
+
+export type ListWhatsAppNumberCountriesResponse = ({
+    countries?: Array<{
+        /**
+         * ISO 3166-1 alpha-2
+         */
+        code?: string;
+        tier?: 1 | 2 | 3 | 4;
+        monthlyCents?: number;
+        needsKyc?: boolean;
+        outboundCallingAvailable?: boolean;
+    }>;
+});
+
+export type ListWhatsAppNumberCountriesError = ({
+    error?: string;
+});
+
+export type SearchAvailableWhatsAppNumbersData = {
+    query?: {
+        /**
+         * Pattern to match within the number
+         */
+        contains?: string;
+        country?: string;
+        limit?: number;
+        /**
+         * City
+         */
+        locality?: string;
+        /**
+         * Area code
+         */
+        prefix?: string;
+        /**
+         * Number type; defaults to the country's WhatsApp-safe type
+         */
+        type?: string;
+    };
+};
+
+export type SearchAvailableWhatsAppNumbersResponse = ({
+    country?: string;
+    numberType?: string;
+    numbers?: Array<{
+        phoneNumber?: string;
+    }>;
+});
+
+export type SearchAvailableWhatsAppNumbersError = (unknown | {
+    error?: string;
+});
+
+export type GetWhatsAppNumberKycFormData = {
+    query: {
+        country: string;
+        profileId: string;
+    };
+};
+
+export type GetWhatsAppNumberKycFormResponse = ({
+    country?: string;
+    numberType?: string;
+    fields?: Array<{
+        requirementId?: string;
+        label?: string;
+        /**
+         * "action" = an out-of-band verification (e.g. Onfido); not filled here, fulfilled after the order via a link.
+         */
+        kind?: 'text' | 'date' | 'address' | 'file' | 'action';
+        /**
+         * Plain-English explanation of what to provide.
+         */
+        description?: (string) | null;
+        /**
+         * Concrete example value.
+         */
+        example?: (string) | null;
+        /**
+         * ISO country the value must be local to
+         */
+        localTo?: (string) | null;
+    }>;
+    /**
+     * Present when this account already has an approved verification for the country that can be reused (skip the form).
+     */
+    reusable?: {
+        available?: boolean;
+        fromPhoneNumber?: string;
+    } | null;
+});
+
+export type GetWhatsAppNumberKycFormError = (unknown | {
+    error?: string;
+});
+
+export type SubmitWhatsAppNumberKycData = {
+    body: {
+        profileId: string;
+        country: string;
+        /**
+         * Reuse a prior approved verification for this country (skips document/field collection; places the order immediately).
+         */
+        reuse?: boolean;
+        /**
+         * End user's legal first name. Required when the country has an action/ID-verification (Onfido) requirement.
+         */
+        endUserFirstName?: string;
+        /**
+         * End user's legal last name. Same condition as endUserFirstName.
+         */
+        endUserLastName?: string;
+        /**
+         * requirementId → textual value
+         */
+        values?: {
+            [key: string]: (string);
+        };
+        documents?: Array<{
+            requirementId?: string;
+            filename?: string;
+            base64?: string;
+        }>;
+        address?: {
+            requirementId?: string;
+            country_code?: string;
+            business_name?: string;
+            first_name?: string;
+            last_name?: string;
+            street_address?: string;
+            locality?: string;
+            administrative_area?: string;
+            postal_code?: string;
+        };
+    };
+};
+
+export type SubmitWhatsAppNumberKycResponse = ({
+    status?: 'kyc_submitted' | 'kyc_reused' | 'kyc_already_submitted';
+    phoneNumber?: {
+        id?: string;
+        status?: string;
+        country?: string;
+    };
+});
+
+export type SubmitWhatsAppNumberKycError = (unknown | {
     error?: string;
 });
 
@@ -13567,10 +13739,20 @@ export type GetWhatsAppPhoneNumberResponse = ({
     phoneNumber?: {
         id?: string;
         phoneNumber?: string;
-        status?: 'pending_payment' | 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
+        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
         country?: string;
         metaPreverifiedId?: string;
         metaVerificationStatus?: string;
+        /**
+         * For a regulated number with an Onfido ID step — the link to forward to the end user. Appears once the order is placed; null otherwise.
+         */
+        onfidoVerificationUrl?: (string) | null;
+        endUserFirstName?: (string) | null;
+        endUserLastName?: (string) | null;
+        /**
+         * Reviewer rejection reason when status is regulatory_declined.
+         */
+        regulatoryDeclineReason?: (string) | null;
         provisionedAt?: string;
     };
 });
