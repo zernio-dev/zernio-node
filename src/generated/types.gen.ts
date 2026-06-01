@@ -3109,6 +3109,10 @@ export type TwitterPlatformData = {
      */
     replyToTweetId?: string;
     /**
+     * ID (or full status URL) of an existing tweet to quote-repost. The published tweet becomes a quote tweet of the target. Mutually exclusive with media and poll. X only permits quoting your own posts or posts you are mentioned in / part of the conversation thread of; quoting an arbitrary other account's post is rejected by X. Billed at the standard create rate ($0.015), unlike pasting a tweet URL into the text which is billed at the URL rate ($0.20). For threads, applies to the first tweet only.
+     */
+    quoteTweetId?: string;
+    /**
      * Controls who can reply to the tweet. "following" allows only people you follow, "mentionedUsers" allows only mentioned users, "subscribers" allows only subscribers, "verified" allows only verified users. Omit for default (everyone can reply). For threads, applies to the first tweet only. Cannot be combined with replyToTweetId.
      */
     replySettings?: 'following' | 'mentionedUsers' | 'subscribers' | 'verified';
