@@ -675,14 +675,19 @@ try {
 ### Workflows
 | Method | Description |
 |--------|-------------|
+| `workflows.listWorkflowExecutionEvents()` | Get an execution's timeline |
 | `workflows.listWorkflowExecutions()` | List workflow runs |
 | `workflows.listWorkflows()` | List workflows |
+| `workflows.listWorkflowVersions()` | List a workflow's version history |
 | `workflows.createWorkflow()` | Create workflow |
 | `workflows.getWorkflow()` | Get workflow with graph |
+| `workflows.getWorkflowVersion()` | Get a specific workflow version |
 | `workflows.updateWorkflow()` | Update workflow |
 | `workflows.deleteWorkflow()` | Delete workflow |
 | `workflows.activateWorkflow()` | Activate workflow |
+| `workflows.duplicateWorkflow()` | Duplicate a workflow |
 | `workflows.pauseWorkflow()` | Pause workflow |
+| `workflows.restoreWorkflowVersion()` | Restore a previous workflow version |
 | `workflows.triggerWorkflow()` | Manually start a workflow run |
 
 ### Invites

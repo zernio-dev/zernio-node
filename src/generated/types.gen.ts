@@ -4945,11 +4945,69 @@ export type WorkflowEdge = {
      */
     target: string;
     /**
-     * Selects a branch output of a multi-output node: a condition rule id or 'default'; 'reply' or 'timeout' for wait_for_reply; 'success' or 'error' for webhook. Null = the node's single/default output.
+     * Selects a branch output of a multi-output node. Null (or omitted) = the node's single/default output. Known handles per node type:
+     *
+     * - **condition** — a rule's `id`, or `'default'` (no rule matched)
+     * - **wait_for_reply** — `'reply'` (contact replied) | `'timeout'` (no reply in window)
+     * - **webhook** — `'success'` (2xx) | `'error'` (non-2xx / fetch failed)
+     * - **ai** — `'success'` (text/JSON response) | `'tool:<toolName>'` (model invoked
+     * that tool) | `'error'` (upstream failure / non-JSON in JSON mode)
+     * - **start_call** — `'success'` | `'permission_required'` | `'failed'`
+     * - **a_b_split** — `'a'` | `'b'`
+     * - **enroll_sequence** — `'success'` | `'error'`
      *
      */
     sourceHandle?: (string) | null;
 };
+
+/**
+ * One entry in a workflow execution's timeline. Emitted by the executor on every node visit and lifecycle transition, surfaced by `GET /v1/workflows/{workflowId}/executions/ {executionId}/events` for run inspection in the Runs UI.
+ *
+ */
+export type WorkflowExecutionEvent = {
+    action?: 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
+    status?: ('success' | 'failed' | 'pending') | null;
+    /**
+     * Present on `node_*` events
+     */
+    nodeId?: (string) | null;
+    /**
+     * Present on `node_*` events
+     */
+    nodeType?: (string) | null;
+    /**
+     * The edge handle the executor followed out of this node (see `WorkflowEdge.sourceHandle`)
+     */
+    sourceHandle?: (string) | null;
+    /**
+     * Node run time; present on `node_completed` and `node_failed`
+     */
+    durationMs?: (number) | null;
+    /**
+     * Failure detail; present on `node_failed` and `execution_exited`
+     */
+    errorMessage?: (string) | null;
+    /**
+     * Per-node-type payload. Shape varies — see WorkflowNode `type`. Examples:
+     * `send_message` → `{ messageType, text, recipient }`,
+     * `webhook` → `{ url, method, statusCode, responseTimeMs, responsePreview }`,
+     * `ai` → `{ model, provider, inputTokens, outputTokens, responsePreview }`,
+     * `condition` → `{ matchedHandle, rulesEvaluated }`,
+     * `a_b_split` → `{ percentage, chosen }`.
+     *
+     */
+    meta?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Event timestamp (UTC)
+     */
+    at?: string;
+};
+
+export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
+
+export type status10 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -4959,16 +5017,54 @@ export type WorkflowNode = {
      * Stable node id referenced by edges
      */
     id: string;
-    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'handoff' | 'end';
     /**
-     * Type-specific settings. trigger: { keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean }. send_message: { messageType: text|template|media|interactive, text, template:{name,language,variableMapping}, media:{mediaType,url,caption}, interactive } (template/interactive are WhatsApp-only). wait_for_reply: { timeoutMinutes:int, saveAs:string }. condition: { rules:[{ id, variable, operator: equals|not_equals|contains|not_contains|starts_with|ends_with|exists|not_exists|matches, value }] }. set_variable: { assignments:[{ name, value }] }. delay: { delayMinutes:int }. webhook: { url, method, headers, bodyTemplate, saveAs }. handoff: { note, assignTo }. String fields support {{variable}} interpolation.
+     * Node kind. The 16 supported types break into four groups:
+     * messaging (send_message),
+     * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
+     * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
+     * integrations (webhook, ai, handoff, start_call).
+     *
+     */
+    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+    /**
+     * Type-specific settings. All string fields support `{{variable}}` interpolation against the run's variable bag (resolved at execution time).
+     *
+     * **trigger**: `{ triggerType: inbound_message|api_call|whatsapp_event, keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean, eventType: message_sent|message_delivered|message_read|message_failed|reaction }`. Default `triggerType` is `inbound_message` for legacy nodes. `eventType` is only honored when `triggerType` is `whatsapp_event` (WhatsApp-only).
+     *
+     * **send_message**: `{ messageType: text|template|media|interactive, text, template:{name,language,variableMapping}, media:{mediaType:image|video|audio|document, url,caption}, interactive }`. `template` and `interactive` are WhatsApp-only.
+     *
+     * **wait_for_reply**: `{ timeoutMinutes:int (max 43200), saveAs:string }`. Resume via the `'reply'` edge on inbound, or `'timeout'` edge after `timeoutMinutes` of silence.
+     *
+     * **condition**: `{ rules:[{ id, variable, operator: equals|not_equals|contains|not_contains|starts_with|ends_with|exists|not_exists|matches, value }] }`. First matching rule takes its `id` as the sourceHandle; otherwise `'default'`.
+     *
+     * **set_variable**: `{ assignments:[{ name, value }] }`. Run-scoped (lives only for this execution; use `set_field` for persistent values).
+     *
+     * **delay**: `{ delayMinutes:int (max 43200) }`. Suspends the run, resumes via timer.
+     *
+     * **webhook**: `{ url, method: GET|POST|PUT|PATCH|DELETE, headers, bodyTemplate, saveAs }`. SSRF-guarded (private/loopback/metadata IPs rejected). Response saved as `{ status, ok, body }` to `vars[saveAs]`. Edge: `'success'` on 2xx, `'error'` otherwise.
+     *
+     * **ai**: `{ provider: anthropic|openai|google|mistral|groq, model, preset: smart|tools|cheap, systemPrompt, userPromptTemplate, saveAs, temperature, maxTokens, outputType: text|json, tools:[{ name, description, parameters }] }`. Set `provider` + `model` for BYOK (uses your stored API key); omit `provider` for the legacy Telnyx path. Edges: `'success'`, `'tool:<name>'` (model picked a tool), `'error'`.
+     *
+     * **handoff**: `{ note, assignTo }`. Terminates the run as `exited`, flags the conversation for a human operator.
+     *
+     * **start_call**: `{ to, forwardTo, requirePermissionFirst, recordingEnabled, saveAs }`. WhatsApp-only. `forwardTo` can be `tel:+E164`, `sip:user@host`, or `wss://…` (AI voice agent). Edges: `'success'`, `'permission_required'`, `'failed'`.
+     *
+     * **a_b_split**: `{ percentage: number 0-100 (default 50) }`. Random branch picker. Edges: `'a'` (with probability `percentage/100`), `'b'`.
+     *
+     * **set_field**: `{ field, value }`. Persistent custom field on the Contact (vs `set_variable` which is run-scoped). Field name is sanitized to `[A-Za-z0-9_]`. No-op on `api_call` runs (no contact).
+     *
+     * **enroll_sequence**: `{ sequenceId, saveAs }`. Enrolls the run's contact into a Sequence. Edges: `'success'`, `'error'`.
+     *
+     * **add_tag** / **remove_tag**: `{ tag }`. Push or pull a tag on the Contact. No-op on `api_call` runs.
+     *
+     * **end**: no config. Terminates the run as `completed`.
      *
      */
     config?: {
         [key: string]: unknown;
     };
     /**
-     * Canvas coordinates (ignored by the executor; used by the future visual builder).
+     * Canvas coordinates (ignored by the executor; used by the visual builder).
      */
     position?: {
         x?: number;
@@ -4976,7 +5072,15 @@ export type WorkflowNode = {
     };
 };
 
-export type type7 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'handoff' | 'end';
+/**
+ * Node kind. The 16 supported types break into four groups:
+ * messaging (send_message),
+ * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
+ * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
+ * integrations (webhook, ai, handoff, start_call).
+ *
+ */
+export type type7 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -15527,6 +15631,11 @@ export type UpdateWorkflowData = {
         nodes?: Array<WorkflowNode>;
         edges?: Array<WorkflowEdge>;
         entryNodeId?: (string) | null;
+        /**
+         * Reassign the workflow to a different `SocialAccount`. `platform` and `profileId` are derived server-side from the new account (the client never sends them directly). The account must belong to the caller's workspace and be on a workflow-supported platform (whatsapp, instagram, facebook, telegram, twitter, bluesky, reddit). Changing this triggers a graph revalidation against the new platform.
+         *
+         */
+        accountId?: string;
     };
     path: {
         workflowId: string;
@@ -15681,6 +15790,150 @@ export type TriggerWorkflowResponse = ({
 });
 
 export type TriggerWorkflowError = (unknown | {
+    error?: string;
+});
+
+export type ListWorkflowExecutionEventsData = {
+    path: {
+        executionId: string;
+        workflowId: string;
+    };
+};
+
+export type ListWorkflowExecutionEventsResponse = ({
+    success?: boolean;
+    execution?: {
+        id?: string;
+        status?: 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+        startedAt?: (string) | null;
+        completedAt?: (string) | null;
+    };
+    /**
+     * Events in chronological order (oldest first).
+     */
+    events?: Array<WorkflowExecutionEvent>;
+});
+
+export type ListWorkflowExecutionEventsError = ({
+    error?: string;
+});
+
+export type DuplicateWorkflowData = {
+    path: {
+        workflowId: string;
+    };
+};
+
+export type DuplicateWorkflowResponse = ({
+    success?: boolean;
+    workflow?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        status?: 'draft';
+        platform?: string;
+        accountId?: string;
+        profileId?: string;
+        entryNodeId?: (string) | null;
+        nodeCount?: number;
+        createdAt?: string;
+    };
+});
+
+export type DuplicateWorkflowError = ({
+    error?: string;
+});
+
+export type ListWorkflowVersionsData = {
+    path: {
+        workflowId: string;
+    };
+};
+
+export type ListWorkflowVersionsResponse = ({
+    success?: boolean;
+    /**
+     * Versions in reverse chronological order (newest first).
+     */
+    versions?: Array<{
+        /**
+         * Monotonically increasing version number
+         */
+        version?: number;
+        name?: string;
+        description?: (string) | null;
+        /**
+         * User id that authored this version
+         */
+        createdBy?: (string) | null;
+        /**
+         * Denormalized email so the history UI can render without a join
+         */
+        createdByEmail?: (string) | null;
+        /**
+         * When non-null
+         */
+        restoredFromVersion?: (number) | null;
+        createdAt?: string;
+    }>;
+});
+
+export type ListWorkflowVersionsError = ({
+    error?: string;
+});
+
+export type GetWorkflowVersionData = {
+    path: {
+        version: number;
+        workflowId: string;
+    };
+};
+
+export type GetWorkflowVersionResponse = ({
+    success?: boolean;
+    version?: {
+        version?: number;
+        name?: string;
+        description?: (string) | null;
+        entryNodeId?: (string) | null;
+        nodes?: Array<WorkflowNode>;
+        edges?: Array<WorkflowEdge>;
+        platform?: string;
+        accountId?: string;
+        profileId?: string;
+        createdBy?: (string) | null;
+        createdByEmail?: (string) | null;
+        restoredFromVersion?: (number) | null;
+        createdAt?: string;
+    };
+});
+
+export type GetWorkflowVersionError = ({
+    error?: string;
+});
+
+export type RestoreWorkflowVersionData = {
+    path: {
+        version: number;
+        workflowId: string;
+    };
+};
+
+export type RestoreWorkflowVersionResponse = ({
+    success?: boolean;
+    workflow?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        status?: string;
+        entryNodeId?: (string) | null;
+        nodeCount?: number;
+        updatedAt?: string;
+    };
+    restoredFromVersion?: number;
+});
+
+export type RestoreWorkflowVersionError = (unknown | {
     error?: string;
 });
 
