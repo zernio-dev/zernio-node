@@ -16035,12 +16035,24 @@ export type ListCommentAutomationsResponse = ({
          */
         buttons?: Array<DmButton>;
         commentReply?: string;
+        /**
+         * Whether link buttons in the DM are wrapped in a tracked redirect to count clicks.
+         */
+        linkTracking?: boolean;
         isActive?: boolean;
         stats?: {
             triggered?: number;
             dmsSent?: number;
             dmsFailed?: number;
             uniqueContacts?: number;
+            /**
+             * Total clicks on tracked links (bots/prefetch excluded).
+             */
+            linkClicks?: number;
+            /**
+             * Distinct people who clicked a tracked link.
+             */
+            uniqueClicks?: number;
         };
         createdAt?: string;
     }>;
@@ -16090,6 +16102,10 @@ export type CreateCommentAutomationData = {
          * Optional public reply to the comment
          */
         commentReply?: string;
+        /**
+         * Wrap link buttons in the DM in a tracked redirect so clicks are counted (Link Clicks / CTR). Pass false to send links exactly as written. Defaults to on.
+         */
+        linkTracking?: boolean;
     };
 };
 
@@ -16108,6 +16124,7 @@ export type CreateCommentAutomationResponse = ({
          */
         buttons?: Array<DmButton>;
         commentReply?: string;
+        linkTracking?: boolean;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -16146,6 +16163,7 @@ export type GetCommentAutomationResponse = ({
          */
         buttons?: Array<DmButton>;
         commentReply?: string;
+        linkTracking?: boolean;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -16196,6 +16214,10 @@ export type UpdateCommentAutomationData = {
          */
         buttons?: Array<DmButton>;
         commentReply?: string;
+        /**
+         * Wrap link buttons in a tracked redirect to count clicks. Pass false to send links untouched.
+         */
+        linkTracking?: boolean;
         isActive?: boolean;
     };
     path: {
