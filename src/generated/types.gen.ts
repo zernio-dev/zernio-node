@@ -18043,6 +18043,18 @@ export type CreateStandaloneAdData = {
          * Required on legacy + multi-creative shapes. Inherited on attach.
          */
         budgetType?: 'daily' | 'lifetime';
+        /**
+         * Meta only. Where the budget lives, which selects the Meta budget model:
+         * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the
+         * ad set. This is the back-compatible behaviour — omit this field to keep it.
+         * - `campaign`: CBO (Campaign Budget Optimization / Advantage Campaign Budget). The
+         * budget AND `bidStrategy` are set on the CAMPAIGN, and Meta distributes spend
+         * across ad sets automatically.
+         * Meta requires the budget at exactly one level, never both. Non-Meta platforms ignore
+         * this field. Ignored on the attach shape (`adSetId`), which inherits the existing budget.
+         *
+         */
+        budgetLevel?: 'adset' | 'campaign';
         currency?: string;
         /**
          * Required for Meta, Google, Pinterest, and LinkedIn on legacy + attach shapes (skip for multi-creative — use `creatives[].headline`). Ignored for TikTok and X/Twitter. Max: Meta=255, Google=30, Pinterest=100, LinkedIn=400. On LinkedIn this is the ad's headline (the bold text on the creative); for traffic ads it's the link card title.
@@ -18236,6 +18248,34 @@ export type CreateStandaloneAdData = {
          */
         languages?: Array<(string)>;
         /**
+         * Meta only. Manual ad placements. Omit for automatic placements (Meta's default,
+         * recommended for most cases — Meta optimises delivery across all eligible surfaces).
+         * When set, restricts delivery to the chosen surfaces, mapped onto the ad set's
+         * `targeting.{publisher_platforms, facebook_positions, instagram_positions,
+         * messenger_positions, audience_network_positions, threads_positions,
+         * whatsapp_positions, device_platforms}`. Enum membership is validated here; Meta
+         * additionally enforces co-selection rules (e.g. some positions require their parent
+         * publisher platform) and returns an actionable error which we surface. Non-Meta
+         * platforms reject this field.
+         *
+         */
+        placements?: {
+            /**
+             * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
+             */
+            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network')>;
+            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+            instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
+            messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
+            audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
+            threadsPositions?: Array<('threads_stream')>;
+            whatsappPositions?: Array<('status')>;
+            /**
+             * Restrict by device. Omit to deliver on both mobile and desktop.
+             */
+            devicePlatforms?: Array<('mobile' | 'desktop')>;
+        };
+        /**
          * ID of a `saved_targeting` audience (created via POST /v1/ads/audiences). When set, its stored
          * TargetingSpec is expanded as the base targeting; inline fields on this body merge on top. Lets you
          * reuse a named targeting preset without re-sending every field.
@@ -18253,6 +18293,61 @@ export type CreateStandaloneAdData = {
          * Required for lifetime budgets
          */
         endDate?: string;
+        /**
+         * Meta only. Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the
+         * ad set's `start_time`. When omitted the ad starts delivering immediately. For lifetime
+         * budgets Meta also requires `endDate`. (Same `schedule.startDate` semantics already
+         * available on `POST /v1/ads/boost`.)
+         *
+         */
+        startDate?: string;
+        /**
+         * Meta only. Override the Instagram account the ad is delivered as — pass an Instagram
+         * Business Account ID (e.g. 17841...), mapped to the creative's `instagram_user_id`.
+         * When omitted we auto-resolve the IG account linked to the connected Facebook Page
+         * (the existing default). Useful when a Page has more than one eligible IG account.
+         *
+         */
+        instagramAccountId?: string;
+        /**
+         * Meta only. Dynamic Creative: supply a POOL of assets and Meta auto-combines and
+         * optimises them into the best-performing variations within a single ad (mapped to the
+         * creative's `asset_feed_spec`). When set, the top-level single-creative fields
+         * (`imageUrl`, `headline`, `body`, `linkUrl`, `callToAction`) are ignored. Mutually
+         * exclusive with the `creatives[]` multi-creative shape. Meta limits: ≤10 images,
+         * ≤5 bodies / titles / descriptions.
+         *
+         */
+        dynamicCreative?: {
+            /**
+             * Pool of image URLs (1-10). Uploaded to the ad account and referenced by hash in the asset feed.
+             */
+            imageUrls: Array<(string)>;
+            /**
+             * Primary-text variations (the body copy).
+             */
+            bodies?: Array<(string)>;
+            /**
+             * Headline variations.
+             */
+            titles?: Array<(string)>;
+            /**
+             * Description (link caption) variations.
+             */
+            descriptions?: Array<(string)>;
+            /**
+             * Destination URL variations. At least one is required unless `goal` is `lead_generation`.
+             */
+            linkUrls?: Array<(string)>;
+            /**
+             * CTA-button variations. Required.
+             */
+            callToActionTypes?: Array<('LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW')>;
+            /**
+             * Asset-feed ad format. Defaults to SINGLE_IMAGE.
+             */
+            adFormat?: 'SINGLE_IMAGE' | 'CAROUSEL_IMAGE';
+        };
         /**
          * Custom audience ID for targeting
          */
