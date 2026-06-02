@@ -1252,6 +1252,74 @@ export type DiscordPlatformData = {
 export type autoArchiveDuration = 60 | 1440 | 4320 | 10080;
 
 /**
+ * Discord guild scheduled event. Returned by /v1/discord/guilds/{guildId}/events endpoints.
+ * Fields below are the subset Zernio consumes — Discord may return more (e.g. creator,
+ * image hash) which we pass through verbatim.
+ *
+ */
+export type DiscordScheduledEvent = {
+    /**
+     * Event snowflake ID
+     */
+    id?: string;
+    guild_id?: string;
+    /**
+     * Voice/stage channel ID; null for external events.
+     */
+    channel_id?: (string) | null;
+    creator_id?: (string) | null;
+    name?: string;
+    description?: (string) | null;
+    scheduled_start_time?: string;
+    /**
+     * Required for external events; optional for voice/stage.
+     */
+    scheduled_end_time?: (string) | null;
+    /**
+     * Always 2 (GUILD_ONLY) — Discord deprecated PUBLIC events.
+     */
+    privacy_level?: 2;
+    /**
+     * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
+     */
+    status?: 1 | 2 | 3 | 4;
+    /**
+     * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
+     */
+    entity_type?: 1 | 2 | 3;
+    entity_id?: (string) | null;
+    entity_metadata?: {
+        /**
+         * External event location string.
+         */
+        location?: string;
+    } | null;
+    /**
+     * Number of members who RSVP'd. Only present when withUserCount=true on list.
+     */
+    user_count?: number;
+    /**
+     * Cover image hash; build URL via cdn.discordapp.com.
+     */
+    image?: (string) | null;
+};
+
+/**
+ * Always 2 (GUILD_ONLY) — Discord deprecated PUBLIC events.
+ */
+export type privacy_level = 2;
+
+/**
+ * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
+ */
+export type status3 = 1 | 2 | 3 | 4;
+
+/**
+ * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
+ */
+export type entity_type = 1 | 2 | 3;
+
+/**
  * A single inline button rendered inside an auto-DM via Meta's button_template.
  * Up to 3 buttons per automation. `url` and `postback` work on Instagram and
  * Facebook; `phone` is Facebook-only. When buttons are set, `dmMessage` becomes
@@ -1586,7 +1654,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status3 = 'active' | 'archived';
+export type status4 = 'active' | 'archived';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -2130,7 +2198,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status4 = 'published' | 'failed';
+export type status5 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -2240,7 +2308,7 @@ export type Post = {
     updatedAt?: string;
 };
 
-export type status5 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
+export type status6 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
 
 export type visibility = 'public' | 'private' | 'unlisted';
 
@@ -3166,7 +3234,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status6 = 'pending' | 'completed' | 'expired';
+export type status7 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -3485,7 +3553,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status7 = 'success' | 'failure';
+export type status8 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -4790,7 +4858,7 @@ export type platform10 = 'whatsapp';
  * request before the template is actually removed.
  *
  */
-export type status8 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status9 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -4891,7 +4959,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status9 = 'pending' | 'active';
+export type status10 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'flow' | 'mpm' | 'catalog';
@@ -5007,7 +5075,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status10 = 'success' | 'failed' | 'pending';
+export type status11 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -10441,6 +10509,450 @@ export type GetDiscordChannelsResponse = ({
 export type GetDiscordChannelsError = (unknown | {
     error?: string;
 });
+
+export type SendDiscordDirectMessageData = {
+    body: {
+        /**
+         * SocialAccount _id of the connected Discord account the bot speaks as. Caller must own the account (directly or via team membership).
+         */
+        accountId: string;
+        /**
+         * Discord snowflake ID of the recipient (15-21 digits).
+         */
+        userId: string;
+        /**
+         * Message text, up to 2,000 characters.
+         */
+        content?: string;
+        /**
+         * Up to 10 Discord embeds. Same shape as channel-post embeds (title, description, color, fields, etc.). See DiscordPlatformData.embeds for the embed object schema.
+         */
+        embeds?: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Up to 10 media attachments. Each is `{ type: image|video|gif|document, url, filename?, mimeType?, size? }`.
+         */
+        attachments?: Array<{
+            type: 'image' | 'video' | 'gif' | 'document';
+            url: string;
+            filename?: string;
+            mimeType?: string;
+            size?: number;
+        }>;
+        /**
+         * Send as text-to-speech message.
+         */
+        tts?: boolean;
+    };
+};
+
+export type SendDiscordDirectMessageResponse = ({
+    /**
+     * Discord message snowflake ID
+     */
+    messageId?: string;
+    /**
+     * DM channel snowflake (Discord auto-creates one per recipient pair)
+     */
+    channelId?: string;
+    /**
+     * Direct link to the message — uses Discord's @me path for DMs
+     */
+    url?: string;
+    timestamp?: string;
+    recipient?: {
+        userId?: string;
+        platform?: string;
+    };
+    account?: {
+        id?: string;
+        username?: string;
+        displayName?: string;
+    };
+});
+
+export type SendDiscordDirectMessageError = (unknown | {
+    error?: string;
+});
+
+export type ListDiscordGuildRolesData = {
+    path: {
+        /**
+         * Discord guild snowflake ID
+         */
+        guildId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of the Discord account bound to this guild
+         */
+        accountId: string;
+    };
+};
+
+export type ListDiscordGuildRolesResponse = ({
+    data?: Array<{
+        /**
+         * Role snowflake ID
+         */
+        id?: string;
+        name?: string;
+        /**
+         * Decimal color (0 = no color). Convert to hex via .toString(16).
+         */
+        color?: number;
+        /**
+         * Position in role hierarchy (higher = more authority)
+         */
+        position?: number;
+        /**
+         * Permissions bitfield as a stringified integer
+         */
+        permissions?: string;
+        /**
+         * True for integration-managed roles (bot roles)
+         */
+        managed?: boolean;
+        mentionable?: boolean;
+        /**
+         * True if role is displayed separately in member list
+         */
+        hoist?: boolean;
+    }>;
+});
+
+export type ListDiscordGuildRolesError = (unknown | {
+    error?: string;
+});
+
+export type ListDiscordGuildMembersData = {
+    path: {
+        guildId: string;
+    };
+    query: {
+        accountId: string;
+        /**
+         * Snowflake of the last member from the previous page.
+         */
+        after?: string;
+        /**
+         * Page size (1-1000).
+         */
+        limit?: number;
+    };
+};
+
+export type ListDiscordGuildMembersResponse = ({
+    data?: Array<{
+        user?: {
+            /**
+             * User snowflake
+             */
+            id?: string;
+            username?: string;
+            discriminator?: string;
+            avatar?: (string) | null;
+            /**
+             * User's display name (post-2023 Discord rebrand)
+             */
+            global_name?: (string) | null;
+        };
+        /**
+         * Guild-specific nickname
+         */
+        nick?: (string) | null;
+        /**
+         * Snowflake IDs of roles assigned to this member
+         */
+        roles?: Array<(string)>;
+        joined_at?: string;
+        /**
+         * When the user started boosting the server
+         */
+        premium_since?: (string) | null;
+    }>;
+    pagination?: {
+        /**
+         * Pass as `after` on the next call. Null when there are no more pages.
+         */
+        nextCursor?: (string) | null;
+        hasMore?: boolean;
+    };
+});
+
+export type ListDiscordGuildMembersError = (unknown | {
+    error?: string;
+});
+
+export type AddDiscordMemberRoleData = {
+    path: {
+        guildId: string;
+        roleId: string;
+        /**
+         * Discord user snowflake to assign the role to.
+         */
+        userId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type AddDiscordMemberRoleResponse = ({
+    success?: boolean;
+    operation?: 'role_assigned';
+    guildId?: string;
+    userId?: string;
+    roleId?: string;
+});
+
+export type AddDiscordMemberRoleError = (unknown | {
+    error?: string;
+});
+
+export type RemoveDiscordMemberRoleData = {
+    path: {
+        guildId: string;
+        roleId: string;
+        userId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type RemoveDiscordMemberRoleResponse = ({
+    success?: boolean;
+    operation?: 'role_removed';
+    guildId?: string;
+    userId?: string;
+    roleId?: string;
+});
+
+export type RemoveDiscordMemberRoleError = (unknown | {
+    error?: string;
+});
+
+export type ListDiscordPinnedMessagesData = {
+    path: {
+        /**
+         * Discord channel snowflake.
+         */
+        channelId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of any Discord account in the same guild.
+         */
+        accountId: string;
+    };
+};
+
+export type ListDiscordPinnedMessagesResponse = ({
+    data?: Array<{
+        id?: string;
+        channel_id?: string;
+        content?: string;
+        timestamp?: string;
+        author?: {
+            [key: string]: unknown;
+        };
+        attachments?: Array<{
+            [key: string]: unknown;
+        }>;
+        embeds?: Array<{
+            [key: string]: unknown;
+        }>;
+    }>;
+});
+
+export type ListDiscordPinnedMessagesError = (unknown | {
+    error?: string;
+});
+
+export type PinDiscordMessageData = {
+    path: {
+        channelId: string;
+        messageId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type PinDiscordMessageResponse = ({
+    success?: boolean;
+    operation?: 'message_pinned';
+    channelId?: string;
+    messageId?: string;
+});
+
+export type PinDiscordMessageError = (unknown | {
+    error?: string;
+});
+
+export type UnpinDiscordMessageData = {
+    path: {
+        channelId: string;
+        messageId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type UnpinDiscordMessageResponse = ({
+    success?: boolean;
+    operation?: 'message_unpinned';
+    channelId?: string;
+    messageId?: string;
+});
+
+export type UnpinDiscordMessageError = (unknown | {
+    error?: string;
+});
+
+export type ListDiscordScheduledEventsData = {
+    path: {
+        guildId: string;
+    };
+    query: {
+        accountId: string;
+        /**
+         * Include user_count on each event.
+         */
+        withUserCount?: boolean;
+    };
+};
+
+export type ListDiscordScheduledEventsResponse = ({
+    data?: Array<DiscordScheduledEvent>;
+});
+
+export type ListDiscordScheduledEventsError = (unknown | {
+    error?: string;
+});
+
+export type CreateDiscordScheduledEventData = {
+    body: {
+        accountId: string;
+        name: string;
+        description?: string;
+        /**
+         * ISO 8601 start time. Must be in the future.
+         */
+        startsAt: string;
+        entity: ({
+    type: 'external';
+    /**
+     * Where the event takes place (e.g. "Zoom link", "123 Main St")
+     */
+    location: string;
+    endsAt: string;
+} | {
+    type: 'voice';
+    /**
+     * Voice channel snowflake.
+     */
+    channelId: string;
+    endsAt?: string;
+} | {
+    type: 'stage';
+    /**
+     * Stage channel snowflake.
+     */
+    channelId: string;
+    endsAt?: string;
+});
+        /**
+         * Optional cover image as a base64 data URI.
+         */
+        imageDataUri?: string;
+    };
+    path: {
+        guildId: string;
+    };
+};
+
+export type CreateDiscordScheduledEventResponse = ({
+    data?: DiscordScheduledEvent;
+});
+
+export type CreateDiscordScheduledEventError = (unknown | {
+    error?: string;
+});
+
+export type GetDiscordScheduledEventData = {
+    path: {
+        eventId: string;
+        guildId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type GetDiscordScheduledEventResponse = ({
+    data?: DiscordScheduledEvent;
+});
+
+export type GetDiscordScheduledEventError = ({
+    error?: string;
+} | unknown);
+
+export type UpdateDiscordScheduledEventData = {
+    body: {
+        accountId: string;
+        name?: string;
+        description?: string;
+        startsAt?: string;
+        endsAt?: string;
+        /**
+         * For external events.
+         */
+        location?: string;
+        /**
+         * Status transition. Most common: 'cancelled' to cancel an event.
+         */
+        status?: 'scheduled' | 'active' | 'completed' | 'cancelled';
+        imageDataUri?: string;
+    };
+    path: {
+        eventId: string;
+        guildId: string;
+    };
+};
+
+export type UpdateDiscordScheduledEventResponse = ({
+    data?: DiscordScheduledEvent;
+});
+
+export type UpdateDiscordScheduledEventError = (unknown | {
+    error?: string;
+});
+
+export type DeleteDiscordScheduledEventData = {
+    path: {
+        eventId: string;
+        guildId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type DeleteDiscordScheduledEventResponse = ({
+    success?: boolean;
+    /**
+     * The deleted event's snowflake.
+     */
+    deleted?: string;
+});
+
+export type DeleteDiscordScheduledEventError = ({
+    error?: string;
+} | unknown);
 
 export type ListQueueSlotsData = {
     query: {

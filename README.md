@@ -463,9 +463,22 @@ try {
 ### Discord
 | Method | Description |
 |--------|-------------|
+| `discord.listDiscordGuildMembers()` | List Discord guild members |
+| `discord.listDiscordGuildRoles()` | List Discord guild roles |
+| `discord.listDiscordPinnedMessages()` | List pinned messages in a Discord channel |
+| `discord.listDiscordScheduledEvents()` | List Discord scheduled events |
+| `discord.createDiscordScheduledEvent()` | Create a Discord scheduled event |
 | `discord.getDiscordChannels()` | List Discord guild channels |
+| `discord.getDiscordScheduledEvent()` | Get a Discord scheduled event |
 | `discord.getDiscordSettings()` | Get Discord account settings |
+| `discord.updateDiscordScheduledEvent()` | Update a Discord scheduled event |
 | `discord.updateDiscordSettings()` | Update Discord settings |
+| `discord.deleteDiscordScheduledEvent()` | Delete a Discord scheduled event |
+| `discord.addDiscordMemberRole()` | Assign a role to a guild member |
+| `discord.pinDiscordMessage()` | Pin a Discord message |
+| `discord.removeDiscordMemberRole()` | Remove a role from a guild member |
+| `discord.sendDiscordDirectMessage()` | Send a Discord Direct Message |
+| `discord.unpinDiscordMessage()` | Unpin a Discord message |
 
 ### GMB Attributes
 | Method | Description |
