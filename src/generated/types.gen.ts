@@ -18349,6 +18349,50 @@ export type CreateStandaloneAdData = {
             adFormat?: 'SINGLE_IMAGE' | 'CAROUSEL_IMAGE';
         };
         /**
+         * Meta only. Placement asset customization: pin a SPECIFIC image to each placement
+         * group on a SINGLE ad (e.g. a 9:16 image on Stories/Reels and a 4:5 on Feed). This
+         * is the same thing Meta Ads Manager produces with "different creative per placement",
+         * mapped to the creative's `asset_feed_spec` + `asset_customization_rules`. It is
+         * deterministic pinning, NOT the auto-optimizing pool of `dynamicCreative` (the two are
+         * mutually exclusive, and it cannot be combined with `creatives[]` or `adSetId`). The
+         * shared copy (headline, body, link, CTA) comes from the top-level single-creative
+         * fields (`headline`, `body`, `linkUrl`, `callToAction`) since only the image varies by
+         * placement. Each rule's `placements` accepts the same fields as the top-level
+         * `placements` object; Meta enforces co-selection rules and returns an actionable error.
+         *
+         */
+        placementAssets?: {
+            /**
+             * Catch-all image for any placement not matched by a rule. REQUIRED — Meta mandates
+             * a default asset customization rule (empty placement spec, lowest priority) on every
+             * placement-customized creative.
+             *
+             */
+            defaultImageUrl: string;
+            /**
+             * One entry per placement group you want to pin a specific image to.
+             */
+            rules: Array<{
+                /**
+                 * The image to deliver for this rule's placements.
+                 */
+                imageUrl: string;
+                /**
+                 * Placements this image is pinned to. At least one field must be set (an empty rule is invalid — that role is served by defaultImageUrl). Same enums as the top-level `placements` object.
+                 */
+                placements: {
+                    publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network')>;
+                    facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+                    instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
+                    messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
+                    audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
+                    threadsPositions?: Array<('threads_stream')>;
+                    whatsappPositions?: Array<('status')>;
+                    devicePlatforms?: Array<('mobile' | 'desktop')>;
+                };
+            }>;
+        };
+        /**
          * Custom audience ID for targeting
          */
         audienceId?: string;
