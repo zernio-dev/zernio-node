@@ -16039,6 +16039,10 @@ export type ListCommentAutomationsResponse = ({
          * Whether link buttons in the DM are wrapped in a tracked redirect to count clicks.
          */
         linkTracking?: boolean;
+        /**
+         * Tag applied to a contact when they click a tracked link.
+         */
+        clickTag?: string;
         isActive?: boolean;
         stats?: {
             triggered?: number;
@@ -16106,6 +16110,10 @@ export type CreateCommentAutomationData = {
          * Wrap link buttons in the DM in a tracked redirect so clicks are counted (Link Clicks / CTR). Pass false to send links exactly as written. Defaults to on.
          */
         linkTracking?: boolean;
+        /**
+         * Optional tag applied to a contact when they click a tracked link (requires linkTracking). Lets you segment clickers for broadcasts/sequences.
+         */
+        clickTag?: string;
     };
 };
 
@@ -16125,6 +16133,7 @@ export type CreateCommentAutomationResponse = ({
         buttons?: Array<DmButton>;
         commentReply?: string;
         linkTracking?: boolean;
+        clickTag?: string;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -16164,6 +16173,7 @@ export type GetCommentAutomationResponse = ({
         buttons?: Array<DmButton>;
         commentReply?: string;
         linkTracking?: boolean;
+        clickTag?: string;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -16218,6 +16228,10 @@ export type UpdateCommentAutomationData = {
          * Wrap link buttons in a tracked redirect to count clicks. Pass false to send links untouched.
          */
         linkTracking?: boolean;
+        /**
+         * Tag applied to a contact when they click a tracked link (requires linkTracking). Empty string clears it.
+         */
+        clickTag?: string;
         isActive?: boolean;
     };
     path: {
