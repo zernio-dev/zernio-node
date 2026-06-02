@@ -16024,6 +16024,7 @@ export type ListCommentAutomationsResponse = ({
         id?: string;
         name?: string;
         platform?: 'instagram' | 'facebook';
+        trigger?: 'comment' | 'story_reply';
         accountId?: string;
         platformPostId?: string;
         postTitle?: string;
@@ -16082,7 +16083,11 @@ export type CreateCommentAutomationData = {
          */
         accountId: string;
         /**
-         * Platform media/post ID. Omit for an account-wide (any-post) automation.
+         * What fires the automation. 'comment' (keyword comment on a post) or 'story_reply' (keyword reply to an Instagram story). For 'story_reply', platformPostId is the story media id (omit for any story).
+         */
+        trigger?: 'comment' | 'story_reply';
+        /**
+         * Platform media/post ID (or story media id when trigger=story_reply). Omit for an account-wide (any-post / any-story) automation.
          */
         platformPostId?: string;
         /**
@@ -16131,6 +16136,7 @@ export type CreateCommentAutomationResponse = ({
         id?: string;
         name?: string;
         platform?: string;
+        trigger?: 'comment' | 'story_reply';
         platformPostId?: string;
         keywords?: Array<(string)>;
         matchMode?: 'exact' | 'contains';
@@ -16168,6 +16174,7 @@ export type GetCommentAutomationResponse = ({
         id?: string;
         name?: string;
         platform?: string;
+        trigger?: 'comment' | 'story_reply';
         accountId?: string;
         platformPostId?: string;
         postId?: string;
@@ -16952,6 +16959,7 @@ export type GetAdAnalyticsResponse = ({
         id?: string;
         name?: string;
         platform?: string;
+        trigger?: 'comment' | 'story_reply';
         status?: string;
         /**
          * ISO 4217 code of the ad account that owns this ad (e.g. USD, THB, INR). All money values in `summary` and `daily` are in this currency. Null only on legacy ads synced before currency was persisted.
