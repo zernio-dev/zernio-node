@@ -3879,15 +3879,26 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
 /**
  * Create comment-to-DM automation
  * Create a keyword-triggered DM automation on an Instagram or Facebook account.
- * When someone comments a matching keyword, they automatically receive a DM.
+ * When someone comments a matching keyword (or, with `trigger: story_reply`, replies
+ * to your Instagram story with one), they automatically receive a DM.
  *
- * Two modes:
- * * **Per-post** — set `platformPostId` to scope the automation to one specific post.
- * Only one active per-post automation is allowed per post.
- * * **Account-wide ("any post")** — omit `platformPostId` (and `postId`). The automation
+ * Triggers (`trigger`):
+ * * `comment` (default): fires on keyword comments on a post or reel.
+ * * `story_reply`: fires when someone replies to your Instagram story with a keyword,
+ * and answers them with a DM. Set `platformPostId` to a story media id to scope to
+ * one story, or omit it to match replies to any story.
+ *
+ * Targeting (comment trigger):
+ * * Per-post: set `platformPostId` to scope to one specific post (only one active
+ * per-post automation is allowed per post).
+ * * Account-wide ("any post"): omit `platformPostId` (and `postId`). The automation
  * evaluates every comment on every post on the account. You can stack unlimited
  * account-wide automations, each with its own keyword set, and they all run
  * independently. Per-post automations take priority on their post.
+ *
+ * Links in the DM's buttons can be click-tracked (`linkTracking`, on by default) and
+ * clickers optionally tagged (`clickTag`) for segmentation. Stats returned include
+ * delivered, read, and link clicks.
  *
  */
 export const createCommentAutomation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCommentAutomationData, ThrowOnError>) => {
