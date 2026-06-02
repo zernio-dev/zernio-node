@@ -16057,6 +16057,14 @@ export type ListCommentAutomationsResponse = ({
              * Distinct people who clicked a tracked link.
              */
             uniqueClicks?: number;
+            /**
+             * DMs confirmed delivered (Messenger; IG emits no delivery receipt).
+             */
+            delivered?: number;
+            /**
+             * DMs confirmed read (IG messaging_seen / Messenger message_reads).
+             */
+            read?: number;
         };
         createdAt?: string;
     }>;
