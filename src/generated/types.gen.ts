@@ -2498,13 +2498,13 @@ export type RecyclingConfig = {
      */
     startDate?: string;
     /**
-     * Stop recycling after this many copies have been created
+     * Stop recycling after this many copies have been created. Send null on update to clear this limit.
      */
-    expireCount?: number;
+    expireCount?: (number) | null;
     /**
-     * Stop recycling after this date, regardless of count
+     * Stop recycling after this date, regardless of count. Send null on update to clear this limit.
      */
-    expireDate?: string;
+    expireDate?: (string) | null;
     /**
      * Array of content variations for recycled copies. On each recycle, the next
      * variation is used in round-robin order. Recommended for Twitter and Pinterest
@@ -6594,8 +6594,8 @@ export type CreatePostData = {
          * Target platforms and accounts for this post. Required for non-draft posts (returns 400 if empty). Drafts can omit platforms.
          */
         platforms?: Array<{
-            platform?: string;
-            accountId?: string;
+            platform: string;
+            accountId: string;
             /**
              * Platform-specific text override. When set, this content is used instead of the top-level post content for this platform. Useful for tailoring captions per platform (e.g. keeping tweets under 280 characters).
              */
@@ -6692,8 +6692,48 @@ export type GetPostError = ({
 
 export type UpdatePostData = {
     body: {
+        title?: string;
         content?: string;
+        mediaItems?: Array<MediaItem>;
+        /**
+         * Target platforms and accounts for this post. Each item must include platform and accountId.
+         */
+        platforms?: Array<{
+            platform: string;
+            accountId: string;
+            /**
+             * Platform-specific text override.
+             */
+            customContent?: string;
+            customMedia?: Array<MediaItem>;
+            /**
+             * Optional per-platform scheduled time override.
+             */
+            scheduledFor?: string;
+            platformSpecificData?: {
+                [key: string]: unknown;
+            };
+        }>;
         scheduledFor?: string;
+        publishNow?: boolean;
+        isDraft?: boolean;
+        timezone?: string;
+        visibility?: 'public' | 'private' | 'unlisted';
+        tags?: Array<(string)>;
+        hashtags?: Array<(string)>;
+        mentions?: Array<(string)>;
+        crosspostingEnabled?: boolean;
+        metadata?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Profile ID to schedule via queue.
+         */
+        queuedFromProfile?: string;
+        /**
+         * Specific queue ID to use when scheduling via queue.
+         */
+        queueId?: string;
         /**
          * Root-level TikTok settings applied to all TikTok platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
          */
@@ -6703,7 +6743,7 @@ export type UpdatePostData = {
          */
         facebookSettings?: FacebookPlatformData;
         recycling?: RecyclingConfig;
-        [key: string]: unknown | string | TikTokPlatformData | FacebookPlatformData | RecyclingConfig;
+        [key: string]: unknown | string | MediaItem | boolean | TikTokPlatformData | FacebookPlatformData | RecyclingConfig;
     };
     path: {
         postId: string;
