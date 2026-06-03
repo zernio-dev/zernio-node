@@ -7893,6 +7893,11 @@ export type SelectFacebookPageError = (unknown | {
 export type ListGoogleBusinessLocationsData = {
     query?: {
         /**
+         * Raw Google Business Information API filter expression (advanced; takes precedence over search). Supports fields such as title, storeCode, storefront_address.postal_code, labels and categories, e.g. storeCode="LH279411". See Google's "Work with location data" guide.
+         *
+         */
+        filter?: string;
+        /**
          * Token from the OAuth callback redirect. Preferred over tempToken because it preserves server-side token storage. One of pendingDataToken or tempToken is required.
          */
         pendingDataToken?: string;
@@ -7900,6 +7905,11 @@ export type ListGoogleBusinessLocationsData = {
          * Profile ID from your connection flow. Required for auth validation when provided.
          */
         profileId?: string;
+        /**
+         * Free-text search on the business name, applied server-side by Google. Use this for accounts that own many locations (the response is bounded, see hasMore) so the user can find a specific location without loading the full list.
+         *
+         */
+        search?: string;
         /**
          * Legacy. Direct Google access token. Use pendingDataToken instead when available.
          */
@@ -7933,7 +7943,16 @@ export type ListGoogleBusinessLocationsResponse = ({
          * Business category
          */
         category?: string;
+        /**
+         * Store code set on the location in Google Business Profile (if any)
+         */
+        storeCode?: string;
     }>;
+    /**
+     * True when more locations exist than were returned (the list is bounded). Prompt the user to narrow the result set with search.
+     *
+     */
+    hasMore?: boolean;
 });
 
 export type ListGoogleBusinessLocationsError = (unknown | {
@@ -7950,6 +7969,11 @@ export type SelectGoogleBusinessLocationData = {
          * The Google Business location ID selected by the user
          */
         locationId: string;
+        /**
+         * Optional but recommended. The Google Business Account resource name ("accounts/123") that owns the selected location (returned per-location by GET /v1/connect/googlebusiness/locations). When provided, the location is resolved directly instead of by enumerating the account, which is required for accounts that own many locations. Omit only for small accounts.
+         *
+         */
+        accountId?: string;
         /**
          * Token from the OAuth callback redirect (pendingDataToken query param). Tokens and profile data are retrieved server-side from this token.
          */
@@ -10315,6 +10339,16 @@ export type GetGmbLocationsData = {
     path: {
         accountId: string;
     };
+    query?: {
+        /**
+         * Raw Google Business Information API filter expression (advanced; takes precedence over search), e.g. storeCode="LH279411".
+         */
+        filter?: string;
+        /**
+         * Free-text search on the business name, applied server-side by Google. Use for accounts with many locations.
+         */
+        search?: string;
+    };
 };
 
 export type GetGmbLocationsResponse = ({
@@ -10326,7 +10360,12 @@ export type GetGmbLocationsResponse = ({
         address?: string;
         category?: string;
         websiteUrl?: string;
+        storeCode?: string;
     }>;
+    /**
+     * True when more locations exist than were returned (use search to narrow down).
+     */
+    hasMore?: boolean;
     selectedLocationId?: string;
     cached?: boolean;
 });
@@ -10338,6 +10377,11 @@ export type GetGmbLocationsError = ({
 export type UpdateGmbLocationData = {
     body: {
         selectedLocationId: string;
+        /**
+         * Optional but recommended. The Google Business Account resource name ("accounts/123") that owns the new location (from GET gmb-locations). When provided, the location is resolved directly instead of by enumerating the account, which is required for accounts with many locations.
+         *
+         */
+        accountId?: string;
     };
     path: {
         accountId: string;

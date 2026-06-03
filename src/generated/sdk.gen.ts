@@ -1672,7 +1672,8 @@ export const updateYoutubeDefaultPlaylist = <ThrowOnError extends boolean = fals
 
 /**
  * List GBP locations
- * Returns all Google Business Profile locations the connected account has access to, including the currently selected location.
+ * Returns Google Business Profile locations the connected account can access, plus the currently selected location. The list is bounded (see hasMore); for accounts that own many locations, use the search or filter query params to find a specific one instead of loading them all.
+ *
  */
 export const getGmbLocations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetGmbLocationsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetGmbLocationsResponse, GetGmbLocationsError, ThrowOnError>({
