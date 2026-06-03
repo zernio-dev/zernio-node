@@ -19089,9 +19089,13 @@ export type SearchAdTargetingError = (unknown | {
 export type EstimateAdReachData = {
     body: {
         /**
-         * Social account ID on the target ad platform.
+         * Zernio social account ID on the target ad platform (the estimate runs against its platform).
          */
         accountId: string;
+        /**
+         * Required. The platform ad-account ID the reach call runs against (Meta act_..., LinkedIn numeric sponsoredAccount ID, Pinterest ad-account ID, X account ID) - every backing reach API is scoped to one ad account. Get it from GET /v1/ads/accounts.
+         */
+        adAccountId: string;
         /**
          * The targeting spec to estimate. Same shape used by POST /v1/ads/create.
          */
