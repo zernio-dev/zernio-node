@@ -386,10 +386,13 @@ try {
 | `ads.getAd()` | Get ad details |
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
+| `ads.getAdTrackingTags()` | Read an ad's click-URL tracking tags |
 | `ads.getConversionDestination()` | Fetch a single conversion destination |
 | `ads.getConversionMetrics()` | Fetch attribution metrics for a conversion destination |
+| `ads.getConversionsQuality()` | Read Event Match Quality + coverage for a Meta pixel |
 | `ads.getLeadForm()` | Get a single Lead Gen form |
 | `ads.updateAd()` | Update ad |
+| `ads.updateAdTrackingTags()` | Set/update an ad's click-URL tracking tags |
 | `ads.updateConversionDestination()` | Update a conversion destination |
 | `ads.deleteAd()` | Cancel an ad |
 | `ads.deleteConversionDestination()` | Soft-delete a conversion destination |

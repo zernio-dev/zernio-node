@@ -996,6 +996,26 @@ export type ConversionEvent = {
          */
         country?: string;
         /**
+         * Meta advanced matching (ct). Plaintext city; normalized + SHA-256 hashed server-side. Meta only.
+         */
+        city?: string;
+        /**
+         * Meta advanced matching (st). 2-letter ANSI for US; hashed server-side. Meta only.
+         */
+        state?: string;
+        /**
+         * Meta advanced matching (zp). US uses first 5 digits; hashed server-side. Meta only.
+         */
+        zip?: string;
+        /**
+         * Meta advanced matching (db). YYYYMMDD; hashed server-side. Meta only.
+         */
+        dob?: string;
+        /**
+         * Meta advanced matching (ge). 'f' or 'm'; hashed server-side. Meta only.
+         */
+        gender?: string;
+        /**
          * Platform click identifiers captured from the originating ad click.
          */
         clickIds?: {
@@ -17788,6 +17808,106 @@ export type GetAdAnalyticsError = ({
     error?: string;
 } | unknown);
 
+export type GetAdTrackingTagsData = {
+    path: {
+        /**
+         * Ad id (hex _id, platformAdId, or effective story/media id).
+         */
+        adId: string;
+    };
+};
+
+export type GetAdTrackingTagsResponse = ({
+    platform?: string;
+    level?: 'creative' | 'campaign';
+    /**
+     * Meta: &-joined click-URL params.
+     */
+    urlTags?: (string) | null;
+    /**
+     * Meta: third-party click-tracking template (Dynamic Ads).
+     */
+    templateUrlSpec?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Google.
+     */
+    trackingUrlTemplate?: (string) | null;
+    /**
+     * Google.
+     */
+    finalUrlSuffix?: (string) | null;
+    /**
+     * LinkedIn.
+     */
+    dynamicValueParameters?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * LinkedIn.
+     */
+    customValueParameters?: {
+        [key: string]: unknown;
+    } | null;
+});
+
+export type GetAdTrackingTagsError = ({
+    error?: string;
+} | unknown);
+
+export type UpdateAdTrackingTagsData = {
+    body: {
+        /**
+         * Meta only. Click-URL params appended to a freshly-rebuilt creative.
+         */
+        urlTags?: Array<{
+            key: string;
+            value: string;
+        }>;
+        /**
+         * Meta only. Required to rebuild the immutable creative when setting urlTags.
+         */
+        creative?: {
+            headline: string;
+            body: string;
+            callToAction: string;
+            linkUrl: string;
+            imageUrl: string;
+            videoUrl?: string;
+        };
+        /**
+         * Google only. Full tracking template (must contain {lpurl}).
+         */
+        trackingUrlTemplate?: string;
+        /**
+         * Google only. Parse-only key=value params.
+         */
+        finalUrlSuffix?: string;
+        /**
+         * LinkedIn only. key -> dynamic value enum (CAMPAIGN_ID, CAMPAIGN_NAME, CREATIVE_ID, ...).
+         */
+        dynamicValueParameters?: {
+            [key: string]: (string);
+        };
+        /**
+         * LinkedIn only. key -> static value.
+         */
+        customValueParameters?: {
+            [key: string]: (string);
+        };
+    };
+    path: {
+        adId: string;
+    };
+};
+
+export type UpdateAdTrackingTagsResponse = (unknown);
+
+export type UpdateAdTrackingTagsError = ({
+    error?: string;
+} | unknown);
+
 export type GetAdCommentsData = {
     path: {
         /**
@@ -19179,6 +19299,42 @@ export type AddUsersToAdAudienceResponse = ({
 export type AddUsersToAdAudienceError = (unknown | {
     error?: string;
 });
+
+export type GetConversionsQualityData = {
+    query: {
+        /**
+         * SocialAccount _id (must be a metaads account).
+         */
+        accountId: string;
+        /**
+         * Meta pixel/dataset ID.
+         */
+        destinationId: string;
+    };
+};
+
+export type GetConversionsQualityResponse = ({
+    platform?: string;
+    rows?: Array<{
+        eventName?: string;
+        /**
+         * Composite EMQ score, 0-10.
+         */
+        compositeScore?: number;
+        matchKeys?: Array<{
+            identifier?: string;
+            coveragePercentage?: number;
+        }>;
+        /**
+         * Pixel↔CAPI coverage rate for this event.
+         */
+        eventCoveragePercentage?: number;
+    }>;
+});
+
+export type GetConversionsQualityError = ({
+    error?: string;
+} | unknown);
 
 export type SendConversionsData = {
     body: {
