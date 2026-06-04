@@ -14212,7 +14212,13 @@ export type GetWhatsAppPhoneNumbersData = {
          */
         profileId?: string;
         /**
-         * Filter by status (by default excludes released numbers)
+         * Filter by status (by default excludes released numbers). NOTE:
+         * `status=pending_regulatory` returns the "provisioning" view — numbers
+         * still in review PLUS recently-declined (last 30 days) ones, so a
+         * failed registration surfaces (with `regulatoryDeclineReason`) instead
+         * of silently disappearing. Declined numbers can be re-submitted via
+         * POST /v1/whatsapp/phone-numbers/{id}/remediate.
+         *
          */
         status?: 'provisioning' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'active' | 'suspended' | 'releasing' | 'released';
     };
@@ -14224,6 +14230,14 @@ export type GetWhatsAppPhoneNumbersResponse = ({
         phoneNumber?: string;
         country?: string;
         status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
+        /**
+         * For regulated numbers
+         */
+        registrantName?: (string) | null;
+        /**
+         * Present once the number order has been placed (i.e. the requirement group was approved). Absent while still in identity review.
+         */
+        telnyxOrderId?: (string) | null;
         /**
          * Per-country monthly price in cents ($2..$25).
          */
@@ -14358,6 +14372,33 @@ export type SearchAvailableWhatsAppNumbersError = (unknown | {
     error?: string;
 });
 
+export type CheckWhatsAppNumberAvailabilityData = {
+    query: {
+        /**
+         * ISO-2 country code.
+         */
+        country: string;
+    };
+};
+
+export type CheckWhatsAppNumberAvailabilityResponse = ({
+    country?: string;
+    numberType?: string;
+    /**
+     * Whether deliverable voice inventory exists right now.
+     */
+    available?: boolean;
+    addressConstraint?: 'geo' | 'country' | 'none';
+    /**
+     * For `geo` only — the area(s) the registered address must be in.
+     */
+    areas?: Array<(string)>;
+});
+
+export type CheckWhatsAppNumberAvailabilityError = (unknown | {
+    error?: string;
+});
+
 export type GetWhatsAppNumberKycFormData = {
     query: {
         country: string;
@@ -14486,6 +14527,68 @@ export type UploadWhatsAppNumberKycDocumentResponse = ({
 });
 
 export type UploadWhatsAppNumberKycDocumentError = (unknown | {
+    error?: string;
+});
+
+export type GetWhatsAppNumberRemediationData = {
+    path: {
+        /**
+         * WhatsAppPhoneNumber id.
+         */
+        id: string;
+    };
+};
+
+export type GetWhatsAppNumberRemediationResponse = ({
+    country?: string;
+    numberType?: string;
+    declineReason?: (string) | null;
+    /**
+     * Same field shape as GET /v1/whatsapp/phone-numbers/kyc.
+     */
+    fields?: Array<{
+        [key: string]: unknown;
+    }>;
+});
+
+export type GetWhatsAppNumberRemediationError = (unknown | {
+    error?: string;
+});
+
+export type RemediateWhatsAppNumberData = {
+    body: {
+        values?: {
+            [key: string]: (string);
+        };
+        documents?: Array<({
+    requirementId: string;
+    filename: string;
+    base64: string;
+} | {
+    requirementId: string;
+    documentId: string;
+})>;
+        /**
+         * Same shape as the KYC submit address.
+         */
+        address?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type RemediateWhatsAppNumberResponse = ({
+    status?: string;
+    phoneNumber?: {
+        id?: string;
+        status?: string;
+    };
+});
+
+export type RemediateWhatsAppNumberError = (unknown | {
     error?: string;
 });
 

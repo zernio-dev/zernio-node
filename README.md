@@ -669,10 +669,13 @@ try {
 | `whatsappPhoneNumbers.listWhatsAppNumberCountries()` | List offerable number countries |
 | `whatsappPhoneNumbers.getWhatsAppNumberInfo()` | Get number status |
 | `whatsappPhoneNumbers.getWhatsAppNumberKycForm()` | Get regulated-number KYC form spec |
+| `whatsappPhoneNumbers.getWhatsAppNumberRemediation()` | Get the declined requirements to fix |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumber()` | Get phone number |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumbers()` | List phone numbers |
+| `whatsappPhoneNumbers.checkWhatsAppNumberAvailability()` | Check a country's availability + address constraint |
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |
 | `whatsappPhoneNumbers.releaseWhatsAppPhoneNumber()` | Release phone number |
+| `whatsappPhoneNumbers.remediateWhatsAppNumber()` | Fix a declined number and re-submit |
 | `whatsappPhoneNumbers.searchAvailableWhatsAppNumbers()` | Search available numbers to purchase |
 | `whatsappPhoneNumbers.submitWhatsAppNumberKyc()` | Submit regulated-number KYC |
 | `whatsappPhoneNumbers.uploadWhatsAppNumberKycDocument()` | Upload a single regulated-number KYC document |
