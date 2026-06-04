@@ -357,6 +357,7 @@ import {
   updateYoutubeDefaultPlaylist,
   uploadMediaDirect,
   uploadWhatsAppFlowJson,
+  uploadWhatsAppNumberKycDocument,
   uploadWhatsAppProfilePhoto,
   validateMedia,
   validatePost,
@@ -875,6 +876,7 @@ export class Zernio {
     searchAvailableWhatsAppNumbers: searchAvailableWhatsAppNumbers,
     getWhatsAppNumberKycForm: getWhatsAppNumberKycForm,
     submitWhatsAppNumberKyc: submitWhatsAppNumberKyc,
+    uploadWhatsAppNumberKycDocument: uploadWhatsAppNumberKycDocument,
     getWhatsAppPhoneNumber: getWhatsAppPhoneNumber,
     releaseWhatsAppPhoneNumber: releaseWhatsAppPhoneNumber,
   };

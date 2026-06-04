@@ -14406,6 +14406,10 @@ export type SubmitWhatsAppNumberKycData = {
         profileId: string;
         country: string;
         /**
+         * Idempotency token for this submission attempt. A retry/double-submit with the same token returns the same number; omit and each call creates a new number.
+         */
+        submissionId?: string;
+        /**
          * Reuse a prior approved verification for this country (skips document/field collection; places the order immediately).
          */
         reuse?: boolean;
@@ -14423,11 +14427,20 @@ export type SubmitWhatsAppNumberKycData = {
         values?: {
             [key: string]: (string);
         };
-        documents?: Array<{
-            requirementId?: string;
-            filename?: string;
-            base64?: string;
-        }>;
+        /**
+         * One per document requirement. Each is EITHER inline base64 OR a `documentId` returned by POST /v1/whatsapp/phone-numbers/kyc/upload-document (use the upload endpoint for large files to stay under the request-size limit).
+         */
+        documents?: Array<({
+    requirementId: string;
+    filename: string;
+    base64: string;
+} | {
+    requirementId: string;
+    /**
+     * Id from POST /v1/whatsapp/phone-numbers/kyc/upload-document.
+     */
+    documentId: string;
+})>;
         address?: {
             requirementId?: string;
             country_code?: string;
@@ -14452,6 +14465,27 @@ export type SubmitWhatsAppNumberKycResponse = ({
 });
 
 export type SubmitWhatsAppNumberKycError = (unknown | {
+    error?: string;
+});
+
+export type UploadWhatsAppNumberKycDocumentData = {
+    body: (Blob | File);
+    headers: {
+        /**
+         * URL-encoded original filename.
+         */
+        'X-Filename': string;
+    };
+};
+
+export type UploadWhatsAppNumberKycDocumentResponse = ({
+    /**
+     * Reference this id in the KYC submit's documents[].documentId.
+     */
+    documentId?: string;
+});
+
+export type UploadWhatsAppNumberKycDocumentError = (unknown | {
     error?: string;
 });
 

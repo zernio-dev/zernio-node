@@ -675,6 +675,7 @@ try {
 | `whatsappPhoneNumbers.releaseWhatsAppPhoneNumber()` | Release phone number |
 | `whatsappPhoneNumbers.searchAvailableWhatsAppNumbers()` | Search available numbers to purchase |
 | `whatsappPhoneNumbers.submitWhatsAppNumberKyc()` | Submit regulated-number KYC |
+| `whatsappPhoneNumbers.uploadWhatsAppNumberKycDocument()` | Upload a single regulated-number KYC document |
 
 ### WhatsApp Sandbox
 | Method | Description |
