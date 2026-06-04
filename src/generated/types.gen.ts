@@ -10387,10 +10387,10 @@ export type UpdateGmbLocationData = {
     body: {
         selectedLocationId: string;
         /**
-         * Optional but recommended. The Google Business Account resource name ("accounts/123") that owns the new location (from GET gmb-locations). When provided, the location is resolved directly instead of by enumerating the account, which is required for accounts with many locations.
+         * Optional but recommended. The Google Business Account resource name ("accounts/123") that owns the new location (from GET gmb-locations). When provided, the location is resolved directly instead of by enumerating the account, which is required for accounts with many locations. Named `googleAccountId` to disambiguate from the path `accountId` (the Zernio account). The legacy field name `accountId` is still accepted for backwards compatibility.
          *
          */
-        accountId?: string;
+        googleAccountId?: string;
     };
     path: {
         accountId: string;
