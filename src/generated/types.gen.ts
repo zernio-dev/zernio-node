@@ -18530,6 +18530,20 @@ export type CreateStandaloneAdData = {
          */
         savedTargetingId?: string;
         /**
+         * Meta only. A raw Meta-native targeting spec passed to the ad set VERBATIM (snake_case:
+         * `geo_locations`, `age_min`, `excluded_custom_audiences`, `flexible_spec`, `targeting_automation`,
+         * business places, etc.) — exactly the shape `GET /v1/ads/{adId}` returns for external ads. Use it to
+         * clone a campaign's targeting EXACTLY, preserving advanced fields the camelCase targeting fields can't
+         * model. Mutually exclusive with the camelCase targeting fields (countries/regions/cities/interests/
+         * ageMin/...), `audienceId`, and `savedTargetingId` (sending both → 422). Sent as-is; Meta validates and
+         * surfaces any errors. If cloning an EU campaign, also pass `dsaBeneficiary` / `dsaPayor` (those are
+         * separate fields, not part of targeting).
+         *
+         */
+        rawTargeting?: {
+            [key: string]: unknown;
+        };
+        /**
          * Meta only. Declares the ad's special category, required for housing, employment, credit, or
          * political/social-issue ads (Meta enforces restricted targeting for these). Note: setting a special
          * category disables income/zip targeting on Meta.
