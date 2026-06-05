@@ -397,6 +397,7 @@ try {
 | `ads.deleteAd()` | Cancel an ad |
 | `ads.deleteConversionDestination()` | Soft-delete a conversion destination |
 | `ads.addConversionAssociations()` | Associate campaigns with a conversion destination |
+| `ads.adjustConversions()` | Adjust already-uploaded conversions (Google only) |
 | `ads.archiveLeadForm()` | Archive a Lead Gen form |
 | `ads.boostPost()` | Boost post as ad |
 | `ads.estimateAdReach()` | Estimate audience reach |

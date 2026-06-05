@@ -90,9 +90,9 @@ export type Ad = {
     status?: AdStatus;
     adType?: 'boost' | 'standalone';
     /**
-     * Available goals vary by platform. Meta (Facebook/Instagram) and TikTok support all 7. LinkedIn supports all except app_promotion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
+     * Available goals vary by platform. Meta (Facebook/Instagram) supports all 8 (incl. `lead_conversion` = website pixel lead optimization). TikTok supports the 7 non-`lead_conversion` goals. LinkedIn supports all except app_promotion / lead_conversion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
      */
-    goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'conversions' | 'app_promotion';
+    goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion';
     /**
      * True for ads synced from platform ad managers
      */
@@ -286,9 +286,9 @@ export type platform = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinte
 export type adType = 'boost' | 'standalone';
 
 /**
- * Available goals vary by platform. Meta (Facebook/Instagram) and TikTok support all 7. LinkedIn supports all except app_promotion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
+ * Available goals vary by platform. Meta (Facebook/Instagram) supports all 8 (incl. `lead_conversion` = website pixel lead optimization). TikTok supports the 7 non-`lead_conversion` goals. LinkedIn supports all except app_promotion / lead_conversion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
  */
-export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'conversions' | 'app_promotion';
+export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion';
 
 export type type = 'daily' | 'lifetime';
 
@@ -18860,9 +18860,9 @@ export type CreateStandaloneAdData = {
             }>;
         };
         /**
-         * Required on legacy + multi-creative shapes. Inherited from the ad set on the attach shape. Available goals vary by platform. Meta-specific: `conversions` requires `promotedObject.pixelId` + `promotedObject.customEventType`; `app_promotion` requires `promotedObject.applicationId` + `promotedObject.objectStoreUrl`; `lead_generation` accepts an optional `promotedObject.pageId` (auto-filled from the connected Page when omitted). TikTok-specific: `conversions` (website-conversion ad group) requires `promotedObject.pixelId` (your TikTok Pixel ID) and accepts an optional `promotedObject.customEventType` (a TikTok `optimization_event` code like `ON_WEB_ORDER`, `INITIATE_ORDER`, `ON_WEB_REGISTER`, `FORM`); to inherit a pixel + event from an existing ad group, pass `adSetId` instead. LinkedIn-specific: `engagement`, `traffic`, `awareness`, and `video_views` are supported for standalone ads (creates a Direct Sponsored Content single image or single video ad). `traffic` requires `linkUrl`; `video_views` requires the `video` field. For `lead_generation` / `conversions` on LinkedIn — or to promote an existing post — use `POST /v1/ads/boost`.
+         * Required on legacy + multi-creative shapes. Inherited from the ad set on the attach shape. Available goals vary by platform. Meta-specific: `conversions` (OUTCOME_SALES) requires `promotedObject.pixelId` + `promotedObject.customEventType` (use a commerce event, e.g. PURCHASE, START_TRIAL); `lead_conversion` (OUTCOME_LEADS, website pixel leads) requires the same pixel + event but with a leads-class event (e.g. LEAD, SUBMIT_APPLICATION, SCHEDULE, CONTACT) — these are rejected under `conversions` because Meta gates conversion events by objective; `lead_generation` is OUTCOME_LEADS with instant forms (`leadGenFormId`), distinct from `lead_conversion`'s website pixel optimization; `app_promotion` requires `promotedObject.applicationId` + `promotedObject.objectStoreUrl`; `lead_generation` accepts an optional `promotedObject.pageId` (auto-filled from the connected Page when omitted). TikTok-specific: `conversions` (website-conversion ad group) requires `promotedObject.pixelId` (your TikTok Pixel ID) and accepts an optional `promotedObject.customEventType` (a TikTok `optimization_event` code like `ON_WEB_ORDER`, `INITIATE_ORDER`, `ON_WEB_REGISTER`, `FORM`); to inherit a pixel + event from an existing ad group, pass `adSetId` instead. LinkedIn-specific: `engagement`, `traffic`, `awareness`, and `video_views` are supported for standalone ads (creates a Direct Sponsored Content single image or single video ad). `traffic` requires `linkUrl`; `video_views` requires the `video` field. For `lead_generation` / `conversions` on LinkedIn — or to promote an existing post — use `POST /v1/ads/boost`.
          */
-        goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'conversions' | 'app_promotion';
+        goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion';
         /**
          * Required on legacy + multi-creative shapes. Inherited on attach.
          */
@@ -20113,6 +20113,82 @@ export type SendConversionsResponse = ({
 });
 
 export type SendConversionsError = (unknown | {
+    error?: string;
+});
+
+export type AdjustConversionsData = {
+    body: {
+        /**
+         * SocialAccount ID. Must be a `googleads` account.
+         */
+        accountId: string;
+        /**
+         * Conversion action resource name, e.g. `customers/1234567890/conversionActions/987654321`.
+         */
+        destinationId: string;
+        adjustments: Array<{
+            adjustmentType: 'RETRACTION' | 'RESTATEMENT' | 'ENHANCEMENT';
+            /**
+             * When the adjustment occurred, unix seconds.
+             */
+            adjustmentTime: number;
+            /**
+             * Transaction ID of the original conversion (the `eventId` you sent). Recommended; required for ENHANCEMENT.
+             */
+            orderId?: string;
+            /**
+             * Alternative key — the original click ID. Pair with `conversionTime`. Not valid for ENHANCEMENT.
+             */
+            gclid?: string;
+            /**
+             * The original conversion's time, unix seconds. Required when identifying by `gclid`.
+             */
+            conversionTime?: number;
+            /**
+             * RESTATEMENT only — the corrected TOTAL conversion value.
+             */
+            restatementValue?: number;
+            /**
+             * RESTATEMENT only — ISO 4217 currency for `restatementValue`.
+             */
+            currency?: string;
+            /**
+             * ENHANCEMENT only — first-party identifiers (hashed server-side). At least one of email/phone required.
+             */
+            user?: {
+                email?: string;
+                phone?: string;
+            };
+            /**
+             * ENHANCEMENT only — the original conversion's user agent (improves match quality).
+             */
+            userAgent?: string;
+        }>;
+    };
+};
+
+export type AdjustConversionsResponse = ({
+    platform?: 'googleads';
+    /**
+     * Adjustments accepted by Google.
+     */
+    adjustmentsReceived?: number;
+    /**
+     * Adjustments rejected (see failures).
+     */
+    adjustmentsFailed?: number;
+    failures?: Array<{
+        /**
+         * Index into the submitted adjustments array.
+         */
+        adjustmentIndex?: number;
+        message?: string;
+        code?: (string | number);
+    }>;
+    traceId?: string;
+});
+
+export type AdjustConversionsError = (unknown | {
     error?: string;
 });
 
