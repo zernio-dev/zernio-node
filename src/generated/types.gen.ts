@@ -9495,12 +9495,16 @@ export type BatchGetGoogleBusinessReviewsResponse = ({
     success?: boolean;
     accountId?: string;
     locationReviews?: Array<{
-        locationName?: string;
-        reviews?: Array<{
+        /**
+         * Full review resource name (accounts*locations*reviews*)
+         */
+        name?: string;
+        /**
+         * The review object (reviewId
+         */
+        review?: {
             [key: string]: unknown;
-        }>;
-        averageRating?: number;
-        totalReviewCount?: number;
+        };
     }>;
     nextPageToken?: string;
 });

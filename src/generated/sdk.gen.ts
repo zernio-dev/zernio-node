@@ -1382,7 +1382,9 @@ export const updateGoogleBusinessServices = <ThrowOnError extends boolean = fals
  * Batch get reviews
  * Fetches reviews across multiple locations in a single request.
  * More efficient than calling GET /gmb-reviews per location for multi-location businesses.
- * Reviews are grouped by location in the response.
+ * Returns a flat list of individual reviews, each tagged with its review resource name.
+ * Note: this endpoint does not return aggregate metrics (averageRating / totalReviewCount).
+ * For those, use the single-location GET /gmb-reviews endpoint.
  *
  */
 export const batchGetGoogleBusinessReviews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BatchGetGoogleBusinessReviewsData, ThrowOnError>) => {
