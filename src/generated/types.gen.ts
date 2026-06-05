@@ -1385,6 +1385,18 @@ export type ErrorResponse = {
 };
 
 /**
+ * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published (url required) and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
+ *
+ */
+export type ExternalPostMediaItem = {
+    type: 'image' | 'video';
+    url: string;
+    thumbnail?: string;
+};
+
+export type type3 = 'image' | 'video';
+
+/**
  * Native (external) post data shared by all post.external.* payloads.
  */
 export type ExternalPostWebhookPost = {
@@ -1412,11 +1424,7 @@ export type ExternalPostWebhookPost = {
      * One of image, video, gif, document, text, carousel.
      */
     mediaType: string;
-    mediaItems: Array<{
-        type: 'image' | 'video';
-        url: string;
-        thumbnail?: string;
-    }>;
+    mediaItems: Array<ExternalPostMediaItem>;
     thumbnailUrl: (string) | null;
     publishedAt: string;
     /**
@@ -1690,7 +1698,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type3 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type4 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * Type of offer
@@ -2195,7 +2203,7 @@ export type MediaItem = {
     tiktokProcessed?: boolean;
 };
 
-export type type4 = 'image' | 'video' | 'gif' | 'document';
+export type type5 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
@@ -3304,7 +3312,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type5 = 'image' | 'video' | 'document';
+export type type6 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -5094,7 +5102,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type6 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'flow' | 'mpm' | 'catalog';
+export type type7 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -5252,7 +5260,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type7 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type8 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
