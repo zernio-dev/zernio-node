@@ -1385,6 +1385,56 @@ export type ErrorResponse = {
 };
 
 /**
+ * Native (external) post data shared by all post.external.* payloads.
+ */
+export type ExternalPostWebhookPost = {
+    /**
+     * Platform-native post ID (NOT a Zernio post ID).
+     */
+    id: string;
+    /**
+     * Platform the post lives on (e.g. "googlebusiness").
+     */
+    platform: string;
+    /**
+     * Zernio social account ID the post belongs to.
+     */
+    accountId: string;
+    /**
+     * Direct URL to the post on the platform, when available.
+     */
+    url: (string) | null;
+    /**
+     * Post text. May be empty.
+     */
+    content: string;
+    /**
+     * One of image, video, gif, document, text, carousel.
+     */
+    mediaType: string;
+    mediaItems: Array<{
+        type: 'image' | 'video';
+        url: string;
+        thumbnail?: string;
+    }>;
+    thumbnailUrl: (string) | null;
+    publishedAt: string;
+    /**
+     * Always "external" — distinguishes these from Zernio-originated post.* events.
+     */
+    source: 'external';
+    /**
+     * Detection time of deletion. Present on post.external.deleted; null/absent otherwise.
+     */
+    deletedAt?: (string) | null;
+};
+
+/**
+ * Always "external" — distinguishes these from Zernio-originated post.* events.
+ */
+export type source = 'external';
+
+/**
  * Feed posts support up to 10 images (no mixed video+image). Stories require single media (24h, no captions). Reels require single vertical video (9:16, 3-60s). Carousel posts (carouselCards) render a 2-5 card multi-link post, images only, mutually exclusive with story/reel. Geo-restriction is a hard visibility restriction: users outside the specified countries cannot see the post. Not supported for stories.
  *
  */
@@ -3454,7 +3504,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -4097,6 +4147,31 @@ export type event10 = 'conversation.started';
 export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky';
 
 /**
+ * Webhook payload for post.external.created / post.external.updated /
+ * post.external.deleted. Fired by Zernio's background sync when it detects a
+ * natively-authored post (e.g. a Google Business Profile localPost created in
+ * the Google UI), NOT a post published through Zernio. Poll-driven (~hourly),
+ * not real-time. On post.external.deleted, post.deletedAt is populated.
+ *
+ */
+export type WebhookPayloadExternalPost = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+    post: ExternalPostWebhookPost;
+    account: {
+        id: string;
+        platform: string;
+        username: string;
+    };
+    timestamp: string;
+};
+
+export type event11 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+
+/**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
  */
 export type WebhookPayloadLead = {
@@ -4154,7 +4229,7 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event11 = 'lead.received';
+export type event12 = 'lead.received';
 
 export type platform9 = 'facebook';
 
@@ -4430,7 +4505,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event12 = 'message.received';
+export type event13 = 'message.received';
 
 /**
  * WhatsApp only. Which kind of interactive reply the user sent:
@@ -4462,7 +4537,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event13 = 'message.deleted';
+export type event14 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, and
@@ -4497,7 +4572,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event14 = 'message.delivered' | 'message.read' | 'message.failed';
+export type event15 = 'message.delivered' | 'message.read' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -4539,7 +4614,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event15 = 'message.edited';
+export type event16 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API)
@@ -4603,7 +4678,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event16 = 'message.sent';
+export type event17 = 'message.sent';
 
 /**
  * Webhook payload for post events
@@ -4631,7 +4706,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event17 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event18 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -4707,7 +4782,7 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event18 = 'post.platform.published' | 'post.platform.failed';
+export type event19 = 'post.platform.published' | 'post.platform.failed';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram)
@@ -4758,7 +4833,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event19 = 'reaction.received';
+export type event20 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -4780,7 +4855,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event20 = 'review.new';
+export type event21 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits
@@ -4804,7 +4879,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event21 = 'review.updated';
+export type event22 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -4822,7 +4897,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event22 = 'webhook.test';
+export type event23 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.template.status_updated` event.
@@ -4877,7 +4952,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event23 = 'whatsapp.template.status_updated';
+export type event24 = 'whatsapp.template.status_updated';
 
 export type platform10 = 'whatsapp';
 
@@ -11607,7 +11682,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -11651,7 +11726,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
         /**
          * Enable or disable webhook delivery
          */
