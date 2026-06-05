@@ -17493,6 +17493,10 @@ export type ListCommentAutomationsResponse = ({
             dmsFailed?: number;
             uniqueContacts?: number;
             /**
+             * DMs sent with a trackable (wrapped) link. CTR denominator: divide clicks by this, not dmsSent. Lags dmsSent for campaigns that predate click tracking.
+             */
+            trackedSends?: number;
+            /**
              * Total clicks on tracked links (bots/prefetch excluded).
              */
             linkClicks?: number;
