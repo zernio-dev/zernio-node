@@ -137,8 +137,14 @@ import {
   getGoogleBusinessServices,
   getGoogleBusinessVerifications,
   getInboxConversation,
+  getInboxConversationAnalytics,
   getInboxConversationMessages,
+  getInboxHeatmap,
   getInboxPostComments,
+  getInboxResponseTime,
+  getInboxSourceBreakdown,
+  getInboxTopAccounts,
+  getInboxVolume,
   getInstagramAccountInsights,
   getInstagramDemographics,
   getInstagramFollowerHistory,
@@ -230,6 +236,7 @@ import {
   listGoogleBusinessMedia,
   listGoogleBusinessPlaceActions,
   listInboxComments,
+  listInboxConversationAnalytics,
   listInboxConversations,
   listInboxReviews,
   listInstagramStories,
@@ -464,6 +471,19 @@ export class Zernio {
     getLinkedInAggregateAnalytics: getLinkedInAggregateAnalytics,
     getLinkedInPostAnalytics: getLinkedInPostAnalytics,
     getLinkedInPostReactions: getLinkedInPostReactions,
+  };
+
+  /**
+   * inboxanalytics API
+   */
+  inboxanalytics = {
+    getInboxVolume: getInboxVolume,
+    getInboxHeatmap: getInboxHeatmap,
+    getInboxSourceBreakdown: getInboxSourceBreakdown,
+    getInboxResponseTime: getInboxResponseTime,
+    getInboxTopAccounts: getInboxTopAccounts,
+    listInboxConversationAnalytics: listInboxConversationAnalytics,
+    getInboxConversationAnalytics: getInboxConversationAnalytics,
   };
 
   /**

@@ -3454,7 +3454,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -6382,6 +6382,358 @@ export type GetGoogleBusinessSearchKeywordsError = ({
     error?: string;
     code?: string;
 });
+
+export type GetInboxVolumeData = {
+    query: {
+        accountId?: string;
+        /**
+         * Inclusive lower bound (YYYY-MM-DD). Required.
+         */
+        fromDate: string;
+        /**
+         * Filter by single platform (facebook, instagram, twitter, etc.).
+         */
+        platform?: string;
+        profileId?: string;
+        /**
+         * Filter by metadata.source lineage (human, workflow, sequence, broadcast, comment_automation, api, contact, platform).
+         */
+        source?: string;
+        /**
+         * Inclusive upper bound (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
+    };
+};
+
+export type GetInboxVolumeResponse = ({
+    success?: boolean;
+    from?: string;
+    to?: (string) | null;
+    summary?: {
+        received?: number;
+        sent?: number;
+        read?: number;
+        failed?: number;
+        uniqueConversations?: number;
+    };
+    timeseries?: Array<{
+        date?: string;
+        sent?: number;
+        received?: number;
+        read?: number;
+        failed?: number;
+    }>;
+    byPlatform?: Array<{
+        platform?: string;
+        sent?: number;
+        received?: number;
+        read?: number;
+        failed?: number;
+    }>;
+});
+
+export type GetInboxVolumeError = ({
+    error?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | {
+    error?: string;
+} | ErrorResponse);
+
+export type GetInboxHeatmapData = {
+    query: {
+        accountId?: string;
+        /**
+         * Narrow to a single event type. "all" or omitted means no filter.
+         */
+        action?: 'message.received' | 'message.sent' | 'message.read' | 'all';
+        fromDate: string;
+        platform?: string;
+        profileId?: string;
+        source?: string;
+        toDate?: string;
+    };
+};
+
+export type GetInboxHeatmapResponse = ({
+    success?: boolean;
+    from?: string;
+    to?: (string) | null;
+    buckets?: Array<{
+        /**
+         * 1 = Monday, 7 = Sunday
+         */
+        dow?: number;
+        hour?: number;
+        received?: number;
+        sent?: number;
+        read?: number;
+    }>;
+});
+
+export type GetInboxHeatmapError = ({
+    error?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | {
+    error?: string;
+} | ErrorResponse);
+
+export type GetInboxSourceBreakdownData = {
+    query: {
+        accountId?: string;
+        fromDate: string;
+        platform?: string;
+        profileId?: string;
+        toDate?: string;
+    };
+};
+
+export type GetInboxSourceBreakdownResponse = ({
+    success?: boolean;
+    from?: string;
+    to?: (string) | null;
+    sources?: Array<{
+        source?: string;
+        received?: number;
+        sent?: number;
+        read?: number;
+        byPlatform?: Array<{
+            platform?: string;
+            received?: number;
+            sent?: number;
+            read?: number;
+        }>;
+    }>;
+});
+
+export type GetInboxSourceBreakdownError = ({
+    error?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | {
+    error?: string;
+} | ErrorResponse);
+
+export type GetInboxResponseTimeData = {
+    query: {
+        accountId?: string;
+        fromDate: string;
+        platform?: string;
+        profileId?: string;
+        toDate?: string;
+    };
+};
+
+export type GetInboxResponseTimeResponse = ({
+    success?: boolean;
+    from?: string;
+    to?: (string) | null;
+    summary?: {
+        sampleSize?: number;
+        medianSeconds?: number;
+        p90Seconds?: number;
+        p99Seconds?: number;
+        meanSeconds?: number;
+        fastestSeconds?: number;
+        slowestSeconds?: number;
+    };
+    histogram?: Array<{
+        /**
+         * Human label (0-1m, 1-5m, 5-15m, 15-60m, 1-4h, 4-24h, 1d+)
+         */
+        bucket?: string;
+        lowerSeconds?: number;
+        /**
+         * null on the open-ended last bucket
+         */
+        upperSeconds?: (number) | null;
+        count?: number;
+    }>;
+});
+
+export type GetInboxResponseTimeError = ({
+    error?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | {
+    error?: string;
+} | ErrorResponse);
+
+export type GetInboxTopAccountsData = {
+    query: {
+        fromDate: string;
+        /**
+         * Cap on returned rows. Lower than the posting listing's 100 because each row triggers a SocialAccount Mongo lookup.
+         */
+        limit?: number;
+        platform?: string;
+        profileId?: string;
+        source?: string;
+        toDate?: string;
+    };
+};
+
+export type GetInboxTopAccountsResponse = ({
+    success?: boolean;
+    from?: string;
+    to?: (string) | null;
+    accounts?: Array<{
+        accountId?: string;
+        platform?: string;
+        /**
+         * (disconnected) when the SocialAccount no longer exists
+         */
+        displayName?: string;
+        username?: string;
+        received?: number;
+        sent?: number;
+        total?: number;
+        conversations?: number;
+        medianResponseSeconds?: number;
+        /**
+         * Distinguishes 'instant replies' from 'no replies at all' so a zero medianResponseSeconds with repliedCount=0 renders as '—' instead of '0s'
+         */
+        repliedCount?: number;
+    }>;
+});
+
+export type GetInboxTopAccountsError = ({
+    error?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | {
+    error?: string;
+} | ErrorResponse);
+
+export type ListInboxConversationAnalyticsData = {
+    query: {
+        accountId?: string;
+        fromDate: string;
+        limit?: number;
+        order?: 'asc' | 'desc';
+        page?: number;
+        platform?: string;
+        profileId?: string;
+        sortBy?: 'lastMessageAt' | 'firstMessageAt' | 'totalMessages' | 'received' | 'sent' | 'read' | 'failed';
+        source?: string;
+        toDate?: string;
+    };
+};
+
+export type ListInboxConversationAnalyticsResponse = ({
+    success?: boolean;
+    from?: string;
+    to?: (string) | null;
+    items?: Array<{
+        /**
+         * The platformConversationId (the same identity used by metadata.conversationId)
+         */
+        conversationId?: string;
+        /**
+         * The Conversation document _id, when a matching doc exists
+         */
+        mongoId?: (string) | null;
+        accountId?: string;
+        platform?: string;
+        participantName?: (string) | null;
+        participantUsername?: (string) | null;
+        participantPicture?: (string) | null;
+        /**
+         * Cached preview from the Conversation doc
+         */
+        lastMessage?: (string) | null;
+        totalMessages?: number;
+        received?: number;
+        sent?: number;
+        read?: number;
+        failed?: number;
+        firstMessageAt?: string;
+        lastMessageAt?: string;
+    }>;
+    pagination?: {
+        page?: number;
+        limit?: number;
+        total?: number;
+        totalPages?: number;
+        hasMore?: boolean;
+    };
+});
+
+export type ListInboxConversationAnalyticsError = ({
+    error?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | {
+    error?: string;
+} | ErrorResponse);
+
+export type GetInboxConversationAnalyticsData = {
+    path: {
+        /**
+         * Mongo _id or platformConversationId.
+         */
+        conversationId: string;
+    };
+    query: {
+        fromDate: string;
+        toDate?: string;
+    };
+};
+
+export type GetInboxConversationAnalyticsResponse = ({
+    success?: boolean;
+    /**
+     * The platformConversationId
+     */
+    conversationId?: string;
+    mongoId?: string;
+    platform?: (string) | null;
+    from?: string;
+    to?: (string) | null;
+    summary?: {
+        received?: number;
+        sent?: number;
+        read?: number;
+        failed?: number;
+        totalMessages?: number;
+        firstMessageAt?: (string) | null;
+        lastMessageAt?: (string) | null;
+    };
+    timeseries?: Array<{
+        date?: string;
+        sent?: number;
+        received?: number;
+        read?: number;
+        failed?: number;
+    }>;
+    bySource?: Array<{
+        /**
+         * (unspecified) for legacy rows with no metadata.source
+         */
+        source?: string;
+        count?: number;
+    }>;
+});
+
+export type GetInboxConversationAnalyticsError = ({
+    error?: string;
+    details?: {
+        [key: string]: unknown;
+    };
+} | {
+    error?: string;
+} | {
+    error?: string;
+    code?: string;
+} | ErrorResponse);
 
 export type ListAccountGroupsResponse = ({
     groups?: Array<{
@@ -11255,7 +11607,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -11299,7 +11651,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released')>;
         /**
          * Enable or disable webhook delivery
          */

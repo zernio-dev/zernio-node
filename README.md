@@ -530,6 +530,17 @@ try {
 | `gmbVerifications.fetchGoogleBusinessVerificationOptions()` | Fetch verification options |
 | `gmbVerifications.startGoogleBusinessVerification()` | Start a verification |
 
+### Inbox Analytics
+| Method | Description |
+|--------|-------------|
+| `inboxAnalytics.listInboxConversationAnalytics()` | List conversations with inbox analytics |
+| `inboxAnalytics.getInboxConversationAnalytics()` | Get analytics for a single conversation |
+| `inboxAnalytics.getInboxHeatmap()` | Get inbox day-of-week × hour-of-day heatmap |
+| `inboxAnalytics.getInboxResponseTime()` | Get inbox response-time stats |
+| `inboxAnalytics.getInboxSourceBreakdown()` | Get inbox source breakdown |
+| `inboxAnalytics.getInboxTopAccounts()` | Get top accounts by inbox volume |
+| `inboxAnalytics.getInboxVolume()` | Get inbox messaging volume |
+
 ### Instagram
 | Method | Description |
 |--------|-------------|
