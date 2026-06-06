@@ -14656,10 +14656,13 @@ export type GetWhatsAppPhoneNumbersData = {
          * still in review PLUS recently-declined (last 30 days) ones, so a
          * failed registration surfaces (with `regulatoryDeclineReason`) instead
          * of silently disappearing. Declined numbers can be re-submitted via
-         * POST /v1/whatsapp/phone-numbers/{id}/remediate.
+         * POST /v1/whatsapp/phone-numbers/{id}/remediate. `verifying` is the
+         * short-lived state after the number is provisioned on our side while
+         * WhatsApp confirms the activation code; the number is not billed until
+         * it reaches `active`.
          *
          */
-        status?: 'provisioning' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'active' | 'suspended' | 'releasing' | 'released';
+        status?: 'provisioning' | 'verifying' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'active' | 'suspended' | 'releasing' | 'released';
     };
 };
 
@@ -14668,7 +14671,7 @@ export type GetWhatsAppPhoneNumbersResponse = ({
         _id?: string;
         phoneNumber?: string;
         country?: string;
-        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
+        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
         /**
          * For regulated numbers
          */
@@ -15044,7 +15047,7 @@ export type GetWhatsAppPhoneNumberResponse = ({
     phoneNumber?: {
         id?: string;
         phoneNumber?: string;
-        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'active' | 'suspended' | 'releasing' | 'released';
+        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
         country?: string;
         metaPreverifiedId?: string;
         metaVerificationStatus?: string;
