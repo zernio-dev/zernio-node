@@ -374,6 +374,7 @@ import {
   validatePost,
   validatePostLength,
   validateSubreddit,
+  validateWhatsAppNumberKycAddress,
 } from './generated/sdk.gen';
 
 import { ZernioApiError, parseApiError } from './errors';
@@ -902,6 +903,7 @@ export class Zernio {
     getWhatsAppNumberKycForm: getWhatsAppNumberKycForm,
     submitWhatsAppNumberKyc: submitWhatsAppNumberKyc,
     uploadWhatsAppNumberKycDocument: uploadWhatsAppNumberKycDocument,
+    validateWhatsAppNumberKycAddress: validateWhatsAppNumberKycAddress,
     getWhatsAppNumberRemediation: getWhatsAppNumberRemediation,
     remediateWhatsAppNumber: remediateWhatsAppNumber,
     getWhatsAppPhoneNumber: getWhatsAppPhoneNumber,

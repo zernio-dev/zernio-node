@@ -691,6 +691,7 @@ try {
 | `whatsappPhoneNumbers.searchAvailableWhatsAppNumbers()` | Search available numbers to purchase |
 | `whatsappPhoneNumbers.submitWhatsAppNumberKyc()` | Submit regulated-number KYC |
 | `whatsappPhoneNumbers.uploadWhatsAppNumberKycDocument()` | Upload a single regulated-number KYC document |
+| `whatsappPhoneNumbers.validateWhatsAppNumberKycAddress()` | Pre-validate a regulated-number KYC address (Tier 4) |
 
 ### WhatsApp Sandbox
 | Method | Description |

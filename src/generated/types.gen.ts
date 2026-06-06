@@ -14972,6 +14972,52 @@ export type UploadWhatsAppNumberKycDocumentError = (unknown | {
     error?: string;
 });
 
+export type ValidateWhatsAppNumberKycAddressData = {
+    body: {
+        /**
+         * ISO 3166-1 alpha-2 country code.
+         */
+        country: string;
+        street_address: string;
+        /**
+         * City / town.
+         */
+        locality: string;
+        /**
+         * State / province / region. When omitted
+         */
+        administrative_area?: string;
+        postal_code: string;
+    };
+};
+
+export type ValidateWhatsAppNumberKycAddressResponse = ({
+    ok?: boolean;
+    /**
+     * true when no `administrative_area` was supplied, so no pre-check ran.
+     */
+    skipped?: boolean;
+});
+
+export type ValidateWhatsAppNumberKycAddressError = ({
+    /**
+     * Human-readable message.
+     */
+    error?: string;
+    type?: string;
+    code?: string;
+    param?: string;
+    details?: {
+        addressSuggestions?: Array<{
+            field?: string;
+            label?: string;
+            value?: string;
+        }>;
+    };
+} | {
+    error?: string;
+});
+
 export type GetWhatsAppNumberRemediationData = {
     path: {
         /**
