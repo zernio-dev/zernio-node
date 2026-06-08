@@ -18962,7 +18962,7 @@ export type CreateStandaloneAdData = {
          */
         linkUrl?: string;
         /**
-         * Meta Lead Gen forms only (facebook/instagram). The leadgen_forms ID to attach to the ad's creative — create one via POST /v1/ads/lead-forms. REQUIRED when `goal` is `lead_generation`; ignored otherwise. The ad set's promoted_object.page_id + LEAD_GENERATION optimization are derived automatically from the goal. NOT compatible with `placementAssets` (per-placement creative) or `dynamicCreative` (multiple assets/text): Meta does not allow an asset_feed_spec creative on instant-form lead ads, so that combination is rejected with INVALID_FIELD_VALUE. Per-placement / multi-asset creative is supported on `traffic` and `conversions` goals.
+         * Meta Lead Gen forms only (facebook/instagram). The leadgen_forms ID to attach to the ad's creative — create one via POST /v1/ads/lead-forms. REQUIRED when `goal` is `lead_generation`; ignored otherwise. The ad set's promoted_object.page_id + LEAD_GENERATION optimization + destination_type ON_AD are derived automatically from the goal. `placementAssets` (per-placement creative) IS supported on instant-form lead ads — the form is attached for you. NOT compatible with `dynamicCreative` (the auto-optimizing multi-asset pool), which Meta requires a dedicated Dynamic Creative ad set for; that combination is rejected with INVALID_FIELD_VALUE (use `placementAssets`, a single creative, or run `dynamicCreative` on a `traffic`/`conversions` goal).
          */
         leadGenFormId?: string;
         /**
