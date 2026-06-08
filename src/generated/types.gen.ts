@@ -7589,6 +7589,11 @@ export type ListAccountsData = {
          * Filter accounts by profile ID
          */
         profileId?: string;
+        /**
+         * Filter accounts by connection status. `connected` returns healthy accounts; `disconnected` returns accounts that need reconnection (per the same reconnection check surfaced in the dashboard). Omit to return accounts in any status. When combined with page/limit, pagination totals reflect the filtered result set.
+         *
+         */
+        status?: 'connected' | 'disconnected';
     };
 };
 
