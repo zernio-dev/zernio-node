@@ -4712,10 +4712,13 @@ export const getAdTrackingTags = <ThrowOnError extends boolean = false>(options:
 /**
  * Set/update an ad's click-URL tracking tags
  * Unified update. Send only the fields for the ad's platform:
- * - Meta: `urlTags` (array of {key,value}) + `creative` (headline, body, callToAction, linkUrl, imageUrl).
- * Meta creatives are immutable, so this REBUILDS the creative and repoints the ad — the full
- * creative is required. Placement-customized / asset-feed / dark creatives may not be
- * rebuildable this way and return 422.
+ * - Meta: `urlTags` (array of {key,value}). Meta creatives are immutable, so this rebuilds the
+ * creative and repoints the ad. By DEFAULT we PRESERVE the existing creative verbatim
+ * (re-post its object_story_spec + the new url_tags, reusing the image), so you send `urlTags`
+ * ALONE — no need to read back headline/body/CTA. `creative` (headline, body, callToAction,
+ * linkUrl, imageUrl) is OPTIONAL and only needed to rebuild explicitly, or for SHARE / page-post
+ * / dark / asset_feed creatives whose object_story_spec Meta strips (those return 422 asking for
+ * `creative`).
  * - Google: `trackingUrlTemplate` and/or `finalUrlSuffix` (full template strings; account quota applies).
  * - LinkedIn: `dynamicValueParameters` and/or `customValueParameters` (campaign-level Dynamic UTM).
  *
