@@ -18917,6 +18917,10 @@ export type CreateStandaloneAdData = {
          */
         goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion';
         /**
+         * Meta only. Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
+         */
+        optimizationGoal?: string;
+        /**
          * Required on legacy + multi-creative shapes. Inherited on attach.
          */
         budgetAmount?: number;
