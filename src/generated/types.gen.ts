@@ -5184,16 +5184,19 @@ export type WhatsAppSandboxSession = {
 export type status11 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
-    type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'flow' | 'mpm' | 'catalog';
-    text: string;
+    type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+    /**
+     * Visible button label. Required for all types except copy_code (whose label is fixed by WhatsApp).
+     */
+    text?: string;
     /**
      * Required when type is URL
      */
     url?: string;
     /**
-     * Example values for URL suffix variables
+     * Example value(s). For URL buttons, an array of URL-suffix samples. For copy_code (marketing) buttons, the coupon code as a string.
      */
-    example?: Array<(string)>;
+    example?: (string | Array<(string)>);
     /**
      * Required when type is phone_number
      */
@@ -5212,7 +5215,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type7 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'flow' | 'mpm' | 'catalog';
+export type type7 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
