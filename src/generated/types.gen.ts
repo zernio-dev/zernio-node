@@ -3575,6 +3575,75 @@ export type Webhook = {
 };
 
 /**
+ * A single webhook delivery attempt recorded by Zernio (30-day retention).
+ */
+export type WebhookLog = {
+    /**
+     * ID of the account owner the webhook belongs to
+     */
+    userId?: string;
+    /**
+     * ID of the webhook configuration that produced this delivery
+     */
+    webhookId?: string;
+    /**
+     * Name of the webhook configuration at delivery time
+     */
+    webhookName?: string;
+    /**
+     * Stable webhook event ID (correlates to the delivered payload)
+     */
+    eventId?: string;
+    /**
+     * Event type that triggered the delivery (e.g. post.published)
+     */
+    event?: string;
+    /**
+     * Destination URL the webhook was delivered to
+     */
+    url?: string;
+    /**
+     * Delivery outcome
+     */
+    status?: 'success' | 'failed';
+    /**
+     * HTTP status code returned by the destination endpoint
+     */
+    statusCode?: number;
+    /**
+     * The JSON payload sent to the destination endpoint
+     */
+    requestPayload?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Response body returned by the destination endpoint
+     */
+    responseBody?: string;
+    /**
+     * Error message when delivery failed
+     */
+    errorMessage?: string;
+    /**
+     * Delivery attempt number (increments on retries)
+     */
+    attemptNumber?: number;
+    /**
+     * Time taken by the destination endpoint to respond, in milliseconds
+     */
+    responseTime?: number;
+    /**
+     * Timestamp the delivery was attempted
+     */
+    createdAt?: string;
+};
+
+/**
+ * Delivery outcome
+ */
+export type status8 = 'success' | 'failed';
+
+/**
  * Webhook payload for `account.ads.initial_sync_completed` events.
  * Fired once per ads-enabled account when the initial discovery + 90-day
  * ad backfill finishes (whether it succeeded fully, partially, or failed).
@@ -3681,7 +3750,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status8 = 'success' | 'failure';
+export type status9 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -5011,7 +5080,7 @@ export type platform10 = 'whatsapp';
  * request before the template is actually removed.
  *
  */
-export type status9 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status10 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -5112,7 +5181,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status10 = 'pending' | 'active';
+export type status11 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'flow' | 'mpm' | 'catalog';
@@ -5228,7 +5297,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status11 = 'success' | 'failed' | 'pending';
+export type status12 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -11821,6 +11890,65 @@ export type DeleteWebhookSettingsResponse = ({
 });
 
 export type DeleteWebhookSettingsError = (unknown | {
+    error?: string;
+});
+
+export type GetWebhookLogsData = {
+    query?: {
+        /**
+         * Filter by event type (e.g. post.published)
+         */
+        event?: string;
+        /**
+         * Filter by stable webhook event ID
+         */
+        eventId?: string;
+        /**
+         * Maximum number of logs to return
+         */
+        limit?: number;
+        /**
+         * Number of logs to skip (offset-based pagination)
+         */
+        skip?: number;
+        /**
+         * Filter by delivery outcome
+         */
+        status?: 'success' | 'failed';
+        /**
+         * Filter by webhook configuration ID
+         */
+        webhookId?: string;
+    };
+};
+
+export type GetWebhookLogsResponse = ({
+    logs?: Array<WebhookLog>;
+    pagination?: {
+        /**
+         * Total number of matching logs
+         */
+        total?: number;
+        /**
+         * Maximum number of logs returned per page
+         */
+        limit?: number;
+        /**
+         * Number of logs skipped
+         */
+        skip?: number;
+        /**
+         * Total number of pages
+         */
+        pages?: number;
+        /**
+         * Whether more logs are available beyond this page
+         */
+        hasMore?: boolean;
+    };
+});
+
+export type GetWebhookLogsError = (unknown | {
     error?: string;
 });
 

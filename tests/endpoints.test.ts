@@ -620,6 +620,11 @@ describe('Endpoint Methods', () => {
       expect(client.webhooks.deleteWebhookSettings).toBeTypeOf('function');
     });
 
+    it('should have getWebhookLogs method', () => {
+      expect(client.webhooks.getWebhookLogs).toBeDefined();
+      expect(client.webhooks.getWebhookLogs).toBeTypeOf('function');
+    });
+
     it('should have testWebhook method', () => {
       expect(client.webhooks.testWebhook).toBeDefined();
       expect(client.webhooks.testWebhook).toBeTypeOf('function');

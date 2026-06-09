@@ -252,6 +252,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `webhooks.createWebhookSettings()` | Create webhook |
+| `webhooks.getWebhookLogs()` | List webhook delivery logs |
 | `webhooks.getWebhookSettings()` | List webhooks |
 | `webhooks.updateWebhookSettings()` | Update webhook |
 | `webhooks.deleteWebhookSettings()` | Delete webhook |

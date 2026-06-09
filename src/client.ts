@@ -179,6 +179,7 @@ import {
   getTrackingTagStats,
   getUsageStats,
   getUser,
+  getWebhookLogs,
   getWebhookSettings,
   getWhatsAppBusinessProfile,
   getWhatsAppCall,
@@ -757,6 +758,7 @@ export class Zernio {
     createWebhookSettings: createWebhookSettings,
     updateWebhookSettings: updateWebhookSettings,
     deleteWebhookSettings: deleteWebhookSettings,
+    getWebhookLogs: getWebhookLogs,
     testWebhook: testWebhook,
   };
 
