@@ -3483,7 +3483,7 @@ export const deleteWhatsAppSandboxSession = <ThrowOnError extends boolean = fals
  * List active WhatsApp group chats for a business phone number.
  * These are actual WhatsApp group conversations on the platform.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const listWhatsAppGroupChats = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListWhatsAppGroupChatsData, ThrowOnError>) => {
@@ -3497,7 +3497,7 @@ export const listWhatsAppGroupChats = <ThrowOnError extends boolean = false>(opt
  * Create group
  * Create a new WhatsApp group chat. Returns the group ID and optionally an invite link.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const createWhatsAppGroupChat = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateWhatsAppGroupChatData, ThrowOnError>) => {
@@ -3512,7 +3512,7 @@ export const createWhatsAppGroupChat = <ThrowOnError extends boolean = false>(op
  * Retrieve metadata about a WhatsApp group including subject, description,
  * participants, and settings.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const getWhatsAppGroupChat = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppGroupChatData, ThrowOnError>) => {
@@ -3526,7 +3526,7 @@ export const getWhatsAppGroupChat = <ThrowOnError extends boolean = false>(optio
  * Update group settings
  * Update the subject, description, or join approval mode of a WhatsApp group.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const updateWhatsAppGroupChat = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWhatsAppGroupChatData, ThrowOnError>) => {
@@ -3540,7 +3540,7 @@ export const updateWhatsAppGroupChat = <ThrowOnError extends boolean = false>(op
  * Delete group
  * Delete a WhatsApp group and remove all participants.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const deleteWhatsAppGroupChat = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteWhatsAppGroupChatData, ThrowOnError>) => {
@@ -3554,7 +3554,7 @@ export const deleteWhatsAppGroupChat = <ThrowOnError extends boolean = false>(op
  * Add participants
  * Add participants to a WhatsApp group. Maximum 8 participants per request.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const addWhatsAppGroupParticipants = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddWhatsAppGroupParticipantsData, ThrowOnError>) => {
@@ -3568,7 +3568,7 @@ export const addWhatsAppGroupParticipants = <ThrowOnError extends boolean = fals
  * Remove participants
  * Remove participants from a WhatsApp group.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const removeWhatsAppGroupParticipants = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveWhatsAppGroupParticipantsData, ThrowOnError>) => {
@@ -3582,7 +3582,7 @@ export const removeWhatsAppGroupParticipants = <ThrowOnError extends boolean = f
  * Create invite link
  * Create a new invite link for a WhatsApp group. The previous link is revoked.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const createWhatsAppGroupInviteLink = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateWhatsAppGroupInviteLinkData, ThrowOnError>) => {
@@ -3596,7 +3596,7 @@ export const createWhatsAppGroupInviteLink = <ThrowOnError extends boolean = fal
  * List join requests
  * List pending join requests for a WhatsApp group (only for groups with approval_required mode).
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const listWhatsAppGroupJoinRequests = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListWhatsAppGroupJoinRequestsData, ThrowOnError>) => {
@@ -3610,7 +3610,7 @@ export const listWhatsAppGroupJoinRequests = <ThrowOnError extends boolean = fal
  * Approve join requests
  * Approve pending join requests for a WhatsApp group.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const approveWhatsAppGroupJoinRequests = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ApproveWhatsAppGroupJoinRequestsData, ThrowOnError>) => {
@@ -3624,7 +3624,7 @@ export const approveWhatsAppGroupJoinRequests = <ThrowOnError extends boolean = 
  * Reject join requests
  * Reject pending join requests for a WhatsApp group.
  *
- * Not available on [Coexistence](/platforms/whatsapp#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
+ * Not available on [Coexistence](/platforms/whatsapp/connection#whatsapp-business-app-coexistence) numbers. Requires a Cloud API-only number.
  *
  */
 export const rejectWhatsAppGroupJoinRequests = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RejectWhatsAppGroupJoinRequestsData, ThrowOnError>) => {
