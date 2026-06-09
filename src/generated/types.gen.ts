@@ -2675,6 +2675,22 @@ export type RedditPlatformData = {
      */
     flairId?: string;
     /**
+     * Custom flair text, for subreddits that allow free-text flair. Ignored when flairId is provided (flairId wins).
+     */
+    flairText?: string;
+    /**
+     * Mark the post as NSFW (Not Safe For Work / over 18).
+     */
+    nsfw?: boolean;
+    /**
+     * Mark the post as a spoiler. The subreddit must have spoiler tagging enabled for this to take effect.
+     */
+    spoiler?: boolean;
+    /**
+     * Whether to receive inbox replies for comments on this post. Set to false to opt out.
+     */
+    sendreplies?: boolean;
+    /**
      * Controls Reddit's native video upload flow. When true (default for video mediaItems), the video is uploaded to Reddit's CDN and submitted with kind=video so it renders as an embedded Reddit video player. Reddit transcodes server-side (1080p/30fps cap). Set to false to fall back to a legacy link post. If the subreddit blocks video posts, the upload falls back to a link post automatically.
      *
      */
@@ -3297,6 +3313,31 @@ export type TwitterPlatformData = {
      */
     longVideo?: boolean;
     geoRestriction?: GeoRestriction;
+    /**
+     * When true, the post is labeled by X as a paid partnership / paid promotion. For threads, applies to the root tweet only. Field availability may depend on your X API access tier.
+     */
+    paidPartnership?: boolean;
+    /**
+     * When true, the post is labeled by X as containing AI-generated media. Per X, this label is for AI-generated media, not AI-written text. For threads, applies to the root tweet only.
+     */
+    madeWithAi?: boolean;
+    /**
+     * Marks attached media with a sensitive-content warning. Applied to every media item in the post (requires media; ignored for text-only tweets). At least one flag must be true for the warning to be sent.
+     */
+    sensitiveMedia?: {
+        /**
+         * Content contains adult material.
+         */
+        adultContent?: boolean;
+        /**
+         * Content depicts graphic violence.
+         */
+        graphicViolence?: boolean;
+        /**
+         * Content has other sensitive characteristics.
+         */
+        other?: boolean;
+    };
 };
 
 /**
