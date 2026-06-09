@@ -8127,6 +8127,14 @@ export type CreateInviteTokenData = {
          * Required if scope is 'profiles'. Array of profile IDs to grant access to.
          */
         profileIds?: Array<(string)>;
+        /**
+         * Org role granted to the invitee. Defaults to 'member'.
+         */
+        role?: 'member' | 'billing_admin';
+        /**
+         * When true, the invitee can view everything in their profile scope but cannot perform any content mutation (publish, edit, delete, connect accounts).
+         */
+        readOnly?: boolean;
     };
 };
 
