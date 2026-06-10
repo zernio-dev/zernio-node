@@ -9318,6 +9318,90 @@ export type DeleteGoogleBusinessMediaResponse = ({
 
 export type DeleteGoogleBusinessMediaError = (ErrorResponse);
 
+export type GetGmbAttributeMetadataData = {
+    path: {
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Category resource name, must start with "categories/" (e.g. "categories/gcid:plumber"). Required together with regionCode. Mutually exclusive with locationId.
+         *
+         */
+        categoryName?: string;
+        /**
+         * BCP-47 language code for display names (e.g. "en", "es"). Optional when categoryName is provided. Omitted from the Google call when not supplied.
+         *
+         */
+        languageCode?: string;
+        /**
+         * GBP location ID (e.g. "6257659026299438786"). If omitted, uses the account's stored selectedLocationId. Mutually exclusive with categoryName.
+         *
+         */
+        locationId?: string;
+        /**
+         * Maximum number of attribute metadata items to return. Google defaults to 200.
+         */
+        pageSize?: number;
+        /**
+         * Pagination token from a previous response's nextPageToken field.
+         */
+        pageToken?: string;
+        /**
+         * BCP-47 region code (e.g. "US", "ES"). Required when categoryName is provided.
+         *
+         */
+        regionCode?: string;
+    };
+};
+
+export type GetGmbAttributeMetadataResponse = ({
+    success?: boolean;
+    accountId?: string;
+    /**
+     * Only present in location mode.
+     */
+    locationId?: string;
+    attributeMetadata?: Array<{
+        /**
+         * Resource name of the attribute (e.g. "attributes/has_delivery").
+         */
+        parent?: string;
+        /**
+         * Value type (e.g. BOOL, ENUM, URL, REPEATED_ENUM).
+         */
+        valueType?: string;
+        /**
+         * Localized human-readable attribute name.
+         */
+        displayName?: string;
+        /**
+         * Display name of the attribute group.
+         */
+        groupDisplayName?: string;
+        /**
+         * True if multiple values can be set simultaneously.
+         */
+        repeatable?: boolean;
+        /**
+         * True if this attribute should no longer be used.
+         */
+        deprecated?: boolean;
+        /**
+         * Possible enum values (for ENUM / REPEATED_ENUM types).
+         */
+        valueMetadata?: Array<{
+            value?: string;
+            displayName?: string;
+        }>;
+    }>;
+    /**
+     * Present when additional pages of results are available.
+     */
+    nextPageToken?: string;
+});
+
+export type GetGmbAttributeMetadataError = (ErrorResponse);
+
 export type GetGoogleBusinessAttributesData = {
     path: {
         accountId: string;

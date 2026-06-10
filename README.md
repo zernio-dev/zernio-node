@@ -488,6 +488,7 @@ try {
 ### GMB Attributes
 | Method | Description |
 |--------|-------------|
+| `gmbAttributes.getGmbAttributeMetadata()` | Get attribute metadata |
 | `gmbAttributes.getGoogleBusinessAttributes()` | Get attributes |
 | `gmbAttributes.updateGoogleBusinessAttributes()` | Update attributes |
 

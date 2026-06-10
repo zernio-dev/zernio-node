@@ -128,6 +128,7 @@ import {
   getFacebookPageInsights,
   getFacebookPages,
   getFollowerStats,
+  getGmbAttributeMetadata,
   getGmbLocations,
   getGoogleBusinessAttributes,
   getGoogleBusinessFoodMenus,
@@ -686,6 +687,7 @@ export class Zernio {
    * gmbattributes API
    */
   gmbattributes = {
+    getGmbAttributeMetadata: getGmbAttributeMetadata,
     getGoogleBusinessAttributes: getGoogleBusinessAttributes,
     updateGoogleBusinessAttributes: updateGoogleBusinessAttributes,
   };
