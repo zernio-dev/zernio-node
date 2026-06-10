@@ -12214,7 +12214,7 @@ export type CreateInboxConversationData = {
          */
         templateLanguage?: string;
         /**
-         * WhatsApp only. Body variable values, in order, substituted into the template body ({{1}}, {{2}}, ...).
+         * WhatsApp only. Body variable values, in order. Works with positional placeholders ({{1}}, {{2}}, ...) and with named placeholders ({{name}}, {{company}} - how Meta Business Manager creates templates), where values fill the named slots in order of appearance.
          */
         templateParams?: Array<(string)>;
     };
