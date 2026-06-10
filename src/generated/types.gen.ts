@@ -5194,9 +5194,9 @@ export type WhatsAppTemplateButton = {
      */
     url?: string;
     /**
-     * Example value(s). For URL buttons, an array of URL-suffix samples. For copy_code (marketing) buttons, the coupon code as a string.
+     * Example value(s). Accepts either a string or an array of strings. For URL buttons, an array of URL-suffix samples; for copy_code (marketing) buttons, the coupon code as a single string. Left untyped (string | string[]) on purpose: a typed oneOf of string-vs-array breaks several SDK code generators.
      */
-    example?: (string | Array<(string)>);
+    example?: unknown;
     /**
      * Required when type is phone_number
      */
