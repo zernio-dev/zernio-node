@@ -15005,6 +15005,16 @@ export type PurchaseWhatsAppPhoneNumberData = {
          *
          */
         country?: string;
+        /**
+         * Optional idempotency key. Send the same value when retrying a purchase: if a number was already bought under this key, the API returns { status: "already_purchased", numberId, phoneNumber } instead of provisioning a second number. Generate a fresh key for each genuinely new purchase.
+         *
+         */
+        purchaseIntentId?: string;
+        /**
+         * Any second purchase within 10 minutes of a previous one is rejected with 409 code PURCHASE_VELOCITY as duplicate protection. Pass true to confirm the additional purchase is intentional (e.g. bulk provisioning).
+         *
+         */
+        allowMultiple?: boolean;
     };
 };
 
@@ -15022,6 +15032,10 @@ export type PurchaseWhatsAppPhoneNumberResponse = (({
         metaPreverifiedId?: string;
         metaVerificationStatus?: string;
     };
+} | {
+    status?: 'already_purchased';
+    numberId?: string;
+    phoneNumber?: string;
 }) | {
     status?: 'kyc_required';
     country?: string;
@@ -15030,6 +15044,9 @@ export type PurchaseWhatsAppPhoneNumberResponse = (({
 
 export type PurchaseWhatsAppPhoneNumberError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'PURCHASE_VELOCITY';
 });
 
 export type ListWhatsAppNumberCountriesResponse = ({
