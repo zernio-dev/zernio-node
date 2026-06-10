@@ -19181,7 +19181,7 @@ export type CreateStandaloneAdData = {
              */
             url: string;
             /**
-             * Public URL of a still-image thumbnail for the video. Required by Meta on every video creative (uploaded as an ad image and referenced in object_story_spec.video_data). Ignored by LinkedIn (auto-generated poster frame).
+             * Public URL of a still-image thumbnail for the video. OPTIONAL: when omitted on Meta, the poster is auto-generated from Meta's own preferred video thumbnail (the same candidates Ads Manager shows), so video ads publish without supplying one. Provide it to control the poster frame exactly (uploaded as an ad image and referenced in object_story_spec.video_data). Ignored by LinkedIn (auto-generated poster frame).
              */
             thumbnailUrl?: string;
         };
@@ -19208,11 +19208,11 @@ export type CreateStandaloneAdData = {
              */
             imageUrl?: string;
             /**
-             * Video creative for this entry. Mutually exclusive with `imageUrl`.
+             * Video creative for this entry. Mutually exclusive with `imageUrl`. thumbnailUrl is optional — when omitted, the poster is auto-generated from Meta's preferred video thumbnail.
              */
             video?: {
                 url: string;
-                thumbnailUrl: string;
+                thumbnailUrl?: string;
             };
             linkUrl: string;
             callToAction: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE';
