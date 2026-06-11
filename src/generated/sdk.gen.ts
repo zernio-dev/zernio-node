@@ -3249,7 +3249,9 @@ export const createWhatsAppDataset = <ThrowOnError extends boolean = false>(opti
 /**
  * List phone numbers
  * List all WhatsApp phone numbers purchased by the authenticated user.
- * By default, released numbers are excluded.
+ * By default, released numbers are excluded. Connected (bring-your-own)
+ * numbers are returned in the separate `connected` array — they are not
+ * billed and have no provisioning lifecycle.
  *
  */
 export const getWhatsAppPhoneNumbers = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetWhatsAppPhoneNumbersData, ThrowOnError>) => {
