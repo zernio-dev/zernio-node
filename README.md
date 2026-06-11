@@ -372,6 +372,8 @@ try {
 | Method | Description |
 |--------|-------------|
 | `ads.listAdAccounts()` | List ad accounts |
+| `ads.listAdCatalogProductSets()` | List a catalog's product sets |
+| `ads.listAdCatalogs()` | List Meta product catalogs |
 | `ads.listAds()` | List ads |
 | `ads.listAdsBusinessCenters()` | List TikTok Business Centers |
 | `ads.listConversionAssociations()` | List campaigns associated with a conversion destination |
