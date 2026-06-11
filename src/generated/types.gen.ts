@@ -12586,8 +12586,8 @@ export type GetInboxConversationMessagesResponse = ({
          * Platform-specific extras. Free-form, but commonly includes:
          * `quotedMessageId` (platformMessageId this message replies to),
          * `waInteractive` (a compact descriptor of WhatsApp interactive
-         * content sent: buttons / list / cta_url / flow), and for inbound
-         * interactive taps `interactiveType` / `interactiveId`.
+         * content sent: buttons / list / cta_url / flow / location_request),
+         * and for inbound interactive taps `interactiveType` / `interactiveId`.
          *
          */
         metadata?: {
@@ -12737,15 +12737,21 @@ export type SendInboxMessageData = {
         };
         /**
          * WhatsApp-only. Rich interactive payload for list messages, CTA URL
-         * buttons, and Flow prompts. When set, takes priority over `buttons`
-         * and `quickReplies`. The shape mirrors Meta's Cloud API `interactive`
-         * object verbatim, so any payload that works against Meta directly
-         * will also work here.
+         * buttons, Flow prompts, and location requests. When set, takes
+         * priority over `buttons` and `quickReplies`. The shape mirrors
+         * Meta's Cloud API `interactive` object verbatim, so any payload
+         * that works against Meta directly will also work here.
          *
          * Use `buttons` / `quickReplies` for simple button replies
          * (WhatsApp's `interactive.type: "button"`) — the abstraction caps at
          * 3 buttons and handles the auto-conversion for you. Use this field
-         * only for `list`, `cta_url`, or `flow` messages.
+         * only for `list`, `cta_url`, `flow`, or `location_request_message`
+         * messages.
+         *
+         * For `location_request_message`, `action` may be omitted (we default
+         * it to `{ "name": "send_location" }`). WhatsApp renders a localized
+         * "Send location" button; the user's reply arrives as a regular
+         * location message in the conversation.
          *
          * Tap events come back via the `message.received` webhook with
          * `metadata.interactiveType` set to `list_reply` or `nfm_reply`.
@@ -12755,7 +12761,7 @@ export type SendInboxMessageData = {
             /**
              * Which interactive layout to render.
              */
-            type: 'list' | 'cta_url' | 'flow';
+            type: 'list' | 'cta_url' | 'flow' | 'location_request_message';
             /**
              * Optional header shown above the body.
              */
@@ -12787,7 +12793,7 @@ export type SendInboxMessageData = {
             footer?: {
                 text?: string;
             };
-            action: ({
+            action?: ({
     /**
      * CTA label that opens the list (max ~20 chars).
      */
@@ -12870,6 +12876,8 @@ export type SendInboxMessageData = {
          */
         mode?: 'draft';
     };
+} | {
+    name: 'send_location';
 });
         };
         /**
@@ -14905,6 +14913,120 @@ export type GetWhatsAppNumberInfoResponse = ({
 export type GetWhatsAppNumberInfoError = (unknown | {
     error?: string;
 });
+
+export type GetWhatsAppBlockedUsersData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Cursor from a previous response's `nextCursor`.
+         */
+        after?: string;
+        /**
+         * Page size.
+         */
+        limit?: number;
+    };
+};
+
+export type GetWhatsAppBlockedUsersResponse = ({
+    blockedUsers?: Array<{
+        /**
+         * WhatsApp user ID (usually the phone number without `+`).
+         */
+        waId?: string;
+    }>;
+    /**
+     * Pass as `after` to fetch the next page. Null when there are no more pages.
+     */
+    nextCursor?: (string) | null;
+});
+
+export type GetWhatsAppBlockedUsersError = ({
+    error?: string;
+} | unknown);
+
+export type BlockWhatsAppUsersData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Phone numbers (E.164, e.g. "+16505551234") or WhatsApp user IDs to block.
+         */
+        users: Array<(string)>;
+    };
+};
+
+export type BlockWhatsAppUsersResponse = ({
+    /**
+     * Users successfully blocked.
+     */
+    blocked?: Array<{
+        /**
+         * The value you sent.
+         */
+        input?: string;
+        /**
+         * Resolved WhatsApp user ID.
+         */
+        waId?: string;
+    }>;
+    /**
+     * Users that could not be blocked, with reasons.
+     */
+    failed?: Array<{
+        input?: string;
+        errors?: Array<(string)>;
+    }>;
+});
+
+export type BlockWhatsAppUsersError = ({
+    error?: string;
+} | unknown);
+
+export type UnblockWhatsAppUsersData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Phone numbers (E.164) or WhatsApp user IDs to unblock.
+         */
+        users: Array<(string)>;
+    };
+};
+
+export type UnblockWhatsAppUsersResponse = ({
+    /**
+     * Users successfully unblocked.
+     */
+    unblocked?: Array<{
+        /**
+         * The value you sent.
+         */
+        input?: string;
+        /**
+         * Resolved WhatsApp user ID.
+         */
+        waId?: string;
+    }>;
+    /**
+     * Users that could not be unblocked, with reasons.
+     */
+    failed?: Array<{
+        input?: string;
+        errors?: Array<(string)>;
+    }>;
+});
+
+export type UnblockWhatsAppUsersError = ({
+    error?: string;
+} | unknown);
 
 export type GetWhatsAppDatasetData = {
     query: {

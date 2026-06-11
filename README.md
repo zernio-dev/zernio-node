@@ -630,6 +630,7 @@ try {
 | `whatsapp.createWhatsAppGroupChat()` | Create group |
 | `whatsapp.createWhatsAppGroupInviteLink()` | Create invite link |
 | `whatsapp.createWhatsAppTemplate()` | Create template |
+| `whatsapp.getWhatsAppBlockedUsers()` | List blocked users |
 | `whatsapp.getWhatsAppBusinessProfile()` | Get business profile |
 | `whatsapp.getWhatsAppDataset()` | Get CTWA conversions dataset |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name status |
@@ -644,9 +645,11 @@ try {
 | `whatsapp.deleteWhatsAppTemplate()` | Delete template |
 | `whatsapp.addWhatsAppGroupParticipants()` | Add participants |
 | `whatsapp.approveWhatsAppGroupJoinRequests()` | Approve join requests |
+| `whatsapp.blockWhatsAppUsers()` | Block users |
 | `whatsapp.rejectWhatsAppGroupJoinRequests()` | Reject join requests |
 | `whatsapp.removeWhatsAppGroupParticipants()` | Remove participants |
 | `whatsapp.sendWhatsAppConversion()` | Send WhatsApp conversion event |
+| `whatsapp.unblockWhatsAppUsers()` | Unblock users |
 | `whatsapp.uploadWhatsAppProfilePhoto()` | Upload profile picture |
 
 ### WhatsApp Calling
