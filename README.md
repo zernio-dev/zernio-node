@@ -554,7 +554,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `messages.listInboxConversations()` | List conversations |
-| `messages.createInboxConversation()` | Create conversation |
+| `messages.createInboxConversation()` | Create conversation (send a WhatsApp template) |
 | `messages.getInboxConversation()` | Get conversation |
 | `messages.getInboxConversationMessages()` | List messages |
 | `messages.updateInboxConversation()` | Update conversation status |
