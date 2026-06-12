@@ -14515,6 +14515,14 @@ export type InitiateWhatsAppCallData = {
          */
         to: string;
         /**
+         * Omit to place a call. Set to send the consent prompt instead.
+         */
+        action?: 'send_call_permission_request';
+        /**
+         * Body text shown with the consent prompt (send_call_permission_request only).
+         */
+        bodyText?: string;
+        /**
          * Per-call destination override. Same accepted shape as the
          * number's stored forwardTo (tel:+E164, sip:..., wss://...).
          *
