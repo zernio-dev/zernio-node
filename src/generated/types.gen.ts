@@ -7176,9 +7176,9 @@ export type GetMediaPresignedUrlResponse = ({
      */
     key?: string;
     /**
-     * Detected file type based on content type
+     * Seconds until the presigned uploadUrl expires (always 3600)
      */
-    type?: 'image' | 'video' | 'document';
+    expiresIn?: number;
 });
 
 export type GetMediaPresignedUrlError = ({
