@@ -15526,7 +15526,7 @@ export type GetWhatsAppNumberKycFormResponse = ({
         localTo?: (string) | null;
     }>;
     /**
-     * Present when this account already has an approved verification for the country that can be reused (skip the form).
+     * Present when this account already has an approved verification for the country that can be reused (skip the form). `fromPhoneNumber`/`details` mirror the newest option; `options` lists ALL approved verifications (agencies hold one per end client) — pass the chosen option's `fromPhoneNumber` as `reuseFrom` on POST.
      */
     reusable?: {
         available?: boolean;
@@ -15537,6 +15537,16 @@ export type GetWhatsAppNumberKycFormResponse = ({
         details?: Array<{
             label?: string;
             value?: string;
+        }>;
+        /**
+         * One entry per distinct approved verification, newest first.
+         */
+        options?: Array<{
+            fromPhoneNumber?: string;
+            details?: Array<{
+                label?: string;
+                value?: string;
+            }>;
         }>;
     } | null;
 });
@@ -15557,6 +15567,10 @@ export type SubmitWhatsAppNumberKycData = {
          * Reuse a prior approved verification for this country (skips document/field collection; places the order immediately).
          */
         reuse?: boolean;
+        /**
+         * Which approved verification to reuse when several exist: the phone number it was originally approved for (GET reusable.options[].fromPhoneNumber). Omitted = newest. No match = 409.
+         */
+        reuseFrom?: string;
         /**
          * End user's legal first name. Required when the country has an action/ID-verification (Onfido) requirement.
          */
