@@ -4692,6 +4692,14 @@ export type WebhookPayloadMessageDeliveryStatus = {
         code?: number;
         title?: string;
         message?: string;
+        /**
+         * Plain-language translation of `code` (e.g. for 131026, that the
+         * recipient has likely opted out of marketing messages while utility
+         * templates are unaffected). Null for unmapped codes; fall back to
+         * title/message.
+         *
+         */
+        explanation?: (string) | null;
     } | null;
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
@@ -17357,6 +17365,10 @@ export type ListBroadcastRecipientsResponse = ({
          * Meta WhatsApp error code (e.g. 131049 for antispam, 131021 for invalid phone, 131026 for re-engagement required). Only populated for status=failed.
          */
         errorCode?: (number) | null;
+        /**
+         * Plain-language translation of errorCode (e.g. for 131026, that the recipient has likely opted out of marketing messages). Null for unmapped codes; fall back to error.
+         */
+        errorExplanation?: (string) | null;
         sentAt?: string;
         deliveredAt?: string;
         readAt?: string;
