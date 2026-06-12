@@ -128,6 +128,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getYouTubeDailyViews).toBeTypeOf('function');
     });
 
+    it('should have getYouTubeVideoRetention method', () => {
+      expect(client.analytics.getYouTubeVideoRetention).toBeDefined();
+      expect(client.analytics.getYouTubeVideoRetention).toBeTypeOf('function');
+    });
+
     it('should have getFacebookPageInsights method', () => {
       expect(client.analytics.getFacebookPageInsights).toBeDefined();
       expect(client.analytics.getFacebookPageInsights).toBeTypeOf('function');

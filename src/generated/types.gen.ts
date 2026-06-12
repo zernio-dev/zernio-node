@@ -5470,6 +5470,10 @@ export type YouTubeDailyViewsResponse = {
      * The YouTube video ID
      */
     videoId?: string;
+    /**
+     * Video length in seconds (from YouTube contentDetails.duration)
+     */
+    durationSeconds?: (number) | null;
     dateRange?: {
         startDate?: string;
         endDate?: string;
@@ -5486,6 +5490,10 @@ export type YouTubeDailyViewsResponse = {
          * Average view duration in seconds
          */
         averageViewDuration?: number;
+        /**
+         * Average percentage of the video watched per view. Can exceed 100 on Shorts (looping rewatches), so do not clamp it client-side.
+         */
+        averageViewPercentage?: number;
         subscribersGained?: number;
         subscribersLost?: number;
         likes?: number;
@@ -5575,6 +5583,70 @@ export type YouTubeScopeMissingResponse = {
          * URL to redirect user for reauthorization
          */
         reauthorizeUrl?: string;
+    };
+};
+
+export type YouTubeVideoRetentionResponse = {
+    success?: boolean;
+    /**
+     * The Zernio account ID for the YouTube account
+     */
+    accountId?: string;
+    /**
+     * The YouTube video ID
+     */
+    videoId?: string;
+    /**
+     * Video title
+     */
+    title?: (string) | null;
+    /**
+     * When the video was published on YouTube
+     */
+    publishedAt?: (string) | null;
+    /**
+     * Video length in seconds (from YouTube contentDetails.duration)
+     */
+    durationSeconds?: (number) | null;
+    dateRange?: {
+        startDate?: string;
+        endDate?: string;
+    };
+    /**
+     * Up to 100 points covering the video timeline, aggregated over the date range. Empty for videos with very few views.
+     */
+    retentionCurve?: Array<{
+        /**
+         * Position in the video as a ratio (0.01-1.0, exclusive end of each interval)
+         */
+        elapsedVideoTimeRatio?: number;
+        /**
+         * Absolute share of viewers watching at this point. Can exceed 1 (rewinds/looping, common on Shorts).
+         */
+        audienceWatchRatio?: number;
+        /**
+         * Retention vs videos of similar length (0 = worst, 0.5 = median, 1 = best)
+         */
+        relativeRetentionPerformance?: number;
+        /**
+         * Viewers who started watching in this segment
+         */
+        startedWatching?: number;
+        /**
+         * Viewers who stopped watching in this segment
+         */
+        stoppedWatching?: number;
+        /**
+         * Total views of this segment, including rewatches
+         */
+        totalSegmentImpressions?: number;
+    }>;
+    /**
+     * Present only when the curve is empty, explaining why
+     */
+    note?: string;
+    scopeStatus?: {
+        hasAnalyticsScope?: boolean;
     };
 };
 
@@ -5968,6 +6040,44 @@ export type GetYouTubeDailyViewsError = ({
 } | {
     error?: string;
     code?: string;
+} | YouTubeScopeMissingResponse | {
+    success?: boolean;
+    error?: string;
+});
+
+export type GetYouTubeVideoRetentionData = {
+    query: {
+        /**
+         * The Zernio account ID for the YouTube account
+         */
+        accountId: string;
+        /**
+         * End date (YYYY-MM-DD). Defaults to 3 days ago (YouTube data latency).
+         */
+        endDate?: string;
+        /**
+         * Start date (YYYY-MM-DD). Defaults to the video's publish date (lifetime curve).
+         */
+        startDate?: string;
+        /**
+         * The YouTube video ID (e.g., "dQw4w9WgXcQ")
+         */
+        videoId: string;
+    };
+};
+
+export type GetYouTubeVideoRetentionResponse = (YouTubeVideoRetentionResponse);
+
+export type GetYouTubeVideoRetentionError = ({
+    error?: string;
+} | {
+    error?: string;
+    code?: string;
+} | {
+    error?: string;
+    type?: string;
+    code?: string;
+    param?: string;
 } | YouTubeScopeMissingResponse | {
     success?: boolean;
     error?: string;

@@ -229,6 +229,7 @@ try {
 | `analytics.getYouTubeChannelInsights()` | Get YouTube channel-level insights |
 | `analytics.getYouTubeDailyViews()` | Get YouTube daily views |
 | `analytics.getYouTubeDemographics()` | Get YouTube demographics |
+| `analytics.getYouTubeVideoRetention()` | Get YouTube video retention curve |
 
 ### Account Groups
 | Method | Description |
