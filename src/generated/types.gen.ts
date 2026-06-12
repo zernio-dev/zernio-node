@@ -15531,6 +15531,13 @@ export type GetWhatsAppNumberKycFormResponse = ({
     reusable?: {
         available?: boolean;
         fromPhoneNumber?: string;
+        /**
+         * Human-readable summary of the verification on file (field labels + values, plus the address as one line). Best-effort — may be empty if the provider lookup fails.
+         */
+        details?: Array<{
+            label?: string;
+            value?: string;
+        }>;
     } | null;
 });
 
