@@ -358,6 +358,10 @@ export type AdCampaign = {
     accountId?: string;
     profileId?: string;
     /**
+     * Google-only. Raw campaign.advertising_channel_type. See AdTreeCampaign.advertisingChannelType.
+     */
+    advertisingChannelType?: (string) | null;
+    /**
      * Raw Meta campaign objective (e.g. OUTCOME_SALES, OUTCOME_LEADS, OUTCOME_TRAFFIC)
      */
     platformObjective?: (string) | null;
@@ -579,6 +583,10 @@ export type AdTreeCampaign = {
     platformAdAccountName?: (string) | null;
     accountId?: string;
     profileId?: string;
+    /**
+     * Google-only. Raw campaign.advertising_channel_type (SEARCH, PERFORMANCE_MAX, VIDEO, DEMAND_GEN, DISPLAY, SHOPPING, ...). Serving surface, distinct from platformObjective (advertiser intent). Null/absent for non-Google platforms.
+     */
+    advertisingChannelType?: (string) | null;
     /**
      * Raw Meta campaign objective (e.g. OUTCOME_SALES, OUTCOME_LEADS, OUTCOME_TRAFFIC)
      */
