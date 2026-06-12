@@ -12862,8 +12862,14 @@ export type SendInboxMessageData = {
          * Use `buttons` / `quickReplies` for simple button replies
          * (WhatsApp's `interactive.type: "button"`) — the abstraction caps at
          * 3 buttons and handles the auto-conversion for you. Use this field
-         * only for `list`, `cta_url`, `flow`, or `location_request_message`
-         * messages.
+         * only for `list`, `cta_url`, `flow`, `location_request_message`, or
+         * `voice_call` messages.
+         *
+         * For `voice_call`, the message renders WhatsApp's native call
+         * button; tapping it starts a voice call to your business number.
+         * Requires WhatsApp Business Calling to be enabled on the sending
+         * number. The optional `parameters.payload` string is echoed back on
+         * the `calls` webhook (as `cta_payload`) for attribution.
          *
          * For `location_request_message`, `action` may be omitted (we default
          * it to `{ "name": "send_location" }`). WhatsApp renders a localized
@@ -12878,7 +12884,7 @@ export type SendInboxMessageData = {
             /**
              * Which interactive layout to render.
              */
-            type: 'list' | 'cta_url' | 'flow' | 'location_request_message';
+            type: 'list' | 'cta_url' | 'flow' | 'location_request_message' | 'voice_call';
             /**
              * Optional header shown above the body.
              */
@@ -12949,6 +12955,25 @@ export type SendInboxMessageData = {
          * Target URL opened when the user taps the button.
          */
         url: string;
+    };
+} | {
+    name: 'voice_call';
+    /**
+     * All optional.
+     */
+    parameters?: {
+        /**
+         * Button label. Defaults to "Call Now".
+         */
+        display_text?: string;
+        /**
+         * How long the button stays tappable. Defaults to 10080 (7 days).
+         */
+        ttl_minutes?: number;
+        /**
+         * Arbitrary string echoed back as `cta_payload` on the `calls` webhook (connect/terminate) for attribution.
+         */
+        payload?: string;
     };
 } | {
     name: 'flow';
@@ -14510,6 +14535,10 @@ export type GetWhatsAppCallingConfigResponse = ({
     phoneNumberDocId?: string;
     phoneNumber?: string;
     callingEnabled?: boolean;
+    /**
+     * Public calling deep link (https://wa.me/call/<number>). Tapping it on a phone starts a WhatsApp voice call to this number. Embed it on websites, emails, or QR codes. Null while calling is disabled; not supported by WhatsApp desktop clients.
+     */
+    callDeepLink?: (string) | null;
     /**
      * tel:+E164 / sip:... / wss://... destination
      */
