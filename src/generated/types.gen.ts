@@ -6191,6 +6191,13 @@ export type GetDailyMetricsData = {
          */
         accountId?: string;
         /**
+         * How each post's engagement is attributed to a day.
+         * "publish" (default) sums each post's lifetime total on its publish date.
+         * "received" buckets the per-day increase in engagement by the day it actually arrived (engagement-over-time), so engagement on older posts appears on the day it was gained rather than the post's publish date.
+         *
+         */
+        attribution?: 'publish' | 'received';
+        /**
          * Inclusive start date (ISO 8601). Defaults to 180 days ago.
          */
         fromDate?: string;
