@@ -631,6 +631,7 @@ try {
 | `whatsapp.createWhatsAppGroupInviteLink()` | Create invite link |
 | `whatsapp.createWhatsAppTemplate()` | Create template |
 | `whatsapp.getWhatsAppBlockedUsers()` | List blocked users |
+| `whatsapp.getWhatsAppBlockStatus()` | Check if a user is blocked |
 | `whatsapp.getWhatsAppBusinessProfile()` | Get business profile |
 | `whatsapp.getWhatsAppDataset()` | Get CTWA conversions dataset |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name status |

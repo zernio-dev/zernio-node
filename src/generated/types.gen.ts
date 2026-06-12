@@ -14922,6 +14922,24 @@ export type GetWhatsAppNumberInfoError = (unknown | {
     error?: string;
 });
 
+export type GetWhatsAppBlockStatusData = {
+    query: {
+        accountId: string;
+        /**
+         * Consumer wa_id or E.164 phone (leading + optional)
+         */
+        user: string;
+    };
+};
+
+export type GetWhatsAppBlockStatusResponse = ({
+    blocked?: boolean;
+});
+
+export type GetWhatsAppBlockStatusError = ({
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppBlockedUsersData = {
     query: {
         /**
