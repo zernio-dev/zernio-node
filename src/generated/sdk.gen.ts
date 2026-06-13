@@ -5329,8 +5329,14 @@ export const listConversionDestinations = <ThrowOnError extends boolean = false>
  * LinkedIn (conversion rule) and Google Ads (conversion action). Meta
  * manages destinations in its own UI and returns 405.
  *
- * **WARNING: creation is NOT idempotent.** A retry creates a second
+ * **LinkedIn:** creation is NOT idempotent. A retry creates a second
  * destination. Deduplicate before retrying.
+ *
+ * **Google Ads:** calling with a name that already exists reuses the
+ * existing conversion action transparently (the response is identical to
+ * a fresh create). Calling with the same name but a different category
+ * returns a typed `IDEMPOTENCY_CONFLICT` (409) rather than silently
+ * returning the mismatched action.
  *
  * **LinkedIn:** the rule is created with `conversionMethod=CONVERSIONS_API`
  * and (by default) auto-associated with all of the ad account's campaigns
