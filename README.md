@@ -382,7 +382,7 @@ try {
 | `ads.listFormLeads()` | List leads for a single form |
 | `ads.listLeadForms()` | List Lead Gen (Instant) forms |
 | `ads.listLeads()` | List submitted leads (cross-form CRM view) |
-| `ads.createConversionDestination()` | Create a conversion destination (LinkedIn) |
+| `ads.createConversionDestination()` | Create a conversion destination (LinkedIn, Google Ads) |
 | `ads.createCtwaAd()` | Create Click-to-WhatsApp ad(s) |
 | `ads.createLeadForm()` | Create a Lead Gen (Instant) form |
 | `ads.createStandaloneAd()` | Create standalone ad |

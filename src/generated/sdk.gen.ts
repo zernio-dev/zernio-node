@@ -5324,11 +5324,15 @@ export const listConversionDestinations = <ThrowOnError extends boolean = false>
 };
 
 /**
- * Create a conversion destination (LinkedIn)
- * Create a new conversion rule on the platform. LinkedIn-only today;
- * other platforms manage destinations in their own UIs and return 405.
+ * Create a conversion destination (LinkedIn, Google Ads)
+ * Create a new conversion destination on the platform. Supported for
+ * LinkedIn (conversion rule) and Google Ads (conversion action). Meta
+ * manages destinations in its own UI and returns 405.
  *
- * For LinkedIn, the rule is created with `conversionMethod=CONVERSIONS_API`
+ * **WARNING: creation is NOT idempotent.** A retry creates a second
+ * destination. Deduplicate before retrying.
+ *
+ * **LinkedIn:** the rule is created with `conversionMethod=CONVERSIONS_API`
  * and (by default) auto-associated with all of the ad account's campaigns
  * via `autoAssociationType=ALL_CAMPAIGNS`. Pass `autoAssociationType: NONE`
  * to opt out and manage associations explicitly via the associations
@@ -5337,6 +5341,17 @@ export const listConversionDestinations = <ThrowOnError extends boolean = false>
  * 365-day attribution windows are only valid for `SUBMIT_APPLICATION`,
  * `PURCHASE`, `ADD_TO_CART`, `QUALIFIED_LEAD`, and `LEAD` rule types;
  * the API rejects other combinations locally.
+ *
+ * **Google Ads:** the conversion action is created with
+ * `type=UPLOAD_CLICKS` (required for API-uploaded offline conversions,
+ * immutable after creation). The `type` field carries the Google
+ * `ConversionActionCategory` enum value, e.g. `PURCHASE`,
+ * `SUBSCRIBE_PAID`, `SIGNUP`, `IMPORTED_LEAD`, `BOOK_APPOINTMENT`.
+ * Unified standard event names (e.g. `Purchase`, `Subscribe`,
+ * `CompleteRegistration`, `Lead`, `Schedule`) are resolved to their
+ * Google category equivalents automatically. The action defaults to
+ * secondary (non-primary) to avoid immediately steering Smart Bidding;
+ * pass `primaryForGoal: true` to opt in.
  *
  */
 export const createConversionDestination = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateConversionDestinationData, ThrowOnError>) => {

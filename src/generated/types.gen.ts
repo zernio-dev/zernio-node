@@ -21046,44 +21046,54 @@ export type ListConversionDestinationsError = (unknown | {
 export type CreateConversionDestinationData = {
     body: {
         /**
-         * Sponsored ad account ID. Numeric (e.g. "5123456") or
-         * full `urn:li:sponsoredAccount:{id}` URN.
+         * Ad account ID. For LinkedIn: numeric (e.g. "5123456") or
+         * full `urn:li:sponsoredAccount:{id}` URN. For Google: numeric
+         * customer ID (e.g. "1234567890") or `customers/{id}` form.
          *
          */
         adAccountId: string;
         name: string;
         /**
-         * Either a unified standard event name (e.g. "Purchase",
-         * "Lead", "AddToCart") or a LinkedIn rule type enum value
-         * (e.g. "PURCHASE", "QUALIFIED_LEAD"). The API maps
-         * standard names to LinkedIn enum values automatically.
+         * Conversion type. For LinkedIn: a unified standard event name
+         * (e.g. "Purchase", "Lead", "AddToCart") or a LinkedIn rule
+         * type enum (e.g. "PURCHASE", "QUALIFIED_LEAD"). For Google:
+         * a unified standard event name (Purchase, Subscribe,
+         * CompleteRegistration, Lead, Schedule) or a Google
+         * ConversionActionCategory enum value directly (e.g.
+         * "PURCHASE", "SUBSCRIBE_PAID", "SIGNUP", "IMPORTED_LEAD",
+         * "BOOK_APPOINTMENT"). Unknown values pass through to the
+         * platform.
          *
          */
         type: string;
+        /**
+         * LinkedIn only.
+         */
         attributionType?: 'LAST_TOUCH_BY_CAMPAIGN' | 'LAST_TOUCH_BY_CONVERSION';
         /**
-         * Default 30. 365 only allowed for LEAD, PURCHASE,
-         * ADD_TO_CART, QUALIFIED_LEAD, SUBMIT_APPLICATION rule
-         * types — the API rejects other combinations locally.
+         * LinkedIn only. Default 30. 365 only allowed for LEAD,
+         * PURCHASE, ADD_TO_CART, QUALIFIED_LEAD, SUBMIT_APPLICATION
+         * rule types; the API rejects other combinations locally.
          *
          */
         postClickAttributionWindowSize?: 1 | 7 | 30 | 90 | 365;
         /**
-         * Default 7. Same 365-day-window type restriction applies
-         * as `postClickAttributionWindowSize`.
+         * LinkedIn only. Default 7. Same 365-day-window type
+         * restriction applies as `postClickAttributionWindowSize`.
          *
          */
         viewThroughAttributionWindowSize?: 1 | 7 | 30 | 90 | 365;
         /**
-         * DYNAMIC (default) uses the per-event `value` from
-         * `sendConversions`. FIXED uses the rule's `value` field.
+         * LinkedIn only. DYNAMIC (default) uses the per-event `value`
+         * from `sendConversions`. FIXED uses the rule's `value` field.
          * NO_VALUE drops monetary value entirely.
          *
          */
         valueType?: 'DYNAMIC' | 'FIXED' | 'NO_VALUE';
         /**
-         * Static conversion value. Used when `valueType=FIXED`.
-         * The currency should match the ad account's currency.
+         * LinkedIn only. Static conversion value. Used when
+         * `valueType=FIXED`. The currency should match the ad
+         * account's currency.
          *
          */
         value?: {
@@ -21097,7 +21107,8 @@ export type CreateConversionDestinationData = {
             amount: string;
         };
         /**
-         * Controls campaign association at rule-creation time:
+         * LinkedIn only. Controls campaign association at rule-creation
+         * time:
          * - ALL_CAMPAIGNS: associate the rule with every active,
          * paused, and draft campaign in the ad account
          * - OBJECTIVE_BASED: associate only campaigns whose
@@ -21110,17 +21121,32 @@ export type CreateConversionDestinationData = {
          *
          */
         autoAssociationType?: 'ALL_CAMPAIGNS' | 'OBJECTIVE_BASED' | 'NONE';
+        /**
+         * Google Ads only. Whether to count multiple conversions from
+         * the same click (MANY_PER_CLICK) or at most one
+         * (ONE_PER_CLICK). Defaults to MANY_PER_CLICK if omitted.
+         *
+         */
+        countingType?: 'MANY_PER_CLICK' | 'ONE_PER_CLICK';
+        /**
+         * Google Ads only. When true, the conversion action is marked
+         * as primary and immediately influences Smart Bidding. Defaults
+         * to false (secondary, record-only) to avoid unintentionally
+         * steering the customer's campaigns on creation.
+         *
+         */
+        primaryForGoal?: boolean;
     };
     path: {
         /**
-         * SocialAccount ID (linkedinads).
+         * SocialAccount ID (linkedinads or googleads).
          */
         accountId: string;
     };
 };
 
 export type CreateConversionDestinationResponse = ({
-    platform?: 'linkedinads';
+    platform?: 'linkedinads' | 'googleads';
     destination?: ConversionDestination;
 });
 
