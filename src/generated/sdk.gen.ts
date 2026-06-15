@@ -5221,12 +5221,18 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * - Meta (`metaads`) via Graph API
  * - Google Ads (`googleads`) via Data Manager API `ingestEvents`
  * - LinkedIn (`linkedinads`) via `/rest/conversionEvents`
+ * - TikTok (`tiktokads`) via the Offline Events API `/offline/batch/` — OFFLINE conversions only
  *
  * `destinationId` semantics differ per platform:
  *
  * - Meta: pixel (dataset) ID, e.g. `123456789012345`
  * - Google: conversion action resource name, e.g. `customers/1234567890/conversionActions/987654321`
  * - LinkedIn: conversion rule ID or URN, e.g. `104012` or `urn:lla:llaPartnerConversion:104012`
+ * - TikTok: Offline Event Set ID, e.g. `7057103914977558530`
+ *
+ * TikTok notes: this path sends OFFLINE conversions (in-store / CRM / call-center), not web-pixel
+ * events. Each event must carry an email or phone (TikTok requires at least one). The connected
+ * TikTok ads account must have granted the Offline Events permission; older grants must reconnect.
  *
  * Callers can list valid destinations via `GET /v1/accounts/{accountId}/conversion-destinations`.
  *

@@ -18904,7 +18904,11 @@ export type GetAdTreeData = {
          */
         adAccountId?: string;
         /**
-         * Start of metrics date range (YYYY-MM-DD). Defaults to 90 days ago.
+         * Restrict the tree to a single campaign by its platform campaign id (the id the platform assigns, e.g. Meta's numeric campaign id). Filters the campaign set itself, so it works regardless of account size and pagination — pass this when you already hold a campaign id instead of paging the tree to find it. Mirrors the `campaignId` filter on GET /v1/ads.
+         */
+        campaignId?: string;
+        /**
+         * Start of the METRICS date range (YYYY-MM-DD). Affects only the spend/impression numbers overlaid on each node, NOT which campaigns are returned. Defaults to 90 days ago.
          */
         fromDate?: string;
         /**
@@ -20861,7 +20865,7 @@ export type GetConversionsQualityError = ({
 export type SendConversionsData = {
     body: {
         /**
-         * SocialAccount ID (metaads, googleads, or linkedinads).
+         * SocialAccount ID (metaads, googleads, linkedinads, or tiktokads).
          */
         accountId: string;
         /**
@@ -20891,7 +20895,7 @@ export type SendConversionsData = {
 };
 
 export type SendConversionsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads';
     /**
      * Events accepted by the platform.
      */
@@ -21004,14 +21008,14 @@ export type AdjustConversionsError = (unknown | {
 export type ListConversionDestinationsData = {
     path: {
         /**
-         * SocialAccount ID (metaads, googleads, or linkedinads).
+         * SocialAccount ID (metaads, googleads, linkedinads, or tiktokads).
          */
         accountId: string;
     };
 };
 
 export type ListConversionDestinationsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads';
     destinations?: Array<{
         /**
          * Destination identifier. Meta: pixel ID. Google:
