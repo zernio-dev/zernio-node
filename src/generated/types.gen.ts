@@ -2171,6 +2171,10 @@ export type LinkedInPlatformData = {
      * Set to true to disable automatic link previews for URLs in the post content (default is false)
      */
     disableLinkPreview?: boolean;
+    /**
+     * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. The published post becomes a quote-reshare: your content is shown as the commentary and the original post is embedded underneath (LinkedIn's "repost with your thoughts"). Mutually exclusive with media. Works on personal profiles and organization pages.
+     */
+    reshareUrl?: string;
     geoRestriction?: GeoRestriction;
 };
 
