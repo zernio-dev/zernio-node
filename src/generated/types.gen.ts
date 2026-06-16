@@ -45,7 +45,7 @@ export type AccountWithFollowerStats = SocialAccount & {
          */
         mediaCount?: number;
         /**
-         * Total videos (YouTube
+         * Total videos (YouTube, TikTok)
          */
         videoCount?: number;
         /**
@@ -1179,7 +1179,7 @@ export type DiscordPlatformData = {
         };
         footer?: {
             /**
-             * Footer text (max 2
+             * Footer text (max 2,048 chars)
              */
             text?: string;
             icon_url?: string;
@@ -1201,7 +1201,7 @@ export type DiscordPlatformData = {
              */
             name: string;
             /**
-             * Field value (max 1
+             * Field value (max 1,024 chars)
              */
             value: string;
             /**
@@ -2729,7 +2729,7 @@ export type RedditPost = {
     author?: string;
     subreddit?: string;
     /**
-     * Post URL (may be a gallery URL
+     * Post URL (may be a gallery URL, external link, or self-post URL)
      */
     url?: string;
     /**
@@ -2822,7 +2822,7 @@ export type SharedAdAccount = {
     id: string;
     name?: string;
     /**
-     * Business Manager id that owns the ad account
+     * Business Manager id that owns the ad account, when reported.
      */
     businessId?: string;
 };
@@ -4239,7 +4239,7 @@ export type WebhookPayloadConversationStarted = {
         platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky';
         platformConversationId: string;
         /**
-         * Contact's platform identifier (IGSID
+         * Contact's platform identifier (IGSID, PSID, wa_id, etc.)
          */
         participantId?: string;
         participantName: string;
@@ -8491,7 +8491,7 @@ export type ConfigureTikTokAdsBrandIdentityData = {
 export type ConfigureTikTokAdsBrandIdentityResponse = ({
     success?: boolean;
     /**
-     * The TikTok-assigned identity_id
+     * The TikTok-assigned identity_id, cached on the account.
      */
     identityId?: string;
     displayName?: string;
@@ -8824,7 +8824,7 @@ export type GetGoogleBusinessVerificationsResponse = ({
      */
     voiceOfMerchantState?: {
         /**
-         * True when the listing is verified and published (eligible to surface reviews
+         * True when the listing is verified and published (eligible to surface reviews, edits, etc.).
          */
         hasVoiceOfMerchant?: boolean;
         /**
@@ -9850,7 +9850,7 @@ export type BatchGetGoogleBusinessReviewsResponse = ({
          */
         name?: string;
         /**
-         * The review object (reviewId
+         * The review object (reviewId, starRating, comment, reviewer, createTime, updateTime, reviewReply)
          */
         review?: {
             [key: string]: unknown;
@@ -12716,7 +12716,7 @@ export type GetInboxConversationMessagesResponse = ({
         reactions?: Array<{
             emoji?: string;
             /**
-             * true if the connected account reacted
+             * true if the connected account reacted, false if the contact did.
              */
             fromMe?: boolean;
             reactedAt?: string;
@@ -13061,7 +13061,7 @@ export type SendInboxMessageData = {
                  */
                 text?: string;
                 /**
-                 * Callback data (inline_keyboard only
+                 * Callback data (inline_keyboard only, max 64 bytes)
                  */
                 callbackData?: string;
                 /**
@@ -13690,11 +13690,11 @@ export type GetInboxPostCommentsResponse = ({
         canReply?: boolean;
         canDelete?: boolean;
         /**
-         * Whether this comment can be hidden (Facebook
+         * Whether this comment can be hidden (Facebook, Instagram, Threads)
          */
         canHide?: boolean;
         /**
-         * Whether this comment can be liked (Facebook
+         * Whether this comment can be liked (Facebook, Twitter/X, Bluesky, Reddit)
          */
         canLike?: boolean;
         /**
@@ -13748,11 +13748,11 @@ export type GetInboxPostCommentsResponse = ({
          */
         selftext?: string;
         /**
-         * Reddit username
+         * Reddit username, without the u/ prefix
          */
         author?: string;
         /**
-         * Subreddit name
+         * Subreddit name, without the r/ prefix
          */
         subreddit?: string;
         /**
@@ -13760,7 +13760,7 @@ export type GetInboxPostCommentsResponse = ({
          */
         permalink?: string;
         /**
-         * For link posts
+         * For link posts, the external URL; for self-posts, the Reddit permalink
          */
         url?: string;
         /**
@@ -14587,7 +14587,7 @@ export type EnableWhatsAppCallingData = {
         forwardTo: string;
         sipAuthUsername?: string;
         /**
-         * Stored encrypted
+         * Stored encrypted, never returned by any endpoint.
          */
         sipAuthPassword?: string;
         recordingEnabled?: boolean;
@@ -14651,7 +14651,7 @@ export type GetWhatsAppCallPermissionsData = {
     query: {
         accountId: string;
         /**
-         * Consumer wa_id (E.164
+         * Consumer wa_id (E.164, leading + optional)
          */
         to: string;
     };
@@ -14679,7 +14679,7 @@ export type InitiateWhatsAppCallData = {
     body: {
         accountId: string;
         /**
-         * Consumer wa_id (E.164
+         * Consumer wa_id (E.164, leading + optional)
          */
         to: string;
         /**
@@ -15295,7 +15295,7 @@ export type GetWhatsAppPhoneNumbersResponse = ({
         country?: string;
         status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
         /**
-         * For regulated numbers
+         * For regulated numbers, who it's registered for (company or person) — set from the submitted KYC.
          */
         registrantName?: (string) | null;
         /**
@@ -15659,7 +15659,7 @@ export type ValidateWhatsAppNumberKycAddressData = {
          */
         locality: string;
         /**
-         * State / province / region. When omitted
+         * State / province / region. When omitted, the pre-check is skipped (the final submit still validates).
          */
         administrative_area?: string;
         postal_code: string;
@@ -17693,7 +17693,7 @@ export type TriggerWorkflowData = {
          */
         conversationId?: string;
         /**
-         * Simulated inbound text
+         * Simulated inbound text, seeded as the run's lastMessage variable
          */
         text?: string;
     };
@@ -17800,7 +17800,7 @@ export type ListWorkflowVersionsResponse = ({
          */
         createdByEmail?: (string) | null;
         /**
-         * When non-null
+         * When non-null, this snapshot was created by restoring that version
          */
         restoredFromVersion?: (number) | null;
         createdAt?: string;
