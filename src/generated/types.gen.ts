@@ -20042,6 +20042,11 @@ export type CreateStandaloneAdData = {
          * placement. Each rule's `placements` accepts the same fields as the top-level
          * `placements` object; Meta enforces co-selection rules and returns an actionable error.
          *
+         * Note on text rendering: Meta suppresses primary text and headline on fullscreen
+         * placements (Stories and Reels) in actual ad delivery; the fields are accepted and
+         * the ad publishes, but the copy is not shown to users. For visible copy on those
+         * placements, bake the text into the creative image or video itself.
+         *
          * A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad
          * format). Image mode: `defaultImageUrl` + `rules[].imageUrl`. Video mode:
          * `defaultVideoUrl` + `rules[].videoUrl` (optional `thumbnailUrl`/`defaultThumbnailUrl`
