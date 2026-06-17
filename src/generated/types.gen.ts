@@ -1385,12 +1385,56 @@ export type DmButton = {
 
 export type type2 = 'url' | 'postback' | 'phone';
 
+/**
+ * Canonical error envelope. `error` is the human-readable message; `type`,
+ * `code`, `param`, `platform`, and `platformError` are top-level siblings
+ * for programmatic handling. For upstream platform failures (`type:
+ * platform_error`), `platformError` carries the provider's raw payload
+ * verbatim (for Meta: `error_subcode`, `error_user_title`, `error_user_msg`).
+ *
+ */
 export type ErrorResponse = {
+    /**
+     * Human-readable error message.
+     */
     error?: string;
+    /**
+     * Error class for programmatic handling.
+     */
+    type?: 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+    /**
+     * Stable machine-readable error code.
+     */
+    code?: string;
+    /**
+     * The request field that caused the error, when applicable.
+     */
+    param?: string;
+    /**
+     * Upstream platform (e.g. meta, google, tiktok) — present when type is platform_error.
+     */
+    platform?: string;
+    /**
+     * Raw error payload from the upstream platform, passed through verbatim so
+     * integrators can read provider-specific codes. For Meta this includes
+     * error_subcode, error_user_title, and error_user_msg.
+     *
+     */
+    platformError?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Additional structured context (e.g. field-level validation errors).
+     */
     details?: {
         [key: string]: unknown;
     };
 };
+
+/**
+ * Error class for programmatic handling.
+ */
+export type type3 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
  * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published (url required) and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
@@ -1402,7 +1446,7 @@ export type ExternalPostMediaItem = {
     thumbnail?: string;
 };
 
-export type type3 = 'image' | 'video';
+export type type4 = 'image' | 'video';
 
 /**
  * Native (external) post data shared by all post.external.* payloads.
@@ -1706,7 +1750,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type4 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type5 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * Type of offer
@@ -2215,7 +2259,7 @@ export type MediaItem = {
     tiktokProcessed?: boolean;
 };
 
-export type type5 = 'image' | 'video' | 'gif' | 'document';
+export type type6 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
@@ -3365,7 +3409,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type6 = 'image' | 'video' | 'document';
+export type type7 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -5235,7 +5279,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type7 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type8 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -5393,7 +5437,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type8 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type9 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
