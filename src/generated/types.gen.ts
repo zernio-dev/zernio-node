@@ -19660,6 +19660,10 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
+         * Meta only. Publish state of the created ad set + ad. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused and skips activation, so you can review before they spend.
+         */
+        status?: 'ACTIVE' | 'PAUSED';
+        /**
          * Meta only. Where the budget lives, which selects the Meta budget model:
          * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the
          * ad set. This is the back-compatible behaviour — omit this field to keep it.
@@ -19787,6 +19791,30 @@ export type CreateStandaloneAdData = {
          *
          */
         adSetId?: string;
+        /**
+         * Meta only. Add the new ad set under this EXISTING campaign
+         * instead of creating a new one (multi-ad-set audience testing).
+         * The new ad set's budget is matched to the campaign's mode
+         * automatically: for a CBO campaign (campaign-level budget) omit
+         * `budgetAmount`/`budgetType` — the campaign owns the budget; for
+         * an ABO campaign pass them (they go on the new ad set). On
+         * failure only the new ad set is cleaned up; the existing campaign
+         * is left untouched and is never (re)activated. Mutually exclusive
+         * with `adSetId` and `creatives[]`.
+         *
+         */
+        existingCampaignId?: string;
+        /**
+         * Meta only. Reuse an EXISTING ad creative by id instead of
+         * building a new one from the copy/media fields (which are then
+         * ignored). Combine with `existingCampaignId` to build a
+         * multi-ad-set campaign that shares one creative. Mutually
+         * exclusive with `creatives[]`, `dynamicCreative`, and
+         * `placementAssets`. The creative id used is returned as
+         * `creativeId` on the create response.
+         *
+         */
+        existingCreativeId?: string;
         /**
          * Google Display only
          */
