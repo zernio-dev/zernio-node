@@ -19941,10 +19941,9 @@ export type CreateStandaloneAdData = {
          * additionally enforces co-selection rules (e.g. some positions require their parent
          * publisher platform) and returns an actionable error which we surface. Non-Meta
          * platforms reject this field.
-         * Mutually exclusive with `rawTargeting` — sending both returns a 422. If you need
-         * manual placements alongside raw targeting, include `publisher_platforms`,
-         * `facebook_positions`, `instagram_positions`, etc. directly inside the `rawTargeting`
-         * object using Meta's snake_case field names.
+         * Can be combined with `rawTargeting` — when both are set, the placement spec is
+         * converted to Meta's snake_case and merged into the raw targeting object before
+         * it is sent to Meta.
          *
          */
         placements?: {
@@ -19976,11 +19975,11 @@ export type CreateStandaloneAdData = {
          * business places, etc.) — exactly the shape `GET /v1/ads/{adId}` returns for external ads. Use it to
          * clone a campaign's targeting EXACTLY, preserving advanced fields the camelCase targeting fields can't
          * model. Mutually exclusive with the camelCase targeting fields (countries/regions/cities/interests/
-         * ageMin/.../placements), `audienceId`, and `savedTargetingId` (sending both → 422). Sent as-is; Meta
-         * validates and surfaces any errors. If cloning an EU campaign, also pass `dsaBeneficiary` / `dsaPayor`
-         * (those are separate fields, not part of targeting).
-         * To set manual placements alongside rawTargeting, include Meta's placement fields directly inside this
-         * object: `publisher_platforms`, `facebook_positions`, `instagram_positions`, etc.
+         * ageMin/...), `audienceId`, and `savedTargetingId` (sending both → 422). Sent as-is; Meta validates and
+         * surfaces any errors. If cloning an EU campaign, also pass `dsaBeneficiary` / `dsaPayor` (those are
+         * separate fields, not part of targeting).
+         * Can be combined with the top-level `placements` field — when both are present, placements are
+         * converted to Meta's snake_case and merged into this object before it is sent to Meta.
          *
          */
         rawTargeting?: {
