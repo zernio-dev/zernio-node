@@ -19660,9 +19660,22 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Meta only. Publish state of the created ad set + ad. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused and skips activation, so you can review before they spend.
+         * Meta only. Desired publish state of the ad (and, on the legacy/multi-ad-set shapes, the ad set too).
+         * Omitted or `ACTIVE` publishes live immediately (default). `PAUSED` creates the objects paused and skips
+         * activation — useful to stage ads before they spend. On the attach shape (`adSetId`), only the new ad is
+         * affected; the existing ad set and campaign are already live and are not touched.
+         *
          */
         status?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Meta only. Independent publish state for the CAMPAIGN when the create makes both a new campaign and a
+         * new ad set (legacy shape). When omitted, the campaign follows `status`. Use this to stage a paused
+         * campaign with an active ad set (`status: ACTIVE, campaignStatus: PAUSED`) — the ad set will start
+         * delivering as soon as the campaign is activated later. Ignored when `existingCampaignId` is set (the
+         * campaign is already live and its status is not changed).
+         *
+         */
+        campaignStatus?: 'ACTIVE' | 'PAUSED';
         /**
          * Meta only. Where the budget lives, which selects the Meta budget model:
          * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the
@@ -19807,11 +19820,16 @@ export type CreateStandaloneAdData = {
         /**
          * Meta only. Reuse an EXISTING ad creative by id instead of
          * building a new one from the copy/media fields (which are then
-         * ignored). Combine with `existingCampaignId` to build a
-         * multi-ad-set campaign that shares one creative. Mutually
-         * exclusive with `creatives[]`, `dynamicCreative`, and
-         * `placementAssets`. The creative id used is returned as
-         * `creativeId` on the create response.
+         * ignored). Works on both shapes:
+         * - Legacy/multi-ad-set (`existingCampaignId`): combine with
+         * `existingCampaignId` to build a multi-ad-set campaign that
+         * shares one creative across audiences.
+         * - Attach (`adSetId`): combine with `adSetId` to add a second
+         * (or Nth) ad to an existing ad set reusing the same creative —
+         * no `headline`/`body`/`imageUrl` required on the body.
+         * Mutually exclusive with `creatives[]`, `dynamicCreative`, and
+         * `placementAssets`. The creative id is returned as `creativeId`
+         * on the create response.
          *
          */
         existingCreativeId?: string;
