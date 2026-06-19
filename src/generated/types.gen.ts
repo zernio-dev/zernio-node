@@ -20560,8 +20560,47 @@ export type GetLeadFormData = {
 
 export type GetLeadFormResponse = ({
     status?: string;
+    /**
+     * Full form config — sufficient to duplicate the form via POST /v1/ads/lead-forms.
+     */
     form?: {
-        [key: string]: unknown;
+        id?: string;
+        name?: string;
+        /**
+         * ARCHIVED forms can't receive new leads.
+         */
+        status?: 'ACTIVE' | 'ARCHIVED';
+        locale?: string;
+        created_time?: string;
+        leads_count?: number;
+        privacy_policy_url?: string;
+        follow_up_action_url?: (string) | null;
+        questions?: Array<{
+            key?: string;
+            label?: string;
+            /**
+             * EMAIL, PHONE, FULL_NAME, FIRST_NAME, LAST_NAME, CUSTOM, …
+             */
+            type?: string;
+            options?: Array<{
+                key?: string;
+                value?: string;
+            }>;
+            inline_context?: string;
+        }>;
+        thank_you_page?: {
+            title?: string;
+            body?: string;
+            button_text?: string;
+            button_type?: string;
+            website_url?: string;
+        } | null;
+        /**
+         * Intro card shown before the form questions (title, content, button label).
+         */
+        context_card?: {
+            [key: string]: unknown;
+        } | null;
     };
 });
 
@@ -20691,9 +20730,9 @@ export type SearchAdTargetingData = {
          */
         dimension?: 'geo' | 'interest' | 'behavior' | 'income';
         /**
-         * Only used when `dimension=geo`. The kind of location to resolve. Defaults to `city`.
+         * Only used when `dimension=geo`. The kind of location to resolve. `place` resolves named points of interest (businesses, landmarks) by proximity. `neighborhood` resolves named neighbourhood areas. Defaults to `city`.
          */
-        geoType?: 'country' | 'region' | 'city' | 'zip' | 'metro';
+        geoType?: 'country' | 'region' | 'city' | 'subcity' | 'neighborhood' | 'place' | 'zip' | 'metro_area' | 'geo_market';
         /**
          * Maximum results to return.
          */
