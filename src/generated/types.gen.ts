@@ -635,6 +635,10 @@ export type AnalyticsListResponse = {
         platform?: string;
         platformPostUrl?: string;
         isExternal?: boolean;
+        /**
+         * True when the post is an ad creative. False for organic posts or platforms where the signal is unavailable. For now is only available for LinkedIn posts.
+         */
+        isAd?: boolean;
         profileId?: (string) | null;
         thumbnailUrl?: string;
         mediaType?: 'image' | 'video' | 'gif' | 'document' | 'carousel' | 'text';
