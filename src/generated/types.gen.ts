@@ -5714,6 +5714,35 @@ export type YouTubeVideoRetentionResponse = {
     };
 };
 
+export type SendSmsData = {
+    body: {
+        /**
+         * One of your SMS-enabled numbers (E.164).
+         */
+        from: string;
+        /**
+         * Recipient number (E.164).
+         */
+        to: string;
+        text?: string;
+        /**
+         * Publicly reachable media URLs for MMS (max 10, total < 1MB).
+         */
+        mediaUrls?: Array<(string)>;
+    };
+};
+
+export type SendSmsResponse = ({
+    /**
+     * Telnyx message id
+     */
+    id?: string;
+    conversationId?: string;
+    status?: string;
+});
+
+export type SendSmsError = unknown;
+
 export type ValidatePostLengthData = {
     body: {
         /**
