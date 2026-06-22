@@ -19620,6 +19620,17 @@ export type BoostPostData = {
          */
         roasAverageFloor?: number;
         /**
+         * Meta only. A raw Meta-native targeting spec passed to the ad set VERBATIM (snake_case:
+         * `geo_locations`, `custom_audiences`, `excluded_custom_audiences`, `flexible_spec`,
+         * `targeting_automation`, etc.). Use it to target specific custom or lookalike audiences,
+         * or to clone a campaign's targeting exactly. Mutually exclusive with `targeting` (sending
+         * both → 422). Sent as-is; Meta validates and surfaces any errors.
+         *
+         */
+        rawTargeting?: {
+            [key: string]: unknown;
+        };
+        /**
          * Meta only. Tracking specs (pixel, URL tags).
          */
         tracking?: {
