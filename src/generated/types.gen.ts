@@ -19988,6 +19988,36 @@ export type CreateStandaloneAdData = {
             address?: string;
         }>;
         /**
+         * Named points of interest (businesses, landmarks). Meta only. `key` from /v1/ads/targeting/search?dimension=geo&geoType=place. Maps to geo_locations.places.
+         */
+        places?: Array<{
+            key: string;
+        }>;
+        /**
+         * Named neighbourhood areas. Meta only. `key` from /v1/ads/targeting/search?dimension=geo&geoType=neighborhood. Maps to geo_locations.neighborhoods.
+         */
+        neighborhoods?: Array<{
+            key: string;
+        }>;
+        /**
+         * Geo exclusions. Meta only. Maps to excluded_geo_locations. Supports countries, regions, cities, and zips.
+         */
+        excludedLocations?: {
+            /**
+             * ISO-3166 alpha-2 country codes to exclude.
+             */
+            countries?: Array<(string)>;
+            regions?: Array<{
+                key: string;
+            }>;
+            cities?: Array<{
+                key: string;
+            }>;
+            zips?: Array<{
+                key: string;
+            }>;
+        };
+        /**
          * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta and TikTok. Each must include id.
          */
         behaviors?: Array<{
@@ -20533,7 +20563,51 @@ export type CreateLeadFormData = {
         thankYouButtonText?: string;
         thankYouButtonType?: string;
         thankYouWebsiteUrl?: string;
+        /**
+         * Legacy form type toggle. Prefer formType instead. false = More Volume, true = Higher Intent.
+         */
         isOptimizedForQuality?: boolean;
+        /**
+         * Form type. MORE_VOLUME = optimized for lead quantity (default). HIGHER_INTENT = adds a review/confirmation step before submit. RICH_CREATIVE = includes context card and custom headline to educate users before they submit. Supersedes isOptimizedForQuality.
+         */
+        formType?: 'MORE_VOLUME' | 'HIGHER_INTENT' | 'RICH_CREATIVE';
+        /**
+         * Sharing setting. true = Restricted (only people targeted by the ad can open the form link). false = Open (shareable link, default).
+         */
+        blockDisplayForNonTargetedViewer?: boolean;
+        /**
+         * Flexible form delivery. true = the form can surface organically on the Page (not just as a paid ad). Defaults to false.
+         */
+        allowOrganicLeadGen?: boolean;
+        /**
+         * Custom subheadline shown above the form fields on the questions page (the contact-information section description). Defaults to Meta's generic copy when omitted.
+         */
+        questionPageCustomHeadline?: string;
+        /**
+         * Intro card shown before the questions page. Omit to skip the intro screen.
+         */
+        contextCard?: {
+            /**
+             * Headline / title of the intro card.
+             */
+            title?: string;
+            /**
+             * Body text lines shown on the intro card.
+             */
+            content?: Array<(string)>;
+            /**
+             * Visual layout of the intro card.
+             */
+            style?: 'LIST_STYLE' | 'PARAGRAPH_STYLE';
+            /**
+             * CTA button label on the intro card.
+             */
+            buttonText?: string;
+            /**
+             * Image hash of the cover photo (obtain from the Meta Ad Images API). Omit to show no image.
+             */
+            coverPhoto?: string;
+        };
     };
 };
 
@@ -20730,9 +20804,9 @@ export type SearchAdTargetingData = {
          */
         dimension?: 'geo' | 'interest' | 'behavior' | 'income';
         /**
-         * Only used when `dimension=geo`. The kind of location to resolve. `place` resolves named points of interest (businesses, landmarks) by proximity. `neighborhood` resolves named neighbourhood areas. Defaults to `city`.
+         * Only used when `dimension=geo`. The kind of location to resolve. `place` resolves named points of interest (businesses, landmarks). `neighborhood` resolves named neighbourhood areas. Use `all` to search every geo type in a single relevance-ranked call — mirrors Meta's own unified search box. Defaults to `city`.
          */
-        geoType?: 'country' | 'region' | 'city' | 'subcity' | 'neighborhood' | 'place' | 'zip' | 'metro_area' | 'geo_market';
+        geoType?: 'all' | 'country' | 'region' | 'city' | 'subcity' | 'neighborhood' | 'place' | 'zip' | 'metro_area' | 'geo_market';
         /**
          * Maximum results to return.
          */
@@ -20766,6 +20840,14 @@ export type SearchAdTargetingResponse = ({
          * Optional estimated reachable users for this option, when the platform returns it.
          */
         audienceSize?: (number) | null;
+        /**
+         * Centre latitude of the location. Populated on Meta geo results (city, neighborhood, place, etc.). Useful for map views.
+         */
+        latitude?: (number) | null;
+        /**
+         * Centre longitude of the location.
+         */
+        longitude?: (number) | null;
     }>;
 });
 
