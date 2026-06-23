@@ -15675,7 +15675,7 @@ export type CreateWhatsAppNumberKycLinkData = {
          */
         branding?: {
             /**
-             * Your company name
+             * Your company name, shown on the hosted page.
              */
             companyName?: string;
             /**
@@ -15683,7 +15683,7 @@ export type CreateWhatsAppNumberKycLinkData = {
              */
             logoUrl?: string;
             /**
-             * Hex color (e.g. "#1a73e8") applied to the primary action.
+             * Hex color (e.g. #1a73e8) used as a brand accent on the page.
              */
             brandColor?: string;
         };
