@@ -2075,6 +2075,10 @@ export type InstagramPlatformData = {
      * Alias for instagramThumbnail. If both are provided, instagramThumbnail takes priority.
      */
     reelCover?: string;
+    /**
+     * When true, the post is labeled by Instagram as containing AI-generated media. Per Meta, this self-disclosure label is for AI-generated media, not AI-written captions. Applies to feed posts, Reels, Stories, and carousels.
+     */
+    isAiGenerated?: boolean;
 };
 
 /**
