@@ -15534,6 +15534,10 @@ export type SubmitWhatsAppNumberKycData = {
          */
         submissionId?: string;
         /**
+         * Provision several same-country numbers from one submission (1-5). The single verification covers all of them; each number is billed only when it activates. Numbers that fail to order are skipped (best-effort).
+         */
+        quantity?: number;
+        /**
          * Reuse a prior approved verification for this country (skips document/field collection; places the order immediately).
          */
         reuse?: boolean;
@@ -15585,11 +15589,23 @@ export type SubmitWhatsAppNumberKycData = {
 
 export type SubmitWhatsAppNumberKycResponse = ({
     status?: 'kyc_submitted' | 'kyc_reused' | 'kyc_already_submitted';
+    /**
+     * The first/primary number, kept at the top level for backward compatibility. See `numbers` for the full set when `quantity` > 1.
+     */
     phoneNumber?: {
         id?: string;
         status?: string;
         country?: string;
     };
+    /**
+     * Every number provisioned from this submission. Length equals the requested `quantity` on full success (fewer if some orders failed; best-effort). The first element mirrors `phoneNumber`.
+     */
+    numbers?: Array<{
+        id?: string;
+        status?: string;
+        phoneNumber?: string;
+        country?: string;
+    }>;
 });
 
 export type SubmitWhatsAppNumberKycError = (unknown | {
