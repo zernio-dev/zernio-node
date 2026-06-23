@@ -17254,7 +17254,9 @@ export type CreateBroadcastData = {
         template?: {
             name?: string;
             language?: string;
-            components?: unknown[];
+            components?: Array<{
+                [key: string]: unknown;
+            }>;
             /**
              * Maps template variable positions ("1", "2") to contact fields or static values. Resolved per recipient at send time.
              */
