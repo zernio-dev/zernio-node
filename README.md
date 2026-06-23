@@ -591,11 +591,6 @@ try {
 | `sequences.pauseSequence()` | Pause sequence |
 | `sequences.unenrollContact()` | Unenroll contact |
 
-### SMS
-| Method | Description |
-|--------|-------------|
-| `sms.sendSms()` | Send an SMS or MMS |
-
 ### Tracking Tags
 | Method | Description |
 |--------|-------------|

@@ -315,7 +315,6 @@ import {
   sendDiscordDirectMessage,
   sendInboxMessage,
   sendPrivateReplyToComment,
-  sendSms,
   sendTypingIndicator,
   sendWhatsAppConversion,
   sendWhatsAppFlowMessage,
@@ -448,13 +447,6 @@ export class Zernio {
    * Base URL for API requests.
    */
   baseURL: string;
-
-  /**
-   * sms API
-   */
-  sms = {
-    sendSms: sendSms,
-  };
 
   /**
    * validate API
