@@ -4134,6 +4134,26 @@ export type WebhookPayloadComment = {
              */
             promotionStatus?: string;
         };
+        /**
+         * Facebook only. Present on graphic-only comments (sticker, GIF, photo) that
+         * carry no text. URLs are ephemeral and may expire for Meta platforms (oe= expiry),
+         * so fetch promptly. Instagram comments do not support attachments.
+         *
+         */
+        attachment?: {
+            /**
+             * Attachment type: sticker, animated_image_share, or photo.
+             */
+            type: string;
+            /**
+             * Rendered image/preview URL (from attachment.media.image.src).
+             */
+            imageUrl?: string;
+            /**
+             * Source URL (from attachment.url). For GIFs this is an l.facebook.com redirect.
+             */
+            url?: string;
+        };
     };
     post: {
         /**
