@@ -688,6 +688,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `whatsappPhoneNumbers.listWhatsAppNumberCountries()` | List offerable number countries |
+| `whatsappPhoneNumbers.createWhatsAppNumberKycLink()` | Create a hosted KYC link |
 | `whatsappPhoneNumbers.getWhatsAppNumberInfo()` | Get number status |
 | `whatsappPhoneNumbers.getWhatsAppNumberKycForm()` | Get regulated-number KYC form spec |
 | `whatsappPhoneNumbers.getWhatsAppNumberRemediation()` | Get the declined requirements to fix |
