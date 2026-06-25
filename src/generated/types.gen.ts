@@ -1500,7 +1500,7 @@ export type source = 'external';
  */
 export type FacebookPlatformData = {
     /**
-     * When true, creates the post as an unpublished draft visible in Facebook Publishing Tools instead of publishing immediately. Supported for feed posts (text, link, image, video) and reels. Not supported for stories. Drafts expire after ~30 days.
+     * When true, creates the post as a draft in Facebook Publishing Tools instead of publishing immediately. Supported for feed posts (text, link, image, video) and reels. Not supported for stories. Drafts expire after ~30 days.
      */
     draft?: boolean;
     /**
