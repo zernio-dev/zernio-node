@@ -2999,19 +2999,19 @@ export type TargetingSpec = {
         name?: string;
     }>;
     /**
-     * City targeting. Optional `radius` + `distanceUnit` extend beyond the city limits; both must be set together or both omitted. `radius` is only honoured on platforms whose capability map allows city radius (Meta).
+     * City targeting. Optional `radius` + `distance_unit` extend beyond the city limits; both must be set together or both omitted. `radius` is only honoured on platforms whose capability map allows city radius (Meta).
      */
     cities?: Array<{
         key: string;
         name?: string;
         /**
-         * Radius around the city. Requires distanceUnit.
+         * Radius around the city. Requires distance_unit.
          */
         radius?: number;
         /**
          * Required if radius is set.
          */
-        distanceUnit?: 'mile' | 'kilometer';
+        distance_unit?: 'mile' | 'kilometer';
     }>;
     /**
      * Postal/ZIP targeting. `key` is the platform's postal location ID (e.g. Meta `US:94304`). Supported on Meta, Google, TikTok, Pinterest, X.
@@ -3039,10 +3039,13 @@ export type TargetingSpec = {
         radius: number;
         distanceUnit: 'mile' | 'kilometer';
         name?: string;
+        /**
+         * Optional label, sent to Meta as `address_string`. latitude/longitude take precedence for the pin location.
+         */
         address?: string;
     }>;
     /**
-     * Geo to exclude from the audience. A subset of the inclusion geo shape.
+     * Geo to exclude from the audience. Mirrors the inclusion geo shape: excluded cities can carry a radius catchment and excluded custom (lat/lng) pins are supported, both on Meta (excluded_geo_locations).
      */
     excludedLocations?: {
         countries?: Array<(string)>;
@@ -3050,13 +3053,52 @@ export type TargetingSpec = {
             key: string;
             name?: string;
         }>;
+        /**
+         * Cities to exclude. Optional `radius` + `distance_unit` exclude a catchment around the city (both must be set together or both omitted); Meta honours the radius on excluded cities.
+         */
         cities?: Array<{
             key: string;
-            name?: string;
+            /**
+             * Radius around the excluded city. Requires distance_unit.
+             */
+            radius?: number;
+            /**
+             * Required if radius is set.
+             */
+            distance_unit?: 'mile' | 'kilometer';
         }>;
         zips?: Array<{
             key: string;
             name?: string;
+        }>;
+        /**
+         * Named points of interest to exclude. `key` from /v1/ads/targeting/search.
+         */
+        places?: Array<{
+            key: string;
+        }>;
+        /**
+         * Named neighbourhood areas to exclude. `key` from /v1/ads/targeting/search.
+         */
+        neighborhoods?: Array<{
+            key: string;
+        }>;
+        /**
+         * Point-radius (lat/lng) pins to exclude (Meta excluded_geo_locations.custom_locations). Mirrors the inclusion customLocations shape.
+         */
+        customLocations?: Array<{
+            latitude: number;
+            longitude: number;
+            /**
+             * Positive radius around the point.
+             */
+            radius: number;
+            distanceUnit: 'mile' | 'kilometer';
+            name?: string;
+            /**
+             * Optional label, sent to Meta as `address_string`. latitude/longitude take precedence for the pin location.
+             */
+            address?: string;
         }>;
     };
     ageMin?: number;
