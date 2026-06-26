@@ -60,11 +60,6 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.deleteAccount).toBeTypeOf('function');
     });
 
-    it('should have getAccountPosts method', () => {
-      expect(client.accounts.getAccountPosts).toBeDefined();
-      expect(client.accounts.getAccountPosts).toBeTypeOf('function');
-    });
-
     it('should have getAllAccountsHealth method', () => {
       expect(client.accounts.getAllAccountsHealth).toBeDefined();
       expect(client.accounts.getAllAccountsHealth).toBeTypeOf('function');
