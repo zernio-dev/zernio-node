@@ -186,6 +186,7 @@ try {
 | `accounts.getAllAccountsHealth()` | Check accounts health |
 | `accounts.listAccounts()` | List accounts |
 | `accounts.getAccountHealth()` | Check account health |
+| `accounts.getAccountPosts()` | List posts for an account |
 | `accounts.getFollowerStats()` | Get follower stats |
 | `accounts.getGoogleBusinessReviews()` | Get reviews |
 | `accounts.getLinkedInMentions()` | Resolve LinkedIn mention |

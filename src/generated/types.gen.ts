@@ -8110,6 +8110,49 @@ export type DeleteAccountError = ({
     error?: string;
 });
 
+export type GetAccountPostsData = {
+    path: {
+        accountId: string;
+    };
+    query?: {
+        /**
+         * YouTube only. When `true`, excludes unlisted and private videos from the response. Has no effect on other platforms.
+         */
+        excludeUnlisted?: boolean;
+    };
+};
+
+export type GetAccountPostsResponse = ({
+    status?: string;
+    posts?: Array<{
+        id?: string;
+        message?: string;
+        createdTime?: string;
+        picture?: (string) | null;
+        permalink?: (string) | null;
+        mediaType?: (string) | null;
+        commentCount?: (number) | null;
+        likeCount?: (number) | null;
+        reactionCount?: (number) | null;
+        shareCount?: (number) | null;
+        platform?: string;
+        /**
+         * Bluesky only. Content ID needed for fetching replies.
+         */
+        cid?: (string) | null;
+        /**
+         * Reddit only. Subreddit name, needed for fetching comments.
+         */
+        subreddit?: (string) | null;
+    }>;
+    lastUpdated?: string;
+});
+
+export type GetAccountPostsError = (unknown | {
+    error?: string;
+    code?: string;
+});
+
 export type GetAllAccountsHealthData = {
     query?: {
         /**
