@@ -7425,6 +7425,10 @@ export type ListPostsData = {
          * Sort order for results.
          */
         sortBy?: 'scheduled-desc' | 'scheduled-asc' | 'created-desc' | 'created-asc' | 'status' | 'platform';
+        /**
+         * Which collection to read. `zernio` (default) returns posts authored through Zernio. `external` returns posts synced from the platform (existing/historical posts that were published outside Zernio). Combine with `accountId` and paginate via `page`/`limit` to walk the full synced history (we keep up to the last ~12 months per account).
+         */
+        source?: 'zernio' | 'external';
         status?: 'draft' | 'scheduled' | 'published' | 'failed';
     };
 };
