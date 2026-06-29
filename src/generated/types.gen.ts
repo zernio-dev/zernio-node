@@ -2392,6 +2392,14 @@ export type PlatformTarget = {
      */
     publishedAt?: string;
     /**
+     * Present and true only when this Instagram reel was launched as a Trial through Zernio (created with platformSpecificData.trialParams). Use it to segment trial reels in analytics. Note: Instagram's Graph API exposes no readable trial field, so this reflects creation-time intent only. It indicates the reel STARTED as a trial, not whether or when it graduated.
+     */
+    isTrialReel?: boolean;
+    /**
+     * Graduation strategy the trial reel was launched with. Present only when isTrialReel is true.
+     */
+    trialGraduationStrategy?: 'MANUAL' | 'SS_PERFORMANCE';
+    /**
      * Human-readable error message when status is failed. Contains platform-specific error details explaining why the publish failed.
      */
     errorMessage?: string;
@@ -2404,6 +2412,11 @@ export type PlatformTarget = {
      */
     errorSource?: 'user' | 'platform' | 'system';
 };
+
+/**
+ * Graduation strategy the trial reel was launched with. Present only when isTrialReel is true.
+ */
+export type trialGraduationStrategy = 'MANUAL' | 'SS_PERFORMANCE';
 
 /**
  * Error category for programmatic handling: auth_expired (token expired/revoked), user_content (wrong format/too long), user_abuse (rate limits/spam), account_issue (config problems), platform_rejected (policy violation), platform_error (5xx/maintenance), system_error (Zernio infra), unknown
