@@ -194,7 +194,7 @@ try {
 | `accounts.deleteAccount()` | Disconnect account |
 | `accounts.deleteGoogleBusinessReviewReply()` | Delete a review reply |
 | `accounts.batchGetGoogleBusinessReviews()` | Batch get reviews |
-| `accounts.moveAccountToProfile()` | Move account to a different profile |
+| `accounts.moveAccountToProfile()` | Move account to another profile |
 | `accounts.replyToGoogleBusinessReview()` | Reply to a review |
 
 ### Profiles
@@ -220,13 +220,13 @@ try {
 | `analytics.getInstagramDemographics()` | Get Instagram demographics |
 | `analytics.getInstagramFollowerHistory()` | Get Instagram follower history |
 | `analytics.getLinkedInAggregateAnalytics()` | Get LinkedIn aggregate stats |
-| `analytics.getLinkedInOrgAggregateAnalytics()` | Get LinkedIn organization page aggregate analytics |
+| `analytics.getLinkedInOrgAggregateAnalytics()` | Get LinkedIn org analytics |
 | `analytics.getLinkedInPostAnalytics()` | Get LinkedIn post stats |
 | `analytics.getLinkedInPostReactions()` | Get LinkedIn post reactions |
 | `analytics.getPostingFrequency()` | Get frequency vs engagement |
 | `analytics.getPostTimeline()` | Get post analytics timeline |
 | `analytics.getTikTokAccountInsights()` | Get TikTok account-level insights |
-| `analytics.getYouTubeChannelInsights()` | Get YouTube channel-level insights |
+| `analytics.getYouTubeChannelInsights()` | Get YouTube channel insights |
 | `analytics.getYouTubeDailyViews()` | Get YouTube daily views |
 | `analytics.getYouTubeDemographics()` | Get YouTube demographics |
 | `analytics.getYouTubeVideoRetention()` | Get YouTube video retention curve |
@@ -296,7 +296,7 @@ try {
 | `connect.listLinkedInOrganizations()` | List LinkedIn orgs |
 | `connect.listPinterestBoardsForSelection()` | List Pinterest boards |
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
-| `connect.listWhatsAppPhoneNumbers()` | List WhatsApp phone numbers for selection |
+| `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
 | `connect.getConnectUrl()` | Get OAuth connect URL |
 | `connect.getFacebookPages()` | List Facebook pages |
 | `connect.getGmbLocations()` | List GBP locations |
@@ -314,8 +314,8 @@ try {
 | `connect.updateRedditSubreddits()` | Set default subreddit |
 | `connect.updateYoutubeDefaultPlaylist()` | Set default YouTube playlist |
 | `connect.completeTelegramConnect()` | Check Telegram status |
-| `connect.completeWhatsAppPhoneSelection()` | Complete WhatsApp phone number selection |
-| `connect.configureTikTokAdsBrandIdentity()` | Configure TikTok Ads Brand Identity |
+| `connect.completeWhatsAppPhoneSelection()` | Complete number selection |
+| `connect.configureTikTokAdsBrandIdentity()` | Set TikTok brand identity |
 | `connect.connectAds()` | Connect ads for a platform |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
@@ -360,11 +360,11 @@ try {
 |--------|-------------|
 | `adCampaigns.listAdCampaigns()` | List campaigns |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
-| `adCampaigns.getAdsTimeline()` | Get daily aggregate ad metrics for an account |
+| `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |
-| `adCampaigns.updateAdCampaign()` | Update a campaign (budget and/or bid strategy) |
+| `adCampaigns.updateAdCampaign()` | Update a campaign |
 | `adCampaigns.updateAdCampaignStatus()` | Pause or resume a campaign |
-| `adCampaigns.updateAdSet()` | Update an ad set (budget, status, and/or bid strategy) |
+| `adCampaigns.updateAdSet()` | Update an ad set |
 | `adCampaigns.updateAdSetStatus()` | Pause or resume a single ad set |
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
@@ -377,38 +377,38 @@ try {
 | `ads.listAdCatalogs()` | List Meta product catalogs |
 | `ads.listAds()` | List ads |
 | `ads.listAdsBusinessCenters()` | List TikTok Business Centers |
-| `ads.listConversionAssociations()` | List campaigns associated with a conversion destination |
-| `ads.listConversionDestinations()` | List destinations for the Conversions API |
+| `ads.listConversionAssociations()` | List associated campaigns |
+| `ads.listConversionDestinations()` | List conversion destinations |
 | `ads.listFormLeads()` | List leads for a single form |
-| `ads.listLeadForms()` | List Lead Gen (Instant) forms |
-| `ads.listLeads()` | List submitted leads (cross-form CRM view) |
-| `ads.createConversionDestination()` | Create a conversion destination (LinkedIn, Google Ads) |
-| `ads.createCtwaAd()` | Create Click-to-WhatsApp ad(s) |
-| `ads.createLeadForm()` | Create a Lead Gen (Instant) form |
+| `ads.listLeadForms()` | List lead forms |
+| `ads.listLeads()` | List submitted leads |
+| `ads.createConversionDestination()` | Create a conversion destination |
+| `ads.createCtwaAd()` | Create Click-to-WhatsApp ad |
+| `ads.createLeadForm()` | Create a lead form |
 | `ads.createStandaloneAd()` | Create standalone ad |
-| `ads.createTestLead()` | Create a synthetic test lead |
+| `ads.createTestLead()` | Create a test lead |
 | `ads.getAd()` | Get ad details |
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
-| `ads.getAdTrackingTags()` | Read an ad's click-URL tracking tags |
-| `ads.getConversionDestination()` | Fetch a single conversion destination |
-| `ads.getConversionMetrics()` | Fetch attribution metrics for a conversion destination |
-| `ads.getConversionsQuality()` | Read Event Match Quality + coverage for a Meta pixel |
-| `ads.getLeadForm()` | Get a single Lead Gen form |
+| `ads.getAdTrackingTags()` | Get ad tracking tags |
+| `ads.getConversionDestination()` | Get a conversion destination |
+| `ads.getConversionMetrics()` | Get attribution metrics |
+| `ads.getConversionsQuality()` | Get Event Match Quality |
+| `ads.getLeadForm()` | Get a lead form |
 | `ads.updateAd()` | Update ad |
-| `ads.updateAdTrackingTags()` | Set/update an ad's click-URL tracking tags |
+| `ads.updateAdTrackingTags()` | Set ad tracking tags |
 | `ads.updateConversionDestination()` | Update a conversion destination |
 | `ads.deleteAd()` | Cancel an ad |
-| `ads.deleteConversionDestination()` | Soft-delete a conversion destination |
-| `ads.addConversionAssociations()` | Associate campaigns with a conversion destination |
-| `ads.adjustConversions()` | Adjust already-uploaded conversions (Google only) |
-| `ads.archiveLeadForm()` | Archive a Lead Gen form |
+| `ads.deleteConversionDestination()` | Delete a conversion destination |
+| `ads.addConversionAssociations()` | Associate campaigns |
+| `ads.adjustConversions()` | Adjust uploaded conversions |
+| `ads.archiveLeadForm()` | Archive a lead form |
 | `ads.boostPost()` | Boost post as ad |
 | `ads.estimateAdReach()` | Estimate audience reach |
-| `ads.removeConversionAssociations()` | Remove campaign↔conversion associations |
-| `ads.searchAdInterests()` | Search targeting interests (deprecated) |
+| `ads.removeConversionAssociations()` | Remove associated campaigns |
+| `ads.searchAdInterests()` | Search targeting interests |
 | `ads.searchAdTargeting()` | Search targeting options |
-| `ads.sendConversions()` | Send conversion events to an ad platform |
+| `ads.sendConversions()` | Send conversion events |
 
 ### Broadcasts
 | Method | Description |
@@ -473,7 +473,7 @@ try {
 |--------|-------------|
 | `discord.listDiscordGuildMembers()` | List Discord guild members |
 | `discord.listDiscordGuildRoles()` | List Discord guild roles |
-| `discord.listDiscordPinnedMessages()` | List pinned messages in a Discord channel |
+| `discord.listDiscordPinnedMessages()` | List pinned messages |
 | `discord.listDiscordScheduledEvents()` | List Discord scheduled events |
 | `discord.createDiscordScheduledEvent()` | Create a Discord scheduled event |
 | `discord.getDiscordChannels()` | List Discord guild channels |
@@ -539,9 +539,9 @@ try {
 ### Inbox Analytics
 | Method | Description |
 |--------|-------------|
-| `inboxAnalytics.listInboxConversationAnalytics()` | List conversations with inbox analytics |
-| `inboxAnalytics.getInboxConversationAnalytics()` | Get analytics for a single conversation |
-| `inboxAnalytics.getInboxHeatmap()` | Get inbox day-of-week × hour-of-day heatmap |
+| `inboxAnalytics.listInboxConversationAnalytics()` | List conversation analytics |
+| `inboxAnalytics.getInboxConversationAnalytics()` | Get conversation analytics |
+| `inboxAnalytics.getInboxHeatmap()` | Get day × hour heatmap |
 | `inboxAnalytics.getInboxResponseTime()` | Get inbox response-time stats |
 | `inboxAnalytics.getInboxSourceBreakdown()` | Get inbox source breakdown |
 | `inboxAnalytics.getInboxTopAccounts()` | Get top accounts by inbox volume |
@@ -557,7 +557,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `messages.listInboxConversations()` | List conversations |
-| `messages.createInboxConversation()` | Create conversation (send a WhatsApp template) |
+| `messages.createInboxConversation()` | Create conversation |
 | `messages.getInboxConversation()` | Get conversation |
 | `messages.getInboxConversationMessages()` | List messages |
 | `messages.updateInboxConversation()` | Update conversation status |
@@ -594,14 +594,14 @@ try {
 ### Tracking Tags
 | Method | Description |
 |--------|-------------|
-| `trackingTags.listTrackingTags()` | List tracking tags (Meta Pixels) |
-| `trackingTags.listTrackingTagSharedAccounts()` | List ad accounts a tracking tag is shared with |
-| `trackingTags.createTrackingTag()` | Create a tracking tag (Meta Pixel) |
-| `trackingTags.getTrackingTag()` | Fetch a single tracking tag (Meta Pixel) |
-| `trackingTags.getTrackingTagStats()` | Aggregated event stats for a tracking tag (Meta Pixel) |
-| `trackingTags.updateTrackingTag()` | Update a tracking tag (Meta Pixel) |
-| `trackingTags.addTrackingTagSharedAccount()` | Share a tracking tag with an ad account |
-| `trackingTags.removeTrackingTagSharedAccount()` | Stop sharing a tracking tag with an ad account |
+| `trackingTags.listTrackingTags()` | List tracking tags |
+| `trackingTags.listTrackingTagSharedAccounts()` | List accounts it is shared with |
+| `trackingTags.createTrackingTag()` | Create a tracking tag |
+| `trackingTags.getTrackingTag()` | Get a tracking tag |
+| `trackingTags.getTrackingTagStats()` | Get aggregated event stats |
+| `trackingTags.updateTrackingTag()` | Update a tracking tag |
+| `trackingTags.addTrackingTagSharedAccount()` | Share with an ad account |
+| `trackingTags.removeTrackingTagSharedAccount()` | Stop sharing with an account |
 
 ### Twitter Engagement
 | Method | Description |
@@ -624,10 +624,10 @@ try {
 ### WhatsApp
 | Method | Description |
 |--------|-------------|
-| `whatsapp.listWhatsAppConversions()` | List recent WhatsApp conversion events |
+| `whatsapp.listWhatsAppConversions()` | List conversion events |
 | `whatsapp.listWhatsAppGroupChats()` | List active groups |
 | `whatsapp.listWhatsAppGroupJoinRequests()` | List join requests |
-| `whatsapp.createWhatsAppDataset()` | Provision CTWA conversions dataset |
+| `whatsapp.createWhatsAppDataset()` | Provision CTWA dataset |
 | `whatsapp.createWhatsAppGroupChat()` | Create group |
 | `whatsapp.createWhatsAppGroupInviteLink()` | Create invite link |
 | `whatsapp.createWhatsAppTemplate()` | Create template |
@@ -659,9 +659,9 @@ try {
 |--------|-------------|
 | `whatsappCalling.listWhatsAppCalls()` | List call history for an account |
 | `whatsappCalling.getWhatsAppCall()` | Get a single call |
-| `whatsappCalling.getWhatsAppCallEstimate()` | Estimate per-minute cost for a destination |
+| `whatsappCalling.getWhatsAppCallEstimate()` | Estimate per-minute cost |
 | `whatsappCalling.getWhatsAppCallingConfig()` | Get calling config for an account |
-| `whatsappCalling.getWhatsAppCallPermissions()` | Check call permission for a consumer |
+| `whatsappCalling.getWhatsAppCallPermissions()` | Check call permission |
 | `whatsappCalling.updateWhatsAppCalling()` | Update calling config |
 | `whatsappCalling.disableWhatsAppCalling()` | Disable calling on a number |
 | `whatsappCalling.enableWhatsAppCalling()` | Enable calling on a number |
@@ -690,24 +690,24 @@ try {
 | `whatsappPhoneNumbers.listWhatsAppNumberCountries()` | List offerable number countries |
 | `whatsappPhoneNumbers.createWhatsAppNumberKycLink()` | Create a hosted KYC link |
 | `whatsappPhoneNumbers.getWhatsAppNumberInfo()` | Get number status |
-| `whatsappPhoneNumbers.getWhatsAppNumberKycForm()` | Get regulated-number KYC form spec |
-| `whatsappPhoneNumbers.getWhatsAppNumberRemediation()` | Get the declined requirements to fix |
+| `whatsappPhoneNumbers.getWhatsAppNumberKycForm()` | Get KYC form spec |
+| `whatsappPhoneNumbers.getWhatsAppNumberRemediation()` | Get declined requirements |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumber()` | Get phone number |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumbers()` | List phone numbers |
-| `whatsappPhoneNumbers.checkWhatsAppNumberAvailability()` | Check a country's availability + address constraint |
+| `whatsappPhoneNumbers.checkWhatsAppNumberAvailability()` | Check country availability |
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |
 | `whatsappPhoneNumbers.releaseWhatsAppPhoneNumber()` | Release phone number |
-| `whatsappPhoneNumbers.remediateWhatsAppNumber()` | Fix a declined number and re-submit |
-| `whatsappPhoneNumbers.searchAvailableWhatsAppNumbers()` | Search available numbers to purchase |
-| `whatsappPhoneNumbers.submitWhatsAppNumberKyc()` | Submit regulated-number KYC |
-| `whatsappPhoneNumbers.uploadWhatsAppNumberKycDocument()` | Upload a single regulated-number KYC document |
-| `whatsappPhoneNumbers.validateWhatsAppNumberKycAddress()` | Pre-validate a regulated-number KYC address (Tier 4) |
+| `whatsappPhoneNumbers.remediateWhatsAppNumber()` | Resubmit a declined number |
+| `whatsappPhoneNumbers.searchAvailableWhatsAppNumbers()` | Search available numbers |
+| `whatsappPhoneNumbers.submitWhatsAppNumberKyc()` | Submit KYC |
+| `whatsappPhoneNumbers.uploadWhatsAppNumberKycDocument()` | Upload a KYC document |
+| `whatsappPhoneNumbers.validateWhatsAppNumberKycAddress()` | Pre-validate KYC address |
 
 ### WhatsApp Sandbox
 | Method | Description |
 |--------|-------------|
 | `whatsappSandbox.listWhatsAppSandboxSessions()` | List your sandbox sessions |
-| `whatsappSandbox.createWhatsAppSandboxSession()` | Start a sandbox activation for a phone |
+| `whatsappSandbox.createWhatsAppSandboxSession()` | Start a sandbox activation |
 | `whatsappSandbox.deleteWhatsAppSandboxSession()` | Revoke a sandbox session |
 
 ### WhatsApp Templates
@@ -730,7 +730,7 @@ try {
 | `workflows.activateWorkflow()` | Activate workflow |
 | `workflows.duplicateWorkflow()` | Duplicate a workflow |
 | `workflows.pauseWorkflow()` | Pause workflow |
-| `workflows.restoreWorkflowVersion()` | Restore a previous workflow version |
+| `workflows.restoreWorkflowVersion()` | Restore a workflow version |
 | `workflows.triggerWorkflow()` | Manually start a workflow run |
 
 ### Invites

@@ -84,7 +84,7 @@ export const getAnalytics = <ThrowOnError extends boolean = false>(options?: Opt
 };
 
 /**
- * Get YouTube channel-level insights
+ * Get YouTube channel insights
  * Returns channel-scoped aggregate metrics from YouTube Analytics API v2. Saves you
  * from looping /v1/analytics/youtube/daily-views over every video when you only need
  * channel totals.
@@ -108,7 +108,7 @@ export const getYouTubeChannelInsights = <ThrowOnError extends boolean = false>(
 };
 
 /**
- * Get LinkedIn organization page aggregate analytics
+ * Get LinkedIn org analytics
  * Returns aggregate analytics for a LinkedIn organization page. Parallel to
  * /v1/accounts/{id}/linkedin-aggregate-analytics (which handles personal accounts only).
  * Backed by LinkedIn's organizationalEntityShareStatistics,
@@ -408,7 +408,7 @@ export const getInboxVolume = <ThrowOnError extends boolean = false>(options: Op
 };
 
 /**
- * Get inbox day-of-week × hour-of-day heatmap
+ * Get day × hour heatmap
  * Day-of-week × hour-of-day breakdown of inbox messages. Buckets are
  * sparse — only cells with at least one event are returned; clients
  * zero-fill the rest to render the full 7×24 grid. The `dow` field
@@ -478,7 +478,7 @@ export const getInboxTopAccounts = <ThrowOnError extends boolean = false>(option
 };
 
 /**
- * List conversations with inbox analytics
+ * List conversation analytics
  * Per-conversation listing with per-row totals + first/last message
  * timestamps. The inbox analog of GET /v1/analytics (posts listing) —
  * same filter shape, same pagination, same sort/order semantics.
@@ -499,7 +499,7 @@ export const listInboxConversationAnalytics = <ThrowOnError extends boolean = fa
 };
 
 /**
- * Get analytics for a single conversation
+ * Get conversation analytics
  * Per-conversation inbox analytics. The inbox analog of
  * /v1/analytics/post-timeline — one conversation, daily totals,
  * source mix.
@@ -927,7 +927,7 @@ export const updateAccount = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Move account to a different profile
+ * Move account to another profile
  * Moves a connected social account to a different profile owned by the same
  * user. The target profile must belong to the same user as the account.
  *
@@ -1080,7 +1080,7 @@ export const connectAds = <ThrowOnError extends boolean = false>(options: Option
 };
 
 /**
- * Configure TikTok Ads Brand Identity
+ * Set TikTok brand identity
  * Set or update the Brand Identity (display name + avatar) for a
  * `tiktokads` SocialAccount. TikTok requires every ad to carry an
  * `identity_id + identity_type` pair. The Brand Identity is the
@@ -1586,7 +1586,7 @@ export const connectWhatsAppCredentials = <ThrowOnError extends boolean = false>
 };
 
 /**
- * List WhatsApp phone numbers for selection
+ * List numbers for selection
  * Fetch the WhatsApp phone numbers available across the user's WhatsApp Business Accounts (WABAs) after a headless OAuth flow.
  *
  * WhatsApp OAuth grants access at the WABA level. When a connected WABA has 2 or more phone numbers, you must call this endpoint to list them and then `POST /v1/connect/whatsapp/select-phone-number` to bind one to the Zernio profile. Single-phone WABAs auto-complete during the OAuth callback and never reach this endpoint.
@@ -1604,7 +1604,7 @@ export const listWhatsAppPhoneNumbers = <ThrowOnError extends boolean = false>(o
 };
 
 /**
- * Complete WhatsApp phone number selection
+ * Complete number selection
  * Bind a specific WhatsApp phone number to the Zernio profile after the user picks one from `listWhatsAppPhoneNumbers`. Exchanges the short-lived OAuth token for a long-lived token, subscribes the WABA to webhooks, and creates the SocialAccount.
  *
  */
@@ -2049,7 +2049,7 @@ export const removeDiscordMemberRole = <ThrowOnError extends boolean = false>(op
 };
 
 /**
- * List pinned messages in a Discord channel
+ * List pinned messages
  * Returns the channel's pinned messages, sorted most-recently-pinned
  * first. Discord caps a channel at 50 pinned messages and returns the
  * full list unpaginated.
@@ -2358,7 +2358,7 @@ export const listInboxConversations = <ThrowOnError extends boolean = false>(opt
 };
 
 /**
- * Create conversation (send a WhatsApp template)
+ * Create conversation
  * Initiate a new direct message conversation with a specified user. If a conversation already exists with the recipient, the message is added to the existing thread.
  *
  * Supported platforms: X/Twitter, Bluesky, Reddit, and WhatsApp. Other platforms return PLATFORM_NOT_SUPPORTED.
@@ -3058,7 +3058,7 @@ export const disableWhatsAppCalling = <ThrowOnError extends boolean = false>(opt
 };
 
 /**
- * Check call permission for a consumer
+ * Check call permission
  * Returns the permission state and the list of available actions for
  * a given consumer wa_id (e.g. `start_call`, `send_call_permission_request`).
  * Use this before placing a call to decide whether to prompt for
@@ -3119,7 +3119,7 @@ export const getWhatsAppCall = <ThrowOnError extends boolean = false>(options: O
 };
 
 /**
- * Estimate per-minute cost for a destination
+ * Estimate per-minute cost
  * Returns a zero-markup estimated cost for an outbound call to the
  * given destination, broken down by Meta + Telnyx + recording line
  * items. Costs are pass-through, no margin applied.
@@ -3318,7 +3318,7 @@ export const getWhatsAppDataset = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Provision CTWA conversions dataset
+ * Provision CTWA dataset
  * Creates (or fetches, if one already exists) the Meta dataset that
  * Click-to-WhatsApp ad events are reported against via the Conversions
  * API, and persists its ID on the account as `metadata.metaCapiDatasetId`.
@@ -3387,7 +3387,7 @@ export const listWhatsAppNumberCountries = <ThrowOnError extends boolean = false
 };
 
 /**
- * Search available numbers to purchase
+ * Search available numbers
  * Search the provider's inventory for numbers available to purchase in a
  * country (default US). Optional filters narrow the results. The country
  * must be offerable (see GET /v1/whatsapp/phone-numbers/countries).
@@ -3401,7 +3401,7 @@ export const searchAvailableWhatsAppNumbers = <ThrowOnError extends boolean = fa
 };
 
 /**
- * Check a country's availability + address constraint
+ * Check country availability
  * Pre-purchase check, so you can warn BEFORE a customer invests in KYC
  * (regulated review is async, 1-3 days). Tells you whether we have
  * deliverable inventory, and what address the customer needs:
@@ -3421,7 +3421,7 @@ export const checkWhatsAppNumberAvailability = <ThrowOnError extends boolean = f
 };
 
 /**
- * Get regulated-number KYC form spec
+ * Get KYC form spec
  * For a Tier 3/4 country, the fields the end customer must provide (Telnyx
  * regulatory requirements) before a number can be ordered: text, date,
  * address, or file (document) per requirement.
@@ -3435,7 +3435,7 @@ export const getWhatsAppNumberKycForm = <ThrowOnError extends boolean = false>(o
 };
 
 /**
- * Submit regulated-number KYC
+ * Submit KYC
  * Submit the end customer's KYC (textual values, uploaded documents,
  * address) for a Tier 3/4 country. Documents are streamed straight to the
  * number provider and are not stored by Zernio. Builds + submits a
@@ -3463,7 +3463,7 @@ export const submitWhatsAppNumberKyc = <ThrowOnError extends boolean = false>(op
 };
 
 /**
- * Upload a single regulated-number KYC document
+ * Upload a KYC document
  * Upload ONE document and get back its provider document id, to reference
  * from POST /v1/whatsapp/phone-numbers/kyc via `documents[].documentId`.
  * Send the RAW file bytes as the request body (not base64); put the filename
@@ -3480,7 +3480,7 @@ export const uploadWhatsAppNumberKycDocument = <ThrowOnError extends boolean = f
 };
 
 /**
- * Pre-validate a regulated-number KYC address (Tier 4)
+ * Pre-validate KYC address
  * Optional early check for the address step of a Tier 4 (end-user identity)
  * registration: validates a postal address for deliverability BEFORE the full
  * KYC submit, so it can be corrected before any documents are uploaded. The
@@ -3523,7 +3523,7 @@ export const createWhatsAppNumberKycLink = <ThrowOnError extends boolean = false
 };
 
 /**
- * Get the declined requirements to fix
+ * Get declined requirements
  * For a number in `regulatory_declined`, returns ONLY the requirements the
  * reviewer flagged declined, as a form spec (same shape as the KYC form GET).
  * The customer fixes just those — Telnyx supports correcting a declined
@@ -3539,7 +3539,7 @@ export const getWhatsAppNumberRemediation = <ThrowOnError extends boolean = fals
 };
 
 /**
- * Fix a declined number and re-submit
+ * Resubmit a declined number
  * Submit corrected values/documents for the declined requirement(s). We
  * PATCH them onto the SAME requirement group and re-submit it for approval;
  * the number goes `regulatory_declined` → `pending_regulatory`. No new
@@ -3604,7 +3604,7 @@ export const listWhatsAppSandboxSessions = <ThrowOnError extends boolean = false
 };
 
 /**
- * Start a sandbox activation for a phone
+ * Start a sandbox activation
  * Creates (or refreshes) a pending sandbox session for the given phone and
  * immediately fires the verified sandbox template from the shared sandbox
  * number to that phone. The session activates when the phone owner replies
@@ -4379,7 +4379,7 @@ export const getWorkflowVersion = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Restore a previous workflow version
+ * Restore a workflow version
  * Replace the current graph with the named version's snapshot. Before the swap, the current graph is itself snapshotted as a new version, so a restore is reversible. The workflow must be in `draft` or `paused` status (same gate as a normal graph edit). The returned workflow carries `restoredFromVersion` so the UI can surface which version was rolled back to.
  *
  */
@@ -4638,7 +4638,7 @@ export const updateAdCampaignStatus = <ThrowOnError extends boolean = false>(opt
 };
 
 /**
- * Update a campaign (budget and/or bid strategy)
+ * Update a campaign
  * Campaign-level edits. At least one of `budget` or `bidStrategy` is required.
  *
  * - `budget` updates the CBO (Campaign Budget Optimization) budget. For ABO campaigns
@@ -4718,7 +4718,7 @@ export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(option
 };
 
 /**
- * Update an ad set (budget, status, and/or bid strategy)
+ * Update an ad set
  * Ad-set-level writes. Use this for ABO budget updates, ad-set-scoped
  * pause/resume, and bid-strategy edits. At least one of `budget`,
  * `status`, or `bidStrategy` is required.
@@ -4773,7 +4773,7 @@ export const getAdTree = <ThrowOnError extends boolean = false>(options?: Option
 };
 
 /**
- * Get daily aggregate ad metrics for an account
+ * Get daily account metrics
  * Returns daily aggregate metrics across all ads in a SocialAccount as a single
  * time series — one row per calendar day in the requested range. Use this for
  * dashboards that draw a daily-spend or daily-conversions chart, instead of
@@ -4861,7 +4861,7 @@ export const getAdAnalytics = <ThrowOnError extends boolean = false>(options: Op
 };
 
 /**
- * Read an ad's click-URL tracking tags
+ * Get ad tracking tags
  * Unified read of the platform's native click-URL tracking params.
  * - Meta (facebook/instagram): the creative's `url_tags` (and template_url_spec).
  * - Google (googleads): the campaign's `trackingUrlTemplate` + `finalUrlSuffix`.
@@ -4878,7 +4878,7 @@ export const getAdTrackingTags = <ThrowOnError extends boolean = false>(options:
 };
 
 /**
- * Set/update an ad's click-URL tracking tags
+ * Set ad tracking tags
  * Unified update. Send only the fields for the ad's platform:
  * - Meta: `urlTags` (array of {key,value}). Meta creatives are immutable, so this rebuilds the
  * creative and repoints the ad. By DEFAULT we PRESERVE the existing creative verbatim
@@ -4996,7 +4996,7 @@ export const createStandaloneAd = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * List submitted leads (cross-form CRM view)
+ * List submitted leads
  * Returns persisted Meta Lead Gen leads for your team, newest-first, with keyset pagination on `cursor`. Leads are ingested in real time from the `leadgen` webhook. Requires the Ads add-on.
  *
  */
@@ -5008,7 +5008,7 @@ export const listLeads = <ThrowOnError extends boolean = false>(options?: Option
 };
 
 /**
- * List Lead Gen (Instant) forms
+ * List lead forms
  * Lists the Lead Gen forms owned by the connected Facebook Page. Requires the Ads add-on.
  */
 export const listLeadForms = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListLeadFormsData, ThrowOnError>) => {
@@ -5019,7 +5019,7 @@ export const listLeadForms = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Create a Lead Gen (Instant) form
+ * Create a lead form
  * Creates a Lead Gen form on the connected Facebook Page (POST /{page-id}/leadgen_forms). NOT idempotent — a retry creates a second form. Prefilled question types (EMAIL, PHONE, FULL_NAME, …) must omit label/key; CUSTOM questions require both. Requires the Ads add-on.
  *
  */
@@ -5031,7 +5031,7 @@ export const createLeadForm = <ThrowOnError extends boolean = false>(options: Op
 };
 
 /**
- * Get a single Lead Gen form
+ * Get a lead form
  */
 export const getLeadForm = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetLeadFormData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetLeadFormResponse, GetLeadFormError, ThrowOnError>({
@@ -5041,7 +5041,7 @@ export const getLeadForm = <ThrowOnError extends boolean = false>(options: Optio
 };
 
 /**
- * Archive a Lead Gen form
+ * Archive a lead form
  * Meta has no hard delete for forms; this archives the form (status=ARCHIVED).
  */
 export const archiveLeadForm = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ArchiveLeadFormData, ThrowOnError>) => {
@@ -5064,7 +5064,7 @@ export const listFormLeads = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Create a synthetic test lead
+ * Create a test lead
  * Submits a test lead against the form (POST /{form-id}/test_leads) to exercise retrieval without waiting for real ad impressions. Meta allows one test lead per form at a time.
  *
  */
@@ -5077,7 +5077,7 @@ export const createTestLead = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * @deprecated
- * Search targeting interests (deprecated)
+ * Search targeting interests
  * Deprecated alias for `GET /v1/ads/targeting/search?dimension=interest`. Kept for
  * backward compatibility, it returns the legacy `{ interests: [...] }` shape rather
  * than the normalized `{ results: [...] }`. New integrations should use
@@ -5221,7 +5221,7 @@ export const addUsersToAdAudience = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
- * Read Event Match Quality + coverage for a Meta pixel
+ * Get Event Match Quality
  * Reads Meta Event Match Quality (EMQ) and pixel↔CAPI event coverage for a
  * pixel/dataset, live from Meta's Dataset Quality API. Web events only (a
  * Meta limitation). Meta-only; other platforms return 405. Requires the Ads add-on.
@@ -5235,7 +5235,7 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
 };
 
 /**
- * Send conversion events to an ad platform
+ * Send conversion events
  * Relay one or more conversion events to the target ad platform's native Conversions API.
  * Platform is inferred from the provided `accountId`. Requires the Ads add-on.
  *
@@ -5289,7 +5289,7 @@ export const sendConversions = <ThrowOnError extends boolean = false>(options: O
 };
 
 /**
- * Adjust already-uploaded conversions (Google only)
+ * Adjust uploaded conversions
  * Adjust conversions that were previously uploaded via `POST /v1/ads/conversions` —
  * retract them, restate their value, or enhance them with first-party data. Requires
  * the Ads add-on.
@@ -5328,7 +5328,7 @@ export const adjustConversions = <ThrowOnError extends boolean = false>(options:
 };
 
 /**
- * List destinations for the Conversions API
+ * List conversion destinations
  * Returns the list of pixels (Meta), conversion actions (Google), or
  * conversion rules (LinkedIn) accessible to the connected ads account.
  * Use the returned `id` as `destinationId` when posting to
@@ -5353,7 +5353,7 @@ export const listConversionDestinations = <ThrowOnError extends boolean = false>
 };
 
 /**
- * Create a conversion destination (LinkedIn, Google Ads)
+ * Create a conversion destination
  * Create a new conversion destination on the platform. Supported for
  * LinkedIn (conversion rule) and Google Ads (conversion action). Meta
  * manages destinations in its own UI and returns 405.
@@ -5397,7 +5397,7 @@ export const createConversionDestination = <ThrowOnError extends boolean = false
 };
 
 /**
- * Fetch a single conversion destination
+ * Get a conversion destination
  * LinkedIn-only today. Returns the full destination record for one
  * conversion rule. The `adAccountId` query parameter is required because
  * LinkedIn rules are scoped to a sponsored ad account.
@@ -5427,7 +5427,7 @@ export const updateConversionDestination = <ThrowOnError extends boolean = false
 };
 
 /**
- * Soft-delete a conversion destination
+ * Delete a conversion destination
  * LinkedIn-only today. LinkedIn does not expose hard-delete on conversion
  * rules — what their UI calls "delete" is the same `enabled: false` flip
  * we apply here. The rule remains fetchable via GET with
@@ -5446,7 +5446,7 @@ export const deleteConversionDestination = <ThrowOnError extends boolean = false
 };
 
 /**
- * List campaigns associated with a conversion destination
+ * List associated campaigns
  * LinkedIn-only today. Returns the campaigns currently associated with
  * this conversion rule. Note that auto-association on rule creation
  * runs once at create time; campaigns created after the rule still need
@@ -5461,7 +5461,7 @@ export const listConversionAssociations = <ThrowOnError extends boolean = false>
 };
 
 /**
- * Associate campaigns with a conversion destination
+ * Associate campaigns
  * Associate one or more campaigns with this conversion rule. Returns a
  * per-campaign success/failure result so callers can retry only the
  * rows that failed (e.g. wrong campaign type for the rule's objective).
@@ -5475,7 +5475,7 @@ export const addConversionAssociations = <ThrowOnError extends boolean = false>(
 };
 
 /**
- * Remove campaign↔conversion associations
+ * Remove associated campaigns
  * Remove one or more campaign associations from this conversion rule.
  * Pass `adAccountId` and `campaignIds` as query parameters
  * (`campaignIds` is comma-separated). The route also accepts a JSON
@@ -5493,7 +5493,7 @@ export const removeConversionAssociations = <ThrowOnError extends boolean = fals
 };
 
 /**
- * Fetch attribution metrics for a conversion destination
+ * Get attribution metrics
  * LinkedIn-only today. Returns conversion-attribution metrics
  * (`externalWebsiteConversions`, `externalWebsitePostClickConversions`,
  * `externalWebsitePostViewConversions`, `conversionValueInLocalCurrency`,
@@ -5517,7 +5517,7 @@ export const getConversionMetrics = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
- * List recent WhatsApp conversion events
+ * List conversion events
  * Returns the most recent conversion events sent through
  * `POST /v1/whatsapp/conversions` for the given WhatsApp account.
  * Sourced from delivery logs (Axiom `late` dataset), so the visible
@@ -5579,7 +5579,7 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
 };
 
 /**
- * Create Click-to-WhatsApp ad(s)
+ * Create Click-to-WhatsApp ad
  * Creates one or more Click-to-WhatsApp (CTWA) ads on Meta under a single campaign and ad set. When tapped, each ad opens a WhatsApp conversation with the business attached to the supplied Facebook Page. The full hierarchy (campaign, ad set, creative(s), ad(s)) is created and activated in one call. The CTA is locked to WHATSAPP_MESSAGE and the destination is hard-coded to api.whatsapp.com/send; Meta resolves the actual WhatsApp number from the Page-to-WA pairing configured in Page settings or Business Manager.
  *
  * Supports two mutually-exclusive shapes:
@@ -5598,7 +5598,7 @@ export const createCtwaAd = <ThrowOnError extends boolean = false>(options: Opti
 };
 
 /**
- * List tracking tags (Meta Pixels)
+ * List tracking tags
  * Returns the tracking tags (Meta Pixels) the connected ads account can
  * see. Pass `?adAccountId=act_...` to scope the list to a single ad
  * account; omit it to list every pixel reachable by the token (the name
@@ -5620,7 +5620,7 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
 };
 
 /**
- * Create a tracking tag (Meta Pixel)
+ * Create a tracking tag
  * Creates a Meta Pixel on the given ad account (`POST /act_{id}/adspixels`
  * — `name` is the only input). Returns the created tag including its
  * install `code`. The pixel is owned by the Business Manager that owns the
@@ -5644,7 +5644,7 @@ export const createTrackingTag = <ThrowOnError extends boolean = false>(options:
 };
 
 /**
- * Fetch a single tracking tag (Meta Pixel)
+ * Get a tracking tag
  * Returns the full tag record including the base-code `code` snippet,
  * `lastFiredTime`, `ownerBusinessId`, `isUnavailable`, etc. Meta only
  * (platform `metaads`); other platforms return 405.
@@ -5658,7 +5658,7 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
 };
 
 /**
- * Update a tracking tag (Meta Pixel)
+ * Update a tracking tag
  * Partial-update a pixel. Whitelisted fields: `name` (rename),
  * `enableAutomaticMatching`, `automaticMatchingFields`,
  * `firstPartyCookieStatus`, `dataUseSetting`. At least one is required.
@@ -5679,7 +5679,7 @@ export const updateTrackingTag = <ThrowOnError extends boolean = false>(options:
 };
 
 /**
- * List ad accounts a tracking tag is shared with
+ * List accounts it is shared with
  * Meta only (platform `metaads`); other platforms return 405.
  */
 export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagSharedAccountsData, ThrowOnError>) => {
@@ -5690,7 +5690,7 @@ export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = fal
 };
 
 /**
- * Share a tracking tag with an ad account
+ * Share with an ad account
  * Shares the pixel with another ad account so campaigns/audiences in that
  * account can use it. Requires that you administer both the pixel's owning
  * Business Manager and the target ad account; a pixel on a personal
@@ -5706,7 +5706,7 @@ export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false
 };
 
 /**
- * Stop sharing a tracking tag with an ad account
+ * Stop sharing with an account
  * `adAccountId` may be passed as a query parameter (recommended) or as a
  * JSON body field for clients that can send DELETE bodies. Meta only
  * (platform `metaads`); other platforms return 405.
@@ -5720,7 +5720,7 @@ export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = fa
 };
 
 /**
- * Aggregated event stats for a tracking tag (Meta Pixel)
+ * Get aggregated event stats
  * Returns aggregated event counts for the pixel (`GET /{pixel_id}/stats`).
  * Rows are passed through from Meta as-is — their shape depends on the
  * `aggregation` requested. Meta only (platform `metaads`); other platforms
