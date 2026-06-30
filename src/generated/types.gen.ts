@@ -15212,6 +15212,97 @@ export type UpdateWhatsAppDisplayNameError = (unknown | {
     error?: string;
 });
 
+export type GetWhatsappBusinessUsernameData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsappBusinessUsernameResponse = ({
+    success?: boolean;
+    /**
+     * The current username, or null if none is set
+     */
+    username?: (string) | null;
+    /**
+     * Approval state of the username
+     */
+    status?: 'approved' | 'reserved' | 'none';
+});
+
+export type GetWhatsappBusinessUsernameError = ({
+    error?: string;
+} | unknown);
+
+export type SetWhatsappBusinessUsernameData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Desired username. Letters, digits, period, and underscore only. Must contain at least one letter. No leading, trailing, or consecutive periods. No www prefix. No domain TLD suffix.
+         *
+         */
+        username: string;
+        /**
+         * Pass `force_transfer` to request a transfer if the username is held by another account
+         */
+        transferAction?: 'none' | 'force_transfer';
+    };
+};
+
+export type SetWhatsappBusinessUsernameResponse = ({
+    success?: boolean;
+    username?: string;
+    status?: 'approved' | 'reserved' | 'none';
+});
+
+export type SetWhatsappBusinessUsernameError = (unknown | {
+    error?: string;
+});
+
+export type DeleteWhatsappBusinessUsernameData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteWhatsappBusinessUsernameResponse = ({
+    success?: boolean;
+});
+
+export type DeleteWhatsappBusinessUsernameError = ({
+    error?: string;
+} | unknown);
+
+export type GetWhatsappBusinessUsernameSuggestionsData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsappBusinessUsernameSuggestionsResponse = ({
+    success?: boolean;
+    /**
+     * List of available username suggestions
+     */
+    suggestions?: Array<(string)>;
+});
+
+export type GetWhatsappBusinessUsernameSuggestionsError = ({
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppNumberInfoData = {
     query: {
         /**

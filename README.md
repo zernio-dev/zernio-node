@@ -640,6 +640,8 @@ try {
 | `whatsapp.getWhatsAppBlockedUsers()` | List blocked users |
 | `whatsapp.getWhatsAppBlockStatus()` | Check if a user is blocked |
 | `whatsapp.getWhatsAppBusinessProfile()` | Get business profile |
+| `whatsapp.getWhatsappBusinessUsername()` | Get business username |
+| `whatsapp.getWhatsappBusinessUsernameSuggestions()` | Get username suggestions |
 | `whatsapp.getWhatsAppDataset()` | Get CTWA conversions dataset |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name status |
 | `whatsapp.getWhatsAppGroupChat()` | Get group info |
@@ -649,6 +651,7 @@ try {
 | `whatsapp.updateWhatsAppDisplayName()` | Request display name change |
 | `whatsapp.updateWhatsAppGroupChat()` | Update group settings |
 | `whatsapp.updateWhatsAppTemplate()` | Update template |
+| `whatsapp.deleteWhatsappBusinessUsername()` | Delete business username |
 | `whatsapp.deleteWhatsAppGroupChat()` | Delete group |
 | `whatsapp.deleteWhatsAppTemplate()` | Delete template |
 | `whatsapp.addWhatsAppGroupParticipants()` | Add participants |
@@ -657,6 +660,7 @@ try {
 | `whatsapp.rejectWhatsAppGroupJoinRequests()` | Reject join requests |
 | `whatsapp.removeWhatsAppGroupParticipants()` | Remove participants |
 | `whatsapp.sendWhatsAppConversion()` | Send WhatsApp conversion event |
+| `whatsapp.setWhatsappBusinessUsername()` | Set business username |
 | `whatsapp.unblockWhatsAppUsers()` | Unblock users |
 | `whatsapp.uploadWhatsAppProfilePhoto()` | Upload profile picture |
 
