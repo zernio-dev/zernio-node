@@ -403,6 +403,21 @@ export type reviewStatus = 'in_review' | 'approved' | 'rejected' | 'with_issues'
  */
 export type budgetLevel = 'campaign' | 'adset';
 
+/**
+ * One day of metrics. Same fields as `AdMetrics` plus the `date` they
+ * apply to. Returned inside a node's `daily[]` when `GET /v1/ads/tree` is
+ * called with `timeIncrement=1`. Rate metrics (ctr/cpc/cpm/costPerConversion/
+ * roas) are recomputed per day from that day's sums, so summing the additive
+ * fields across a node's `daily[]` reproduces its aggregated `metrics` total.
+ *
+ */
+export type AdDailyMetrics = AdMetrics & {
+    /**
+     * Calendar day (YYYY-MM-DD) these metrics apply to.
+     */
+    date?: string;
+};
+
 export type AdMetrics = {
     spend?: number;
     impressions?: number;
@@ -508,9 +523,13 @@ export type AdTreeAdSet = {
         page_id?: string;
     } | null;
     /**
-     * Individual ads within this ad set (capped at 100). Returns a subset of Ad fields from the aggregation (core fields like _id, name, platform, status, budget, metrics, creative, goal are included; targeting and schedule may be absent).
+     * Individual ads within this ad set (capped at 100). Returns a subset of Ad fields from the aggregation (core fields like _id, name, platform, status, budget, metrics, creative, goal are included; targeting and schedule may be absent). When `timeIncrement=1&dailyLevel=ad`, each entry also carries a `daily[]` array of `AdDailyMetrics`.
      */
     ads?: Array<Ad>;
+    /**
+     * Per-day metric series for this ad set. Present only when `GET /v1/ads/tree` is called with `timeIncrement=1` and `dailyLevel` is `adset` or `ad`.
+     */
+    daily?: Array<AdDailyMetrics>;
 };
 
 /**
@@ -616,6 +635,10 @@ export type AdTreeCampaign = {
         page_id?: string;
     } | null;
     adSets?: Array<AdTreeAdSet>;
+    /**
+     * Per-day metric series for this campaign. Present only when `GET /v1/ads/tree` is called with `timeIncrement=1` (any `dailyLevel`). This is the per-campaign daily trend — summing its additive fields reproduces the campaign `metrics` total.
+     */
+    daily?: Array<AdDailyMetrics>;
 };
 
 export type AnalyticsListResponse = {
@@ -19076,6 +19099,10 @@ export type GetAdTreeData = {
          */
         campaignId?: string;
         /**
+         * Which tree levels get the `daily[]` series when `timeIncrement=1`. `campaign` (default) attaches it on campaign nodes only — the common per-campaign-trend case, and the smallest payload. `adset` adds it on ad sets too; `ad` adds it on every ad in `ads[]` as well (heaviest — a long range × up to 100 ads per ad set). Scope with `campaignId` to keep `ad`-level responses small. Ignored when `timeIncrement` is unset.
+         */
+        dailyLevel?: 'campaign' | 'adset' | 'ad';
+        /**
          * Start of the METRICS date range (YYYY-MM-DD). Affects only the spend/impression numbers overlaid on each node, NOT which campaigns are returned. Defaults to 90 days ago.
          */
         fromDate?: string;
@@ -19104,6 +19131,10 @@ export type GetAdTreeData = {
          * Filter by derived campaign status (post-aggregation)
          */
         status?: AdStatus;
+        /**
+         * Set to `1` to also return a daily breakdown. Mirrors Meta Insights' `time_increment=1`: each node gains a `daily[]` array of per-day metrics (same fields as the aggregated `metrics`) alongside the range total, so you get per-entity daily trends in ONE call instead of calling the tree once per day. Only `1` (daily) is supported. The daily series covers the same date range and uses the same source data as `metrics`. See `dailyLevel` to control which levels carry it.
+         */
+        timeIncrement?: 1;
         /**
          * End of metrics date range (YYYY-MM-DD). Defaults to today. Max 730-day range.
          */
@@ -19302,6 +19333,64 @@ export type DeleteAdResponse = ({
 export type DeleteAdError = ({
     error?: string;
 });
+
+export type GetCampaignAnalyticsData = {
+    path: {
+        /**
+         * Platform campaign id (platformCampaignId).
+         */
+        campaignId: string;
+    };
+    query?: {
+        /**
+         * Comma-separated breakdown dimensions (Meta only): age, gender, country, publisher_platform, device_platform, region, platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         */
+        breakdowns?: string;
+        /**
+         * Start of date range (YYYY-MM-DD). Defaults to 90 days ago.
+         */
+        fromDate?: string;
+        /**
+         * Disambiguate when the campaign id exists across platforms (e.g. facebook, instagram).
+         */
+        platform?: string;
+        /**
+         * End of date range (YYYY-MM-DD). Defaults to today. Max 730-day range.
+         */
+        toDate?: string;
+    };
+};
+
+export type GetCampaignAnalyticsResponse = ({
+    campaign?: {
+        id?: string;
+        name?: (string) | null;
+        platform?: string;
+        /**
+         * Effective campaign status (ACTIVE when any child ad is active).
+         */
+        status?: (string) | null;
+        /**
+         * ISO 4217 code of the ad account (e.g. USD, THB). All money values in `summary` and `daily` are in this currency.
+         */
+        currency?: (string) | null;
+    };
+    analytics?: {
+        summary?: AdMetrics;
+        daily?: Array<(AdMetrics & {
+    date?: string;
+})>;
+        breakdowns?: {
+            [key: string]: Array<{
+                [key: string]: unknown;
+            }>;
+        };
+    };
+});
+
+export type GetCampaignAnalyticsError = ({
+    error?: string;
+} | unknown);
 
 export type GetAdAnalyticsData = {
     path: {

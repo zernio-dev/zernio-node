@@ -391,6 +391,7 @@ try {
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
 | `ads.getAdTrackingTags()` | Get ad tracking tags |
+| `ads.getCampaignAnalytics()` | Get campaign analytics |
 | `ads.getConversionDestination()` | Get a conversion destination |
 | `ads.getConversionMetrics()` | Get attribution metrics |
 | `ads.getConversionsQuality()` | Get Event Match Quality |
