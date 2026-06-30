@@ -872,7 +872,7 @@ export const updateProfile = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Delete profile
- * Permanently deletes a profile by ID.
+ * Permanently deletes a profile. Active connected accounts block deletion (returns 400) - disconnect them first. Any remaining disconnected accounts and provisioned WhatsApp numbers are moved to another of your profiles (a new one is created only if needed), never deleted.
  */
 export const deleteProfile = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteProfileData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteProfileResponse, DeleteProfileError, ThrowOnError>({
