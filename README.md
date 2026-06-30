@@ -554,6 +554,11 @@ try {
 | `instagram.listInstagramStories()` | List active Instagram stories |
 | `instagram.getInstagramStoryInsights()` | Get Instagram story insights |
 
+### Mentions
+| Method | Description |
+|--------|-------------|
+| `mentions.listInboxMentions()` | List mentions |
+
 ### Messages (Inbox)
 | Method | Description |
 |--------|-------------|

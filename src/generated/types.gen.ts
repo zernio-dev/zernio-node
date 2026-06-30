@@ -14353,6 +14353,70 @@ export type UnfollowUserError = (unknown | {
     error?: string;
 });
 
+export type ListInboxMentionsData = {
+    query?: {
+        /**
+         * Filter by social account ID
+         */
+        accountId?: string;
+        /**
+         * Cursor for pagination (ID of the last item from the previous page)
+         */
+        cursor?: string;
+        limit?: number;
+        /**
+         * Filter by profile ID
+         */
+        profileId?: string;
+        /**
+         * Sort order by publishedAt
+         */
+        sortOrder?: 'asc' | 'desc';
+    };
+};
+
+export type ListInboxMentionsResponse = ({
+    data?: Array<{
+        /**
+         * Mention document ID
+         */
+        id?: string;
+        platform?: 'linkedin';
+        accountId?: string;
+        accountUsername?: string;
+        /**
+         * Text of the post that mentioned you
+         */
+        content?: string;
+        /**
+         * URL to the source post on LinkedIn
+         */
+        permalink?: (string) | null;
+        /**
+         * LinkedIn URN of the person who mentioned you
+         */
+        authorUrn?: (string) | null;
+        /**
+         * URN of the organization that was mentioned
+         */
+        organizationalEntity?: string;
+        publishedAt?: string;
+        createdAt?: string;
+    }>;
+    pagination?: {
+        hasMore?: boolean;
+        cursor?: (string) | null;
+    };
+    meta?: {
+        total?: number;
+        sortOrder?: 'asc' | 'desc';
+    };
+});
+
+export type ListInboxMentionsError = ({
+    error?: string;
+} | unknown);
+
 export type ListInboxReviewsData = {
     query?: {
         /**

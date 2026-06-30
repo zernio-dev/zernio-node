@@ -249,6 +249,7 @@ import {
   listInboxComments,
   listInboxConversationAnalytics,
   listInboxConversations,
+  listInboxMentions,
   listInboxReviews,
   listInstagramStories,
   listLeadForms,
@@ -840,6 +841,13 @@ export class Zernio {
     removeBookmark: removeBookmark,
     followUser: followUser,
     unfollowUser: unfollowUser,
+  };
+
+  /**
+   * mentions API
+   */
+  mentions = {
+    listInboxMentions: listInboxMentions,
   };
 
   /**
