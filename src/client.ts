@@ -331,6 +331,7 @@ import {
   setWhatsappBusinessUsername,
   startGoogleBusinessVerification,
   submitWhatsAppNumberKyc,
+  syncExternalPosts,
   testWebhook,
   triggerWorkflow,
   unblockWhatsAppUsers,
@@ -544,6 +545,7 @@ export class Zernio {
   posts = {
     listPosts: listPosts,
     createPost: createPost,
+    syncExternalPosts: syncExternalPosts,
     getPost: getPost,
     updatePost: updatePost,
     deletePost: deletePost,

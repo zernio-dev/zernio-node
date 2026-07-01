@@ -462,6 +462,11 @@ describe('Endpoint Methods', () => {
       expect(client.posts.createPost).toBeTypeOf('function');
     });
 
+    it('should have syncExternalPosts method', () => {
+      expect(client.posts.syncExternalPosts).toBeDefined();
+      expect(client.posts.syncExternalPosts).toBeTypeOf('function');
+    });
+
     it('should have getPost method', () => {
       expect(client.posts.getPost).toBeDefined();
       expect(client.posts.getPost).toBeTypeOf('function');

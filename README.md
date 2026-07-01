@@ -178,6 +178,7 @@ try {
 | `posts.deletePost()` | Delete post |
 | `posts.editPost()` | Edit published post |
 | `posts.retryPost()` | Retry failed post |
+| `posts.syncExternalPosts()` | Sync or verify an external post on demand |
 | `posts.unpublishPost()` | Unpublish post |
 
 ### Accounts

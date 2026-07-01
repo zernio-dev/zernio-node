@@ -1472,6 +1472,78 @@ export type ExternalPostMediaItem = {
 export type type4 = 'image' | 'video';
 
 /**
+ * A post synced from a platform (published directly on the platform, not
+ * through Zernio). Returned by GET /v1/posts?source=external and
+ * POST /v1/posts/sync-external. Analytics are exposed separately via
+ * GET /v1/analytics?source=external.
+ *
+ */
+export type ExternalPostSummary = {
+    /**
+     * Platform the post belongs to (e.g. instagram, youtube, tiktok)
+     */
+    platform?: string;
+    /**
+     * The platform's own post/media/video id
+     */
+    platformPostId?: string;
+    /**
+     * Canonical URL (permalink) of the post on the platform
+     */
+    platformPostUrl?: string;
+    /**
+     * Post caption / text
+     */
+    content?: string;
+    /**
+     * When the post was published on the platform
+     */
+    publishedAt?: string;
+    /**
+     * Media type (e.g. image, video, carousel)
+     */
+    mediaType?: string;
+    /**
+     * Primary media URL
+     */
+    mediaUrl?: string;
+    /**
+     * Thumbnail URL
+     */
+    thumbnailUrl?: string;
+    /**
+     * Per-item media (for carousels / multi-media posts)
+     */
+    mediaItems?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Engagement + insights for the post. `likes` and `comments` are
+     * available immediately after an on-demand sync (they come from the
+     * platform listing). `reach`, `impressions`, `views` depend on the
+     * platform's insights, which carry their own delay (e.g. ~24h on
+     * Instagram) and read 0 until the platform makes them available.
+     *
+     */
+    analytics?: {
+        likes?: number;
+        comments?: number;
+        shares?: number;
+        saves?: number;
+        sends?: number;
+        clicks?: number;
+        views?: number;
+        reach?: number;
+        impressions?: number;
+        engagementRate?: number;
+        /**
+         * When these metrics were last refreshed
+         */
+        lastUpdated?: string;
+    };
+};
+
+/**
  * Native (external) post data shared by all post.external.* payloads.
  */
 export type ExternalPostWebhookPost = {
@@ -7570,6 +7642,54 @@ export type CreatePostError = ({
         [key: string]: unknown;
     };
 });
+
+export type SyncExternalPostsData = {
+    body: {
+        /**
+         * SocialAccount ID whose posts to sync. Must be connected to Zernio.
+         */
+        accountId: string;
+        /**
+         * The post URL to locate. Optional. Provide `url` or `postId` to return a specific post; omit both to just refresh and return the account's recent posts.
+         */
+        url?: string;
+        /**
+         * The platform post/media/video id to locate, as an alternative to `url`. Optional.
+         */
+        postId?: string;
+    };
+};
+
+export type SyncExternalPostsResponse = ({
+    synced?: {
+        /**
+         * Posts returned by the platform listing during the on-demand sync
+         */
+        postsFound?: number;
+        /**
+         * Posts inserted or updated in Zernio
+         */
+        postsSynced?: number;
+        /**
+         * True when no live fetch ran: the post was already stored, or the account was synced within the debounce window
+         */
+        skipped?: boolean;
+    };
+    /**
+     * Present only when a locator (`url`/`postId`) was provided — whether the post was found.
+     */
+    found?: boolean;
+    /**
+     * The matched external post, or null when not found. Present only when a locator was provided.
+     */
+    post?: (ExternalPostSummary | null);
+    /**
+     * The account's recent external posts. Present only when no locator was provided.
+     */
+    posts?: Array<ExternalPostSummary>;
+});
+
+export type SyncExternalPostsError = (ErrorResponse);
 
 export type GetPostData = {
     path: {
