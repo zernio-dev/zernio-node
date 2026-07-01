@@ -178,7 +178,6 @@ try {
 | `posts.deletePost()` | Delete post |
 | `posts.editPost()` | Edit published post |
 | `posts.retryPost()` | Retry failed post |
-| `posts.syncExternalPosts()` | Sync an external post |
 | `posts.unpublishPost()` | Unpublish post |
 
 ### Accounts
@@ -231,6 +230,7 @@ try {
 | `analytics.getYouTubeDailyViews()` | Get YouTube daily views |
 | `analytics.getYouTubeDemographics()` | Get YouTube demographics |
 | `analytics.getYouTubeVideoRetention()` | Get YouTube video retention curve |
+| `analytics.syncExternalPosts()` | Sync an external post |
 
 ### Account Groups
 | Method | Description |

@@ -488,6 +488,7 @@ export class Zernio {
     getPostTimeline: getPostTimeline,
     getGoogleBusinessPerformance: getGoogleBusinessPerformance,
     getGoogleBusinessSearchKeywords: getGoogleBusinessSearchKeywords,
+    syncExternalPosts: syncExternalPosts,
     getLinkedInAggregateAnalytics: getLinkedInAggregateAnalytics,
     getLinkedInPostAnalytics: getLinkedInPostAnalytics,
     getLinkedInPostReactions: getLinkedInPostReactions,
@@ -545,7 +546,6 @@ export class Zernio {
   posts = {
     listPosts: listPosts,
     createPost: createPost,
-    syncExternalPosts: syncExternalPosts,
     getPost: getPost,
     updatePost: updatePost,
     deletePost: deletePost,

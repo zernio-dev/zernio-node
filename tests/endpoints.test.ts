@@ -193,6 +193,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getGoogleBusinessSearchKeywords).toBeTypeOf('function');
     });
 
+    it('should have syncExternalPosts method', () => {
+      expect(client.analytics.syncExternalPosts).toBeDefined();
+      expect(client.analytics.syncExternalPosts).toBeTypeOf('function');
+    });
+
     it('should have getLinkedInAggregateAnalytics method', () => {
       expect(client.analytics.getLinkedInAggregateAnalytics).toBeDefined();
       expect(client.analytics.getLinkedInAggregateAnalytics).toBeTypeOf('function');
@@ -460,11 +465,6 @@ describe('Endpoint Methods', () => {
     it('should have createPost method', () => {
       expect(client.posts.createPost).toBeDefined();
       expect(client.posts.createPost).toBeTypeOf('function');
-    });
-
-    it('should have syncExternalPosts method', () => {
-      expect(client.posts.syncExternalPosts).toBeDefined();
-      expect(client.posts.syncExternalPosts).toBeTypeOf('function');
     });
 
     it('should have getPost method', () => {
