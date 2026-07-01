@@ -12456,13 +12456,33 @@ export type TestWebhookError = (unknown | {
 export type ListLogsData = {
     query?: {
         /**
+         * Filter by connected account ID
+         */
+        account_id?: string;
+        /**
          * Filter by action (e.g., post.published, message.sent, account.connected, webhook.delivered)
          */
         action?: string;
         /**
+         * Filter by the API key that made the request (api_request logs)
+         */
+        api_key_id?: string;
+        /**
          * Number of days to look back (max 90)
          */
         days?: number;
+        /**
+         * Filter webhook logs by event (e.g. post.published, message.received)
+         */
+        event?: string;
+        /**
+         * Precise start instant (ISO 8601); narrows within the day range
+         */
+        from?: string;
+        /**
+         * Include message.read / message.delivered events (hidden by default for messaging logs)
+         */
+        include_read_receipts?: boolean;
         /**
          * Maximum number of logs to return (max 100)
          */
@@ -12471,6 +12491,10 @@ export type ListLogsData = {
          * Filter by platform
          */
         platform?: 'tiktok' | 'instagram' | 'whatsapp' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'all';
+        /**
+         * Correlation ID — returns every log spawned by a single API request
+         */
+        request_id?: string;
         /**
          * Free-text search across log fields
          */
@@ -12484,9 +12508,19 @@ export type ListLogsData = {
          */
         status?: 'success' | 'failed' | 'pending' | 'skipped' | 'all';
         /**
-         * Log category to query
+         * Filter by exact HTTP status code (api_request logs)
          */
-        type?: 'publishing' | 'connections' | 'webhooks' | 'messaging';
+        status_code?: number;
+        /**
+         * Precise end instant (ISO 8601)
+         */
+        to?: string;
+        /**
+         * Log category to query. Use `all` for the unified view across every category,
+         * or `api_request` for your API request logs (method, path, status, latency).
+         *
+         */
+        type?: 'all' | 'publishing' | 'connections' | 'webhooks' | 'messaging' | 'workflow_event' | 'api_request';
     };
 };
 
@@ -12525,6 +12559,30 @@ export type ListLogsResponse = ({
          * Additional context as JSON string
          */
         metadata?: string;
+        /**
+         * Correlation ID linking every log from one API request (api_request logs)
+         */
+        request_id?: string;
+        /**
+         * The API key that made the request (api_request logs)
+         */
+        api_key_id?: string;
+        /**
+         * HTTP method (api_request logs)
+         */
+        method?: string;
+        /**
+         * Request path (api_request logs)
+         */
+        path?: string;
+        /**
+         * Client IP address (api_request logs)
+         */
+        ip_address?: string;
+        /**
+         * Client user-agent (api_request logs)
+         */
+        user_agent?: string;
     }>;
     pagination?: {
         total?: number;
