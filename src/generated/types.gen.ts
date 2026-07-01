@@ -13004,6 +13004,10 @@ export type SendInboxMessageData = {
          */
         attachmentType?: 'image' | 'video' | 'audio' | 'file';
         /**
+         * WhatsApp only. Display name for a document sent via attachmentUrl with attachmentType: file (e.g. "Report.pdf"). Maps to the recipient's file name; without it WhatsApp derives the name from the URL and shows "Untitled". Ignored for image/video/audio and for binary uploads (which use the uploaded file's name).
+         */
+        attachmentName?: string;
+        /**
          * WhatsApp only. When `true` on an audio attachment, the message is sent
          * as a voice message (PTT) — the recipient sees the waveform + voice-note
          * UI instead of a basic audio attachment. The audio file MUST be `.ogg`
