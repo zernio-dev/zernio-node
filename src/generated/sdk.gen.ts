@@ -689,7 +689,7 @@ export const createPost = <ThrowOnError extends boolean = false>(options: Option
 };
 
 /**
- * Sync or verify an external post on demand
+ * Sync an external post
  * Fetch an account's latest external posts (published directly on the platform, not through Zernio) on demand, so a just-published post is retrievable within seconds instead of waiting for the background sync (which refreshes each account at most every ~90 minutes).
  *
  * Primary use case: verifying a submitted post. When a user publishes on the platform and immediately pastes the post URL into your app, call this with `accountId` plus `url` (or `postId`) to confirm the post exists and return its metadata.
