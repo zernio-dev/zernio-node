@@ -5075,6 +5075,10 @@ export type WebhookPayloadPost = {
         platforms: Array<{
             platform: string;
             status: string;
+            /**
+             * SocialAccount id this platform target published through. Use it to route events by connected account (e.g. separate staging vs production endpoints). A post can span multiple accounts.
+             */
+            accountId?: string;
             platformPostId?: string;
             publishedUrl?: string;
             error?: string;
@@ -5117,6 +5121,10 @@ export type WebhookPayloadPostPlatform = {
         platforms: Array<{
             platform: string;
             status: string;
+            /**
+             * SocialAccount id this platform target published through. On post.platform.* events see also the top-level `account` block.
+             */
+            accountId?: string;
             platformPostId?: string;
             publishedUrl?: string;
             error?: string;
