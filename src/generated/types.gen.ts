@@ -5583,7 +5583,7 @@ export type WorkflowNode = {
      *
      * **trigger**: `{ triggerType: inbound_message|api_call|whatsapp_event, keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean, eventType: message_sent|message_delivered|message_read|message_failed|reaction }`. Default `triggerType` is `inbound_message` for legacy nodes. `eventType` is only honored when `triggerType` is `whatsapp_event` (WhatsApp-only).
      *
-     * **send_message**: `{ messageType: text|template|media|interactive, text, template:{name,language,variableMapping}, media:{mediaType:image|video|audio|document, url,caption}, interactive }`. `template` and `interactive` are WhatsApp-only.
+     * **send_message**: `{ messageType: text|template|media|interactive, text, template:{name,language,variableMapping}, media:{mediaType:image|video|audio|document, url,caption}, interactive }`. `template` and `interactive` are WhatsApp-only. `interactive.type` is inferred from the payload shape when omitted; payloads with neither `type` nor an inferable shape are rejected.
      *
      * **wait_for_reply**: `{ timeoutMinutes:int (max 43200), saveAs:string }`. Resume via the `'reply'` edge on inbound, or `'timeout'` edge after `timeoutMinutes` of silence.
      *
