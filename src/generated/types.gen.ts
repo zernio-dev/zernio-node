@@ -15986,6 +15986,10 @@ export type GetWhatsAppNumberKycFormResponse = ({
          * ISO country the value must be local to
          */
         localTo?: (string) | null;
+        /**
+         * When set, the requirement applies ONLY to this end-user type — provide it for that type and OMIT it for the other (e.g. Brazil: "Cartão CNPJ" is business-only, "CPF" and "ID/Passport Copy" are personal-only). Submitting both sets makes the regulator ask whether the number is for personal or business use and stalls the review. Pass `entityType` on POST so the server drops the inapplicable set.
+         */
+        audience?: ('business' | 'individual') | null;
     }>;
     /**
      * Present when this account already has an approved verification for the country that can be reused (skip the form). `fromPhoneNumber`/`details` mirror the newest option; `options` lists ALL approved verifications (agencies hold one per end client) — pass the chosen option's `fromPhoneNumber` as `reuseFrom` on POST.
