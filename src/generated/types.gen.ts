@@ -8534,11 +8534,11 @@ export type CreateInviteTokenData = {
          */
         profileIds?: Array<(string)>;
         /**
-         * Org role granted to the invitee. Defaults to 'member'. 'viewer' creates a read-only member who can view everything in their profile scope but cannot perform any content mutation (publish, edit, delete, connect accounts).
+         * Org role granted to the invitee. Defaults to 'member'. 'admin' can manage the team (invite/remove members, change roles and access) but not billing, ownership transfer or account deletion. 'viewer' creates a read-only member who can view everything in their profile scope but cannot perform any content mutation (publish, edit, delete, connect accounts).
          */
-        role?: 'member' | 'billing_admin' | 'viewer';
+        role?: 'admin' | 'member' | 'billing_admin' | 'viewer';
         /**
-         * Deprecated. Use role 'viewer' instead. When true, the invite is created with role 'viewer'. Cannot be combined with role 'billing_admin'.
+         * Deprecated. Use role 'viewer' instead. When true, the invite is created with role 'viewer'. Cannot be combined with role 'billing_admin' or 'admin'.
          * @deprecated
          */
         readOnly?: boolean;
