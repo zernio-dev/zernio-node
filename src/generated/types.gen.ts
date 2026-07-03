@@ -1864,6 +1864,10 @@ export type InboxWebhookAccount = {
      * Social account ID
      */
     id: string;
+    /**
+     * Social account ID (same value as id). Canonical field so consumers can filter every webhook event on one field (e.g. route staging vs production by account). id is kept for backward compatibility.
+     */
+    accountId?: string;
     platform: string;
     username: string;
     displayName?: string;
@@ -4451,6 +4455,10 @@ export type WebhookPayloadComment = {
          * Social account ID
          */
         id: string;
+        /**
+         * Social account ID (same as id); canonical field for account filtering.
+         */
+        accountId?: string;
         platform: string;
         username: string;
     };
@@ -4532,6 +4540,10 @@ export type WebhookPayloadExternalPost = {
     post: ExternalPostWebhookPost;
     account: {
         id: string;
+        /**
+         * Social account ID (same as id); canonical field for account filtering.
+         */
+        accountId?: string;
         platform: string;
         username: string;
     };
@@ -4593,6 +4605,10 @@ export type WebhookPayloadLead = {
          * Social account ID (the facebook account owning the Page)
          */
         id: string;
+        /**
+         * Social account ID (same as id); canonical field for account filtering.
+         */
+        accountId?: string;
         platform: 'facebook';
     };
     timestamp: string;
@@ -5234,6 +5250,10 @@ export type WebhookPayloadReviewNew = {
     review: ReviewWebhookReview;
     account: {
         id: string;
+        /**
+         * Social account ID (same as id); canonical field for account filtering.
+         */
+        accountId?: string;
         platform: string;
         username: string;
     };
@@ -5258,6 +5278,10 @@ export type WebhookPayloadReviewUpdated = {
     review: ReviewWebhookReview;
     account: {
         id: string;
+        /**
+         * Social account ID (same as id); canonical field for account filtering.
+         */
+        accountId?: string;
         platform: string;
         username: string;
     };
