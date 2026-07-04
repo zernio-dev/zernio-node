@@ -730,6 +730,10 @@ export const getPost = <ThrowOnError extends boolean = false>(options: OptionsLe
  * Update an existing post. Draft, scheduled, failed, partial, and cancelled posts can be edited.
  * Published posts can only have their recycling config updated.
  *
+ * To promote a draft to scheduled, send `isDraft: false` together with `scheduledFor` (or `publishNow: true`,
+ * or `queuedFromProfile`). If `isDraft` is omitted the post keeps its current draft status, so sending only
+ * `scheduledFor` to a draft returns 200 but the post remains a draft.
+ *
  */
 export const updatePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdatePostData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdatePostResponse, UpdatePostError, ThrowOnError>({
