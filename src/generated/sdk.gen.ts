@@ -3357,8 +3357,7 @@ export const getCallRecording = <ThrowOnError extends boolean = false>(options: 
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe;
  * same key + same body replays the original response instead of dialing
- * (and billing) a second call. The body `idempotencyKey` field predates
- * the header and keeps working; prefer the header.
+ * (and billing) a second call.
  *
  */
 export const createVoiceCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateVoiceCallData, ThrowOnError>) => {

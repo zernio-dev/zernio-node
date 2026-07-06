@@ -15660,10 +15660,6 @@ export type CreateVoiceCallData = {
          */
         transcriptionLanguage?: 'auto' | 'en' | 'es';
         /**
-         * A retry with the same key returns the original call instead of dialing again.
-         */
-        idempotencyKey?: string;
-        /**
          * Answering-machine detection; defers the bridge until human vs machine is known.
          */
         amd?: boolean;
@@ -18258,6 +18254,9 @@ export type DisableVoiceOnNumberData = {
 };
 
 export type DisableVoiceOnNumberResponse = ({
+    /**
+     * Always false after a successful disable.
+     */
     enabled?: boolean;
     phoneNumber?: string;
 });
@@ -18330,6 +18329,9 @@ export type DisableSmsOnNumberData = {
 };
 
 export type DisableSmsOnNumberResponse = ({
+    /**
+     * Always false after a successful disable.
+     */
     enabled?: boolean;
     phoneNumber?: string;
     /**
