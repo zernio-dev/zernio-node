@@ -589,9 +589,24 @@ describe('Endpoint Methods', () => {
       expect(client.usage.getXApiPricing).toBeTypeOf('function');
     });
 
+    it('should have getUsage method', () => {
+      expect(client.usage.getUsage).toBeDefined();
+      expect(client.usage.getUsage).toBeTypeOf('function');
+    });
+
     it('should have getUsageStats method', () => {
       expect(client.usage.getUsageStats).toBeDefined();
       expect(client.usage.getUsageStats).toBeTypeOf('function');
+    });
+
+    it('should have getCallsUsage method', () => {
+      expect(client.usage.getCallsUsage).toBeDefined();
+      expect(client.usage.getCallsUsage).toBeTypeOf('function');
+    });
+
+    it('should have getSmsUsage method', () => {
+      expect(client.usage.getSmsUsage).toBeDefined();
+      expect(client.usage.getSmsUsage).toBeTypeOf('function');
     });
 
   });

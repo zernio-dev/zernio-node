@@ -912,6 +912,148 @@ export type BusinessCenter = {
 };
 
 /**
+ * One call on a number you own, either channel. `channel` tells you which
+ * lane it took: `whatsapp` (WhatsApp Business Calling) or `pstn` (a regular
+ * phone call). List endpoints omit `transcript`; use `lastTranscriptSnippet`
+ * for a preview and the detail endpoint for the full transcript.
+ *
+ */
+export type CallRecord = {
+    _id?: string;
+    /**
+     * Owning social account. The unified /v1/calls/{id} detail + recording endpoints work for any channel; the channel-specific endpoints remain for account-scoped access.
+     */
+    accountId?: string;
+    /**
+     * Inbox conversation with the counterparty, when one exists.
+     */
+    conversationId?: (string) | null;
+    /**
+     * CRM Contact for the counterparty, when resolved.
+     */
+    contactId?: (string) | null;
+    channel?: 'whatsapp' | 'pstn';
+    direction?: 'inbound' | 'outbound';
+    /**
+     * Caller number (E.164).
+     */
+    from?: string;
+    /**
+     * Callee number (E.164).
+     */
+    to?: string;
+    /**
+     * Destination the call was routed to (tel:/sip:/wss:), snapshotted at routing time.
+     */
+    forwardTo?: (string) | null;
+    /**
+     * Outbound PSTN only. Message spoken to the callee on answer, before the bridge.
+     */
+    greeting?: (string) | null;
+    status?: 'ringing' | 'answered' | 'ended' | 'failed';
+    /**
+     * True when an inbound call went to voicemail.
+     */
+    isVoicemail?: boolean;
+    /**
+     * Outbound answering-machine detection was requested for this call.
+     */
+    amd?: boolean;
+    /**
+     * With `amd`, whether a machine (vs a human) answered.
+     */
+    answeredMachine?: (boolean) | null;
+    /**
+     * Caller ID presented on the forwarded leg.
+     */
+    forwardCallerId?: 'business' | 'caller';
+    /**
+     * Effective flag for THIS call (number default + per-call override, resolved at create time).
+     */
+    recordingEnabled?: boolean;
+    transcriptionEnabled?: boolean;
+    transcriptionLanguage?: 'auto' | 'en' | 'es';
+    startedAt?: string;
+    answeredAt?: (string) | null;
+    endedAt?: (string) | null;
+    /**
+     * When the call was blind-transferred (POST /v1/voice/calls/{id}/transfer).
+     */
+    transferredAt?: (string) | null;
+    durationSeconds?: number;
+    endReason?: 'hangup' | 'no_answer' | 'rejected' | 'error';
+    /**
+     * Raw carrier hangup cause behind endReason (e.g. normal_clearing, not_found, time_limit) — the actual motive when endReason is a coarse bucket.
+     */
+    hangupCause?: (string) | null;
+    /**
+     * SIP response code that ended the call, when SIP-signalled (e.g. '403', '488'). The real failure reason for SIP legs.
+     */
+    sipHangupCause?: (string) | null;
+    /**
+     * Per-call failure log (dial failed, bridge failed, recording error).
+     */
+    callErrors?: Array<{
+        code?: number;
+        message?: string;
+    }>;
+    /**
+     * May be expired. Resolve a fresh playable URL via GET /v1/calls/{id}/recording (any channel).
+     */
+    recordingUrl?: (string) | null;
+    /**
+     * Most recent transcript segment, for list previews.
+     */
+    lastTranscriptSnippet?: (string) | null;
+    /**
+     * Full transcript segments (detail endpoint only; omitted from lists).
+     */
+    transcript?: Array<{
+        text?: string;
+        confidence?: number;
+        at?: string;
+    }>;
+    billing?: {
+        metaMinutes?: number;
+        telnyxSeconds?: number;
+        transcriptionSeconds?: number;
+        transcriptionCostUSD?: number;
+        /**
+         * WhatsApp channel only. Meta per-minute charge, billed by Meta directly to your WABA. Display only; not billed by Zernio.
+         */
+        metaCostUSD?: number;
+        telnyxCostUSD?: number;
+        recordingCostUSD?: number;
+        /**
+         * Amount Zernio bills you = telephony leg + recording + transcription (excludes any Meta portion).
+         */
+        billableCostUSD?: number;
+        /**
+         * Full cost incl. any Meta portion you pay directly. Display only.
+         */
+        totalCostUSD?: number;
+        currency?: string;
+    };
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type channel = 'whatsapp' | 'pstn';
+
+export type direction = 'inbound' | 'outbound';
+
+export type status2 = 'ringing' | 'answered' | 'ended' | 'failed';
+
+/**
+ * Caller ID presented on the forwarded leg.
+ */
+export type forwardCallerId = 'business' | 'caller';
+
+export type transcriptionLanguage = 'auto' | 'en' | 'es';
+
+export type endReason = 'hangup' | 'no_answer' | 'rejected' | 'error';
+
+/**
  * A discoverable conversion destination on an ad platform — a Meta pixel,
  * Google conversion action, or LinkedIn conversion rule. Returned by
  * `listConversionDestinations`, `getConversionDestination`,
@@ -951,7 +1093,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status2 = 'active' | 'inactive';
+export type status3 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -1372,7 +1514,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status3 = 1 | 2 | 3 | 4;
+export type status4 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -1896,7 +2038,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status4 = 'active' | 'archived';
+export type status5 = 'active' | 'archived';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -2005,7 +2147,7 @@ export type InboxWebhookMessage = {
 
 export type platform2 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
 
-export type direction = 'incoming' | 'outgoing';
+export type direction2 = 'incoming' | 'outgoing';
 
 /**
  * Shared account-insights response envelope used by every platform-level
@@ -2448,7 +2590,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status5 = 'published' | 'failed';
+export type status6 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -2571,7 +2713,7 @@ export type Post = {
     updatedAt?: string;
 };
 
-export type status6 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
+export type status7 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
 
 export type visibility = 'public' | 'private' | 'unlisted';
 
@@ -3614,7 +3756,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status7 = 'pending' | 'completed' | 'expired';
+export type status8 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -3893,7 +4035,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status8 = 'success' | 'failed';
+export type status9 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -4002,7 +4144,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status9 = 'success' | 'failure';
+export type status10 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -4252,10 +4394,6 @@ export type WebhookPayloadCallEnded = {
 };
 
 export type event5 = 'call.ended';
-
-export type direction2 = 'inbound' | 'outbound';
-
-export type endReason = 'hangup' | 'no_answer' | 'rejected' | 'error';
 
 /**
  * Webhook payload for the `call.failed` event. Fired when a call
@@ -5390,7 +5528,7 @@ export type platform10 = 'whatsapp';
  * request before the template is actually removed.
  *
  */
-export type status10 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status11 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -5491,7 +5629,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status11 = 'pending' | 'active';
+export type status12 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -5610,7 +5748,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status12 = 'success' | 'failed' | 'pending';
+export type status13 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -7536,6 +7674,26 @@ export type GetXApiPricingError = ({
     error?: string;
 });
 
+export type GetUsageData = {
+    query?: {
+        /**
+         * For Stripe subscription users, `true` forces a subscription
+         * reconciliation pass even when cached plan data looks complete.
+         * Omit the parameter, or pass `false`, to use the default
+         * first-time-only reconciliation behavior. Invalid boolean values are
+         * rejected.
+         *
+         */
+        reconcile?: boolean;
+    };
+};
+
+export type GetUsageResponse = (UsageStats);
+
+export type GetUsageError = (unknown | {
+    error?: string;
+});
+
 export type GetUsageStatsData = {
     query?: {
         /**
@@ -7553,6 +7711,107 @@ export type GetUsageStatsData = {
 export type GetUsageStatsResponse = (UsageStats);
 
 export type GetUsageStatsError = (unknown | {
+    error?: string;
+});
+
+export type GetCallsUsageData = {
+    query?: {
+        channel?: 'whatsapp' | 'pstn';
+        groupBy?: 'day' | 'number' | 'channel';
+        /**
+         * Scope to calls involving this number (typically one of YOUR numbers). E.164, leading + optional.
+         */
+        number?: string;
+        /**
+         * Start of the window (inclusive). Default 30 days before `until`.
+         */
+        since?: string;
+        /**
+         * End of the window (exclusive). Default now.
+         */
+        until?: string;
+    };
+};
+
+export type GetCallsUsageResponse = ({
+    since?: string;
+    until?: string;
+    groupBy?: ('day' | 'number' | 'channel') | null;
+    totals?: {
+        calls?: number;
+        answered?: number;
+        minutes?: number;
+        /**
+         * What Zernio bills for these calls.
+         */
+        billableUSD?: number;
+        /**
+         * WhatsApp only: Meta's per-minute charge, billed by Meta directly to your WABA. Display only.
+         */
+        metaUSD?: number;
+    };
+    /**
+     * Present (possibly empty) when `groupBy` is set.
+     */
+    groups?: Array<{
+        /**
+         * The group key: a `YYYY-MM-DD` UTC day, one of your numbers, or a channel.
+         */
+        key?: string;
+        calls?: number;
+        answered?: number;
+        minutes?: number;
+        billableUSD?: number;
+        metaUSD?: number;
+    }>;
+});
+
+export type GetCallsUsageError = (unknown | {
+    error?: string;
+});
+
+export type GetSmsUsageData = {
+    query?: {
+        groupBy?: 'day' | 'number';
+        /**
+         * Scope to one of YOUR SMS-enabled numbers (E.164, leading + optional).
+         */
+        number?: string;
+        /**
+         * Start of the window (inclusive). Default 30 days before `until`.
+         */
+        since?: string;
+        /**
+         * End of the window (exclusive). Default now.
+         */
+        until?: string;
+    };
+};
+
+export type GetSmsUsageResponse = ({
+    since?: string;
+    until?: string;
+    groupBy?: ('day' | 'number') | null;
+    totals?: {
+        sent?: number;
+        received?: number;
+        total?: number;
+    };
+    /**
+     * Present (possibly empty) when `groupBy` is set.
+     */
+    groups?: Array<{
+        /**
+         * A `YYYY-MM-DD` UTC day or one of your numbers.
+         */
+        key?: string;
+        sent?: number;
+        received?: number;
+        total?: number;
+    }>;
+});
+
+export type GetSmsUsageError = (unknown | {
     error?: string;
 });
 
@@ -14977,7 +15236,7 @@ export type GetWhatsAppCallingConfigData = {
 
 export type GetWhatsAppCallingConfigResponse = ({
     /**
-     * WhatsAppPhoneNumber Mongo ID (use on /v1/whatsapp/phone-numbers/{id}/calling)
+     * Phone number record ID (use on /v1/phone-numbers/{id}/whatsapp/calling)
      */
     phoneNumberDocId?: string;
     phoneNumber?: string;
@@ -15003,7 +15262,7 @@ export type GetWhatsAppCallingConfigError = ({
     error?: string;
 } | unknown);
 
-export type EnableWhatsAppCallingData = {
+export type EnableWhatsAppCallingLegacyData = {
     body: {
         accountId: string;
         /**
@@ -15026,18 +15285,18 @@ export type EnableWhatsAppCallingData = {
     };
 };
 
-export type EnableWhatsAppCallingResponse = ({
+export type EnableWhatsAppCallingLegacyResponse = ({
     success?: boolean;
     callingEnabled?: boolean;
     sipHostname?: string;
     forwardTo?: string;
 });
 
-export type EnableWhatsAppCallingError = ({
+export type EnableWhatsAppCallingLegacyError = ({
     error?: string;
 } | unknown);
 
-export type UpdateWhatsAppCallingData = {
+export type UpdateWhatsAppCallingLegacyData = {
     body: {
         accountId: string;
         forwardTo?: string;
@@ -15051,13 +15310,13 @@ export type UpdateWhatsAppCallingData = {
     };
 };
 
-export type UpdateWhatsAppCallingResponse = (unknown);
+export type UpdateWhatsAppCallingLegacyResponse = (unknown);
 
-export type UpdateWhatsAppCallingError = ({
+export type UpdateWhatsAppCallingLegacyError = ({
     error?: string;
 } | unknown);
 
-export type DisableWhatsAppCallingData = {
+export type DisableWhatsAppCallingLegacyData = {
     path: {
         id: string;
     };
@@ -15066,9 +15325,9 @@ export type DisableWhatsAppCallingData = {
     };
 };
 
-export type DisableWhatsAppCallingResponse = (unknown);
+export type DisableWhatsAppCallingLegacyResponse = (unknown);
 
-export type DisableWhatsAppCallingError = ({
+export type DisableWhatsAppCallingLegacyError = ({
     error?: string;
 } | unknown);
 
@@ -15130,6 +15389,12 @@ export type InitiateWhatsAppCallData = {
          */
         biz_opaque_callback_data?: string;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes dial retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type InitiateWhatsAppCallResponse = ({
@@ -15156,6 +15421,10 @@ export type InitiateWhatsAppCallError = ({
 export type ListWhatsAppCallsData = {
     query: {
         accountId: string;
+        /**
+         * Return calls with startedAt strictly before this instant (use the previous page's nextCursor).
+         */
+        before?: string;
         direction?: 'inbound' | 'outbound';
         limit?: number;
         since?: string;
@@ -15194,6 +15463,10 @@ export type ListWhatsAppCallsResponse = ({
             currency?: string;
         };
     }>;
+    /**
+     * Pass as `before` for the next page; null on the last page.
+     */
+    nextCursor?: (string) | null;
 });
 
 export type ListWhatsAppCallsError = ({
@@ -15218,6 +15491,27 @@ export type GetWhatsAppCallResponse = ({
 export type GetWhatsAppCallError = ({
     error?: string;
 } | unknown);
+
+export type GetWhatsAppCallRecordingData = {
+    path: {
+        callId: string;
+    };
+    query: {
+        accountId: string;
+        /**
+         * `json` returns `{ url }` instead of a 302 redirect.
+         */
+        as?: 'json';
+    };
+};
+
+export type GetWhatsAppCallRecordingResponse = ({
+    url?: string;
+});
+
+export type GetWhatsAppCallRecordingError = (unknown | {
+    error?: string;
+});
 
 export type GetWhatsAppCallEstimateData = {
     query: {
@@ -15253,6 +15547,673 @@ export type GetWhatsAppCallEstimateResponse = ({
 export type GetWhatsAppCallEstimateError = ({
     error?: string;
 });
+
+export type ListCallsData = {
+    query?: {
+        /**
+         * Return calls with startedAt strictly before this instant (use the previous page's nextCursor).
+         */
+        before?: string;
+        channel?: 'whatsapp' | 'pstn';
+        direction?: 'inbound' | 'outbound';
+        limit?: number;
+        /**
+         * Exact filter: calls involving this number (typically one of YOUR numbers, to scope history to a single line). E.164, leading + optional.
+         */
+        number?: string;
+        /**
+         * Free-text match on the from/to numbers. Non-digits are stripped, so partial queries like `302` or `+1 302` work.
+         */
+        search?: string;
+        status?: 'ringing' | 'answered' | 'ended' | 'failed';
+    };
+};
+
+export type ListCallsResponse = ({
+    calls?: Array<(CallRecord & {
+    /**
+     * CRM contact name for the counterparty, when resolved.
+     */
+    contactName?: string;
+})>;
+    /**
+     * Pass as `before` for the next page; null on the last page.
+     */
+    nextCursor?: (string) | null;
+});
+
+export type ListCallsError = ({
+    error?: string;
+} | unknown);
+
+export type GetCallData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetCallResponse = ({
+    call?: (CallRecord & {
+    /**
+     * CRM contact name for the counterparty, when resolved.
+     */
+    contactName?: string;
+});
+});
+
+export type GetCallError = ({
+    error?: string;
+} | unknown);
+
+export type GetCallRecordingData = {
+    path: {
+        id: string;
+    };
+    query?: {
+        /**
+         * `json` returns `{ url }` instead of a 302 redirect.
+         */
+        as?: 'json';
+    };
+};
+
+export type GetCallRecordingResponse = ({
+    url?: string;
+});
+
+export type GetCallRecordingError = (unknown | {
+    error?: string;
+});
+
+export type CreateVoiceCallData = {
+    body: {
+        /**
+         * Destination to dial, E.164 with leading +.
+         */
+        to: string;
+        /**
+         * Which of your voice-enabled numbers to dial from. Optional when you have exactly one.
+         */
+        fromNumber?: string;
+        /**
+         * Per-call agent override (tel:+E164, sip:..., or wss://...); defaults to the number's stored forward destination.
+         */
+        forwardTo?: string;
+        /**
+         * Spoken to the callee when they answer, before the bridge.
+         */
+        greeting?: string;
+        /**
+         * Per-call recording toggle; defaults to the number's setting.
+         */
+        recordOverride?: boolean;
+        /**
+         * Per-call transcription toggle; defaults to the number's setting.
+         */
+        transcribeOverride?: boolean;
+        /**
+         * 'auto' derives from the callee's country; 'en'/'es' force it.
+         */
+        transcriptionLanguage?: 'auto' | 'en' | 'es';
+        /**
+         * A retry with the same key returns the original call instead of dialing again.
+         */
+        idempotencyKey?: string;
+        /**
+         * Answering-machine detection; defers the bridge until human vs machine is known.
+         */
+        amd?: boolean;
+        /**
+         * Spoken to a detected machine, then hang up (implies `amd`). For outbound voicemail drops.
+         */
+        voicemailDropMessage?: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes dial retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type CreateVoiceCallResponse = ({
+    success?: boolean;
+    /**
+     * Internal Call doc ID
+     */
+    callId?: string;
+    telnyxCallControlId?: string;
+    status?: 'dialing';
+    direction?: 'outbound';
+    from?: string;
+    to?: string;
+    forwardTo?: string;
+    greeting?: (string) | null;
+    recordingEnabled?: boolean;
+    transcriptionEnabled?: boolean;
+    transcriptionLanguage?: 'auto' | 'en' | 'es';
+});
+
+export type CreateVoiceCallError = ({
+    error?: string;
+} | unknown);
+
+export type ListVoiceCallsData = {
+    query?: {
+        before?: string;
+        direction?: 'inbound' | 'outbound';
+        limit?: number;
+        /**
+         * Exact filter: calls involving this number (typically one of your DIDs). E.164, leading + optional.
+         */
+        number?: string;
+        status?: 'ringing' | 'answered' | 'ended' | 'failed';
+    };
+};
+
+export type ListVoiceCallsResponse = ({
+    calls?: Array<CallRecord>;
+    nextCursor?: (string) | null;
+});
+
+export type ListVoiceCallsError = ({
+    error?: string;
+});
+
+export type GetVoiceCallData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetVoiceCallResponse = ({
+    call?: CallRecord;
+});
+
+export type GetVoiceCallError = ({
+    error?: string;
+} | unknown);
+
+export type EndVoiceCallData = {
+    path: {
+        id: string;
+    };
+};
+
+export type EndVoiceCallResponse = ({
+    success?: boolean;
+    callId?: string;
+    /**
+     * `ending` when a hangup was issued; otherwise the call's current status.
+     */
+    status?: string;
+});
+
+export type EndVoiceCallError = ({
+    error?: string;
+} | unknown);
+
+export type GetVoiceCallRecordingData = {
+    path: {
+        id: string;
+    };
+    query?: {
+        /**
+         * `json` returns `{ url }` instead of a 302 redirect.
+         */
+        as?: 'json';
+    };
+};
+
+export type GetVoiceCallRecordingResponse = ({
+    url?: string;
+});
+
+export type GetVoiceCallRecordingError = (unknown | {
+    error?: string;
+});
+
+export type TransferVoiceCallData = {
+    body: {
+        /**
+         * +E164 phone number (tel: prefix optional) or a sip: URI. wss:// is not a valid transfer target.
+         */
+        to: string;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type TransferVoiceCallResponse = ({
+    success?: boolean;
+    callId?: string;
+    transferredTo?: string;
+});
+
+export type TransferVoiceCallError = ({
+    error?: string;
+} | unknown);
+
+export type GetVoiceCallEstimateData = {
+    query: {
+        minutes?: number;
+        recording?: boolean;
+        /**
+         * Destination number, E.164 (leading + optional).
+         */
+        to: string;
+        transcription?: boolean;
+    };
+};
+
+export type GetVoiceCallEstimateResponse = ({
+    destinationCountry?: (string) | null;
+    minutes?: number;
+    /**
+     * Billable cost per minute for the requested options.
+     */
+    perMinuteUsd?: number;
+    breakdown?: {
+        telnyxCostUSD?: number;
+        recordingCostUSD?: number;
+        transcriptionCostUSD?: number;
+        /**
+         * What Zernio bills for the call.
+         */
+        billableCostUSD?: number;
+        /**
+         * Equals billableCostUSD (no separate Meta bill on PSTN); kept for shape parity with the WhatsApp estimate.
+         */
+        totalCostUSD?: number;
+    };
+});
+
+export type GetVoiceCallEstimateError = ({
+    error?: string;
+});
+
+export type CreateVoiceWebSessionResponse = ({
+    success?: boolean;
+    /**
+     * Login token for the browser WebRTC SDK.
+     */
+    token?: string;
+    /**
+     * Pass to POST /v1/voice/calls/web/dial once the browser is registered.
+     */
+    credentialId?: string;
+    expiresAt?: string;
+    sdk?: string;
+});
+
+export type CreateVoiceWebSessionError = ({
+    error?: string;
+} | unknown);
+
+export type DialVoiceWebCallData = {
+    body: {
+        /**
+         * The number to call, E.164 with leading +.
+         */
+        to: string;
+        /**
+         * The WebRTC credential id returned by POST /v1/voice/calls/web (the registered browser).
+         */
+        credentialId: string;
+        /**
+         * Which of your voice-enabled numbers to call from (optional when you have one).
+         */
+        fromNumber?: string;
+        recordOverride?: boolean;
+    };
+};
+
+export type DialVoiceWebCallResponse = ({
+    success?: boolean;
+    callId?: string;
+    telnyxCallControlId?: string;
+    status?: 'dialing';
+    direction?: 'outbound';
+    from?: string;
+    to?: string;
+    recordingEnabled?: boolean;
+});
+
+export type DialVoiceWebCallError = ({
+    error?: string;
+} | unknown);
+
+export type SendSmsData = {
+    body: {
+        /**
+         * One of your SMS-enabled numbers (E.164; formatting is normalized).
+         */
+        from: string;
+        /**
+         * Recipient number (E.164).
+         */
+        to: string;
+        /**
+         * Message body. Required unless `mediaUrls` is set. Max 10 SMS segments (1530 GSM-7 or 670 unicode characters).
+         */
+        text?: string;
+        /**
+         * Public media URLs to attach (sends as MMS). Max 10.
+         */
+        mediaUrls?: Array<(string)>;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes send retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type SendSmsResponse = ({
+    /**
+     * Message ID
+     */
+    id?: string;
+    /**
+     * Inbox conversation the message was threaded into.
+     */
+    conversationId?: string;
+    status?: 'sent';
+});
+
+export type SendSmsError = ({
+    error?: string;
+} | unknown);
+
+export type LookupSmsNumberData = {
+    query: {
+        /**
+         * Number to look up (E.164; formatting is normalized).
+         */
+        number: string;
+    };
+};
+
+export type LookupSmsNumberResponse = ({
+    phoneNumber?: string;
+    carrierName?: (string) | null;
+    lineType?: 'mobile' | 'landline' | 'voip' | 'toll-free' | 'unknown';
+    /**
+     * True when the line type can receive SMS (not a landline).
+     */
+    smsReachable?: boolean;
+});
+
+export type LookupSmsNumberError = ({
+    error?: string;
+} | unknown);
+
+export type ListSmsOptOutsData = {
+    query?: {
+        format?: 'json' | 'csv';
+        limit?: number;
+    };
+};
+
+export type ListSmsOptOutsResponse = ({
+    optOuts?: Array<{
+        phoneNumber?: string;
+        optedOutAt?: (string) | null;
+        /**
+         * The keyword they sent (e.g. STOP), when the carrier recorded one.
+         */
+        keyword?: (string) | null;
+        /**
+         * Which of your numbers the recipient opted out from.
+         */
+        from?: (string) | null;
+    }>;
+    count?: number;
+});
+
+export type ListSmsOptOutsError = ({
+    error?: string;
+});
+
+export type StartSmsRegistrationData = {
+    body: {
+        registrationType: 'standard_10dlc' | 'sole_prop_10dlc' | 'toll_free';
+        /**
+         * Your numbers this registration covers.
+         */
+        phoneNumbers: Array<(string)>;
+        /**
+         * Required for 10DLC. The legal entity behind the traffic (TCR brand).
+         */
+        brand?: {
+            entityType: 'PRIVATE_PROFIT' | 'PUBLIC_PROFIT' | 'NON_PROFIT' | 'GOVERNMENT' | 'SOLE_PROPRIETOR';
+            displayName: string;
+            /**
+             * Legal company name. Required for every entityType except SOLE_PROPRIETOR.
+             */
+            companyName?: string;
+            /**
+             * Required for every entityType except SOLE_PROPRIETOR.
+             */
+            ein?: string;
+            phone?: string;
+            /**
+             * Required for SOLE_PROPRIETOR; the verification OTP is texted there (US/CA mobile).
+             */
+            mobilePhone?: string;
+            street?: string;
+            city?: string;
+            state?: string;
+            postalCode?: string;
+            country: 'US' | 'CA';
+            /**
+             * Brand contact email; defaults to your account email when omitted.
+             */
+            email?: string;
+            website?: string;
+            vertical: 'AGRICULTURE' | 'COMMUNICATION' | 'CONSTRUCTION' | 'EDUCATION' | 'ENERGY' | 'ENTERTAINMENT' | 'FINANCIAL' | 'GAMBLING' | 'GOVERNMENT' | 'HEALTHCARE' | 'HOSPITALITY' | 'HUMAN_RESOURCES' | 'INSURANCE' | 'LEGAL' | 'MANUFACTURING' | 'NGO' | 'POLITICAL' | 'POSTAL' | 'PROFESSIONAL' | 'REAL_ESTATE' | 'RETAIL' | 'TECHNOLOGY' | 'TRANSPORTATION';
+            stockSymbol?: string;
+        };
+        /**
+         * Required for 10DLC. What you'll send and how recipients opt in/out.
+         */
+        campaign?: {
+            usecase: string;
+            description: string;
+            /**
+             * How a recipient ends up receiving your messages (the opt-in flow).
+             */
+            messageFlow: string;
+            sample1: string;
+            sample2?: string;
+            helpMessage: string;
+            optinKeywords: string;
+            optinMessage: string;
+            optoutKeywords: string;
+            optoutMessage: string;
+            helpKeywords: string;
+            embeddedLink?: boolean;
+            embeddedPhone?: boolean;
+            numberPool?: boolean;
+            ageGated?: boolean;
+            directLending?: boolean;
+        };
+        /**
+         * Required for toll_free.
+         */
+        tollFree?: {
+            businessName: string;
+            corporateWebsite: string;
+            phoneNumbers: Array<(string)>;
+            useCase: string;
+            useCaseSummary: string;
+            productionMessageContent: string;
+            /**
+             * How recipients opt in to your messages.
+             */
+            optInWorkflow: string;
+            /**
+             * Screenshot URL(s) showing the opt-in flow (at least one).
+             */
+            optInWorkflowImageUrls: Array<(string)>;
+            /**
+             * Expected monthly message volume tier.
+             */
+            messageVolume: '10' | '100' | '1,000' | '10,000' | '100,000' | '250,000' | '500,000' | '750,000' | '1,000,000' | '5,000,000' | '10,000,000+';
+            additionalInformation: string;
+            businessAddr1: string;
+            businessAddr2?: string;
+            businessCity: string;
+            businessState: string;
+            businessZip: string;
+            businessContactFirstName: string;
+            businessContactLastName: string;
+            businessContactEmail: string;
+            businessContactPhone: string;
+            businessRegistrationNumber: string;
+            /**
+             * e.g. EIN (US), Companies House (UK), ABN (AU).
+             */
+            businessRegistrationType: string;
+            /**
+             * ISO 3166-1 alpha-2.
+             */
+            businessRegistrationCountry: string;
+        };
+    };
+};
+
+export type StartSmsRegistrationResponse = ({
+    registrationId?: string;
+    status?: 'pending';
+    /**
+     * True for sole-prop 10DLC: an OTP was texted to the brand's mobile; submit it via /verify-otp.
+     */
+    awaitingOtp?: boolean;
+});
+
+export type StartSmsRegistrationError = ({
+    error?: string;
+} | unknown);
+
+export type ListSmsRegistrationsResponse = ({
+    registrations?: Array<{
+        id?: string;
+        registrationType?: 'standard_10dlc' | 'sole_prop_10dlc' | 'toll_free';
+        displayName?: (string) | null;
+        status?: 'pending' | 'approved' | 'rejected';
+        /**
+         * Carrier-registry brand status (e.g. VERIFIED).
+         */
+        brandStatus?: string;
+        campaignStatus?: string;
+        /**
+         * TCR brand id, useful when referencing the brand in carrier support threads.
+         */
+        brandId?: (string) | null;
+        /**
+         * TCR campaign id.
+         */
+        campaignId?: (string) | null;
+        declineReason?: (string) | null;
+        phoneNumbers?: Array<(string)>;
+        /**
+         * Sole-prop 10DLC only; the OTP step is still pending.
+         */
+        awaitingOtp?: boolean;
+        /**
+         * Carrier-assigned brand trust score; drives throughput.
+         */
+        trustScore?: (number) | null;
+        /**
+         * Carrier throughput tier derived from the trust score.
+         */
+        throughput?: {
+            label?: string;
+            smsPerMinute?: number;
+            smsPerDay?: number;
+        };
+    }>;
+});
+
+export type ListSmsRegistrationsError = ({
+    error?: string;
+});
+
+export type GetSmsRegistrationData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetSmsRegistrationResponse = ({
+    id?: string;
+    registrationType?: 'standard_10dlc' | 'sole_prop_10dlc' | 'toll_free';
+    status?: 'pending' | 'approved' | 'rejected';
+    brandStatus?: string;
+    campaignStatus?: string;
+    declineReason?: (string) | null;
+    phoneNumbers?: Array<(string)>;
+    awaitingOtp?: boolean;
+});
+
+export type GetSmsRegistrationError = ({
+    error?: string;
+} | unknown);
+
+export type VerifySmsRegistrationOtpData = {
+    body: {
+        otpPin: string;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type VerifySmsRegistrationOtpResponse = ({
+    verified?: boolean;
+});
+
+export type VerifySmsRegistrationOtpError = ({
+    error?: string;
+} | unknown);
+
+export type AppealSmsRegistrationData = {
+    body: {
+        appealReason: string;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type AppealSmsRegistrationResponse = ({
+    status?: 'pending';
+});
+
+export type AppealSmsRegistrationError = (unknown | {
+    error?: string;
+});
+
+export type ShareSmsRegistrationData = {
+    body: {
+        /**
+         * Your phone number's ID (from GET /v1/phone-numbers).
+         */
+        numberId: string;
+    };
+};
+
+export type ShareSmsRegistrationResponse = ({
+    url?: string;
+    expiresAt?: string;
+});
+
+export type ShareSmsRegistrationError = ({
+    error?: string;
+} | unknown);
 
 export type GetWhatsAppLibraryTemplateData = {
     query: {
@@ -15782,6 +16743,337 @@ export type CreateWhatsAppDatasetError = ({
     error?: string;
 } | unknown);
 
+export type ListPhoneNumbersData = {
+    query?: {
+        /**
+         * Filter by profile
+         */
+        profileId?: string;
+        /**
+         * Filter by status (by default excludes released numbers). NOTE:
+         * `status=pending_regulatory` returns the "provisioning" view — numbers
+         * still in review PLUS recently-declined (last 30 days) ones, so a
+         * failed registration surfaces (with `regulatoryDeclineReason`) instead
+         * of silently disappearing. Declined numbers can be re-submitted via
+         * POST /v1/phone-numbers/{id}/remediate. `verifying` is the
+         * short-lived state after the number is provisioned on our side while
+         * WhatsApp confirms the activation code; the number is not billed until
+         * it reaches `active`.
+         *
+         */
+        status?: 'provisioning' | 'verifying' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'active' | 'suspended' | 'releasing' | 'released';
+    };
+};
+
+export type ListPhoneNumbersResponse = ({
+    numbers?: Array<{
+        _id?: string;
+        phoneNumber?: string;
+        country?: string;
+        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+        /**
+         * For regulated numbers, who it's registered for (company or person) — set from the submitted KYC.
+         */
+        registrantName?: (string) | null;
+        /**
+         * Present once the number order has been placed (i.e. the requirement group was approved). Absent while still in identity review.
+         */
+        telnyxOrderId?: (string) | null;
+        /**
+         * Per-country monthly price in cents ($2..$25).
+         */
+        monthlyCents?: number;
+        /**
+         * False for numbers you brought yourself (connected via Meta embedded signup) — they live on your own carrier, so SMS/Calls can't be enabled on them.
+         */
+        hostedByZernio?: boolean;
+        profileId?: {
+            [key: string]: unknown;
+        };
+        provisionedAt?: string;
+        metaPreverifiedId?: string;
+        metaVerificationStatus?: string;
+        /**
+         * For regulated (Tier 3/4) numbers with an Onfido ID-verification step — the link to forward to the end user. Set once the order is placed; null otherwise. Poll this field after submitting KYC.
+         */
+        onfidoVerificationUrl?: (string) | null;
+        endUserFirstName?: (string) | null;
+        endUserLastName?: (string) | null;
+        /**
+         * Reviewer rejection reason when status is regulatory_declined.
+         */
+        regulatoryDeclineReason?: (string) | null;
+        createdAt?: string;
+    }>;
+    /**
+     * Connected (bring-your-own) WhatsApp numbers — your own WABA
+     * numbers linked via Embedded Signup. Not provisioned or billed
+     * by Zernio, so they are not in `numbers`; `accountId` is the
+     * social-account id used by the messaging and inbox endpoints.
+     * Included only on the default and `status=active` views.
+     *
+     */
+    connected?: Array<{
+        accountId?: string;
+        phoneNumber?: (string) | null;
+        displayName?: (string) | null;
+        profileId?: (string) | null;
+        connectedAt?: (string) | null;
+    }>;
+    /**
+     * The shared WhatsApp sandbox (one Zernio-owned number, all users test
+     * against it). Present when the sandbox is configured; null otherwise.
+     * The `accountId` lets you address the sandbox in compose endpoints.
+     * `template` is the only template a sandbox send is allowed to use.
+     *
+     */
+    sandbox?: {
+        phoneNumber?: string;
+        accountId?: (string) | null;
+        template?: {
+            name?: string;
+            language?: string;
+        };
+        isSandbox?: boolean;
+    } | null;
+});
+
+export type ListPhoneNumbersError = ({
+    error?: string;
+});
+
+export type GetPhoneNumberData = {
+    path: {
+        /**
+         * Phone number record ID
+         */
+        id: string;
+    };
+};
+
+export type GetPhoneNumberResponse = ({
+    phoneNumber?: {
+        id?: string;
+        phoneNumber?: string;
+        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+        country?: string;
+        metaPreverifiedId?: string;
+        metaVerificationStatus?: string;
+        /**
+         * For a regulated number with an Onfido ID step — the link to forward to the end user. Appears once the order is placed; null otherwise.
+         */
+        onfidoVerificationUrl?: (string) | null;
+        endUserFirstName?: (string) | null;
+        endUserLastName?: (string) | null;
+        /**
+         * Reviewer rejection reason when status is regulatory_declined.
+         */
+        regulatoryDeclineReason?: (string) | null;
+        provisionedAt?: string;
+    };
+});
+
+export type GetPhoneNumberError = ({
+    error?: string;
+});
+
+export type ReleasePhoneNumberData = {
+    path: {
+        /**
+         * Phone number record ID
+         */
+        id: string;
+    };
+};
+
+export type ReleasePhoneNumberResponse = ({
+    message?: string;
+    phoneNumber?: {
+        id?: string;
+        phoneNumber?: string;
+        /**
+         * "released"
+         */
+        status?: string;
+        releasedAt?: string;
+    };
+});
+
+export type ReleasePhoneNumberError = (unknown | {
+    error?: string;
+});
+
+export type PurchasePhoneNumberData = {
+    body: {
+        /**
+         * Profile to associate the number with
+         */
+        profileId: string;
+        /**
+         * ISO 3166-1 alpha-2 country for the number (default US). International numbers require usage-based billing. Tier 3/4 countries return 202 { status: "kyc_required", kycUrl } — the customer must complete KYC at that URL before the number is ordered. See GET /v1/phone-numbers/countries.
+         *
+         */
+        country?: string;
+        /**
+         * A phone number is the unit; WhatsApp is one optional feature. Pass false to buy a STANDALONE number (Calls/SMS only): provisioning skips the Meta pre-verify/OTP steps and the number activates immediately. Omitted defaults to the WhatsApp provisioning path. WhatsApp can be connected to a standalone number later from the connect flow.
+         *
+         */
+        connectWhatsapp?: boolean;
+        /**
+         * SMS capability is per-number, not per-country. Pass true to provision from the SMS-capable inventory pool so the number can actually text (see also GET /v1/phone-numbers/available with sms=true, and smsAvailable on GET /v1/phone-numbers/countries).
+         *
+         */
+        wantsSms?: boolean;
+        /**
+         * Optional idempotency key. Send the same value when retrying a purchase: if a number was already bought under this key, the API returns { status: "already_purchased", numberId, phoneNumber } instead of provisioning a second number. Generate a fresh key for each genuinely new purchase.
+         *
+         */
+        purchaseIntentId?: string;
+        /**
+         * Any second purchase within 10 minutes of a previous one is rejected with 409 code PURCHASE_VELOCITY as duplicate protection. Pass true to confirm the additional purchase is intentional (e.g. bulk provisioning).
+         *
+         */
+        allowMultiple?: boolean;
+    };
+};
+
+export type PurchasePhoneNumberResponse = (({
+    message?: string;
+    checkoutUrl?: string;
+} | {
+    message?: string;
+    phoneNumber?: {
+        id?: string;
+        phoneNumber?: string;
+        status?: string;
+        country?: string;
+        provisionedAt?: string;
+        metaPreverifiedId?: string;
+        metaVerificationStatus?: string;
+    };
+} | {
+    status?: 'already_purchased';
+    numberId?: string;
+    phoneNumber?: string;
+}) | {
+    status?: 'kyc_required';
+    country?: string;
+    kycUrl?: string;
+});
+
+export type PurchasePhoneNumberError = (unknown | {
+    error?: string;
+} | {
+    error?: string;
+    code?: 'PURCHASE_VELOCITY';
+});
+
+export type ListPhoneNumberCountriesResponse = ({
+    countries?: Array<{
+        /**
+         * ISO 3166-1 alpha-2
+         */
+        code?: string;
+        tier?: 1 | 2 | 3 | 4;
+        monthlyCents?: number;
+        needsKyc?: boolean;
+        /**
+         * Regular phone (PSTN) calling on the number, inbound + outbound. Available on every offerable country.
+         */
+        callsAvailable?: boolean;
+        /**
+         * WhatsApp can be enabled on numbers from this country.
+         */
+        whatsappAvailable?: boolean;
+        /**
+         * Whether this country's number type can do SMS. Use it to filter the picker when the buyer wants SMS (pair with `wantsSms` on purchase).
+         */
+        smsAvailable?: boolean;
+        /**
+         * WhatsApp Business Calling (BIC) outbound availability, a Meta feature blocked in some countries. NOT the PSTN Calls feature (`callsAvailable`).
+         */
+        outboundCallingAvailable?: boolean;
+    }>;
+});
+
+export type ListPhoneNumberCountriesError = ({
+    error?: string;
+});
+
+export type SearchAvailablePhoneNumbersData = {
+    query?: {
+        /**
+         * Pattern to match within the number
+         */
+        contains?: string;
+        country?: string;
+        limit?: number;
+        /**
+         * City
+         */
+        locality?: string;
+        /**
+         * Area code
+         */
+        prefix?: string;
+        /**
+         * true narrows the pool to SMS-capable numbers. Each result still carries its full `features` list for per-number capability badging.
+         */
+        sms?: boolean;
+        /**
+         * Number type; defaults to the country's WhatsApp-safe type
+         */
+        type?: string;
+    };
+};
+
+export type SearchAvailablePhoneNumbersResponse = ({
+    country?: string;
+    numberType?: string;
+    /**
+     * Echo of the `sms` filter applied to this search.
+     */
+    requireSms?: boolean;
+    numbers?: Array<{
+        phoneNumber?: string;
+        /**
+         * Provider capability list for this number (e.g. voice, sms, mms).
+         */
+        features?: Array<(string)>;
+    }>;
+});
+
+export type SearchAvailablePhoneNumbersError = (unknown | {
+    error?: string;
+});
+
+export type CheckPhoneNumberAvailabilityData = {
+    query: {
+        /**
+         * ISO-2 country code.
+         */
+        country: string;
+    };
+};
+
+export type CheckPhoneNumberAvailabilityResponse = ({
+    country?: string;
+    numberType?: string;
+    /**
+     * Whether deliverable voice inventory exists right now.
+     */
+    available?: boolean;
+    addressConstraint?: 'geo' | 'country' | 'none';
+    /**
+     * For `geo` only — the area(s) the registered address must be in.
+     */
+    areas?: Array<(string)>;
+});
+
+export type CheckPhoneNumberAvailabilityError = (unknown | {
+    error?: string;
+});
+
 export type GetWhatsAppPhoneNumbersData = {
     query?: {
         /**
@@ -15822,6 +17114,10 @@ export type GetWhatsAppPhoneNumbersResponse = ({
          * Per-country monthly price in cents ($2..$25).
          */
         monthlyCents?: number;
+        /**
+         * False for numbers you brought yourself (connected via Meta embedded signup) — they live on your own carrier, so SMS/Calls can't be enabled on them.
+         */
+        hostedByZernio?: boolean;
         profileId?: {
             [key: string]: unknown;
         };
@@ -16008,6 +17304,524 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
 });
 
 export type CheckWhatsAppNumberAvailabilityError = (unknown | {
+    error?: string;
+});
+
+export type GetPhoneNumberKycFormData = {
+    query: {
+        country: string;
+    };
+};
+
+export type GetPhoneNumberKycFormResponse = ({
+    country?: string;
+    numberType?: string;
+    fields?: Array<{
+        requirementId?: string;
+        label?: string;
+        /**
+         * "action" = an out-of-band verification (e.g. Onfido); not filled here, fulfilled after the order via a link.
+         */
+        kind?: 'text' | 'date' | 'address' | 'file' | 'action';
+        /**
+         * Plain-English explanation of what to provide.
+         */
+        description?: (string) | null;
+        /**
+         * Concrete example value.
+         */
+        example?: (string) | null;
+        /**
+         * ISO country the value must be local to
+         */
+        localTo?: (string) | null;
+    }>;
+    /**
+     * Present when this account already has an approved verification for the country that can be reused (skip the form). `fromPhoneNumber`/`details` mirror the newest option; `options` lists ALL approved verifications (agencies hold one per end client) — pass the chosen option's `fromPhoneNumber` as `reuseFrom` on POST.
+     */
+    reusable?: {
+        available?: boolean;
+        fromPhoneNumber?: string;
+        /**
+         * Human-readable summary of the verification on file (field labels + values, plus the address as one line). Best-effort — may be empty if the provider lookup fails.
+         */
+        details?: Array<{
+            label?: string;
+            value?: string;
+        }>;
+        /**
+         * One entry per distinct approved verification, newest first.
+         */
+        options?: Array<{
+            fromPhoneNumber?: string;
+            details?: Array<{
+                label?: string;
+                value?: string;
+            }>;
+        }>;
+    } | null;
+});
+
+export type GetPhoneNumberKycFormError = (unknown | {
+    error?: string;
+});
+
+export type SubmitPhoneNumberKycData = {
+    body: {
+        profileId: string;
+        country: string;
+        /**
+         * Idempotency token for this submission attempt. A retry/double-submit with the same token returns the same number; omit and each call creates a new number.
+         */
+        submissionId?: string;
+        /**
+         * Provision several same-country numbers from one submission (1-5). The single verification covers all of them; each number is billed only when it activates. Numbers that fail to order are skipped (best-effort).
+         */
+        quantity?: number;
+        /**
+         * Reuse a prior approved verification for this country (skips document/field collection; places the order immediately).
+         */
+        reuse?: boolean;
+        /**
+         * Which approved verification to reuse when several exist: the phone number it was originally approved for (GET reusable.options[].fromPhoneNumber). Omitted = newest. No match = 409.
+         */
+        reuseFrom?: string;
+        /**
+         * End user's legal first name. Required when the country has an action/ID-verification (Onfido) requirement.
+         */
+        endUserFirstName?: string;
+        /**
+         * End user's legal last name. Same condition as endUserFirstName.
+         */
+        endUserLastName?: string;
+        /**
+         * requirementId → textual value
+         */
+        values?: {
+            [key: string]: (string);
+        };
+        /**
+         * One per document requirement. Each is EITHER inline base64 OR a `documentId` returned by POST /v1/phone-numbers/kyc/upload-document (use the upload endpoint for large files to stay under the request-size limit).
+         */
+        documents?: Array<({
+    requirementId: string;
+    filename: string;
+    base64: string;
+} | {
+    requirementId: string;
+    /**
+     * Id from POST /v1/phone-numbers/kyc/upload-document.
+     */
+    documentId: string;
+})>;
+        address?: {
+            requirementId?: string;
+            country_code?: string;
+            business_name?: string;
+            first_name?: string;
+            last_name?: string;
+            street_address?: string;
+            locality?: string;
+            administrative_area?: string;
+            postal_code?: string;
+        };
+    };
+};
+
+export type SubmitPhoneNumberKycResponse = ({
+    status?: 'kyc_submitted' | 'kyc_reused' | 'kyc_already_submitted';
+    /**
+     * The first/primary number, kept at the top level for backward compatibility. See `numbers` for the full set when `quantity` > 1.
+     */
+    phoneNumber?: {
+        id?: string;
+        status?: string;
+        country?: string;
+    };
+    /**
+     * Every number provisioned from this submission. Length equals the requested `quantity` on full success (fewer if some orders failed; best-effort). The first element mirrors `phoneNumber`.
+     */
+    numbers?: Array<{
+        id?: string;
+        status?: string;
+        phoneNumber?: string;
+        country?: string;
+    }>;
+});
+
+export type SubmitPhoneNumberKycError = (unknown | {
+    error?: string;
+});
+
+export type UploadPhoneNumberKycDocumentData = {
+    body: (Blob | File);
+    headers: {
+        /**
+         * URL-encoded original filename.
+         */
+        'X-Filename': string;
+    };
+};
+
+export type UploadPhoneNumberKycDocumentResponse = ({
+    /**
+     * Reference this id in the KYC submit's documents[].documentId.
+     */
+    documentId?: string;
+});
+
+export type UploadPhoneNumberKycDocumentError = (unknown | {
+    error?: string;
+});
+
+export type ValidatePhoneNumberKycAddressData = {
+    body: {
+        /**
+         * ISO 3166-1 alpha-2 country code.
+         */
+        country: string;
+        street_address: string;
+        /**
+         * City / town.
+         */
+        locality: string;
+        /**
+         * State / province / region. When omitted, the pre-check is skipped (the final submit still validates).
+         */
+        administrative_area?: string;
+        postal_code: string;
+    };
+};
+
+export type ValidatePhoneNumberKycAddressResponse = ({
+    ok?: boolean;
+    /**
+     * true when no `administrative_area` was supplied, so no pre-check ran.
+     */
+    skipped?: boolean;
+});
+
+export type ValidatePhoneNumberKycAddressError = ({
+    /**
+     * Human-readable message.
+     */
+    error?: string;
+    type?: string;
+    code?: string;
+    param?: string;
+    details?: {
+        addressSuggestions?: Array<{
+            field?: string;
+            label?: string;
+            value?: string;
+        }>;
+    };
+} | {
+    error?: string;
+});
+
+export type CreatePhoneNumberKycLinkData = {
+    body: {
+        profileId: string;
+        /**
+         * ISO 3166-1 alpha-2 country code (must be a regulated/KYC country).
+         */
+        country: string;
+        /**
+         * Optional white-label of the hosted page the end customer sees.
+         */
+        branding?: {
+            /**
+             * Your company name, shown on the hosted page.
+             */
+            companyName?: string;
+            /**
+             * Logo shown above the form.
+             */
+            logoUrl?: string;
+            /**
+             * Hex color (e.g. #1a73e8) used as a brand accent on the page.
+             */
+            brandColor?: string;
+        };
+        /**
+         * Where to send the end customer's browser after a successful
+         * submit. On completion Zernio appends `kyc=submitted` and
+         * `country=<ISO-2>` as query params. When omitted, the hosted
+         * page shows a built-in confirmation screen instead.
+         *
+         */
+        redirect_url?: string;
+    };
+};
+
+export type CreatePhoneNumberKycLinkResponse = ({
+    /**
+     * The hosted link to send your end customer.
+     */
+    url?: string;
+    token?: string;
+    expiresAt?: string;
+});
+
+export type CreatePhoneNumberKycLinkError = (unknown | {
+    error?: string;
+});
+
+export type CreatePhoneNumberPortInData = {
+    body: {
+        /**
+         * E.164 numbers to port in.
+         */
+        phoneNumbers: Array<(string)>;
+        /**
+         * End-user / current-carrier account info that authorizes the port.
+         */
+        endUser: {
+            entityName: string;
+            authPersonName: string;
+            billingPhoneNumber?: string;
+            accountNumber?: string;
+            /**
+             * Transfer PIN. Forwarded to the carrier, never stored.
+             */
+            pinPasscode?: string;
+            streetAddress: string;
+            extendedAddress?: string;
+            locality: string;
+            administrativeArea: string;
+            postalCode: string;
+            countryCode: string;
+        };
+        /**
+         * Document id from POST /v1/phone-numbers/port-in/documents (kind=loa).
+         */
+        loaDocumentId: string;
+        /**
+         * Document id from POST /v1/phone-numbers/port-in/documents (kind=invoice).
+         */
+        invoiceDocumentId: string;
+        /**
+         * Requested port date; the carrier confirms the actual FOC later.
+         */
+        focDatetimeRequested?: string;
+        customerReference?: string;
+    };
+};
+
+export type CreatePhoneNumberPortInResponse = ({
+    /**
+     * Porting order ID.
+     */
+    id?: string;
+    telnyxPortingOrderId?: string;
+    status?: 'draft' | 'pending' | 'foc_confirmed' | 'ported' | 'exception' | 'cancelled';
+    phoneNumbers?: Array<(string)>;
+    orders?: Array<{
+        id?: string;
+        telnyxPortingOrderId?: string;
+        status?: string;
+        phoneNumbers?: Array<(string)>;
+        /**
+         * Present when this split order failed to submit (it stays as a cancellable draft).
+         */
+        error?: string;
+    }>;
+});
+
+export type CreatePhoneNumberPortInError = ({
+    error?: string;
+} | unknown);
+
+export type ListPhoneNumberPortInsResponse = ({
+    orders?: Array<{
+        id?: string;
+        status?: 'draft' | 'pending' | 'foc_confirmed' | 'ported' | 'exception' | 'cancelled';
+        /**
+         * Raw carrier status string.
+         */
+        telnyxStatusValue?: (string) | null;
+        phoneNumbers?: Array<(string)>;
+        fastPortEligible?: (boolean) | null;
+        focDatetimeRequested?: (string) | null;
+        focDatetimeActual?: (string) | null;
+        declineReason?: (string) | null;
+        submittedAt?: (string) | null;
+        portedAt?: (string) | null;
+        createdAt?: string;
+    }>;
+});
+
+export type ListPhoneNumberPortInsError = ({
+    error?: string;
+});
+
+export type CheckPhoneNumberPortabilityData = {
+    body: {
+        /**
+         * E.164 numbers to check, e.g. +13035550000.
+         */
+        phoneNumbers: Array<(string)>;
+    };
+};
+
+export type CheckPhoneNumberPortabilityResponse = ({
+    results?: Array<{
+        phoneNumber?: string;
+        portable?: boolean;
+        /**
+         * Qualifies for the carrier's accelerated FastPort lane.
+         */
+        fastPortable?: boolean;
+        /**
+         * Carrier reason when not portable; null when portable.
+         */
+        notPortableReason?: (string) | null;
+    }>;
+});
+
+export type CheckPhoneNumberPortabilityError = ({
+    error?: string;
+});
+
+export type UploadPhoneNumberPortInDocumentData = {
+    body: {
+        /**
+         * The document (PDF/JPEG/PNG, 10MB max).
+         */
+        file: (Blob | File);
+        /**
+         * Informational; used for the stored filename.
+         */
+        kind?: 'loa' | 'invoice';
+    };
+};
+
+export type UploadPhoneNumberPortInDocumentResponse = ({
+    documentId?: string;
+});
+
+export type UploadPhoneNumberPortInDocumentError = (unknown | {
+    error?: string;
+});
+
+export type CancelPhoneNumberPortInData = {
+    path: {
+        /**
+         * Porting order ID (from the port-in list).
+         */
+        id: string;
+    };
+};
+
+export type CancelPhoneNumberPortInResponse = ({
+    id?: string;
+    status?: 'draft' | 'pending' | 'foc_confirmed' | 'ported' | 'exception' | 'cancelled';
+});
+
+export type CancelPhoneNumberPortInError = ({
+    error?: string;
+} | unknown);
+
+export type ReviewPhoneNumberKycPacketData = {
+    body: {
+        country: string;
+        numberType: string;
+        /**
+         * requirementId to declared textual value.
+         */
+        values?: {
+            [key: string]: (string);
+        };
+        /**
+         * Declared address (street_address, locality, ...), so a mismatched proof-of-address can be flagged.
+         */
+        address?: {
+            [key: string]: (string);
+        };
+        docs: Array<{
+            requirementId: string;
+            /**
+             * Id from POST /v1/phone-numbers/kyc/upload-document.
+             */
+            documentId: string;
+        }>;
+    };
+};
+
+export type ReviewPhoneNumberKycPacketResponse = ({
+    advisories?: Array<{
+        requirementId?: string;
+        /**
+         * One short plain-language concern about that requirement's document.
+         */
+        concern?: string;
+    }>;
+});
+
+export type ReviewPhoneNumberKycPacketError = ({
+    error?: string;
+});
+
+export type GetPhoneNumberRemediationData = {
+    path: {
+        /**
+         * Phone number record ID.
+         */
+        id: string;
+    };
+};
+
+export type GetPhoneNumberRemediationResponse = ({
+    country?: string;
+    numberType?: string;
+    declineReason?: (string) | null;
+    /**
+     * Same field shape as GET /v1/phone-numbers/kyc.
+     */
+    fields?: Array<{
+        [key: string]: unknown;
+    }>;
+});
+
+export type GetPhoneNumberRemediationError = (unknown | {
+    error?: string;
+});
+
+export type RemediatePhoneNumberData = {
+    body: {
+        values?: {
+            [key: string]: (string);
+        };
+        documents?: Array<({
+    requirementId: string;
+    filename: string;
+    base64: string;
+} | {
+    requirementId: string;
+    documentId: string;
+})>;
+        /**
+         * Same shape as the KYC submit address.
+         */
+        address?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type RemediatePhoneNumberResponse = ({
+    status?: string;
+    phoneNumber?: {
+        id?: string;
+        status?: string;
+    };
+});
+
+export type RemediatePhoneNumberError = (unknown | {
     error?: string;
 });
 
@@ -16338,6 +18152,312 @@ export type RemediateWhatsAppNumberResponse = ({
 export type RemediateWhatsAppNumberError = (unknown | {
     error?: string;
 });
+
+export type EnableVoiceOnNumberData = {
+    body?: {
+        /**
+         * tel:+E164, sip:..., or wss://... destination for inbound calls. Empty string clears the forward (outbound-only); omitted preserves the current one.
+         */
+        forwardTo?: string;
+        recordingEnabled?: boolean;
+        transcriptionEnabled?: boolean;
+        transcriptionLanguage?: 'auto' | 'en' | 'es';
+        /**
+         * Voicemail is taken when there's no live destination. Default on.
+         */
+        voicemailEnabled?: boolean;
+        /**
+         * Custom spoken greeting; empty string restores the default.
+         */
+        voicemailGreeting?: string;
+        /**
+         * Outside the windows, inbound skips the forward and goes to voicemail. Off = 24/7.
+         */
+        businessHoursEnabled?: boolean;
+        /**
+         * IANA timezone the windows are evaluated in.
+         */
+        businessHoursTimezone?: string;
+        businessHours?: Array<{
+            /**
+             * 0 = Sunday.
+             */
+            day: number;
+            open: string;
+            close: string;
+        }>;
+        /**
+         * E.164 numbers rejected before answer. Replaces the whole list; bare 10-digit values are normalized as US numbers.
+         */
+        blockedCallers?: Array<(string)>;
+        /**
+         * Caller ID on the forwarded leg: your number (`business`) or the original caller's (`caller`).
+         */
+        forwardCallerId?: 'business' | 'caller';
+        /**
+         * IVR menu (supersedes the plain forward within business hours).
+         */
+        ivrEnabled?: boolean;
+        ivrPrompt?: string;
+        ivrOptions?: Array<{
+            digit: string;
+            /**
+             * tel:+E164, sip:..., or wss://... destination for this digit.
+             */
+            forwardTo: string;
+            label?: string;
+        }>;
+    };
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type EnableVoiceOnNumberResponse = ({
+    enabled?: boolean;
+    phoneNumber?: string;
+    pstnForwardTo?: (string) | null;
+    recordingEnabled?: boolean;
+    transcriptionEnabled?: boolean;
+    transcriptionLanguage?: 'auto' | 'en' | 'es';
+    voicemailEnabled?: boolean;
+    voicemailGreeting?: (string) | null;
+    businessHoursEnabled?: boolean;
+    businessHoursTimezone?: (string) | null;
+    businessHours?: Array<{
+        day?: number;
+        open?: string;
+        close?: string;
+    }>;
+    blockedCallers?: Array<(string)>;
+    forwardCallerId?: 'business' | 'caller';
+    ivrEnabled?: boolean;
+    ivrPrompt?: (string) | null;
+    ivrOptions?: Array<{
+        digit?: string;
+        forwardTo?: string;
+        label?: string;
+    }>;
+});
+
+export type EnableVoiceOnNumberError = ({
+    error?: string;
+} | unknown);
+
+export type DisableVoiceOnNumberData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DisableVoiceOnNumberResponse = ({
+    enabled?: boolean;
+    phoneNumber?: string;
+});
+
+export type DisableVoiceOnNumberError = ({
+    error?: string;
+} | unknown);
+
+export type EnableSmsOnNumberData = {
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type EnableSmsOnNumberResponse = ({
+    enabled?: boolean;
+    /**
+     * The SMS social account ID (present when enabled).
+     */
+    id?: string;
+    phoneNumber?: string;
+    /**
+     * False for US numbers until their registration is approved.
+     */
+    isActive?: boolean;
+    country?: string;
+    /**
+     * Null when capability can't be read yet (still provisioning).
+     */
+    smsCapable?: (boolean) | null;
+    mmsCapable?: boolean;
+    domesticOnly?: boolean;
+    /**
+     * Number is still provisioning at the carrier; retry shortly.
+     */
+    notReady?: boolean;
+    /**
+     * US only; a carrier registration is required before delivery.
+     */
+    needsRegistration?: boolean;
+    /**
+     * A prior non-rejected registration already covers this number; no re-submit needed.
+     */
+    alreadyRegistered?: boolean;
+    registrationStatus?: ('pending' | 'approved' | 'rejected') | null;
+    /**
+     * Present when an existing approved registration can cover this number via /sms/reuse-registration.
+     */
+    reusable?: {
+        registrationId?: string;
+        status?: string;
+    } | null;
+    /**
+     * Human-readable explanation when `enabled` is false.
+     */
+    message?: string;
+});
+
+export type EnableSmsOnNumberError = ({
+    error?: string;
+} | unknown);
+
+export type DisableSmsOnNumberData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DisableSmsOnNumberResponse = ({
+    enabled?: boolean;
+    phoneNumber?: string;
+    /**
+     * False when SMS was already off. Legacy field; prefer `enabled`.
+     */
+    disabled?: boolean;
+});
+
+export type DisableSmsOnNumberError = ({
+    error?: string;
+} | unknown);
+
+export type ReuseSmsRegistrationForNumberData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ReuseSmsRegistrationForNumberResponse = ({
+    registrationId?: string;
+    status?: 'pending' | 'approved' | 'rejected';
+});
+
+export type ReuseSmsRegistrationForNumberError = ({
+    error?: string;
+} | unknown);
+
+export type GetWhatsAppCallingData = {
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type GetWhatsAppCallingResponse = ({
+    phoneNumber?: string;
+    callingEnabled?: boolean;
+    /**
+     * Public calling deep link (https://wa.me/call/<number>). Null while calling is disabled.
+     */
+    callDeepLink?: (string) | null;
+    /**
+     * tel:+E164 / sip:... / wss://... destination
+     */
+    forwardTo?: (string) | null;
+    recordingEnabled?: boolean;
+    sipAuthUsername?: (string) | null;
+    /**
+     * True when a SIP digest password is stored. The plaintext is never returned.
+     */
+    sipAuthPasswordConfigured?: boolean;
+    callIconCountries?: Array<(string)> | null;
+    /**
+     * True when the number's country blocks business-initiated (outbound) WhatsApp calling; inbound still works.
+     */
+    outboundDisabled?: boolean;
+});
+
+export type GetWhatsAppCallingError = ({
+    error?: string;
+} | unknown);
+
+export type EnableWhatsAppCallingData = {
+    body: {
+        accountId: string;
+        /**
+         * tel:+E164 / sip:... / wss://... destination
+         */
+        forwardTo: string;
+        sipAuthUsername?: string;
+        /**
+         * Stored encrypted, never returned by any endpoint.
+         */
+        sipAuthPassword?: string;
+        recordingEnabled?: boolean;
+        callIconCountries?: Array<(string)>;
+    };
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type EnableWhatsAppCallingResponse = ({
+    success?: boolean;
+    callingEnabled?: boolean;
+    sipHostname?: string;
+    forwardTo?: string;
+});
+
+export type EnableWhatsAppCallingError = ({
+    error?: string;
+} | unknown);
+
+export type UpdateWhatsAppCallingData = {
+    body: {
+        accountId: string;
+        forwardTo?: string;
+        sipAuthUsername?: (string) | null;
+        sipAuthPassword?: (string) | null;
+        recordingEnabled?: boolean;
+        callIconCountries?: Array<(string)> | null;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type UpdateWhatsAppCallingResponse = (unknown);
+
+export type UpdateWhatsAppCallingError = ({
+    error?: string;
+} | unknown);
+
+export type DisableWhatsAppCallingData = {
+    path: {
+        id: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type DisableWhatsAppCallingResponse = (unknown);
+
+export type DisableWhatsAppCallingError = ({
+    error?: string;
+} | unknown);
 
 export type GetWhatsAppPhoneNumberData = {
     path: {

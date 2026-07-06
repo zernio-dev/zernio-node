@@ -281,6 +281,9 @@ try {
 ### Usage
 | Method | Description |
 |--------|-------------|
+| `usage.getCallsUsage()` | Calling usage (volumes + billable cost) |
+| `usage.getSmsUsage()` | SMS usage (volumes) |
+| `usage.getUsage()` | Get plan and usage snapshot |
 | `usage.getUsageStats()` | Get plan and usage stats |
 | `usage.getXApiPricing()` | Get X/Twitter API pricing table |
 
@@ -425,6 +428,13 @@ try {
 | `broadcasts.cancelBroadcast()` | Cancel broadcast |
 | `broadcasts.scheduleBroadcast()` | Schedule broadcast for later |
 | `broadcasts.sendBroadcast()` | Send broadcast now |
+
+### Calls
+| Method | Description |
+|--------|-------------|
+| `calls.listCalls()` | List all calls (unified history) |
+| `calls.getCall()` | Get a call (any channel) |
+| `calls.getCallRecording()` | Get a call recording (any channel) |
 
 ### Comment Automations
 | Method | Description |
@@ -577,6 +587,30 @@ try {
 | `messages.sendTypingIndicator()` | Send typing indicator |
 | `messages.uploadMediaDirect()` | Upload media file |
 
+### Phone Numbers
+| Method | Description |
+|--------|-------------|
+| `phoneNumbers.listPhoneNumberCountries()` | List offerable number countries |
+| `phoneNumbers.listPhoneNumberPortIns()` | List port-in orders |
+| `phoneNumbers.listPhoneNumbers()` | List phone numbers |
+| `phoneNumbers.createPhoneNumberKycLink()` | Create a hosted KYC link |
+| `phoneNumbers.createPhoneNumberPortIn()` | Port numbers in |
+| `phoneNumbers.getPhoneNumber()` | Get phone number |
+| `phoneNumbers.getPhoneNumberKycForm()` | Get KYC form spec |
+| `phoneNumbers.getPhoneNumberRemediation()` | Get declined requirements |
+| `phoneNumbers.cancelPhoneNumberPortIn()` | Cancel a port-in |
+| `phoneNumbers.checkPhoneNumberAvailability()` | Check country availability |
+| `phoneNumbers.checkPhoneNumberPortability()` | Check portability |
+| `phoneNumbers.purchasePhoneNumber()` | Purchase phone number |
+| `phoneNumbers.releasePhoneNumber()` | Release phone number |
+| `phoneNumbers.remediatePhoneNumber()` | Resubmit a declined number |
+| `phoneNumbers.reviewPhoneNumberKycPacket()` | Pre-review a KYC packet |
+| `phoneNumbers.searchAvailablePhoneNumbers()` | Search available numbers |
+| `phoneNumbers.submitPhoneNumberKyc()` | Submit KYC |
+| `phoneNumbers.uploadPhoneNumberKycDocument()` | Upload a KYC document |
+| `phoneNumbers.uploadPhoneNumberPortInDocument()` | Upload a porting document |
+| `phoneNumbers.validatePhoneNumberKycAddress()` | Pre-validate KYC address |
+
 ### Reviews (Inbox)
 | Method | Description |
 |--------|-------------|
@@ -597,6 +631,22 @@ try {
 | `sequences.enrollContacts()` | Enroll contacts in a sequence |
 | `sequences.pauseSequence()` | Pause sequence |
 | `sequences.unenrollContact()` | Unenroll contact |
+
+### SMS
+| Method | Description |
+|--------|-------------|
+| `sms.listSmsOptOuts()` | List SMS opt-outs |
+| `sms.listSmsRegistrations()` | List carrier registrations |
+| `sms.getSmsRegistration()` | Get a carrier registration |
+| `sms.appealSmsRegistration()` | Appeal a rejected campaign |
+| `sms.disableSmsOnNumber()` | Disable SMS on a number |
+| `sms.enableSmsOnNumber()` | Enable SMS on a number |
+| `sms.lookupSmsNumber()` | Look up carrier + line type |
+| `sms.reuseSmsRegistrationForNumber()` | Add a number to an existing registration |
+| `sms.sendSms()` | Send an SMS/MMS |
+| `sms.shareSmsRegistration()` | Create a registration share link |
+| `sms.startSmsRegistration()` | Start a carrier registration |
+| `sms.verifySmsRegistrationOtp()` | Submit the sole-prop OTP |
 
 ### Tracking Tags
 | Method | Description |
@@ -627,6 +677,21 @@ try {
 | `validate.validatePost()` | Validate post content |
 | `validate.validatePostLength()` | Validate character count |
 | `validate.validateSubreddit()` | Check subreddit existence |
+
+### Voice
+| Method | Description |
+|--------|-------------|
+| `voice.listVoiceCalls()` | List phone calls |
+| `voice.createVoiceCall()` | Place an outbound phone call |
+| `voice.createVoiceWebSession()` | Mint a browser softphone session |
+| `voice.getVoiceCall()` | Get a phone call |
+| `voice.getVoiceCallEstimate()` | Estimate call cost |
+| `voice.getVoiceCallRecording()` | Get a call recording |
+| `voice.dialVoiceWebCall()` | Dial from the browser softphone |
+| `voice.disableVoiceOnNumber()` | Disable phone calling on a number |
+| `voice.enableVoiceOnNumber()` | Enable phone calling on a number |
+| `voice.endVoiceCall()` | Hang up a live call |
+| `voice.transferVoiceCall()` | Blind-transfer a live call |
 
 ### WhatsApp
 | Method | Description |
@@ -671,11 +736,16 @@ try {
 | `whatsappCalling.listWhatsAppCalls()` | List call history for an account |
 | `whatsappCalling.getWhatsAppCall()` | Get a single call |
 | `whatsappCalling.getWhatsAppCallEstimate()` | Estimate per-minute cost |
+| `whatsappCalling.getWhatsAppCalling()` | Get calling config for a number |
 | `whatsappCalling.getWhatsAppCallingConfig()` | Get calling config for an account |
 | `whatsappCalling.getWhatsAppCallPermissions()` | Check call permission |
+| `whatsappCalling.getWhatsAppCallRecording()` | Get a call recording |
 | `whatsappCalling.updateWhatsAppCalling()` | Update calling config |
+| `whatsappCalling.updateWhatsAppCallingLegacy()` | Update calling config |
 | `whatsappCalling.disableWhatsAppCalling()` | Disable calling on a number |
+| `whatsappCalling.disableWhatsAppCallingLegacy()` | Disable calling on a number |
 | `whatsappCalling.enableWhatsAppCalling()` | Enable calling on a number |
+| `whatsappCalling.enableWhatsAppCallingLegacy()` | Enable calling on a number |
 | `whatsappCalling.initiateWhatsAppCall()` | Initiate outbound call |
 
 ### WhatsApp Flows
