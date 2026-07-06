@@ -13099,6 +13099,96 @@ export type CreateInboxConversationError = ({
     code?: 'DM_NOT_ALLOWED';
 });
 
+export type SearchInboxConversationsData = {
+    query: {
+        /**
+         * Filter by specific social account ID
+         */
+        accountId?: string;
+        /**
+         * Pagination cursor for next page
+         */
+        cursor?: string;
+        /**
+         * Only match messages sent to you (incoming) or by you (outgoing)
+         */
+        direction?: 'incoming' | 'outgoing';
+        /**
+         * Maximum number of conversations to return
+         */
+        limit?: number;
+        /**
+         * Filter by platform (searchable platforms only)
+         */
+        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms';
+        /**
+         * Filter by profile ID
+         */
+        profileId?: string;
+        /**
+         * Text to search for in message content
+         */
+        query: string;
+    };
+};
+
+export type SearchInboxConversationsResponse = ({
+    data?: Array<{
+        conversation?: {
+            /**
+             * Conversation ID, usable with the conversation messages endpoints
+             */
+            id?: string;
+            platform?: string;
+            accountId?: string;
+            participantName?: (string) | null;
+            participantUsername?: (string) | null;
+            participantPicture?: (string) | null;
+            status?: 'active' | 'archived';
+            lastMessageAt?: (string) | null;
+        };
+        /**
+         * Total number of matching messages in this conversation
+         */
+        matchCount?: number;
+        /**
+         * Up to 3 most-recent matching messages
+         */
+        matches?: Array<{
+            id?: string;
+            text?: (string) | null;
+            direction?: 'incoming' | 'outgoing';
+            timestamp?: string;
+        }>;
+    }>;
+    pagination?: {
+        hasMore?: boolean;
+        nextCursor?: (string) | null;
+    };
+    meta?: {
+        accountsQueried?: number;
+        accountsFailed?: number;
+        failedAccounts?: Array<{
+            accountId?: string;
+            accountUsername?: (string) | null;
+            platform?: string;
+            error?: string;
+        }>;
+        lastUpdated?: string;
+        /**
+         * Connected messaging accounts that cannot be searched (live-fetched platforms)
+         */
+        accountsSkipped?: Array<{
+            accountId?: string;
+            platform?: string;
+        }>;
+    };
+});
+
+export type SearchInboxConversationsError = (unknown | {
+    error?: string;
+});
+
 export type GetInboxConversationData = {
     path: {
         /**

@@ -583,6 +583,7 @@ try {
 | `messages.editInboxMessage()` | Edit message |
 | `messages.markConversationRead()` | Mark a conversation as read |
 | `messages.removeMessageReaction()` | Remove reaction |
+| `messages.searchInboxConversations()` | Search conversations |
 | `messages.sendInboxMessage()` | Send message |
 | `messages.sendTypingIndicator()` | Send typing indicator |
 | `messages.uploadMediaDirect()` | Upload media file |

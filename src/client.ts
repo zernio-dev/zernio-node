@@ -354,6 +354,7 @@ import {
   searchAdTargeting,
   searchAvailablePhoneNumbers,
   searchAvailableWhatsAppNumbers,
+  searchInboxConversations,
   searchReddit,
   selectFacebookPage,
   selectGoogleBusinessLocation,
@@ -851,6 +852,7 @@ export class Zernio {
   messages = {
     listInboxConversations: listInboxConversations,
     createInboxConversation: createInboxConversation,
+    searchInboxConversations: searchInboxConversations,
     getInboxConversation: getInboxConversation,
     updateInboxConversation: updateInboxConversation,
     getInboxConversationMessages: getInboxConversationMessages,
