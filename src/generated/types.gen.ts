@@ -407,8 +407,11 @@ export type budgetLevel = 'campaign' | 'adset';
  * One day of metrics. Same fields as `AdMetrics` plus the `date` they
  * apply to. Returned inside a node's `daily[]` when `GET /v1/ads/tree` is
  * called with `timeIncrement=1`. Rate metrics (ctr/cpc/cpm/costPerConversion/
- * roas) are recomputed per day from that day's sums, so summing the additive
- * fields across a node's `daily[]` reproduces its aggregated `metrics` total.
+ * roas/videoAvgTimeWatchedActions) are recomputed per day from that day's
+ * sums, so summing the additive fields across a node's `daily[]` reproduces
+ * its aggregated `metrics` total. Do NOT sum or plain-average
+ * `videoAvgTimeWatchedActions` across days: the range value is the
+ * play-weighted average of the daily values.
  *
  */
 export type AdDailyMetrics = AdMetrics & {
@@ -464,6 +467,42 @@ export type AdMetrics = {
      * Return on ad spend — derived as `purchaseValue / spend`. 0 when `spend` is 0. Equivalent to Meta's `purchase_roas` under default attribution. At ad-set and campaign levels this is recomputed from summed purchaseValue + spend (NOT averaged across children) so it's mathematically correct at every rollup level.
      */
     roas?: number;
+    /**
+     * Meta video ads only (0 for non-video ads and other platforms), like all video* fields below. Number of times the video started playing (Meta `video_play_actions`), summed over the date range and across children at ad-set/campaign level.
+     */
+    videoPlayActions?: number;
+    /**
+     * Views of at least 30 seconds (or to the end, for shorter videos). Meta `video_30_sec_watched_actions`.
+     */
+    video30SecWatchedActions?: number;
+    /**
+     * ThruPlays (watched to completion, or at least 15 seconds). Meta `video_thruplay_watched_actions`.
+     */
+    videoThruplayWatchedActions?: number;
+    /**
+     * Views reaching 25% of the video's length. With the other percentile fields, powers hook/hold/drop-off analysis (e.g. hook rate = videoP25WatchedActions / videoPlayActions). Meta `video_p25_watched_actions`.
+     */
+    videoP25WatchedActions?: number;
+    /**
+     * Views reaching 50% of the video's length. Meta `video_p50_watched_actions`.
+     */
+    videoP50WatchedActions?: number;
+    /**
+     * Views reaching 75% of the video's length. Meta `video_p75_watched_actions`.
+     */
+    videoP75WatchedActions?: number;
+    /**
+     * Views reaching 95% of the video's length. Meta `video_p95_watched_actions`.
+     */
+    videoP95WatchedActions?: number;
+    /**
+     * Views reaching 100% of the video's length. Meta `video_p100_watched_actions`.
+     */
+    videoP100WatchedActions?: number;
+    /**
+     * Average seconds watched per play (Meta `video_avg_time_watched_actions`). Aggregated over date ranges and across children as a play-weighted average (total watch time / total plays), never a plain average of averages.
+     */
+    videoAvgTimeWatchedActions?: number;
     /**
      * Present on individual ads only, not on campaign aggregations
      */
