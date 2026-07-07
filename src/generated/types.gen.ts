@@ -15025,6 +15025,18 @@ export type ListInboxMentionsResponse = ({
          */
         authorUrn?: (string) | null;
         /**
+         * Display name of the author, resolved from authorUrn. Null when LinkedIn does not allow resolving the profile.
+         */
+        authorName?: (string) | null;
+        /**
+         * LinkedIn vanity name of the author (the slug in their profile URL)
+         */
+        authorUsername?: (string) | null;
+        /**
+         * Profile picture URL of the author. LinkedIn CDN URLs expire after some time, so fetch promptly rather than storing long-term.
+         */
+        authorPicture?: (string) | null;
+        /**
          * URN of the organization that was mentioned
          */
         organizationalEntity?: string;
