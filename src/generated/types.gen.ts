@@ -13110,7 +13110,7 @@ export type CreateInboxConversationResponse = ({
          */
         messageId?: string;
         /**
-         * Platform conversation ID (dm_conversation_id)
+         * Platform conversation ID (dm_conversation_id). For WhatsApp, this is Zernio's internal conversation id (24-character hex) which matches the id returned by the list-conversations endpoint and the conversationId in the message.received and conversation.started webhooks; use it to correlate the created thread with inbound events.
          */
         conversationId?: string;
         /**
