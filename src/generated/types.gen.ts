@@ -8031,6 +8031,12 @@ export type CreatePostError = ({
     error?: string;
 } | {
     error?: string;
+    /**
+     * Stable machine-readable cause. Absent for ownership failures.
+     */
+    code?: 'ACCOUNT_DISCONNECTED' | 'PROFILE_OVER_LIMIT';
+} | {
+    error?: string;
     details?: {
         accountId?: string;
         platform?: string;
