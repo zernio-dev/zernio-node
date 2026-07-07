@@ -21577,8 +21577,12 @@ export type ListAdsData = {
 
 export type ListAdsResponse = ({
     ads?: Array<Ad>;
+    /**
+     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
+     */
+    backfillPending?: boolean;
     pagination?: Pagination;
-});
+} | unknown);
 
 export type ListAdsError = ({
     error?: string;
@@ -21950,8 +21954,12 @@ export type GetAdTreeData = {
 
 export type GetAdTreeResponse = ({
     campaigns?: Array<AdTreeCampaign>;
+    /**
+     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
+     */
+    backfillPending?: boolean;
     pagination?: Pagination;
-});
+} | unknown);
 
 export type GetAdTreeError = ({
     error?: string;
@@ -22031,7 +22039,11 @@ export type GetAdsTimelineResponse = ({
          */
         roas?: number;
     }>;
-});
+    /**
+     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
+     */
+    backfillPending?: boolean;
+} | unknown);
 
 export type GetAdsTimelineError = ({
     error?: string;
@@ -22181,6 +22193,10 @@ export type GetCampaignAnalyticsResponse = ({
          */
         currency?: (string) | null;
     };
+    /**
+     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
+     */
+    backfillPending?: boolean;
     analytics?: {
         summary?: AdMetrics;
         daily?: Array<(AdMetrics & {
@@ -22192,7 +22208,7 @@ export type GetCampaignAnalyticsResponse = ({
             }>;
         };
     };
-});
+} | unknown);
 
 export type GetCampaignAnalyticsError = ({
     error?: string;
@@ -22230,6 +22246,10 @@ export type GetAdAnalyticsResponse = ({
          */
         currency?: (string) | null;
     };
+    /**
+     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
+     */
+    backfillPending?: boolean;
     analytics?: {
         summary?: AdMetrics;
         daily?: Array<(AdMetrics & {
@@ -22241,7 +22261,7 @@ export type GetAdAnalyticsResponse = ({
             }>;
         };
     };
-});
+} | unknown);
 
 export type GetAdAnalyticsError = ({
     error?: string;

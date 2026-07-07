@@ -5936,8 +5936,9 @@ export const getAdTree = <ThrowOnError extends boolean = false>(options?: Option
  * (and vice-versa) — same convention as `/v1/ads/tree` and `/v1/ads`.
  *
  * Date range defaults to the last 90 days. Capped at 730 days. Ranges older
- * than the 90-day cache window trigger an on-demand backfill from the platform
- * before returning.
+ * than the ingested history return a `202` immediately with the covered part
+ * and `backfillPending: true` while the rest is backfilled in the background;
+ * repeat the request shortly until it returns 200 with full data.
  *
  */
 export const getAdsTimeline = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdsTimelineData, ThrowOnError>) => {
