@@ -4993,6 +4993,56 @@ export type WebhookPayloadMessage = {
             [key: string]: unknown;
         };
         /**
+         * WhatsApp only. Cart submitted by the user from a commerce message
+         * (catalog, product, or product-list message). Meta's `order` object
+         * forwarded verbatim.
+         *
+         */
+        order?: {
+            /**
+             * Meta catalog the ordered products belong to.
+             */
+            catalog_id?: string;
+            /**
+             * Optional free-text note the user attached to the cart.
+             */
+            text?: string;
+            product_items?: Array<{
+                /**
+                 * Retailer ID (SKU) of the ordered product.
+                 */
+                product_retailer_id?: string;
+                /**
+                 * Quantity ordered for this line item.
+                 */
+                quantity?: number;
+                /**
+                 * Unit price of the item.
+                 */
+                item_price?: number;
+                /**
+                 * ISO 4217 currency code (e.g. USD).
+                 */
+                currency?: string;
+            }>;
+        };
+        /**
+         * WhatsApp only. The product the user is asking about. Set when an
+         * inbound text carries Meta's `context.referred_product` (the user
+         * tapped "Message business" on a product). Forwarded verbatim.
+         *
+         */
+        referredProduct?: {
+            /**
+             * Meta catalog the product belongs to.
+             */
+            catalog_id?: string;
+            /**
+             * Retailer ID (SKU) of the product being asked about.
+             */
+            product_retailer_id?: string;
+        };
+        /**
          * Instagram only. Populated when an IG user replies to one of the
          * account's stories (Meta `messaging_story_replies`). Mutually
          * exclusive in practice with `isStoryMention`.
@@ -13629,16 +13679,32 @@ export type SendInboxMessageData = {
         };
         /**
          * WhatsApp-only. Rich interactive payload for list messages, CTA URL
-         * buttons, Flow prompts, and location requests. When set, takes
-         * priority over `buttons` and `quickReplies`. The shape mirrors
-         * Meta's Cloud API `interactive` object verbatim, so any payload
-         * that works against Meta directly will also work here.
+         * buttons, Flow prompts, location requests, voice-call buttons, and
+         * commerce messages (single product, product list, catalog, and
+         * carousel). When set, takes priority over `buttons` and
+         * `quickReplies`. The shape mirrors Meta's Cloud API `interactive`
+         * object verbatim, so any payload that works against Meta directly
+         * will also work here.
          *
          * Use `buttons` / `quickReplies` for simple button replies
-         * (WhatsApp's `interactive.type: "button"`) — the abstraction caps at
+         * (WhatsApp's `interactive.type: "button"`): the abstraction caps at
          * 3 buttons and handles the auto-conversion for you. Use this field
-         * only for `list`, `cta_url`, `flow`, `location_request_message`, or
-         * `voice_call` messages.
+         * only for the types listed in the enum below.
+         *
+         * All interactive messages are session messages: they can only be
+         * sent inside the 24-hour customer service window opened by the
+         * user's last inbound message.
+         *
+         * Commerce types (`product`, `product_list`, `catalog_message`, and
+         * product carousels) require a Meta catalog connected to the
+         * WhatsApp Business Account in Commerce Manager. Media carousels
+         * (image/video cards) do not need a catalog.
+         *
+         * For `product`, `body` is optional (WhatsApp renders the product
+         * card itself) and `header` is not allowed (the product image is
+         * the header). For `product_list`, a `header` with `type: "text"`
+         * is required. For `carousel`, top-level `header`/`footer` are not
+         * supported; media goes on each card instead.
          *
          * For `voice_call`, the message renders WhatsApp's native call
          * button; tapping it starts a voice call to your business number.
@@ -13651,17 +13717,25 @@ export type SendInboxMessageData = {
          * "Send location" button; the user's reply arrives as a regular
          * location message in the conversation.
          *
+         * For `catalog_message`, `action` may also be omitted (we default it
+         * to `{ "name": "catalog_message" }`).
+         *
          * Tap events come back via the `message.received` webhook with
          * `metadata.interactiveType` set to `list_reply` or `nfm_reply`.
+         * Carts submitted from commerce messages arrive as `metadata.order`;
+         * product inquiries arrive as `metadata.referredProduct`.
          *
          */
         interactive?: {
             /**
              * Which interactive layout to render.
              */
-            type: 'list' | 'cta_url' | 'flow' | 'location_request_message' | 'voice_call';
+            type: 'list' | 'cta_url' | 'flow' | 'location_request_message' | 'voice_call' | 'product' | 'product_list' | 'catalog_message' | 'carousel';
             /**
-             * Optional header shown above the body.
+             * Optional header shown above the body. Required with
+             * `type: "text"` for `product_list`; not allowed for `product`
+             * or `carousel`.
+             *
              */
             header?: {
                 type?: 'text' | 'image' | 'video' | 'document';
@@ -13679,7 +13753,10 @@ export type SendInboxMessageData = {
                     link?: string;
                 };
             };
-            body: {
+            /**
+             * Required for every type except `product`, where it is optional.
+             */
+            body?: {
                 /**
                  * Main body text.
                  */
@@ -13795,6 +13872,73 @@ export type SendInboxMessageData = {
     };
 } | {
     name: 'send_location';
+} | {
+    /**
+     * Meta catalog ID connected to the WhatsApp Business Account.
+     */
+    catalog_id: string;
+    /**
+     * Retailer ID (SKU) of the product inside the catalog.
+     */
+    product_retailer_id: string;
+} | {
+    /**
+     * Meta catalog ID connected to the WhatsApp Business Account.
+     */
+    catalog_id: string;
+    /**
+     * 1-10 sections. Total products across all sections cannot exceed 30.
+     */
+    sections: Array<{
+        /**
+         * Optional section header.
+         */
+        title?: string;
+        product_items: Array<{
+            /**
+             * Retailer ID (SKU) of the product inside the catalog.
+             */
+            product_retailer_id: string;
+        }>;
+    }>;
+} | {
+    name: 'catalog_message';
+    parameters?: {
+        /**
+         * Optional product whose image is used as the message thumbnail. Falls back to the first catalog item when omitted.
+         */
+        thumbnail_product_retailer_id?: string;
+    };
+} | {
+    cards: Array<{
+        /**
+         * Card position. Auto-filled sequentially when omitted.
+         */
+        card_index?: number;
+        /**
+         * `product` for a product card; media cards use `cta_url` or a quick-reply type.
+         */
+        type?: string;
+        /**
+         * Media cards only
+         */
+        header?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Optional card body text.
+         */
+        body?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Product cards: `{ catalog_id, product_retailer_id }` (required). Media cards: the card's button action (e.g. `cta_url` with `parameters.display_text` and `parameters.url`).
+         */
+        action?: {
+            [key: string]: unknown;
+        };
+        [key: string]: unknown | number | string;
+    }>;
 });
         };
         /**
