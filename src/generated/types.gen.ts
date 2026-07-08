@@ -22167,7 +22167,7 @@ export type GetCampaignAnalyticsData = {
     };
     query?: {
         /**
-         * Comma-separated breakdown dimensions (Meta only): age, gender, country, publisher_platform, device_platform, region, platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         * Comma-separated breakdown dimensions (Meta only): age, gender, country, publisher_platform, device_platform, region, platform_position, impression_device, video_asset, image_asset, body_asset, title_asset. `placement` is accepted as an alias for `publisher_platform` (Facebook vs Instagram vs Audience Network). The singular `breakdown` is accepted too. Unknown values return 400 with the supported list rather than being ignored.
          */
         breakdowns?: string;
         /**
@@ -22216,7 +22216,7 @@ export type GetCampaignAnalyticsResponse = ({
     };
 } | unknown);
 
-export type GetCampaignAnalyticsError = ({
+export type GetCampaignAnalyticsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -22226,7 +22226,7 @@ export type GetAdAnalyticsData = {
     };
     query?: {
         /**
-         * Comma-separated breakdown dimensions. Meta: age, gender, country, publisher_platform, device_platform, region. TikTok: gender, age, country_code, platform, ac, language.
+         * Comma-separated breakdown dimensions. Meta: age, gender, country, publisher_platform, device_platform, region, platform_position, impression_device, video_asset, image_asset, body_asset, title_asset. TikTok: gender, age, country_code, platform, ac, language. `placement` is accepted as an alias for `publisher_platform` (Facebook vs Instagram vs Audience Network). The singular `breakdown` is accepted too. Unknown values return 400 with the supported list rather than being ignored.
          */
         breakdowns?: string;
         /**
@@ -22269,7 +22269,7 @@ export type GetAdAnalyticsResponse = ({
     };
 } | unknown);
 
-export type GetAdAnalyticsError = ({
+export type GetAdAnalyticsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
