@@ -2470,7 +2470,7 @@ export const listInboxConversations = <ThrowOnError extends boolean = false>(opt
  *
  * X API tier requirement: DM write endpoints require X API Pro tier ($5,000/month) or Enterprise access. This applies to BYOK (Bring Your Own Key) users who provide their own X API credentials.
  *
- * Rate limits: 200 requests per 15 minutes, 1,000 per 24 hours per user, 15,000 per 24 hours per app (shared across all DM endpoints).
+ * Rate limits (X/Twitter only): X's DM API enforces 200 requests per 15 minutes, 1,000 per 24 hours per connected X account, and 15,000 per 24 hours per X developer app (shared across all DM endpoints). These limits do NOT apply to other platforms. WhatsApp sends are governed by Meta's per-number messaging tiers (unique business-initiated conversations per 24 hours) and per-number throughput instead.
  *
  */
 export const createInboxConversation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateInboxConversationData, ThrowOnError>) => {
