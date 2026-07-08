@@ -356,6 +356,7 @@ try {
 | `adAudiences.listAdAudiences()` | List custom audiences |
 | `adAudiences.createAdAudience()` | Create custom audience |
 | `adAudiences.getAdAudience()` | Get audience details |
+| `adAudiences.updateAdAudience()` | Update saved targeting audience |
 | `adAudiences.deleteAdAudience()` | Delete custom audience |
 | `adAudiences.addUsersToAdAudience()` | Add users to audience |
 

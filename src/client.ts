@@ -395,6 +395,7 @@ import {
   updateAccount,
   updateAccountGroup,
   updateAd,
+  updateAdAudience,
   updateAdCampaign,
   updateAdCampaignStatus,
   updateAdSet,
@@ -1265,6 +1266,7 @@ export class Zernio {
     listAdAudiences: listAdAudiences,
     createAdAudience: createAdAudience,
     getAdAudience: getAdAudience,
+    updateAdAudience: updateAdAudience,
     deleteAdAudience: deleteAdAudience,
     addUsersToAdAudience: addUsersToAdAudience,
   };

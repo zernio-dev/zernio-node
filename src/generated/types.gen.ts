@@ -23810,6 +23810,10 @@ export type ListAdAudiencesData = {
 export type ListAdAudiencesResponse = ({
     audiences?: Array<{
         id?: (string) | null;
+        /**
+         * Social account the audience was created against. Returned for saved_targeting items.
+         */
+        accountId?: string;
         platformAudienceId?: string;
         name?: string;
         description?: string;
@@ -23915,6 +23919,31 @@ export type GetAdAudienceResponse = ({
 export type GetAdAudienceError = ({
     error?: string;
 } | unknown);
+
+export type UpdateAdAudienceData = {
+    body: {
+        name?: string;
+        description?: string;
+        /**
+         * Full replacement for the stored targeting spec.
+         */
+        spec?: (TargetingSpec);
+    };
+    path: {
+        audienceId: string;
+    };
+};
+
+export type UpdateAdAudienceResponse = ({
+    audience?: {
+        [key: string]: unknown;
+    };
+    message?: string;
+});
+
+export type UpdateAdAudienceError = (unknown | {
+    error?: string;
+});
 
 export type DeleteAdAudienceData = {
     path: {
