@@ -2773,6 +2773,10 @@ export type PostAnalytics = {
     clicks?: number;
     views?: number;
     /**
+     * Instagram feed posts and stories only: organic accounts that started following from this post. 0 for reels and other platforms.
+     */
+    follows?: number;
+    /**
      * Instagram Reels only: average watch time per play, in milliseconds. 0 for non-Reels media and other platforms.
      */
     igReelsAvgWatchTime?: number;
@@ -6384,7 +6388,7 @@ export type GetAnalyticsData = {
         /**
          * Sort by date, engagement, or a specific metric
          */
-        sortBy?: 'date' | 'engagement' | 'impressions' | 'reach' | 'likes' | 'comments' | 'shares' | 'saves' | 'clicks' | 'views';
+        sortBy?: 'date' | 'engagement' | 'impressions' | 'reach' | 'likes' | 'comments' | 'shares' | 'saves' | 'clicks' | 'views' | 'follows';
         /**
          * Filter by post source: late (posted via Zernio API), external (synced from platform), all (default)
          */
