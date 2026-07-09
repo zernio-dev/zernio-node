@@ -332,7 +332,7 @@ try {
 | `connect.selectLinkedInOrganization()` | Select LinkedIn org |
 | `connect.selectPinterestBoard()` | Select Pinterest board |
 | `connect.selectSnapchatProfile()` | Select Snapchat profile |
-| `connect.setRedditPostFlair()` | Set flair on a published Reddit post |
+| `connect.setRedditPostFlair()` | Set Reddit post flair |
 | `connect.voteRedditThing()` | Vote on a Reddit post or comment |
 
 ### Reddit
@@ -506,7 +506,7 @@ try {
 | `discord.deleteDiscordMessage()` | Delete a Discord channel message |
 | `discord.deleteDiscordScheduledEvent()` | Delete a Discord scheduled event |
 | `discord.addDiscordMemberRole()` | Assign a role to a guild member |
-| `discord.crosspostDiscordMessage()` | Crosspost a Discord announcement message |
+| `discord.crosspostDiscordMessage()` | Crosspost Discord message |
 | `discord.editDiscordGuildRole()` | Edit a Discord guild role |
 | `discord.pinDiscordMessage()` | Pin a Discord message |
 | `discord.removeDiscordMemberRole()` | Remove a role from a guild member |

@@ -2094,7 +2094,7 @@ export const getRedditFlairs = <ThrowOnError extends boolean = false>(options: O
 };
 
 /**
- * Set flair on a published Reddit post
+ * Set Reddit post flair
  * Applies a flair to a post the connected account already published. Use the GET on this
  * path to list the available `flairTemplateId` values for the subreddit.
  *
@@ -2328,7 +2328,7 @@ export const deleteDiscordMessage = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
- * Crosspost a Discord announcement message
+ * Crosspost Discord message
  * Publishes a message from an announcement channel so it propagates to every server
  * following that channel.
  *
