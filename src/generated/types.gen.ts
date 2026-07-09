@@ -9014,7 +9014,7 @@ export type GetConnectUrlData = {
          */
         profileId: string;
         /**
-         * Your custom redirect URL after connection completes. Standard mode appends ?connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
+         * Your custom redirect URL after connection completes. Accepts an http(s) URL, a custom app scheme for mobile deeplinks (e.g. myapp://callback), or a relative path. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
          */
         redirect_url?: string;
     };
@@ -9157,7 +9157,7 @@ export type ConnectAdsData = {
          */
         profileId: string;
         /**
-         * Custom redirect URL after OAuth completes (same-token platforms only)
+         * Custom redirect URL after OAuth completes (same-token platforms only). Accepts an http(s) URL, a custom app scheme for mobile deeplinks (e.g. myapp://callback), or a relative path.
          */
         redirect_url?: string;
     };
