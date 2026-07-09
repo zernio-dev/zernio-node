@@ -214,6 +214,7 @@ try {
 | `analytics.getContentDecay()` | Get content performance decay |
 | `analytics.getDailyMetrics()` | Get daily aggregated metrics |
 | `analytics.getFacebookPageInsights()` | Get Facebook Page insights |
+| `analytics.getFacebookPostReactions()` | Get Facebook post reactions |
 | `analytics.getGoogleBusinessPerformance()` | Get GBP performance metrics |
 | `analytics.getGoogleBusinessSearchKeywords()` | Get GBP search keywords |
 | `analytics.getInstagramAccountInsights()` | Get Instagram insights |
@@ -309,6 +310,7 @@ try {
 | `connect.getPinterestBoards()` | List Pinterest boards |
 | `connect.getRedditFlairs()` | List subreddit flairs |
 | `connect.getRedditSubreddits()` | List Reddit subreddits |
+| `connect.getSubredditRules()` | Get subreddit rules |
 | `connect.getTelegramConnectStatus()` | Generate Telegram code |
 | `connect.getYoutubePlaylists()` | List YouTube playlists |
 | `connect.updateFacebookPage()` | Update Facebook page |
@@ -330,6 +332,8 @@ try {
 | `connect.selectLinkedInOrganization()` | Select LinkedIn org |
 | `connect.selectPinterestBoard()` | Select Pinterest board |
 | `connect.selectSnapchatProfile()` | Select Snapchat profile |
+| `connect.setRedditPostFlair()` | Set flair on a published Reddit post |
+| `connect.voteRedditThing()` | Vote on a Reddit post or comment |
 
 ### Reddit
 | Method | Description |
@@ -453,10 +457,12 @@ try {
 | `comments.listInboxComments()` | List commented posts |
 | `comments.getInboxPostComments()` | Get post comments |
 | `comments.deleteInboxComment()` | Delete comment |
+| `comments.editInboxComment()` | Edit comment |
 | `comments.hideInboxComment()` | Hide comment |
 | `comments.likeInboxComment()` | Like comment |
 | `comments.replyToInboxPost()` | Reply to comment |
 | `comments.sendPrivateReplyToComment()` | Send private reply |
+| `comments.setCommentModeration()` | Set comment moderation status |
 | `comments.unhideInboxComment()` | Unhide comment |
 | `comments.unlikeInboxComment()` | Unlike comment |
 
@@ -488,14 +494,20 @@ try {
 | `discord.listDiscordGuildRoles()` | List Discord guild roles |
 | `discord.listDiscordPinnedMessages()` | List pinned messages |
 | `discord.listDiscordScheduledEvents()` | List Discord scheduled events |
+| `discord.createDiscordGuildRole()` | Create a Discord guild role |
 | `discord.createDiscordScheduledEvent()` | Create a Discord scheduled event |
+| `discord.createDiscordThread()` | Create a Discord public thread |
 | `discord.getDiscordChannels()` | List Discord guild channels |
 | `discord.getDiscordScheduledEvent()` | Get a Discord scheduled event |
 | `discord.getDiscordSettings()` | Get Discord account settings |
 | `discord.updateDiscordScheduledEvent()` | Update a Discord scheduled event |
 | `discord.updateDiscordSettings()` | Update Discord settings |
+| `discord.deleteDiscordGuildRole()` | Delete a Discord guild role |
+| `discord.deleteDiscordMessage()` | Delete a Discord channel message |
 | `discord.deleteDiscordScheduledEvent()` | Delete a Discord scheduled event |
 | `discord.addDiscordMemberRole()` | Assign a role to a guild member |
+| `discord.crosspostDiscordMessage()` | Crosspost a Discord announcement message |
+| `discord.editDiscordGuildRole()` | Edit a Discord guild role |
 | `discord.pinDiscordMessage()` | Pin a Discord message |
 | `discord.removeDiscordMemberRole()` | Remove a role from a guild member |
 | `discord.sendDiscordDirectMessage()` | Send a Discord Direct Message |
@@ -564,12 +576,14 @@ try {
 | Method | Description |
 |--------|-------------|
 | `instagram.listInstagramStories()` | List active Instagram stories |
+| `instagram.getInstagramPublishingLimit()` | Get Instagram publishing limit |
 | `instagram.getInstagramStoryInsights()` | Get Instagram story insights |
 
 ### Mentions
 | Method | Description |
 |--------|-------------|
 | `mentions.listInboxMentions()` | List mentions |
+| `mentions.replyToMention()` | Reply to a mention |
 
 ### Messages (Inbox)
 | Method | Description |

@@ -213,6 +213,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getLinkedInPostReactions).toBeTypeOf('function');
     });
 
+    it('should have getFacebookPostReactions method', () => {
+      expect(client.analytics.getFacebookPostReactions).toBeDefined();
+      expect(client.analytics.getFacebookPostReactions).toBeTypeOf('function');
+    });
+
   });
 
   describe('api Keys', () => {
@@ -334,9 +339,24 @@ describe('Endpoint Methods', () => {
       expect(client.connect.updateRedditSubreddits).toBeTypeOf('function');
     });
 
+    it('should have getSubredditRules method', () => {
+      expect(client.connect.getSubredditRules).toBeDefined();
+      expect(client.connect.getSubredditRules).toBeTypeOf('function');
+    });
+
+    it('should have voteRedditThing method', () => {
+      expect(client.connect.voteRedditThing).toBeDefined();
+      expect(client.connect.voteRedditThing).toBeTypeOf('function');
+    });
+
     it('should have getRedditFlairs method', () => {
       expect(client.connect.getRedditFlairs).toBeDefined();
       expect(client.connect.getRedditFlairs).toBeTypeOf('function');
+    });
+
+    it('should have setRedditPostFlair method', () => {
+      expect(client.connect.setRedditPostFlair).toBeDefined();
+      expect(client.connect.setRedditPostFlair).toBeTypeOf('function');
     });
 
   });

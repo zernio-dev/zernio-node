@@ -1493,6 +1493,38 @@ export type DiscordPlatformData = {
 export type autoArchiveDuration = 60 | 1440 | 4320 | 10080;
 
 /**
+ * A Discord guild role, returned verbatim from Discord's API.
+ */
+export type DiscordRole = {
+    /**
+     * Role snowflake ID
+     */
+    id?: string;
+    name?: string;
+    /**
+     * Decimal color (0 = no color). Convert to hex via .toString(16).
+     */
+    color?: number;
+    /**
+     * Position in role hierarchy (higher = more authority)
+     */
+    position?: number;
+    /**
+     * Permissions bitfield as a stringified integer
+     */
+    permissions?: string;
+    /**
+     * True for integration-managed roles (bot roles)
+     */
+    managed?: boolean;
+    mentionable?: boolean;
+    /**
+     * True if role is displayed separately in member list
+     */
+    hoist?: boolean;
+};
+
+/**
  * Discord guild scheduled event. Returned by /v1/discord/guilds/{guildId}/events endpoints.
  * Fields below are the subset Zernio consumes — Discord may return more (e.g. creator,
  * image hash) which we pass through verbatim.
@@ -8249,11 +8281,11 @@ export type UnpublishPostError = (unknown | {
 export type EditPostData = {
     body: {
         /**
-         * The platform to edit the post on. Currently only twitter is supported.
+         * The platform to edit the post on.
          */
-        platform: 'twitter';
+        platform: 'twitter' | 'discord' | 'facebook' | 'reddit';
         /**
-         * The new tweet text content
+         * The new post text content
          */
         content: string;
     };
@@ -8265,11 +8297,12 @@ export type EditPostData = {
 export type EditPostResponse = ({
     success?: boolean;
     /**
-     * New tweet ID assigned by X after edit
+     * The platform post ID after the edit. X assigns a new ID; Discord, Facebook, and Reddit return the original ID unchanged.
+     *
      */
     id?: string;
     /**
-     * URL of the edited tweet
+     * URL of the edited post
      */
     url?: string;
     message?: string;
@@ -11673,6 +11706,34 @@ export type ListInstagramStoriesError = (unknown | {
     error?: string;
 });
 
+export type GetInstagramPublishingLimitData = {
+    path: {
+        /**
+         * The ID of the Instagram account
+         */
+        accountId: string;
+    };
+};
+
+export type GetInstagramPublishingLimitResponse = ({
+    /**
+     * Containers published so far in the current window
+     */
+    quotaUsage?: number;
+    /**
+     * Maximum containers publishable per window
+     */
+    quotaTotal?: number;
+    /**
+     * Length of the rolling window in seconds
+     */
+    quotaDurationSeconds?: number;
+});
+
+export type GetInstagramPublishingLimitError = (unknown | {
+    error?: string;
+});
+
 export type GetInstagramStoryInsightsData = {
     path: {
         /**
@@ -11878,6 +11939,49 @@ export type UpdateGmbLocationError = (unknown | {
     error?: string;
 });
 
+export type GetFacebookPostReactionsData = {
+    path: {
+        /**
+         * The ID of the Facebook Page account
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * The Facebook post ID
+         */
+        postId: string;
+    };
+};
+
+export type GetFacebookPostReactionsResponse = ({
+    accountId?: string;
+    platform?: string;
+    username?: string;
+    postId?: string;
+    /**
+     * Total reactions across all types
+     */
+    total?: number;
+    /**
+     * Count per reaction type. A type with no reactions returns 0.
+     */
+    breakdown?: {
+        like?: number;
+        love?: number;
+        haha?: number;
+        wow?: number;
+        sad?: number;
+        angry?: number;
+        care?: number;
+    };
+    lastUpdated?: string;
+});
+
+export type GetFacebookPostReactionsError = (unknown | {
+    error?: string;
+});
+
 export type GetRedditSubredditsData = {
     path: {
         accountId: string;
@@ -11934,6 +12038,84 @@ export type UpdateRedditSubredditsError = (unknown | {
     error?: string;
 });
 
+export type GetSubredditRulesData = {
+    path: {
+        /**
+         * The ID of the Reddit account
+         */
+        accountId: string;
+        /**
+         * Subreddit name (without the "r/" prefix)
+         */
+        subreddit: string;
+    };
+};
+
+export type GetSubredditRulesResponse = ({
+    rules?: Array<{
+        /**
+         * Scope of the rule: 'link', 'comment', or 'all'
+         */
+        kind?: string;
+        /**
+         * Short rule title shown in the subreddit sidebar
+         */
+        shortName?: string;
+        /**
+         * Full rule text
+         */
+        description?: string;
+        /**
+         * Reason shown to a user when the rule is enforced
+         */
+        violationReason?: string;
+        /**
+         * Unix timestamp when the rule was created
+         */
+        createdUtc?: number;
+        /**
+         * Display order of the rule
+         */
+        priority?: number;
+    }>;
+    /**
+     * Reddit's site-wide content policy rules
+     */
+    siteRules?: Array<(string)>;
+});
+
+export type GetSubredditRulesError = (unknown | {
+    error?: string;
+});
+
+export type VoteRedditThingData = {
+    body: {
+        /**
+         * Reddit fullname of the target. Prefix "t3_" for a post and "t1_" for a comment. A bare id with no prefix is treated as a post ("t3_").
+         *
+         */
+        thingId: string;
+        /**
+         * 1 to upvote, -1 to downvote, 0 to clear an existing vote
+         */
+        direction: 1 | 0 | -1;
+    };
+    path: {
+        /**
+         * The ID of the Reddit account casting the vote
+         */
+        accountId: string;
+    };
+};
+
+export type VoteRedditThingResponse = ({
+    success?: boolean;
+});
+
+export type VoteRedditThingError = (unknown | {
+    error?: string;
+});
+
 export type GetRedditFlairsData = {
     path: {
         accountId: string;
@@ -11968,6 +12150,41 @@ export type GetRedditFlairsResponse = ({
 });
 
 export type GetRedditFlairsError = (unknown | {
+    error?: string;
+});
+
+export type SetRedditPostFlairData = {
+    body: {
+        /**
+         * Subreddit name (without the "r/" prefix)
+         */
+        subreddit: string;
+        /**
+         * Reddit post id, with or without the t3_ prefix
+         */
+        postId: string;
+        /**
+         * Flair template id from the GET on this path
+         */
+        flairTemplateId: string;
+        /**
+         * Optional override text, only for editable flair templates
+         */
+        text?: string;
+    };
+    path: {
+        /**
+         * The ID of the Reddit account that owns the post
+         */
+        accountId: string;
+    };
+};
+
+export type SetRedditPostFlairResponse = ({
+    success?: boolean;
+});
+
+export type SetRedditPostFlairError = (unknown | {
     error?: string;
 });
 
@@ -12208,6 +12425,112 @@ export type ListDiscordGuildRolesError = (unknown | {
     error?: string;
 });
 
+export type CreateDiscordGuildRoleData = {
+    body: {
+        name: string;
+        /**
+         * Decimal color (0 = no color). 0xFF0000 red is 16711680.
+         */
+        color?: number;
+        /**
+         * Display members with this role separately in the member list
+         */
+        hoist?: boolean;
+        /**
+         * Allow anyone to @mention this role
+         */
+        mentionable?: boolean;
+        /**
+         * Permissions bitfield as a stringified integer
+         */
+        permissions?: string;
+    };
+    path: {
+        /**
+         * Discord guild snowflake ID
+         */
+        guildId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of the Discord account bound to this guild
+         */
+        accountId: string;
+    };
+};
+
+export type CreateDiscordGuildRoleResponse = ({
+    data?: DiscordRole;
+});
+
+export type CreateDiscordGuildRoleError = (unknown | {
+    error?: string;
+});
+
+export type EditDiscordGuildRoleData = {
+    body: {
+        name?: string;
+        color?: number;
+        hoist?: boolean;
+        mentionable?: boolean;
+        /**
+         * Permissions bitfield as a stringified integer
+         */
+        permissions?: string;
+    };
+    path: {
+        /**
+         * Discord guild snowflake ID
+         */
+        guildId: string;
+        /**
+         * Discord role snowflake ID
+         */
+        roleId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of the Discord account bound to this guild
+         */
+        accountId: string;
+    };
+};
+
+export type EditDiscordGuildRoleResponse = ({
+    data?: DiscordRole;
+});
+
+export type EditDiscordGuildRoleError = (unknown | {
+    error?: string;
+});
+
+export type DeleteDiscordGuildRoleData = {
+    path: {
+        /**
+         * Discord guild snowflake ID
+         */
+        guildId: string;
+        /**
+         * Discord role snowflake ID
+         */
+        roleId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of the Discord account bound to this guild
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteDiscordGuildRoleResponse = ({
+    success?: boolean;
+});
+
+export type DeleteDiscordGuildRoleError = (unknown | {
+    error?: string;
+});
+
 export type ListDiscordGuildMembersData = {
     path: {
         guildId: string;
@@ -12313,6 +12636,108 @@ export type RemoveDiscordMemberRoleResponse = ({
 });
 
 export type RemoveDiscordMemberRoleError = (unknown | {
+    error?: string;
+});
+
+export type DeleteDiscordMessageData = {
+    path: {
+        /**
+         * Discord channel snowflake ID
+         */
+        channelId: string;
+        /**
+         * Discord message snowflake ID
+         */
+        messageId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of the Discord account bound to this channel's guild
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteDiscordMessageResponse = ({
+    success?: boolean;
+});
+
+export type DeleteDiscordMessageError = (unknown | {
+    error?: string;
+});
+
+export type CrosspostDiscordMessageData = {
+    path: {
+        /**
+         * Discord announcement channel snowflake ID
+         */
+        channelId: string;
+        /**
+         * Discord message snowflake ID
+         */
+        messageId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of the Discord account bound to this channel's guild
+         */
+        accountId: string;
+    };
+};
+
+export type CrosspostDiscordMessageResponse = ({
+    /**
+     * The crossposted Discord message object.
+     */
+    data?: {
+        [key: string]: unknown;
+    };
+});
+
+export type CrosspostDiscordMessageError = (unknown | {
+    error?: string;
+});
+
+export type CreateDiscordThreadData = {
+    body: {
+        /**
+         * Thread name
+         */
+        name: string;
+        /**
+         * Optional message snowflake to start the thread from. Omit for a standalone thread.
+         */
+        messageId?: string;
+        /**
+         * Minutes of inactivity before the thread auto-archives. Discord accepts only these four values.
+         */
+        autoArchiveDuration?: 60 | 1440 | 4320 | 10080;
+    };
+    path: {
+        /**
+         * Discord channel snowflake ID
+         */
+        channelId: string;
+    };
+    query: {
+        /**
+         * SocialAccount _id of the Discord account bound to this channel's guild
+         */
+        accountId: string;
+    };
+};
+
+export type CreateDiscordThreadResponse = ({
+    data?: {
+        /**
+         * Thread snowflake ID
+         */
+        id?: string;
+        name?: string;
+    };
+});
+
+export type CreateDiscordThreadError = (unknown | {
     error?: string;
 });
 
@@ -13921,7 +14346,7 @@ export type SendInboxMessageData = {
          */
         type?: string;
         /**
-         * Media cards only
+         * Media cards only, required. Carries the card's image or video.
          */
         header?: {
             [key: string]: unknown;
@@ -14783,6 +15208,71 @@ export type DeleteInboxCommentError = ({
     error?: string;
 } | unknown);
 
+export type EditInboxCommentData = {
+    body: {
+        /**
+         * The social account ID
+         */
+        accountId: string;
+        /**
+         * Only Reddit supports editing a comment
+         */
+        platform: 'reddit';
+        /**
+         * The new comment body
+         */
+        content: string;
+    };
+    path: {
+        commentId: string;
+        postId: string;
+    };
+};
+
+export type EditInboxCommentResponse = ({
+    status?: string;
+    commentId?: string;
+    platform?: string;
+});
+
+export type EditInboxCommentError = (unknown | {
+    error?: string;
+});
+
+export type SetCommentModerationData = {
+    body: {
+        /**
+         * The social account ID
+         */
+        accountId: string;
+        /**
+         * Only YouTube supports comment moderation
+         */
+        platform: 'youtube';
+        /**
+         * published approves the comment, rejected removes it, heldForReview returns it to the queue.
+         */
+        moderationStatus: 'published' | 'rejected' | 'heldForReview';
+        /**
+         * Also ban the comment's author, auto-rejecting their future comments. Only valid when moderationStatus is "rejected"; any other pairing is a 400.
+         *
+         */
+        banAuthor?: boolean;
+    };
+    path: {
+        commentId: string;
+        postId: string;
+    };
+};
+
+export type SetCommentModerationResponse = ({
+    success?: boolean;
+});
+
+export type SetCommentModerationError = (unknown | {
+    error?: string;
+});
+
 export type HideInboxCommentData = {
     body: {
         /**
@@ -15201,6 +15691,39 @@ export type ListInboxMentionsResponse = ({
 export type ListInboxMentionsError = ({
     error?: string;
 } | unknown);
+
+export type ReplyToMentionData = {
+    body: {
+        /**
+         * The Instagram social account ID
+         */
+        accountId: string;
+        /**
+         * The ID of the media the account was mentioned in
+         */
+        mediaId: string;
+        /**
+         * The mentioning comment's ID. Omit for a caption mention.
+         */
+        commentId?: string;
+        /**
+         * The reply text
+         */
+        message: string;
+    };
+};
+
+export type ReplyToMentionResponse = ({
+    success?: boolean;
+    /**
+     * ID of the created reply or comment
+     */
+    id?: string;
+});
+
+export type ReplyToMentionError = (unknown | {
+    error?: string;
+});
 
 export type ListInboxReviewsData = {
     query?: {

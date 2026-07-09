@@ -43,7 +43,9 @@ import {
   createConversionDestination,
   createCtwaAd,
   createCustomField,
+  createDiscordGuildRole,
   createDiscordScheduledEvent,
+  createDiscordThread,
   createGoogleBusinessMedia,
   createGoogleBusinessPlaceAction,
   createInboxConversation,
@@ -69,6 +71,7 @@ import {
   createWhatsAppSandboxSession,
   createWhatsAppTemplate,
   createWorkflow,
+  crosspostDiscordMessage,
   deleteAccount,
   deleteAccountGroup,
   deleteAd,
@@ -80,6 +83,8 @@ import {
   deleteContact,
   deleteConversionDestination,
   deleteCustomField,
+  deleteDiscordGuildRole,
+  deleteDiscordMessage,
   deleteDiscordScheduledEvent,
   deleteGoogleBusinessMedia,
   deleteGoogleBusinessPlaceAction,
@@ -109,6 +114,8 @@ import {
   disableWhatsAppCallingLegacy,
   duplicateAdCampaign,
   duplicateWorkflow,
+  editDiscordGuildRole,
+  editInboxComment,
   editInboxMessage,
   editPost,
   enableSmsOnNumber,
@@ -150,6 +157,7 @@ import {
   getDiscordSettings,
   getFacebookPageInsights,
   getFacebookPages,
+  getFacebookPostReactions,
   getFollowerStats,
   getGmbAttributeMetadata,
   getGmbLocations,
@@ -174,6 +182,7 @@ import {
   getInstagramDemographics,
   getInstagramFollowerHistory,
   getInstagramIceBreakers,
+  getInstagramPublishingLimit,
   getInstagramStoryInsights,
   getLeadForm,
   getLinkedInAggregateAnalytics,
@@ -200,6 +209,7 @@ import {
   getSequence,
   getSmsRegistration,
   getSmsUsage,
+  getSubredditRules,
   getTelegramCommands,
   getTelegramConnectStatus,
   getTikTokAccountInsights,
@@ -344,6 +354,7 @@ import {
   replyToGoogleBusinessReview,
   replyToInboxPost,
   replyToInboxReview,
+  replyToMention,
   restoreWorkflowVersion,
   retryPost,
   retweetPost,
@@ -370,9 +381,11 @@ import {
   sendTypingIndicator,
   sendWhatsAppConversion,
   sendWhatsAppFlowMessage,
+  setCommentModeration,
   setContactFieldValue,
   setInstagramIceBreakers,
   setMessengerMenu,
+  setRedditPostFlair,
   setTelegramCommands,
   setWhatsappBusinessUsername,
   shareSmsRegistration,
@@ -448,6 +461,7 @@ import {
   validateSubreddit,
   validateWhatsAppNumberKycAddress,
   verifySmsRegistrationOtp,
+  voteRedditThing,
 } from './generated/sdk.gen';
 
 import { ZernioApiError, parseApiError } from './errors';
@@ -548,6 +562,7 @@ export class Zernio {
     getLinkedInAggregateAnalytics: getLinkedInAggregateAnalytics,
     getLinkedInPostAnalytics: getLinkedInPostAnalytics,
     getLinkedInPostReactions: getLinkedInPostReactions,
+    getFacebookPostReactions: getFacebookPostReactions,
   };
 
   /**
@@ -693,7 +708,10 @@ export class Zernio {
     updateGmbLocation: updateGmbLocation,
     getRedditSubreddits: getRedditSubreddits,
     updateRedditSubreddits: updateRedditSubreddits,
+    getSubredditRules: getSubredditRules,
+    voteRedditThing: voteRedditThing,
     getRedditFlairs: getRedditFlairs,
+    setRedditPostFlair: setRedditPostFlair,
     facebook: {
       listFacebookPages: listFacebookPages,
       selectFacebookPage: selectFacebookPage,
@@ -791,6 +809,7 @@ export class Zernio {
    */
   instagram = {
     listInstagramStories: listInstagramStories,
+    getInstagramPublishingLimit: getInstagramPublishingLimit,
     getInstagramStoryInsights: getInstagramStoryInsights,
   };
 
@@ -803,9 +822,15 @@ export class Zernio {
     getDiscordChannels: getDiscordChannels,
     sendDiscordDirectMessage: sendDiscordDirectMessage,
     listDiscordGuildRoles: listDiscordGuildRoles,
+    createDiscordGuildRole: createDiscordGuildRole,
+    editDiscordGuildRole: editDiscordGuildRole,
+    deleteDiscordGuildRole: deleteDiscordGuildRole,
     listDiscordGuildMembers: listDiscordGuildMembers,
     addDiscordMemberRole: addDiscordMemberRole,
     removeDiscordMemberRole: removeDiscordMemberRole,
+    deleteDiscordMessage: deleteDiscordMessage,
+    crosspostDiscordMessage: crosspostDiscordMessage,
+    createDiscordThread: createDiscordThread,
     listDiscordPinnedMessages: listDiscordPinnedMessages,
     pinDiscordMessage: pinDiscordMessage,
     unpinDiscordMessage: unpinDiscordMessage,
@@ -890,6 +915,8 @@ export class Zernio {
     getInboxPostComments: getInboxPostComments,
     replyToInboxPost: replyToInboxPost,
     deleteInboxComment: deleteInboxComment,
+    editInboxComment: editInboxComment,
+    setCommentModeration: setCommentModeration,
     hideInboxComment: hideInboxComment,
     unhideInboxComment: unhideInboxComment,
     likeInboxComment: likeInboxComment,
@@ -914,6 +941,7 @@ export class Zernio {
    */
   mentions = {
     listInboxMentions: listInboxMentions,
+    replyToMention: replyToMention,
   };
 
   /**
