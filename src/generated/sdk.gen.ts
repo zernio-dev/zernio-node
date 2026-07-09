@@ -680,7 +680,7 @@ export const getUsageStats = <ThrowOnError extends boolean = false>(options?: Op
 };
 
 /**
- * Calling usage (volumes + billable cost)
+ * Calling usage and cost
  * Aggregated calling usage across your numbers, both channels
  * (WhatsApp Business Calling + regular phone/PSTN): call counts,
  * answered counts, minutes, and cost. Use it for cost visibility or to
@@ -3618,7 +3618,7 @@ export const getCall = <ThrowOnError extends boolean = false>(options: OptionsLe
 };
 
 /**
- * Get a call recording (any channel)
+ * Get a call recording
  * Channel-agnostic recording fetch: resolves a fresh, playable MP3 URL
  * for any call regardless of channel (provider-signed URLs expire ~10
  * minutes after signing, so this re-signs on demand). Default responds
@@ -4889,7 +4889,7 @@ export const disableSmsOnNumber = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Add a number to an existing registration
+ * Add number to SMS registration
  * Attaches this number to your existing approved 10DLC campaign instead
  * of running a fresh registration: the number inherits the campaign's
  * approval (no new brand or campaign, no extra carrier fee). Enable SMS

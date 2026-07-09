@@ -282,7 +282,7 @@ try {
 ### Usage
 | Method | Description |
 |--------|-------------|
-| `usage.getCallsUsage()` | Calling usage (volumes + billable cost) |
+| `usage.getCallsUsage()` | Calling usage and cost |
 | `usage.getSmsUsage()` | SMS usage (volumes) |
 | `usage.getUsage()` | Get plan and usage snapshot |
 | `usage.getUsageStats()` | Get plan and usage stats |
@@ -439,7 +439,7 @@ try {
 |--------|-------------|
 | `calls.listCalls()` | List all calls (unified history) |
 | `calls.getCall()` | Get a call (any channel) |
-| `calls.getCallRecording()` | Get a call recording (any channel) |
+| `calls.getCallRecording()` | Get a call recording |
 
 ### Comment Automations
 | Method | Description |
@@ -658,7 +658,7 @@ try {
 | `sms.disableSmsOnNumber()` | Disable SMS on a number |
 | `sms.enableSmsOnNumber()` | Enable SMS on a number |
 | `sms.lookupSmsNumber()` | Look up carrier + line type |
-| `sms.reuseSmsRegistrationForNumber()` | Add a number to an existing registration |
+| `sms.reuseSmsRegistrationForNumber()` | Add number to SMS registration |
 | `sms.sendSms()` | Send an SMS/MMS |
 | `sms.shareSmsRegistration()` | Create a registration share link |
 | `sms.startSmsRegistration()` | Start a carrier registration |
