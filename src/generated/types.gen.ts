@@ -16819,26 +16819,37 @@ export type StartSmsRegistrationData = {
              * Required for every entityType except SOLE_PROPRIETOR.
              */
             ein?: string;
+            /**
+             * Business contact phone. Required for every entityType except SOLE_PROPRIETOR.
+             */
             phone?: string;
             /**
              * Required for SOLE_PROPRIETOR; the verification OTP is texted there (US/CA mobile).
              */
             mobilePhone?: string;
-            street?: string;
-            city?: string;
-            state?: string;
-            postalCode?: string;
+            street: string;
+            city: string;
+            state: string;
+            postalCode: string;
             country: 'US' | 'CA';
             /**
              * Brand contact email; defaults to your account email when omitted.
              */
             email?: string;
-            website?: string;
+            /**
+             * The brand's website (sole proprietors may use a social profile such as LinkedIn or a business Facebook page). Carriers verify the brand against it; a bare domain is normalized to https://.
+             */
+            website: string;
             vertical: 'AGRICULTURE' | 'COMMUNICATION' | 'CONSTRUCTION' | 'EDUCATION' | 'ENERGY' | 'ENTERTAINMENT' | 'FINANCIAL' | 'GAMBLING' | 'GOVERNMENT' | 'HEALTHCARE' | 'HOSPITALITY' | 'HUMAN_RESOURCES' | 'INSURANCE' | 'LEGAL' | 'MANUFACTURING' | 'NGO' | 'POLITICAL' | 'POSTAL' | 'PROFESSIONAL' | 'REAL_ESTATE' | 'RETAIL' | 'TECHNOLOGY' | 'TRANSPORTATION';
             stockSymbol?: string;
         };
         /**
          * Required for 10DLC. What you'll send and how recipients opt in/out.
+         * Opt-in/opt-out/help auto-responses must name the registered brand and
+         * carry the carrier-required disclosures; submissions that don't (or that
+         * are blank) are automatically rewritten to a compliant, brand-named
+         * template before the campaign is filed.
+         *
          */
         campaign?: {
             usecase: string;
@@ -16848,7 +16859,10 @@ export type StartSmsRegistrationData = {
              */
             messageFlow: string;
             sample1: string;
-            sample2?: string;
+            /**
+             * Second example message; carriers require two distinct samples
+             */
+            sample2: string;
             helpMessage: string;
             optinKeywords: string;
             optinMessage: string;
