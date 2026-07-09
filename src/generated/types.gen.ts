@@ -5374,6 +5374,12 @@ export type WebhookPayloadPost = {
             publishedUrl?: string;
             error?: string;
         }>;
+        /**
+         * The free-form `metadata` object supplied when the post was created, echoed back so you can map events onto your own records. Omitted when the post was created without it.
+         */
+        metadata?: {
+            [key: string]: unknown;
+        };
     };
     timestamp: string;
 };
@@ -5422,6 +5428,12 @@ export type WebhookPayloadPostPlatform = {
             publishedUrl?: string;
             error?: string;
         }>;
+        /**
+         * The free-form `metadata` object supplied when the post was created, echoed back so you can map events onto your own records. Omitted when the post was created without it.
+         */
+        metadata?: {
+            [key: string]: unknown;
+        };
     };
     /**
      * The specific platform that just transitioned to a terminal state.
