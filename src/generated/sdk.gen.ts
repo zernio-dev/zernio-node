@@ -3973,6 +3973,11 @@ export const updateWhatsAppBusinessProfile = <ThrowOnError extends boolean = fal
  * Uses Meta's resumable upload API under the hood: creates an upload session,
  * uploads the image bytes, then updates the business profile with the resulting handle.
  *
+ * Provide the image either as a binary upload (`multipart/form-data` with `file`)
+ * or as a download URL (`application/json` with `url`) — with a URL we fetch the
+ * image server-side and upload the bytes for you. Meta's profile-photo API is
+ * bytes-only, so there is no direct URL passthrough. JPEG/PNG, max 5MB either way.
+ *
  */
 export const uploadWhatsAppProfilePhoto = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadWhatsAppProfilePhotoData, ThrowOnError>) => {
     return (options?.client ?? client).post<UploadWhatsAppProfilePhotoResponse, UploadWhatsAppProfilePhotoError, ThrowOnError>({
