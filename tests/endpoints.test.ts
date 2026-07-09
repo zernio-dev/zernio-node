@@ -604,6 +604,11 @@ describe('Endpoint Methods', () => {
   });
 
   describe('usage', () => {
+    it('should have getBilling method', () => {
+      expect(client.usage.getBilling).toBeDefined();
+      expect(client.usage.getBilling).toBeTypeOf('function');
+    });
+
     it('should have getXApiPricing method', () => {
       expect(client.usage.getXApiPricing).toBeDefined();
       expect(client.usage.getXApiPricing).toBeTypeOf('function');

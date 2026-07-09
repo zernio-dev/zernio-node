@@ -282,10 +282,11 @@ try {
 ### Usage
 | Method | Description |
 |--------|-------------|
+| `usage.getBilling()` | Account billing snapshot (plan, cycle, balance, caps, status) |
 | `usage.getCallsUsage()` | Calling usage and cost |
 | `usage.getSmsUsage()` | SMS usage (volumes) |
-| `usage.getUsage()` | Get plan and usage snapshot |
-| `usage.getUsageStats()` | Get plan and usage stats |
+| `usage.getUsage()` | Usage snapshot (default) or billed-spend metering (with params) |
+| `usage.getUsageStats()` | Get plan and usage snapshot (plan, limits, payment status) |
 | `usage.getXApiPricing()` | Get X/Twitter API pricing table |
 
 ### Logs

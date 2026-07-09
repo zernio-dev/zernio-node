@@ -850,6 +850,67 @@ export type permission = 'read-write' | 'read';
 export type BidStrategy = 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
 
 /**
+ * Account billing state — plan, cycle, balance, spend caps, and payment /
+ * access status. Returned by `GET /v1/billing`.
+ *
+ */
+export type BillingSnapshot = {
+    billingSystem?: 'metronome' | 'stripe';
+    plan?: {
+        name?: string;
+        isUsageBased?: boolean;
+    };
+    /**
+     * Current billing cycle. `start`/`end` are resolved for usage-based accounts only.
+     */
+    period?: {
+        start?: (string) | null;
+        end?: (string) | null;
+        /**
+         * Day-of-month the cycle resets.
+         */
+        anchorDay?: number;
+    };
+    /**
+     * Accrued spend + remaining credits this cycle. `null` for fixed-subscription (Stripe) plans.
+     */
+    balance?: {
+        accruedThisPeriodCents?: number;
+        creditsRemainingCents?: number;
+    } | null;
+    caps?: {
+        xSpendUsedCents?: number;
+        /**
+         * Monthly X-API spend cap; null = unlimited.
+         */
+        xSpendLimitCents?: (number) | null;
+    };
+    status?: {
+        hasAccess?: boolean;
+        suspended?: boolean;
+        suspendedAt?: (string) | null;
+        suspensionReason?: (string) | null;
+        /**
+         * Hosted invoice URL for dunning (Stripe).
+         */
+        openInvoiceUrl?: (string) | null;
+        declineReason?: (string) | null;
+        autoUpgradeEnabled?: boolean;
+    };
+    /**
+     * Deprecated plan entitlements (Stripe only); absent for usage-based accounts.
+     */
+    legacy?: {
+        limits?: {
+            uploads?: number;
+            profiles?: number;
+        };
+    };
+};
+
+export type billingSystem = 'metronome' | 'stripe';
+
+/**
  * Bluesky post settings. Supports text posts with up to 4 images or a single video. threadItems creates a reply chain (Bluesky thread). Images exceeding 1MB are automatically compressed. Alt text supported via mediaItem properties.
  *
  */
@@ -3838,6 +3899,97 @@ export type UploadTokenStatusResponse = {
 };
 
 /**
+ * Billed spend by product family over a window, from Metronome's invoice
+ * breakdown (the CHARGE view). Returned by `GET /v1/usage`.
+ *
+ */
+export type UsageMetering = {
+    /**
+     * False for legacy Stripe accounts (no Metronome invoice to split); `days` and `totals` are then empty/zero.
+     */
+    supported?: boolean;
+    granularity?: 'day' | 'month' | 'total';
+    /**
+     * One row per bucket. Empty when `granularity=total`. `date` is a UTC date (month buckets use the 1st).
+     */
+    days?: Array<{
+        date?: string;
+        accounts?: number;
+        numbers?: number;
+        calls?: number;
+        sms?: number;
+        /**
+         * 10DLC registration (brand + campaign) fees.
+         */
+        dlc?: number;
+        xApi?: number;
+        /**
+         * Applied credits/discounts (negative).
+         */
+        credits?: number;
+        other?: number;
+    }>;
+    /**
+     * Sum of each product over the whole window (USD), plus `total`. Unaffected by `granularity`.
+     */
+    totals?: {
+        accounts?: number;
+        numbers?: number;
+        calls?: number;
+        sms?: number;
+        dlc?: number;
+        xApi?: number;
+        credits?: number;
+        other?: number;
+        total?: number;
+    };
+    /**
+     * Per-invoice-line-item rows (largest spend first) for a detailed breakdown.
+     */
+    lineItems?: Array<{
+        name?: string;
+        product?: 'accounts' | 'numbers' | 'calls' | 'sms' | 'dlc' | 'xApi' | 'credits' | 'other';
+        totalUsd?: number;
+        quantity?: number;
+    }>;
+    /**
+     * Peak counts over the window (Metronome COUNT metrics + live active-number count).
+     */
+    peaks?: {
+        accounts?: number;
+        numbers?: number;
+    };
+    /**
+     * Billable call volumes over the window.
+     */
+    callUsage?: {
+        whatsapp?: {
+            count?: number;
+            minutes?: number;
+        };
+        pstn?: {
+            count?: number;
+            minutes?: number;
+        };
+    };
+    period?: {
+        start?: string;
+        end?: string;
+        /**
+         * `cycle` = a real billing period resolved; `window` = trailing/custom window (or cycle fallback).
+         */
+        source?: 'cycle' | 'window';
+    };
+};
+
+export type granularity = 'day' | 'month' | 'total';
+
+/**
+ * `cycle` = a real billing period resolved; `window` = trailing/custom window (or cycle fallback).
+ */
+export type source2 = 'cycle' | 'window';
+
+/**
  * Plan and usage stats. The response shape depends on `billingSystem`:
  * * Stripe users (default): per-period counters like `usage.uploads` and
  * `usage.profiles` are returned, scoped by the plan's `limits`.
@@ -3970,11 +4122,6 @@ export type UsageStats = {
         xSpendLimitCents?: (number) | null;
     };
 };
-
-/**
- * Which billing system the account is on. Shape of `usage`/`spend` differs.
- */
-export type billingSystem = 'stripe' | 'metronome';
 
 export type billingPeriod = 'monthly' | 'yearly';
 
@@ -7800,6 +7947,12 @@ export type GetRedditFeedError = (unknown | {
     error?: string;
 });
 
+export type GetBillingResponse = (BillingSnapshot);
+
+export type GetBillingError = ({
+    error?: string;
+});
+
 export type GetXApiPricingResponse = (XApiPricing);
 
 export type GetXApiPricingError = ({
@@ -7809,18 +7962,39 @@ export type GetXApiPricingError = ({
 export type GetUsageData = {
     query?: {
         /**
-         * For Stripe subscription users, `true` forces a subscription
-         * reconciliation pass even when cached plan data looks complete.
-         * Omit the parameter, or pass `false`, to use the default
-         * first-time-only reconciliation behavior. Invalid boolean values are
-         * rejected.
+         * Inclusive start (UTC date). Required when `range=custom`.
+         */
+        from?: string;
+        /**
+         * Bucketing of the `days` series: `day` (one row per UTC day),
+         * `month` (one row per calendar month, dated to the 1st), or `total`
+         * (no series — read `totals`). Does not affect `totals`.
+         *
+         */
+        granularity?: 'day' | 'month' | 'total';
+        /**
+         * Window to report. `cycle` / `prev-cycle` resolve to the customer's
+         * real billing-period bounds (falling back to a trailing 30 days when
+         * no invoice exists yet); `7d`…`12mo` are trailing windows; `custom`
+         * uses `from` / `to`.
+         *
+         */
+        range?: 'cycle' | 'prev-cycle' | '7d' | '14d' | '30d' | '3mo' | '12mo' | 'custom';
+        /**
+         * Snapshot mode only. For Stripe subscription users, `true` forces a
+         * subscription reconciliation pass even when cached plan data looks
+         * complete.
          *
          */
         reconcile?: boolean;
+        /**
+         * Inclusive end (UTC date). Required when `range=custom`. Max span 366 days.
+         */
+        to?: string;
     };
 };
 
-export type GetUsageResponse = (UsageStats);
+export type GetUsageResponse = ((UsageStats | UsageMetering));
 
 export type GetUsageError = (unknown | {
     error?: string;

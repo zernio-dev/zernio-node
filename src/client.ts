@@ -138,6 +138,7 @@ import {
   getAllAccountsHealth,
   getAnalytics,
   getBestTimeToPost,
+  getBilling,
   getBroadcast,
   getCall,
   getCallRecording,
@@ -607,6 +608,7 @@ export class Zernio {
    * Usage API - Get usage statistics
    */
   usage = {
+    getBilling: getBilling,
     getXApiPricing: getXApiPricing,
     getUsage: getUsage,
     getUsageStats: getUsageStats,
