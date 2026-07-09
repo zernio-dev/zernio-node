@@ -2004,10 +2004,6 @@ export type GoogleBusinessPlatformData = {
      */
     offer?: {
         /**
-         * Type of offer
-         */
-        offerType?: 'OFFER' | 'BUY_ONE_GET_ONE';
-        /**
          * URL where the offer can be redeemed online
          */
         redeemOnlineUrl?: string;
@@ -2031,11 +2027,6 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
 export type type5 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
-
-/**
- * Type of offer
- */
-export type offerType = 'OFFER' | 'BUY_ONE_GET_ONE';
 
 /**
  * The account context included in inbox webhook payloads.
