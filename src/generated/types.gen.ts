@@ -23277,6 +23277,14 @@ export type ListAdAccountsResponse = ({
          * Signed UTC offset in hours, reflecting current DST (Meta only).
          */
         timezoneOffsetHoursUtc?: number;
+        /**
+         * Meta only. Whether the account can create/run ads now. Absent (treat as true) on non-Meta platforms.
+         */
+        selectable?: boolean;
+        /**
+         * Meta only. Human-readable reason when selectable is false; null when selectable.
+         */
+        unusableReason?: (string) | null;
     }>;
 });
 
