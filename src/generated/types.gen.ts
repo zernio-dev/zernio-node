@@ -3980,6 +3980,32 @@ export type UsageMetering = {
          */
         source?: 'cycle' | 'window';
     };
+    /**
+     * Estimated tax on the window's net `totals.total`, computed with
+     * Stripe Tax against the billing address (the same engine the real
+     * invoice uses; invoices apply exclusive tax, so the card is charged
+     * total + tax). Null when the account has no billing address on
+     * file, the total is zero or negative, or the estimate failed.
+     *
+     */
+    tax?: {
+        /**
+         * Estimated tax in USD
+         */
+        taxUsd?: number;
+        /**
+         * Combined rate percentage
+         */
+        ratePercent?: (number) | null;
+        /**
+         * Human jurisdiction label
+         */
+        jurisdictionLabel?: (string) | null;
+        /**
+         * True for EU/UK B2B reverse charge (0 tax added by design).
+         */
+        reverseCharge?: boolean;
+    } | null;
 };
 
 export type granularity = 'day' | 'month' | 'total';
