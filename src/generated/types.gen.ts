@@ -23741,7 +23741,7 @@ export type CreateStandaloneAdData = {
             /**
              * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
              */
-            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network')>;
+            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
             facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
             instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
             messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
@@ -23898,7 +23898,7 @@ export type CreateStandaloneAdData = {
                  * Placements this asset is pinned to. At least one field must be set (an empty rule is invalid — that role is served by the default asset). Same enums as the top-level `placements` object.
                  */
                 placements: {
-                    publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network')>;
+                    publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
                     facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
                     instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
                     messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
@@ -25653,7 +25653,7 @@ export type CreateCtwaAdData = {
             /**
              * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
              */
-            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network')>;
+            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
             facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
             instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
             messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
