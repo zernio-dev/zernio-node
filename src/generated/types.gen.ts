@@ -25639,6 +25639,33 @@ export type CreateCtwaAdData = {
          */
         audienceId?: string;
         /**
+         * Manual ad placements on the shared ad set. Omit
+         * for automatic placements. When set, restricts delivery to the chosen surfaces,
+         * mapped onto the ad set's `targeting.{publisher_platforms, facebook_positions, instagram_positions,
+         * messenger_positions, audience_network_positions, threads_positions,
+         * whatsapp_positions, device_platforms}`. Enum membership is validated here; Meta
+         * additionally enforces co-selection rules and restricts which
+         * placements are eligible for click-to-WhatsApp ads, returning an actionable
+         * error which we surface.
+         *
+         */
+        placements?: {
+            /**
+             * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
+             */
+            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network')>;
+            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+            instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
+            messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
+            audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
+            threadsPositions?: Array<('threads_stream')>;
+            whatsappPositions?: Array<('status')>;
+            /**
+             * Restrict by device. Omit to deliver on both mobile and desktop.
+             */
+            devicePlatforms?: Array<('mobile' | 'desktop')>;
+        };
+        /**
          * Meta's Advantage+ audience expansion. `0` (default) keeps
          * targeting strict; `1` lets Meta expand beyond the supplied
          * targeting when its delivery system finds better matches.
