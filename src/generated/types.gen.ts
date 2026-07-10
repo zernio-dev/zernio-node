@@ -13837,7 +13837,7 @@ export type SearchInboxConversationsData = {
          */
         cursor?: string;
         /**
-         * Only match messages sent to you (incoming) or by you (outgoing)
+         * Only match messages sent to you (incoming) or by you (outgoing). Contact-identity matching is not applied when this is set.
          */
         direction?: 'incoming' | 'outgoing';
         /**
@@ -13853,7 +13853,7 @@ export type SearchInboxConversationsData = {
          */
         profileId?: string;
         /**
-         * Text to search for in message content
+         * Text to search for, in message content and in the contact's name, username, or phone number
          */
         query: string;
     };
@@ -13872,14 +13872,18 @@ export type SearchInboxConversationsResponse = ({
             participantUsername?: (string) | null;
             participantPicture?: (string) | null;
             status?: 'active' | 'archived';
+            /**
+             * The conversation's most recent message preview
+             */
+            lastMessage?: (string) | null;
             lastMessageAt?: (string) | null;
         };
         /**
-         * Total number of matching messages in this conversation
+         * Number of matching messages in this conversation. 0 when the conversation matched only on contact identity (name, username, or phone number), not on message text.
          */
         matchCount?: number;
         /**
-         * Up to 3 most-recent matching messages
+         * Up to 3 most-recent matching messages (empty for an identity-only match)
          */
         matches?: Array<{
             id?: string;
