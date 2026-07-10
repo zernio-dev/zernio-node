@@ -3928,6 +3928,13 @@ export const verifySmsRegistrationOtp = <ThrowOnError extends boolean = false>(o
  * brand-level rejection should be fixed and re-verified instead. On
  * success the registration returns to `pending`.
  *
+ * Content rejections (e.g. an opt-in flow without a verifiable form link,
+ * or unrealistic samples) should be FIXED in the same call: pass the
+ * corrected `messageFlow` / `sample1` / `sample2` and the campaign is
+ * updated before the appeal is filed, so the reviewer sees the new
+ * content. The current content is on `GET /v1/sms/registrations/{id}`
+ * (`campaignContent`).
+ *
  */
 export const appealSmsRegistration = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AppealSmsRegistrationData, ThrowOnError>) => {
     return (options?.client ?? client).post<AppealSmsRegistrationResponse, AppealSmsRegistrationError, ThrowOnError>({
