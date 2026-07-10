@@ -3567,7 +3567,7 @@ export const listWhatsAppCalls = <ThrowOnError extends boolean = false>(options:
 export const getWhatsAppCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppCallData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetWhatsAppCallResponse, GetWhatsAppCallError, ThrowOnError>({
         ...options,
-        url: '/v1/whatsapp/calls/{callId}'
+        url: '/v1/whatsapp/calls/{id}'
     });
 };
 
@@ -3584,7 +3584,7 @@ export const getWhatsAppCall = <ThrowOnError extends boolean = false>(options: O
 export const getWhatsAppCallRecording = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppCallRecordingData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetWhatsAppCallRecordingResponse, GetWhatsAppCallRecordingError, ThrowOnError>({
         ...options,
-        url: '/v1/whatsapp/calls/{callId}/recording'
+        url: '/v1/whatsapp/calls/{id}/recording'
     });
 };
 
@@ -4282,11 +4282,14 @@ export const releasePhoneNumber = <ThrowOnError extends boolean = false>(options
 
 /**
  * Purchase phone number
- * Initiate purchasing a phone number. Payment-first flow: the user does not pick
- * a specific number. The system either creates a Stripe Checkout Session (first number)
- * or increments the existing subscription quantity and provisions inline (subsequent numbers).
+ * Payment-first: you do not pick a specific number, the system provisions one and
+ * auto-assigns it. With usage-based billing active and a payment method on file, the
+ * number provisions inline and bills per month on your usage-based invoice (there is
+ * no checkout redirect). No payment method on file returns `402 PAYMENT_REQUIRED`;
+ * a regulated country returns `202` with `status: "kyc_required"` and a `kycUrl`.
  *
- * Requires a paid plan. The maximum number of phone numbers is determined by the user's plan.
+ * Requires usage-based billing (the Usage plan). The maximum number of phone numbers
+ * is determined by the user's plan.
  *
  */
 export const purchasePhoneNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PurchasePhoneNumberData, ThrowOnError>) => {
@@ -4373,11 +4376,14 @@ export const getWhatsAppPhoneNumbers = <ThrowOnError extends boolean = false>(op
  * Deprecated alias of `/v1/phone-numbers/purchase`; same contract. New
  * integrations should use that path.
  *
- * Initiate purchasing a WhatsApp phone number. Payment-first flow: the user does not pick
- * a specific number. The system either creates a Stripe Checkout Session (first number)
- * or increments the existing subscription quantity and provisions inline (subsequent numbers).
+ * Payment-first: you do not pick a specific number, the system provisions one and
+ * auto-assigns it. With usage-based billing active and a payment method on file, the
+ * number provisions inline and bills per month on your usage-based invoice (there is
+ * no checkout redirect). No payment method on file returns `402 PAYMENT_REQUIRED`;
+ * a regulated country returns `202` with `status: "kyc_required"` and a `kycUrl`.
  *
- * Requires a paid plan. The maximum number of phone numbers is determined by the user's plan.
+ * Requires usage-based billing (the Usage plan). The maximum number of phone numbers
+ * is determined by the user's plan.
  *
  */
 export const purchaseWhatsAppPhoneNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PurchaseWhatsAppPhoneNumberData, ThrowOnError>) => {

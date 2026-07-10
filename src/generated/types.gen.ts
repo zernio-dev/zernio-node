@@ -16474,7 +16474,7 @@ export type ListWhatsAppCallsError = ({
 
 export type GetWhatsAppCallData = {
     path: {
-        callId: string;
+        id: string;
     };
     query: {
         accountId: string;
@@ -16493,7 +16493,7 @@ export type GetWhatsAppCallError = ({
 
 export type GetWhatsAppCallRecordingData = {
     path: {
-        callId: string;
+        id: string;
     };
     query: {
         accountId: string;
