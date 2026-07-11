@@ -4871,7 +4871,7 @@ export type platform7 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'link
  * Fired once when a new conversation begins, in either direction. A conversation
  * starts the first time an account and a contact exchange a message on any DM
  * platform (Instagram, Messenger/Facebook, Telegram, WhatsApp, Twitter, Reddit,
- * Bluesky). Platform-agnostic — one subscription covers every DM platform.
+ * Bluesky, SMS). Platform-agnostic — one subscription covers every DM platform.
  *
  */
 export type WebhookPayloadConversationStarted = {
@@ -4885,7 +4885,7 @@ export type WebhookPayloadConversationStarted = {
          * Internal conversation ID
          */
         id: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms';
         platformConversationId: string;
         /**
          * Contact's platform identifier (IGSID, PSID, wa_id, etc.)
@@ -4919,7 +4919,7 @@ export type WebhookPayloadConversationStarted = {
 
 export type event10 = 'conversation.started';
 
-export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky';
+export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
