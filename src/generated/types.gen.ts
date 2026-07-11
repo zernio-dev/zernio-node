@@ -22954,6 +22954,37 @@ export type DeleteAdError = ({
     error?: string;
 });
 
+export type UpdateAdStatusData = {
+    body: {
+        status: 'active' | 'paused';
+    };
+    path: {
+        /**
+         * Zernio `_id` (hex), Meta `platformAdId` (numeric), or one of the creative's effective story/media IDs.
+         */
+        adId: string;
+    };
+};
+
+export type UpdateAdStatusResponse = ({
+    /**
+     * 1 when the status changed, 0 when skipped
+     */
+    updated?: number;
+    /**
+     * 1 when skipped (terminal status or already in target state), else 0
+     */
+    skipped?: number;
+    /**
+     * Human-readable summary (present only when skipped)
+     */
+    message?: string;
+});
+
+export type UpdateAdStatusError = (unknown | {
+    error?: string;
+});
+
 export type GetCampaignAnalyticsData = {
     path: {
         /**

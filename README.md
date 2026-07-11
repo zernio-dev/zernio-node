@@ -407,6 +407,7 @@ try {
 | `ads.getConversionsQuality()` | Get Event Match Quality |
 | `ads.getLeadForm()` | Get a lead form |
 | `ads.updateAd()` | Update ad |
+| `ads.updateAdStatus()` | Pause or resume a single ad |
 | `ads.updateAdTrackingTags()` | Set ad tracking tags |
 | `ads.updateConversionDestination()` | Update a conversion destination |
 | `ads.deleteAd()` | Cancel an ad |
