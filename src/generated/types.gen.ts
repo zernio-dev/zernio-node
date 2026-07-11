@@ -13784,9 +13784,30 @@ export type CreateInboxConversationData = {
          */
         templateLanguage?: string;
         /**
-         * WhatsApp only. Template variable values as one flat array, in the order the variables appear across the whole template: text-header variables first, then body variables, then one value per dynamic URL button (in button order). Works with positional placeholders ({{1}}, {{2}}, ...) and with named placeholders ({{name}}, {{company}} - how Meta Business Manager creates templates), where values fill the named slots in order of appearance. Example - a body with {{1}}, {{2}} plus a URL button https://example.com/{{1}} takes three values: [body1, body2, buttonSuffix]. Media headers (image, video, document) are filled automatically from the approved template and take no value here.
+         * WhatsApp only. Template variable values as one flat array, in the order the variables appear across the whole template: text-header variables first, then body variables, then one value per dynamic URL button (in button order). Works with positional placeholders ({{1}}, {{2}}, ...) and with named placeholders ({{name}}, {{company}} - how Meta Business Manager creates templates), where values fill the named slots in order of appearance. Example - a body with {{1}}, {{2}} plus a URL button https://example.com/{{1}} takes three values: [body1, body2, buttonSuffix]. Media headers (image, video, document) are filled automatically from the approved template and take no value here (use headerMedia to override the header asset per send).
          */
         templateParams?: Array<(string)>;
+        /**
+         * WhatsApp only. Overrides a media-header template's header asset for THIS send, so a template with an image/video/document header can carry a different asset per message (e.g. each recipient their own invoice PDF). Without it, the template's approved sample asset is sent. Provide exactly one of link or id.
+         */
+        headerMedia?: {
+            /**
+             * Must match the template header's media type.
+             */
+            type: 'image' | 'video' | 'document';
+            /**
+             * Public URL of the asset to send. Must be reachable without auth.
+             */
+            link?: string;
+            /**
+             * A Meta media id (from the media upload endpoint), as an alternative to link.
+             */
+            id?: string;
+            /**
+             * Document display name shown to the recipient (e.g. "Factura 0001-123.pdf"). document type only; ignored for image/video.
+             */
+            filename?: string;
+        };
     };
 };
 
