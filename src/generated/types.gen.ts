@@ -17056,7 +17056,10 @@ export type StartSmsRegistrationData = {
             city: string;
             state: string;
             postalCode: string;
-            country: 'US' | 'CA';
+            /**
+             * ISO 3166-1 alpha-2 country where the company is registered. Companies worldwide can register standard 10DLC (non-US companies use their local tax ID in `ein`; carrier vetting may take longer). SOLE_PROPRIETOR is US/CA only.
+             */
+            country: string;
             /**
              * Brand contact email; defaults to your account email when omitted.
              */
