@@ -8704,15 +8704,10 @@ export type CreateProfileError = (unknown | {
          */
         has_payment_method?: boolean;
         /**
-         * Public pricing ceiling (the published cap beyond which an enterprise contract is required). Only set when reason=enterprise_required.
-         */
-        public_account_limit?: number;
-        /**
-         * The cap actually applied to this team. Equals
-         * `public_account_limit` for organic teams; for teams
-         * with a per-customer override (grandfathered legacy
-         * customers, signed enterprise contracts) this can
-         * be higher. Only set when reason=enterprise_required.
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
          *
          */
         effective_account_limit?: number;
@@ -9287,15 +9282,10 @@ export type GetConnectUrlError = (unknown | {
          */
         has_payment_method?: boolean;
         /**
-         * Public pricing ceiling (the published cap beyond which an enterprise contract is required). Only set when reason=enterprise_required.
-         */
-        public_account_limit?: number;
-        /**
-         * The cap actually applied to this team. Equals
-         * `public_account_limit` for organic teams; for teams
-         * with a per-customer override (grandfathered legacy
-         * customers, signed enterprise contracts) this can
-         * be higher. Only set when reason=enterprise_required.
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
          *
          */
         effective_account_limit?: number;
