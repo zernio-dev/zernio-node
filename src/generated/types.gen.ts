@@ -15999,6 +15999,14 @@ export type ListInboxReviewsResponse = ({
         text?: string;
         created?: string;
         hasReply?: boolean;
+        /**
+         * Whether the review has at least one photo. Google Business only; always false for other platforms.
+         */
+        hasPhotos?: boolean;
+        /**
+         * Number of photos attached to the review (photos only; videos are not counted). Google Business only; 0 for other platforms.
+         */
+        photoCount?: number;
         reply?: {
             id?: string;
             text?: string;
