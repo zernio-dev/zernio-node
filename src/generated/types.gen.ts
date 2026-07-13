@@ -23348,6 +23348,10 @@ export type ListAdAccountsResponse = ({
          */
         timezoneOffsetHoursUtc?: number;
         /**
+         * Meta only. Minimum daily budget for the account, in the account currency's major units. This is the impressions-billed minimum; other billing events have higher minimums. Absent when the connected token cannot read it.
+         */
+        minimumDailyBudget?: number;
+        /**
          * Meta only. Whether the account can create/run ads now. Absent (treat as true) on non-Meta platforms.
          */
         selectable?: boolean;
