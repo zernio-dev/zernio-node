@@ -23354,6 +23354,86 @@ export type ListAdAccountsError = ({
     error?: string;
 } | unknown);
 
+export type UpdateAdAccountData = {
+    body: {
+        /**
+         * Social account ID (metaads, or a facebook/instagram posting account)
+         */
+        accountId: string;
+        /**
+         * Meta ad account ID (act_...)
+         */
+        adAccountId: string;
+        /**
+         * Legal entity benefiting from ads on this ad account
+         */
+        defaultDsaBeneficiary: string;
+        /**
+         * Legal entity paying for ads on this ad account. Defaults to defaultDsaBeneficiary when omitted.
+         */
+        defaultDsaPayor?: string;
+    };
+};
+
+export type UpdateAdAccountResponse = ({
+    adAccountId?: string;
+    dsaDefaults?: {
+        beneficiary?: string;
+        payor?: string;
+    };
+});
+
+export type UpdateAdAccountError = (unknown | {
+    error?: string;
+});
+
+export type GetDsaDefaultsData = {
+    query: {
+        /**
+         * Social account ID (metaads, or a facebook/instagram posting account)
+         */
+        accountId: string;
+        /**
+         * Meta ad account ID (act_...)
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetDsaDefaultsResponse = ({
+    adAccountId?: string;
+    dsaDefaults?: {
+        beneficiary?: string;
+        payor?: string;
+    };
+});
+
+export type GetDsaDefaultsError = (unknown | {
+    error?: string;
+});
+
+export type GetDsaRecommendationsData = {
+    query: {
+        /**
+         * Social account ID (metaads, or a facebook/instagram posting account)
+         */
+        accountId: string;
+        /**
+         * Meta ad account ID (act_...)
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetDsaRecommendationsResponse = ({
+    adAccountId?: string;
+    recommendations?: Array<(string)>;
+});
+
+export type GetDsaRecommendationsError = (unknown | {
+    error?: string;
+});
+
 export type BoostPostData = {
     body: {
         /**
@@ -23471,16 +23551,18 @@ export type BoostPostData = {
          */
         sparkAuthCode?: string;
         /**
-         * Name of the legal entity benefiting from the ad.
-         * Required by Meta when targeting EU users (DSA Article 26).
-         * Not enforced at schema level; enforced server-side when targeting intersects EU member states.
+         * Legal entity that benefits from the ad. Required when targeting EU users
+         * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
+         * set it once via `PATCH /v1/ads/accounts` or in Meta Ads Manager, and Meta
+         * fills it in whenever the field is omitted.
          *
          */
         dsaBeneficiary?: string;
         /**
-         * Name of the legal entity paying for the ad.
-         * Required by Meta when targeting EU users (DSA Article 26).
-         * Note Meta API spelling: dsa_payor (not dsa_payer).
+         * Legal entity that pays for the ad. Can differ from `dsaBeneficiary`
+         * (for example, an agency paying for a client's ads). Same rules as
+         * `dsaBeneficiary`: required for EU targeting unless the ad account has
+         * a default payor.
          *
          */
         dsaPayor?: string;
@@ -24045,16 +24127,18 @@ export type CreateStandaloneAdData = {
          */
         roasAverageFloor?: number;
         /**
-         * Name of the legal entity benefiting from the ad.
-         * Required by Meta when targeting EU users (DSA Article 26).
-         * Not enforced at schema level; enforced server-side when targeting intersects EU member states.
+         * Legal entity that benefits from the ad. Required when targeting EU users
+         * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
+         * set it once via `PATCH /v1/ads/accounts` or in Meta Ads Manager, and Meta
+         * fills it in whenever the field is omitted.
          *
          */
         dsaBeneficiary?: string;
         /**
-         * Name of the legal entity paying for the ad.
-         * Required by Meta when targeting EU users (DSA Article 26).
-         * Note Meta API spelling: dsa_payor (not dsa_payer).
+         * Legal entity that pays for the ad. Can differ from `dsaBeneficiary`
+         * (for example, an agency paying for a client's ads). Same rules as
+         * `dsaBeneficiary`: required for EU targeting unless the ad account has
+         * a default payor.
          *
          */
         dsaPayor?: string;
@@ -25781,16 +25865,18 @@ export type CreateCtwaAdData = {
          */
         roasAverageFloor?: number;
         /**
-         * Name of the legal entity benefiting from the ad.
-         * Required by Meta when targeting EU users (DSA Article 26).
-         * Not enforced at schema level; enforced server-side when targeting intersects EU member states.
+         * Legal entity that benefits from the ad. Required when targeting EU users
+         * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
+         * set it once via `PATCH /v1/ads/accounts` or in Meta Ads Manager, and Meta
+         * fills it in whenever the field is omitted.
          *
          */
         dsaBeneficiary?: string;
         /**
-         * Name of the legal entity paying for the ad.
-         * Required by Meta when targeting EU users (DSA Article 26).
-         * Note Meta API spelling: dsa_payor (not dsa_payer).
+         * Legal entity that pays for the ad. Can differ from `dsaBeneficiary`
+         * (for example, an agency paying for a client's ads). Same rules as
+         * `dsaBeneficiary`: required for EU targeting unless the ad account has
+         * a default payor.
          *
          */
         dsaPayor?: string;

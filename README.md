@@ -405,8 +405,11 @@ try {
 | `ads.getConversionDestination()` | Get a conversion destination |
 | `ads.getConversionMetrics()` | Get attribution metrics |
 | `ads.getConversionsQuality()` | Get Event Match Quality |
+| `ads.getDsaDefaults()` | Get ad account DSA defaults |
+| `ads.getDsaRecommendations()` | List DSA beneficiary/payor suggestions |
 | `ads.getLeadForm()` | Get a lead form |
 | `ads.updateAd()` | Update ad |
+| `ads.updateAdAccount()` | Update ad account settings |
 | `ads.updateAdStatus()` | Pause or resume a single ad |
 | `ads.updateAdTrackingTags()` | Set ad tracking tags |
 | `ads.updateConversionDestination()` | Update a conversion destination |
