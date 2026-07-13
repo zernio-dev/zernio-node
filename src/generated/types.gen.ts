@@ -18667,6 +18667,9 @@ export type CreatePhoneNumberPortInData = {
         endUser: {
             entityName: string;
             authPersonName: string;
+            /**
+             * Phone number on the losing carrier's bill. Defaults to the ported number itself on single-number orders.
+             */
             billingPhoneNumber?: string;
             accountNumber?: string;
             /**
@@ -18689,10 +18692,14 @@ export type CreatePhoneNumberPortInData = {
          */
         invoiceDocumentId: string;
         /**
-         * Requested port date; the carrier confirms the actual FOC later.
+         * Requested port date; the carrier confirms the actual FOC later. Defaults to one week out (shifted off weekends) when omitted.
          */
         focDatetimeRequested?: string;
         customerReference?: string;
+        /**
+         * Whether the losing account ports all its numbers (full) or keeps some (partial).
+         */
+        portType?: 'full' | 'partial';
     };
 };
 
