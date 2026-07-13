@@ -713,6 +713,10 @@ export type AnalyticsListResponse = {
              * Thumbnail URL (same as url for images)
              */
             thumbnail?: string;
+            /**
+             * Accessibility alt text set on the media, when present.
+             */
+            altText?: string;
         }>;
     }>;
     pagination?: Pagination;
@@ -784,6 +788,10 @@ export type AnalyticsSinglePostResponse = {
          * Thumbnail URL (same as url for images)
          */
         thumbnail?: string;
+        /**
+         * Accessibility alt text set on the media, when present.
+         */
+        altText?: string;
     }>;
 };
 
