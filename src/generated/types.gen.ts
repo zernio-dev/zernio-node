@@ -92,7 +92,7 @@ export type Ad = {
     /**
      * Available goals vary by platform. Meta (Facebook/Instagram) supports all 9 (incl. `lead_conversion` = website pixel lead optimization and `catalog_sales` = Advantage+ catalog ads). TikTok supports the 7 non-`lead_conversion` goals. LinkedIn supports all except app_promotion / lead_conversion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
      */
-    goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales';
+    goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'job_applicants';
     /**
      * True for ads synced from platform ad managers
      */
@@ -288,7 +288,7 @@ export type adType = 'boost' | 'standalone';
 /**
  * Available goals vary by platform. Meta (Facebook/Instagram) supports all 9 (incl. `lead_conversion` = website pixel lead optimization and `catalog_sales` = Advantage+ catalog ads). TikTok supports the 7 non-`lead_conversion` goals. LinkedIn supports all except app_promotion / lead_conversion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
  */
-export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales';
+export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'job_applicants';
 
 export type type = 'daily' | 'lifetime';
 
@@ -2608,6 +2608,43 @@ export type LinkedInAdsPlatformData = {
         showMemberProfilePhoto?: boolean;
     };
     /**
+     * POST /v1/ads/create only. Dynamic Jobs Ad promoting your open roles,
+     * personalized with the viewer's profile photo. Requires goal
+     * job_applicants and a Company Page with active job postings.
+     * headline and buttonLabel take exactly one of
+     * preApproved or custom. logoUrl and organizationName default to the
+     * Company Page's. Mutually exclusive with the other creative sources.
+     *
+     */
+    jobs?: {
+        headline: {
+            /**
+             * LinkedIn preset id, not reviewed. Example MEMBER_READY_FOR_YOUR_DREAM_JOB.
+             */
+            preApproved?: string;
+            /**
+             * Free text, reviewed by LinkedIn.
+             */
+            custom?: string;
+        };
+        buttonLabel: {
+            /**
+             * LinkedIn preset id, not reviewed. One of SEE_MORE_JOBS, VIEW_MORE, CAREERS_AT_COMPANY.
+             */
+            preApproved?: string;
+            /**
+             * Free text, reviewed by LinkedIn.
+             */
+            custom?: string;
+        };
+        logoUrl?: string;
+        organizationName?: string;
+        /**
+         * Defaults to true.
+         */
+        showMemberProfilePhoto?: boolean;
+    };
+    /**
      * POST /v1/ads/create only. Classic right-rail Text Ad. The copy lives
      * here; ad-level body and headline are not used. Mutually exclusive
      * with the other creative sources.
@@ -2621,6 +2658,57 @@ export type LinkedInAdsPlatformData = {
          * Optional 100x100 image.
          */
         imageUrl?: string;
+    };
+    /**
+     * POST /v1/ads/create only. Conversation Ad: a choose-your-path message
+     * tree delivered to the member's LinkedIn inbox. Messages are flat
+     * nodes wired by local ids; each button either opens a url or leads to
+     * nextMessageId. Cycles, unknown ids and a missing firstMessageId
+     * return a 400. LinkedIn does not deliver message ads to EU members.
+     * Mutually exclusive with the other creative sources.
+     *
+     */
+    conversation?: {
+        /**
+         * InMail subject shown in the inbox.
+         */
+        subject: string;
+        /**
+         * Person or organization URN. Defaults to the authoring Company
+         * Page. The sender must be approved for the ad account first
+         * (Campaign Manager > Manage message ad senders) or LinkedIn
+         * rejects the create with SINMAIL_SENDER_NOT_APPROVED.
+         *
+         */
+        sender?: string;
+        /**
+         * Optional intro body (HTML allowed).
+         */
+        body?: string;
+        /**
+         * Terms shown at the bottom of the message.
+         */
+        footer?: string;
+        /**
+         * Conversation headline. Defaults to the first message's first line.
+         */
+        headline?: string;
+        firstMessageId: string;
+        messages: Array<{
+            id: string;
+            text: string;
+            buttons?: Array<{
+                text: string;
+                /**
+                 * Continues the conversation at this message. Exactly one of nextMessageId or url.
+                 */
+                nextMessageId?: string;
+                /**
+                 * Opens this landing page. Exactly one of nextMessageId or url.
+                 */
+                url?: string;
+            }>;
+        }>;
     };
     /**
      * POST /v1/ads/create only. Promotes an existing LinkedIn Event; no
@@ -23900,9 +23988,25 @@ export type CreateStandaloneAdData = {
             }>;
         };
         /**
-         * Required on legacy + multi-creative shapes. Inherited from the ad set on the attach shape. Available goals vary by platform. Meta-specific: `conversions` (OUTCOME_SALES) requires `promotedObject.pixelId` + `promotedObject.customEventType` (use a commerce event, e.g. PURCHASE, START_TRIAL); `lead_conversion` (OUTCOME_LEADS, website pixel leads) requires the same pixel + event but with a leads-class event (e.g. LEAD, SUBMIT_APPLICATION, SCHEDULE, CONTACT) — these are rejected under `conversions` because Meta gates conversion events by objective; `lead_generation` is OUTCOME_LEADS with instant forms (`leadGenFormId`), distinct from `lead_conversion`'s website pixel optimization; `app_promotion` requires `promotedObject.applicationId` + `promotedObject.objectStoreUrl`; `catalog_sales` (Advantage+ catalog ads, e.g. vehicle inventory) requires `promotedObject.productSetId` + `promotedObject.pixelId` + `promotedObject.customEventType` and builds a catalog TEMPLATE creative from the copy fields (headline/body/description/linkUrl/callToAction, which may carry catalog template tags like {{product.name}} or {{vehicle.make}}) — no imageUrl/video is sent, Meta renders the visuals per catalog item; discover catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets; single shape only (no creatives[]/adSetId/dynamicCreative/placementAssets); `lead_generation` accepts an optional `promotedObject.pageId` (auto-filled from the connected Page when omitted). TikTok-specific: `conversions` (website-conversion ad group) requires `promotedObject.pixelId` (your TikTok Pixel ID) and accepts an optional `promotedObject.customEventType` (a TikTok `optimization_event` code like `ON_WEB_ORDER`, `INITIATE_ORDER`, `ON_WEB_REGISTER`, `FORM`); to inherit a pixel + event from an existing ad group, pass `adSetId` instead. LinkedIn-specific: `engagement`, `traffic`, `awareness`, and `video_views` are supported for standalone ads (creates a Direct Sponsored Content single image or single video ad). `traffic` requires `linkUrl`; `video_views` requires the `video` field. For `lead_generation` / `conversions` on LinkedIn — or to promote an existing post — use `POST /v1/ads/boost`.
+         * Required on legacy and multi-creative shapes; the attach shape inherits it from the ad set. Available goals vary by platform.
+         *
+         * **Meta**
+         * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event such as PURCHASE or START_TRIAL.
+         * - `lead_conversion`: OUTCOME_LEADS optimizing website pixel leads. Same pixel and event fields, but with a leads-class event such as LEAD, SUBMIT_APPLICATION, SCHEDULE or CONTACT. Meta gates conversion events by objective, so leads-class events are rejected under `conversions`.
+         * - `lead_generation`: OUTCOME_LEADS with instant forms. Requires `leadGenFormId`. `promotedObject.pageId` is optional and auto-filled from the connected Page.
+         * - `app_promotion`: requires `promotedObject.applicationId` and `promotedObject.objectStoreUrl`.
+         * - `catalog_sales`: Advantage+ catalog ads, for example vehicle inventory. Requires `promotedObject.productSetId`, `promotedObject.pixelId` and `promotedObject.customEventType`. Builds a catalog TEMPLATE creative from the copy fields, which may carry template tags like {{product.name}} or {{vehicle.make}}. No imageUrl or video is sent; Meta renders the visuals per catalog item. Discover catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets. Single shape only, no creatives[], adSetId, dynamicCreative or placementAssets.
+         *
+         * **TikTok**
+         * - `conversions`: website-conversion ad group. Requires `promotedObject.pixelId`, your TikTok Pixel ID. Accepts an optional `promotedObject.customEventType` with a TikTok optimization_event code such as ON_WEB_ORDER, INITIATE_ORDER, ON_WEB_REGISTER or FORM. To inherit pixel and event from an existing ad group, pass `adSetId` instead.
+         *
+         * **LinkedIn**
+         * - `engagement`, `traffic`, `awareness` and `video_views` create standalone Direct Sponsored Content ads. `traffic` requires `linkUrl`; `video_views` requires `video`.
+         * - `job_applicants` requires a `platformSpecificData.jobs` creative.
+         * - For `lead_generation` or `conversions` on LinkedIn, or to promote an existing post, use POST /v1/ads/boost.
+         *
          */
-        goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales';
+        goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'job_applicants';
         /**
          * Meta only. Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
          */
