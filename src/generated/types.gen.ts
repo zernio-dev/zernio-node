@@ -22034,6 +22034,14 @@ export type ListCommentAutomationsResponse = ({
         buttons?: Array<DmButton>;
         commentReply?: string;
         /**
+         * Alternate DM texts rotated at random with dmMessage. Omitted when none.
+         */
+        dmMessageVariations?: Array<(string)>;
+        /**
+         * Alternate public replies rotated at random with commentReply. Omitted when none.
+         */
+        commentReplyVariations?: Array<(string)>;
+        /**
          * Whether link buttons in the DM are wrapped in a tracked redirect to count clicks.
          */
         linkTracking?: boolean;
@@ -22121,6 +22129,14 @@ export type CreateCommentAutomationData = {
          */
         commentReply?: string;
         /**
+         * Optional alternate DM texts for random rotation. When set, each triggered comment sends one picked at random from [dmMessage, ...dmMessageVariations], so repeat commenters get slightly different DMs (helps avoid identical-message patterns). Up to 5. Buttons are attached to whichever text is picked, not varied.
+         */
+        dmMessageVariations?: Array<(string)>;
+        /**
+         * Optional alternate public replies, rotated at random alongside commentReply (picked independently of the DM). Up to 5.
+         */
+        commentReplyVariations?: Array<(string)>;
+        /**
          * Wrap link buttons in the DM in a tracked redirect so clicks are counted (Link Clicks / CTR). Pass false to send links exactly as written. Defaults to on.
          */
         linkTracking?: boolean;
@@ -22147,6 +22163,14 @@ export type CreateCommentAutomationResponse = ({
          */
         buttons?: Array<DmButton>;
         commentReply?: string;
+        /**
+         * Alternate DM texts rotated at random with dmMessage. Omitted when none.
+         */
+        dmMessageVariations?: Array<(string)>;
+        /**
+         * Alternate public replies rotated at random with commentReply. Omitted when none.
+         */
+        commentReplyVariations?: Array<(string)>;
         linkTracking?: boolean;
         clickTag?: string;
         isActive?: boolean;
@@ -22188,6 +22212,14 @@ export type GetCommentAutomationResponse = ({
          */
         buttons?: Array<DmButton>;
         commentReply?: string;
+        /**
+         * Alternate DM texts rotated at random with dmMessage. Omitted when none.
+         */
+        dmMessageVariations?: Array<(string)>;
+        /**
+         * Alternate public replies rotated at random with commentReply. Omitted when none.
+         */
+        commentReplyVariations?: Array<(string)>;
         linkTracking?: boolean;
         clickTag?: string;
         isActive?: boolean;
@@ -22241,6 +22273,14 @@ export type UpdateCommentAutomationData = {
         buttons?: Array<DmButton>;
         commentReply?: string;
         /**
+         * Alternate DM texts for random rotation (see create). Pass [] to clear.
+         */
+        dmMessageVariations?: Array<(string)>;
+        /**
+         * Alternate public replies for random rotation. Pass [] to clear.
+         */
+        commentReplyVariations?: Array<(string)>;
+        /**
          * Wrap link buttons in a tracked redirect to count clicks. Pass false to send links untouched.
          */
         linkTracking?: boolean;
@@ -22268,6 +22308,14 @@ export type UpdateCommentAutomationResponse = ({
          */
         buttons?: Array<DmButton>;
         commentReply?: string;
+        /**
+         * Alternate DM texts rotated at random with dmMessage. Omitted when none.
+         */
+        dmMessageVariations?: Array<(string)>;
+        /**
+         * Alternate public replies rotated at random with commentReply. Omitted when none.
+         */
+        commentReplyVariations?: Array<(string)>;
         isActive?: boolean;
         updatedAt?: string;
     };
