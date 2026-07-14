@@ -2468,6 +2468,61 @@ export type contentType2 = 'story';
 export type graduationStrategy = 'MANUAL' | 'SS_PERFORMANCE';
 
 /**
+ * LinkedIn campaign bidding and delivery controls for POST /v1/ads/boost and POST /v1/ads/create. Unknown keys are rejected.
+ *
+ */
+export type LinkedInAdsPlatformData = {
+    /**
+     * Campaign cost model (billing event). Defaults to `CPM`. Required when
+     * `unitCost` is set so the manual bid applies to an explicit cost model.
+     *
+     */
+    costType?: 'CPM' | 'CPC' | 'CPV';
+    /**
+     * Manual bid in WHOLE account-currency units (e.g. 2.5 = $2.50). Requires
+     * `costType`. Omit for LinkedIn's automated (max delivery) bidding.
+     * LinkedIn enforces its own per-audience min/max bid bounds.
+     *
+     */
+    unitCost?: number;
+    /**
+     * Campaign `optimizationTargetType` (e.g. `MAX_CLICK`, `TARGET_COST_PER_CLICK`,
+     * `MAX_IMPRESSION`). Forwarded verbatim — LinkedIn validates compatibility with
+     * the objective and `costType`. Omit for the objective-derived default.
+     *
+     */
+    optimizationTargetType?: string;
+    /**
+     * How LinkedIn rotates creatives within the campaign. Defaults to `OPTIMIZED`.
+     */
+    creativeSelection?: 'OPTIMIZED' | 'ROUND_ROBIN';
+    /**
+     * Enable LinkedIn audience expansion. Defaults to false.
+     */
+    audienceExpansionEnabled?: boolean;
+    /**
+     * Deliver on the LinkedIn Audience Network. Defaults to false.
+     */
+    offsiteDeliveryEnabled?: boolean;
+    /**
+     * Restrict delivery to Connected TV inventory.
+     */
+    connectedTelevisionOnly?: boolean;
+};
+
+/**
+ * Campaign cost model (billing event). Defaults to `CPM`. Required when
+ * `unitCost` is set so the manual bid applies to an explicit cost model.
+ *
+ */
+export type costType = 'CPM' | 'CPC' | 'CPV';
+
+/**
+ * How LinkedIn rotates creatives within the campaign. Defaults to `OPTIMIZED`.
+ */
+export type creativeSelection = 'OPTIMIZED' | 'ROUND_ROBIN';
+
+/**
  * Response for DAILY aggregation (time series breakdown)
  */
 export type LinkedInAggregateAnalyticsDailyResponse = {
@@ -23570,6 +23625,14 @@ export type BoostPostData = {
          */
         roasAverageFloor?: number;
         /**
+         * Platform-specific options. The platform is derived from `accountId`;
+         * sending options for a different platform returns a 400. LinkedIn
+         * (campaign bidding and delivery controls) is the only platform with
+         * options today.
+         *
+         */
+        platformSpecificData?: (LinkedInAdsPlatformData);
+        /**
          * Meta only. Tracking specs (pixel, URL tags).
          */
         tracking?: {
@@ -24184,6 +24247,14 @@ export type CreateStandaloneAdData = {
          *
          */
         roasAverageFloor?: number;
+        /**
+         * Platform-specific options. The platform is derived from `accountId`;
+         * sending options for a different platform returns a 400. LinkedIn
+         * (campaign bidding and delivery controls) is the only platform with
+         * options today.
+         *
+         */
+        platformSpecificData?: (LinkedInAdsPlatformData);
         /**
          * Legal entity that benefits from the ad. Required when targeting EU users
          * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
