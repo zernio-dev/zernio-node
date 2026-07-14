@@ -17134,10 +17134,13 @@ export type StartSmsRegistrationData = {
         };
         /**
          * Required for 10DLC. What you'll send and how recipients opt in/out.
-         * Opt-in/opt-out/help auto-responses must name the registered brand and
-         * carry the carrier-required disclosures; submissions that don't (or that
-         * are blank) are automatically rewritten to a compliant, brand-named
-         * template before the campaign is filed.
+         * The opt-in/opt-out/help auto-responses (`optinMessage`,
+         * `optoutMessage`, `helpMessage`) are optional: when omitted, a
+         * compliant, brand-named template with the carrier-required
+         * disclosures is generated for you. If you do send them, they must
+         * name the registered brand and carry the disclosures — submissions
+         * that don't are rewritten to the compliant template before the
+         * campaign is filed.
          *
          */
         campaign?: {
@@ -17159,11 +17162,11 @@ export type StartSmsRegistrationData = {
              * Second example message; carriers require two distinct samples
              */
             sample2: string;
-            helpMessage: string;
+            helpMessage?: string;
             optinKeywords: string;
-            optinMessage: string;
+            optinMessage?: string;
             optoutKeywords: string;
-            optoutMessage: string;
+            optoutMessage?: string;
             helpKeywords: string;
             embeddedLink?: boolean;
             embeddedPhone?: boolean;
@@ -17321,6 +17324,20 @@ export type VerifySmsRegistrationOtpResponse = ({
 export type VerifySmsRegistrationOtpError = ({
     error?: string;
 } | unknown);
+
+export type ResendSmsRegistrationOtpData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ResendSmsRegistrationOtpResponse = ({
+    sent?: boolean;
+});
+
+export type ResendSmsRegistrationOtpError = (unknown | {
+    error?: string;
+});
 
 export type AppealSmsRegistrationData = {
     body: {
@@ -18726,26 +18743,45 @@ export type CreatePhoneNumberPortInData = {
          */
         phoneNumbers: Array<(string)>;
         /**
-         * End-user / current-carrier account info that authorizes the port.
+         * End-user / current-carrier account info that authorizes the port. The
+         * losing carrier matches every field against its records and rejects the
+         * whole port on a mismatch — enter values exactly as they appear on the
+         * carrier bill.
+         *
          */
         endUser: {
+            /**
+             * Account holder / business name, as on the carrier account.
+             */
             entityName: string;
+            /**
+             * Full name (first + last) of the person authorizing the port — must match the LOA signature.
+             */
             authPersonName: string;
             /**
-             * Phone number on the losing carrier's bill. Defaults to the ported number itself on single-number orders.
+             * Phone number on the losing carrier's bill. Defaults to the ported number itself on single-number orders. Validated as a real phone number when present.
              */
             billingPhoneNumber?: string;
-            accountNumber?: string;
             /**
-             * Transfer PIN. Forwarded to the carrier, never stored.
+             * Account number with the losing carrier — required (carriers reject ports without it; on prepaid mobile plans it is often the phone number itself).
+             */
+            accountNumber: string;
+            /**
+             * Transfer PIN. Required for mobile numbers (wireless carriers reject PIN-less ports). Forwarded to the carrier, never stored.
              */
             pinPasscode?: string;
             streetAddress: string;
             extendedAddress?: string;
             locality: string;
+            /**
+             * 2-letter US state / CA province code (full names are accepted and normalized).
+             */
             administrativeArea: string;
+            /**
+             * US ZIP (5 digits) or Canadian postal code, matching countryCode.
+             */
             postalCode: string;
-            countryCode: string;
+            countryCode: 'US' | 'CA';
         };
         /**
          * Document id from POST /v1/phone-numbers/port-in/documents (kind=loa).
@@ -18831,6 +18867,10 @@ export type CheckPhoneNumberPortabilityResponse = ({
          * Qualifies for the carrier's accelerated FastPort lane.
          */
         fastPortable?: boolean;
+        /**
+         * Line type when known (mobile, landline, voip…). A mobile number requires the transfer PIN at submit.
+         */
+        lineType?: (string) | null;
         /**
          * Carrier reason when not portable; null when portable.
          */

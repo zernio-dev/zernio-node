@@ -663,6 +663,7 @@ try {
 | `sms.disableSmsOnNumber()` | Disable SMS on a number |
 | `sms.enableSmsOnNumber()` | Enable SMS on a number |
 | `sms.lookupSmsNumber()` | Look up carrier + line type |
+| `sms.resendSmsRegistrationOtp()` | Re-send the sole-prop OTP |
 | `sms.reuseSmsRegistrationForNumber()` | Add number to SMS registration |
 | `sms.sendSms()` | Send an SMS/MMS |
 | `sms.shareSmsRegistration()` | Create a registration share link |
