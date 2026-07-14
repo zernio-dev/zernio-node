@@ -2468,7 +2468,7 @@ export type contentType2 = 'story';
 export type graduationStrategy = 'MANUAL' | 'SS_PERFORMANCE';
 
 /**
- * LinkedIn campaign bidding and delivery controls for POST /v1/ads/boost and POST /v1/ads/create. Unknown keys are rejected.
+ * LinkedIn-specific options for POST /v1/ads/boost and POST /v1/ads/create: campaign bidding and delivery controls, plus the LinkedIn-only creative formats on /v1/ads/create. Unknown keys are rejected.
  *
  */
 export type LinkedInAdsPlatformData = {
@@ -2508,6 +2508,131 @@ export type LinkedInAdsPlatformData = {
      * Restrict delivery to Connected TV inventory.
      */
     connectedTelevisionOnly?: boolean;
+    /**
+     * POST /v1/ads/create only. Carousel ad with 2-10 image cards.
+     * Mutually exclusive with the other creative sources.
+     *
+     */
+    carousel?: {
+        cards: Array<{
+            imageUrl: string;
+            /**
+             * Card title. Falls back to the ad-level headline.
+             */
+            headline?: string;
+            /**
+             * Per-card click destination. LinkedIn requires one on every
+             * card; the ad-level `linkUrl` backfills cards that omit it.
+             *
+             */
+            landingUrl?: string;
+        }>;
+    };
+    /**
+     * POST /v1/ads/create only. Document ad rendered as an in-feed viewer.
+     * PDF, PPT or DOC up to 100MB. Mutually exclusive with the other
+     * creative sources.
+     *
+     */
+    document?: {
+        url: string;
+        /**
+         * Document title.
+         */
+        title: string;
+    };
+    /**
+     * POST /v1/ads/create only. Dynamic Spotlight Ad personalized with the
+     * viewer's profile photo. Supported goals: traffic, awareness. logoUrl
+     * and organizationName default to the Company Page's; set them
+     * explicitly if LinkedIn rejects the create with a 404. Mutually
+     * exclusive with the other creative sources.
+     *
+     */
+    spotlight?: {
+        headline: string;
+        /**
+         * Mutually exclusive with backgroundImageUrl.
+         */
+        description?: string;
+        /**
+         * Button label text.
+         */
+        callToAction: string;
+        landingUrl: string;
+        logoUrl?: string;
+        organizationName?: string;
+        /**
+         * Defaults to true.
+         */
+        showMemberProfilePhoto?: boolean;
+        /**
+         * Custom background. Replaces the description and the profile photo.
+         */
+        backgroundImageUrl?: string;
+    };
+    /**
+     * POST /v1/ads/create only. Dynamic Follower Ad promoting the Company
+     * Page. Supported goals: engagement, awareness. headline and
+     * description take exactly one of preApproved or custom. Mutually
+     * exclusive with the other creative sources.
+     *
+     */
+    follower?: {
+        headline: {
+            /**
+             * LinkedIn preset id, not reviewed. Example GROW_YOUR_BUSINESS_INSIGHTS.
+             */
+            preApproved?: string;
+            /**
+             * Free text, reviewed by LinkedIn.
+             */
+            custom?: string;
+        };
+        description: {
+            /**
+             * LinkedIn preset id, not reviewed. Example GET_LATEST_JOBS_AND_INDUSTRY_NEWS.
+             */
+            preApproved?: string;
+            /**
+             * Free text, reviewed by LinkedIn.
+             */
+            custom?: string;
+        };
+        callToAction: 'VISIT_ORGANIZATION_COMPANY_PAGE' | 'VISIT_ORGANIZATION_LIFE_PAGE' | 'VISIT_ORGANIZATION_JOBS_PAGE' | 'VISIT_ORGANIZATION_CAREERS_PAGE';
+        logoUrl?: string;
+        organizationName?: string;
+        /**
+         * Defaults to true.
+         */
+        showMemberProfilePhoto?: boolean;
+    };
+    /**
+     * POST /v1/ads/create only. Classic right-rail Text Ad. The copy lives
+     * here; ad-level body and headline are not used. Mutually exclusive
+     * with the other creative sources.
+     *
+     */
+    textAd?: {
+        headline: string;
+        description: string;
+        landingUrl: string;
+        /**
+         * Optional 100x100 image.
+         */
+        imageUrl?: string;
+    };
+    /**
+     * POST /v1/ads/create only. Promotes an existing LinkedIn Event; no
+     * headline needed. Mutually exclusive with the other creative sources.
+     *
+     */
+    event?: {
+        /**
+         * LinkedIn Event URN, urn:li:event:N.
+         */
+        urn: string;
+    };
 };
 
 /**
@@ -2521,6 +2646,8 @@ export type costType = 'CPM' | 'CPC' | 'CPV';
  * How LinkedIn rotates creatives within the campaign. Defaults to `OPTIMIZED`.
  */
 export type creativeSelection = 'OPTIMIZED' | 'ROUND_ROBIN';
+
+export type callToAction = 'VISIT_ORGANIZATION_COMPANY_PAGE' | 'VISIT_ORGANIZATION_LIFE_PAGE' | 'VISIT_ORGANIZATION_JOBS_PAGE' | 'VISIT_ORGANIZATION_CAREERS_PAGE';
 
 /**
  * Response for DAILY aggregation (time series breakdown)
@@ -23826,7 +23953,7 @@ export type CreateStandaloneAdData = {
          */
         callToAction?: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW';
         /**
-         * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`. NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead of a destination).
+         * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`. NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead of a destination). On LinkedIn, `imageUrl` + `linkUrl` publishes an ARTICLE-content creative; this is LinkedIn's article ad format, with the image as thumbnail and `longHeadline` as description.
          */
         linkUrl?: string;
         /**
