@@ -23368,7 +23368,16 @@ export type GetCampaignAnalyticsData = {
     };
     query?: {
         /**
-         * Comma-separated breakdown dimensions (Meta only): age, gender, country, publisher_platform, device_platform, region, platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         * Comma-separated breakdown dimensions.
+         *
+         * **Meta**: age, gender, country, publisher_platform, device_platform, region,
+         * platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         *
+         * **LinkedIn** (firmographics): job_title, job_function, seniority, industry,
+         * company, company_size, country, region. Rows carry the raw pivot `value`
+         * plus a resolved `name`. LinkedIn serves these aggregated over the whole
+         * range, delays the data 12-24h, and omits segments with fewer than 3 events.
+         *
          */
         breakdowns?: string;
         /**
@@ -23427,7 +23436,17 @@ export type GetAdAnalyticsData = {
     };
     query?: {
         /**
-         * Comma-separated breakdown dimensions. Meta: age, gender, country, publisher_platform, device_platform, region. TikTok: gender, age, country_code, platform, ac, language.
+         * Comma-separated breakdown dimensions.
+         *
+         * **Meta**: age, gender, country, publisher_platform, device_platform, region.
+         *
+         * **TikTok**: gender, age, country_code, platform, ac, language.
+         *
+         * **LinkedIn** (firmographics): job_title, job_function, seniority, industry,
+         * company, company_size, country, region. Rows carry the raw pivot `value`
+         * plus a resolved `name`. LinkedIn serves these aggregated over the whole
+         * range, delays the data 12-24h, and omits segments with fewer than 3 events.
+         *
          */
         breakdowns?: string;
         /**
@@ -25130,9 +25149,9 @@ export type ListAdAudiencesData = {
         adAccountId: string;
         platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads';
         /**
-         * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences (each item carries a `spec`); the other types return uploaded/derived audiences.
+         * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences; the other types return uploaded/derived audiences.
          */
-        type?: 'customer_list' | 'website' | 'lookalike' | 'saved_targeting';
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'lookalike' | 'saved_targeting';
     };
 };
 
@@ -25146,7 +25165,7 @@ export type ListAdAudiencesResponse = ({
         platformAudienceId?: string;
         name?: string;
         description?: string;
-        type?: 'customer_list' | 'website' | 'lookalike' | 'saved_targeting';
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'lookalike' | 'saved_targeting';
         /**
          * Present (and the only meaningful payload) when `type` is `saved_targeting`. Null for uploaded/derived audience types.
          */
@@ -25170,7 +25189,49 @@ export type CreateAdAudienceData = {
     adAccountId: string;
     name: string;
     description?: string;
-    type: 'customer_list' | 'website' | 'lookalike';
+    type: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'lookalike';
+    /**
+     * Required for engagement audiences (LinkedIn only): what
+     * members engaged with — a video/leadgen/single-image ad
+     * campaign, a Company Page or an Event page.
+     *
+     */
+    sourceType?: 'VIDEO_ADS' | 'LEAD_GEN_FORMS' | 'ORGANIZATION_PAGES' | 'EVENT_PAGES' | 'SINGLE_IMAGE_ADS';
+    /**
+     * Required for engagement audiences. The action, validated
+     * by LinkedIn against `sourceType`. Common values:
+     * VIDEO_ADS FIRST_QUARTILE / MIDPOINT / THIRD_QUARTILE /
+     * FULL_COMPLETE; LEAD_GEN_FORMS VIEW_FORM /
+     * LEAD_FORM_SUBMIT; ORGANIZATION_PAGES VIEW / CTA_CLICK;
+     * EVENT_PAGES RSVPED / VIDEO_VIEWED / ENGAGEMENT / CLICK.
+     *
+     */
+    trigger?: string;
+    /**
+     * Required for engagement audiences. Rolling window.
+     */
+    lookbackDays?: 30 | 60 | 90 | 180 | 365;
+    /**
+     * Required for engagement audiences. Campaign URNs for the
+     * ad source types, organization URNs for pages and events.
+     * LinkedIn creates one rule per source, all sharing the
+     * same trigger and lookbackDays.
+     *
+     */
+    engagementSources?: Array<(string)>;
+    /**
+     * Required for company_list audiences (LinkedIn only): plain-text
+     * company rows for account targeting. Each row needs at least one
+     * identifier. LinkedIn recommends 1,000+ companies for a usable
+     * match rate and takes up to 48h to process the list.
+     *
+     */
+    companies?: Array<{
+        name?: string;
+        domain?: string;
+        website?: string;
+        linkedinPageUrl?: string;
+    }>;
     /**
      * Required for website audiences
      */
