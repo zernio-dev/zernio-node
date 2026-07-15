@@ -440,7 +440,7 @@ export type AdMetrics = {
     cpm?: number;
     engagement?: number;
     /**
-     * Count of conversion events matching the campaign's promoted_object.custom_event_type (PURCHASE, LEAD, etc.) over the requested date range. 0 for non-conversion campaigns or when no events have fired. Meta-only at time of writing; other platforms return 0.
+     * Count of conversion events over the requested date range. Meta: events matching the campaign's promoted_object.custom_event_type (PURCHASE, LEAD, etc.). Google: the account's tracked conversions. X and LinkedIn: their reported website/lead conversions (added 2026-07). 0 for non-conversion campaigns or when no events have fired.
      */
     conversions?: number;
     /**
@@ -448,7 +448,7 @@ export type AdMetrics = {
      */
     costPerConversion?: number;
     /**
-     * Raw per-action-type counts from Meta's Insights actions[] array, summed over the date range. Keys are Meta action_type strings (e.g. link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped). Use this to extract any conversion event (purchases, leads, add_to_cart, etc.) without relying on the derived conversions field. Empty object when no actions are reported.
+     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...) — both engagement and conversion events. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen). Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
      */
     actions?: {
         [key: string]: (number);
@@ -23338,7 +23338,7 @@ export type GetAdsTimelineResponse = ({
          */
         cpm?: number;
         /**
-         * Sum of conversion events matching the campaign optimization goal. Meta-only at time of writing.
+         * Sum of conversion events over the range. Meta: events matching the campaign optimization goal. Google: tracked conversions. X / LinkedIn: reported website/lead conversions (added 2026-07).
          */
         conversions?: number;
         costPerConversion?: number;
