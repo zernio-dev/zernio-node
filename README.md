@@ -409,6 +409,8 @@ try {
 | `ads.getDsaDefaults()` | Get ad account DSA defaults |
 | `ads.getDsaRecommendations()` | List DSA beneficiary/payor suggestions |
 | `ads.getLeadForm()` | Get a lead form |
+| `ads.getLinkedInBidPricing()` | Suggested bid and budget bounds (LinkedIn) |
+| `ads.getLinkedInSupplyForecast()` | Impressions, clicks and spend forecast (LinkedIn) |
 | `ads.updateAd()` | Update ad |
 | `ads.updateAdAccount()` | Update ad account settings |
 | `ads.updateAdStatus()` | Pause or resume a single ad |

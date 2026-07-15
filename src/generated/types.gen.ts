@@ -2934,6 +2934,17 @@ export type Money = {
     nanos?: number;
 };
 
+export type MoneyAmount = {
+    /**
+     * Amount as a decimal string, e.g. "88.59".
+     */
+    amount: string;
+    /**
+     * ISO 4217 currency code, e.g. "USD".
+     */
+    currencyCode: string;
+};
+
 export type Pagination = {
     page?: number;
     limit?: number;
@@ -25176,6 +25187,151 @@ export type EstimateAdReachError = (unknown | {
     error?: string;
 });
 
+export type GetLinkedInBidPricingData = {
+    body: {
+        /**
+         * Zernio social account ID (LinkedIn).
+         */
+        accountId: string;
+        /**
+         * LinkedIn ad account ID (numeric).
+         */
+        adAccountId: string;
+        /**
+         * Same targeting spec used by POST /v1/ads/create.
+         */
+        spec: (TargetingSpec);
+        /**
+         * Defaults to SPONSORED_UPDATES.
+         */
+        campaignType?: 'TEXT_AD' | 'SPONSORED_UPDATES' | 'SPONSORED_INMAILS';
+        /**
+         * Defaults to CPM.
+         */
+        bidType?: 'CPM' | 'CPC' | 'CPV';
+        /**
+         * Defaults to EXACT.
+         */
+        matchType?: 'EXACT' | 'AUDIENCE_EXPANDED';
+        /**
+         * ISO 4217, defaults to USD.
+         */
+        currency?: string;
+        /**
+         * LinkedIn objectiveType, e.g. WEBSITE_VISIT, LEAD_GENERATION, VIDEO_VIEW.
+         */
+        objectiveType?: string;
+        /**
+         * LinkedIn optimizationTargetType, e.g. MAX_CLICK, MAX_IMPRESSION.
+         */
+        optimizationTargetType?: string;
+        /**
+         * Optional daily budget in whole account-currency units. LinkedIn refines the suggested bid to this budget.
+         */
+        dailyBudget?: number;
+    };
+};
+
+export type GetLinkedInBidPricingResponse = ({
+    available: boolean;
+    /**
+     * LinkedIn's adBudgetPricing element. Null when LinkedIn has no data for the combination.
+     */
+    pricing?: {
+        bidLimits?: {
+            min?: MoneyAmount;
+            max?: MoneyAmount;
+        };
+        suggestedBid?: {
+            min?: MoneyAmount;
+            default?: MoneyAmount;
+            max?: MoneyAmount;
+        };
+        dailyBudgetLimits?: {
+            min?: MoneyAmount;
+            default?: MoneyAmount;
+            max?: MoneyAmount;
+        };
+    } | null;
+});
+
+export type GetLinkedInBidPricingError = (unknown | {
+    error?: string;
+});
+
+export type GetLinkedInSupplyForecastData = {
+    body: {
+        accountId: string;
+        adAccountId: string;
+        spec: (TargetingSpec);
+        /**
+         * Defaults to SPONSORED_UPDATES.
+         */
+        campaignType?: 'SPONSORED_UPDATES' | 'SPONSORED_INMAILS' | 'DYNAMIC';
+        /**
+         * Unix ms. Must be in the future.
+         */
+        timeRangeStart: number;
+        /**
+         * Unix ms. Must be after start and within LinkedIn's max horizon.
+         */
+        timeRangeEnd: number;
+        objectiveType?: string;
+        /**
+         * When set, the forecast assumes auto-bidding. When unset, competingBid is required.
+         */
+        optimizationTarget?: string;
+        /**
+         * Either dailyBudget or totalBudget is required.
+         */
+        dailyBudget?: number;
+        totalBudget?: number;
+        /**
+         * ISO 4217, defaults to USD.
+         */
+        currency?: string;
+        /**
+         * Required for manual-bid forecasts (when optimizationTarget is not set).
+         */
+        competingBid?: {
+            bidType: 'CPM' | 'CPC' | 'CPV';
+            amount: number;
+        };
+        /**
+         * Defaults to false. Required true for connectedTelevisionOnly.
+         */
+        enableAudienceNetwork?: boolean;
+        /**
+         * Defaults to false.
+         */
+        enableAudienceExpansion?: boolean;
+        /**
+         * Defaults to false.
+         */
+        connectedTelevisionOnly?: boolean;
+    };
+};
+
+export type GetLinkedInSupplyForecastResponse = ({
+    available: boolean;
+    forecast?: Array<{
+        metricType?: string;
+        granularity?: 'DAILY' | 'SEVEN_DAY' | 'THIRTY_DAY' | 'CUSTOM';
+        timeSeries?: Array<{
+            timestamp?: number;
+            value?: number;
+            adForecastRange?: {
+                lowEnd?: number;
+                highEnd?: number;
+            };
+        }>;
+    }>;
+});
+
+export type GetLinkedInSupplyForecastError = (unknown | {
+    error?: string;
+});
+
 export type ListAdCatalogsData = {
     query: {
         /**
@@ -25291,6 +25447,11 @@ export type CreateAdAudienceData = {
      * matching page enters the segment. Needs the LinkedIn
      * Insight Tag installed on the customer's site — the
      * segment only starts filling once the tag reports visits.
+     *
+     * The response's `platformAudienceId` is the LinkedIn
+     * adSegment id, valid for downstream use.
+     * These segments appear in GET /v1/ads/audiences with
+     * `type: website_retargeting` once LinkedIn has finished building them.
      *
      */
     matchRules?: Array<{
