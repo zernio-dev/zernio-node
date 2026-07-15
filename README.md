@@ -669,6 +669,7 @@ try {
 | `sms.sendSms()` | Send an SMS/MMS |
 | `sms.shareSmsRegistration()` | Create a registration share link |
 | `sms.startSmsRegistration()` | Start a carrier registration |
+| `sms.uploadSmsOptInProof()` | Upload opt-in form proof for an appeal |
 | `sms.verifySmsRegistrationOtp()` | Submit the sole-prop OTP |
 
 ### Tracking Tags

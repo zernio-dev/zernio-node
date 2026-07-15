@@ -17614,6 +17614,29 @@ export type AppealSmsRegistrationError = (unknown | {
     error?: string;
 });
 
+export type UploadSmsOptInProofData = {
+    body: {
+        /**
+         * PNG, JPG, WebP, GIF or PDF, max 4MB.
+         */
+        file: (Blob | File);
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type UploadSmsOptInProofResponse = ({
+    /**
+     * Public URL to reference in the opt-in flow text.
+     */
+    url?: string;
+});
+
+export type UploadSmsOptInProofError = ({
+    error?: string;
+} | unknown);
+
 export type ShareSmsRegistrationData = {
     body: {
         /**
