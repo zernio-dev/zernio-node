@@ -663,6 +663,7 @@ try {
 | `sms.listSmsRegistrations()` | List carrier registrations |
 | `sms.getSmsRegistration()` | Get a carrier registration |
 | `sms.appealSmsRegistration()` | Appeal a rejected campaign |
+| `sms.deactivateSmsRegistration()` | Deactivate a brand/campaign registration |
 | `sms.disableSmsOnNumber()` | Disable SMS on a number |
 | `sms.enableSmsOnNumber()` | Enable SMS on a number |
 | `sms.lookupSmsNumber()` | Look up carrier + line type |

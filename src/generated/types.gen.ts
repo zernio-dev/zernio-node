@@ -17573,6 +17573,20 @@ export type ListSmsRegistrationsError = ({
     error?: string;
 });
 
+export type DeactivateSmsRegistrationData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DeactivateSmsRegistrationResponse = ({
+    status?: 'deactivated';
+});
+
+export type DeactivateSmsRegistrationError = ({
+    error?: string;
+} | unknown);
+
 export type GetSmsRegistrationData = {
     path: {
         id: string;
