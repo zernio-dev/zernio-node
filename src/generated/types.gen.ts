@@ -17472,6 +17472,16 @@ export type StartSmsRegistrationData = {
             termsAndConditionsLink?: string;
         };
         /**
+         * Raw dashboard-wizard answers, stored only to prefill edit-and-resubmit. API integrators can omit.
+         */
+        wizardValues?: {
+            [key: string]: (string);
+        };
+        /**
+         * Resubmit a registration that was returned for changes — updates it in place instead of creating a new one.
+         */
+        resubmitRequestId?: string;
+        /**
          * Required for toll_free.
          */
         tollFree?: {
@@ -17543,7 +17553,10 @@ export type ListSmsRegistrationsResponse = ({
         id?: string;
         registrationType?: 'standard_10dlc' | 'sole_prop_10dlc' | 'toll_free';
         displayName?: (string) | null;
-        status?: 'pending' | 'approved' | 'rejected';
+        /**
+         * requested/changes_requested = pre-submission review states; customers see them as pending / needs changes.
+         */
+        status?: 'pending' | 'approved' | 'rejected' | 'requested' | 'changes_requested' | 'deactivated';
         /**
          * Carrier-registry brand status (e.g. VERIFIED).
          */
@@ -17605,7 +17618,10 @@ export type GetSmsRegistrationData = {
 export type GetSmsRegistrationResponse = ({
     id?: string;
     registrationType?: 'standard_10dlc' | 'sole_prop_10dlc' | 'toll_free';
-    status?: 'pending' | 'approved' | 'rejected';
+    /**
+     * requested/changes_requested = pre-submission review states; customers see them as pending / needs changes.
+     */
+    status?: 'pending' | 'approved' | 'rejected' | 'requested' | 'changes_requested' | 'deactivated';
     brandStatus?: string;
     campaignStatus?: string;
     declineReason?: (string) | null;
@@ -19913,7 +19929,10 @@ export type ReuseSmsRegistrationForNumberData = {
 
 export type ReuseSmsRegistrationForNumberResponse = ({
     registrationId?: string;
-    status?: 'pending' | 'approved' | 'rejected';
+    /**
+     * requested/changes_requested = pre-submission review states; customers see them as pending / needs changes.
+     */
+    status?: 'pending' | 'approved' | 'rejected' | 'requested' | 'changes_requested' | 'deactivated';
 });
 
 export type ReuseSmsRegistrationForNumberError = ({
