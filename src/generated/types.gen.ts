@@ -17529,6 +17529,15 @@ export type StartSmsRegistrationError = ({
     error?: string;
 } | unknown);
 
+export type ListSmsRegistrationsData = {
+    query?: {
+        /**
+         * Deactivated (terminated) registrations are hidden by default — pass true to include them.
+         */
+        includeDeactivated?: boolean;
+    };
+};
+
 export type ListSmsRegistrationsResponse = ({
     registrations?: Array<{
         id?: string;
