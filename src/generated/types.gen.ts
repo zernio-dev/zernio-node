@@ -25151,7 +25151,7 @@ export type ListAdAudiencesData = {
         /**
          * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences; the other types return uploaded/derived audiences.
          */
-        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'lookalike' | 'saved_targeting';
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
     };
 };
 
@@ -25165,7 +25165,7 @@ export type ListAdAudiencesResponse = ({
         platformAudienceId?: string;
         name?: string;
         description?: string;
-        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'lookalike' | 'saved_targeting';
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
         /**
          * Present (and the only meaningful payload) when `type` is `saved_targeting`. Null for uploaded/derived audience types.
          */
@@ -25189,7 +25189,19 @@ export type CreateAdAudienceData = {
     adAccountId: string;
     name: string;
     description?: string;
-    type: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'lookalike';
+    type: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'website_retargeting' | 'lookalike';
+    /**
+     * Required for website_retargeting audiences (LinkedIn only).
+     * Each rule is a URL pattern; a member who visits any
+     * matching page enters the segment. Needs the LinkedIn
+     * Insight Tag installed on the customer's site — the
+     * segment only starts filling once the tag reports visits.
+     *
+     */
+    matchRules?: Array<{
+        matchType: 'EXACT' | 'STARTS_WITH' | 'CONTAINS' | 'ENDS_WITH';
+        matchValue: string;
+    }>;
     /**
      * Required for engagement audiences (LinkedIn only): what
      * members engaged with — a video/leadgen/single-image ad
