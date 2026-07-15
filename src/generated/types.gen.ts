@@ -17417,11 +17417,25 @@ export type StartSmsRegistrationData = {
             optoutKeywords: string;
             optoutMessage?: string;
             helpKeywords: string;
+            /**
+             * Whether messages carry links. Auto-derived from the samples when omitted, so the declaration matches what the reviewer reads.
+             */
             embeddedLink?: boolean;
+            /**
+             * Whether messages carry phone numbers. Auto-derived from the samples when omitted.
+             */
             embeddedPhone?: boolean;
             numberPool?: boolean;
             ageGated?: boolean;
             directLending?: boolean;
+            /**
+             * Link to your privacy policy. Recommended: reviewers check that it says mobile information is not sold or shared with third parties for promotional purposes. A bare domain is normalized to https://.
+             */
+            privacyPolicyLink?: string;
+            /**
+             * Link to your terms & conditions. A bare domain is normalized to https://.
+             */
+            termsAndConditionsLink?: string;
         };
         /**
          * Required for toll_free.
