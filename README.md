@@ -670,6 +670,7 @@ try {
 | `sms.shareSmsRegistration()` | Create a registration share link |
 | `sms.startSmsRegistration()` | Start a carrier registration |
 | `sms.uploadSmsOptInProof()` | Upload opt-in form proof for an appeal |
+| `sms.uploadSmsOptInProofFile()` | Upload opt-in form proof |
 | `sms.verifySmsRegistrationOtp()` | Submit the sole-prop OTP |
 
 ### Tracking Tags

@@ -17632,6 +17632,26 @@ export type AppealSmsRegistrationError = (unknown | {
     error?: string;
 });
 
+export type UploadSmsOptInProofFileData = {
+    body: {
+        /**
+         * PNG, JPG, WebP, GIF or PDF, max 4MB.
+         */
+        file: (Blob | File);
+    };
+};
+
+export type UploadSmsOptInProofFileResponse = ({
+    /**
+     * Public URL to reference in the opt-in flow text.
+     */
+    url?: string;
+});
+
+export type UploadSmsOptInProofFileError = ({
+    error?: string;
+} | unknown);
+
 export type UploadSmsOptInProofData = {
     body: {
         /**
