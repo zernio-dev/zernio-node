@@ -12314,6 +12314,40 @@ export type UpdatePinterestBoardsError = (unknown | {
     error?: string;
 });
 
+export type CreatePinterestBoardData = {
+    body: {
+        /**
+         * Name of the board
+         */
+        name: string;
+        /**
+         * Board description
+         */
+        description?: string;
+        /**
+         * Board privacy setting
+         */
+        privacy?: 'PUBLIC' | 'PROTECTED' | 'SECRET';
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type CreatePinterestBoardResponse = ({
+    board?: {
+        id?: string;
+        name?: string;
+        description?: string;
+        privacy?: string;
+        url?: string;
+    };
+});
+
+export type CreatePinterestBoardError = (unknown | {
+    error?: string;
+});
+
 export type GetYoutubePlaylistsData = {
     path: {
         accountId: string;

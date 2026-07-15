@@ -303,6 +303,7 @@ try {
 | `connect.listPinterestBoardsForSelection()` | List Pinterest boards |
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
 | `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
+| `connect.createPinterestBoard()` | Create Pinterest board |
 | `connect.getConnectUrl()` | Get OAuth connect URL |
 | `connect.getFacebookPages()` | List Facebook pages |
 | `connect.getGmbLocations()` | List GBP locations |
