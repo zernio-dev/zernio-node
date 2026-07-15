@@ -2721,6 +2721,25 @@ export type LinkedInAdsPlatformData = {
          */
         urn: string;
     };
+    /**
+     * POST /v1/ads/create only. Thought-leader ad: references someone
+     * else's existing LinkedIn share or ugcPost as the creative. Unlike
+     * boostPost, which provisions its own CampaignGroup + Campaign
+     * around the post, this variant attaches the reference under the
+     * campaign /v1/ads/create builds — same shape as every other
+     * format, so the caller can pick bidding / targeting / schedule
+     * freely. No headline, body, imageUrl or organization are needed;
+     * the referenced post carries its own commentary and author.
+     * Mutually exclusive with the other creative sources.
+     *
+     */
+    thoughtLeader?: {
+        /**
+         * LinkedIn share or ugcPost URN, urn:li:share:N or urn:li:ugcPost:N. Get it via "Copy link to post" on the target LinkedIn post (the URL contains -share- for a share or -ugcPost- for a ugcPost, then the numeric id).
+         *
+         */
+        postUrn: string;
+    };
 };
 
 /**
@@ -24123,7 +24142,7 @@ export type CreateStandaloneAdData = {
          * - `catalog_sales`: Advantage+ catalog ads, for example vehicle inventory. Requires `promotedObject.productSetId`, `promotedObject.pixelId` and `promotedObject.customEventType`. Builds a catalog TEMPLATE creative from the copy fields, which may carry template tags like {{product.name}} or {{vehicle.make}}. No imageUrl or video is sent; Meta renders the visuals per catalog item. Discover catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets. Single shape only, no creatives[], adSetId, dynamicCreative or placementAssets.
          *
          * **TikTok**
-         * - `conversions`: website-conversion ad group. Requires `promotedObject.pixelId`, your TikTok Pixel ID. Accepts an optional `promotedObject.customEventType` with a TikTok optimization_event code such as ON_WEB_ORDER, INITIATE_ORDER, ON_WEB_REGISTER or FORM. To inherit pixel and event from an existing ad group, pass `adSetId` instead.
+         * - `conversions`: website-conversion ad group. Requires `promotedObject.pixelId`, your TikTok Pixel ID. Accepts an optional `promotedObject.customEventType` with a TikTok optimization_event code your pixel tracks (newer pixels use e.g. SHOPPING for purchase events; legacy pixels use ON_WEB_ORDER, INITIATE_ORDER, ON_WEB_REGISTER or FORM). To inherit pixel and event from an existing ad group, pass `adSetId` instead.
          *
          * **LinkedIn**
          * - `engagement`, `traffic`, `awareness` and `video_views` create standalone Direct Sponsored Content ads. `traffic` requires `linkUrl`; `video_views` requires `video`.
@@ -24748,11 +24767,15 @@ export type CreateStandaloneAdData = {
              * for `goal: conversions`.
              *
              * **TikTok:** an `optimization_event` code (UPPER_SNAKE, not Meta's vocabulary
-             * and not PascalCase), e.g. `ON_WEB_ORDER` (Complete Payment), `INITIATE_ORDER`
-             * (Place an Order), `ON_WEB_CART` (Add to Cart), `ON_WEB_REGISTER` (Complete
-             * Registration), `FORM` (Submit Form), `ON_WEB_DETAIL` (View Content). Must be
-             * one of the events your TikTok Pixel is configured to track; passed through
-             * verbatim and validated by TikTok. Optional for `goal: conversions`.
+             * and not PascalCase). Must be one of the event types your TikTok Pixel is
+             * configured to track; passed through verbatim and validated by TikTok.
+             * Newer pixels (Events API / funnel-template setups) use TikTok's updated
+             * taxonomy, e.g. `SHOPPING` for purchase/payment events; legacy pixels use
+             * codes like `ON_WEB_ORDER` (Complete Payment), `INITIATE_ORDER` (Place an
+             * Order), `ON_WEB_CART` (Add to Cart), `ON_WEB_REGISTER` (Complete
+             * Registration), `FORM` (Submit Form), `ON_WEB_DETAIL` (View Content).
+             * On rejection the error lists the event types your pixel actually tracks.
+             * Optional for `goal: conversions`.
              *
              */
             customEventType?: string;
