@@ -17258,6 +17258,10 @@ export type SendSmsData = {
          * Public media URLs to attach (sends as MMS). Max 10.
          */
         mediaUrls?: Array<(string)>;
+        /**
+         * Optional. Schedule the send for a future time (ISO 8601 with offset, e.g. `2026-08-01T12:00:00Z`). Must be in the future. The message is queued and the `message.delivered` webhook fires when it actually sends.
+         */
+        sendAt?: string;
     };
     headers?: {
         /**
