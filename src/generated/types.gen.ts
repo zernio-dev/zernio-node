@@ -14594,10 +14594,21 @@ export type SendInboxMessageData = {
         }>;
         /**
          * Action buttons. Mutually exclusive with quickReplies. Max 3 items.
+         *
+         * WhatsApp: buttons always render as interactive reply buttons.
+         * Only `title` and `payload` are used — `type`, `url`, and `phone`
+         * are ignored (WhatsApp has no URL/phone button in this field; use
+         * the `interactive` field with `type: cta_url` for a link button).
+         * `payload` becomes the button reply ID delivered on the
+         * `message.received` webhook when the user taps. To send a simple
+         * reply-button message, provide `title` + `payload` and set
+         * `type: postback`, e.g.
+         * `{ "type": "postback", "title": "Yes", "payload": "yes" }`.
+         *
          */
         buttons?: Array<{
             /**
-             * Button type. phone is Facebook only.
+             * Button type. phone is Facebook only. Ignored on WhatsApp (buttons always render as reply buttons).
              */
             type: 'url' | 'postback' | 'phone';
             /**
@@ -14605,11 +14616,11 @@ export type SendInboxMessageData = {
              */
             title: string;
             /**
-             * URL for url-type buttons
+             * URL for url-type buttons (Facebook/Instagram only)
              */
             url?: string;
             /**
-             * Payload for postback-type buttons
+             * Payload for postback-type buttons. On WhatsApp, this is the reply ID returned on the message.received webhook when the button is tapped.
              */
             payload?: string;
             /**
