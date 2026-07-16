@@ -3810,7 +3810,7 @@ export type TargetingSpec = {
      */
     incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
     /**
-     * Language codes (e.g. ['en']).
+     * Language codes restricting the audience by language. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
      */
     languages?: Array<(string)>;
     /**
@@ -12457,6 +12457,10 @@ export type GetGmbLocationsData = {
          */
         filter?: string;
         /**
+         * Max locations to return (default 100, max 500). Raise it to enumerate an account with more than 100 locations; for accounts with thousands, use search/filter instead.
+         */
+        limit?: number;
+        /**
          * Free-text search on the business name, applied server-side by Google. Use for accounts with many locations.
          */
         search?: string;
@@ -12482,9 +12486,9 @@ export type GetGmbLocationsResponse = ({
     cached?: boolean;
 });
 
-export type GetGmbLocationsError = ({
+export type GetGmbLocationsError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type UpdateGmbLocationData = {
     body: {
@@ -24583,7 +24587,7 @@ export type CreateStandaloneAdData = {
          */
         incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
         /**
-         * Language codes (e.g. ['en']). Restricts the audience by language.
+         * Language codes restricting the audience by language. On Meta, ISO 639-1 codes (e.g. ['en'], ['de']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code for a specific one ("en_GB", "pt_BR", "zh_TW"). Unknown codes are rejected. Other ad platforms use their own language-code systems.
          */
         languages?: Array<(string)>;
         /**
