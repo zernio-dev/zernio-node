@@ -9659,6 +9659,16 @@ export type ConnectAdsData = {
          */
         adAccountIds?: Array<(string)>;
         /**
+         * Force a fresh OAuth even when an account already exists. Normally the
+         * endpoint returns `alreadyConnected: true` whenever a connected account
+         * is found, keying off its active state rather than token liveness.
+         * Set `force=true` to bypass that and always receivean `authUrl`.
+         * Completing the returned OAuth refreshes the stored token
+         * on the existing posting and ads accounts in place.
+         *
+         */
+        force?: boolean;
+        /**
          * Enable headless mode (same-token platforms only)
          */
         headless?: boolean;
@@ -24026,13 +24036,76 @@ export type BoostPostData = {
              */
             endDate?: string;
         };
+        /**
+         * Same geo/demographic fields as the `TargetingSpec` used by /v1/ads/create.
+         * Geo keys (`regions`/`cities`/`zips`/`metros`) resolve via
+         * GET /v1/ads/targeting/search?dimension=geo. City radius and lat/lng
+         * `customLocations` are Meta-only and preserve the boosted post's
+         * social proof (the ad references the existing post).
+         *
+         */
         targeting?: {
             ageMin?: number;
             ageMax?: number;
             /**
+             * Meta only.
+             */
+            gender?: 'all' | 'male' | 'female';
+            /**
+             * Meta locale ids (numeric), passed through as given.
+             */
+            languages?: Array<(string)>;
+            /**
              * ISO country codes. Required for TikTok boosts (TikTok's ad group requires location_ids); optional on other platforms.
              */
             countries?: Array<(string)>;
+            /**
+             * Region/state targeting. `key` from /v1/ads/targeting/search?dimension=geo&geoType=region.
+             */
+            regions?: Array<{
+                key: string;
+                name?: string;
+            }>;
+            /**
+             * City targeting. Optional `radius` + `distance_unit` extend beyond the city limits (both set together, Meta only).
+             */
+            cities?: Array<{
+                key: string;
+                name?: string;
+                /**
+                 * Requires distance_unit.
+                 */
+                radius?: number;
+                distance_unit?: 'mile' | 'kilometer';
+            }>;
+            /**
+             * Postal/ZIP targeting. `key` is the platform's postal location ID (e.g. Meta `US:94304`).
+             */
+            zips?: Array<{
+                key: string;
+                name?: string;
+            }>;
+            /**
+             * DMA / metro-area targeting. `key` is the platform's metro ID (e.g. Meta `DMA:807`).
+             */
+            metros?: Array<{
+                key: string;
+                name?: string;
+            }>;
+            /**
+             * Point-radius (lat/lng) targeting (Meta custom_locations). No geo `key` lookup needed.
+             */
+            customLocations?: Array<{
+                latitude: number;
+                longitude: number;
+                radius: number;
+                distanceUnit: 'mile' | 'kilometer';
+                name?: string;
+                /**
+                 * Optional label, sent to Meta as `address_string`.
+                 */
+                address?: string;
+            }>;
             /**
              * Interest objects from /v1/ads/interests. Each must include id and name.
              */
@@ -24044,6 +24117,17 @@ export type BoostPostData = {
              * Meta only. 0 = disabled (default), 1 = enabled.
              */
             advantage_audience?: 0 | 1;
+        };
+        /**
+         * Meta only. A verbatim Meta-native targeting spec (e.g.
+         * `{ "geo_locations": { "cities": [{ "key": "...", "radius": 15, "distance_unit": "kilometer" }] } }`),
+         * forwarded unchanged. Mutually exclusive with `targeting` (sending both is a 400).
+         * Use for advanced fields the structured object does not expose (flexible_spec,
+         * excluded audiences, business places).
+         *
+         */
+        rawTargeting?: {
+            [key: string]: unknown;
         };
         /**
          * Meta bid strategy applied to the ad set. On TikTok, mapped to
