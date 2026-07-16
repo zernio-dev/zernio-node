@@ -23082,9 +23082,21 @@ export type UpdateAdCampaignData = {
          */
         bidStrategy?: (BidStrategy);
         /**
-         * Rename the campaign (Meta only; other platforms return 501). At least one of budget/bidStrategy/name is required.
+         * Rename the campaign (Meta only; other platforms return 501). At least one of budget/bidStrategy/name/platformSpecificData is required.
          */
         name?: string;
+        /**
+         * Platform-specific campaign settings. The platform is implied by the `platform`
+         * body param (same convention as platformSpecificData on POST /v1/ads/create).
+         * Meta (facebook/instagram) only; other platforms return 400.
+         *
+         */
+        platformSpecificData?: {
+            /**
+             * Campaign lifetime spend cap, in the ad account's currency (Meta `spend_cap`). Pass null to remove the cap (0 is rejected by Meta).
+             */
+            spendCap?: (number) | null;
+        };
     };
     path: {
         /**
@@ -23099,6 +23111,9 @@ export type UpdateAdCampaignResponse = ({
     budget?: AdBudget;
     budgetLevel?: 'campaign';
     bidStrategy?: BidStrategy;
+    platformSpecificData?: {
+        [key: string]: unknown;
+    };
 });
 
 export type UpdateAdCampaignError = (unknown | {
@@ -23250,6 +23265,42 @@ export type UpdateAdSetData = {
          *
          */
         roasAverageFloor?: number;
+        /**
+         * Platform-specific post-launch delivery settings. The platform is implied by the
+         * `platform` body param. Meta only; other platforms return 400. Unknown keys are rejected.
+         *
+         */
+        platformSpecificData?: {
+            /**
+             * Meta ad-set optimization_goal (e.g. OFFSITE_CONVERSIONS, LANDING_PAGE_VIEWS).
+             */
+            optimizationGoal?: string;
+            /**
+             * Meta ad-set billing_event (e.g. IMPRESSIONS, LINK_CLICKS, THRUPLAY).
+             */
+            billingEvent?: string;
+            /**
+             * Ad set start_time (ISO 8601).
+             */
+            startDate?: string;
+            /**
+             * Ad set end_time (ISO 8601).
+             */
+            endDate?: string;
+            /**
+             * Meta ad-set promoted_object, forwarded verbatim (same shape as /v1/ads/create).
+             */
+            promotedObject?: {
+                pixelId?: string;
+                customEventType?: string;
+                pageId?: string;
+                applicationId?: string;
+                objectStoreUrl?: string;
+                customConversionId?: string;
+                productCatalogId?: string;
+                productSetId?: string;
+            };
+        };
     };
     path: {
         /**
@@ -23268,6 +23319,9 @@ export type UpdateAdSetResponse = ({
     bidStrategy?: BidStrategy;
     bidAmount?: (number) | null;
     roasAverageFloor?: (number) | null;
+    platformSpecificData?: {
+        [key: string]: unknown;
+    };
 });
 
 export type UpdateAdSetError = (unknown | {
@@ -24330,6 +24384,10 @@ export type CreateStandaloneAdData = {
          * Meta only. Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
          */
         optimizationGoal?: string;
+        /**
+         * Meta only. Explicit ad-set `billing_event`. Defaults to `IMPRESSIONS`. Forwarded verbatim to Meta, which validates compatibility with the optimization goal.
+         */
+        billingEvent?: string;
         /**
          * Required on legacy + multi-creative shapes. Inherited on attach.
          */
