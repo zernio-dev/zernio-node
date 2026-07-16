@@ -2567,7 +2567,8 @@ export const updateQueueSlot = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Delete schedule
- * Delete a queue from a profile. Requires queueId to specify which queue to delete.
+ * Delete a queue from a profile. Pass queueId to delete a specific queue;
+ * omit it to delete all queues for the profile.
  * If deleting the default queue, another queue will be promoted to default.
  *
  */

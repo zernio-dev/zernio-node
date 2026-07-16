@@ -9067,7 +9067,7 @@ export type UpdateProfileData = {
 
 export type UpdateProfileResponse = (ProfileUpdateResponse);
 
-export type UpdateProfileError = ({
+export type UpdateProfileError = (unknown | {
     error?: string;
 });
 
@@ -13543,7 +13543,7 @@ export type ListQueueSlotsData = {
         /**
          * Set to 'true' to list all queues for the profile
          */
-        all?: 'true';
+        all?: 'true' | 'false';
         /**
          * Profile ID to get queues for
          */
@@ -13628,9 +13628,9 @@ export type DeleteQueueSlotData = {
     query: {
         profileId: string;
         /**
-         * Queue ID to delete
+         * Queue ID to delete. Omit to delete all queues for the profile
          */
-        queueId: string;
+        queueId?: string;
     };
 };
 
@@ -22247,7 +22247,7 @@ export type ListSequencesResponse = ({
     };
 });
 
-export type ListSequencesError = ({
+export type ListSequencesError = (unknown | {
     error?: string;
 });
 
@@ -22299,7 +22299,7 @@ export type CreateSequenceResponse = ({
     };
 });
 
-export type CreateSequenceError = ({
+export type CreateSequenceError = (unknown | {
     error?: string;
 });
 
@@ -22342,7 +22342,7 @@ export type GetSequenceResponse = ({
     };
 });
 
-export type GetSequenceError = ({
+export type GetSequenceError = (unknown | {
     error?: string;
 });
 
@@ -22394,7 +22394,7 @@ export type UpdateSequenceResponse = ({
     };
 });
 
-export type UpdateSequenceError = ({
+export type UpdateSequenceError = (unknown | {
     error?: string;
 });
 
@@ -22406,7 +22406,7 @@ export type DeleteSequenceData = {
 
 export type DeleteSequenceResponse = (unknown);
 
-export type DeleteSequenceError = ({
+export type DeleteSequenceError = (unknown | {
     error?: string;
 });
 
@@ -22466,12 +22466,23 @@ export type EnrollContactsResponse = ({
      */
     enrolled?: number;
     /**
-     * Number skipped (already enrolled or missing channel)
+     * Number that failed (already enrolled, or no subscribed channel on the sequence platform)
      */
-    skipped?: number;
+    failed?: number;
+    /**
+     * Per-contact outcome
+     */
+    results?: Array<{
+        contactId?: string;
+        success?: boolean;
+        /**
+         * Present when success is false
+         */
+        error?: string;
+    }>;
 });
 
-export type EnrollContactsError = ({
+export type EnrollContactsError = (unknown | {
     error?: string;
 });
 
@@ -22484,7 +22495,7 @@ export type UnenrollContactData = {
 
 export type UnenrollContactResponse = (unknown);
 
-export type UnenrollContactError = ({
+export type UnenrollContactError = (unknown | {
     error?: string;
 });
 
@@ -22523,7 +22534,7 @@ export type ListSequenceEnrollmentsResponse = ({
     };
 });
 
-export type ListSequenceEnrollmentsError = ({
+export type ListSequenceEnrollmentsError = (unknown | {
     error?: string;
 });
 
