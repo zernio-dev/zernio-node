@@ -6257,6 +6257,17 @@ export const bulkUpdateAdCampaignStatus = <ThrowOnError extends boolean = false>
  * carrying over budget / targeting / bid_type / bid_price /
  * deep_bid_type / creative fields. Spark Ad linkage (`tiktok_item_id`)
  * is preserved.
+ * - **LinkedIn** has no native copy primitive; Zernio walks the source
+ * CampaignGroup → Campaigns → Creatives and recreates each entity,
+ * carrying over `type` / `costType` / `unitCost` /
+ * `optimizationTargetType` / `creativeSelection` / `objectiveType` /
+ * `format` / `dailyBudget` / `totalBudget` / `targetingCriteria` /
+ * `runSchedule` and every Creative's `content` object verbatim.
+ * `statusOption: INHERITED_FROM_SOURCE` is evaluated **per entity**:
+ * any Group / Campaign / Creative whose source is `ACTIVE` gets its
+ * clone activated too. Duplicating an ACTIVE campaign with
+ * `INHERITED_FROM_SOURCE` starts a second front of spend the moment
+ * the clone activates — the safe default is `PAUSED`.
  *
  * The new hierarchy is asynchronous to materialize in our DB — we
  * trigger sync discovery automatically. Set `syncAfter: false` to
