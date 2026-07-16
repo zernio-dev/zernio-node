@@ -4298,15 +4298,15 @@ export type UsageMetering = {
      */
     tax?: {
         /**
-         * Estimated tax in USD
+         * Estimated tax in USD, added on top of `totals.total`.
          */
         taxUsd?: number;
         /**
-         * Combined rate percentage
+         * Combined rate percentage, e.g. 21.
          */
         ratePercent?: (number) | null;
         /**
-         * Human jurisdiction label
+         * Human jurisdiction label, e.g. "ES VAT" or "WA sales tax".
          */
         jurisdictionLabel?: (string) | null;
         /**
@@ -8180,9 +8180,9 @@ export type UpdateAccountGroupResponse = ({
     };
 });
 
-export type UpdateAccountGroupError = ({
+export type UpdateAccountGroupError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type DeleteAccountGroupData = {
     path: {
@@ -8194,7 +8194,7 @@ export type DeleteAccountGroupResponse = ({
     message?: string;
 });
 
-export type DeleteAccountGroupError = ({
+export type DeleteAccountGroupError = (unknown | {
     error?: string;
 });
 
@@ -17452,7 +17452,7 @@ export type StartSmsRegistrationData = {
             messageFlow: string;
             sample1: string;
             /**
-             * Second example message; carriers require two distinct samples
+             * Second example message; carriers require two distinct samples, so it must differ from sample1.
              */
             sample2: string;
             helpMessage?: string;
@@ -21031,7 +21031,7 @@ export type ListContactsResponse = ({
     };
 });
 
-export type ListContactsError = ({
+export type ListContactsError = (unknown | {
     error?: string;
 });
 
@@ -21082,9 +21082,9 @@ export type CreateContactResponse = ({
     warning?: string;
 });
 
-export type CreateContactError = ({
+export type CreateContactError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type GetContactData = {
     path: {
@@ -21143,7 +21143,7 @@ export type GetContactResponse = ({
     }>;
 });
 
-export type GetContactError = ({
+export type GetContactError = (unknown | {
     error?: string;
 });
 
@@ -21179,7 +21179,7 @@ export type UpdateContactResponse = ({
     };
 });
 
-export type UpdateContactError = ({
+export type UpdateContactError = (unknown | {
     error?: string;
 });
 
@@ -21191,7 +21191,7 @@ export type DeleteContactData = {
 
 export type DeleteContactResponse = (unknown);
 
-export type DeleteContactError = ({
+export type DeleteContactError = (unknown | {
     error?: string;
 });
 
@@ -21218,7 +21218,7 @@ export type GetContactChannelsResponse = ({
     }>;
 });
 
-export type GetContactChannelsError = ({
+export type GetContactChannelsError = (unknown | {
     error?: string;
 });
 
@@ -21248,7 +21248,7 @@ export type BulkCreateContactsResponse = ({
     total?: number;
 });
 
-export type BulkCreateContactsError = ({
+export type BulkCreateContactsError = (unknown | {
     error?: string;
 });
 
@@ -21426,7 +21426,7 @@ export type ListBroadcastsResponse = ({
     };
 });
 
-export type ListBroadcastsError = ({
+export type ListBroadcastsError = (unknown | {
     error?: string;
 });
 
@@ -21487,7 +21487,7 @@ export type CreateBroadcastResponse = ({
     };
 });
 
-export type CreateBroadcastError = ({
+export type CreateBroadcastError = (unknown | {
     error?: string;
 });
 
@@ -21710,7 +21710,7 @@ export type ListBroadcastRecipientsResponse = ({
     };
 });
 
-export type ListBroadcastRecipientsError = ({
+export type ListBroadcastRecipientsError = (unknown | {
     error?: string;
 });
 
@@ -21746,7 +21746,7 @@ export type AddBroadcastRecipientsResponse = ({
     skipped?: number;
 });
 
-export type AddBroadcastRecipientsError = ({
+export type AddBroadcastRecipientsError = (unknown | {
     error?: string;
 });
 
@@ -22567,7 +22567,7 @@ export type ListCommentAutomationsResponse = ({
     }>;
 });
 
-export type ListCommentAutomationsError = ({
+export type ListCommentAutomationsError = (unknown | {
     error?: string;
 });
 
