@@ -10033,6 +10033,16 @@ export type GetGoogleBusinessReviewsResponse = ({
             comment?: string;
             updateTime?: string;
         } | null;
+        /**
+         * Number of photos attached to the review (photos only, videos are not counted)
+         */
+        photoCount?: number;
+        /**
+         * Photos attached to the review by the reviewer
+         */
+        photos?: Array<{
+            url?: string;
+        }>;
     }>;
     /**
      * Overall average rating
@@ -16383,6 +16393,12 @@ export type ListInboxReviewsResponse = ({
          * Number of photos attached to the review (photos only; videos are not counted). Google Business only; 0 for other platforms.
          */
         photoCount?: number;
+        /**
+         * Photos attached to the review. Google Business only; always an empty array for other platforms.
+         */
+        photos?: Array<{
+            url?: string;
+        }>;
         reply?: {
             id?: string;
             text?: string;
@@ -24574,7 +24590,16 @@ export type CreateStandaloneAdData = {
          */
         organizationId?: string;
         /**
-         * ISO 3166-1 alpha-2 country codes (e.g. ['NL']). Defaults to ['US'] when no `cities` or `regions` are provided. (LinkedIn currently honours country-level targeting only.)
+         * Nested targeting object — the same TargetingSpec shape as `POST /v1/ads/boost`,
+         * `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences. Merged
+         * UNDER the flat inline targeting fields below: `savedTargetingId` < `targeting` <
+         * flat fields (a flat field present on the body replaces the nested value entirely).
+         * Both forms are equivalent; use whichever your integration already builds.
+         *
+         */
+        targeting?: (TargetingSpec);
+        /**
+         * ISO 3166-1 alpha-2 country codes (e.g. ['NL']). Defaults to ['US'] when no other geo targeting (flat or nested `targeting`) is provided. (LinkedIn currently honours country-level targeting only.)
          */
         countries?: Array<(string)>;
         /**
