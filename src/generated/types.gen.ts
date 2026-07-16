@@ -3692,19 +3692,19 @@ export type TargetingSpec = {
         name?: string;
     }>;
     /**
-     * City targeting. Optional `radius` + `distance_unit` extend beyond the city limits; both must be set together or both omitted. `radius` is only honoured on platforms whose capability map allows city radius (Meta).
+     * City targeting. Optional `radius` + `distanceUnit` extend beyond the city limits; both must be set together or both omitted. `radius` is only honoured on platforms whose capability map allows city radius (Meta).
      */
     cities?: Array<{
         key: string;
         name?: string;
         /**
-         * Radius around the city. Requires distance_unit.
+         * Radius around the city. Requires distanceUnit. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng), which allows a smaller radius.
          */
         radius?: number;
         /**
          * Required if radius is set.
          */
-        distance_unit?: 'mile' | 'kilometer';
+        distanceUnit?: 'mile' | 'kilometer';
     }>;
     /**
      * Postal/ZIP targeting. `key` is the platform's postal location ID (e.g. Meta `US:94304`). Supported on Meta, Google, TikTok, Pinterest, X.
@@ -3747,18 +3747,18 @@ export type TargetingSpec = {
             name?: string;
         }>;
         /**
-         * Cities to exclude. Optional `radius` + `distance_unit` exclude a catchment around the city (both must be set together or both omitted); Meta honours the radius on excluded cities.
+         * Cities to exclude. Optional `radius` + `distanceUnit` exclude a catchment around the city (both must be set together or both omitted); Meta honours the radius on excluded cities.
          */
         cities?: Array<{
             key: string;
             /**
-             * Radius around the excluded city. Requires distance_unit.
+             * Radius around the excluded city. Requires distanceUnit.
              */
             radius?: number;
             /**
              * Required if radius is set.
              */
-            distance_unit?: 'mile' | 'kilometer';
+            distanceUnit?: 'mile' | 'kilometer';
         }>;
         zips?: Array<{
             key: string;
@@ -6578,6 +6578,18 @@ export type YouTubeDemographicsResponse = {
     accountId?: string;
     platform?: string;
     /**
+     * Present only when demographics are scoped to a single video
+     */
+    videoId?: string;
+    /**
+     * Video title (video mode only)
+     */
+    title?: (string) | null;
+    /**
+     * Video publish date (video mode only)
+     */
+    publishedAt?: (string) | null;
+    /**
      * Object keyed by breakdown dimension (age, gender, country)
      */
     demographics?: {
@@ -7338,10 +7350,17 @@ export type GetYouTubeDemographicsData = {
          */
         endDate?: string;
         /**
-         * Start date in YYYY-MM-DD format. Defaults to 90 days ago.
+         * Start date in YYYY-MM-DD format. Defaults to 90 days ago, or to the video's
+         * publish date (lifetime) when videoId is provided.
          *
          */
         startDate?: string;
+        /**
+         * YouTube video ID. When provided, demographics are scoped to this single video
+         * (must belong to the connected channel; otherwise 404 video_not_found).
+         *
+         */
+        videoId?: string;
     };
 };
 
@@ -24082,16 +24101,16 @@ export type BoostPostData = {
                 name?: string;
             }>;
             /**
-             * City targeting. Optional `radius` + `distance_unit` extend beyond the city limits (both set together, Meta only).
+             * City targeting. Optional `radius` + `distanceUnit` extend beyond the city limits (both set together, Meta only).
              */
             cities?: Array<{
                 key: string;
                 name?: string;
                 /**
-                 * Requires distance_unit.
+                 * Requires distanceUnit. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng).
                  */
                 radius?: number;
-                distance_unit?: 'mile' | 'kilometer';
+                distanceUnit?: 'mile' | 'kilometer';
             }>;
             /**
              * Postal/ZIP targeting. `key` is the platform's postal location ID (e.g. Meta `US:94304`).
@@ -24497,7 +24516,7 @@ export type CreateStandaloneAdData = {
              */
             key: string;
             /**
-             * Optional radius around the city. Must be set together with distance_unit.
+             * Optional radius around the city. Must be set together with distance_unit. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng).
              */
             radius?: number;
             /**
@@ -26641,6 +26660,10 @@ export type CreateCtwaAdData = {
          * TargetingGeoLocationCity. `key` is Meta's city ID
          * (lookupable via GET /v1/ads/targeting/search). `radius`
          * and `distance_unit` are coupled: set both or neither.
+         * Meta enforces a minimum city radius (~17 km / 10 mi);
+         * smaller values resolve to a 0-size audience and the ad
+         * fails at launch. For a tighter catchment use customLocations
+         * (lat/lng).
          *
          */
         cities?: Array<{

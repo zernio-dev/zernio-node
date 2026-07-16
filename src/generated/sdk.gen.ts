@@ -279,8 +279,11 @@ export const getInstagramDemographics = <ThrowOnError extends boolean = false>(o
 /**
  * Get YouTube demographics
  * Returns audience demographic insights for a YouTube channel, broken down by age, gender, and/or country.
+ * Pass videoId to get the audience profile of a single video instead of the whole channel.
  * Age and gender values are viewer percentages (0-100). Country values are view counts.
- * Data is based on signed-in viewers only, with a 2-3 day delay. Requires the Analytics add-on.
+ * Data is based on signed-in viewers only, with a 2-3 day delay. YouTube suppresses demographics
+ * for videos with too few signed-in views, so low-traffic videos can return empty breakdowns.
+ * Requires the Analytics add-on.
  *
  */
 export const getYouTubeDemographics = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetYouTubeDemographicsData, ThrowOnError>) => {
