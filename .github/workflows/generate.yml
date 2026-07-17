@@ -135,7 +135,6 @@ jobs:
 
       - name: Publish to npm as @getlatedev/node (legacy)
         if: steps.changes.outputs.has_changes == 'true' && steps.check_published.outputs.skip != 'true'
-        continue-on-error: true
         run: |
           node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@getlatedev/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
           npm publish --access public
