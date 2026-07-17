@@ -3624,6 +3624,15 @@ export type SocialAccount = {
     profileUrl?: string;
     isActive: boolean;
     /**
+     * The platform definitively reported the stored OAuth token as dead.
+     * While true, GET /v1/connect/{platform}/ads returns a
+     * fresh authUrl (implicit force=true) instead of alreadyConnected,
+     * so re-running the connect flow recovers the account. Cleared
+     * automatically when the account is re-authorized.
+     *
+     */
+    needsReconnection?: boolean;
+    /**
      * Follower count (only included if user has analytics add-on)
      */
     followersCount?: number;
@@ -9850,6 +9859,9 @@ export type SelectFacebookPageResponse = ({
 
 export type SelectFacebookPageError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'RECONNECT_ACCOUNT_MISMATCH';
 });
 
 export type ListGoogleBusinessLocationsData = {
@@ -12523,6 +12535,47 @@ export type UpdateGmbLocationResponse = ({
 });
 
 export type UpdateGmbLocationError = (unknown | {
+    error?: string;
+});
+
+export type AssignGoogleBusinessLocationData = {
+    body: {
+        /**
+         * Target profile to connect the location onto.
+         */
+        profileId: string;
+        /**
+         * The Google Business location ID to assign (e.g. "locations/123").
+         */
+        selectedLocationId: string;
+        /**
+         * Optional but recommended. The Google Business Account resource name ("accounts/123") that owns the location (from GET gmb-locations). When provided the location is resolved directly instead of by enumerating the account, required for accounts with many locations.
+         *
+         */
+        googleAccountId?: string;
+    };
+    path: {
+        /**
+         * A source connected GBP account whose OAuth grant is reused.
+         */
+        accountId: string;
+    };
+};
+
+export type AssignGoogleBusinessLocationResponse = ({
+    message?: string;
+    account?: {
+        accountId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: string;
+        isActive?: boolean;
+        selectedLocationName?: string;
+        selectedLocationId?: string;
+    };
+});
+
+export type AssignGoogleBusinessLocationError = (unknown | {
     error?: string;
 });
 
@@ -18522,6 +18575,11 @@ export type PurchasePhoneNumberData = {
          */
         country?: string;
         /**
+         * Which of the country's offered number types to order (see `types[]` on GET /v1/phone-numbers/countries). Omitted = the country's default type, which is always the WhatsApp-safe choice. Capabilities, price, and KYC requirements are per (country, type): toll_free can never connect WhatsApp (400 when combined with connectWhatsapp:true), and wantsSms:true requires an SMS-capable type.
+         *
+         */
+        numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+        /**
          * A phone number is the unit; WhatsApp is one optional feature. Pass false to buy a STANDALONE number (Calls/SMS only): provisioning skips the Meta pre-verify/OTP steps and the number activates immediately. Omitted defaults to the WhatsApp provisioning path. WhatsApp can be connected to a standalone number later from the connect flow.
          *
          */
@@ -18565,6 +18623,10 @@ export type PurchasePhoneNumberResponse = (({
 }) | {
     status?: 'kyc_required';
     country?: string;
+    /**
+     * The type that will be ordered after KYC approval.
+     */
+    numberType?: string;
     kycUrl?: string;
 });
 
@@ -18600,6 +18662,27 @@ export type ListPhoneNumberCountriesResponse = ({
          * WhatsApp Business Calling (BIC) outbound availability, a Meta feature blocked in some countries. NOT the PSTN Calls feature (`callsAvailable`).
          */
         outboundCallingAvailable?: boolean;
+        /**
+         * Live carrier-stock snapshot (refreshed every 6h + on availability checks): false when NO offered type currently has deliverable inventory, so a purchase would fail. Treat as advisory; the purchase itself re-checks.
+         */
+        inStock?: boolean;
+        /**
+         * Every number type offered in this country (default first). Capabilities, KYC tier, monthly price, and stock are per type. The country-level fields above mirror the first (default) entry. Pass the chosen `numberType` to POST /v1/phone-numbers/purchase.
+         *
+         */
+        types?: Array<{
+            numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+            tier?: 1 | 2 | 3 | 4;
+            needsKyc?: boolean;
+            monthlyCents?: number;
+            /**
+             * Always false for toll_free (WhatsApp does not reliably register toll-free numbers).
+             */
+            whatsappAvailable?: boolean;
+            smsAvailable?: boolean;
+            callsAvailable?: boolean;
+            inStock?: boolean;
+        }>;
     }>;
 });
 
@@ -18660,6 +18743,10 @@ export type CheckPhoneNumberAvailabilityData = {
          * ISO-2 country code.
          */
         country: string;
+        /**
+         * Check a specific offered type (stock and address constraints are per type). Omitted = the country's default type.
+         */
+        numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
     };
 };
 
@@ -18825,6 +18912,10 @@ export type PurchaseWhatsAppPhoneNumberResponse = (({
 }) | {
     status?: 'kyc_required';
     country?: string;
+    /**
+     * The type that will be ordered after KYC approval.
+     */
+    numberType?: string;
     kycUrl?: string;
 });
 
@@ -18893,6 +18984,10 @@ export type CheckWhatsAppNumberAvailabilityData = {
          * ISO-2 country code.
          */
         country: string;
+        /**
+         * Check a specific offered type (stock and address constraints are per type). Omitted = the country's default type.
+         */
+        numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
     };
 };
 
@@ -18917,6 +19012,10 @@ export type CheckWhatsAppNumberAvailabilityError = (unknown | {
 export type GetPhoneNumberKycFormData = {
     query: {
         country: string;
+        /**
+         * Requirements and reuse eligibility are per (country, type). Omitted = the country's default type. Pass the same value on the POST.
+         */
+        numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
     };
 };
 

@@ -334,6 +334,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.updateGmbLocation).toBeTypeOf('function');
     });
 
+    it('should have assignGoogleBusinessLocation method', () => {
+      expect(client.connect.assignGoogleBusinessLocation).toBeDefined();
+      expect(client.connect.assignGoogleBusinessLocation).toBeTypeOf('function');
+    });
+
     it('should have getRedditSubreddits method', () => {
       expect(client.connect.getRedditSubreddits).toBeDefined();
       expect(client.connect.getRedditSubreddits).toBeTypeOf('function');

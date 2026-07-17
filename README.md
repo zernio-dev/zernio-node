@@ -321,6 +321,7 @@ try {
 | `connect.updatePinterestBoards()` | Set default Pinterest board |
 | `connect.updateRedditSubreddits()` | Set default subreddit |
 | `connect.updateYoutubeDefaultPlaylist()` | Set default YouTube playlist |
+| `connect.assignGoogleBusinessLocation()` | Assign GBP location to another profile |
 | `connect.completeTelegramConnect()` | Check Telegram status |
 | `connect.completeWhatsAppPhoneSelection()` | Complete number selection |
 | `connect.configureTikTokAdsBrandIdentity()` | Set TikTok brand identity |
