@@ -7548,7 +7548,7 @@ export type GetContentDecayResponse = ({
     }>;
 });
 
-export type GetContentDecayError = ({
+export type GetContentDecayError = (unknown | {
     error?: string;
 } | {
     error?: string;
@@ -16742,9 +16742,9 @@ export type EnableWhatsAppCallingLegacyResponse = ({
     forwardTo?: string;
 });
 
-export type EnableWhatsAppCallingLegacyError = ({
+export type EnableWhatsAppCallingLegacyError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type UpdateWhatsAppCallingLegacyData = {
     body: {
@@ -16762,9 +16762,9 @@ export type UpdateWhatsAppCallingLegacyData = {
 
 export type UpdateWhatsAppCallingLegacyResponse = (unknown);
 
-export type UpdateWhatsAppCallingLegacyError = ({
+export type UpdateWhatsAppCallingLegacyError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type DisableWhatsAppCallingLegacyData = {
     path: {
@@ -16777,9 +16777,9 @@ export type DisableWhatsAppCallingLegacyData = {
 
 export type DisableWhatsAppCallingLegacyResponse = (unknown);
 
-export type DisableWhatsAppCallingLegacyError = ({
+export type DisableWhatsAppCallingLegacyError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type GetWhatsAppCallPermissionsData = {
     query: {
@@ -20032,9 +20032,9 @@ export type GetWhatsAppCallingResponse = ({
     outboundDisabled?: boolean;
 });
 
-export type GetWhatsAppCallingError = ({
+export type GetWhatsAppCallingError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type EnableWhatsAppCallingData = {
     body: {
@@ -20066,9 +20066,9 @@ export type EnableWhatsAppCallingResponse = ({
     forwardTo?: string;
 });
 
-export type EnableWhatsAppCallingError = ({
+export type EnableWhatsAppCallingError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type UpdateWhatsAppCallingData = {
     body: {
@@ -20086,9 +20086,9 @@ export type UpdateWhatsAppCallingData = {
 
 export type UpdateWhatsAppCallingResponse = (unknown);
 
-export type UpdateWhatsAppCallingError = ({
+export type UpdateWhatsAppCallingError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type DisableWhatsAppCallingData = {
     path: {
@@ -20101,9 +20101,9 @@ export type DisableWhatsAppCallingData = {
 
 export type DisableWhatsAppCallingResponse = (unknown);
 
-export type DisableWhatsAppCallingError = ({
+export type DisableWhatsAppCallingError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type GetWhatsAppPhoneNumberData = {
     path: {
@@ -21355,7 +21355,7 @@ export type ListCustomFieldsResponse = ({
     }>;
 });
 
-export type ListCustomFieldsError = ({
+export type ListCustomFieldsError = (unknown | {
     error?: string;
 });
 
@@ -21387,12 +21387,12 @@ export type CreateCustomFieldResponse = ({
     };
 });
 
-export type CreateCustomFieldError = ({
+export type CreateCustomFieldError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type UpdateCustomFieldData = {
-    body?: {
+    body: {
         name?: string;
         options?: Array<(string)>;
     };
@@ -21412,7 +21412,7 @@ export type UpdateCustomFieldResponse = ({
     };
 });
 
-export type UpdateCustomFieldError = ({
+export type UpdateCustomFieldError = (unknown | {
     error?: string;
 });
 
@@ -21424,7 +21424,7 @@ export type DeleteCustomFieldData = {
 
 export type DeleteCustomFieldResponse = (unknown);
 
-export type DeleteCustomFieldError = ({
+export type DeleteCustomFieldError = (unknown | {
     error?: string;
 });
 
@@ -22030,7 +22030,7 @@ export type ListWorkflowExecutionsResponse = ({
     };
 });
 
-export type ListWorkflowExecutionsError = ({
+export type ListWorkflowExecutionsError = (unknown | {
     error?: string;
 });
 
