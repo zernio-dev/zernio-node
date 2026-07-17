@@ -2130,6 +2130,26 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 export type type5 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
+ * Attachment snapshot inside an edit-history entry.
+ */
+export type InboxMessageEditAttachment = {
+    type?: string;
+    url?: string;
+    payload?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * One prior version of an edited message.
+ */
+export type InboxMessageEditHistoryEntry = {
+    text: (string) | null;
+    attachments: Array<InboxMessageEditAttachment>;
+    editedAt: string;
+};
+
+/**
  * The account context included in inbox webhook payloads.
  */
 export type InboxWebhookAccount = {
@@ -5748,17 +5768,7 @@ export type WebhookPayloadMessageEdited = {
     /**
      * Prior versions of the message, oldest first.
      */
-    editHistory: Array<{
-        text: (string) | null;
-        attachments: Array<{
-            type?: string;
-            url?: string;
-            payload?: {
-                [key: string]: unknown;
-            };
-        }>;
-        editedAt: string;
-    }>;
+    editHistory: Array<InboxMessageEditHistoryEntry>;
     /**
      * Total number of edits applied to this message.
      */
@@ -14566,17 +14576,7 @@ export type GetInboxConversationMessagesResponse = ({
         /**
          * Every prior version of the message, oldest first.
          */
-        editHistory?: Array<{
-            text?: (string) | null;
-            attachments?: Array<{
-                type?: string;
-                url?: string;
-                payload?: {
-                    [key: string]: unknown;
-                };
-            }>;
-            editedAt?: string;
-        }>;
+        editHistory?: Array<InboxMessageEditHistoryEntry>;
         /**
          * True if the sender has deleted (unsent) this message. The original message and attachments fields remain populated.
          */
