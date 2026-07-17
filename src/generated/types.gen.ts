@@ -23825,6 +23825,160 @@ export type GetCampaignAnalyticsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type QueryAdInsightsData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Comma-separated Graph breakdowns (e.g. age,gender or publisher_platform).
+         */
+        breakdowns?: string;
+        /**
+         * Meta date_preset (e.g. last_7d, last_30d, this_month). Mutually exclusive with fromDate/toDate.
+         */
+        datePreset?: string;
+        /**
+         * Comma-separated Graph insights fields (e.g. spend,impressions,frequency,website_purchase_roas). Omitted = Meta's default set.
+         */
+        fields?: string;
+        /**
+         * JSON array of Meta filter objects: [{"field", "operator", "value"}]. Applied server-side by Meta.
+         */
+        filtering?: string;
+        /**
+         * Start of range (YYYY-MM-DD); requires toDate.
+         */
+        fromDate?: string;
+        /**
+         * Row granularity
+         */
+        level?: 'ad' | 'adset' | 'campaign' | 'account';
+        /**
+         * Rows per page
+         */
+        limit?: number;
+        /**
+         * Meta insights node: act_<n>, campaign id, ad set id or ad id.
+         */
+        objectId: string;
+        /**
+         * Days per row (1-90), monthly, or all_days.
+         */
+        timeIncrement?: string;
+        /**
+         * End of range (YYYY-MM-DD); requires fromDate.
+         */
+        toDate?: string;
+    };
+};
+
+export type QueryAdInsightsResponse = ({
+    objectId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type QueryAdInsightsError = (unknown | {
+    error?: string;
+});
+
+export type CreateAdInsightsReportData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant).
+         */
+        accountId: string;
+        /**
+         * Meta insights node: act_<n>, campaign id, ad set id or ad id.
+         */
+        objectId: string;
+        level?: 'ad' | 'adset' | 'campaign' | 'account';
+        /**
+         * Comma-separated Graph insights fields.
+         */
+        fields?: string;
+        /**
+         * Comma-separated Graph breakdowns.
+         */
+        breakdowns?: string;
+        /**
+         * Meta filter objects, applied server-side.
+         */
+        filtering?: Array<{
+            field: string;
+            operator: string;
+            value?: unknown;
+        }>;
+        /**
+         * Mutually exclusive with fromDate/toDate.
+         */
+        datePreset?: string;
+        fromDate?: string;
+        toDate?: string;
+        timeIncrement?: (number | 'monthly' | 'all_days');
+    };
+};
+
+export type CreateAdInsightsReportResponse = ({
+    reportRunId?: string;
+    status?: string;
+});
+
+export type CreateAdInsightsReportError = (unknown | {
+    error?: string;
+});
+
+export type GetAdInsightsReportData = {
+    path: {
+        reportRunId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id used to resolve the Meta token (must be the same connection that created the run).
+         */
+        accountId: string;
+        after?: string;
+        limit?: number;
+    };
+};
+
+export type GetAdInsightsReportResponse = ({
+    reportRunId?: string;
+    /**
+     * Meta async_status: Job Not Started, Job Started, Job Running, Job Completed, Job Failed, Job Skipped.
+     */
+    status?: string;
+    percentCompletion?: number;
+    dateStart?: string;
+    dateStop?: string;
+    /**
+     * Present only when status is Job Completed.
+     */
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        after?: (string) | null;
+    };
+});
+
+export type GetAdInsightsReportError = (unknown | {
+    error?: string;
+});
+
 export type GetAdAnalyticsData = {
     path: {
         adId: string;

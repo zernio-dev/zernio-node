@@ -394,6 +394,7 @@ try {
 | `ads.listFormLeads()` | List leads for a single form |
 | `ads.listLeadForms()` | List lead forms |
 | `ads.listLeads()` | List submitted leads |
+| `ads.createAdInsightsReport()` | Submit an async insights report run (Meta) |
 | `ads.createConversionDestination()` | Create a conversion destination |
 | `ads.createCtwaAd()` | Create Click-to-WhatsApp ad |
 | `ads.createLeadForm()` | Create a lead form |
@@ -402,6 +403,7 @@ try {
 | `ads.getAd()` | Get ad details |
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
+| `ads.getAdInsightsReport()` | Poll an async insights report run (Meta) |
 | `ads.getAdTrackingTags()` | Get ad tracking tags |
 | `ads.getCampaignAnalytics()` | Get campaign analytics |
 | `ads.getConversionDestination()` | Get a conversion destination |
@@ -424,6 +426,7 @@ try {
 | `ads.archiveLeadForm()` | Archive a lead form |
 | `ads.boostPost()` | Boost post as ad |
 | `ads.estimateAdReach()` | Estimate audience reach |
+| `ads.queryAdInsights()` | Flexible live insights query (Meta) |
 | `ads.removeConversionAssociations()` | Remove associated campaigns |
 | `ads.searchAdInterests()` | Search targeting interests |
 | `ads.searchAdTargeting()` | Search targeting options |
