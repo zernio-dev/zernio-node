@@ -25287,15 +25287,14 @@ export type CreateStandaloneAdData = {
              * for `goal: conversions`.
              *
              * **TikTok:** an `optimization_event` code (UPPER_SNAKE, not Meta's vocabulary
-             * and not PascalCase). Must be one of the event types your TikTok Pixel is
-             * configured to track; passed through verbatim and validated by TikTok.
-             * Newer pixels (Events API / funnel-template setups) use TikTok's updated
-             * taxonomy, e.g. `SHOPPING` for purchase/payment events; legacy pixels use
-             * codes like `ON_WEB_ORDER` (Complete Payment), `INITIATE_ORDER` (Place an
-             * Order), `ON_WEB_CART` (Add to Cart), `ON_WEB_REGISTER` (Complete
-             * Registration), `FORM` (Submit Form), `ON_WEB_DETAIL` (View Content).
-             * On rejection the error lists the event types your pixel actually tracks.
-             * Optional for `goal: conversions`.
+             * and not PascalCase), OR the exact event name shown in TikTok Events Manager
+             * (auto-resolved to its code). Must be one of the event types your TikTok
+             * Pixel tracks; custom events are not optimizable. Current taxonomy:
+             * `SHOPPING` (Purchase), `ON_WEB_CART` (Add to Cart), `INITIATE_ORDER`
+             * (Initiate Checkout), `FORM` (Lead), `ON_WEB_REGISTER` (Complete
+             * Registration), `ON_WEB_DETAIL` (View Content). `ON_WEB_ORDER` is
+             * deprecated. On rejection the error lists the event types your pixel
+             * actually tracks. Optional for `goal: conversions`.
              *
              */
             customEventType?: string;
