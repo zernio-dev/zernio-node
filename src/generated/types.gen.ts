@@ -1962,8 +1962,8 @@ export type FoodMenuItem = {
      * Item variants/options (e.g. sizes, preparations)
      */
     options?: Array<{
-        labels?: Array<FoodMenuLabel>;
-        attributes?: FoodMenuItemAttributes;
+        labels: Array<FoodMenuLabel>;
+        attributes: FoodMenuItemAttributes;
     }>;
 };
 
@@ -1972,7 +1972,7 @@ export type FoodMenuItemAttributes = {
     /**
      * Spiciness level (e.g. MILD, MEDIUM, HOT)
      */
-    spiciness?: string;
+    spiciness?: 'SPICINESS_UNSPECIFIED' | 'MILD' | 'MEDIUM' | 'HOT';
     /**
      * Allergens (e.g. DAIRY, GLUTEN, SHELLFISH)
      */
@@ -1994,6 +1994,11 @@ export type FoodMenuItemAttributes = {
      */
     mediaKeys?: Array<(string)>;
 };
+
+/**
+ * Spiciness level (e.g. MILD, MEDIUM, HOT)
+ */
+export type spiciness = 'SPICINESS_UNSPECIFIED' | 'MILD' | 'MEDIUM' | 'HOT';
 
 export type FoodMenuLabel = {
     /**
@@ -9319,7 +9324,7 @@ export type GetAllAccountsHealthResponse = ({
     }>;
 });
 
-export type GetAllAccountsHealthError = ({
+export type GetAllAccountsHealthError = (ErrorResponse | {
     error?: string;
 });
 
@@ -10695,7 +10700,7 @@ export type CreateGoogleBusinessMediaData = {
         /**
          * Where the photo appears on the listing
          */
-        category?: 'COVER' | 'PROFILE' | 'LOGO' | 'EXTERIOR' | 'INTERIOR' | 'FOOD_AND_DRINK' | 'MENU' | 'PRODUCT' | 'TEAMS' | 'ADDITIONAL';
+        category?: 'CATEGORY_UNSPECIFIED' | 'COVER' | 'PROFILE' | 'LOGO' | 'EXTERIOR' | 'INTERIOR' | 'PRODUCT' | 'FOOD_AND_DRINK' | 'MENU' | 'COMMON_AREA' | 'ROOMS' | 'TEAMS' | 'AT_WORK' | 'ADDITIONAL';
     };
     path: {
         accountId: string;
@@ -10863,12 +10868,16 @@ export type GetGoogleBusinessAttributesError = (ErrorResponse);
 export type UpdateGoogleBusinessAttributesData = {
     body: {
         attributes: Array<{
-            name?: string;
+            name: string;
+            valueType?: 'ATTRIBUTE_VALUE_TYPE_UNSPECIFIED' | 'BOOL' | 'ENUM' | 'URL' | 'REPEATED_ENUM';
             values?: Array<unknown>;
             repeatedEnumValue?: {
                 setValues?: Array<(string)>;
                 unsetValues?: Array<(string)>;
             };
+            uriValues?: Array<{
+                uri: string;
+            }>;
         }>;
         /**
          * Comma-separated attribute names to update (e.g. 'has_delivery,has_takeout')
@@ -10998,7 +11007,7 @@ export type UpdateGoogleBusinessPlaceActionData = {
          */
         name: string;
         /**
-         * New action URL
+         * New action URL. At least one of uri or placeActionType is required (enforced server-side; not modeled as anyOf because required-only anyOf branches break SDK generators).
          */
         uri?: string;
         /**
@@ -11067,15 +11076,19 @@ export type GetGoogleBusinessServicesError = (ErrorResponse);
 export type UpdateGoogleBusinessServicesData = {
     body: {
         serviceItems: Array<{
+            /**
+             * Exactly one of structuredServiceItem or freeFormServiceItem is required per item (enforced server-side; not modeled as oneOf because required-only oneOf branches break SDK generators).
+             */
             structuredServiceItem?: {
-                serviceTypeId?: string;
+                serviceTypeId: string;
                 description?: string;
             };
             freeFormServiceItem?: {
-                category?: string;
-                label?: {
-                    displayName?: string;
+                category: string;
+                label: {
+                    displayName: string;
                     description?: string;
+                    languageCode?: string;
                 };
             };
             price?: {
@@ -11305,7 +11318,11 @@ export type SelectLinkedInOrganizationData = {
         };
         accountType: 'personal' | 'organization';
         selectedOrganization?: {
-            [key: string]: unknown;
+            id: string;
+            urn: string;
+            name: string;
+            logoUrl?: string;
+            vanityName?: string;
         };
         redirect_url?: string;
     };
@@ -12084,7 +12101,7 @@ export type GetLinkedInPostReactionsData = {
         /**
          * Offset-based pagination start index
          */
-        cursor?: string;
+        cursor?: number;
         /**
          * Maximum number of reactions to return per page
          */
@@ -12153,10 +12170,7 @@ export type GetLinkedInPostReactionsResponse = ({
     lastUpdated?: string;
 });
 
-export type GetLinkedInPostReactionsError = ({
-    error?: string;
-    code?: 'missing_urn' | 'invalid_urn' | 'invalid_platform' | 'PLATFORM_LIMITATION';
-} | {
+export type GetLinkedInPostReactionsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -12174,7 +12188,8 @@ export type UpdateLinkedInOrganizationData = {
 
 export type UpdateLinkedInOrganizationResponse = ({
     message?: string;
-    account?: SocialAccount;
+    accountType?: 'personal' | 'organization';
+    accountName?: string;
 });
 
 export type UpdateLinkedInOrganizationError = (unknown | {
@@ -14114,6 +14129,9 @@ export type ListInboxConversationsData = {
 
 export type ListInboxConversationsResponse = ({
     data?: Array<{
+        /**
+         * Opaque conversation identifier. Pass it back verbatim to any /v1/inbox/conversations/{conversationId} route; do not assume a fixed format.
+         */
         id?: string;
         platform?: string;
         accountId?: string;
@@ -15428,7 +15446,7 @@ export type DeleteMessengerMenuData = {
 
 export type DeleteMessengerMenuResponse = (unknown);
 
-export type DeleteMessengerMenuError = ({
+export type DeleteMessengerMenuError = (ErrorResponse | {
     error?: string;
 });
 
@@ -15474,7 +15492,7 @@ export type DeleteInstagramIceBreakersData = {
 
 export type DeleteInstagramIceBreakersResponse = (unknown);
 
-export type DeleteInstagramIceBreakersError = ({
+export type DeleteInstagramIceBreakersError = (ErrorResponse | {
     error?: string;
 });
 
@@ -15527,7 +15545,7 @@ export type DeleteTelegramCommandsData = {
 
 export type DeleteTelegramCommandsResponse = (unknown);
 
-export type DeleteTelegramCommandsError = ({
+export type DeleteTelegramCommandsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -24666,7 +24684,7 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Meta only. Publish state of the created ad set + ad. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused and skips activation, so you can review before they spend.
+         * Meta and TikTok. Publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused and skips activation, so you can review before they spend. On TikTok the whole campaign > ad group > ad hierarchy stays paused.
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
@@ -24856,9 +24874,9 @@ export type CreateStandaloneAdData = {
          */
         countries?: Array<(string)>;
         /**
-         * Meta-only. City-level geo targeting. Each city is targeted by Meta's opaque `key` (the city ID) which can be looked up via `GET /v1/ads/targeting/search?type=city&q=<name>&country_code=<ISO>`. Optional `radius` + `distance_unit` extend the targeting beyond the city limits (e.g. radius 25 km around the city center). Both must be set together, or both omitted (Meta defaults to ~16 km when omitted).
+         * City-level geo targeting (Meta and TikTok). Each city is targeted by the platform's opaque `key` (the city ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`. Optional `radius` + `distance_unit` (Meta only) extend the targeting beyond the city limits (e.g. radius 25 km around the city center). Both must be set together, or both omitted (Meta defaults to ~16 km when omitted).
          *
-         * Cannot overlap with the same country in `countries` (Meta returns a "locations overlap" error). Either drop the country or scope it to a different country.
+         * On Meta, cannot overlap with the same country in `countries` (Meta returns a "locations overlap" error). Either drop the country or scope it to a different country. On TikTok, keys are numeric location ids and can be sent without `countries`.
          *
          */
         cities?: Array<{
@@ -24876,12 +24894,12 @@ export type CreateStandaloneAdData = {
             distance_unit?: 'mile' | 'kilometer';
         }>;
         /**
-         * Meta-only. Region-level (state/province) geo targeting. Each region is targeted by Meta's opaque `key` (the region ID) which can be looked up via `GET /v1/ads/targeting/search?type=region&q=<name>&country_code=<ISO>`.
+         * Region-level (state/province) geo targeting (Meta and TikTok). Each region is targeted by the platform's opaque `key` (the region ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`.
          *
          */
         regions?: Array<{
             /**
-             * Meta region ID, from /v1/ads/targeting/search results.
+             * Platform region ID, from /v1/ads/targeting/search results.
              */
             key: string;
         }>;
@@ -24902,7 +24920,7 @@ export type CreateStandaloneAdData = {
             name?: string;
         }>;
         /**
-         * DMA / metro-area geo targeting. `key` is the platform's metro ID from /v1/ads/targeting/search?dimension=geo&geoType=metro.
+         * DMA / metro-area geo targeting (Meta and TikTok). `key` is the platform's metro ID from /v1/ads/targeting/search?dimension=geo&geoType=metro (TikTok metros appear as type `metro`, e.g. the New York DMA).
          */
         metros?: Array<{
             key: string;

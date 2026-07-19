@@ -1424,7 +1424,7 @@ export const listGoogleBusinessMedia = <ThrowOnError extends boolean = false>(op
  * Upload photo
  * Creates a media item (photo) for a location from a publicly accessible URL.
  *
- * Categories determine where the photo appears: COVER, PROFILE, LOGO, EXTERIOR, INTERIOR, FOOD_AND_DRINK, MENU, PRODUCT, TEAMS, ADDITIONAL.
+ * Categories determine where the photo appears: CATEGORY_UNSPECIFIED, COVER, PROFILE, LOGO, EXTERIOR, INTERIOR, PRODUCT, FOOD_AND_DRINK, MENU, COMMON_AREA, ROOMS, TEAMS, AT_WORK, ADDITIONAL.
  *
  */
 export const createGoogleBusinessMedia = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateGoogleBusinessMediaData, ThrowOnError>) => {
@@ -6847,6 +6847,12 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * varies by platform (e.g. behaviours are Meta/TikTok only). Results are normalized
  * across platforms into a single shape, so the same client code consumes Meta,
  * TikTok, LinkedIn, X, Pinterest, and Google results.
+ *
+ * TikTok geo searches return every matching level in one list (`type` is
+ * `country`, `region`, `city`, `district`, or `metro` for DMA areas) —
+ * `geoType` is not applied. Results are scoped to the advertiser's targetable
+ * markets, and every id is usable in `regions`/`cities`/`metros` keys on
+ * `POST /v1/ads/create`.
  *
  * For geo queries, `q` should contain only the locality name (e.g. `"Amsterdam"`,
  * not `"Amsterdam, NL"`). Use `countryCode` to disambiguate.
