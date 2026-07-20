@@ -15838,6 +15838,10 @@ export type ReplyToInboxPostData = {
         accountId: string;
         message: string;
         /**
+         * (Facebook only) URL of an image to attach, publishing a photo comment alongside the text. The URL must be publicly accessible so Meta can fetch it. Returns 400 for other platforms.
+         */
+        attachmentUrl?: string;
+        /**
          * Reply to specific comment (optional)
          */
         commentId?: string;
@@ -15874,9 +15878,9 @@ export type ReplyToInboxPostResponse = ({
     };
 });
 
-export type ReplyToInboxPostError = ({
+export type ReplyToInboxPostError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type DeleteInboxCommentData = {
     path: {
