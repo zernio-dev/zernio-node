@@ -9989,7 +9989,13 @@ export type SelectGoogleBusinessLocationResponse = ({
         username?: string;
         displayName?: string;
         isActive?: boolean;
+        /**
+         * Human-readable location display name, NOT a resource name. Do not use it to build API paths.
+         */
         selectedLocationName?: string;
+        /**
+         * Bare GBP location id. Combine with the GBP account id as accounts/{gbpAccountId}/locations/{selectedLocationId} to form the location resource names that gmb-reviews/batch expects in locationNames.
+         */
         selectedLocationId?: string;
     };
 });
@@ -11121,7 +11127,7 @@ export type UpdateGoogleBusinessServicesError = (ErrorResponse);
 export type BatchGetGoogleBusinessReviewsData = {
     body: {
         /**
-         * Array of full location resource names (e.g. ['accounts/123/locations/456'])
+         * Array of full location resource names (e.g. ['accounts/123/locations/456']). Max 50 per request (Google's batchGetReviews cap); chunk larger sets into multiple requests.
          */
         locationNames: Array<(string)>;
         /**
@@ -11132,6 +11138,10 @@ export type BatchGetGoogleBusinessReviewsData = {
          * Pagination token from previous response
          */
         pageToken?: string;
+        /**
+         * Sort order requested from Google. Defaults to 'updateTime desc' (newest first), which allows early-stopping pagination once results cross your date window.
+         */
+        orderBy?: 'updateTime desc' | 'rating' | 'rating desc';
     };
     path: {
         accountId: string;
@@ -11143,11 +11153,11 @@ export type BatchGetGoogleBusinessReviewsResponse = ({
     accountId?: string;
     locationReviews?: Array<{
         /**
-         * Full review resource name (accounts*locations*reviews*)
+         * LOCATION resource name the review belongs to (accounts/{accountId}/locations/{locationId}) - NOT the review resource name. Use it to attribute the review to a location; the review identity is review.reviewId (full review resource name at review.name).
          */
         name?: string;
         /**
-         * The review object (reviewId, starRating, comment, reviewer, createTime, updateTime, reviewReply)
+         * The review object: reviewId (the review's identity), name (full review resource name, accounts*locations*reviews*), starRating, comment, reviewer, createTime, updateTime, reviewReply, and reviewMediaItems (review photos/videos; photo items carry thumbnailUrl, video items carry videoUrl)
          */
         review?: {
             [key: string]: unknown;
@@ -12595,7 +12605,13 @@ export type AssignGoogleBusinessLocationResponse = ({
         username?: string;
         displayName?: string;
         isActive?: boolean;
+        /**
+         * Human-readable location display name (e.g. "Snap Fitness Dianella"), NOT a resource name. Do not use it to build API paths.
+         */
         selectedLocationName?: string;
+        /**
+         * Bare GBP location id (digits only). Combine with the GBP account id as accounts/{gbpAccountId}/locations/{selectedLocationId} to form the location resource names that gmb-reviews/batch expects in locationNames.
+         */
         selectedLocationId?: string;
     };
 });
@@ -15590,11 +15606,23 @@ export type ListInboxCommentsResponse = ({
         platform?: string;
         accountId?: string;
         accountUsername?: string;
+        /**
+         * The post text/caption. On ad rows (isAd: true) this is the AD NAME, not the underlying post's caption — the creative text isn't exposed here.
+         */
         content?: string;
+        /**
+         * Post media thumbnail. On ad rows this is the ad creative thumbnail.
+         */
         picture?: (string) | null;
+        /**
+         * Public URL of the post. On ad rows: the Facebook dark-post URL (facebook placement) or the IG media permalink (instagram placement); may be null when unknown.
+         */
         permalink?: (string) | null;
         createdTime?: string;
         commentCount?: number;
+        /**
+         * Not fetched for ad rows (always 0 there).
+         */
         likeCount?: number;
         /**
          * Bluesky content identifier
@@ -16447,10 +16475,21 @@ export type ListInboxReviewsData = {
 export type ListInboxReviewsResponse = ({
     status?: string;
     data?: Array<{
+        /**
+         * Review identifier. For Google Business this is the full review resource name (accounts/{accountId}/locations/{locationId}/reviews/{reviewId}), so it also encodes the location.
+         */
         id?: string;
         platform?: string;
         accountId?: string;
         accountUsername?: string;
+        /**
+         * Bare GBP location id the review belongs to. Google Business only; absent for other platforms.
+         */
+        locationId?: string;
+        /**
+         * Human-readable GBP location display name. Google Business only; absent for other platforms.
+         */
+        locationName?: (string) | null;
         reviewer?: {
             id?: (string) | null;
             name?: string;

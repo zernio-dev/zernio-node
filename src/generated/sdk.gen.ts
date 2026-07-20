@@ -1578,7 +1578,12 @@ export const updateGoogleBusinessServices = <ThrowOnError extends boolean = fals
  * Batch get reviews
  * Fetches reviews across multiple locations in a single request.
  * More efficient than calling GET /gmb-reviews per location for multi-location businesses.
- * Returns a flat list of individual reviews, each tagged with its review resource name.
+ * Returns a flat locationReviews array (not grouped by location): each item carries
+ * the location resource name it belongs to (`name`) plus the review object (`review`),
+ * whose identity is `review.reviewId`.
+ * Reviews are requested from Google ordered by `orderBy` (default `updateTime desc`,
+ * newest first), so callers polling for recent reviews can stop paginating once they
+ * cross their date window.
  * Note: this endpoint does not return aggregate metrics (averageRating / totalReviewCount).
  * For those, use the single-location GET /gmb-reviews endpoint.
  *
