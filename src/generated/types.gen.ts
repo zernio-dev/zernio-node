@@ -23893,6 +23893,18 @@ export type QueryAdInsightsData = {
          */
         accountId: string;
         /**
+         * Comma-separated Meta attribution windows. Action values are returned keyed per window.
+         */
+        actionAttributionWindows?: string;
+        /**
+         * Comma-separated Graph action breakdowns. Segments the actions[] arrays in each row.
+         */
+        actionBreakdowns?: string;
+        /**
+         * When actions are counted: impression, conversion or mixed.
+         */
+        actionReportTime?: string;
+        /**
          * Cursor from paging.after of the previous page.
          */
         after?: string;
@@ -23936,6 +23948,10 @@ export type QueryAdInsightsData = {
          * End of range (YYYY-MM-DD); requires fromDate.
          */
         toDate?: string;
+        /**
+         * Use the ad sets' own attribution settings for action counting.
+         */
+        useUnifiedAttributionSetting?: boolean;
     };
 };
 
@@ -23975,6 +23991,22 @@ export type CreateAdInsightsReportData = {
          * Comma-separated Graph breakdowns.
          */
         breakdowns?: string;
+        /**
+         * Comma-separated Graph action breakdowns (e.g. action_type,action_destination).
+         */
+        actionBreakdowns?: string;
+        /**
+         * Meta attribution windows (e.g. ["7d_click", "1d_view"]). Action values are returned keyed per window.
+         */
+        actionAttributionWindows?: Array<(string)>;
+        /**
+         * When actions are counted: impression, conversion or mixed.
+         */
+        actionReportTime?: string;
+        /**
+         * Use the ad sets' own attribution settings for action counting.
+         */
+        useUnifiedAttributionSetting?: boolean;
         /**
          * Meta filter objects, applied server-side.
          */
@@ -25113,6 +25145,38 @@ export type CreateStandaloneAdData = {
              */
             adFormat?: 'SINGLE_IMAGE' | 'CAROUSEL_IMAGE';
         };
+        /**
+         * Meta only. Hand-built carousel: 2-10 authored cards in DETERMINISTIC order, mapped to
+         * the creative's `link_data.child_attachments`. Unlike `dynamicCreative`,
+         * you control the card order and per-card copy/link. Requires top-level `body`,
+         * `linkUrl` and `callToAction`.
+         * Mutually exclusive with `imageUrl`/`video`, `creatives[]`, `dynamicCreative`,
+         * `placementAssets`, `existingCreativeId`, `adSetId`, `leadGenFormId` and goal
+         * `catalog_sales`.
+         *
+         */
+        carouselCards?: Array<{
+            /**
+             * Card image; uploaded to the ad account and referenced by hash.
+             */
+            imageUrl: string;
+            /**
+             * Card destination URL. Defaults to the top-level linkUrl.
+             */
+            linkUrl?: string;
+            /**
+             * Card headline, shown below the card image.
+             */
+            headline?: string;
+            /**
+             * Card description, shown under the headline.
+             */
+            description?: string;
+            /**
+             * Card CTA override. Defaults to the top-level callToAction; same enum.
+             */
+            callToAction?: string;
+        }>;
         /**
          * Meta only. Placement asset customization: pin a SPECIFIC asset (image OR video) to
          * each placement group on a SINGLE ad (e.g. a 9:16 on Stories/Reels and a 4:5 on Feed).
