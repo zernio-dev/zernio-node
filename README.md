@@ -395,15 +395,18 @@ try {
 | `ads.listLeadForms()` | List lead forms |
 | `ads.listLeads()` | List submitted leads |
 | `ads.createAdInsightsReport()` | Submit an async insights report run (Meta) |
+| `ads.createCallAd()` | Create Click-to-Call ad |
 | `ads.createConversionDestination()` | Create a conversion destination |
-| `ads.createCtwaAd()` | Create Click-to-WhatsApp ad |
+| `ads.createCtwaAd()` | Create Click-to-WhatsApp ad (deprecated) |
 | `ads.createLeadForm()` | Create a lead form |
+| `ads.createMessagingAd()` | Create click-to-message ad (WhatsApp / Messenger / Instagram Direct) |
 | `ads.createStandaloneAd()` | Create standalone ad |
 | `ads.createTestLead()` | Create a test lead |
 | `ads.getAd()` | Get ad details |
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
 | `ads.getAdInsightsReport()` | Poll an async insights report run (Meta) |
+| `ads.getAdPreviews()` | Render previews of an existing ad (Meta) |
 | `ads.getAdTrackingTags()` | Get ad tracking tags |
 | `ads.getCampaignAnalytics()` | Get campaign analytics |
 | `ads.getConversionDestination()` | Get a conversion destination |
@@ -426,6 +429,7 @@ try {
 | `ads.archiveLeadForm()` | Archive a lead form |
 | `ads.boostPost()` | Boost post as ad |
 | `ads.estimateAdReach()` | Estimate audience reach |
+| `ads.generateAdPreviews()` | Render pre-create ad previews (Meta) |
 | `ads.queryAdInsights()` | Flexible live insights query (Meta) |
 | `ads.removeConversionAssociations()` | Remove associated campaigns |
 | `ads.searchAdInterests()` | Search targeting interests |

@@ -1373,6 +1373,313 @@ export type ConversionEvent = {
 export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 'system_generated';
 
 /**
+ * In addition to the `required` list, the request must use
+ * EXACTLY ONE of the two shapes:
+ *
+ * - Single-creative: `headline`, `body`, and one of
+ * `imageUrl` / `video` (mutually exclusive).
+ * - Multi-creative: a non-empty `creatives[]` array. Top-level
+ * `headline` / `body` / `imageUrl` / `video` must NOT be set
+ * on this shape.
+ *
+ * The route enforces this at the Zod boundary; OpenAPI's
+ * `required` cannot express the OR cleanly.
+ *
+ */
+export type CtwaAdRequestBody = {
+    /**
+     * Facebook or Instagram SocialAccount ID.
+     */
+    accountId: string;
+    /**
+     * Meta ad account ID, e.g. `act_123456789`.
+     */
+    adAccountId: string;
+    /**
+     * Ad display name. Used to derive campaign / ad set names.
+     * On the multi-creative shape, each ad's Meta name gets a
+     * " #N" suffix (1-indexed) so Ads Manager shows them as a
+     * numbered batch.
+     *
+     */
+    name: string;
+    /**
+     * Single-creative shape only. Mutually exclusive with
+     * `creatives[]`.
+     *
+     */
+    headline?: string;
+    /**
+     * Primary text shown above the image / video. Single-creative
+     * shape only. Mutually exclusive with `creatives[]`.
+     *
+     */
+    body?: string;
+    /**
+     * Image asset for single-creative shape. Mutually exclusive
+     * with `video` and with `creatives[]`. Required on the
+     * single-creative shape if `video` is not supplied.
+     *
+     */
+    imageUrl?: string;
+    /**
+     * Video creative for single-creative shape. Mutually
+     * exclusive with `imageUrl` and with `creatives[]`. Required
+     * on the single-creative shape if `imageUrl` is not supplied.
+     *
+     */
+    video?: {
+        url: string;
+        /**
+         * Required by Meta for every video creative. Used as the
+         * ad thumbnail.
+         *
+         */
+        thumbnailUrl: string;
+    };
+    /**
+     * Multi-creative shape: N CTWA ads under one campaign + one
+     * ad set, sharing budget and targeting. Mutually exclusive
+     * with the top-level single-creative fields (`headline` /
+     * `body` / `imageUrl` / `video`). Each entry must supply its
+     * own headline, body, and exactly one of `imageUrl` /
+     * `video`.
+     *
+     */
+    creatives?: Array<{
+        headline: string;
+        /**
+         * Primary text shown above the image / video.
+         */
+        body: string;
+        /**
+         * Image asset. Mutually exclusive with this entry's
+         * `video`. Required if `video` is not supplied.
+         *
+         */
+        imageUrl?: string;
+        /**
+         * Video creative. Mutually exclusive with this entry's
+         * `imageUrl`. Required if `imageUrl` is not supplied.
+         *
+         */
+        video?: {
+            url: string;
+            /**
+             * Required by Meta for every video creative. Used
+             * as the ad thumbnail.
+             *
+             */
+            thumbnailUrl: string;
+        };
+    }>;
+    /**
+     * Budget amount in the ad account's currency major units
+     * (e.g. dollars for USD, not cents). Must be > 0.
+     *
+     */
+    budgetAmount: number;
+    budgetType: 'daily' | 'lifetime';
+    /**
+     * ISO 4217 currency code matching the ad account's currency
+     * (e.g. `USD`). Optional; Meta infers from the ad account
+     * when omitted.
+     *
+     */
+    currency?: string;
+    /**
+     * ISO 8601 datetime. Required when `budgetType` is `lifetime`.
+     *
+     */
+    endDate?: string;
+    /**
+     * ISO 3166-1 alpha-2 country codes. Defaults to `["US"]` only
+     * when no other geo (`cities`, `regions`, `zips`, `metros`,
+     * `customLocations`) is supplied.
+     *
+     */
+    countries?: Array<(string)>;
+    /**
+     * City-level geo targeting for local CTWA campaigns. Each entry maps to Meta's
+     * TargetingGeoLocationCity. `key` is Meta's city ID. `radius`
+     * and `distance_unit` are coupled: set both or neither.
+     * Meta enforces a minimum city radius (~17 km / 10 mi);
+     * smaller values resolve to a 0-size audience and the ad
+     * fails at launch. For a tighter catchment use customLocations
+     * (lat/lng).
+     *
+     */
+    cities?: Array<{
+        key: string;
+        radius?: number;
+        distance_unit?: 'mile' | 'kilometer';
+    }>;
+    /**
+     * Region / state-level geo targeting. `key` is Meta's region
+     * ID (lookupable via GET /v1/ads/targeting/search?type=region).
+     *
+     */
+    regions?: Array<{
+        key: string;
+    }>;
+    /**
+     * ZIP / postal-code geo targeting. `key` is the platform's
+     * postal id resolved via /v1/ads/targeting/search.
+     *
+     */
+    zips?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    /**
+     * DMA / metro-area geo targeting. `key` is Meta's metro id
+     * (e.g. `DMA:807`).
+     *
+     */
+    metros?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    /**
+     * Point-radius geo (Meta `geo_locations.custom_locations`).
+     * Use for targeting a radius around a specific lat/long when
+     * no Meta city/region key fits. `distanceUnit` is required.
+     *
+     */
+    customLocations?: Array<{
+        latitude: number;
+        longitude: number;
+        radius: number;
+        distanceUnit: 'mile' | 'kilometer';
+        name?: string;
+        address?: string;
+    }>;
+    ageMin?: number;
+    ageMax?: number;
+    interests?: Array<{
+        id: string;
+        name?: string;
+    }>;
+    /**
+     * Custom audience ID to target.
+     */
+    audienceId?: string;
+    /**
+     * Manual ad placements on the shared ad set. Omit
+     * for automatic placements. When set, restricts delivery to the chosen surfaces,
+     * mapped onto the ad set's `targeting.{publisher_platforms, facebook_positions, instagram_positions,
+     * messenger_positions, audience_network_positions, threads_positions,
+     * whatsapp_positions, device_platforms}`. Enum membership is validated here; Meta
+     * additionally enforces co-selection rules and restricts which
+     * placements are eligible for click-to-WhatsApp ads, returning an actionable
+     * error which we surface.
+     *
+     */
+    placements?: {
+        /**
+         * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
+         */
+        publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
+        facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+        instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
+        messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
+        audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
+        threadsPositions?: Array<('threads_stream')>;
+        whatsappPositions?: Array<('status')>;
+        /**
+         * Restrict by device. Omit to deliver on both mobile and desktop.
+         */
+        devicePlatforms?: Array<('mobile' | 'desktop')>;
+    };
+    /**
+     * Meta's Advantage+ audience expansion. `0` (default) keeps
+     * targeting strict; `1` lets Meta expand beyond the supplied
+     * targeting when its delivery system finds better matches.
+     * Always sent on CREATE (Meta requires it).
+     *
+     */
+    advantageAudience?: 0 | 1;
+    /**
+     * Defaults to `OUTCOME_ENGAGEMENT`. `OUTCOME_SALES` and `OUTCOME_LEADS` require
+     * additional account configuration (Dataset linked to the WABA
+     * for sales) and may be rejected by Meta if missing.
+     *
+     */
+    objective?: 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS';
+    /**
+     * Meta bid strategy applied to the shared ad set. Defaults to
+     * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
+     * `LOWEST_COST_WITH_BID_CAP` and `COST_CAP` require
+     * `bidAmount`. `LOWEST_COST_WITH_MIN_ROAS` requires
+     * `roasAverageFloor`. CTWA's `optimization_goal` is fixed to
+     * `CONVERSATIONS`, but the bid strategy is independent.
+     *
+     */
+    bidStrategy?: 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
+    /**
+     * Whole currency units (e.g. `5` = $5.00 on a USD account).
+     * Required when `bidStrategy` is `LOWEST_COST_WITH_BID_CAP`
+     * or `COST_CAP`; rejected otherwise.
+     *
+     */
+    bidAmount?: number;
+    /**
+     * Decimal ROAS multiplier (e.g. `2.0` = 2.0× ROAS floor).
+     * Required when `bidStrategy` is `LOWEST_COST_WITH_MIN_ROAS`;
+     * rejected otherwise. Meta enforces its own upper bound
+     * server-side.
+     *
+     */
+    roasAverageFloor?: number;
+    /**
+     * Legal entity that benefits from the ad. Required when targeting EU users
+     * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
+     * set it once via `PATCH /v1/ads/accounts` or in Meta Ads Manager, and Meta
+     * fills it in whenever the field is omitted.
+     *
+     */
+    dsaBeneficiary?: string;
+    /**
+     * Legal entity that pays for the ad. Can differ from `dsaBeneficiary`
+     * (for example, an agency paying for a client's ads). Same rules as
+     * `dsaBeneficiary`: required for EU targeting unless the ad account has
+     * a default payor.
+     *
+     */
+    dsaPayor?: string;
+};
+
+export type budgetType = 'daily' | 'lifetime';
+
+/**
+ * Meta's Advantage+ audience expansion. `0` (default) keeps
+ * targeting strict; `1` lets Meta expand beyond the supplied
+ * targeting when its delivery system finds better matches.
+ * Always sent on CREATE (Meta requires it).
+ *
+ */
+export type advantageAudience = 0 | 1;
+
+/**
+ * Defaults to `OUTCOME_ENGAGEMENT`. `OUTCOME_SALES` and `OUTCOME_LEADS` require
+ * additional account configuration (Dataset linked to the WABA
+ * for sales) and may be rejected by Meta if missing.
+ *
+ */
+export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS';
+
+/**
+ * Meta bid strategy applied to the shared ad set. Defaults to
+ * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
+ * `LOWEST_COST_WITH_BID_CAP` and `COST_CAP` require
+ * `bidAmount`. `LOWEST_COST_WITH_MIN_ROAS` requires
+ * `roasAverageFloor`. CTWA's `optimization_goal` is fixed to
+ * `CONVERSATIONS`, but the bid strategy is independent.
+ *
+ */
+export type bidStrategy = 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
+
+/**
  * Response returned by `POST /v1/ads/ctwa` when the request used the
  * multi-creative shape (`creatives[]`). N persisted Ad documents share
  * the returned `platformCampaignId` and `platformAdSetId`. `adType` is
@@ -23886,6 +24193,77 @@ export type GetCampaignAnalyticsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type GenerateAdPreviewsData = {
+    body: {
+        /**
+         * Zernio SocialAccount id used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Meta ad_format values, one preview per format. Defaults to [DESKTOP_FEED_STANDARD].
+         */
+        formats?: Array<(string)>;
+        /**
+         * Preview an existing ad-account creative by id. Mutually exclusive with creativeSpec.
+         */
+        existingCreativeId?: string;
+        /**
+         * Raw Meta creative spec forwarded verbatim to /generatepreviews. Mutually exclusive with existingCreativeId.
+         */
+        creativeSpec?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type GenerateAdPreviewsResponse = ({
+    previews?: Array<{
+        format?: string;
+        /**
+         * Meta's <iframe> snippet; null when Meta returned no preview for the format.
+         */
+        html?: (string) | null;
+    }>;
+});
+
+export type GenerateAdPreviewsError = (unknown | {
+    error?: string;
+});
+
+export type GetAdPreviewsData = {
+    path: {
+        /**
+         * Zernio ad id (24-char hex).
+         */
+        adId: string;
+    };
+    query?: {
+        /**
+         * Comma-separated Meta ad_format values (max 10), one preview per format. Defaults to DESKTOP_FEED_STANDARD.
+         */
+        formats?: string;
+    };
+};
+
+export type GetAdPreviewsResponse = ({
+    adId?: string;
+    previews?: Array<{
+        format?: string;
+        /**
+         * Meta's <iframe> snippet; null when Meta returned no preview for the format.
+         */
+        html?: (string) | null;
+    }>;
+});
+
+export type GetAdPreviewsError = (unknown | {
+    error?: string;
+});
+
 export type QueryAdInsightsData = {
     query: {
         /**
@@ -27015,272 +27393,42 @@ export type SendWhatsAppConversionError = (unknown | {
     error?: string;
 });
 
+export type CreateMessagingAdData = {
+    body: (CtwaAdRequestBody & {
+    /**
+     * Where the conversation opens when the ad is tapped.
+     */
+    destination: 'whatsapp' | 'messenger' | 'instagram_direct';
+});
+};
+
+export type CreateMessagingAdResponse = (unknown);
+
+export type CreateMessagingAdError = (unknown | {
+    error?: string;
+});
+
+export type CreateCallAdData = {
+    body: (CtwaAdRequestBody & {
+    /**
+     * E.164 number the CALL_NOW CTA dials (e.g. +34600111222).
+     */
+    phoneNumber: string;
+    /**
+     * Website shown as the creative's link. Required: Meta rejects tel: as link_data.link; the phone number rides only the CTA.
+     */
+    linkUrl: string;
+});
+};
+
+export type CreateCallAdResponse = (unknown);
+
+export type CreateCallAdError = (unknown | {
+    error?: string;
+});
+
 export type CreateCtwaAdData = {
-    body: {
-        /**
-         * Facebook or Instagram SocialAccount ID.
-         */
-        accountId: string;
-        /**
-         * Meta ad account ID, e.g. `act_123456789`.
-         */
-        adAccountId: string;
-        /**
-         * Ad display name. Used to derive campaign / ad set names.
-         * On the multi-creative shape, each ad's Meta name gets a
-         * " #N" suffix (1-indexed) so Ads Manager shows them as a
-         * numbered batch.
-         *
-         */
-        name: string;
-        /**
-         * Single-creative shape only. Mutually exclusive with
-         * `creatives[]`.
-         *
-         */
-        headline?: string;
-        /**
-         * Primary text shown above the image / video. Single-creative
-         * shape only. Mutually exclusive with `creatives[]`.
-         *
-         */
-        body?: string;
-        /**
-         * Image asset for single-creative shape. Mutually exclusive
-         * with `video` and with `creatives[]`. Required on the
-         * single-creative shape if `video` is not supplied.
-         *
-         */
-        imageUrl?: string;
-        /**
-         * Video creative for single-creative shape. Mutually
-         * exclusive with `imageUrl` and with `creatives[]`. Required
-         * on the single-creative shape if `imageUrl` is not supplied.
-         *
-         */
-        video?: {
-            url: string;
-            /**
-             * Required by Meta for every video creative. Used as the
-             * ad thumbnail.
-             *
-             */
-            thumbnailUrl: string;
-        };
-        /**
-         * Multi-creative shape: N CTWA ads under one campaign + one
-         * ad set, sharing budget and targeting. Mutually exclusive
-         * with the top-level single-creative fields (`headline` /
-         * `body` / `imageUrl` / `video`). Each entry must supply its
-         * own headline, body, and exactly one of `imageUrl` /
-         * `video`.
-         *
-         */
-        creatives?: Array<{
-            headline: string;
-            /**
-             * Primary text shown above the image / video.
-             */
-            body: string;
-            /**
-             * Image asset. Mutually exclusive with this entry's
-             * `video`. Required if `video` is not supplied.
-             *
-             */
-            imageUrl?: string;
-            /**
-             * Video creative. Mutually exclusive with this entry's
-             * `imageUrl`. Required if `imageUrl` is not supplied.
-             *
-             */
-            video?: {
-                url: string;
-                /**
-                 * Required by Meta for every video creative. Used
-                 * as the ad thumbnail.
-                 *
-                 */
-                thumbnailUrl: string;
-            };
-        }>;
-        /**
-         * Budget amount in the ad account's currency major units
-         * (e.g. dollars for USD, not cents). Must be > 0.
-         *
-         */
-        budgetAmount: number;
-        budgetType: 'daily' | 'lifetime';
-        /**
-         * ISO 4217 currency code matching the ad account's currency
-         * (e.g. `USD`). Optional; Meta infers from the ad account
-         * when omitted.
-         *
-         */
-        currency?: string;
-        /**
-         * ISO 8601 datetime. Required when `budgetType` is `lifetime`.
-         *
-         */
-        endDate?: string;
-        /**
-         * ISO 3166-1 alpha-2 country codes. Defaults to `["US"]` only
-         * when no other geo (`cities`, `regions`, `zips`, `metros`,
-         * `customLocations`) is supplied.
-         *
-         */
-        countries?: Array<(string)>;
-        /**
-         * City-level geo targeting for local CTWA campaigns (e.g.
-         * 25km radius around Milan). Each entry maps to Meta's
-         * TargetingGeoLocationCity. `key` is Meta's city ID
-         * (lookupable via GET /v1/ads/targeting/search). `radius`
-         * and `distance_unit` are coupled: set both or neither.
-         * Meta enforces a minimum city radius (~17 km / 10 mi);
-         * smaller values resolve to a 0-size audience and the ad
-         * fails at launch. For a tighter catchment use customLocations
-         * (lat/lng).
-         *
-         */
-        cities?: Array<{
-            key: string;
-            radius?: number;
-            distance_unit?: 'mile' | 'kilometer';
-        }>;
-        /**
-         * Region / state-level geo targeting. `key` is Meta's region
-         * ID (lookupable via GET /v1/ads/targeting/search?type=region).
-         *
-         */
-        regions?: Array<{
-            key: string;
-        }>;
-        /**
-         * ZIP / postal-code geo targeting. `key` is the platform's
-         * postal id resolved via /v1/ads/targeting/search.
-         *
-         */
-        zips?: Array<{
-            key: string;
-            name?: string;
-        }>;
-        /**
-         * DMA / metro-area geo targeting. `key` is Meta's metro id
-         * (e.g. `DMA:807`).
-         *
-         */
-        metros?: Array<{
-            key: string;
-            name?: string;
-        }>;
-        /**
-         * Point-radius geo (Meta `geo_locations.custom_locations`).
-         * Use for targeting a radius around a specific lat/long when
-         * no Meta city/region key fits. `distanceUnit` is required.
-         *
-         */
-        customLocations?: Array<{
-            latitude: number;
-            longitude: number;
-            radius: number;
-            distanceUnit: 'mile' | 'kilometer';
-            name?: string;
-            address?: string;
-        }>;
-        ageMin?: number;
-        ageMax?: number;
-        interests?: Array<{
-            id: string;
-            name?: string;
-        }>;
-        /**
-         * Custom audience ID to target.
-         */
-        audienceId?: string;
-        /**
-         * Manual ad placements on the shared ad set. Omit
-         * for automatic placements. When set, restricts delivery to the chosen surfaces,
-         * mapped onto the ad set's `targeting.{publisher_platforms, facebook_positions, instagram_positions,
-         * messenger_positions, audience_network_positions, threads_positions,
-         * whatsapp_positions, device_platforms}`. Enum membership is validated here; Meta
-         * additionally enforces co-selection rules and restricts which
-         * placements are eligible for click-to-WhatsApp ads, returning an actionable
-         * error which we surface.
-         *
-         */
-        placements?: {
-            /**
-             * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
-             */
-            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
-            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
-            instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
-            messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
-            audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
-            threadsPositions?: Array<('threads_stream')>;
-            whatsappPositions?: Array<('status')>;
-            /**
-             * Restrict by device. Omit to deliver on both mobile and desktop.
-             */
-            devicePlatforms?: Array<('mobile' | 'desktop')>;
-        };
-        /**
-         * Meta's Advantage+ audience expansion. `0` (default) keeps
-         * targeting strict; `1` lets Meta expand beyond the supplied
-         * targeting when its delivery system finds better matches.
-         * Always sent on CREATE (Meta requires it).
-         *
-         */
-        advantageAudience?: 0 | 1;
-        /**
-         * Defaults to `OUTCOME_ENGAGEMENT` (the broadly-supported CTWA
-         * objective). `OUTCOME_SALES` and `OUTCOME_LEADS` require
-         * additional account configuration (Dataset linked to the WABA
-         * for sales) and may be rejected by Meta if missing.
-         *
-         */
-        objective?: 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS';
-        /**
-         * Meta bid strategy applied to the shared ad set. Defaults to
-         * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
-         * `LOWEST_COST_WITH_BID_CAP` and `COST_CAP` require
-         * `bidAmount`. `LOWEST_COST_WITH_MIN_ROAS` requires
-         * `roasAverageFloor`. CTWA's `optimization_goal` is fixed to
-         * `CONVERSATIONS`, but the bid strategy is independent.
-         *
-         */
-        bidStrategy?: 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
-        /**
-         * Whole currency units (e.g. `5` = $5.00 on a USD account).
-         * Required when `bidStrategy` is `LOWEST_COST_WITH_BID_CAP`
-         * or `COST_CAP`; rejected otherwise.
-         *
-         */
-        bidAmount?: number;
-        /**
-         * Decimal ROAS multiplier (e.g. `2.0` = 2.0× ROAS floor).
-         * Required when `bidStrategy` is `LOWEST_COST_WITH_MIN_ROAS`;
-         * rejected otherwise. Meta enforces its own upper bound
-         * server-side.
-         *
-         */
-        roasAverageFloor?: number;
-        /**
-         * Legal entity that benefits from the ad. Required when targeting EU users
-         * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
-         * set it once via `PATCH /v1/ads/accounts` or in Meta Ads Manager, and Meta
-         * fills it in whenever the field is omitted.
-         *
-         */
-        dsaBeneficiary?: string;
-        /**
-         * Legal entity that pays for the ad. Can differ from `dsaBeneficiary`
-         * (for example, an agency paying for a client's ads). Same rules as
-         * `dsaBeneficiary`: required for EU targeting unless the ad account has
-         * a default payor.
-         *
-         */
-        dsaPayor?: string;
-    };
+    body: CtwaAdRequestBody;
 };
 
 export type CreateCtwaAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));
