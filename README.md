@@ -402,6 +402,7 @@ try {
 | `ads.createCtwaAd()` | Create Click-to-WhatsApp ad (deprecated) |
 | `ads.createLeadForm()` | Create a lead form |
 | `ads.createMessagingAd()` | Create click-to-message ad (WhatsApp / Messenger / Instagram Direct) |
+| `ads.createRfPrediction()` | Create a Reach & Frequency prediction (Meta) |
 | `ads.createStandaloneAd()` | Create standalone ad |
 | `ads.createTestLead()` | Create a test lead |
 | `ads.getAd()` | Get ad details |
@@ -421,6 +422,7 @@ try {
 | `ads.getLeadForm()` | Get a lead form |
 | `ads.getLinkedInBidPricing()` | Suggested bid and budget bounds (LinkedIn) |
 | `ads.getLinkedInSupplyForecast()` | Impressions, clicks and spend forecast (LinkedIn) |
+| `ads.getRfPrediction()` | Read a Reach & Frequency prediction (Meta) |
 | `ads.updateAd()` | Update ad |
 | `ads.updateAdAccount()` | Update ad account settings |
 | `ads.updateAdStatus()` | Pause or resume a single ad |
@@ -432,10 +434,12 @@ try {
 | `ads.adjustConversions()` | Adjust uploaded conversions |
 | `ads.archiveLeadForm()` | Archive a lead form |
 | `ads.boostPost()` | Boost post as ad |
+| `ads.cancelRfReservation()` | Cancel a Reach & Frequency reservation (Meta) |
 | `ads.estimateAdReach()` | Estimate audience reach |
 | `ads.generateAdPreviews()` | Render pre-create ad previews (Meta) |
 | `ads.queryAdInsights()` | Flexible live insights query (Meta) |
 | `ads.removeConversionAssociations()` | Remove associated campaigns |
+| `ads.reserveRfPrediction()` | Reserve a Reach & Frequency prediction (Meta) |
 | `ads.searchAdInterests()` | Search targeting interests |
 | `ads.searchAdTargeting()` | Search targeting options |
 | `ads.sendConversions()` | Send conversion events |

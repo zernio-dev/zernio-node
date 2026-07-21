@@ -3911,6 +3911,43 @@ export type ReviewWebhookReview = {
 export type platform4 = 'googlebusiness';
 
 /**
+ * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
+ */
+export type RfPrediction = {
+    predictionId?: string;
+    /**
+     * ready | pending | failed:<meta code>
+     */
+    status?: string;
+    /**
+     * Quoted (or provided) lifetime budget for the window.
+     */
+    budget?: (number) | null;
+    /**
+     * Predicted (or requested) unique reach.
+     */
+    reach?: (number) | null;
+    impressions?: (number) | null;
+    /**
+     * Meta's allowed lower bound for this spec.
+     */
+    minBudget?: (number) | null;
+    maxBudget?: (number) | null;
+    minReach?: (number) | null;
+    maxReach?: (number) | null;
+    frequencyCap?: (number) | null;
+    /**
+     * Unix seconds; the reserved window the R&F ad set will run on.
+     */
+    startTime?: (number) | null;
+    stopTime?: (number) | null;
+    /**
+     * When the reservation's locked price expires (set after reserving).
+     */
+    expiresAt?: (string) | null;
+};
+
+/**
  * An ad account a tracking tag is shared with (Meta `shared_accounts` edge).
  */
 export type SharedAdAccount = {
@@ -24790,6 +24827,113 @@ export type GetAdsActivityLogError = (unknown | {
     error?: string;
 });
 
+export type CreateRfPredictionData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant).
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Whole currency units. Exactly one of budgetAmount / reach.
+         */
+        budgetAmount?: number;
+        /**
+         * Target unique reach. Exactly one of budgetAmount / reach.
+         */
+        reach?: number;
+        /**
+         * Campaign window start (must be in the future).
+         */
+        startDate: string;
+        endDate: string;
+        /**
+         * Max impressions per person over the window.
+         */
+        frequencyCap?: number;
+        /**
+         * Canonical camelCase TargetingSpec (same shape as /v1/ads/create's `targeting`). Defaults to countries: [US].
+         */
+        targeting?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Meta placements object (same shape as /v1/ads/create's `placements`).
+         */
+        placements?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type CreateRfPredictionResponse = ({
+    adAccountId?: string;
+    currency?: string;
+    prediction?: RfPrediction;
+});
+
+export type CreateRfPredictionError = (unknown | {
+    error?: string;
+});
+
+export type GetRfPredictionData = {
+    path: {
+        predictionId: string;
+    };
+    query: {
+        accountId: string;
+        adAccountId: string;
+    };
+};
+
+export type GetRfPredictionResponse = ({
+    adAccountId?: string;
+    currency?: string;
+    prediction?: RfPrediction;
+});
+
+export type GetRfPredictionError = (unknown | {
+    error?: string;
+});
+
+export type CancelRfReservationData = {
+    path: {
+        predictionId: string;
+    };
+    query: {
+        accountId: string;
+        adAccountId: string;
+    };
+};
+
+export type CancelRfReservationResponse = (unknown);
+
+export type CancelRfReservationError = (unknown | {
+    error?: string;
+});
+
+export type ReserveRfPredictionData = {
+    body: {
+        accountId: string;
+        adAccountId: string;
+    };
+    path: {
+        predictionId: string;
+    };
+};
+
+export type ReserveRfPredictionResponse = ({
+    adAccountId?: string;
+    prediction?: RfPrediction;
+});
+
+export type ReserveRfPredictionError = (unknown | {
+    error?: string;
+});
+
 export type ListAdStudiesData = {
     query: {
         /**
@@ -25299,6 +25443,14 @@ export type CreateStandaloneAdData = {
          * Meta only. Explicit ad-set `billing_event`. Defaults to `IMPRESSIONS`. Forwarded verbatim to Meta, which validates compatibility with the optimization goal.
          */
         billingEvent?: string;
+        /**
+         * Meta only. RESERVED = Reach & Frequency: requires `rfPredictionId` (a RESERVED prediction from /v1/ads/rf-predictions + /reserve). Budget, schedule and pricing come from the reservation, so budgetAmount/budgetType are not required and bid fields are ignored. Only the plain single-ad shape (no creatives[], adSetId, existingCampaignId or dynamicCreative).
+         */
+        buyingType?: 'AUCTION' | 'RESERVED';
+        /**
+         * Meta only. The RESERVED prediction id the R&F ad set runs on (reserving mints a new id — pass that one). Requires buyingType RESERVED.
+         */
+        rfPredictionId?: string;
         /**
          * Required on legacy + multi-creative shapes. Inherited on attach.
          */
