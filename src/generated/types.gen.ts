@@ -23708,6 +23708,38 @@ export type DuplicateAdCampaignError = (unknown | {
     error?: string;
 });
 
+export type GetAdSetDetailsData = {
+    path: {
+        /**
+         * Meta ad set id (platformAdSetId).
+         */
+        adSetId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Comma-separated Graph field override (supports nested {} projections).
+         */
+        fields?: string;
+    };
+};
+
+export type GetAdSetDetailsResponse = ({
+    /**
+     * Raw Meta ad set; keys are the requested Graph fields.
+     */
+    adSet?: {
+        [key: string]: unknown;
+    };
+});
+
+export type GetAdSetDetailsError = (unknown | {
+    error?: string;
+});
+
 export type UpdateAdSetData = {
     body: {
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
@@ -24708,6 +24740,145 @@ export type ListAdsBusinessCentersError = ({
     error?: string;
 } | unknown);
 
+export type GetAdsActivityLogData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+        /**
+         * Client-side filter to one Meta object id (campaign, ad set or ad).
+         */
+        objectId?: string;
+        /**
+         * Start of range (YYYY-MM-DD).
+         */
+        since?: string;
+        /**
+         * End of range (YYYY-MM-DD).
+         */
+        until?: string;
+    };
+};
+
+export type GetAdsActivityLogResponse = ({
+    adAccountId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type GetAdsActivityLogError = (unknown | {
+    error?: string;
+});
+
+export type ListAdStudiesData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Comma-separated Graph field override (supports nested {} projections).
+         */
+        fields?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListAdStudiesResponse = ({
+    adAccountId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListAdStudiesError = (unknown | {
+    error?: string;
+});
+
+export type GetAdAccountFinanceData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetAdAccountFinanceResponse = ({
+    adAccountId?: string;
+    /**
+     * ISO 4217 code all money values are expressed in.
+     */
+    currency?: string;
+    /**
+     * Outstanding/prepaid balance in whole currency units.
+     */
+    balance?: number;
+    /**
+     * Lifetime amount spent in whole currency units.
+     */
+    amountSpent?: number;
+    /**
+     * Account spend cap; null when none is set.
+     */
+    spendCap?: (number) | null;
+    fundingSource?: {
+        /**
+         * Human-readable payment method, e.g. 'Mastercard *4985'.
+         */
+        displayString?: string;
+        /**
+         * Meta funding source type code.
+         */
+        type?: number;
+    } | null;
+});
+
+export type GetAdAccountFinanceError = (unknown | {
+    error?: string;
+});
+
 export type ListAdAccountsData = {
     query: {
         /**
@@ -25010,7 +25181,7 @@ export type BoostPostData = {
         /**
          * Meta only. Required for housing, employment, credit, or political ads.
          */
-        specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS')>;
+        specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING')>;
         /**
          * TikTok-only. Custom destination URL for the Spark Ad. Without this, TikTok
          * Spark Ads have no clickable destination — required for traffic / conversion
@@ -25172,7 +25343,7 @@ export type CreateStandaloneAdData = {
         /**
          * Required on legacy + attach shapes for Meta. Honoured on TikTok (passes through to the Spark Ad creative's `call_to_action`) and on LinkedIn (the CTA button on the ad; defaults to LEARN_MORE when `linkUrl` is set). LinkedIn accepts: LEARN_MORE, SIGN_UP, DOWNLOAD, SUBSCRIBE, REGISTER, JOIN, ATTEND, REQUEST_DEMO, VIEW_QUOTE, APPLY, SEE_MORE, SHOP_NOW, BUY_NOW. Ignored by Google, Pinterest, and X/Twitter.
          */
-        callToAction?: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW';
+        callToAction?: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW';
         /**
          * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`. NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead of a destination). On LinkedIn, `imageUrl` + `linkUrl` publishes an ARTICLE-content creative; this is LinkedIn's article ad format, with the image as thumbnail and `longHeadline` as description.
          */
@@ -25241,7 +25412,7 @@ export type CreateStandaloneAdData = {
                 thumbnailUrl?: string;
             };
             linkUrl: string;
-            callToAction: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE';
+            callToAction: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP';
         }>;
         /**
          * Meta-only. When present, switches to the attach shape: adds
@@ -25463,7 +25634,7 @@ export type CreateStandaloneAdData = {
          * category disables income/zip targeting on Meta.
          *
          */
-        specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS')>;
+        specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING')>;
         /**
          * Required for lifetime budgets
          */
@@ -25517,7 +25688,7 @@ export type CreateStandaloneAdData = {
             /**
              * CTA-button variations. Required.
              */
-            callToActionTypes?: Array<('LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW')>;
+            callToActionTypes?: Array<('LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW')>;
             /**
              * Asset-feed ad format. Defaults to SINGLE_IMAGE.
              */
@@ -26091,6 +26262,45 @@ export type CreateTestLeadResponse = ({
 });
 
 export type CreateTestLeadError = ({
+    error?: string;
+});
+
+export type UploadAdImageData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Raw base64 image bytes, or a full data URL (the data:image/...;base64, prefix is stripped).
+         */
+        imageBase64: string;
+        /**
+         * Optional filename shown in Meta's image library. Defaults to ad_image.jpg.
+         */
+        filename?: string;
+    };
+};
+
+export type UploadAdImageResponse = ({
+    adAccountId?: string;
+    image?: {
+        /**
+         * Meta image hash, reusable wherever image_hash is accepted.
+         */
+        hash?: string;
+        /**
+         * Meta-hosted image URL; usable as imageUrl on the create endpoints.
+         */
+        url?: string;
+    };
+});
+
+export type UploadAdImageError = (unknown | {
     error?: string;
 });
 
@@ -26741,8 +26951,12 @@ export type SendConversionsData = {
         testCode?: string;
         /**
          * Batch-level user consent. Required by Google for EEA/UK
-         * events under the Feb 2026 restrictions. Ignored by Meta
-         * and LinkedIn.
+         * events under the Feb 2026 restrictions. On Meta, any
+         * DENIED flag enables Limited Data Use on every event in
+         * the batch (data_processing_options ["LDU"] with
+         * geolocation, country 0 / state 0); GRANTED or absent
+         * consent sends events with Meta's default processing.
+         * Ignored by LinkedIn.
          *
          */
         consent?: {

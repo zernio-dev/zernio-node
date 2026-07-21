@@ -372,6 +372,7 @@ try {
 |--------|-------------|
 | `adCampaigns.listAdCampaigns()` | List campaigns |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
+| `adCampaigns.getAdSetDetails()` | Live ad-set details incl. learning phase (Meta) |
 | `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |
 | `adCampaigns.updateAdCampaign()` | Update a campaign |
@@ -389,6 +390,7 @@ try {
 | `ads.listAdCatalogs()` | List Meta product catalogs |
 | `ads.listAds()` | List ads |
 | `ads.listAdsBusinessCenters()` | List TikTok Business Centers |
+| `ads.listAdStudies()` | A/B tests and lift studies (Meta) |
 | `ads.listConversionAssociations()` | List associated campaigns |
 | `ads.listConversionDestinations()` | List conversion destinations |
 | `ads.listFormLeads()` | List leads for a single form |
@@ -403,10 +405,12 @@ try {
 | `ads.createStandaloneAd()` | Create standalone ad |
 | `ads.createTestLead()` | Create a test lead |
 | `ads.getAd()` | Get ad details |
+| `ads.getAdAccountFinance()` | Ad account finances (Meta) |
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
 | `ads.getAdInsightsReport()` | Poll an async insights report run (Meta) |
 | `ads.getAdPreviews()` | Render previews of an existing ad (Meta) |
+| `ads.getAdsActivityLog()` | Ad account change / audit log (Meta) |
 | `ads.getAdTrackingTags()` | Get ad tracking tags |
 | `ads.getCampaignAnalytics()` | Get campaign analytics |
 | `ads.getConversionDestination()` | Get a conversion destination |
@@ -435,6 +439,7 @@ try {
 | `ads.searchAdInterests()` | Search targeting interests |
 | `ads.searchAdTargeting()` | Search targeting options |
 | `ads.sendConversions()` | Send conversion events |
+| `ads.uploadAdImage()` | Upload an ad image from base64 (Meta) |
 
 ### Broadcasts
 | Method | Description |
