@@ -7622,7 +7622,7 @@ export type GetInstagramAccountInsightsData = {
 
 export type GetInstagramAccountInsightsResponse = (InstagramAccountInsightsResponse);
 
-export type GetInstagramAccountInsightsError = ({
+export type GetInstagramAccountInsightsError = (ErrorResponse | {
     error?: string;
 } | {
     error?: string;
