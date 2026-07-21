@@ -17791,7 +17791,7 @@ export type DialVoiceWebCallError = ({
 export type SendSmsData = {
     body: {
         /**
-         * One of your SMS-enabled numbers (E.164; formatting is normalized).
+         * One of your SMS-enabled numbers (E.164; formatting is normalized), or an approved alphanumeric sender ID (3-11 letters/digits/spaces, created via `/v1/sms/sender-ids`).
          */
         from: string;
         /**
@@ -17831,7 +17831,7 @@ export type SendSmsResponse = ({
     status?: 'sent';
 });
 
-export type SendSmsError = ({
+export type SendSmsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -17884,6 +17884,105 @@ export type ListSmsOptOutsResponse = ({
 export type ListSmsOptOutsError = ({
     error?: string;
 });
+
+export type CreateSmsSenderIdData = {
+    body: {
+        /**
+         * The sender ID recipients will see (3-11 letters/digits/spaces, at least one letter, no leading/trailing space).
+         */
+        senderId: string;
+    };
+};
+
+export type CreateSmsSenderIdResponse = ({
+    /**
+     * Sender ID resource id.
+     */
+    id?: string;
+    senderId?: string;
+    isActive?: boolean;
+});
+
+export type CreateSmsSenderIdError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListSmsSenderIdsResponse = ({
+    senderIds?: Array<{
+        id?: string;
+        senderId?: string;
+        isActive?: boolean;
+        createdAt?: (string) | null;
+    }>;
+    /**
+     * Workspace-wide daily sending budget, shared by every sender ID (resets midnight UTC).
+     */
+    budget?: {
+        /**
+         * Daily message cap (raisable via `/v1/sms/sender-ids/limit-request`).
+         */
+        cap?: number;
+        /**
+         * Messages already counted against today's cap.
+         */
+        usedToday?: number;
+        /**
+         * Cap tier (Level 1 = 500/day).
+         */
+        level?: number;
+        /**
+         * The in-flight cap-raise request awaiting review, or null. While set, further requests return 409.
+         */
+        pendingRequest?: {
+            requestedCap?: number;
+            level?: number;
+            requestedAt?: (string) | null;
+        } | null;
+    };
+});
+
+export type ListSmsSenderIdsError = ({
+    error?: string;
+});
+
+export type RequestSmsSenderIdLimitIncreaseData = {
+    body: {
+        /**
+         * Desired daily message cap. Must exceed the current cap.
+         */
+        requestedCap: number;
+        /**
+         * Use case and audience (what you send, to whom, opt-in status).
+         */
+        reason: string;
+    };
+};
+
+export type RequestSmsSenderIdLimitIncreaseResponse = ({
+    requested?: boolean;
+    requestedCap?: number;
+});
+
+export type RequestSmsSenderIdLimitIncreaseError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteSmsSenderIdData = {
+    path: {
+        /**
+         * Sender ID resource id.
+         */
+        id: string;
+    };
+};
+
+export type DeleteSmsSenderIdResponse = ({
+    deleted?: boolean;
+});
+
+export type DeleteSmsSenderIdError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type StartSmsRegistrationData = {
     body: {

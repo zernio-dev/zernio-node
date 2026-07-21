@@ -680,12 +680,16 @@ try {
 |--------|-------------|
 | `sms.listSmsOptOuts()` | List SMS opt-outs |
 | `sms.listSmsRegistrations()` | List carrier registrations |
+| `sms.listSmsSenderIds()` | List alphanumeric sender IDs |
+| `sms.createSmsSenderId()` | Create an alphanumeric sender ID |
 | `sms.getSmsRegistration()` | Get a carrier registration |
+| `sms.deleteSmsSenderId()` | Delete an alphanumeric sender ID |
 | `sms.appealSmsRegistration()` | Appeal a rejected campaign |
 | `sms.deactivateSmsRegistration()` | Deactivate a brand/campaign registration |
 | `sms.disableSmsOnNumber()` | Disable SMS on a number |
 | `sms.enableSmsOnNumber()` | Enable SMS on a number |
 | `sms.lookupSmsNumber()` | Look up carrier + line type |
+| `sms.requestSmsSenderIdLimitIncrease()` | Request a higher sender ID daily limit |
 | `sms.resendSmsRegistrationOtp()` | Re-send the sole-prop OTP |
 | `sms.reuseSmsRegistrationForNumber()` | Add number to SMS registration |
 | `sms.sendSms()` | Send an SMS/MMS |
