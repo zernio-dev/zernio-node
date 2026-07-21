@@ -19710,21 +19710,32 @@ export type CreatePhoneNumberPortInData = {
              */
             accountNumber: string;
             /**
-             * Transfer PIN. Required for mobile numbers (wireless carriers reject PIN-less ports). Forwarded to the carrier, never stored.
+             * Transfer PIN. Required for US/CA mobile numbers (wireless carriers reject PIN-less ports). Forwarded to the carrier, never stored. International porting codes (e.g. the UK PAC) go through `requirements` instead.
              */
             pinPasscode?: string;
+            /**
+             * Company tax id on the carrier account (EU ports, e.g. Spanish CIF).
+             */
+            taxIdentifier?: string;
+            /**
+             * Business registration id on the carrier account (EU ports).
+             */
+            businessIdentifier?: string;
             streetAddress: string;
             extendedAddress?: string;
             locality: string;
             /**
-             * 2-letter US state / CA province code (full names are accepted and normalized).
+             * Region. Required for US/CA as the 2-letter state/province code (full names are accepted and normalized); optional elsewhere.
              */
-            administrativeArea: string;
+            administrativeArea?: string;
             /**
-             * US ZIP (5 digits) or Canadian postal code, matching countryCode.
+             * Postal code. Validated as a US ZIP / Canadian postal code for US/CA; free-form elsewhere.
              */
             postalCode: string;
-            countryCode: 'US' | 'CA';
+            /**
+             * Service-address country (a supported port-in country).
+             */
+            countryCode: 'US' | 'CA' | 'GB' | 'ES' | 'DE' | 'FR' | 'NL' | 'AU';
         };
         /**
          * Document id from POST /v1/phone-numbers/port-in/documents (kind=loa).
@@ -19735,7 +19746,7 @@ export type CreatePhoneNumberPortInData = {
          */
         invoiceDocumentId: string;
         /**
-         * Requested port date; the carrier confirms the actual FOC later. Defaults to one week out (shifted off weekends) when omitted.
+         * Requested port date; the carrier confirms the actual FOC later. US/CA default is one week out (shifted off weekends); international orders are scheduled into the carrier's next allowed porting window at or after this date.
          */
         focDatetimeRequested?: string;
         customerReference?: string;
@@ -19743,6 +19754,19 @@ export type CreatePhoneNumberPortInData = {
          * Whether the losing account ports all its numbers (full) or keeps some (partial).
          */
         portType?: 'full' | 'partial';
+        /**
+         * Country-specific requirement values for international ports (from GET /v1/phone-numbers/port-in/requirements). Not needed for US/CA. The LOA and invoice requirements are satisfied automatically by loaDocumentId/invoiceDocumentId, and address-type requirements by the endUser service address.
+         */
+        requirements?: Array<{
+            /**
+             * The requirement's id, from the requirements endpoint.
+             */
+            requirementTypeId: string;
+            /**
+             * Text value, ISO datetime, or a documentId from POST /v1/phone-numbers/port-in/documents, per the requirement's kind.
+             */
+            fieldValue: string;
+        }>;
     };
 };
 
@@ -19766,7 +19790,7 @@ export type CreatePhoneNumberPortInResponse = ({
     }>;
 });
 
-export type CreatePhoneNumberPortInError = ({
+export type CreatePhoneNumberPortInError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -19811,9 +19835,17 @@ export type CheckPhoneNumberPortabilityResponse = ({
          */
         fastPortable?: boolean;
         /**
-         * Line type when known (mobile, landline, voip…). A mobile number requires the transfer PIN at submit.
+         * Line type when known (mobile, landline, voip…). A US/CA mobile number requires the transfer PIN at submit.
          */
         lineType?: (string) | null;
+        /**
+         * ISO country of the number — pass it to GET /v1/phone-numbers/port-in/requirements for international numbers.
+         */
+        countryCode?: (string) | null;
+        /**
+         * Carrier number-type classification (local, mobile, national, toll_free…) — the numberType for the requirements endpoint.
+         */
+        phoneNumberType?: (string) | null;
         /**
          * Carrier reason when not portable; null when portable.
          */
@@ -19832,9 +19864,9 @@ export type UploadPhoneNumberPortInDocumentData = {
          */
         file: (Blob | File);
         /**
-         * Informational; used for the stored filename.
+         * 'loa', 'invoice', or any short slug for requirement documents. Informational; used for the stored filename.
          */
-        kind?: 'loa' | 'invoice';
+        kind?: string;
     };
 };
 
@@ -19845,6 +19877,79 @@ export type UploadPhoneNumberPortInDocumentResponse = ({
 export type UploadPhoneNumberPortInDocumentError = (unknown | {
     error?: string;
 });
+
+export type GetPhoneNumberPortInRequirementsData = {
+    query: {
+        /**
+         * ISO country of the numbers being ported (a supported port-in country).
+         */
+        country: string;
+        /**
+         * The portability check's phoneNumberType — requirements differ by type.
+         */
+        numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+    };
+};
+
+export type GetPhoneNumberPortInRequirementsResponse = ({
+    country?: string;
+    numberType?: string;
+    /**
+     * false when the combination includes a step that can't be completed through the API (e.g. an in-person identity verification) — porting it needs support.
+     */
+    supported?: boolean;
+    fields?: Array<{
+        /**
+         * Pass back as requirements[].requirementTypeId.
+         */
+        requirementId?: string;
+        label?: string;
+        /**
+         * text/date take a string value; file takes a documentId from the documents endpoint; address is satisfied automatically from the end-user service address.
+         */
+        kind?: 'text' | 'date' | 'address' | 'file' | 'action';
+        description?: string;
+        example?: string;
+        /**
+         * When present, the value must be one of these.
+         */
+        acceptableValues?: Array<(string)>;
+    }>;
+});
+
+export type GetPhoneNumberPortInRequirementsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetPhoneNumberPortInOrderRequirementsData = {
+    path: {
+        /**
+         * Porting order ID (from the port-in list).
+         */
+        id: string;
+    };
+};
+
+export type GetPhoneNumberPortInOrderRequirementsResponse = ({
+    country?: string;
+    requirements?: Array<{
+        requirementId?: string;
+        label?: string;
+        kind?: 'text' | 'date' | 'address' | 'file' | 'action';
+        description?: string;
+        example?: string;
+        acceptableValues?: Array<(string)>;
+        /**
+         * requirement-info-pending | requirement-info-under-review | requirement-info-exception | approved
+         */
+        status?: string;
+        filled?: boolean;
+    }>;
+});
+
+export type GetPhoneNumberPortInOrderRequirementsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type CancelPhoneNumberPortInData = {
     path: {

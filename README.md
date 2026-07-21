@@ -638,6 +638,8 @@ try {
 | `phoneNumbers.createPhoneNumberPortIn()` | Port numbers in |
 | `phoneNumbers.getPhoneNumber()` | Get phone number |
 | `phoneNumbers.getPhoneNumberKycForm()` | Get KYC form spec |
+| `phoneNumbers.getPhoneNumberPortInOrderRequirements()` | A port-in order's pending requirements |
+| `phoneNumbers.getPhoneNumberPortInRequirements()` | Country porting requirements |
 | `phoneNumbers.getPhoneNumberRemediation()` | Get declined requirements |
 | `phoneNumbers.cancelPhoneNumberPortIn()` | Cancel a port-in |
 | `phoneNumbers.checkPhoneNumberAvailability()` | Check country availability |
