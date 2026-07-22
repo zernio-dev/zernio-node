@@ -24293,7 +24293,7 @@ export type UpdateAdSetData = {
              */
             endDate?: string;
             /**
-             * Meta ad-set promoted_object, forwarded verbatim (same shape as /v1/ads/create).
+             * Meta ad-set promoted_object, forwarded verbatim (same shape as /v1/ads/create). Unknown keys are rejected with 400.
              */
             promotedObject?: {
                 pixelId?: string;
@@ -24304,6 +24304,8 @@ export type UpdateAdSetData = {
                 customConversionId?: string;
                 productCatalogId?: string;
                 productSetId?: string;
+                offlineConversionDataSetId?: string;
+                whatsappPhoneNumber?: string;
             };
         };
     };
@@ -26084,6 +26086,10 @@ export type BoostPostData = {
          */
         specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING')>;
         /**
+         * Meta (metaads) only. 2-letter ISO country codes the special ad category applies to. Requires specialAdCategories to be set (400 otherwise).
+         */
+        specialAdCategoryCountry?: Array<(string)>;
+        /**
          * TikTok-only. Custom destination URL for the Spark Ad. Without this, TikTok
          * Spark Ads have no clickable destination — required for traffic / conversion
          * objectives. Maps to `landing_page_url` on the creative entry of /v2/ad/create/
@@ -26555,6 +26561,13 @@ export type CreateStandaloneAdData = {
          */
         specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING')>;
         /**
+         * Meta (metaads) only. 2-letter ISO country codes the special ad category applies to. Requires
+         * specialAdCategories to be set (400 otherwise). Ignored when joining an existing campaign via
+         * existingCampaignId (the existing campaign's category/country already governs it).
+         *
+         */
+        specialAdCategoryCountry?: Array<(string)>;
+        /**
          * Required for lifetime budgets
          */
         endDate?: string;
@@ -26917,6 +26930,14 @@ export type CreateStandaloneAdData = {
              * Product Set ID inside the catalog.
              */
             productSetId?: string;
+            /**
+             * Meta only. Offline event set (dataset) to optimise toward. Post-merger these are datasets: the id is the dataset id (for pixel-backed datasets, the pixel id).
+             */
+            offlineConversionDataSetId?: string;
+            /**
+             * Meta only. WhatsApp number on messaging-destination ad sets.
+             */
+            whatsappPhoneNumber?: string;
         };
     };
     headers?: {
@@ -27629,7 +27650,7 @@ export type ListAdAudiencesData = {
         /**
          * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences; the other types return uploaded/derived audiences.
          */
-        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
     };
 };
 
@@ -27643,7 +27664,7 @@ export type ListAdAudiencesResponse = ({
         platformAudienceId?: string;
         name?: string;
         description?: string;
-        type?: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
         /**
          * Present (and the only meaningful payload) when `type` is `saved_targeting`. Null for uploaded/derived audience types.
          */
@@ -27667,7 +27688,7 @@ export type CreateAdAudienceData = {
     adAccountId: string;
     name: string;
     description?: string;
-    type: 'customer_list' | 'company_list' | 'engagement' | 'website' | 'website_retargeting' | 'lookalike';
+    type: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'website' | 'website_retargeting' | 'lookalike';
     /**
      * Required for website_retargeting audiences (LinkedIn only).
      * Each rule is a URL pattern; a member who visits any
@@ -27732,9 +27753,29 @@ export type CreateAdAudienceData = {
      */
     pixelId?: string;
     /**
-     * Required for website audiences
+     * Required for website (max 180) and meta_engagement (max 365) audiences.
      */
     retentionDays?: number;
+    /**
+     * Required for meta_engagement audiences (Meta only): what people
+     * engaged with. `page` = a Facebook Page, `instagram` = an IG
+     * professional account, `video` = a video. The source object must be
+     * eligible for engagement audiences or Meta rejects with subcode
+     * 1713151 ("Invalid Event Name"), surfaced verbatim.
+     *
+     */
+    engagementSource?: 'page' | 'instagram' | 'video';
+    /**
+     * Required for meta_engagement: the Page / IG account / video id.
+     */
+    sourceId?: string;
+    /**
+     * meta_engagement only. The engagement event; defaults per source
+     * (page → page_engaged, instagram → ig_business_profile_all,
+     * video → video_watched). Ignored when `rule` is provided.
+     *
+     */
+    event?: string;
     /**
      * Required for lookalike audiences
      */
@@ -27748,7 +27789,7 @@ export type CreateAdAudienceData = {
      */
     ratio?: number;
     /**
-     * Pixel event rule for website audiences (optional)
+     * Optional raw Meta rule, forwarded verbatim: pixel event rule for website audiences, or the engagement rule for meta_engagement (overrides the built rule, e.g. for event/canvas/lead-form sources).
      */
     rule?: {
         [key: string]: unknown;
