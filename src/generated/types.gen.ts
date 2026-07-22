@@ -4064,7 +4064,7 @@ export type SocialAccount = {
     /**
      * Platform-specific metadata. Fields vary by platform. For WhatsApp accounts, includes:
      * - qualityRating: Phone number quality rating from Meta (GREEN, YELLOW, RED, or UNKNOWN)
-     * - nameStatus: Display name review status (APPROVED, PENDING_REVIEW, DECLINED, or NONE). Messages cannot be sent until the display name is approved by Meta.
+     * - nameStatus: Display name review status (APPROVED, PENDING_REVIEW, DECLINED, or NONE). A declined or pending display name does not by itself block sending; sendability is reported separately via health_status (can_send_message).
      * - messagingLimitTier: Maximum unique business-initiated conversations per 24h rolling window (TIER_250, TIER_1K, TIER_10K, TIER_100K, or TIER_UNLIMITED). Scales automatically as quality rating improves.
      * - verifiedName: Meta-verified business display name
      * - displayPhoneNumber: Formatted phone number (e.g., "+1 555-123-4567")
