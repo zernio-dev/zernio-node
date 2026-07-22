@@ -363,7 +363,7 @@ try {
 | `adAudiences.listAdAudiences()` | List custom audiences |
 | `adAudiences.createAdAudience()` | Create custom audience |
 | `adAudiences.getAdAudience()` | Get audience details |
-| `adAudiences.updateAdAudience()` | Update saved targeting audience |
+| `adAudiences.updateAdAudience()` | Update an audience |
 | `adAudiences.deleteAdAudience()` | Delete custom audience |
 | `adAudiences.addUsersToAdAudience()` | Add users to audience |
 
@@ -372,6 +372,7 @@ try {
 |--------|-------------|
 | `adCampaigns.listAdCampaigns()` | List campaigns |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
+| `adCampaigns.createAdCampaign()` | Create a standalone campaign (Meta) |
 | `adCampaigns.getAdSetDetails()` | Live ad-set details incl. learning phase (Meta) |
 | `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |
@@ -381,6 +382,7 @@ try {
 | `adCampaigns.updateAdSetStatus()` | Pause or resume a single ad set |
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
+| `adCampaigns.duplicateAdSet()` | Duplicate an ad set (Meta) |
 
 ### Ads
 | Method | Description |
@@ -388,14 +390,20 @@ try {
 | `ads.listAdAccounts()` | List ad accounts |
 | `ads.listAdCatalogProductSets()` | List a catalog's product sets |
 | `ads.listAdCatalogs()` | List Meta product catalogs |
+| `ads.listAdCreatives()` | Creative library (Meta) |
+| `ads.listAdImages()` | Ad image library (Meta) |
+| `ads.listAdLabels()` | Ad labels (Meta) |
 | `ads.listAds()` | List ads |
 | `ads.listAdsBusinessCenters()` | List TikTok Business Centers |
 | `ads.listAdStudies()` | A/B tests and lift studies (Meta) |
 | `ads.listConversionAssociations()` | List associated campaigns |
 | `ads.listConversionDestinations()` | List conversion destinations |
 | `ads.listFormLeads()` | List leads for a single form |
+| `ads.listHighDemandPeriods()` | High demand periods / budget schedules (Meta) |
 | `ads.listLeadForms()` | List lead forms |
 | `ads.listLeads()` | List submitted leads |
+| `ads.listMetaBusinesses()` | Businesses list (Meta) |
+| `ads.createAdCreative()` | Create a standalone creative (Meta) |
 | `ads.createAdInsightsReport()` | Submit an async insights report run (Meta) |
 | `ads.createCallAd()` | Create Click-to-Call ad |
 | `ads.createConversionDestination()` | Create a conversion destination |
@@ -409,6 +417,7 @@ try {
 | `ads.getAdAccountFinance()` | Ad account finances (Meta) |
 | `ads.getAdAnalytics()` | Get ad analytics |
 | `ads.getAdComments()` | List comments on an ad |
+| `ads.getAdCreative()` | Creative details (Meta) |
 | `ads.getAdInsightsReport()` | Poll an async insights report run (Meta) |
 | `ads.getAdPreviews()` | Render previews of an existing ad (Meta) |
 | `ads.getAdsActivityLog()` | Ad account change / audit log (Meta) |
@@ -425,16 +434,19 @@ try {
 | `ads.getRfPrediction()` | Read a Reach & Frequency prediction (Meta) |
 | `ads.updateAd()` | Update ad |
 | `ads.updateAdAccount()` | Update ad account settings |
+| `ads.updateAdCreative()` | Rename a creative (Meta) |
 | `ads.updateAdStatus()` | Pause or resume a single ad |
 | `ads.updateAdTrackingTags()` | Set ad tracking tags |
 | `ads.updateConversionDestination()` | Update a conversion destination |
 | `ads.deleteAd()` | Cancel an ad |
+| `ads.deleteAdCreative()` | Delete a creative (Meta) |
 | `ads.deleteConversionDestination()` | Delete a conversion destination |
 | `ads.addConversionAssociations()` | Associate campaigns |
 | `ads.adjustConversions()` | Adjust uploaded conversions |
 | `ads.archiveLeadForm()` | Archive a lead form |
 | `ads.boostPost()` | Boost post as ad |
 | `ads.cancelRfReservation()` | Cancel a Reach & Frequency reservation (Meta) |
+| `ads.duplicateAd()` | Duplicate an ad (Meta) |
 | `ads.estimateAdReach()` | Estimate audience reach |
 | `ads.generateAdPreviews()` | Render pre-create ad previews (Meta) |
 | `ads.queryAdInsights()` | Flexible live insights query (Meta) |
@@ -523,6 +535,7 @@ try {
 | `discord.createDiscordScheduledEvent()` | Create a Discord scheduled event |
 | `discord.createDiscordThread()` | Create a Discord public thread |
 | `discord.getDiscordChannels()` | List Discord guild channels |
+| `discord.getDiscordGuildMember()` | Get a Discord guild member |
 | `discord.getDiscordScheduledEvent()` | Get a Discord scheduled event |
 | `discord.getDiscordSettings()` | Get Discord account settings |
 | `discord.updateDiscordScheduledEvent()` | Update a Discord scheduled event |
@@ -535,6 +548,7 @@ try {
 | `discord.editDiscordGuildRole()` | Edit a Discord guild role |
 | `discord.pinDiscordMessage()` | Pin a Discord message |
 | `discord.removeDiscordMemberRole()` | Remove a role from a guild member |
+| `discord.searchDiscordGuildMembers()` | Search Discord guild members |
 | `discord.sendDiscordDirectMessage()` | Send a Discord Direct Message |
 | `discord.unpinDiscordMessage()` | Unpin a Discord message |
 
@@ -680,12 +694,16 @@ try {
 |--------|-------------|
 | `sms.listSmsOptOuts()` | List SMS opt-outs |
 | `sms.listSmsRegistrations()` | List carrier registrations |
+| `sms.listSmsSenderIds()` | List alphanumeric sender IDs |
+| `sms.createSmsSenderId()` | Create an alphanumeric sender ID |
 | `sms.getSmsRegistration()` | Get a carrier registration |
+| `sms.deleteSmsSenderId()` | Delete an alphanumeric sender ID |
 | `sms.appealSmsRegistration()` | Appeal a rejected campaign |
 | `sms.deactivateSmsRegistration()` | Deactivate a brand/campaign registration |
 | `sms.disableSmsOnNumber()` | Disable SMS on a number |
 | `sms.enableSmsOnNumber()` | Enable SMS on a number |
 | `sms.lookupSmsNumber()` | Look up carrier + line type |
+| `sms.requestSmsSenderIdLimitIncrease()` | Request a higher sender ID daily limit |
 | `sms.resendSmsRegistrationOtp()` | Re-send the sole-prop OTP |
 | `sms.reuseSmsRegistrationForNumber()` | Add number to SMS registration |
 | `sms.sendSms()` | Send an SMS/MMS |

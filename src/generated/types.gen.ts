@@ -1723,6 +1723,38 @@ export type CtwaSingleResponse = {
 export type adType3 = 'single';
 
 /**
+ * A Discord guild member, returned verbatim from Discord's API.
+ */
+export type DiscordGuildMember = {
+    user?: {
+        /**
+         * User snowflake
+         */
+        id?: string;
+        username?: string;
+        discriminator?: string;
+        avatar?: (string) | null;
+        /**
+         * User's display name (post-2023 Discord rebrand)
+         */
+        global_name?: (string) | null;
+    };
+    /**
+     * Guild-specific nickname
+     */
+    nick?: (string) | null;
+    /**
+     * Snowflake IDs of roles assigned to this member
+     */
+    roles?: Array<(string)>;
+    joined_at?: string;
+    /**
+     * When the user started boosting the server
+     */
+    premium_since?: (string) | null;
+};
+
+/**
  * Discord message settings. Supports plain text (2,000 chars), rich embeds (up to 10), native polls, forum posts, threads, and announcement crossposts. Media attachments support images (JPEG, PNG, GIF, WebP), videos (MP4), and documents (up to 10 files, 25 MB each). Webhook identity (username + avatar) can be customized per-account via PATCH /v1/connect/discord or per-post via webhookUsername/webhookAvatarUrl.
  *
  */
@@ -13625,34 +13657,7 @@ export type ListDiscordGuildMembersData = {
 };
 
 export type ListDiscordGuildMembersResponse = ({
-    data?: Array<{
-        user?: {
-            /**
-             * User snowflake
-             */
-            id?: string;
-            username?: string;
-            discriminator?: string;
-            avatar?: (string) | null;
-            /**
-             * User's display name (post-2023 Discord rebrand)
-             */
-            global_name?: (string) | null;
-        };
-        /**
-         * Guild-specific nickname
-         */
-        nick?: (string) | null;
-        /**
-         * Snowflake IDs of roles assigned to this member
-         */
-        roles?: Array<(string)>;
-        joined_at?: string;
-        /**
-         * When the user started boosting the server
-         */
-        premium_since?: (string) | null;
-    }>;
+    data?: Array<DiscordGuildMember>;
     pagination?: {
         /**
          * Pass as `after` on the next call. Null when there are no more pages.
@@ -13665,6 +13670,49 @@ export type ListDiscordGuildMembersResponse = ({
 export type ListDiscordGuildMembersError = (unknown | {
     error?: string;
 });
+
+export type SearchDiscordGuildMembersData = {
+    path: {
+        guildId: string;
+    };
+    query: {
+        accountId: string;
+        limit?: number;
+        /**
+         * Username or nickname prefix to match.
+         */
+        query: string;
+    };
+};
+
+export type SearchDiscordGuildMembersResponse = ({
+    data?: Array<DiscordGuildMember>;
+});
+
+export type SearchDiscordGuildMembersError = (unknown | {
+    error?: string;
+});
+
+export type GetDiscordGuildMemberData = {
+    path: {
+        guildId: string;
+        /**
+         * Discord user snowflake.
+         */
+        userId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type GetDiscordGuildMemberResponse = ({
+    data?: DiscordGuildMember;
+});
+
+export type GetDiscordGuildMemberError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type AddDiscordMemberRoleData = {
     path: {
@@ -17956,6 +18004,105 @@ export type ListSmsOptOutsResponse = ({
 export type ListSmsOptOutsError = ({
     error?: string;
 });
+
+export type CreateSmsSenderIdData = {
+    body: {
+        /**
+         * The sender ID recipients will see (3-11 letters/digits/spaces, at least one letter, no leading/trailing space).
+         */
+        senderId: string;
+    };
+};
+
+export type CreateSmsSenderIdResponse = ({
+    /**
+     * Sender ID resource id.
+     */
+    id?: string;
+    senderId?: string;
+    isActive?: boolean;
+});
+
+export type CreateSmsSenderIdError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListSmsSenderIdsResponse = ({
+    senderIds?: Array<{
+        id?: string;
+        senderId?: string;
+        isActive?: boolean;
+        createdAt?: (string) | null;
+    }>;
+    /**
+     * Workspace-wide daily sending budget, shared by every sender ID (resets midnight UTC).
+     */
+    budget?: {
+        /**
+         * Daily message cap (raisable via `/v1/sms/sender-ids/limit-request`).
+         */
+        cap?: number;
+        /**
+         * Messages already counted against today's cap.
+         */
+        usedToday?: number;
+        /**
+         * Cap tier (Level 1 = 500/day).
+         */
+        level?: number;
+        /**
+         * The in-flight cap-raise request awaiting review, or null. While set, further requests return 409.
+         */
+        pendingRequest?: {
+            requestedCap?: number;
+            level?: number;
+            requestedAt?: (string) | null;
+        } | null;
+    };
+});
+
+export type ListSmsSenderIdsError = ({
+    error?: string;
+});
+
+export type RequestSmsSenderIdLimitIncreaseData = {
+    body: {
+        /**
+         * Desired daily message cap. Must exceed the current cap.
+         */
+        requestedCap: number;
+        /**
+         * Use case and audience (what you send, to whom, opt-in status).
+         */
+        reason: string;
+    };
+};
+
+export type RequestSmsSenderIdLimitIncreaseResponse = ({
+    requested?: boolean;
+    requestedCap?: number;
+});
+
+export type RequestSmsSenderIdLimitIncreaseError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteSmsSenderIdData = {
+    path: {
+        /**
+         * Sender ID resource id.
+         */
+        id: string;
+    };
+};
+
+export type DeleteSmsSenderIdResponse = ({
+    deleted?: boolean;
+});
+
+export type DeleteSmsSenderIdError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type StartSmsRegistrationData = {
     body: {
@@ -23735,6 +23882,48 @@ export type ListAdCampaignsError = ({
     error?: string;
 } | unknown);
 
+export type CreateAdCampaignData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        name: string;
+        /**
+         * Mapped to the ODAX objective (same mapping as POST /v1/ads/create).
+         */
+        goal: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'job_applicants' | 'conversions' | 'app_promotion' | 'catalog_sales';
+        specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ONLINE_GAMBLING_AND_GAMING')>;
+        /**
+         * Campaign-level (CBO) budget in whole currency units. Requires budgetType.
+         */
+        budgetAmount?: number;
+        budgetType?: 'daily' | 'lifetime';
+        status?: 'ACTIVE' | 'PAUSED';
+    };
+};
+
+export type CreateAdCampaignResponse = ({
+    adAccountId?: string;
+    /**
+     * Platform id of the new campaign
+     */
+    campaignId?: string;
+    /**
+     * Resolved ODAX objective (e.g. OUTCOME_SALES).
+     */
+    objective?: string;
+    status?: 'ACTIVE' | 'PAUSED';
+});
+
+export type CreateAdCampaignError = (unknown | {
+    error?: string;
+});
+
 export type UpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
@@ -23923,6 +24112,89 @@ export type DuplicateAdCampaignResponse = ({
 });
 
 export type DuplicateAdCampaignError = (unknown | {
+    error?: string;
+});
+
+export type DuplicateAdSetData = {
+    body: {
+        platform: 'facebook' | 'instagram';
+        /**
+         * Destination platform campaign id (defaults to the source's campaign)
+         */
+        campaignId?: string;
+        /**
+         * Copy child ads + creatives
+         */
+        deepCopy?: boolean;
+        statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
+        /**
+         * Reschedule the copy's start time
+         */
+        startTime?: string;
+        endTime?: string;
+        renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
+        renamePrefix?: string;
+        renameSuffix?: string;
+        syncAfter?: boolean;
+    };
+    path: {
+        /**
+         * Source platform ad set ID
+         */
+        adSetId: string;
+    };
+};
+
+export type DuplicateAdSetResponse = ({
+    /**
+     * Platform ID of the new ad set
+     */
+    copiedAdSetId?: string;
+    discovery?: 'triggered' | 'skipped' | 'failed';
+    /**
+     * Meta's native copy response (includes ad_object_ids for child copies)
+     */
+    raw?: {
+        [key: string]: unknown;
+    };
+});
+
+export type DuplicateAdSetError = (unknown | {
+    error?: string;
+});
+
+export type DuplicateAdData = {
+    body?: {
+        /**
+         * Destination platform ad set id (defaults to the source's ad set)
+         */
+        adSetId?: string;
+        statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
+        renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
+        renamePrefix?: string;
+        renameSuffix?: string;
+        syncAfter?: boolean;
+    };
+    path: {
+        /**
+         * Zernio ad ID or platform ad ID
+         */
+        adId: string;
+    };
+};
+
+export type DuplicateAdResponse = ({
+    /**
+     * Platform ID of the new ad
+     */
+    copiedAdId?: string;
+    discovery?: 'triggered' | 'skipped' | 'failed';
+    raw?: {
+        [key: string]: unknown;
+    };
+});
+
+export type DuplicateAdError = (unknown | {
     error?: string;
 });
 
@@ -25157,6 +25429,310 @@ export type ListAdStudiesError = (unknown | {
     error?: string;
 });
 
+export type ListMetaBusinessesData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListMetaBusinessesResponse = ({
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListMetaBusinessesError = (unknown | {
+    error?: string;
+});
+
+export type ListAdLabelsData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListAdLabelsResponse = ({
+    adAccountId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListAdLabelsError = (unknown | {
+    error?: string;
+});
+
+export type ListHighDemandPeriodsData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Platform ad set id. Exactly one of campaignId / adSetId.
+         */
+        adSetId?: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Platform campaign id. Exactly one of campaignId / adSetId.
+         */
+        campaignId?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListHighDemandPeriodsResponse = ({
+    /**
+     * The campaign / ad set id the schedules belong to.
+     */
+    objectId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListHighDemandPeriodsError = (unknown | {
+    error?: string;
+});
+
+export type ListAdCreativesData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Comma-separated Graph field override (supports nested {} projections).
+         */
+        fields?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListAdCreativesResponse = ({
+    adAccountId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListAdCreativesError = (unknown | {
+    error?: string;
+});
+
+export type CreateAdCreativeData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token and Page.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        headline: string;
+        /**
+         * Primary text
+         */
+        body: string;
+        /**
+         * Link description below the headline; omitted = Meta scrapes the destination's OG description.
+         */
+        description?: string;
+        /**
+         * CTA type (same whitelist as POST /v1/ads/create).
+         */
+        callToAction?: string;
+        linkUrl: string;
+        /**
+         * Publicly reachable image; uploaded to the account's library server-side.
+         */
+        imageUrl?: string;
+        /**
+         * Existing library image hash (POST /v1/ads/images or GET /v1/ads/images).
+         */
+        imageHash?: string;
+        carouselCards?: Array<{
+            imageUrl: string;
+            linkUrl: string;
+            headline?: string;
+            description?: string;
+            callToAction?: string;
+        }>;
+        /**
+         * Appended to every outbound URL (e.g. utm_source=fb).
+         */
+        urlTags?: string;
+        /**
+         * Advantage+ creative enhancements: partial map of Meta creative feature keys (snake_case) to enroll status, forwarded as degrees_of_freedom_spec.creative_features_spec. Unspecified features default to OPT_OUT.
+         */
+        creativeFeatures?: {
+            [key: string]: ('OPT_IN' | 'OPT_OUT');
+        };
+    };
+};
+
+export type CreateAdCreativeResponse = ({
+    adAccountId?: string;
+    /**
+     * Platform creative id, reusable via existingCreativeId.
+     */
+    creativeId?: string;
+});
+
+export type CreateAdCreativeError = (unknown | {
+    error?: string;
+});
+
+export type GetAdCreativeData = {
+    path: {
+        /**
+         * Platform creative id
+         */
+        creativeId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Comma-separated Graph field override (supports nested {} projections).
+         */
+        fields?: string;
+    };
+};
+
+export type GetAdCreativeResponse = ({
+    /**
+     * Raw Meta creative node
+     */
+    creative?: {
+        [key: string]: unknown;
+    };
+});
+
+export type GetAdCreativeError = (unknown | {
+    error?: string;
+});
+
+export type UpdateAdCreativeData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        name: string;
+    };
+    path: {
+        /**
+         * Platform creative id
+         */
+        creativeId: string;
+    };
+};
+
+export type UpdateAdCreativeResponse = ({
+    creativeId?: string;
+    name?: string;
+    message?: string;
+});
+
+export type UpdateAdCreativeError = (unknown | {
+    error?: string;
+});
+
+export type DeleteAdCreativeData = {
+    path: {
+        /**
+         * Platform creative id
+         */
+        creativeId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteAdCreativeResponse = ({
+    creativeId?: string;
+    message?: string;
+});
+
+export type DeleteAdCreativeError = (unknown | {
+    error?: string;
+});
+
 export type GetAdAccountFinanceData = {
     query: {
         /**
@@ -25632,6 +26208,16 @@ export type CreateStandaloneAdData = {
          * Meta only. The RESERVED prediction id the R&F ad set runs on (reserving mints a new id — pass that one). Requires buyingType RESERVED.
          */
         rfPredictionId?: string;
+        /**
+         * Meta only. Advantage+ creative enhancements: a partial map of Meta creative feature keys (snake_case, e.g. enhance_cta, image_brightness_and_contrast, text_optimizations) to enroll status, forwarded as degrees_of_freedom_spec.creative_features_spec. Meta validates the keys; unspecified features default to OPT_OUT. The legacy standard_enhancements bundle is deprecated by Meta and rejected.
+         */
+        creativeFeatures?: {
+            [key: string]: ('OPT_IN' | 'OPT_OUT');
+        };
+        /**
+         * Meta only, single standalone shape only (no creatives[], adSetId, or RESERVED). Dry-run: each node runs Meta's execution_options validate_only and NOTHING is created or persisted. Children need real parents, so a fresh tree validates the campaign + creative (the ad set needs its campaign to exist — pass existingCampaignId to validate it too; the ad itself is never validatable pre-create). A Meta validation failure returns the 400 verbatim; success returns 200 with per-node results instead of an ad.
+         */
+        validateOnly?: boolean;
         /**
          * Required on legacy + multi-creative shapes. Inherited on attach.
          */
@@ -26341,7 +26927,18 @@ export type CreateStandaloneAdData = {
     };
 };
 
-export type CreateStandaloneAdResponse = (({
+export type CreateStandaloneAdResponse = ({
+    validateOnly?: boolean;
+    results?: Array<{
+        node?: 'campaign' | 'adSet' | 'creative' | 'ad';
+        status?: 'validated' | 'skipped';
+        /**
+         * Why the node could not be validated (only on skipped).
+         */
+        reason?: string;
+    }>;
+    message?: string;
+} | ({
     ad?: Ad;
     message?: string;
 } | {
@@ -26634,6 +27231,48 @@ export type UploadAdImageResponse = ({
 });
 
 export type UploadAdImageError = (unknown | {
+    error?: string;
+});
+
+export type ListAdImagesData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Comma-separated Graph field override (supports nested {} projections).
+         */
+        fields?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListAdImagesResponse = ({
+    adAccountId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListAdImagesError = (unknown | {
     error?: string;
 });
 
