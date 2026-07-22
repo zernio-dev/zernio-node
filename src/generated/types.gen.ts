@@ -8694,7 +8694,7 @@ export type SearchRedditResponse = ({
     before?: (string) | null;
 });
 
-export type SearchRedditError = (unknown | {
+export type SearchRedditError = (ErrorResponse | {
     error?: string;
 });
 
@@ -8715,7 +8715,7 @@ export type GetRedditFeedResponse = ({
     before?: (string) | null;
 });
 
-export type GetRedditFeedError = (unknown | {
+export type GetRedditFeedError = (ErrorResponse | {
     error?: string;
 });
 
@@ -18161,6 +18161,10 @@ export type ListSmsRegistrationsResponse = ({
          */
         campaignId?: (string) | null;
         declineReason?: (string) | null;
+        /**
+         * Toll-free only: when the carrier requested changes ("Waiting For Customer"). The request must be resubmitted within 7 days of this timestamp or it expires.
+         */
+        tfActionRequiredAt?: (string) | null;
         phoneNumbers?: Array<(string)>;
         /**
          * Sole-prop 10DLC only; the OTP step is still pending.
