@@ -23830,7 +23830,7 @@ export type ListAdsResponse = ({
     pagination?: Pagination;
 } | unknown);
 
-export type ListAdsError = ({
+export type ListAdsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -27605,7 +27605,7 @@ export type ListAdCatalogsResponse = ({
     }>;
 });
 
-export type ListAdCatalogsError = ({
+export type ListAdCatalogsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -27632,7 +27632,7 @@ export type ListAdCatalogProductSetsResponse = ({
     }>;
 });
 
-export type ListAdCatalogProductSetsError = ({
+export type ListAdCatalogProductSetsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -27939,7 +27939,7 @@ export type GetConversionsQualityResponse = ({
     }>;
 });
 
-export type GetConversionsQualityError = ({
+export type GetConversionsQualityError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
