@@ -39,8 +39,6 @@ import {
   connectWhatsAppCredentials,
   createAccountGroup,
   createAdAudience,
-  createAdCampaign,
-  createAdCreative,
   createAdInsightsReport,
   createApiKey,
   createBroadcast,
@@ -67,7 +65,6 @@ import {
   createQueueSlot,
   createRfPrediction,
   createSequence,
-  createSmsSenderId,
   createStandaloneAd,
   createTestLead,
   createTrackingTag,
@@ -90,7 +87,6 @@ import {
   deleteAd,
   deleteAdAudience,
   deleteAdCampaign,
-  deleteAdCreative,
   deleteApiKey,
   deleteBroadcast,
   deleteCommentAutomation,
@@ -112,7 +108,6 @@ import {
   deleteProfile,
   deleteQueueSlot,
   deleteSequence,
-  deleteSmsSenderId,
   deleteTelegramCommands,
   deleteWebhookSettings,
   deleteWhatsAppFlow,
@@ -127,9 +122,7 @@ import {
   disableVoiceOnNumber,
   disableWhatsAppCalling,
   disableWhatsAppCallingLegacy,
-  duplicateAd,
   duplicateAdCampaign,
-  duplicateAdSet,
   duplicateWorkflow,
   editDiscordGuildRole,
   editInboxComment,
@@ -151,7 +144,6 @@ import {
   getAdAnalytics,
   getAdAudience,
   getAdComments,
-  getAdCreative,
   getAdInsightsReport,
   getAdPreviews,
   getAdSetDetails,
@@ -273,6 +265,7 @@ import {
   getWhatsAppFlowPreview,
   getWhatsAppGroupChat,
   getWhatsAppLibraryTemplate,
+  getWhatsAppMedia,
   getWhatsAppNumberInfo,
   getWhatsAppNumberKycForm,
   getWhatsAppNumberRemediation,
@@ -302,9 +295,6 @@ import {
   listAdCampaigns,
   listAdCatalogProductSets,
   listAdCatalogs,
-  listAdCreatives,
-  listAdImages,
-  listAdLabels,
   listAdStudies,
   listAds,
   listAdsBusinessCenters,
@@ -327,7 +317,6 @@ import {
   listGoogleBusinessLocations,
   listGoogleBusinessMedia,
   listGoogleBusinessPlaceActions,
-  listHighDemandPeriods,
   listInboxComments,
   listInboxConversationAnalytics,
   listInboxConversations,
@@ -349,7 +338,6 @@ import {
   listSequences,
   listSmsOptOuts,
   listSmsRegistrations,
-  listSmsSenderIds,
   listSnapchatProfiles,
   listTrackingTagSharedAccounts,
   listTrackingTags,
@@ -395,7 +383,6 @@ import {
   replyToInboxPost,
   replyToInboxReview,
   replyToMention,
-  requestSmsSenderIdLimitIncrease,
   resendSmsRegistrationOtp,
   reserveRfPrediction,
   restoreWorkflowVersion,
@@ -455,7 +442,6 @@ import {
   updateAdAudience,
   updateAdCampaign,
   updateAdCampaignStatus,
-  updateAdCreative,
   updateAdSet,
   updateAdSetStatus,
   updateAdStatus,
@@ -945,6 +931,13 @@ export class Zernio {
   };
 
   /**
+   * inbox API
+   */
+  inbox = {
+    getWhatsAppMedia: getWhatsAppMedia,
+  };
+
+  /**
    * accountsettings API
    */
   accountsettings = {
@@ -1097,10 +1090,6 @@ export class Zernio {
     sendSms: sendSms,
     lookupSmsNumber: lookupSmsNumber,
     listSmsOptOuts: listSmsOptOuts,
-    createSmsSenderId: createSmsSenderId,
-    listSmsSenderIds: listSmsSenderIds,
-    requestSmsSenderIdLimitIncrease: requestSmsSenderIdLimitIncrease,
-    deleteSmsSenderId: deleteSmsSenderId,
     startSmsRegistration: startSmsRegistration,
     listSmsRegistrations: listSmsRegistrations,
     deactivateSmsRegistration: deactivateSmsRegistration,
@@ -1294,7 +1283,6 @@ export class Zernio {
    */
   ads = {
     listAds: listAds,
-    duplicateAd: duplicateAd,
     getAd: getAd,
     updateAd: updateAd,
     deleteAd: deleteAd,
@@ -1316,13 +1304,6 @@ export class Zernio {
     cancelRfReservation: cancelRfReservation,
     reserveRfPrediction: reserveRfPrediction,
     listAdStudies: listAdStudies,
-    listAdLabels: listAdLabels,
-    listHighDemandPeriods: listHighDemandPeriods,
-    listAdCreatives: listAdCreatives,
-    createAdCreative: createAdCreative,
-    getAdCreative: getAdCreative,
-    updateAdCreative: updateAdCreative,
-    deleteAdCreative: deleteAdCreative,
     getAdAccountFinance: getAdAccountFinance,
     listAdAccounts: listAdAccounts,
     updateAdAccount: updateAdAccount,
@@ -1338,7 +1319,6 @@ export class Zernio {
     listFormLeads: listFormLeads,
     createTestLead: createTestLead,
     uploadAdImage: uploadAdImage,
-    listAdImages: listAdImages,
     searchAdInterests: searchAdInterests,
     searchAdTargeting: searchAdTargeting,
     estimateAdReach: estimateAdReach,
@@ -1368,13 +1348,11 @@ export class Zernio {
    */
   adcampaigns = {
     listAdCampaigns: listAdCampaigns,
-    createAdCampaign: createAdCampaign,
     updateAdCampaignStatus: updateAdCampaignStatus,
     updateAdCampaign: updateAdCampaign,
     deleteAdCampaign: deleteAdCampaign,
     bulkUpdateAdCampaignStatus: bulkUpdateAdCampaignStatus,
     duplicateAdCampaign: duplicateAdCampaign,
-    duplicateAdSet: duplicateAdSet,
     getAdSetDetails: getAdSetDetails,
     updateAdSet: updateAdSet,
     updateAdSetStatus: updateAdSetStatus,

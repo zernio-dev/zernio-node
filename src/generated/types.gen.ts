@@ -2535,7 +2535,13 @@ export type InboxWebhookMessage = {
          */
         type: string;
         /**
-         * Attachment URL (may expire for Meta platforms)
+         * Where to fetch the attachment. The contract depends on direction and
+         * platform: inbound WhatsApp media points at the authenticated
+         * `GET /v1/whatsapp/media/{mediaId}` and requires
+         * `Authorization: Bearer <your API key>`, while outgoing media carries the
+         * URL originally supplied and Instagram / Facebook / Telegram carry direct
+         * platform CDN links that need no authentication.
+         *
          */
         url: string;
         /**
@@ -5763,7 +5769,19 @@ export type WebhookPayloadMessage = {
              */
             type: string;
             /**
-             * Attachment URL (may expire for Meta platforms)
+             * Where to fetch the attachment. **The contract differs by platform.**
+             *
+             * - **WhatsApp**: points at `GET /v1/whatsapp/media/{mediaId}`, an
+             * authenticated Zernio endpoint. You MUST send
+             * `Authorization: Bearer <your API key>`; fetching it without that
+             * header returns `401`. Download and store the bytes when this
+             * webhook arrives: Meta drops inbound media after a limited
+             * retention window, after which the endpoint answers `400`
+             * permanently and the media is unrecoverable.
+             * - **Instagram / Facebook / Telegram**: a direct platform CDN link
+             * that needs no authentication and expires on the platform's own
+             * schedule.
+             *
              */
             url: string;
             /**
@@ -6194,7 +6212,13 @@ export type WebhookPayloadMessageSent = {
              */
             type: string;
             /**
-             * Attachment URL (may expire for Meta platforms)
+             * Where to fetch the attachment. For outgoing messages this is the
+             * media URL as sent, so for WhatsApp it is the URL you supplied when
+             * publishing (WhatsApp sends media by link), not a Zernio endpoint,
+             * and it needs no Zernio credentials. Contrast the inbound direction:
+             * `message.received` attachment URLs on WhatsApp point at the
+             * authenticated `GET /v1/whatsapp/media/{mediaId}`.
+             *
              */
             url: string;
             /**
@@ -7649,7 +7673,7 @@ export type GetInstagramAccountInsightsData = {
 
 export type GetInstagramAccountInsightsResponse = (InstagramAccountInsightsResponse);
 
-export type GetInstagramAccountInsightsError = (ErrorResponse | {
+export type GetInstagramAccountInsightsError = ({
     error?: string;
 } | {
     error?: string;
@@ -8648,7 +8672,7 @@ export type GetMediaPresignedUrlResponse = ({
     expiresIn?: number;
 });
 
-export type GetMediaPresignedUrlError = ({
+export type GetMediaPresignedUrlError = (ErrorResponse | {
     error?: string;
 });
 
@@ -15573,6 +15597,27 @@ export type SendInboxMessageError = ({
     error?: string;
 } | unknown);
 
+export type GetWhatsAppMediaData = {
+    path: {
+        /**
+         * The media id from `attachments[].payload.id`.
+         */
+        mediaId: string;
+    };
+    query: {
+        /**
+         * The WhatsApp account that received the media.
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppMediaResponse = ((Blob | File));
+
+export type GetWhatsAppMediaError = (unknown | {
+    error?: string;
+});
+
 export type EditInboxMessageData = {
     body: {
         /**
@@ -17818,7 +17863,7 @@ export type DialVoiceWebCallError = ({
 export type SendSmsData = {
     body: {
         /**
-         * One of your SMS-enabled numbers (E.164; formatting is normalized), or an approved alphanumeric sender ID (3-11 letters/digits/spaces, created via `/v1/sms/sender-ids`).
+         * One of your SMS-enabled numbers (E.164; formatting is normalized).
          */
         from: string;
         /**
@@ -17858,7 +17903,7 @@ export type SendSmsResponse = ({
     status?: 'sent';
 });
 
-export type SendSmsError = (ErrorResponse | {
+export type SendSmsError = ({
     error?: string;
 } | unknown);
 
@@ -17911,105 +17956,6 @@ export type ListSmsOptOutsResponse = ({
 export type ListSmsOptOutsError = ({
     error?: string;
 });
-
-export type CreateSmsSenderIdData = {
-    body: {
-        /**
-         * The sender ID recipients will see (3-11 letters/digits/spaces, at least one letter, no leading/trailing space).
-         */
-        senderId: string;
-    };
-};
-
-export type CreateSmsSenderIdResponse = ({
-    /**
-     * Sender ID resource id.
-     */
-    id?: string;
-    senderId?: string;
-    isActive?: boolean;
-});
-
-export type CreateSmsSenderIdError = (ErrorResponse | {
-    error?: string;
-} | unknown);
-
-export type ListSmsSenderIdsResponse = ({
-    senderIds?: Array<{
-        id?: string;
-        senderId?: string;
-        isActive?: boolean;
-        createdAt?: (string) | null;
-    }>;
-    /**
-     * Workspace-wide daily sending budget, shared by every sender ID (resets midnight UTC).
-     */
-    budget?: {
-        /**
-         * Daily message cap (raisable via `/v1/sms/sender-ids/limit-request`).
-         */
-        cap?: number;
-        /**
-         * Messages already counted against today's cap.
-         */
-        usedToday?: number;
-        /**
-         * Cap tier (Level 1 = 500/day).
-         */
-        level?: number;
-        /**
-         * The in-flight cap-raise request awaiting review, or null. While set, further requests return 409.
-         */
-        pendingRequest?: {
-            requestedCap?: number;
-            level?: number;
-            requestedAt?: (string) | null;
-        } | null;
-    };
-});
-
-export type ListSmsSenderIdsError = ({
-    error?: string;
-});
-
-export type RequestSmsSenderIdLimitIncreaseData = {
-    body: {
-        /**
-         * Desired daily message cap. Must exceed the current cap.
-         */
-        requestedCap: number;
-        /**
-         * Use case and audience (what you send, to whom, opt-in status).
-         */
-        reason: string;
-    };
-};
-
-export type RequestSmsSenderIdLimitIncreaseResponse = ({
-    requested?: boolean;
-    requestedCap?: number;
-});
-
-export type RequestSmsSenderIdLimitIncreaseError = (ErrorResponse | {
-    error?: string;
-} | unknown);
-
-export type DeleteSmsSenderIdData = {
-    path: {
-        /**
-         * Sender ID resource id.
-         */
-        id: string;
-    };
-};
-
-export type DeleteSmsSenderIdResponse = ({
-    deleted?: boolean;
-});
-
-export type DeleteSmsSenderIdError = (ErrorResponse | {
-    error?: string;
-} | unknown);
 
 export type StartSmsRegistrationData = {
     body: {
@@ -23785,48 +23731,6 @@ export type ListAdCampaignsError = ({
     error?: string;
 } | unknown);
 
-export type CreateAdCampaignData = {
-    body: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-        /**
-         * Meta ad account id (act_<n>).
-         */
-        adAccountId: string;
-        name: string;
-        /**
-         * Mapped to the ODAX objective (same mapping as POST /v1/ads/create).
-         */
-        goal: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'job_applicants' | 'conversions' | 'app_promotion' | 'catalog_sales';
-        specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ONLINE_GAMBLING_AND_GAMING')>;
-        /**
-         * Campaign-level (CBO) budget in whole currency units. Requires budgetType.
-         */
-        budgetAmount?: number;
-        budgetType?: 'daily' | 'lifetime';
-        status?: 'ACTIVE' | 'PAUSED';
-    };
-};
-
-export type CreateAdCampaignResponse = ({
-    adAccountId?: string;
-    /**
-     * Platform id of the new campaign
-     */
-    campaignId?: string;
-    /**
-     * Resolved ODAX objective (e.g. OUTCOME_SALES).
-     */
-    objective?: string;
-    status?: 'ACTIVE' | 'PAUSED';
-});
-
-export type CreateAdCampaignError = (unknown | {
-    error?: string;
-});
-
 export type UpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
@@ -24015,89 +23919,6 @@ export type DuplicateAdCampaignResponse = ({
 });
 
 export type DuplicateAdCampaignError = (unknown | {
-    error?: string;
-});
-
-export type DuplicateAdSetData = {
-    body: {
-        platform: 'facebook' | 'instagram';
-        /**
-         * Destination platform campaign id (defaults to the source's campaign)
-         */
-        campaignId?: string;
-        /**
-         * Copy child ads + creatives
-         */
-        deepCopy?: boolean;
-        statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
-        /**
-         * Reschedule the copy's start time
-         */
-        startTime?: string;
-        endTime?: string;
-        renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
-        renamePrefix?: string;
-        renameSuffix?: string;
-        syncAfter?: boolean;
-    };
-    path: {
-        /**
-         * Source platform ad set ID
-         */
-        adSetId: string;
-    };
-};
-
-export type DuplicateAdSetResponse = ({
-    /**
-     * Platform ID of the new ad set
-     */
-    copiedAdSetId?: string;
-    discovery?: 'triggered' | 'skipped' | 'failed';
-    /**
-     * Meta's native copy response (includes ad_object_ids for child copies)
-     */
-    raw?: {
-        [key: string]: unknown;
-    };
-});
-
-export type DuplicateAdSetError = (unknown | {
-    error?: string;
-});
-
-export type DuplicateAdData = {
-    body?: {
-        /**
-         * Destination platform ad set id (defaults to the source's ad set)
-         */
-        adSetId?: string;
-        statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
-        renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
-        renamePrefix?: string;
-        renameSuffix?: string;
-        syncAfter?: boolean;
-    };
-    path: {
-        /**
-         * Zernio ad ID or platform ad ID
-         */
-        adId: string;
-    };
-};
-
-export type DuplicateAdResponse = ({
-    /**
-     * Platform ID of the new ad
-     */
-    copiedAdId?: string;
-    discovery?: 'triggered' | 'skipped' | 'failed';
-    raw?: {
-        [key: string]: unknown;
-    };
-});
-
-export type DuplicateAdError = (unknown | {
     error?: string;
 });
 
@@ -25329,271 +25150,6 @@ export type ListAdStudiesResponse = ({
 });
 
 export type ListAdStudiesError = (unknown | {
-    error?: string;
-});
-
-export type ListAdLabelsData = {
-    query: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-        /**
-         * Meta ad account id (act_<n>).
-         */
-        adAccountId: string;
-        /**
-         * Cursor from paging.after of the previous page.
-         */
-        after?: string;
-        /**
-         * Rows per page
-         */
-        limit?: number;
-    };
-};
-
-export type ListAdLabelsResponse = ({
-    adAccountId?: string;
-    data?: Array<{
-        [key: string]: unknown;
-    }>;
-    paging?: {
-        /**
-         * Cursor for the next page; null when exhausted.
-         */
-        after?: (string) | null;
-    };
-});
-
-export type ListAdLabelsError = (unknown | {
-    error?: string;
-});
-
-export type ListHighDemandPeriodsData = {
-    query: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-        /**
-         * Platform ad set id. Exactly one of campaignId / adSetId.
-         */
-        adSetId?: string;
-        /**
-         * Cursor from paging.after of the previous page.
-         */
-        after?: string;
-        /**
-         * Platform campaign id. Exactly one of campaignId / adSetId.
-         */
-        campaignId?: string;
-        /**
-         * Rows per page
-         */
-        limit?: number;
-    };
-};
-
-export type ListHighDemandPeriodsResponse = ({
-    /**
-     * The campaign / ad set id the schedules belong to.
-     */
-    objectId?: string;
-    data?: Array<{
-        [key: string]: unknown;
-    }>;
-    paging?: {
-        /**
-         * Cursor for the next page; null when exhausted.
-         */
-        after?: (string) | null;
-    };
-});
-
-export type ListHighDemandPeriodsError = (unknown | {
-    error?: string;
-});
-
-export type ListAdCreativesData = {
-    query: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-        /**
-         * Meta ad account id (act_<n>).
-         */
-        adAccountId: string;
-        /**
-         * Cursor from paging.after of the previous page.
-         */
-        after?: string;
-        /**
-         * Comma-separated Graph field override (supports nested {} projections).
-         */
-        fields?: string;
-        /**
-         * Rows per page
-         */
-        limit?: number;
-    };
-};
-
-export type ListAdCreativesResponse = ({
-    adAccountId?: string;
-    data?: Array<{
-        [key: string]: unknown;
-    }>;
-    paging?: {
-        /**
-         * Cursor for the next page; null when exhausted.
-         */
-        after?: (string) | null;
-    };
-});
-
-export type ListAdCreativesError = (unknown | {
-    error?: string;
-});
-
-export type CreateAdCreativeData = {
-    body: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token and Page.
-         */
-        accountId: string;
-        /**
-         * Meta ad account id (act_<n>).
-         */
-        adAccountId: string;
-        headline: string;
-        /**
-         * Primary text
-         */
-        body: string;
-        /**
-         * Link description below the headline; omitted = Meta scrapes the destination's OG description.
-         */
-        description?: string;
-        /**
-         * CTA type (same whitelist as POST /v1/ads/create).
-         */
-        callToAction?: string;
-        linkUrl: string;
-        /**
-         * Publicly reachable image; uploaded to the account's library server-side.
-         */
-        imageUrl?: string;
-        /**
-         * Existing library image hash (POST /v1/ads/images or GET /v1/ads/images).
-         */
-        imageHash?: string;
-        carouselCards?: Array<{
-            imageUrl: string;
-            linkUrl: string;
-            headline?: string;
-            description?: string;
-            callToAction?: string;
-        }>;
-        /**
-         * Appended to every outbound URL (e.g. utm_source=fb).
-         */
-        urlTags?: string;
-    };
-};
-
-export type CreateAdCreativeResponse = ({
-    adAccountId?: string;
-    /**
-     * Platform creative id, reusable via existingCreativeId.
-     */
-    creativeId?: string;
-});
-
-export type CreateAdCreativeError = (unknown | {
-    error?: string;
-});
-
-export type GetAdCreativeData = {
-    path: {
-        /**
-         * Platform creative id
-         */
-        creativeId: string;
-    };
-    query: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-        /**
-         * Comma-separated Graph field override (supports nested {} projections).
-         */
-        fields?: string;
-    };
-};
-
-export type GetAdCreativeResponse = ({
-    /**
-     * Raw Meta creative node
-     */
-    creative?: {
-        [key: string]: unknown;
-    };
-});
-
-export type GetAdCreativeError = (unknown | {
-    error?: string;
-});
-
-export type UpdateAdCreativeData = {
-    body: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-        name: string;
-    };
-    path: {
-        /**
-         * Platform creative id
-         */
-        creativeId: string;
-    };
-};
-
-export type UpdateAdCreativeResponse = ({
-    creativeId?: string;
-    name?: string;
-    message?: string;
-});
-
-export type UpdateAdCreativeError = (unknown | {
-    error?: string;
-});
-
-export type DeleteAdCreativeData = {
-    path: {
-        /**
-         * Platform creative id
-         */
-        creativeId: string;
-    };
-    query: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-    };
-};
-
-export type DeleteAdCreativeResponse = ({
-    creativeId?: string;
-    message?: string;
-});
-
-export type DeleteAdCreativeError = (unknown | {
     error?: string;
 });
 
@@ -27074,48 +26630,6 @@ export type UploadAdImageResponse = ({
 });
 
 export type UploadAdImageError = (unknown | {
-    error?: string;
-});
-
-export type ListAdImagesData = {
-    query: {
-        /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
-         */
-        accountId: string;
-        /**
-         * Meta ad account id (act_<n>).
-         */
-        adAccountId: string;
-        /**
-         * Cursor from paging.after of the previous page.
-         */
-        after?: string;
-        /**
-         * Comma-separated Graph field override (supports nested {} projections).
-         */
-        fields?: string;
-        /**
-         * Rows per page
-         */
-        limit?: number;
-    };
-};
-
-export type ListAdImagesResponse = ({
-    adAccountId?: string;
-    data?: Array<{
-        [key: string]: unknown;
-    }>;
-    paging?: {
-        /**
-         * Cursor for the next page; null when exhausted.
-         */
-        after?: (string) | null;
-    };
-});
-
-export type ListAdImagesError = (unknown | {
     error?: string;
 });
 
