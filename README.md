@@ -586,11 +586,6 @@ try {
 | `gmbVerifications.fetchGoogleBusinessVerificationOptions()` | Fetch verification options |
 | `gmbVerifications.startGoogleBusinessVerification()` | Start a verification |
 
-### Inbox
-| Method | Description |
-|--------|-------------|
-| `inbox.getWhatsAppMedia()` | Download WhatsApp media |
-
 ### Inbox Analytics
 | Method | Description |
 |--------|-------------|
@@ -770,6 +765,7 @@ try {
 | `whatsapp.getWhatsAppDataset()` | Get CTWA conversions dataset |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name status |
 | `whatsapp.getWhatsAppGroupChat()` | Get group info |
+| `whatsapp.getWhatsAppMedia()` | Download WhatsApp media |
 | `whatsapp.getWhatsAppTemplate()` | Get template |
 | `whatsapp.getWhatsAppTemplates()` | List templates |
 | `whatsapp.updateWhatsAppBusinessProfile()` | Update business profile |
