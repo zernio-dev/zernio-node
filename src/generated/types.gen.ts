@@ -6617,6 +6617,21 @@ export type WhatsAppButtonsComponent = {
     buttons: Array<WhatsAppTemplateButton>;
 };
 
+export type WhatsAppCarouselCardComponent = WhatsAppHeaderComponent | WhatsAppBodyComponent | WhatsAppButtonsComponent;
+
+export type WhatsAppCarouselComponent = {
+    type: 'carousel';
+    /**
+     * 2-10 cards. Meta requires all cards to share the same component structure; a mismatch surfaces as a rejected_reason. MARKETING category only.
+     */
+    cards: Array<{
+        /**
+         * Per-card components. Each card carries its own media header + optional body + up to 2 buttons. Footer and nested carousel are not allowed inside cards.
+         */
+        components: Array<WhatsAppCarouselCardComponent>;
+    }>;
+};
+
 export type WhatsAppFooterComponent = {
     type: 'footer';
     /**
@@ -6651,6 +6666,20 @@ export type WhatsAppHeaderComponent = {
 };
 
 export type format = 'text' | 'image' | 'video' | 'gif' | 'document' | 'location';
+
+export type WhatsAppLimitedTimeOfferComponent = {
+    type: 'limited_time_offer';
+    limited_time_offer: {
+        /**
+         * Short offer label (<=16 chars). MARKETING only.
+         */
+        text: string;
+        /**
+         * Toggles the countdown timer. The actual coupon code + expiry are bound at SEND time, not here.
+         */
+        has_expiration?: boolean;
+    };
+};
 
 /**
  * A per-user activation session against the shared WhatsApp sandbox number.
@@ -6734,7 +6763,7 @@ export type type8 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code'
  */
 export type otp_type = 'copy_code' | 'one_tap' | 'zero_tap';
 
-export type WhatsAppTemplateComponent = WhatsAppHeaderComponent | WhatsAppBodyComponent | WhatsAppFooterComponent | WhatsAppButtonsComponent;
+export type WhatsAppTemplateComponent = WhatsAppHeaderComponent | WhatsAppBodyComponent | WhatsAppFooterComponent | WhatsAppButtonsComponent | WhatsAppCarouselComponent | WhatsAppLimitedTimeOfferComponent;
 
 /**
  * A directed edge between two nodes.
@@ -17112,7 +17141,7 @@ export type CreateWhatsAppTemplateData = {
          */
         language: string;
         /**
-         * Template components (header, body, footer, buttons). Required for custom templates, omit when using library_template_name.
+         * Template components (header, body, footer, buttons, carousel, limited_time_offer). Required for custom templates, omit when using library_template_name.
          */
         components?: Array<WhatsAppTemplateComponent>;
         /**
@@ -19217,6 +19246,11 @@ export type PurchasePhoneNumberData = {
          *
          */
         wantsSms?: boolean;
+        /**
+         * Declare WhatsApp intent on a STANDALONE purchase (connectWhatsapp:false). The number still activates and bills immediately, but if WhatsApp's buy-time check rejects the assigned number, it is automatically swapped for a WhatsApp-eligible one during the purchase instead of being delivered with WhatsApp unavailable. Ignored on the WhatsApp provisioning path (connectWhatsapp omitted or true), which always delivers a WhatsApp-verified number.
+         *
+         */
+        wantsWhatsapp?: boolean;
         /**
          * Optional idempotency key. Send the same value when retrying a purchase: if a number was already bought under this key, the API returns { status: "already_purchased", numberId, phoneNumber } instead of provisioning a second number. Generate a fresh key for each genuinely new purchase.
          *
