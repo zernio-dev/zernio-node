@@ -27,6 +27,7 @@ import {
   cancelRfReservation,
   checkPhoneNumberAvailability,
   checkPhoneNumberPortability,
+  checkVerification,
   checkWhatsAppNumberAvailability,
   clearContactFieldValue,
   completeGoogleBusinessVerification,
@@ -70,6 +71,7 @@ import {
   createStandaloneAd,
   createTestLead,
   createTrackingTag,
+  createVerification,
   createVoiceCall,
   createVoiceWebSession,
   createWebhookSettings,
@@ -249,6 +251,7 @@ import {
   getUsage,
   getUsageStats,
   getUser,
+  getVerification,
   getVoiceCall,
   getVoiceCallEstimate,
   getVoiceCallRecording,
@@ -1403,6 +1406,15 @@ export class Zernio {
     addTrackingTagSharedAccount: addTrackingTagSharedAccount,
     removeTrackingTagSharedAccount: removeTrackingTagSharedAccount,
     getTrackingTagStats: getTrackingTagStats,
+  };
+
+  /**
+   * verify API
+   */
+  verify = {
+    createVerification: createVerification,
+    getVerification: getVerification,
+    checkVerification: checkVerification,
   };
 
   /**

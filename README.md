@@ -740,6 +740,13 @@ try {
 | `validate.validatePostLength()` | Validate character count |
 | `validate.validateSubreddit()` | Check subreddit existence |
 
+### Verify
+| Method | Description |
+|--------|-------------|
+| `verify.createVerification()` | Send a verification code |
+| `verify.getVerification()` | Get a verification |
+| `verify.checkVerification()` | Check a verification code |
+
 ### Voice
 | Method | Description |
 |--------|-------------|
