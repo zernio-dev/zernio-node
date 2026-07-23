@@ -18781,9 +18781,9 @@ export type GetWhatsAppDisplayNameResponse = ({
     };
 });
 
-export type GetWhatsAppDisplayNameError = ({
+export type GetWhatsAppDisplayNameError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type UpdateWhatsAppDisplayNameData = {
     body: {
