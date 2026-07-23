@@ -24054,7 +24054,7 @@ export type ListAdCampaignsResponse = ({
     pagination?: Pagination;
 });
 
-export type ListAdCampaignsError = ({
+export type ListAdCampaignsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
