@@ -86,7 +86,7 @@ export type AccountWithFollowerStats = SocialAccount & {
 export type Ad = {
     _id?: string;
     name?: string;
-    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     status?: AdStatus;
     adType?: 'boost' | 'standalone';
     /**
@@ -281,7 +281,7 @@ export type Ad = {
     updatedAt?: string;
 };
 
-export type platform = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+export type platform = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
 
 export type adType = 'boost' | 'standalone';
 
@@ -302,7 +302,7 @@ export type AdBudget = {
 
 export type AdCampaign = {
     platformCampaignId?: string;
-    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     campaignName?: string;
     /**
      * Delivery status derived from child ad statuses. Distinct from `reviewStatus`.
@@ -576,7 +576,7 @@ export type AdTreeAdSet = {
  */
 export type AdTreeCampaign = {
     platformCampaignId?: string;
-    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     campaignName?: string;
     /**
      * Delivery status derived from child ad statuses. Distinct from `reviewStatus`, which reflects the platform-side review state.
@@ -1215,12 +1215,14 @@ export type ConversionEvent = {
      * Standard event name (Purchase, Lead, CompleteRegistration, AddToCart,
      * InitiateCheckout, AddPaymentInfo, Subscribe, StartTrial, ViewContent,
      * Search, Contact, SubmitApplication, Schedule) or a custom string
-     * (only supported on platforms that accept custom events — Meta).
+     * (only supported on platforms that accept custom events — Meta and
+     * OpenAI Ads).
      *
      * Per-platform behavior:
      * - Meta: free-form; standard names match Meta's built-ins.
      * - Google: ignored — the conversion action's category determines the type.
      * - LinkedIn: ignored — the conversion rule's `type` is locked to the destination.
+     * - OpenAI Ads: a fixed subset of standard names (Purchase, Lead, AddToCart, ViewContent, InitiateCheckout, CompleteRegistration, Subscribe, StartTrial, Schedule) maps 1:1 onto OpenAI's own event-type enum; anything else is sent as a custom event with the name preserved.
      *
      */
     eventName: string;
@@ -4017,7 +4019,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -4077,7 +4079,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform5 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads';
+export type platform5 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
@@ -12117,6 +12119,35 @@ export type ConnectBlueskyCredentialsError = (unknown | {
     error?: string;
 });
 
+export type ConnectOpenAiAdsCredentialsData = {
+    body: {
+        /**
+         * API key from ChatGPT Ads Manager (Settings). Grants full read/write access on OpenAI's side; Zernio only ever reads with it.
+         */
+        apiKey: string;
+        /**
+         * Your Zernio profile ID
+         */
+        profileId: string;
+        /**
+         * Optional state passthrough for the connect flow.
+         */
+        state?: string;
+        /**
+         * Optional URL to redirect to after successful connection
+         */
+        redirectUri?: string;
+    };
+};
+
+export type ConnectOpenAiAdsCredentialsResponse = ({
+    accountId?: string;
+    adAccountName?: string;
+    redirectUrl?: string;
+});
+
+export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown);
+
 export type ConnectWhatsAppCredentialsData = {
     body: {
         /**
@@ -19729,7 +19760,7 @@ export type GetPhoneNumberKycFormResponse = ({
         localTo?: (string) | null;
     }>;
     /**
-     * Present when this account already has an approved verification for the country that can be reused (skip the form). `fromPhoneNumber`/`details` mirror the newest option; `options` lists ALL approved verifications (agencies hold one per end client) — pass the chosen option's `fromPhoneNumber` as `reuseFrom` on POST.
+     * Present when this account already has a reusable verification for the country (skip the form). `fromPhoneNumber`/`details` mirror the first option; `options` lists ALL reusable verifications (agencies hold one per end client), approved-first. Pass the chosen option's `id` as `reuseOptionId` on POST. Each option's `instant` says whether it activates in minutes (group-approved) or still queues for carrier review (1-3 days).
      */
     reusable?: {
         available?: boolean;
@@ -19745,10 +19776,25 @@ export type GetPhoneNumberKycFormResponse = ({
          * One entry per distinct approved verification, newest first.
          */
         options?: Array<{
+            /**
+             * Opaque option id — pass as `reuseOptionId` on POST. Stable selection key (a phone number is not unique across verifications).
+             */
+            id?: string;
+            /**
+             * Display only — the number this verification was submitted for. Not a selection key.
+             */
             fromPhoneNumber?: string;
+            /**
+             * true = group-approved, a new order activates in minutes; false = documents are reused but the order still queues for carrier review (1-3 days).
+             */
+            instant?: boolean;
             details?: Array<{
                 label?: string;
                 value?: string;
+                /**
+                 * Present on document rows — the Telnyx document id. GET /v1/whatsapp/phone-numbers/kyc/document/{documentId} streams it (auth-scoped, inline PDF).
+                 */
+                documentId?: string;
             }>;
         }>;
     } | null;
@@ -19775,7 +19821,11 @@ export type SubmitPhoneNumberKycData = {
          */
         reuse?: boolean;
         /**
-         * Which approved verification to reuse when several exist: the phone number it was originally approved for (GET reusable.options[].fromPhoneNumber). Omitted = newest. No match = 409.
+         * Which reusable verification to use (GET reusable.options[].id). The unambiguous selection key. Omitted = the approved default. No match = 409.
+         */
+        reuseOptionId?: string;
+        /**
+         * Legacy fallback for `reuseOptionId`: the source phone number (GET reusable.options[].fromPhoneNumber). Ambiguous when a number labels two verifications — prefer `reuseOptionId`. Omitted = the approved default. No match = 409.
          */
         reuseFrom?: string;
         /**
@@ -19844,6 +19894,21 @@ export type SubmitPhoneNumberKycResponse = ({
 export type SubmitPhoneNumberKycError = (unknown | {
     error?: string;
 });
+
+export type ViewPhoneNumberKycDocumentData = {
+    path: {
+        /**
+         * The Telnyx document id (from `reusable.options[].details[].documentId`).
+         */
+        documentId: string;
+    };
+};
+
+export type ViewPhoneNumberKycDocumentResponse = ((Blob | File));
+
+export type ViewPhoneNumberKycDocumentError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type UploadPhoneNumberKycDocumentData = {
     body: (Blob | File);
@@ -20387,7 +20452,7 @@ export type GetWhatsAppNumberKycFormResponse = ({
         audience?: ('business' | 'individual') | null;
     }>;
     /**
-     * Present when this account already has an approved verification for the country that can be reused (skip the form). `fromPhoneNumber`/`details` mirror the newest option; `options` lists ALL approved verifications (agencies hold one per end client) — pass the chosen option's `fromPhoneNumber` as `reuseFrom` on POST.
+     * Present when this account already has a reusable verification for the country (skip the form). `fromPhoneNumber`/`details` mirror the first option; `options` lists ALL reusable verifications (agencies hold one per end client), approved-first. Pass the chosen option's `id` as `reuseOptionId` on POST. Each option's `instant` says whether it activates in minutes (group-approved) or still queues for carrier review (1-3 days).
      */
     reusable?: {
         available?: boolean;
@@ -20403,10 +20468,25 @@ export type GetWhatsAppNumberKycFormResponse = ({
          * One entry per distinct approved verification, newest first.
          */
         options?: Array<{
+            /**
+             * Opaque option id — pass as `reuseOptionId` on POST. Stable selection key (a phone number is not unique across verifications).
+             */
+            id?: string;
+            /**
+             * Display only — the number this verification was submitted for. Not a selection key.
+             */
             fromPhoneNumber?: string;
+            /**
+             * true = group-approved, a new order activates in minutes; false = documents are reused but the order still queues for carrier review (1-3 days).
+             */
+            instant?: boolean;
             details?: Array<{
                 label?: string;
                 value?: string;
+                /**
+                 * Present on document rows — the Telnyx document id. GET /v1/whatsapp/phone-numbers/kyc/document/{documentId} streams it (auth-scoped, inline PDF).
+                 */
+                documentId?: string;
             }>;
         }>;
     } | null;
@@ -20433,7 +20513,11 @@ export type SubmitWhatsAppNumberKycData = {
          */
         reuse?: boolean;
         /**
-         * Which approved verification to reuse when several exist: the phone number it was originally approved for (GET reusable.options[].fromPhoneNumber). Omitted = newest. No match = 409.
+         * Which reusable verification to use (GET reusable.options[].id). The unambiguous selection key. Omitted = the approved default. No match = 409.
+         */
+        reuseOptionId?: string;
+        /**
+         * Legacy fallback for `reuseOptionId`: the source phone number (GET reusable.options[].fromPhoneNumber). Ambiguous when a number labels two verifications — prefer `reuseOptionId`. Omitted = the approved default. No match = 409.
          */
         reuseFrom?: string;
         /**
@@ -23858,7 +23942,7 @@ export type ListAdsData = {
          * Page number (1-based)
          */
         page?: number;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Meta ad ID. Returns the ad with this platform-side ad ID.
          */
@@ -23911,7 +23995,7 @@ export type ListAdCampaignsData = {
          * Page number (1-based)
          */
         page?: number;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Profile ID
          */
@@ -23985,7 +24069,7 @@ export type CreateAdCampaignError = (unknown | {
 export type UpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     };
     path: {
         /**
@@ -24097,7 +24181,7 @@ export type BulkUpdateAdCampaignStatusData = {
         status: 'active' | 'paused';
         campaigns: Array<{
             platformCampaignId: string;
-            platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+            platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         }>;
     };
 };
@@ -24290,7 +24374,7 @@ export type GetAdSetDetailsError = (unknown | {
 
 export type UpdateAdSetData = {
     body: {
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Omit if not updating budget
          */
@@ -24308,23 +24392,27 @@ export type UpdateAdSetData = {
         name?: string;
         /**
          * Ad-set-level bid strategy. Overrides the campaign-level default.
-         * Supported on Meta (facebook, instagram) and TikTok. On TikTok the
+         * Supported on Meta (facebook, instagram), TikTok, and OpenAI. On TikTok the
          * Meta-style enum is mapped to bid_type / bid_price / deep_bid_type
-         * automatically. Other platforms (linkedin, pinterest, google, twitter)
-         * return 501 Not Implemented when bidStrategy is set.
+         * automatically. On OpenAI, LOWEST_COST_WITH_BID_CAP and COST_CAP both map to
+         * the ad group's `bidding_config.max_bid_micros` (one knob covers both);
+         * LOWEST_COST_WITH_MIN_ROAS is rejected with 422 (OpenAI has no ROAS-based
+         * bidding). Other platforms (linkedin, pinterest, google, twitter) return 501
+         * Not Implemented when bidStrategy is set.
          *
          */
         bidStrategy?: (BidStrategy);
         /**
          * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when
          * bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP. Internally converted to Meta's
-         * smallest-denomination integer.
+         * smallest-denomination integer, or (on OpenAI) to micros (× 1,000,000).
          *
          */
         bidAmount?: number;
         /**
          * Minimum ROAS as a decimal multiplier (2.0 = 2.0x). Required when bidStrategy is
          * LOWEST_COST_WITH_MIN_ROAS. Sent to Meta as `bid_constraints.roas_average_floor` × 10000.
+         * Not supported on OpenAI (422).
          *
          */
         roasAverageFloor?: number;
@@ -24396,7 +24484,7 @@ export type UpdateAdSetError = (unknown | {
 export type UpdateAdSetStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     };
     path: {
         /**
@@ -24445,7 +24533,7 @@ export type GetAdTreeData = {
          * Page number (1-based)
          */
         page?: number;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Profile ID
          */
@@ -24503,7 +24591,7 @@ export type GetAdsTimelineData = {
         /**
          * Restrict to one platform.
          */
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Inclusive end of metrics range (YYYY-MM-DD). Defaults to today. Max 730-day range.
          */
@@ -24596,6 +24684,9 @@ export type UpdateAdData = {
              * Minimum varies by platform: TikTok=$20, Pinterest=$5, others=$1
              */
             amount?: number;
+            /**
+             * OpenAI Ads accepts lifetime only; sending daily returns 422.
+             */
             type?: 'daily' | 'lifetime';
         };
         /**
@@ -26260,6 +26351,9 @@ export type CreateStandaloneAdData = {
          * - `job_applicants` requires a `platformSpecificData.jobs` creative.
          * - For `lead_generation` or `conversions` on LinkedIn, or to promote an existing post, use POST /v1/ads/boost.
          *
+         * **OpenAI Ads**
+         * - Only `traffic`, `awareness`, and `conversions` are supported (other goals return 400). Maps to OpenAI's `bidding_type` (clicks, impressions, conversions respectively). `conversions` requires an active conversion event setting on the account; create a tracking tag with `defaultEventType` via the tracking-tags API (`POST /v1/accounts/{accountId}/tracking-tags`), or configure a conversion event in OpenAI Ads Manager, or the request returns 422.
+         *
          */
         goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'job_applicants';
         /**
@@ -26289,11 +26383,11 @@ export type CreateStandaloneAdData = {
          */
         validateOnly?: boolean;
         /**
-         * Required on legacy + multi-creative shapes. Inherited on attach.
+         * Required on legacy + multi-creative shapes. Inherited on attach. OpenAI Ads requires a $1 minimum (its budget is lifetime-only, see budgetType).
          */
         budgetAmount?: number;
         /**
-         * Required on legacy + multi-creative shapes. Inherited on attach.
+         * Required on legacy + multi-creative shapes. Inherited on attach. OpenAI Ads accepts lifetime only (no daily-budget concept on the platform); sending daily returns 422. OpenAI Ads lifetime budgets require `endDate` to give the lifetime cap a spend window.
          */
         budgetType?: 'daily' | 'lifetime';
         /**
@@ -26314,7 +26408,7 @@ export type CreateStandaloneAdData = {
         budgetLevel?: 'adset' | 'campaign';
         currency?: string;
         /**
-         * Required for Meta, Google, Pinterest, and LinkedIn on legacy + attach shapes (skip for multi-creative — use `creatives[].headline`). Ignored for TikTok and X/Twitter. Max: Meta=255, Google=30, Pinterest=100, LinkedIn=400. On LinkedIn this is the ad's headline (the bold text on the creative); for traffic ads it's the link card title.
+         * Required for Meta, Google, Pinterest, LinkedIn, and OpenAI Ads on legacy + attach shapes (skip for multi-creative — use `creatives[].headline`). Ignored for TikTok and X/Twitter. Max: Meta=255, Google=30, Pinterest=100, LinkedIn=400, OpenAI=50 (min 3). On LinkedIn this is the ad's headline (the bold text on the creative); for traffic ads it's the link card title. On OpenAI Ads this is the chat card's title.
          */
         headline?: string;
         /**
@@ -26322,7 +26416,7 @@ export type CreateStandaloneAdData = {
          */
         longHeadline?: string;
         /**
-         * Required on legacy + attach shapes. For X/Twitter this is the tweet text (max 280 chars including a ~24-char URL when `linkUrl` is set). On LinkedIn this is the post commentary (the intro text shown above the ad). Max: Google=90, Pinterest=500.
+         * Required on legacy + attach shapes. For X/Twitter this is the tweet text (max 280 chars including a ~24-char URL when `linkUrl` is set). On LinkedIn this is the post commentary (the intro text shown above the ad). On OpenAI Ads this is the chat card's body text. Max: Google=90, Pinterest=500, OpenAI=100.
          */
         body?: string;
         /**
@@ -26334,7 +26428,7 @@ export type CreateStandaloneAdData = {
          */
         callToAction?: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW';
         /**
-         * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`. NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead of a destination). On LinkedIn, `imageUrl` + `linkUrl` publishes an ARTICLE-content creative; this is LinkedIn's article ad format, with the image as thumbnail and `longHeadline` as description.
+         * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`. NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead of a destination). On LinkedIn, `imageUrl` + `linkUrl` publishes an ARTICLE-content creative; this is LinkedIn's article ad format, with the image as thumbnail and `longHeadline` as description. Required for OpenAI Ads (the chat card's target_url).
          */
         linkUrl?: string;
         /**
@@ -26342,7 +26436,7 @@ export type CreateStandaloneAdData = {
          */
         leadGenFormId?: string;
         /**
-         * Image creative for Meta/Google/Pinterest/LinkedIn on legacy + attach shapes (mutually exclusive with `video`). Required for LinkedIn ads unless `video` is set. Not required for Google Search campaigns. For TikTok, this field carries the VIDEO URL (the TikTok ads endpoint is video-only; the field retains the `imageUrl` name for cross-platform consistency). Ignored for X/Twitter. For Google Display, treated as the landscape image (alias of `images.landscape`); supply `images.square` alongside or the request is rejected. For LinkedIn the image is uploaded to LinkedIn under the authoring Company Page (see `organizationId`); recommended ratio 1.91:1 (e.g. 1200×627).
+         * Image creative for Meta/Google/Pinterest/LinkedIn on legacy + attach shapes (mutually exclusive with `video`). Required for LinkedIn ads unless `video` is set. Not required for Google Search campaigns. For TikTok, this field carries the VIDEO URL (the TikTok ads endpoint is video-only; the field retains the `imageUrl` name for cross-platform consistency). Ignored for X/Twitter. For Google Display, treated as the landscape image (alias of `images.landscape`); supply `images.square` alongside or the request is rejected. For LinkedIn the image is uploaded to LinkedIn under the authoring Company Page (see `organizationId`); recommended ratio 1.91:1 (e.g. 1200×627). Required for OpenAI Ads (uploaded as the chat card's image; OpenAI has no video ad format).
          */
         imageUrl?: string;
         /**
@@ -26483,7 +26577,7 @@ export type CreateStandaloneAdData = {
          */
         targeting?: (TargetingSpec);
         /**
-         * ISO 3166-1 alpha-2 country codes (e.g. ['NL']). Defaults to ['US'] when no other geo targeting (flat or nested `targeting`) is provided. (LinkedIn currently honours country-level targeting only.)
+         * ISO 3166-1 alpha-2 country codes (e.g. ['NL']). Defaults to ['US'] when no other geo targeting (flat or nested `targeting`) is provided. (LinkedIn and OpenAI Ads currently honour country-level targeting only; any other targeting field returns 400 for OpenAI Ads.)
          */
         countries?: Array<(string)>;
         /**
@@ -28010,20 +28104,21 @@ export type GetConversionsQualityError = (ErrorResponse | {
 export type SendConversionsData = {
     body: {
         /**
-         * SocialAccount ID (metaads, googleads, linkedinads, or tiktokads).
+         * SocialAccount ID (metaads, googleads, linkedinads, tiktokads, or openaiads).
          */
         accountId: string;
         /**
          * Platform destination identifier. For Meta, the pixel/dataset
          * ID. For Google, the conversion action resource name. For
          * LinkedIn, the conversion rule ID or full
-         * `urn:lla:llaPartnerConversion:{id}` URN.
+         * `urn:lla:llaPartnerConversion:{id}` URN. For OpenAI Ads, the
+         * pixel wire id.
          *
          */
         destinationId: string;
         events: Array<ConversionEvent>;
         /**
-         * Meta `test_event_code` passthrough. Ignored by Google and LinkedIn.
+         * Meta `test_event_code` passthrough. Ignored by Google, LinkedIn, and OpenAI Ads.
          */
         testCode?: string;
         /**
@@ -28044,7 +28139,7 @@ export type SendConversionsData = {
 };
 
 export type SendConversionsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads';
     /**
      * Events accepted by the platform.
      */
@@ -28068,7 +28163,8 @@ export type SendConversionsResponse = ({
     /**
      * Platform trace ID for debugging. fbtrace_id for Meta,
      * requestId for Google. Absent for LinkedIn (LinkedIn's
-     * conversionEvents endpoint does not surface a trace ID).
+     * conversionEvents endpoint does not surface a trace ID)
+     * and OpenAI Ads (no trace ID surfaced).
      *
      */
     traceId?: string;
@@ -28157,19 +28253,20 @@ export type AdjustConversionsError = (unknown | {
 export type ListConversionDestinationsData = {
     path: {
         /**
-         * SocialAccount ID (metaads, googleads, linkedinads, or tiktokads).
+         * SocialAccount ID (metaads, googleads, linkedinads, tiktokads, or openaiads).
          */
         accountId: string;
     };
 };
 
 export type ListConversionDestinationsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads';
     destinations?: Array<{
         /**
          * Destination identifier. Meta: pixel ID. Google:
          * conversion action resource name. LinkedIn:
-         * numeric conversion rule ID.
+         * numeric conversion rule ID. OpenAI Ads: pixel wire
+         * id.
          *
          */
         id?: string;
@@ -28731,20 +28828,20 @@ export type CreateCtwaAdError = (unknown | {
 export type ListTrackingTagsData = {
     path: {
         /**
-         * Meta ads SocialAccount id (platform `metaads`).
+         * Ads SocialAccount id (platform `metaads` or `openaiads`).
          */
         accountId: string;
     };
     query?: {
         /**
-         * Optional. Scope to one ad account, e.g. `act_123456789`.
+         * Optional, Meta only. Scope to one ad account, e.g. `act_123456789`. Ignored for OpenAI Ads.
          */
         adAccountId?: string;
     };
 };
 
 export type ListTrackingTagsResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'openaiads';
     tags?: Array<TrackingTag>;
 });
 
@@ -28755,21 +28852,21 @@ export type ListTrackingTagsError = (unknown | {
 export type CreateTrackingTagData = {
     body: {
         /**
-         * Meta ad account id, e.g. `act_123456789`.
+         * Meta ad account id, e.g. `act_123456789`. Required by this endpoint but ignored for OpenAI Ads.
          */
         adAccountId: string;
         name: string;
     };
     path: {
         /**
-         * Meta ads SocialAccount id (platform `metaads`).
+         * Ads SocialAccount id (platform `metaads` or `openaiads`).
          */
         accountId: string;
     };
 };
 
 export type CreateTrackingTagResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'openaiads';
     tag?: TrackingTag;
 });
 

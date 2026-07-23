@@ -327,6 +327,7 @@ try {
 | `connect.configureTikTokAdsBrandIdentity()` | Set TikTok brand identity |
 | `connect.connectAds()` | Connect ads for a platform |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |
+| `connect.connectOpenAIAdsCredentials()` | Connect an OpenAI Ads account |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
@@ -685,6 +686,7 @@ try {
 | `phoneNumbers.uploadPhoneNumberKycDocument()` | Upload a KYC document |
 | `phoneNumbers.uploadPhoneNumberPortInDocument()` | Upload a porting document |
 | `phoneNumbers.validatePhoneNumberKycAddress()` | Pre-validate KYC address |
+| `phoneNumbers.viewPhoneNumberKycDocument()` | View a KYC document on file |
 
 ### Reach and Frequency
 | Method | Description |

@@ -36,6 +36,7 @@ import {
   configureTikTokAdsBrandIdentity,
   connectAds,
   connectBlueskyCredentials,
+  connectOpenAiAdsCredentials,
   connectWhatsAppCredentials,
   createAccountGroup,
   createAdAudience,
@@ -514,6 +515,7 @@ import {
   validateSubreddit,
   validateWhatsAppNumberKycAddress,
   verifySmsRegistrationOtp,
+  viewPhoneNumberKycDocument,
   voteRedditThing,
 } from './generated/sdk.gen';
 
@@ -747,6 +749,7 @@ export class Zernio {
     connectAds: connectAds,
     configureTikTokAdsBrandIdentity: configureTikTokAdsBrandIdentity,
     getPendingOAuthData: getPendingOAuthData,
+    connectOpenAIAdsCredentials: connectOpenAiAdsCredentials,
     connectWhatsAppCredentials: connectWhatsAppCredentials,
     listWhatsAppPhoneNumbers: listWhatsAppPhoneNumbers,
     completeWhatsAppPhoneSelection: completeWhatsAppPhoneSelection,
@@ -1164,6 +1167,7 @@ export class Zernio {
     checkPhoneNumberAvailability: checkPhoneNumberAvailability,
     getPhoneNumberKycForm: getPhoneNumberKycForm,
     submitPhoneNumberKyc: submitPhoneNumberKyc,
+    viewPhoneNumberKycDocument: viewPhoneNumberKycDocument,
     uploadPhoneNumberKycDocument: uploadPhoneNumberKycDocument,
     validatePhoneNumberKycAddress: validatePhoneNumberKycAddress,
     createPhoneNumberKycLink: createPhoneNumberKycLink,
@@ -1465,6 +1469,206 @@ export class Zernio {
     createVerification: createVerification,
     getVerification: getVerification,
     checkVerification: checkVerification,
+  };
+
+  /**
+   * @deprecated The `ads` namespace has been split. Use one of these instead:
+   * zernio.adcampaigns, zernio.adaccounts, zernio.adcreatives, zernio.adaudiences, zernio.adtargeting, zernio.adinsights, zernio.conversions, zernio.messagingads, zernio.reachandfrequency, zernio.leadgen, zernio.trackingtags.
+   * This backward-compatibility alias will be removed in a future major version.
+   */
+  ads = {
+    /** @deprecated Use `zernio.adcampaigns.listAds` instead. */
+    listAds: listAds,
+    /** @deprecated Use `zernio.adcampaigns.listAdCampaigns` instead. */
+    listAdCampaigns: listAdCampaigns,
+    /** @deprecated Use `zernio.adcampaigns.createAdCampaign` instead. */
+    createAdCampaign: createAdCampaign,
+    /** @deprecated Use `zernio.adcampaigns.updateAdCampaignStatus` instead. */
+    updateAdCampaignStatus: updateAdCampaignStatus,
+    /** @deprecated Use `zernio.adcampaigns.updateAdCampaign` instead. */
+    updateAdCampaign: updateAdCampaign,
+    /** @deprecated Use `zernio.adcampaigns.deleteAdCampaign` instead. */
+    deleteAdCampaign: deleteAdCampaign,
+    /** @deprecated Use `zernio.adcampaigns.bulkUpdateAdCampaignStatus` instead. */
+    bulkUpdateAdCampaignStatus: bulkUpdateAdCampaignStatus,
+    /** @deprecated Use `zernio.adcampaigns.duplicateAdCampaign` instead. */
+    duplicateAdCampaign: duplicateAdCampaign,
+    /** @deprecated Use `zernio.adcampaigns.duplicateAdSet` instead. */
+    duplicateAdSet: duplicateAdSet,
+    /** @deprecated Use `zernio.adcampaigns.duplicateAd` instead. */
+    duplicateAd: duplicateAd,
+    /** @deprecated Use `zernio.adcampaigns.getAdSetDetails` instead. */
+    getAdSetDetails: getAdSetDetails,
+    /** @deprecated Use `zernio.adcampaigns.updateAdSet` instead. */
+    updateAdSet: updateAdSet,
+    /** @deprecated Use `zernio.adcampaigns.updateAdSetStatus` instead. */
+    updateAdSetStatus: updateAdSetStatus,
+    /** @deprecated Use `zernio.adcampaigns.getAdTree` instead. */
+    getAdTree: getAdTree,
+    /** @deprecated Use `zernio.adcampaigns.getAdsTimeline` instead. */
+    getAdsTimeline: getAdsTimeline,
+    /** @deprecated Use `zernio.adcampaigns.getAd` instead. */
+    getAd: getAd,
+    /** @deprecated Use `zernio.adcampaigns.updateAd` instead. */
+    updateAd: updateAd,
+    /** @deprecated Use `zernio.adcampaigns.deleteAd` instead. */
+    deleteAd: deleteAd,
+    /** @deprecated Use `zernio.adcampaigns.updateAdStatus` instead. */
+    updateAdStatus: updateAdStatus,
+    /** @deprecated Use `zernio.adcampaigns.boostPost` instead. */
+    boostPost: boostPost,
+    /** @deprecated Use `zernio.adcampaigns.createStandaloneAd` instead. */
+    createStandaloneAd: createStandaloneAd,
+    /** @deprecated Use `zernio.adaccounts.getAdComments` instead. */
+    getAdComments: getAdComments,
+    /** @deprecated Use `zernio.adaccounts.listAdsBusinessCenters` instead. */
+    listAdsBusinessCenters: listAdsBusinessCenters,
+    /** @deprecated Use `zernio.adaccounts.getAdsActivityLog` instead. */
+    getAdsActivityLog: getAdsActivityLog,
+    /** @deprecated Use `zernio.adaccounts.listAdStudies` instead. */
+    listAdStudies: listAdStudies,
+    /** @deprecated Use `zernio.adaccounts.listMetaBusinesses` instead. */
+    listMetaBusinesses: listMetaBusinesses,
+    /** @deprecated Use `zernio.adaccounts.listAdLabels` instead. */
+    listAdLabels: listAdLabels,
+    /** @deprecated Use `zernio.adaccounts.listHighDemandPeriods` instead. */
+    listHighDemandPeriods: listHighDemandPeriods,
+    /** @deprecated Use `zernio.adaccounts.getAdAccountFinance` instead. */
+    getAdAccountFinance: getAdAccountFinance,
+    /** @deprecated Use `zernio.adaccounts.listAdAccounts` instead. */
+    listAdAccounts: listAdAccounts,
+    /** @deprecated Use `zernio.adaccounts.updateAdAccount` instead. */
+    updateAdAccount: updateAdAccount,
+    /** @deprecated Use `zernio.adaccounts.getDsaDefaults` instead. */
+    getDsaDefaults: getDsaDefaults,
+    /** @deprecated Use `zernio.adaccounts.getDsaRecommendations` instead. */
+    getDsaRecommendations: getDsaRecommendations,
+    /** @deprecated Use `zernio.adcreatives.generateAdPreviews` instead. */
+    generateAdPreviews: generateAdPreviews,
+    /** @deprecated Use `zernio.adcreatives.getAdPreviews` instead. */
+    getAdPreviews: getAdPreviews,
+    /** @deprecated Use `zernio.adcreatives.listAdCreatives` instead. */
+    listAdCreatives: listAdCreatives,
+    /** @deprecated Use `zernio.adcreatives.createAdCreative` instead. */
+    createAdCreative: createAdCreative,
+    /** @deprecated Use `zernio.adcreatives.getAdCreative` instead. */
+    getAdCreative: getAdCreative,
+    /** @deprecated Use `zernio.adcreatives.updateAdCreative` instead. */
+    updateAdCreative: updateAdCreative,
+    /** @deprecated Use `zernio.adcreatives.deleteAdCreative` instead. */
+    deleteAdCreative: deleteAdCreative,
+    /** @deprecated Use `zernio.adcreatives.uploadAdImage` instead. */
+    uploadAdImage: uploadAdImage,
+    /** @deprecated Use `zernio.adcreatives.listAdImages` instead. */
+    listAdImages: listAdImages,
+    /** @deprecated Use `zernio.adcreatives.listAdCatalogs` instead. */
+    listAdCatalogs: listAdCatalogs,
+    /** @deprecated Use `zernio.adcreatives.listAdCatalogProductSets` instead. */
+    listAdCatalogProductSets: listAdCatalogProductSets,
+    /** @deprecated Use `zernio.adaudiences.listAdAudiences` instead. */
+    listAdAudiences: listAdAudiences,
+    /** @deprecated Use `zernio.adaudiences.createAdAudience` instead. */
+    createAdAudience: createAdAudience,
+    /** @deprecated Use `zernio.adaudiences.getAdAudience` instead. */
+    getAdAudience: getAdAudience,
+    /** @deprecated Use `zernio.adaudiences.updateAdAudience` instead. */
+    updateAdAudience: updateAdAudience,
+    /** @deprecated Use `zernio.adaudiences.deleteAdAudience` instead. */
+    deleteAdAudience: deleteAdAudience,
+    /** @deprecated Use `zernio.adaudiences.addUsersToAdAudience` instead. */
+    addUsersToAdAudience: addUsersToAdAudience,
+    /** @deprecated Use `zernio.adtargeting.searchAdInterests` instead. */
+    searchAdInterests: searchAdInterests,
+    /** @deprecated Use `zernio.adtargeting.searchAdTargeting` instead. */
+    searchAdTargeting: searchAdTargeting,
+    /** @deprecated Use `zernio.adtargeting.estimateAdReach` instead. */
+    estimateAdReach: estimateAdReach,
+    /** @deprecated Use `zernio.adtargeting.getLinkedInBidPricing` instead. */
+    getLinkedInBidPricing: getLinkedInBidPricing,
+    /** @deprecated Use `zernio.adtargeting.getLinkedInSupplyForecast` instead. */
+    getLinkedInSupplyForecast: getLinkedInSupplyForecast,
+    /** @deprecated Use `zernio.adinsights.getCampaignAnalytics` instead. */
+    getCampaignAnalytics: getCampaignAnalytics,
+    /** @deprecated Use `zernio.adinsights.queryAdInsights` instead. */
+    queryAdInsights: queryAdInsights,
+    /** @deprecated Use `zernio.adinsights.createAdInsightsReport` instead. */
+    createAdInsightsReport: createAdInsightsReport,
+    /** @deprecated Use `zernio.adinsights.getAdInsightsReport` instead. */
+    getAdInsightsReport: getAdInsightsReport,
+    /** @deprecated Use `zernio.adinsights.getAdAnalytics` instead. */
+    getAdAnalytics: getAdAnalytics,
+    /** @deprecated Use `zernio.conversions.getConversionsQuality` instead. */
+    getConversionsQuality: getConversionsQuality,
+    /** @deprecated Use `zernio.conversions.sendConversions` instead. */
+    sendConversions: sendConversions,
+    /** @deprecated Use `zernio.conversions.adjustConversions` instead. */
+    adjustConversions: adjustConversions,
+    /** @deprecated Use `zernio.conversions.listConversionDestinations` instead. */
+    listConversionDestinations: listConversionDestinations,
+    /** @deprecated Use `zernio.conversions.createConversionDestination` instead. */
+    createConversionDestination: createConversionDestination,
+    /** @deprecated Use `zernio.conversions.getConversionDestination` instead. */
+    getConversionDestination: getConversionDestination,
+    /** @deprecated Use `zernio.conversions.updateConversionDestination` instead. */
+    updateConversionDestination: updateConversionDestination,
+    /** @deprecated Use `zernio.conversions.deleteConversionDestination` instead. */
+    deleteConversionDestination: deleteConversionDestination,
+    /** @deprecated Use `zernio.conversions.listConversionAssociations` instead. */
+    listConversionAssociations: listConversionAssociations,
+    /** @deprecated Use `zernio.conversions.addConversionAssociations` instead. */
+    addConversionAssociations: addConversionAssociations,
+    /** @deprecated Use `zernio.conversions.removeConversionAssociations` instead. */
+    removeConversionAssociations: removeConversionAssociations,
+    /** @deprecated Use `zernio.conversions.getConversionMetrics` instead. */
+    getConversionMetrics: getConversionMetrics,
+    /** @deprecated Use `zernio.messagingads.createMessagingAd` instead. */
+    createMessagingAd: createMessagingAd,
+    /** @deprecated Use `zernio.messagingads.createCallAd` instead. */
+    createCallAd: createCallAd,
+    /** @deprecated Use `zernio.messagingads.createCtwaAd` instead. */
+    createCtwaAd: createCtwaAd,
+    /** @deprecated Use `zernio.reachandfrequency.createRfPrediction` instead. */
+    createRfPrediction: createRfPrediction,
+    /** @deprecated Use `zernio.reachandfrequency.getRfPrediction` instead. */
+    getRfPrediction: getRfPrediction,
+    /** @deprecated Use `zernio.reachandfrequency.cancelRfReservation` instead. */
+    cancelRfReservation: cancelRfReservation,
+    /** @deprecated Use `zernio.reachandfrequency.reserveRfPrediction` instead. */
+    reserveRfPrediction: reserveRfPrediction,
+    /** @deprecated Use `zernio.leadgen.listLeads` instead. */
+    listLeads: listLeads,
+    /** @deprecated Use `zernio.leadgen.listLeadForms` instead. */
+    listLeadForms: listLeadForms,
+    /** @deprecated Use `zernio.leadgen.createLeadForm` instead. */
+    createLeadForm: createLeadForm,
+    /** @deprecated Use `zernio.leadgen.getLeadForm` instead. */
+    getLeadForm: getLeadForm,
+    /** @deprecated Use `zernio.leadgen.archiveLeadForm` instead. */
+    archiveLeadForm: archiveLeadForm,
+    /** @deprecated Use `zernio.leadgen.listFormLeads` instead. */
+    listFormLeads: listFormLeads,
+    /** @deprecated Use `zernio.leadgen.createTestLead` instead. */
+    createTestLead: createTestLead,
+    /** @deprecated Use `zernio.trackingtags.getAdTrackingTags` instead. */
+    getAdTrackingTags: getAdTrackingTags,
+    /** @deprecated Use `zernio.trackingtags.updateAdTrackingTags` instead. */
+    updateAdTrackingTags: updateAdTrackingTags,
+    /** @deprecated Use `zernio.trackingtags.listTrackingTags` instead. */
+    listTrackingTags: listTrackingTags,
+    /** @deprecated Use `zernio.trackingtags.createTrackingTag` instead. */
+    createTrackingTag: createTrackingTag,
+    /** @deprecated Use `zernio.trackingtags.getTrackingTag` instead. */
+    getTrackingTag: getTrackingTag,
+    /** @deprecated Use `zernio.trackingtags.updateTrackingTag` instead. */
+    updateTrackingTag: updateTrackingTag,
+    /** @deprecated Use `zernio.trackingtags.listTrackingTagSharedAccounts` instead. */
+    listTrackingTagSharedAccounts: listTrackingTagSharedAccounts,
+    /** @deprecated Use `zernio.trackingtags.addTrackingTagSharedAccount` instead. */
+    addTrackingTagSharedAccount: addTrackingTagSharedAccount,
+    /** @deprecated Use `zernio.trackingtags.removeTrackingTagSharedAccount` instead. */
+    removeTrackingTagSharedAccount: removeTrackingTagSharedAccount,
+    /** @deprecated Use `zernio.trackingtags.getTrackingTagStats` instead. */
+    getTrackingTagStats: getTrackingTagStats,
   };
 
   /**
