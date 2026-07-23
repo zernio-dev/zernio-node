@@ -27141,6 +27141,9 @@ export type CreateStandaloneAdData = {
 };
 
 export type CreateStandaloneAdResponse = ({
+    /**
+     * Always true in a validate-only response.
+     */
     validateOnly?: boolean;
     results?: Array<{
         node?: 'campaign' | 'adSet' | 'creative' | 'ad';
