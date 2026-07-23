@@ -26137,7 +26137,13 @@ export type BoostPostData = {
          */
         tracking?: {
             pixelId?: string;
-            urlTags?: string;
+            /**
+             * URL parameters appended to the ad link, rendered as `key=value` pairs joined with `&`.
+             */
+            urlTags?: Array<{
+                key?: string;
+                value?: string;
+            }>;
         };
         /**
          * Meta only. Required for housing, employment, credit, or political ads.
