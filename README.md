@@ -680,6 +680,7 @@ try {
 | `phoneNumbers.purchasePhoneNumber()` | Purchase phone number |
 | `phoneNumbers.releasePhoneNumber()` | Release phone number |
 | `phoneNumbers.remediatePhoneNumber()` | Resubmit a declined number |
+| `phoneNumbers.replyToPhoneNumberReviewer()` | Reply to the regulatory reviewer |
 | `phoneNumbers.reviewPhoneNumberKycPacket()` | Pre-review a KYC packet |
 | `phoneNumbers.searchAvailablePhoneNumbers()` | Search available numbers |
 | `phoneNumbers.submitPhoneNumberKyc()` | Submit KYC |

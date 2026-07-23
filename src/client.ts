@@ -399,6 +399,7 @@ import {
   replyToInboxPost,
   replyToInboxReview,
   replyToMention,
+  replyToPhoneNumberReviewer,
   requestSmsSenderIdLimitIncrease,
   resendSmsRegistrationOtp,
   reserveRfPrediction,
@@ -1181,6 +1182,7 @@ export class Zernio {
     reviewPhoneNumberKycPacket: reviewPhoneNumberKycPacket,
     getPhoneNumberRemediation: getPhoneNumberRemediation,
     remediatePhoneNumber: remediatePhoneNumber,
+    replyToPhoneNumberReviewer: replyToPhoneNumberReviewer,
   };
 
   /**

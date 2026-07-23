@@ -20417,6 +20417,40 @@ export type RemediatePhoneNumberError = (unknown | {
     error?: string;
 });
 
+export type ReplyToPhoneNumberReviewerData = {
+    body: {
+        /**
+         * The reply message to the reviewer.
+         */
+        text?: string;
+        /**
+         * Files (PDF/JPG/PNG/WEBP, max 10 MB each) whose links are added to the reply.
+         */
+        attachments?: Array<{
+            filename: string;
+            /**
+             * Base64-encoded file bytes.
+             */
+            base64: string;
+        }>;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type ReplyToPhoneNumberReviewerResponse = ({
+    posted?: boolean;
+    /**
+     * Number of attachments uploaded.
+     */
+    attachments?: number;
+});
+
+export type ReplyToPhoneNumberReviewerError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppNumberKycFormData = {
     query: {
         country: string;
