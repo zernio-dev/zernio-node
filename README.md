@@ -681,6 +681,7 @@ try {
 | `phoneNumbers.releasePhoneNumber()` | Release phone number |
 | `phoneNumbers.remediatePhoneNumber()` | Resubmit a declined number |
 | `phoneNumbers.replyToPhoneNumberReviewer()` | Reply to the regulatory reviewer |
+| `phoneNumbers.respondToPhoneNumberReviewer()` | Respond to the regulatory reviewer (message + corrections) |
 | `phoneNumbers.reviewPhoneNumberKycPacket()` | Pre-review a KYC packet |
 | `phoneNumbers.searchAvailablePhoneNumbers()` | Search available numbers |
 | `phoneNumbers.submitPhoneNumberKyc()` | Submit KYC |

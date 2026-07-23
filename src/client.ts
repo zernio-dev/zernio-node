@@ -403,6 +403,7 @@ import {
   requestSmsSenderIdLimitIncrease,
   resendSmsRegistrationOtp,
   reserveRfPrediction,
+  respondToPhoneNumberReviewer,
   restoreWorkflowVersion,
   retryPost,
   retweetPost,
@@ -1183,6 +1184,7 @@ export class Zernio {
     getPhoneNumberRemediation: getPhoneNumberRemediation,
     remediatePhoneNumber: remediatePhoneNumber,
     replyToPhoneNumberReviewer: replyToPhoneNumberReviewer,
+    respondToPhoneNumberReviewer: respondToPhoneNumberReviewer,
   };
 
   /**

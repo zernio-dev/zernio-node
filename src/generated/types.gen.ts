@@ -20481,6 +20481,73 @@ export type ReplyToPhoneNumberReviewerError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type RespondToPhoneNumberReviewerData = {
+    body: {
+        /**
+         * Your message to the reviewer.
+         */
+        message?: string;
+        /**
+         * Corrected requirement documents, each keyed to its requirement.
+         */
+        documents?: Array<{
+            requirementId: string;
+            filename?: string;
+            /**
+             * Base64-encoded file bytes (or supply documentId instead).
+             */
+            base64?: string;
+            /**
+             * Id of a document already uploaded out-of-band.
+             */
+            documentId?: string;
+        }>;
+        /**
+         * A corrected address record, keyed to its requirement.
+         */
+        address?: {
+            [key: string]: unknown;
+        };
+        entityType?: ('individual' | 'business') | null;
+        /**
+         * Loose files (PDF/JPG/PNG/WEBP, max 10 MB each) whose links are added to your message.
+         */
+        attachments?: Array<{
+            filename: string;
+            /**
+             * Base64-encoded file bytes.
+             */
+            base64: string;
+        }>;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type RespondToPhoneNumberReviewerResponse = ({
+    /**
+     * `resubmitted` when corrections were submitted, `replied` when it was message-only.
+     */
+    status?: 'resubmitted' | 'replied';
+    /**
+     * Whether a message/attachments were posted to the reviewer.
+     */
+    posted?: boolean;
+    phoneNumber?: {
+        id?: string;
+        status?: string;
+    };
+    /**
+     * Other numbers on the same registration the correction fanned out to.
+     */
+    siblingsResubmitted?: number;
+});
+
+export type RespondToPhoneNumberReviewerError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppNumberKycFormData = {
     query: {
         country: string;
