@@ -270,6 +270,37 @@ export interface ClientOptions {
     }
   }
 
+  // Fallback namespace names (tag.toLowerCase, no camelCase map entries) — must
+  // match what groupOperationsByNamespace produces for the ad-* tags.
+  const AD_NAMESPACES = ['adcampaigns', 'adaccounts', 'adcreatives', 'adaudiences', 'adtargeting', 'adinsights', 'conversions', 'messagingads', 'reachandfrequency', 'leadgen', 'trackingtags'];
+  if (!namespaces.has('ads')) {
+    const adAliasEntries: { ns: string; op: OperationInfo }[] = [];
+    const seen = new Set<string>();
+    for (const ns of AD_NAMESPACES) {
+      for (const op of namespaces.get(ns) ?? []) {
+        if (seen.has(op.methodName)) continue;
+        seen.add(op.methodName);
+        adAliasEntries.push({ ns, op });
+      }
+    }
+    if (adAliasEntries.length > 0) {
+      let adsCode = `  /**
+   * @deprecated The \`ads\` namespace has been split. Use one of these instead:
+   * ${AD_NAMESPACES.map(n => 'zernio.' + n).join(', ')}.
+   * This backward-compatibility alias will be removed in a future major version.
+   */
+  ads = {`;
+      // Per-method @deprecated so every ad method is individually flagged, each
+      // pointing at its exact new namespace.
+      for (const { ns, op } of adAliasEntries) {
+        adsCode += `\n    /** @deprecated Use \`zernio.${ns}.${op.methodName}\` instead. */`;
+        adsCode += `\n    ${op.methodName}: ${op.functionName},`;
+      }
+      adsCode += `\n  };`;
+      namespaceProps.push(adsCode);
+    }
+  }
+
   // Generate class
   const classCode = `
 /**
@@ -400,6 +431,30 @@ function getNamespaceComment(namespace: string): string {
 }
 
 // Main execution
+// openapi-ts (hey-api) normalizes some operationIds when it emits the SDK
+// functions — notably acronyms, e.g. `connectOpenAIAdsCredentials` becomes
+// `connectOpenAiAdsCredentials`. We use the operationId verbatim as the import
+// name, which then fails to match the export. Reconcile each functionName
+// against the real exports in sdk.gen.ts (case-insensitive) so imports always
+// resolve. Runs after openapi-ts (sdk.gen.ts already generated).
+function reconcileFunctionNames(namespaces: Map<string, OperationInfo[]>): void {
+  const sdkPath = path.join(__dirname, '..', 'src', 'generated', 'sdk.gen.ts');
+  if (!fs.existsSync(sdkPath)) return;
+  const sdk = fs.readFileSync(sdkPath, 'utf-8');
+  const byLower = new Map<string, string>();
+  for (const m of sdk.matchAll(/export const (\w+) =/g)) {
+    byLower.set(m[1].toLowerCase(), m[1]);
+  }
+  for (const ops of namespaces.values()) {
+    for (const op of ops) {
+      const actual = byLower.get(op.functionName.toLowerCase());
+      if (actual && actual !== op.functionName) {
+        op.functionName = actual;
+      }
+    }
+  }
+}
+
 async function main() {
   const specPath = path.join(__dirname, '..', 'openapi.yaml');
 
@@ -413,6 +468,7 @@ async function main() {
   const spec = yaml.parse(specContent) as OpenAPISpec;
 
   const namespaces = groupOperationsByNamespace(spec);
+  reconcileFunctionNames(namespaces);
   const clientCode = generateClientCode(namespaces);
 
   const outputPath = path.join(__dirname, '..', 'src', 'client.ts');
