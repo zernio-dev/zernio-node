@@ -7020,6 +7020,10 @@ export type YouTubeDailyViewsResponse = {
         endDate?: string;
     };
     /**
+     * Present only when the range reaches into YouTube's ~3-day processing window: the first date whose numbers are provisional and may still be revised by YouTube.
+     */
+    provisionalSince?: string;
+    /**
      * Sum of views across all days in the range
      */
     totalViews?: number;
@@ -7088,6 +7092,10 @@ export type YouTubeDemographicsResponse = {
         startDate?: string;
         endDate?: string;
     };
+    /**
+     * Present only when the range reaches into YouTube's ~3-day processing window: the first date whose numbers are provisional and may still be revised by YouTube.
+     */
+    provisionalSince?: string;
     note?: string;
 };
 
@@ -7165,6 +7173,10 @@ export type YouTubeVideoRetentionResponse = {
         startDate?: string;
         endDate?: string;
     };
+    /**
+     * Present only when the range reaches into YouTube's ~3-day processing window: the first date whose numbers are provisional and may still be revised by YouTube.
+     */
+    provisionalSince?: string;
     /**
      * Up to 100 points covering the video timeline, aggregated over the date range. Empty for videos with very few views.
      */
@@ -7580,7 +7592,12 @@ export type GetYouTubeDailyViewsData = {
          */
         accountId: string;
         /**
-         * End date (YYYY-MM-DD). Defaults to 3 days ago (YouTube data latency).
+         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
+         * (YouTube finalizes analytics with a ~3-day delay). An explicit endDate is honored
+         * up to today: days inside the delay window are provisional and may still be revised
+         * by YouTube (see provisionalSince in the response), and days YouTube has not
+         * processed yet are omitted from dailyViews.
+         *
          */
         endDate?: string;
         /**
@@ -7613,7 +7630,11 @@ export type GetYouTubeVideoRetentionData = {
          */
         accountId: string;
         /**
-         * End date (YYYY-MM-DD). Defaults to 3 days ago (YouTube data latency).
+         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
+         * (YouTube finalizes analytics with a ~3-day delay). An explicit endDate is honored
+         * up to today: days inside the delay window are provisional and may still be revised
+         * by YouTube (see provisionalSince in the response).
+         *
          */
         endDate?: string;
         /**
@@ -7825,7 +7846,10 @@ export type GetYouTubeDemographicsData = {
          */
         breakdown?: string;
         /**
-         * End date in YYYY-MM-DD format. Defaults to 3 days ago (YouTube data latency).
+         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
+         * (YouTube finalizes analytics with a ~3-day delay). An explicit endDate is honored
+         * up to today: days inside the delay window are provisional and may still be revised
+         * by YouTube (see provisionalSince in the response).
          *
          */
         endDate?: string;

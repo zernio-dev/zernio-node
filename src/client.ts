@@ -1297,84 +1297,10 @@ export class Zernio {
   };
 
   /**
-   * ads API
-   */
-  ads = {
-    listAds: listAds,
-    duplicateAd: duplicateAd,
-    getAd: getAd,
-    updateAd: updateAd,
-    deleteAd: deleteAd,
-    updateAdStatus: updateAdStatus,
-    getCampaignAnalytics: getCampaignAnalytics,
-    generateAdPreviews: generateAdPreviews,
-    getAdPreviews: getAdPreviews,
-    queryAdInsights: queryAdInsights,
-    createAdInsightsReport: createAdInsightsReport,
-    getAdInsightsReport: getAdInsightsReport,
-    getAdAnalytics: getAdAnalytics,
-    getAdTrackingTags: getAdTrackingTags,
-    updateAdTrackingTags: updateAdTrackingTags,
-    getAdComments: getAdComments,
-    listAdsBusinessCenters: listAdsBusinessCenters,
-    getAdsActivityLog: getAdsActivityLog,
-    createRfPrediction: createRfPrediction,
-    getRfPrediction: getRfPrediction,
-    cancelRfReservation: cancelRfReservation,
-    reserveRfPrediction: reserveRfPrediction,
-    listAdStudies: listAdStudies,
-    listMetaBusinesses: listMetaBusinesses,
-    listAdLabels: listAdLabels,
-    listHighDemandPeriods: listHighDemandPeriods,
-    listAdCreatives: listAdCreatives,
-    createAdCreative: createAdCreative,
-    getAdCreative: getAdCreative,
-    updateAdCreative: updateAdCreative,
-    deleteAdCreative: deleteAdCreative,
-    getAdAccountFinance: getAdAccountFinance,
-    listAdAccounts: listAdAccounts,
-    updateAdAccount: updateAdAccount,
-    getDsaDefaults: getDsaDefaults,
-    getDsaRecommendations: getDsaRecommendations,
-    boostPost: boostPost,
-    createStandaloneAd: createStandaloneAd,
-    listLeads: listLeads,
-    listLeadForms: listLeadForms,
-    createLeadForm: createLeadForm,
-    getLeadForm: getLeadForm,
-    archiveLeadForm: archiveLeadForm,
-    listFormLeads: listFormLeads,
-    createTestLead: createTestLead,
-    uploadAdImage: uploadAdImage,
-    listAdImages: listAdImages,
-    searchAdInterests: searchAdInterests,
-    searchAdTargeting: searchAdTargeting,
-    estimateAdReach: estimateAdReach,
-    getLinkedInBidPricing: getLinkedInBidPricing,
-    getLinkedInSupplyForecast: getLinkedInSupplyForecast,
-    listAdCatalogs: listAdCatalogs,
-    listAdCatalogProductSets: listAdCatalogProductSets,
-    getConversionsQuality: getConversionsQuality,
-    sendConversions: sendConversions,
-    adjustConversions: adjustConversions,
-    listConversionDestinations: listConversionDestinations,
-    createConversionDestination: createConversionDestination,
-    getConversionDestination: getConversionDestination,
-    updateConversionDestination: updateConversionDestination,
-    deleteConversionDestination: deleteConversionDestination,
-    listConversionAssociations: listConversionAssociations,
-    addConversionAssociations: addConversionAssociations,
-    removeConversionAssociations: removeConversionAssociations,
-    getConversionMetrics: getConversionMetrics,
-    createMessagingAd: createMessagingAd,
-    createCallAd: createCallAd,
-    createCtwaAd: createCtwaAd,
-  };
-
-  /**
    * adcampaigns API
    */
   adcampaigns = {
+    listAds: listAds,
     listAdCampaigns: listAdCampaigns,
     createAdCampaign: createAdCampaign,
     updateAdCampaignStatus: updateAdCampaignStatus,
@@ -1383,11 +1309,114 @@ export class Zernio {
     bulkUpdateAdCampaignStatus: bulkUpdateAdCampaignStatus,
     duplicateAdCampaign: duplicateAdCampaign,
     duplicateAdSet: duplicateAdSet,
+    duplicateAd: duplicateAd,
     getAdSetDetails: getAdSetDetails,
     updateAdSet: updateAdSet,
     updateAdSetStatus: updateAdSetStatus,
     getAdTree: getAdTree,
     getAdsTimeline: getAdsTimeline,
+    getAd: getAd,
+    updateAd: updateAd,
+    deleteAd: deleteAd,
+    updateAdStatus: updateAdStatus,
+    boostPost: boostPost,
+    createStandaloneAd: createStandaloneAd,
+  };
+
+  /**
+   * adinsights API
+   */
+  adinsights = {
+    getCampaignAnalytics: getCampaignAnalytics,
+    queryAdInsights: queryAdInsights,
+    createAdInsightsReport: createAdInsightsReport,
+    getAdInsightsReport: getAdInsightsReport,
+    getAdAnalytics: getAdAnalytics,
+  };
+
+  /**
+   * adcreatives API
+   */
+  adcreatives = {
+    generateAdPreviews: generateAdPreviews,
+    getAdPreviews: getAdPreviews,
+    listAdCreatives: listAdCreatives,
+    createAdCreative: createAdCreative,
+    getAdCreative: getAdCreative,
+    updateAdCreative: updateAdCreative,
+    deleteAdCreative: deleteAdCreative,
+    uploadAdImage: uploadAdImage,
+    listAdImages: listAdImages,
+    listAdCatalogs: listAdCatalogs,
+    listAdCatalogProductSets: listAdCatalogProductSets,
+  };
+
+  /**
+   * trackingtags API
+   */
+  trackingtags = {
+    getAdTrackingTags: getAdTrackingTags,
+    updateAdTrackingTags: updateAdTrackingTags,
+    listTrackingTags: listTrackingTags,
+    createTrackingTag: createTrackingTag,
+    getTrackingTag: getTrackingTag,
+    updateTrackingTag: updateTrackingTag,
+    listTrackingTagSharedAccounts: listTrackingTagSharedAccounts,
+    addTrackingTagSharedAccount: addTrackingTagSharedAccount,
+    removeTrackingTagSharedAccount: removeTrackingTagSharedAccount,
+    getTrackingTagStats: getTrackingTagStats,
+  };
+
+  /**
+   * adaccounts API
+   */
+  adaccounts = {
+    getAdComments: getAdComments,
+    listAdsBusinessCenters: listAdsBusinessCenters,
+    getAdsActivityLog: getAdsActivityLog,
+    listAdStudies: listAdStudies,
+    listMetaBusinesses: listMetaBusinesses,
+    listAdLabels: listAdLabels,
+    listHighDemandPeriods: listHighDemandPeriods,
+    getAdAccountFinance: getAdAccountFinance,
+    listAdAccounts: listAdAccounts,
+    updateAdAccount: updateAdAccount,
+    getDsaDefaults: getDsaDefaults,
+    getDsaRecommendations: getDsaRecommendations,
+  };
+
+  /**
+   * reachandfrequency API
+   */
+  reachandfrequency = {
+    createRfPrediction: createRfPrediction,
+    getRfPrediction: getRfPrediction,
+    cancelRfReservation: cancelRfReservation,
+    reserveRfPrediction: reserveRfPrediction,
+  };
+
+  /**
+   * leadgen API
+   */
+  leadgen = {
+    listLeads: listLeads,
+    listLeadForms: listLeadForms,
+    createLeadForm: createLeadForm,
+    getLeadForm: getLeadForm,
+    archiveLeadForm: archiveLeadForm,
+    listFormLeads: listFormLeads,
+    createTestLead: createTestLead,
+  };
+
+  /**
+   * adtargeting API
+   */
+  adtargeting = {
+    searchAdInterests: searchAdInterests,
+    searchAdTargeting: searchAdTargeting,
+    estimateAdReach: estimateAdReach,
+    getLinkedInBidPricing: getLinkedInBidPricing,
+    getLinkedInSupplyForecast: getLinkedInSupplyForecast,
   };
 
   /**
@@ -1403,17 +1432,30 @@ export class Zernio {
   };
 
   /**
-   * trackingtags API
+   * conversions API
    */
-  trackingtags = {
-    listTrackingTags: listTrackingTags,
-    createTrackingTag: createTrackingTag,
-    getTrackingTag: getTrackingTag,
-    updateTrackingTag: updateTrackingTag,
-    listTrackingTagSharedAccounts: listTrackingTagSharedAccounts,
-    addTrackingTagSharedAccount: addTrackingTagSharedAccount,
-    removeTrackingTagSharedAccount: removeTrackingTagSharedAccount,
-    getTrackingTagStats: getTrackingTagStats,
+  conversions = {
+    getConversionsQuality: getConversionsQuality,
+    sendConversions: sendConversions,
+    adjustConversions: adjustConversions,
+    listConversionDestinations: listConversionDestinations,
+    createConversionDestination: createConversionDestination,
+    getConversionDestination: getConversionDestination,
+    updateConversionDestination: updateConversionDestination,
+    deleteConversionDestination: deleteConversionDestination,
+    listConversionAssociations: listConversionAssociations,
+    addConversionAssociations: addConversionAssociations,
+    removeConversionAssociations: removeConversionAssociations,
+    getConversionMetrics: getConversionMetrics,
+  };
+
+  /**
+   * messagingads API
+   */
+  messagingads = {
+    createMessagingAd: createMessagingAd,
+    createCallAd: createCallAd,
+    createCtwaAd: createCtwaAd,
   };
 
   /**

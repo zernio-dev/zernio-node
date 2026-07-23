@@ -174,7 +174,9 @@ export const getTikTokAccountInsights = <ThrowOnError extends boolean = false>(o
 /**
  * Get YouTube daily views
  * Returns daily view counts for a YouTube video including views, watch time, and subscriber changes.
- * Requires yt-analytics.readonly scope (re-authorization may be needed). Data has a 2-3 day delay. Max 90 days, defaults to last 30 days.
+ * Requires yt-analytics.readonly scope (re-authorization may be needed). YouTube finalizes analytics
+ * with a ~3-day delay; by default only finalized days are returned, and an explicit endDate can reach
+ * into the delay window (see the endDate parameter). Max 90 days, defaults to last 30 days.
  *
  */
 export const getYouTubeDailyViews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetYouTubeDailyViewsData, ThrowOnError>) => {
@@ -6366,12 +6368,12 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
 };
 
 /**
- * Create a standalone campaign (Meta)
+ * Create a standalone campaign
  * Creates a campaign WITHOUT its first ad set / ad (the ODAX shell only). Ad sets join it
  * later via `existingCampaignId` on the create endpoints. A budget here is campaign-level
  * (CBO) by definition; omit it for ABO (each ad set carries its own budget). Created
  * `PAUSED` unless `status: ACTIVE`. The campaign materializes in `/v1/ads/tree` via the
- * next sync discovery pass. Meta only.
+ * next sync discovery pass.
  */
 export const createAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdCampaignData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdCampaignResponse, CreateAdCampaignError, ThrowOnError>({
@@ -6487,12 +6489,12 @@ export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(option
 };
 
 /**
- * Duplicate an ad set (Meta)
+ * Duplicate an ad set
  * Duplicates an ad set, including its ads and creatives by default (`deepCopy: true`),
  * via Meta's native `POST /{adset-id}/copies`. The copy is created paused so callers can
  * review before launching. `campaignId` retargets the copy into another campaign; omitted
  * = the source's own campaign. The new hierarchy materializes asynchronously — sync
- * discovery is triggered automatically (`syncAfter: false` to skip). Meta only.
+ * discovery is triggered automatically (`syncAfter: false` to skip).
  */
 export const duplicateAdSet = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DuplicateAdSetData, ThrowOnError>) => {
     return (options?.client ?? client).post<DuplicateAdSetResponse, DuplicateAdSetError, ThrowOnError>({
@@ -6502,11 +6504,11 @@ export const duplicateAdSet = <ThrowOnError extends boolean = false>(options: Op
 };
 
 /**
- * Duplicate an ad (Meta)
+ * Duplicate an ad
  * Duplicates a single ad via Meta's native `POST /{ad-id}/copies`. The copy is created
  * paused. `adSetId` retargets the copy into another ad set; omitted = the source's own ad
  * set. Accepts the Zernio ad id or the platform ad id. Sync discovery is triggered
- * automatically (`syncAfter: false` to skip). Meta only.
+ * automatically (`syncAfter: false` to skip).
  */
 export const duplicateAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DuplicateAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<DuplicateAdResponse, DuplicateAdError, ThrowOnError>({
@@ -6516,12 +6518,12 @@ export const duplicateAd = <ThrowOnError extends boolean = false>(options: Optio
 };
 
 /**
- * Live ad-set details incl. learning phase (Meta)
+ * Live ad-set details incl. learning phase
  * Reads the ad set live from Meta, returned verbatim. The default projection includes
  * `learning_stage_info` (learning-phase status: LEARNING / SUCCESS / FAIL / WAIVING — Meta
  * omits its `status` key on paused ad sets), delivery settings, budgets, schedule and
  * targeting. `fields` is a raw-passthrough override; unknown fields return Meta's 400
- * verbatim. Meta only.
+ * verbatim.
  */
 export const getAdSetDetails = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdSetDetailsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdSetDetailsResponse, GetAdSetDetailsError, ThrowOnError>({
@@ -6710,11 +6712,11 @@ export const getCampaignAnalytics = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
- * Render pre-create ad previews (Meta)
+ * Render pre-create ad previews
  * Renders how a creative would look per placement BEFORE any ad exists, via Meta's
  * `/generatepreviews`. Provide exactly one creative source: `existingCreativeId` or `creativeSpec`.
  * Each preview is an HTML `<iframe>` snippet embeddable directly. Unknown `formats` values
- * return Meta's 400 verbatim. Meta only.
+ * return Meta's 400 verbatim.
  *
  */
 export const generateAdPreviews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GenerateAdPreviewsData, ThrowOnError>) => {
@@ -6725,10 +6727,9 @@ export const generateAdPreviews = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Render previews of an existing ad (Meta)
+ * Render previews of an existing ad
  * Renders an EXISTING ad per placement via Meta's `/{ad_id}/previews`. Each preview is an HTML
  * `<iframe>` snippet embeddable directly. Unknown `formats` values return Meta's 400 verbatim.
- * Meta only.
  *
  */
 export const getAdPreviews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdPreviewsData, ThrowOnError>) => {
@@ -6739,7 +6740,7 @@ export const getAdPreviews = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Flexible live insights query (Meta)
+ * Flexible live insights query
  * Live, flexible insights query against Meta's Graph API. Unlike GET /v1/ads/{adId}/analytics
  * (fixed metric set, cached), this forwards caller-chosen `fields`, `breakdowns` and `filtering`
  * to any Meta insights node and returns Meta's rows verbatim.
@@ -6749,7 +6750,7 @@ export const getAdPreviews = <ThrowOnError extends boolean = false>(options: Opt
  *
  * Semantic validation is Meta's: an unknown field or invalid breakdown combination returns a 400
  * carrying Meta's message. For long ranges or agency-scale accounts prefer the async variant
- * (POST /v1/ads/insights/reports). Meta only.
+ * (POST /v1/ads/insights/reports).
  *
  */
 export const queryAdInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<QueryAdInsightsData, ThrowOnError>) => {
@@ -6760,11 +6761,11 @@ export const queryAdInsights = <ThrowOnError extends boolean = false>(options: O
 };
 
 /**
- * Submit an async insights report run (Meta)
+ * Submit an async insights report run
  * Submits an asynchronous Meta insights report. Same query surface as GET /v1/ads/insights, but
  * in the JSON body; Meta processes the report server-side, which is the right choice for long
  * ranges or large accounts where the sync query is slow or rate-limited. Returns a `reportRunId`
- * to poll via GET /v1/ads/insights/reports/{reportRunId}. Meta only.
+ * to poll via GET /v1/ads/insights/reports/{reportRunId}.
  *
  */
 export const createAdInsightsReport = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdInsightsReportData, ThrowOnError>) => {
@@ -6775,7 +6776,7 @@ export const createAdInsightsReport = <ThrowOnError extends boolean = false>(opt
 };
 
 /**
- * Poll an async insights report run (Meta)
+ * Poll an async insights report run
  * Status and results for a report run created via POST /v1/ads/insights/reports. While the job
  * runs, returns `status` and `percentCompletion`. Once `status` is "Job Completed" the response
  * also carries a `data` page, cursor-paginated via `limit` / `after`.
@@ -6895,12 +6896,12 @@ export const listAdsBusinessCenters = <ThrowOnError extends boolean = false>(opt
 };
 
 /**
- * Ad account change / audit log (Meta)
+ * Ad account change / audit log
  * Account-level audit log from Meta's `/act_X/activities`: who changed what and when
  * (creates, edits, status flips, budget changes...) with Meta's translated event names and
  * the structured before/after in `extra_data`. Rows are returned verbatim. Meta has no
  * server-side per-object filter on this edge, so `objectId` filters the returned page
- * client-side (combine with paging to walk history for one campaign/ad set/ad). Meta only.
+ * client-side (combine with paging to walk history for one campaign/ad set/ad).
  */
 export const getAdsActivityLog = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdsActivityLogData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdsActivityLogResponse, GetAdsActivityLogError, ThrowOnError>({
@@ -6910,7 +6911,7 @@ export const getAdsActivityLog = <ThrowOnError extends boolean = false>(options:
 };
 
 /**
- * Create a Reach & Frequency prediction (Meta)
+ * Create a Reach & Frequency prediction
  * Creates an R&F prediction — a QUOTE, nothing is bought and no ad entities are created.
  * Provide a date range plus exactly one of `budgetAmount` (Meta predicts reach) or `reach`
  * (Meta predicts the budget). The response carries the estimate and its allowed bounds
@@ -6920,7 +6921,7 @@ export const getAdsActivityLog = <ThrowOnError extends boolean = false>(options:
  *
  * Reservation campaigns reject automatic placements, so omitted `placements` default to
  * Facebook feed (+ Instagram stream when a linked IG professional account resolves);
- * Instagram placements require that IG account. Meta only.
+ * Instagram placements require that IG account.
  */
 export const createRfPrediction = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateRfPredictionData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateRfPredictionResponse, CreateRfPredictionError, ThrowOnError>({
@@ -6930,7 +6931,7 @@ export const createRfPrediction = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Read a Reach & Frequency prediction (Meta)
+ * Read a Reach & Frequency prediction
  */
 export const getRfPrediction = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetRfPredictionData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetRfPredictionResponse, GetRfPredictionError, ThrowOnError>({
@@ -6940,7 +6941,7 @@ export const getRfPrediction = <ThrowOnError extends boolean = false>(options: O
 };
 
 /**
- * Cancel a Reach & Frequency reservation (Meta)
+ * Cancel a Reach & Frequency reservation
  * Releases a RESERVATION's locked price and inventory. Unreserved predictions expire on their own.
  */
 export const cancelRfReservation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CancelRfReservationData, ThrowOnError>) => {
@@ -6951,10 +6952,10 @@ export const cancelRfReservation = <ThrowOnError extends boolean = false>(option
 };
 
 /**
- * Reserve a Reach & Frequency prediction (Meta)
+ * Reserve a Reach & Frequency prediction
  * Locks the quoted price + inventory until the returned `expiresAt` and mints a NEW
  * prediction id — pass that RESERVED id (not the original) as `rfPredictionId` on
- * POST /v1/ads/create. Release an unused reservation via DELETE. Meta only.
+ * POST /v1/ads/create. Release an unused reservation via DELETE.
  */
 export const reserveRfPrediction = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReserveRfPredictionData, ThrowOnError>) => {
     return (options?.client ?? client).post<ReserveRfPredictionResponse, ReserveRfPredictionError, ThrowOnError>({
@@ -6964,10 +6965,10 @@ export const reserveRfPrediction = <ThrowOnError extends boolean = false>(option
 };
 
 /**
- * A/B tests and lift studies (Meta)
+ * A/B tests and lift studies
  * Lists the ad account's A/B tests and lift studies (Meta's `/act_X/ad_studies`), rows
  * returned verbatim. The default projection covers id, name, type, timing and cells with
- * split percentages; `fields` is a raw-passthrough override. Meta only.
+ * split percentages; `fields` is a raw-passthrough override.
  */
 export const listAdStudies = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdStudiesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdStudiesResponse, ListAdStudiesError, ThrowOnError>({
@@ -6977,10 +6978,10 @@ export const listAdStudies = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Businesses list (Meta)
+ * Businesses list
  * Business Manager portfolios the connected Meta user belongs to (Meta's `/me/businesses`),
  * rows returned verbatim (id, name, verification_status, created_time). Token-scoped, so no
- * `adAccountId` is needed. Meta only; for TikTok Business Centers use
+ * `adAccountId` is needed. For TikTok Business Centers use
  * `GET /v1/ads/business-centers`.
  */
 export const listMetaBusinesses = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListMetaBusinessesData, ThrowOnError>) => {
@@ -6991,9 +6992,9 @@ export const listMetaBusinesses = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Ad labels (Meta)
+ * Ad labels
  * Lists the ad account's organizational labels (Meta's `/act_X/adlabels`), rows returned
- * verbatim (id, name, created/updated time). Meta only.
+ * verbatim (id, name, created/updated time).
  */
 export const listAdLabels = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdLabelsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdLabelsResponse, ListAdLabelsError, ThrowOnError>({
@@ -7003,11 +7004,11 @@ export const listAdLabels = <ThrowOnError extends boolean = false>(options: Opti
 };
 
 /**
- * High demand periods / budget schedules (Meta)
+ * High demand periods / budget schedules
  * Scheduled budget increases (Meta's budget-scheduling API). The Graph edge lives on the
  * campaign and ad-set nodes only, so exactly one of `campaignId` / `adSetId` (platform
  * ids) is required. Rows returned verbatim (budget_value, budget_value_type, time window,
- * recurrence). Meta only.
+ * recurrence).
  */
 export const listHighDemandPeriods = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListHighDemandPeriodsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListHighDemandPeriodsResponse, ListHighDemandPeriodsError, ThrowOnError>({
@@ -7017,12 +7018,12 @@ export const listHighDemandPeriods = <ThrowOnError extends boolean = false>(opti
 };
 
 /**
- * Creative library (Meta)
+ * Creative library
  * Lists the ad account's creative library (Meta's `/act_X/adcreatives`), rows returned
  * verbatim. The default projection covers id, name, status, object type, thumbnail,
  * object_story_spec / asset_feed_spec and url_tags; `fields` is a raw-passthrough
  * override. Any creative id here is reusable on the create endpoints via
- * `existingCreativeId`. Meta only.
+ * `existingCreativeId`.
  */
 export const listAdCreatives = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdCreativesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdCreativesResponse, ListAdCreativesError, ThrowOnError>({
@@ -7032,12 +7033,12 @@ export const listAdCreatives = <ThrowOnError extends boolean = false>(options: O
 };
 
 /**
- * Create a standalone creative (Meta)
+ * Create a standalone creative
  * Creates a creative in the library WITHOUT an ad, reusable on the create endpoints via
  * `existingCreativeId`. Provide exactly one of `imageUrl` (uploaded server-side),
  * `imageHash` (from POST /v1/ads/images or the library list), or `carouselCards` (2-10
  * hand-built cards). The Page (and linked Instagram account, when present) is resolved
- * from `accountId` as the story actor. Meta only.
+ * from `accountId` as the story actor.
  */
 export const createAdCreative = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdCreativeData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdCreativeResponse, CreateAdCreativeError, ThrowOnError>({
@@ -7047,9 +7048,9 @@ export const createAdCreative = <ThrowOnError extends boolean = false>(options: 
 };
 
 /**
- * Creative details (Meta)
+ * Creative details
  * One creative's details, verbatim from Meta. `fields` is a raw-passthrough override of
- * the default projection. Meta only.
+ * the default projection.
  */
 export const getAdCreative = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdCreativeData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdCreativeResponse, GetAdCreativeError, ThrowOnError>({
@@ -7059,10 +7060,10 @@ export const getAdCreative = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Rename a creative (Meta)
+ * Rename a creative
  * Renames a creative. Creatives are immutable on Meta beyond `name` — for content changes
  * create a new creative (POST /v1/ads/creatives) and swap it onto the ad
- * (PUT /v1/ads/{adId} with `creative`). Meta only.
+ * (PUT /v1/ads/{adId} with `creative`).
  */
 export const updateAdCreative = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdCreativeData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdateAdCreativeResponse, UpdateAdCreativeError, ThrowOnError>({
@@ -7072,7 +7073,7 @@ export const updateAdCreative = <ThrowOnError extends boolean = false>(options: 
 };
 
 /**
- * Delete a creative (Meta)
+ * Delete a creative
  * Deletes a creative from the library. Meta only allows deleting creatives not referenced
  * by any ad — otherwise its 400 surfaces verbatim.
  */
@@ -7084,10 +7085,10 @@ export const deleteAdCreative = <ThrowOnError extends boolean = false>(options: 
 };
 
 /**
- * Ad account finances (Meta)
+ * Ad account finances
  * Finances of one Meta ad account: prepaid `balance`, lifetime `amountSpent`, account
  * `spendCap` (null = no cap) and the `fundingSource`. Money values are converted from
- * Meta's minor units to whole units of `currency`. Meta only.
+ * Meta's minor units to whole units of `currency`.
  */
 export const getAdAccountFinance = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdAccountFinanceData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdAccountFinanceResponse, GetAdAccountFinanceError, ThrowOnError>({
@@ -7280,11 +7281,11 @@ export const createTestLead = <ThrowOnError extends boolean = false>(options: Op
 };
 
 /**
- * Upload an ad image from base64 (Meta)
+ * Upload an ad image from base64
  * Uploads raw image bytes to the Meta ad account's image library — for callers whose
  * creatives aren't hosted at a public URL. Returns the image `hash` (Meta's identifier for
  * the asset) and the Meta-hosted `url`, which can be used directly as `imageUrl` on the
- * create endpoints. Max 30 MB decoded. Meta only.
+ * create endpoints. Max 30 MB decoded.
  */
 export const uploadAdImage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadAdImageData, ThrowOnError>) => {
     return (options?.client ?? client).post<UploadAdImageResponse, UploadAdImageError, ThrowOnError>({
@@ -7294,11 +7295,11 @@ export const uploadAdImage = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Ad image library (Meta)
+ * Ad image library
  * Lists the ad account's image library (Meta's `/act_X/adimages`), rows returned verbatim.
  * The default projection covers hash, url, name, dimensions and status; `fields` is a
  * raw-passthrough override. Any `hash` here is reusable wherever Meta accepts
- * `image_hash` (e.g. `imageHash` on POST /v1/ads/creatives). Meta only.
+ * `image_hash` (e.g. `imageHash` on POST /v1/ads/creatives).
  */
 export const listAdImages = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdImagesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdImagesResponse, ListAdImagesError, ThrowOnError>({
@@ -7373,7 +7374,7 @@ export const estimateAdReach = <ThrowOnError extends boolean = false>(options: O
 };
 
 /**
- * Suggested bid and budget bounds (LinkedIn)
+ * Suggested bid and budget bounds
  * LinkedIn-only. Returns the suggested bid and bid limits for a targeting
  * spec, plus the daily-budget bounds LinkedIn will accept. Use it before
  * creating a campaign to pick a bid inside the allowed range and warn the
@@ -7392,7 +7393,7 @@ export const getLinkedInBidPricing = <ThrowOnError extends boolean = false>(opti
 };
 
 /**
- * Impressions, clicks and spend forecast (LinkedIn)
+ * Impressions, clicks and spend forecast
  * LinkedIn-only. Forecasted impressions, clicks, spend and ~20 other
  * metrics for a targeting spec over a time range. Wraps LinkedIn's
  * `adSupplyForecasts` finder.

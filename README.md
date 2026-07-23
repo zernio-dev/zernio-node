@@ -357,6 +357,22 @@ try {
 | `accountSettings.setMessengerMenu()` | Set FB persistent menu |
 | `accountSettings.setTelegramCommands()` | Set TG bot commands |
 
+### Ad Accounts
+| Method | Description |
+|--------|-------------|
+| `adAccounts.listAdAccounts()` | List ad accounts |
+| `adAccounts.listAdLabels()` | Ad labels |
+| `adAccounts.listAdsBusinessCenters()` | List TikTok Business Centers |
+| `adAccounts.listAdStudies()` | A/B tests and lift studies |
+| `adAccounts.listHighDemandPeriods()` | High demand periods / budget schedules |
+| `adAccounts.listMetaBusinesses()` | Businesses list |
+| `adAccounts.getAdAccountFinance()` | Ad account finances |
+| `adAccounts.getAdComments()` | List comments on an ad |
+| `adAccounts.getAdsActivityLog()` | Ad account change / audit log |
+| `adAccounts.getDsaDefaults()` | Get ad account DSA defaults |
+| `adAccounts.getDsaRecommendations()` | List DSA beneficiary/payor suggestions |
+| `adAccounts.updateAdAccount()` | Update ad account settings |
+
 ### Ad Audiences
 | Method | Description |
 |--------|-------------|
@@ -371,91 +387,59 @@ try {
 | Method | Description |
 |--------|-------------|
 | `adCampaigns.listAdCampaigns()` | List campaigns |
+| `adCampaigns.listAds()` | List ads |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
-| `adCampaigns.createAdCampaign()` | Create a standalone campaign (Meta) |
-| `adCampaigns.getAdSetDetails()` | Live ad-set details incl. learning phase (Meta) |
+| `adCampaigns.createAdCampaign()` | Create a standalone campaign |
+| `adCampaigns.createStandaloneAd()` | Create standalone ad |
+| `adCampaigns.getAd()` | Get ad details |
+| `adCampaigns.getAdSetDetails()` | Live ad-set details incl. learning phase |
 | `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |
+| `adCampaigns.updateAd()` | Update ad |
 | `adCampaigns.updateAdCampaign()` | Update a campaign |
 | `adCampaigns.updateAdCampaignStatus()` | Pause or resume a campaign |
 | `adCampaigns.updateAdSet()` | Update an ad set |
 | `adCampaigns.updateAdSetStatus()` | Pause or resume a single ad set |
+| `adCampaigns.updateAdStatus()` | Pause or resume a single ad |
+| `adCampaigns.deleteAd()` | Cancel an ad |
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
+| `adCampaigns.boostPost()` | Boost post as ad |
+| `adCampaigns.duplicateAd()` | Duplicate an ad |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
-| `adCampaigns.duplicateAdSet()` | Duplicate an ad set (Meta) |
+| `adCampaigns.duplicateAdSet()` | Duplicate an ad set |
 
-### Ads
+### Ad Creatives
 | Method | Description |
 |--------|-------------|
-| `ads.listAdAccounts()` | List ad accounts |
-| `ads.listAdCatalogProductSets()` | List a catalog's product sets |
-| `ads.listAdCatalogs()` | List Meta product catalogs |
-| `ads.listAdCreatives()` | Creative library (Meta) |
-| `ads.listAdImages()` | Ad image library (Meta) |
-| `ads.listAdLabels()` | Ad labels (Meta) |
-| `ads.listAds()` | List ads |
-| `ads.listAdsBusinessCenters()` | List TikTok Business Centers |
-| `ads.listAdStudies()` | A/B tests and lift studies (Meta) |
-| `ads.listConversionAssociations()` | List associated campaigns |
-| `ads.listConversionDestinations()` | List conversion destinations |
-| `ads.listFormLeads()` | List leads for a single form |
-| `ads.listHighDemandPeriods()` | High demand periods / budget schedules (Meta) |
-| `ads.listLeadForms()` | List lead forms |
-| `ads.listLeads()` | List submitted leads |
-| `ads.listMetaBusinesses()` | Businesses list (Meta) |
-| `ads.createAdCreative()` | Create a standalone creative (Meta) |
-| `ads.createAdInsightsReport()` | Submit an async insights report run (Meta) |
-| `ads.createCallAd()` | Create Click-to-Call ad |
-| `ads.createConversionDestination()` | Create a conversion destination |
-| `ads.createCtwaAd()` | Create Click-to-WhatsApp ad (deprecated) |
-| `ads.createLeadForm()` | Create a lead form |
-| `ads.createMessagingAd()` | Create click-to-message ad (WhatsApp / Messenger / Instagram Direct) |
-| `ads.createRfPrediction()` | Create a Reach & Frequency prediction (Meta) |
-| `ads.createStandaloneAd()` | Create standalone ad |
-| `ads.createTestLead()` | Create a test lead |
-| `ads.getAd()` | Get ad details |
-| `ads.getAdAccountFinance()` | Ad account finances (Meta) |
-| `ads.getAdAnalytics()` | Get ad analytics |
-| `ads.getAdComments()` | List comments on an ad |
-| `ads.getAdCreative()` | Creative details (Meta) |
-| `ads.getAdInsightsReport()` | Poll an async insights report run (Meta) |
-| `ads.getAdPreviews()` | Render previews of an existing ad (Meta) |
-| `ads.getAdsActivityLog()` | Ad account change / audit log (Meta) |
-| `ads.getAdTrackingTags()` | Get ad tracking tags |
-| `ads.getCampaignAnalytics()` | Get campaign analytics |
-| `ads.getConversionDestination()` | Get a conversion destination |
-| `ads.getConversionMetrics()` | Get attribution metrics |
-| `ads.getConversionsQuality()` | Get Event Match Quality |
-| `ads.getDsaDefaults()` | Get ad account DSA defaults |
-| `ads.getDsaRecommendations()` | List DSA beneficiary/payor suggestions |
-| `ads.getLeadForm()` | Get a lead form |
-| `ads.getLinkedInBidPricing()` | Suggested bid and budget bounds (LinkedIn) |
-| `ads.getLinkedInSupplyForecast()` | Impressions, clicks and spend forecast (LinkedIn) |
-| `ads.getRfPrediction()` | Read a Reach & Frequency prediction (Meta) |
-| `ads.updateAd()` | Update ad |
-| `ads.updateAdAccount()` | Update ad account settings |
-| `ads.updateAdCreative()` | Rename a creative (Meta) |
-| `ads.updateAdStatus()` | Pause or resume a single ad |
-| `ads.updateAdTrackingTags()` | Set ad tracking tags |
-| `ads.updateConversionDestination()` | Update a conversion destination |
-| `ads.deleteAd()` | Cancel an ad |
-| `ads.deleteAdCreative()` | Delete a creative (Meta) |
-| `ads.deleteConversionDestination()` | Delete a conversion destination |
-| `ads.addConversionAssociations()` | Associate campaigns |
-| `ads.adjustConversions()` | Adjust uploaded conversions |
-| `ads.archiveLeadForm()` | Archive a lead form |
-| `ads.boostPost()` | Boost post as ad |
-| `ads.cancelRfReservation()` | Cancel a Reach & Frequency reservation (Meta) |
-| `ads.duplicateAd()` | Duplicate an ad (Meta) |
-| `ads.estimateAdReach()` | Estimate audience reach |
-| `ads.generateAdPreviews()` | Render pre-create ad previews (Meta) |
-| `ads.queryAdInsights()` | Flexible live insights query (Meta) |
-| `ads.removeConversionAssociations()` | Remove associated campaigns |
-| `ads.reserveRfPrediction()` | Reserve a Reach & Frequency prediction (Meta) |
-| `ads.searchAdInterests()` | Search targeting interests |
-| `ads.searchAdTargeting()` | Search targeting options |
-| `ads.sendConversions()` | Send conversion events |
-| `ads.uploadAdImage()` | Upload an ad image from base64 (Meta) |
+| `adCreatives.listAdCatalogProductSets()` | List a catalog's product sets |
+| `adCreatives.listAdCatalogs()` | List Meta product catalogs |
+| `adCreatives.listAdCreatives()` | Creative library |
+| `adCreatives.listAdImages()` | Ad image library |
+| `adCreatives.createAdCreative()` | Create a standalone creative |
+| `adCreatives.getAdCreative()` | Creative details |
+| `adCreatives.getAdPreviews()` | Render previews of an existing ad |
+| `adCreatives.updateAdCreative()` | Rename a creative |
+| `adCreatives.deleteAdCreative()` | Delete a creative |
+| `adCreatives.generateAdPreviews()` | Render pre-create ad previews |
+| `adCreatives.uploadAdImage()` | Upload an ad image from base64 |
+
+### Ad Insights
+| Method | Description |
+|--------|-------------|
+| `adInsights.createAdInsightsReport()` | Submit an async insights report run |
+| `adInsights.getAdAnalytics()` | Get ad analytics |
+| `adInsights.getAdInsightsReport()` | Poll an async insights report run |
+| `adInsights.getCampaignAnalytics()` | Get campaign analytics |
+| `adInsights.queryAdInsights()` | Flexible live insights query |
+
+### Ad Targeting
+| Method | Description |
+|--------|-------------|
+| `adTargeting.getLinkedInBidPricing()` | Suggested bid and budget bounds |
+| `adTargeting.getLinkedInSupplyForecast()` | Impressions, clicks and spend forecast |
+| `adTargeting.estimateAdReach()` | Estimate audience reach |
+| `adTargeting.searchAdInterests()` | Search targeting interests |
+| `adTargeting.searchAdTargeting()` | Search targeting options |
 
 ### Broadcasts
 | Method | Description |
@@ -513,6 +497,22 @@ try {
 | `contacts.getContactChannels()` | List channels for a contact |
 | `contacts.updateContact()` | Update contact |
 | `contacts.deleteContact()` | Delete contact |
+
+### Conversions
+| Method | Description |
+|--------|-------------|
+| `conversions.listConversionAssociations()` | List associated campaigns |
+| `conversions.listConversionDestinations()` | List conversion destinations |
+| `conversions.createConversionDestination()` | Create a conversion destination |
+| `conversions.getConversionDestination()` | Get a conversion destination |
+| `conversions.getConversionMetrics()` | Get attribution metrics |
+| `conversions.getConversionsQuality()` | Get Event Match Quality |
+| `conversions.updateConversionDestination()` | Update a conversion destination |
+| `conversions.deleteConversionDestination()` | Delete a conversion destination |
+| `conversions.addConversionAssociations()` | Associate campaigns |
+| `conversions.adjustConversions()` | Adjust uploaded conversions |
+| `conversions.removeConversionAssociations()` | Remove associated campaigns |
+| `conversions.sendConversions()` | Send conversion events |
 
 ### Custom Fields
 | Method | Description |
@@ -618,6 +618,17 @@ try {
 | `instagram.getInstagramPublishingLimit()` | Get Instagram publishing limit |
 | `instagram.getInstagramStoryInsights()` | Get Instagram story insights |
 
+### Lead Gen
+| Method | Description |
+|--------|-------------|
+| `leadGen.listFormLeads()` | List leads for a single form |
+| `leadGen.listLeadForms()` | List lead forms |
+| `leadGen.listLeads()` | List submitted leads |
+| `leadGen.createLeadForm()` | Create a lead form |
+| `leadGen.createTestLead()` | Create a test lead |
+| `leadGen.getLeadForm()` | Get a lead form |
+| `leadGen.archiveLeadForm()` | Archive a lead form |
+
 ### Mentions
 | Method | Description |
 |--------|-------------|
@@ -641,6 +652,13 @@ try {
 | `messages.sendInboxMessage()` | Send message |
 | `messages.sendTypingIndicator()` | Send typing indicator |
 | `messages.uploadMediaDirect()` | Upload media file |
+
+### Messaging Ads
+| Method | Description |
+|--------|-------------|
+| `messagingAds.createCallAd()` | Create Click-to-Call ad |
+| `messagingAds.createCtwaAd()` | Create Click-to-WhatsApp ad (deprecated) |
+| `messagingAds.createMessagingAd()` | Create click-to-message ad (WhatsApp / Messenger / Instagram Direct) |
 
 ### Phone Numbers
 | Method | Description |
@@ -667,6 +685,14 @@ try {
 | `phoneNumbers.uploadPhoneNumberKycDocument()` | Upload a KYC document |
 | `phoneNumbers.uploadPhoneNumberPortInDocument()` | Upload a porting document |
 | `phoneNumbers.validatePhoneNumberKycAddress()` | Pre-validate KYC address |
+
+### Reach and Frequency
+| Method | Description |
+|--------|-------------|
+| `reachAndFrequency.createRfPrediction()` | Create a Reach & Frequency prediction |
+| `reachAndFrequency.getRfPrediction()` | Read a Reach & Frequency prediction |
+| `reachAndFrequency.cancelRfReservation()` | Cancel a Reach & Frequency reservation |
+| `reachAndFrequency.reserveRfPrediction()` | Reserve a Reach & Frequency prediction |
 
 ### Reviews (Inbox)
 | Method | Description |
@@ -719,8 +745,10 @@ try {
 | `trackingTags.listTrackingTags()` | List tracking tags |
 | `trackingTags.listTrackingTagSharedAccounts()` | List accounts it is shared with |
 | `trackingTags.createTrackingTag()` | Create a tracking tag |
+| `trackingTags.getAdTrackingTags()` | Get ad tracking tags |
 | `trackingTags.getTrackingTag()` | Get a tracking tag |
 | `trackingTags.getTrackingTagStats()` | Get aggregated event stats |
+| `trackingTags.updateAdTrackingTags()` | Set ad tracking tags |
 | `trackingTags.updateTrackingTag()` | Update a tracking tag |
 | `trackingTags.addTrackingTagSharedAccount()` | Share with an ad account |
 | `trackingTags.removeTrackingTagSharedAccount()` | Stop sharing with an account |
