@@ -978,7 +978,7 @@ export const getUser = <ThrowOnError extends boolean = false>(options: OptionsLe
 
 /**
  * List profiles
- * Returns profiles sorted by creation date. Use includeOverLimit=true to include profiles that exceed the plan limit.
+ * Returns profiles sorted default-first, then by creation date. Filter with name (exact match) and paginate with limit/skip; without those params the full list is returned unchanged. Use includeOverLimit=true to include profiles that exceed the plan limit.
  */
 export const listProfiles = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListProfilesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListProfilesResponse, ListProfilesError, ThrowOnError>({
@@ -989,7 +989,7 @@ export const listProfiles = <ThrowOnError extends boolean = false>(options?: Opt
 
 /**
  * Create profile
- * Creates a new profile with a name, optional description, and color.
+ * Creates a new profile with a name, optional description, and color. Names are unique per workspace: a duplicate returns a 409 whose details.existingProfileId carries the id of the existing profile. Send an Idempotency-Key header to make retries safe: a retried create with the same key and body replays the original 201 (same _id) instead of conflicting.
  */
 export const createProfile = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateProfileData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateProfileResponse, CreateProfileError, ThrowOnError>({

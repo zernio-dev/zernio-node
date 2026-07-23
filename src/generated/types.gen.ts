@@ -3609,6 +3609,18 @@ export type ProfileGetResponse = {
 
 export type ProfilesListResponse = {
     profiles?: Array<Profile>;
+    /**
+     * Total matching profiles across all pages. Present only when limit or skip was passed.
+     */
+    total?: number;
+    /**
+     * Offset applied. Present only when limit or skip was passed.
+     */
+    skip?: number;
+    /**
+     * Echo of the limit query param. Present only when it was passed.
+     */
+    limit?: number;
 };
 
 export type ProfileUpdateResponse = {
@@ -9474,12 +9486,24 @@ export type ListProfilesData = {
          * When true, includes over-limit profiles (marked with isOverLimit: true).
          */
         includeOverLimit?: boolean;
+        /**
+         * Page size. When limit or skip is present, the response includes total and skip (and echoes limit).
+         */
+        limit?: number;
+        /**
+         * Exact-match filter on the profile name. Useful to recover a profile id after an ambiguous create (timeout followed by a 409 on retry).
+         */
+        name?: string;
+        /**
+         * Number of profiles to skip, applied after sorting and filtering.
+         */
+        skip?: number;
     };
 };
 
 export type ListProfilesResponse = (ProfilesListResponse);
 
-export type ListProfilesError = ({
+export type ListProfilesError = (ErrorResponse | {
     error?: string;
 });
 
@@ -9488,6 +9512,12 @@ export type CreateProfileData = {
         name: string;
         description?: string;
         color?: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes create retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
     };
 };
 
