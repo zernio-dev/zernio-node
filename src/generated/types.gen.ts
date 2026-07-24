@@ -19342,6 +19342,11 @@ export type PurchasePhoneNumberData = {
          */
         numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
         /**
+         * Area code (national destination code, e.g. 11 for Sao Paulo) the number must be in. Hard constraint: when the area has no deliverable inventory the purchase fails with 409 code AREA_CODE_UNAVAILABLE instead of assigning a number from another area, and later replacements stay in this area too. Omit for any area. Get live options from GET /v1/phone-numbers/availability (areaOptions).
+         *
+         */
+        areaCode?: string;
+        /**
          * A phone number is the unit; WhatsApp is one optional feature. Pass false to buy a STANDALONE number (Calls/SMS only): provisioning skips the Meta pre-verify/OTP steps and the number activates immediately. Omitted defaults to the WhatsApp provisioning path. WhatsApp can be connected to a standalone number later from the connect flow.
          *
          */
@@ -19401,7 +19406,7 @@ export type PurchasePhoneNumberError = (unknown | {
     error?: string;
 } | {
     error?: string;
-    code?: 'PURCHASE_VELOCITY';
+    code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE';
 });
 
 export type ListPhoneNumberCountriesResponse = ({
@@ -19514,6 +19519,10 @@ export type CheckPhoneNumberAvailabilityData = {
          * Check a specific offered type (stock and address constraints are per type). Omitted = the country's default type.
          */
         numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+        /**
+         * Pass true when the buyer wants SMS: availability, areas, and areaOptions then describe the SMS-capable pool (an SMS purchase orders from it), not the wider voice-only pool.
+         */
+        sms?: boolean;
     };
 };
 
@@ -19529,6 +19538,24 @@ export type CheckPhoneNumberAvailabilityResponse = ({
      * For `geo` only — the area(s) the registered address must be in.
      */
     areas?: Array<(string)>;
+    /**
+     * Live inventory grouped by area code, largest stock first. Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
+     *
+     */
+    areaOptions?: Array<{
+        /**
+         * Area code (national destination code), e.g. "11".
+         */
+        ndc?: string;
+        /**
+         * Human-readable area name, e.g. "Sao Paulo".
+         */
+        name?: string;
+        /**
+         * Deliverable numbers seen in this area on the latest inventory page.
+         */
+        count?: number;
+    }>;
 });
 
 export type CheckPhoneNumberAvailabilityError = (unknown | {
@@ -19690,7 +19717,7 @@ export type PurchaseWhatsAppPhoneNumberError = (unknown | {
     error?: string;
 } | {
     error?: string;
-    code?: 'PURCHASE_VELOCITY';
+    code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE';
 });
 
 export type ListWhatsAppNumberCountriesResponse = ({
@@ -19755,6 +19782,10 @@ export type CheckWhatsAppNumberAvailabilityData = {
          * Check a specific offered type (stock and address constraints are per type). Omitted = the country's default type.
          */
         numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+        /**
+         * Pass true when the buyer wants SMS: availability, areas, and areaOptions then describe the SMS-capable pool (an SMS purchase orders from it), not the wider voice-only pool.
+         */
+        sms?: boolean;
     };
 };
 
@@ -19770,6 +19801,24 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
      * For `geo` only — the area(s) the registered address must be in.
      */
     areas?: Array<(string)>;
+    /**
+     * Live inventory grouped by area code, largest stock first. Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
+     *
+     */
+    areaOptions?: Array<{
+        /**
+         * Area code (national destination code), e.g. "11".
+         */
+        ndc?: string;
+        /**
+         * Human-readable area name, e.g. "Sao Paulo".
+         */
+        name?: string;
+        /**
+         * Deliverable numbers seen in this area on the latest inventory page.
+         */
+        count?: number;
+    }>;
 });
 
 export type CheckWhatsAppNumberAvailabilityError = (unknown | {
@@ -19878,6 +19927,10 @@ export type SubmitPhoneNumberKycData = {
          * Legacy fallback for `reuseOptionId`: the source phone number (GET reusable.options[].fromPhoneNumber). Ambiguous when a number labels two verifications — prefer `reuseOptionId`. Omitted = the approved default. No match = 409.
          */
         reuseFrom?: string;
+        /**
+         * Area code (NDC) the number must be in. Hard constraint: an empty area pool fails with 409 code AREA_CODE_UNAVAILABLE instead of ordering from another area. Omit for any area. Options come from GET /v1/phone-numbers/availability (areaOptions); the purchase 202 kycUrl echoes the areaCode picked at purchase time so it can be passed here.
+         */
+        areaCode?: string;
         /**
          * End user's legal first name. Required when the country has an action/ID-verification (Onfido) requirement.
          */
@@ -20034,6 +20087,10 @@ export type CreatePhoneNumberKycLinkData = {
          * ISO 3166-1 alpha-2 country code (must be a regulated/KYC country).
          */
         country: string;
+        /**
+         * Area code (NDC) the eventual number must be in. Hard constraint carried by the link; the end customer filling the form makes no area choice. Options come from GET /v1/phone-numbers/availability (areaOptions).
+         */
+        areaCode?: string;
         /**
          * Optional white-label of the hosted page the end customer sees.
          */
@@ -20672,6 +20729,10 @@ export type SubmitWhatsAppNumberKycData = {
          */
         reuseFrom?: string;
         /**
+         * Area code (NDC) the number must be in. Hard constraint: an empty area pool fails with 409 code AREA_CODE_UNAVAILABLE instead of ordering from another area. Omit for any area. Options come from GET /v1/phone-numbers/availability (areaOptions); the purchase 202 kycUrl echoes the areaCode picked at purchase time so it can be passed here.
+         */
+        areaCode?: string;
+        /**
          * End user's legal first name. Required when the country has an action/ID-verification (Onfido) requirement.
          */
         endUserFirstName?: string;
@@ -20812,6 +20873,10 @@ export type CreateWhatsAppNumberKycLinkData = {
          * ISO 3166-1 alpha-2 country code (must be a regulated/KYC country).
          */
         country: string;
+        /**
+         * Area code (NDC) the eventual number must be in. Hard constraint carried by the link; the end customer filling the form makes no area choice. Options come from GET /v1/phone-numbers/availability (areaOptions).
+         */
+        areaCode?: string;
         /**
          * Optional white-label of the hosted page the end customer sees.
          */
