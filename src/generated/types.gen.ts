@@ -23099,7 +23099,7 @@ export type PauseWorkflowResponse = ({
     };
 });
 
-export type PauseWorkflowError = ({
+export type PauseWorkflowError = (ErrorResponse | {
     error?: string;
 });
 
@@ -23209,7 +23209,7 @@ export type ListWorkflowExecutionEventsResponse = ({
     events?: Array<WorkflowExecutionEvent>;
 });
 
-export type ListWorkflowExecutionEventsError = ({
+export type ListWorkflowExecutionEventsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -23235,7 +23235,7 @@ export type DuplicateWorkflowResponse = ({
     };
 });
 
-export type DuplicateWorkflowError = ({
+export type DuplicateWorkflowError = (ErrorResponse | {
     error?: string;
 });
 
@@ -23273,7 +23273,7 @@ export type ListWorkflowVersionsResponse = ({
     }>;
 });
 
-export type ListWorkflowVersionsError = ({
+export type ListWorkflowVersionsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -23303,7 +23303,7 @@ export type GetWorkflowVersionResponse = ({
     };
 });
 
-export type GetWorkflowVersionError = ({
+export type GetWorkflowVersionError = (ErrorResponse | {
     error?: string;
 });
 
