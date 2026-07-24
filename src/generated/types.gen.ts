@@ -19619,7 +19619,7 @@ export type GetWhatsAppPhoneNumbersResponse = ({
     } | null;
 });
 
-export type GetWhatsAppPhoneNumbersError = ({
+export type GetWhatsAppPhoneNumbersError = (ErrorResponse | {
     error?: string;
 });
 
@@ -24794,7 +24794,7 @@ export type GetAdsTimelineResponse = ({
     backfillPending?: boolean;
 } | unknown);
 
-export type GetAdsTimelineError = ({
+export type GetAdsTimelineError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
