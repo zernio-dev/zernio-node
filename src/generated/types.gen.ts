@@ -6225,7 +6225,7 @@ export type WebhookPayloadMessageEdited = {
 export type event16 = 'message.edited';
 
 /**
- * Webhook payload for message sent events (fired when a message is sent via the API)
+ * Webhook payload for message sent events (fired when a message is sent via the API, or from the WhatsApp Business app on Coexistence numbers)
  */
 export type WebhookPayloadMessageSent = {
     /**
@@ -6286,6 +6286,10 @@ export type WebhookPayloadMessageSent = {
         };
         sentAt: string;
         isRead: boolean;
+        /**
+         * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. This is not the inbox metadata.source lineage field.
+         */
+        source?: 'whatsapp_business_app' | 'cloud_api';
     };
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
@@ -6293,6 +6297,11 @@ export type WebhookPayloadMessageSent = {
 };
 
 export type event17 = 'message.sent';
+
+/**
+ * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. This is not the inbox metadata.source lineage field.
+ */
+export type source3 = 'whatsapp_business_app' | 'cloud_api';
 
 /**
  * Webhook payload for post events
