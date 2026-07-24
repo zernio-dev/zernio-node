@@ -21358,7 +21358,7 @@ export type ListWhatsAppGroupChatsResponse = ({
     };
 });
 
-export type ListWhatsAppGroupChatsError = ({
+export type ListWhatsAppGroupChatsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21391,7 +21391,7 @@ export type CreateWhatsAppGroupChatResponse = ({
     };
 });
 
-export type CreateWhatsAppGroupChatError = ({
+export type CreateWhatsAppGroupChatError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21433,7 +21433,7 @@ export type GetWhatsAppGroupChatResponse = ({
     };
 });
 
-export type GetWhatsAppGroupChatError = ({
+export type GetWhatsAppGroupChatError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21462,7 +21462,7 @@ export type UpdateWhatsAppGroupChatResponse = ({
     message?: string;
 });
 
-export type UpdateWhatsAppGroupChatError = ({
+export type UpdateWhatsAppGroupChatError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21486,7 +21486,7 @@ export type DeleteWhatsAppGroupChatResponse = ({
     message?: string;
 });
 
-export type DeleteWhatsAppGroupChatError = ({
+export type DeleteWhatsAppGroupChatError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21516,7 +21516,7 @@ export type AddWhatsAppGroupParticipantsResponse = ({
     message?: string;
 });
 
-export type AddWhatsAppGroupParticipantsError = ({
+export type AddWhatsAppGroupParticipantsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21546,7 +21546,7 @@ export type RemoveWhatsAppGroupParticipantsResponse = ({
     message?: string;
 });
 
-export type RemoveWhatsAppGroupParticipantsError = ({
+export type RemoveWhatsAppGroupParticipantsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21570,7 +21570,7 @@ export type CreateWhatsAppGroupInviteLinkResponse = ({
     inviteLink?: string;
 });
 
-export type CreateWhatsAppGroupInviteLinkError = ({
+export type CreateWhatsAppGroupInviteLinkError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21603,7 +21603,7 @@ export type ListWhatsAppGroupJoinRequestsResponse = ({
     }>;
 });
 
-export type ListWhatsAppGroupJoinRequestsError = ({
+export type ListWhatsAppGroupJoinRequestsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21633,7 +21633,7 @@ export type ApproveWhatsAppGroupJoinRequestsResponse = ({
     message?: string;
 });
 
-export type ApproveWhatsAppGroupJoinRequestsError = ({
+export type ApproveWhatsAppGroupJoinRequestsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -21663,7 +21663,7 @@ export type RejectWhatsAppGroupJoinRequestsResponse = ({
     message?: string;
 });
 
-export type RejectWhatsAppGroupJoinRequestsError = ({
+export type RejectWhatsAppGroupJoinRequestsError = (ErrorResponse | {
     error?: string;
 });
 
