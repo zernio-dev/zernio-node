@@ -87,7 +87,18 @@ export type Ad = {
     _id?: string;
     name?: string;
     platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
-    status?: AdStatus;
+    /**
+     * Delivery status. Derived from the platform `effective_status`, so it inherits ancestor pauses (an ACTIVE ad under a PAUSED campaign reads `paused`). For the ad's own on/off toggle use `configuredStatus`; for the review state use `reviewStatus`.
+     */
+    status?: (AdStatus);
+    /**
+     * The ad's own on/off toggle as configured on the platform (Meta `configured_status`: ACTIVE / PAUSED), unaffected by ancestor (ad set / campaign) pauses. Distinct from `status`, which is the ancestor-cascaded delivery status. Only present for Meta ads synced after this field was added.
+     */
+    configuredStatus?: (string) | null;
+    /**
+     * Platform review state of this ad, independent of delivery `status` / `configuredStatus`. Absent when the platform reports no review signal.
+     */
+    reviewStatus?: (AdReviewStatus);
     adType?: 'boost' | 'standalone';
     /**
      * Available goals vary by platform. Meta (Facebook/Instagram) supports all 9 (incl. `lead_conversion` = website pixel lead optimization and `catalog_sales` = Advantage+ catalog ads). TikTok supports the 7 non-`lead_conversion` goals. LinkedIn supports all except app_promotion / lead_conversion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
@@ -311,7 +322,7 @@ export type AdCampaign = {
     /**
      * Platform-side review state of the campaign. See AdTreeCampaign.reviewStatus for the full description.
      */
-    reviewStatus?: ('in_review' | 'approved' | 'rejected' | 'with_issues') | null;
+    reviewStatus?: (AdReviewStatus | null);
     /**
      * Raw platform-level campaign status (Meta `effective_status`).
      */
@@ -392,11 +403,6 @@ export type AdCampaign = {
     earliestAd?: string;
     latestAd?: string;
 };
-
-/**
- * Platform-side review state of the campaign. See AdTreeCampaign.reviewStatus for the full description.
- */
-export type reviewStatus = 'in_review' | 'approved' | 'rejected' | 'with_issues';
 
 /**
  * Canonical CBO/ABO indicator. See AdTreeCampaign.budgetLevel.
@@ -509,6 +515,11 @@ export type AdMetrics = {
     lastSyncedAt?: string;
 };
 
+/**
+ * Platform-side review state, independent of the delivery `status` and the `configuredStatus` on/off toggle. `in_review` means the platform is still reviewing. Absent when the platform reports no review signal (e.g. a paused ad whose review state is masked behind the pause).
+ */
+export type AdReviewStatus = 'in_review' | 'approved' | 'rejected' | 'with_issues';
+
 export type AdStatus = 'active' | 'paused' | 'pending_review' | 'rejected' | 'completed' | 'cancelled' | 'error';
 
 /**
@@ -591,7 +602,7 @@ export type AdTreeCampaign = {
      * the Campaign, plus ad-level PENDING_REVIEW rollup.
      *
      */
-    reviewStatus?: ('in_review' | 'approved' | 'rejected' | 'with_issues') | null;
+    reviewStatus?: (AdReviewStatus | null);
     /**
      * Raw platform-level campaign status (Meta `effective_status`: ACTIVE, PAUSED, DELETED, ARCHIVED, IN_PROCESS, WITH_ISSUES). Distinct from per-ad `platformStatus`.
      */
