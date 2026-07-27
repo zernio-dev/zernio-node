@@ -27431,11 +27431,15 @@ export type CreateStandaloneAdError = (unknown | {
 export type ListLeadsData = {
     query?: {
         /**
-         * Filter to a single connected account.
+         * Filter to a single connected account. LinkedIn ads accounts switch to the live fetch.
          */
         accountId?: string;
         /**
-         * Keyset cursor from a previous response's pagination.cursor.
+         * LinkedIn only: the LinkedIn ad account id whose responses to read (owner-scoped finder).
+         */
+        adAccountId?: string;
+        /**
+         * Keyset cursor from a previous response's pagination.cursor (Meta: AdLead id; LinkedIn: numeric start offset).
          */
         cursor?: string;
         /**
@@ -27444,7 +27448,7 @@ export type ListLeadsData = {
         formId?: string;
         limit?: number;
         /**
-         * Unix seconds; only leads created at/after this Meta timestamp.
+         * Unix seconds; only leads created at/after this timestamp.
          */
         since?: number;
     };
@@ -27498,9 +27502,13 @@ export type ListLeadsError = ({
 export type ListLeadFormsData = {
     query: {
         /**
-         * Connected facebook account id.
+         * Connected facebook or linkedin ads account id.
          */
         accountId: string;
+        /**
+         * LinkedIn only: the LinkedIn ad account id (used to resolve the owning organization). Required for LinkedIn.
+         */
+        adAccountId?: string;
         cursor?: string;
         limit?: number;
     };
@@ -27525,7 +27533,11 @@ export type CreateLeadFormData = {
     body: {
         accountId: string;
         name: string;
-        questions: Array<{
+        /**
+         * Deprecated (Meta legacy shape): use platformSpecificData.questions.
+         * @deprecated
+         */
+        questions?: Array<{
             /**
              * EMAIL, PHONE, FULL_NAME, FIRST_NAME, LAST_NAME, CUSTOM, …
              */
@@ -27545,15 +27557,138 @@ export type CreateLeadFormData = {
             inline_context?: string;
         }>;
         privacyPolicyUrl: string;
+        /**
+         * Deprecated: use platformSpecificData.privacyPolicyLinkText.
+         * @deprecated
+         */
         privacyPolicyLinkText?: string;
+        /**
+         * Deprecated: use platformSpecificData.followUpActionUrl.
+         * @deprecated
+         */
         followUpActionUrl?: string;
+        /**
+         * Deprecated: use platformSpecificData.locale.
+         * @deprecated
+         */
         locale?: string;
+        /**
+         * Deprecated: use platformSpecificData.thankYouTitle.
+         * @deprecated
+         */
         thankYouTitle?: string;
+        /**
+         * Deprecated: use platformSpecificData.thankYouBody.
+         * @deprecated
+         */
         thankYouBody?: string;
+        /**
+         * Deprecated: use platformSpecificData.thankYouButtonText.
+         * @deprecated
+         */
         thankYouButtonText?: string;
+        /**
+         * Deprecated: use platformSpecificData.thankYouButtonType.
+         * @deprecated
+         */
         thankYouButtonType?: string;
+        /**
+         * Deprecated: use platformSpecificData.thankYouWebsiteUrl.
+         * @deprecated
+         */
         thankYouWebsiteUrl?: string;
+        /**
+         * Deprecated: use platformSpecificData.isOptimizedForQuality.
+         * @deprecated
+         */
         isOptimizedForQuality?: boolean;
+        /**
+         * Form content; the shape is selected by the accountId's platform. Unknown fields are a 400 (strict-parsed).
+         */
+        platformSpecificData?: ({
+    questions: Array<{
+        /**
+         * EMAIL, PHONE, FULL_NAME, FIRST_NAME, LAST_NAME, CUSTOM, …
+         */
+        type: string;
+        /**
+         * CUSTOM questions only.
+         */
+        key?: string;
+        /**
+         * CUSTOM questions only.
+         */
+        label?: string;
+        options?: Array<{
+            key?: string;
+            value?: string;
+        }>;
+        inline_context?: string;
+    }>;
+    privacyPolicyLinkText?: string;
+    followUpActionUrl?: string;
+    locale?: string;
+    thankYouTitle?: string;
+    thankYouBody?: string;
+    thankYouButtonText?: string;
+    thankYouButtonType?: string;
+    thankYouWebsiteUrl?: string;
+    isOptimizedForQuality?: boolean;
+    formType?: 'MORE_VOLUME' | 'HIGHER_INTENT' | 'RICH_CREATIVE';
+    blockDisplayForNonTargetedViewer?: boolean;
+    allowOrganicLeadGen?: boolean;
+    questionPageCustomHeadline?: string;
+    contextCard?: {
+        title?: string;
+        content?: Array<(string)>;
+        style?: 'LIST_STYLE' | 'PARAGRAPH_STYLE';
+        buttonText?: string;
+        coverPhoto?: string;
+    };
+} | {
+    /**
+     * LinkedIn ad account id (resolves the owning organization).
+     */
+    adAccountId: string;
+    headline: string;
+    description: string;
+    /**
+     * Defaults to DRAFT.
+     */
+    state?: 'DRAFT' | 'PUBLISHED';
+    locale?: {
+        country?: string;
+        language?: string;
+    };
+    consents?: Array<{
+        description: string;
+        /**
+         * Whether the viewer must tick this consent to submit. Defaults to false.
+         */
+        required?: boolean;
+    }>;
+    questions: Array<({
+    kind: 'text';
+    name: string;
+    question: string;
+    required?: boolean;
+    responseEditable?: boolean;
+    /**
+     * Defaults to 300 on LinkedIn's side.
+     */
+    maxResponseLength?: number;
+} | {
+    kind: 'multipleChoice';
+    name: string;
+    question: string;
+    required?: boolean;
+    responseEditable?: boolean;
+    choices: Array<{
+        id: number;
+        text: string;
+    }>;
+})>;
+});
     };
 };
 
@@ -27571,9 +27706,15 @@ export type CreateLeadFormError = ({
 
 export type GetLeadFormData = {
     path: {
+        /**
+         * Numeric form id (Meta leadgen_form id or LinkedIn leadForm id).
+         */
         formId: string;
     };
     query: {
+        /**
+         * Connected facebook or linkedin ads account id (selects the platform).
+         */
         accountId: string;
     };
 };
@@ -27591,9 +27732,15 @@ export type GetLeadFormError = ({
 
 export type ArchiveLeadFormData = {
     path: {
+        /**
+         * Numeric form id (Meta leadgen_form id or LinkedIn leadForm id).
+         */
         formId: string;
     };
     query: {
+        /**
+         * Connected facebook or linkedin ads account id (selects the platform).
+         */
         accountId: string;
     };
 };
