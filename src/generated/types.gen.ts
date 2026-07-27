@@ -7293,6 +7293,10 @@ export type ValidatePostData = {
          */
         platforms: Array<{
             platform: 'twitter' | 'instagram' | 'tiktok' | 'youtube' | 'facebook' | 'linkedin' | 'bluesky' | 'threads' | 'reddit' | 'pinterest' | 'telegram' | 'snapchat' | 'googlebusiness' | 'discord';
+            /**
+             * Account to validate against. For twitter, resolves X Premium status to apply the 25000 character limit instead of 280.
+             */
+            accountId?: string;
             customContent?: string;
             platformSpecificData?: {
                 [key: string]: unknown;
