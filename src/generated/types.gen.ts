@@ -9650,11 +9650,13 @@ export type ListAccountsData = {
          */
         includeOverLimit?: boolean;
         /**
-         * Page size. Required alongside page for pagination.
+         * Page size. Must be provided together with page; sending only one of the two returns 400.
+         *
          */
         limit?: number;
         /**
-         * Page number (1-based). When provided with limit, enables server-side pagination. Omit for all accounts.
+         * Page number (1-based). Must be provided together with limit to enable server-side pagination; sending only one of the two returns 400. Omit both for all accounts.
+         *
          */
         page?: number;
         /**
@@ -9662,7 +9664,7 @@ export type ListAccountsData = {
          */
         platform?: string;
         /**
-         * Filter accounts by profile ID
+         * Filter accounts by profile ID. Must be a valid ObjectId.
          */
         profileId?: string;
         /**
@@ -9675,7 +9677,7 @@ export type ListAccountsData = {
 
 export type ListAccountsResponse = (AccountsListResponse);
 
-export type ListAccountsError = ({
+export type ListAccountsError = (ErrorResponse | {
     error?: string;
 });
 

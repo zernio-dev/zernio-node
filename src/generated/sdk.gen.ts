@@ -1035,6 +1035,7 @@ export const deleteProfile = <ThrowOnError extends boolean = false>(options: Opt
  * List accounts
  * Returns connected social accounts. Only includes accounts within the plan limit by default. Follower data requires analytics add-on.
  * Supports optional server-side pagination via page/limit params. When omitted, returns all accounts (backward-compatible).
+ * page and limit must be supplied together; out-of-range page/limit values are rejected with 400 rather than silently clamped.
  *
  */
 export const listAccounts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAccountsData, ThrowOnError>) => {
