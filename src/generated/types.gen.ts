@@ -26276,7 +26276,7 @@ export type ListAdAccountsResponse = ({
 
 export type ListAdAccountsError = ({
     error?: string;
-} | unknown);
+} | unknown | ErrorResponse);
 
 export type UpdateAdAccountData = {
     body: {

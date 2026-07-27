@@ -7199,6 +7199,9 @@ export const getAdAccountFinance = <ThrowOnError extends boolean = false>(option
  * without a BC fall back to the OAuth-time `advertiser_ids` list. Cached for 1h on the
  * SocialAccount; lazy-refreshed on first call after expiry.
  *
+ * For Google Ads: responds `429` when Google's API quota is temporarily exhausted
+ * (instead of an empty list). Retry after a delay.
+ *
  */
 export const listAdAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdAccountsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdAccountsResponse, ListAdAccountsError, ThrowOnError>({
