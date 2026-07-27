@@ -18410,7 +18410,7 @@ export type StartSmsRegistrationResponse = ({
     awaitingOtp?: boolean;
 });
 
-export type StartSmsRegistrationError = ({
+export type StartSmsRegistrationError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -18470,7 +18470,7 @@ export type ListSmsRegistrationsResponse = ({
     }>;
 });
 
-export type ListSmsRegistrationsError = ({
+export type ListSmsRegistrationsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -18484,7 +18484,7 @@ export type DeactivateSmsRegistrationResponse = ({
     status?: 'deactivated';
 });
 
-export type DeactivateSmsRegistrationError = ({
+export type DeactivateSmsRegistrationError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -18519,7 +18519,7 @@ export type GetSmsRegistrationResponse = ({
     };
 });
 
-export type GetSmsRegistrationError = ({
+export type GetSmsRegistrationError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -18536,7 +18536,7 @@ export type VerifySmsRegistrationOtpResponse = ({
     verified?: boolean;
 });
 
-export type VerifySmsRegistrationOtpError = ({
+export type VerifySmsRegistrationOtpError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -18637,7 +18637,7 @@ export type ShareSmsRegistrationResponse = ({
     expiresAt?: string;
 });
 
-export type ShareSmsRegistrationError = ({
+export type ShareSmsRegistrationError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
