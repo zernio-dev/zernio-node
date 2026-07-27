@@ -19918,7 +19918,7 @@ export type SubmitPhoneNumberKycData = {
          */
         submissionId?: string;
         /**
-         * Provision several same-country numbers from one submission (1-5). The single verification covers all of them; each number is billed only when it activates. Numbers that fail to order are skipped (best-effort).
+         * Provision several same-country numbers from one submission (1-5). The single verification covers all of them; each number is billed only when it activates. Numbers that fail to order are skipped (best-effort). With `areaCode`, a quantity above that area's live stock is rejected with a 400.
          */
         quantity?: number;
         /**
@@ -20719,7 +20719,7 @@ export type SubmitWhatsAppNumberKycData = {
          */
         submissionId?: string;
         /**
-         * Provision several same-country numbers from one submission (1-5). The single verification covers all of them; each number is billed only when it activates. Numbers that fail to order are skipped (best-effort).
+         * Provision several same-country numbers from one submission (1-5). The single verification covers all of them; each number is billed only when it activates. Numbers that fail to order are skipped (best-effort). With `areaCode`, a quantity above that area's live stock is rejected with a 400.
          */
         quantity?: number;
         /**
