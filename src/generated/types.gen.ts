@@ -19539,7 +19539,7 @@ export type CheckPhoneNumberAvailabilityResponse = ({
      */
     areas?: Array<(string)>;
     /**
-     * Live inventory grouped by area code, largest stock first. Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
+     * Live inventory grouped by area code, largest stock first. For US and CA this is the full country inventory (every area code with stock, named by state/province); other countries list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
      *
      */
     areaOptions?: Array<{
@@ -19548,11 +19548,11 @@ export type CheckPhoneNumberAvailabilityResponse = ({
          */
         ndc?: string;
         /**
-         * Human-readable area name, e.g. "Sao Paulo".
+         * Area name: state/province for US/CA (e.g. "Minnesota"), city otherwise (e.g. "Sao Paulo").
          */
         name?: string;
         /**
-         * Deliverable numbers seen in this area on the latest inventory page.
+         * Numbers available in this area: country-wide count for US/CA, numbers seen on the latest inventory page otherwise.
          */
         count?: number;
     }>;
@@ -19802,7 +19802,7 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
      */
     areas?: Array<(string)>;
     /**
-     * Live inventory grouped by area code, largest stock first. Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
+     * Live inventory grouped by area code, largest stock first. For US and CA this is the full country inventory (every area code with stock, named by state/province); other countries list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
      *
      */
     areaOptions?: Array<{
@@ -19811,11 +19811,11 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
          */
         ndc?: string;
         /**
-         * Human-readable area name, e.g. "Sao Paulo".
+         * Area name: state/province for US/CA (e.g. "Minnesota"), city otherwise (e.g. "Sao Paulo").
          */
         name?: string;
         /**
-         * Deliverable numbers seen in this area on the latest inventory page.
+         * Numbers available in this area: country-wide count for US/CA, numbers seen on the latest inventory page otherwise.
          */
         count?: number;
     }>;
