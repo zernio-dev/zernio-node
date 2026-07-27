@@ -24192,6 +24192,84 @@ export type ListAdsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type ListAdKeywordsData = {
+    query?: {
+        /**
+         * Social account ID
+         */
+        accountId?: string;
+        /**
+         * Platform ad account ID (Google customer ID). Mirrors the same filter on /v1/ads.
+         */
+        adAccountId?: string;
+        /**
+         * Platform ad group ID (Google ad group)
+         */
+        adSetId?: string;
+        /**
+         * Platform campaign ID
+         */
+        campaignId?: string;
+        limit?: number;
+        matchType?: 'exact' | 'phrase' | 'broad' | 'unknown';
+        /**
+         * true = negative keywords only, false = positive only. Omit for both.
+         */
+        negative?: boolean;
+        /**
+         * Page number (1-based)
+         */
+        page?: number;
+        /**
+         * Profile ID
+         */
+        profileId?: string;
+        /**
+         * Case-insensitive substring match on the keyword text
+         */
+        search?: string;
+        /**
+         * Keyword criterion status
+         */
+        status?: 'active' | 'paused';
+    };
+};
+
+export type ListAdKeywordsResponse = ({
+    keywords?: Array<{
+        id?: string;
+        /**
+         * Social account ID owning the sync
+         */
+        accountId?: string;
+        profileId?: string;
+        platform?: 'google';
+        /**
+         * Google customer ID
+         */
+        adAccountId?: string;
+        campaignId?: string;
+        campaignName?: (string) | null;
+        campaignStatus?: (string) | null;
+        /**
+         * Google ad group ID
+         */
+        adSetId?: string;
+        adSetName?: (string) | null;
+        adSetStatus?: (string) | null;
+        keyword?: string;
+        matchType?: 'exact' | 'phrase' | 'broad' | 'unknown';
+        status?: 'active' | 'paused';
+        negative?: boolean;
+        syncedAt?: (string) | null;
+    }>;
+    pagination?: Pagination;
+});
+
+export type ListAdKeywordsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type ListAdCampaignsData = {
     query?: {
         /**

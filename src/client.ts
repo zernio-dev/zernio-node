@@ -307,6 +307,7 @@ import {
   listAdCatalogs,
   listAdCreatives,
   listAdImages,
+  listAdKeywords,
   listAdLabels,
   listAdStudies,
   listAds,
@@ -1309,6 +1310,7 @@ export class Zernio {
    */
   adcampaigns = {
     listAds: listAds,
+    listAdKeywords: listAdKeywords,
     listAdCampaigns: listAdCampaigns,
     createAdCampaign: createAdCampaign,
     updateAdCampaignStatus: updateAdCampaignStatus,
@@ -1483,6 +1485,8 @@ export class Zernio {
   ads = {
     /** @deprecated Use `zernio.adcampaigns.listAds` instead. */
     listAds: listAds,
+    /** @deprecated Use `zernio.adcampaigns.listAdKeywords` instead. */
+    listAdKeywords: listAdKeywords,
     /** @deprecated Use `zernio.adcampaigns.listAdCampaigns` instead. */
     listAdCampaigns: listAdCampaigns,
     /** @deprecated Use `zernio.adcampaigns.createAdCampaign` instead. */

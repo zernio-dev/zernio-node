@@ -388,6 +388,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `adCampaigns.listAdCampaigns()` | List campaigns |
+| `adCampaigns.listAdKeywords()` | List Search keywords |
 | `adCampaigns.listAds()` | List ads |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
 | `adCampaigns.createAdCampaign()` | Create a standalone campaign |
