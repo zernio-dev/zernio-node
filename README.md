@@ -734,8 +734,10 @@ try {
 | `sms.disableSmsOnNumber()` | Disable SMS on a number |
 | `sms.enableSmsOnNumber()` | Enable SMS on a number |
 | `sms.lookupSmsNumber()` | Look up carrier + line type |
+| `sms.preflightSmsRegistration()` | Pre-check a carrier registration |
 | `sms.requestSmsSenderIdLimitIncrease()` | Request a higher sender ID daily limit |
 | `sms.resendSmsRegistrationOtp()` | Re-send the sole-prop OTP |
+| `sms.respondToSmsRegistrationReview()` | Reply to a change request |
 | `sms.reuseSmsRegistrationForNumber()` | Add number to SMS registration |
 | `sms.sendSms()` | Send an SMS/MMS |
 | `sms.shareSmsRegistration()` | Create a registration share link |

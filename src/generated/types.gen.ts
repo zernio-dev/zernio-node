@@ -18428,6 +18428,10 @@ export type StartSmsRegistrationData = {
             termsAndConditionsLink?: string;
         };
         /**
+         * DBA / trade name used to brand message content (samples and auto-replies) when it differs from the legal name, e.g. a sole proprietor texting under a business name. The legal `brand.displayName` is still what the carrier vets.
+         */
+        messagingBrandName?: string;
+        /**
          * Raw dashboard-wizard answers, stored only to prefill edit-and-resubmit. API integrators can omit.
          */
         wizardValues?: {
@@ -18555,6 +18559,61 @@ export type ListSmsRegistrationsError = (ErrorResponse | {
     error?: string;
 });
 
+export type PreflightSmsRegistrationData = {
+    body: {
+        registrationType: 'standard_10dlc' | 'sole_prop_10dlc';
+        phoneNumbers?: Array<(string)>;
+        /**
+         * Same shape as the registration `brand`.
+         */
+        brand: {
+            [key: string]: unknown;
+        };
+        /**
+         * Same shape as the registration `campaign`.
+         */
+        campaign: {
+            [key: string]: unknown;
+        };
+        messagingBrandName?: string;
+    };
+};
+
+export type PreflightSmsRegistrationResponse = ({
+    /**
+     * The exact payloads a submission would store (post-branding, disclosures appended, auto-replies generated).
+     */
+    composed?: {
+        brand?: {
+            [key: string]: unknown;
+        };
+        campaign?: {
+            [key: string]: unknown;
+        };
+    };
+    advisories?: Array<{
+        /**
+         * The payload field the finding is about, when attributable.
+         */
+        field?: (string) | null;
+        /**
+         * Stable rule id for deterministic findings; absent on AI findings.
+         */
+        code?: (string) | null;
+        concern?: string;
+        severity?: 'block' | 'warn';
+    }>;
+    verdict?: 'pass' | 'warn' | 'fail' | 'unreviewed';
+    /**
+     * True when the AI portion of the check could not run; advisories then contain only deterministic findings.
+     */
+    aiUnavailable?: boolean;
+});
+
+export type PreflightSmsRegistrationError = (ErrorResponse | {
+    error?: string;
+});
+
 export type DeactivateSmsRegistrationData = {
     path: {
         id: string;
@@ -18660,6 +18719,30 @@ export type AppealSmsRegistrationResponse = ({
 export type AppealSmsRegistrationError = (unknown | {
     error?: string;
 });
+
+export type RespondToSmsRegistrationReviewData = {
+    body: {
+        /**
+         * Answer for the reviewer. Required when no files are sent.
+         */
+        note?: string;
+        /**
+         * Hosted document URLs returned by POST /v1/sms/opt-in-proof.
+         */
+        files?: Array<(string)>;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type RespondToSmsRegistrationReviewResponse = ({
+    status?: 'requested';
+});
+
+export type RespondToSmsRegistrationReviewError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type UploadSmsOptInProofFileData = {
     body: {
