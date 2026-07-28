@@ -25677,7 +25677,7 @@ export type ListAdsBusinessCentersResponse = ({
     businessCenters?: Array<BusinessCenter>;
 });
 
-export type ListAdsBusinessCentersError = ({
+export type ListAdsBusinessCentersError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -27501,7 +27501,7 @@ export type ListLeadsResponse = ({
     };
 });
 
-export type ListLeadsError = ({
+export type ListLeadsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -27531,7 +27531,7 @@ export type ListLeadFormsResponse = ({
     };
 });
 
-export type ListLeadFormsError = ({
+export type ListLeadFormsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -27706,7 +27706,7 @@ export type CreateLeadFormResponse = ({
     };
 });
 
-export type CreateLeadFormError = ({
+export type CreateLeadFormError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -27732,7 +27732,7 @@ export type GetLeadFormResponse = ({
     };
 });
 
-export type GetLeadFormError = ({
+export type GetLeadFormError = (ErrorResponse | {
     error?: string;
 });
 
@@ -27757,7 +27757,7 @@ export type ArchiveLeadFormResponse = ({
     archived?: boolean;
 });
 
-export type ArchiveLeadFormError = ({
+export type ArchiveLeadFormError = (ErrorResponse | {
     error?: string;
 });
 
@@ -27796,7 +27796,7 @@ export type ListFormLeadsResponse = ({
     };
 });
 
-export type ListFormLeadsError = ({
+export type ListFormLeadsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -27820,7 +27820,7 @@ export type CreateTestLeadResponse = ({
     };
 });
 
-export type CreateTestLeadError = ({
+export type CreateTestLeadError = (ErrorResponse | {
     error?: string;
 });
 
