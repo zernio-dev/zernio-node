@@ -2672,7 +2672,7 @@ export const getNextQueueSlot = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * List webhooks
- * Retrieve all configured webhooks for the authenticated user. Supports up to 10 webhooks per user.
+ * Retrieve all configured webhooks for the authenticated user. Supports up to 50 webhooks per user.
  */
 export const getWebhookSettings = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
     return (options?.client ?? client).get<GetWebhookSettingsResponse, GetWebhookSettingsError, ThrowOnError>({
@@ -2683,7 +2683,7 @@ export const getWebhookSettings = <ThrowOnError extends boolean = false>(options
 
 /**
  * Create webhook
- * Create a new webhook configuration. Maximum 10 webhooks per user.
+ * Create a new webhook configuration. Maximum 50 webhooks per user.
  *
  * `name`, `url` and `events` are required. `url` must be a valid URL and `events` must contain at least one event. Whitespace is trimmed from `url` before validation.
  *
