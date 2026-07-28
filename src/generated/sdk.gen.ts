@@ -7070,8 +7070,9 @@ export const getAdsActivityLog = <ThrowOnError extends boolean = false>(options:
  * POST /v1/ads/rf-predictions/{predictionId}/reserve and pass the RESERVED id to
  * POST /v1/ads/create with `buyingType: "RESERVED"`.
  *
- * Reservation campaigns reject automatic placements, so omitted `placements` default to
- * Facebook feed (+ Instagram stream when a linked IG professional account resolves);
+ * Reservation campaigns reject automatic placements. Top-level `placements` wins; when it is
+ * omitted, `targeting.placements` is used; when neither is set, placements default to
+ * Facebook feed (+ Instagram stream when a linked IG professional account resolves).
  * Instagram placements require that IG account.
  */
 export const createRfPrediction = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateRfPredictionData, ThrowOnError>) => {
