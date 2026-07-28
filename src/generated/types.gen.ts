@@ -12641,7 +12641,7 @@ export type GetLinkedInPostAnalyticsResponse = ({
          */
         clicks?: number;
         /**
-         * Video views (video posts only). Organization accounts require the connected LinkedIn user to be an ADMINISTRATOR of the page; CONTENT_ADMINISTRATOR returns 0.
+         * Video views (video posts only)
          */
         views?: number;
         /**
