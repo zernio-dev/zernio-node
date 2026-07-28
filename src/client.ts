@@ -418,6 +418,7 @@ import {
   searchDiscordGuildMembers,
   searchInboxConversations,
   searchReddit,
+  searchTweets,
   selectFacebookPage,
   selectGoogleBusinessLocation,
   selectLinkedInOrganization,
@@ -1038,6 +1039,7 @@ export class Zernio {
     removeBookmark: removeBookmark,
     followUser: followUser,
     unfollowUser: unfollowUser,
+    searchTweets: searchTweets,
   };
 
   /**

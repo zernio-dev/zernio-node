@@ -16946,6 +16946,85 @@ export type UnfollowUserError = (unknown | {
     error?: string;
 });
 
+export type SearchTweetsData = {
+    query: {
+        /**
+         * The social account ID
+         */
+        accountId: string;
+        /**
+         * Pagination cursor from a previous response
+         */
+        cursor?: string;
+        /**
+         * Newest UTC timestamp (ISO 8601, exclusive), within the last 7 days
+         */
+        endTime?: string;
+        /**
+         * Results per page. X requires a minimum of 10; values below 10 are rejected.
+         */
+        limit?: number;
+        /**
+         * X search query, max 512 characters. Operators are passed through unchanged; X rejects malformed queries with a 400.
+         */
+        query: string;
+        /**
+         * Only return tweets with an ID greater than (more recent than) this numeric tweet ID. Non-numeric values are rejected with 400.
+         */
+        sinceId?: string;
+        sortOrder?: 'recency' | 'relevancy';
+        /**
+         * Oldest UTC timestamp (ISO 8601, inclusive), within the last 7 days
+         */
+        startTime?: string;
+        /**
+         * Only return tweets with an ID less than (older than) this numeric tweet ID. Non-numeric values are rejected with 400.
+         */
+        untilId?: string;
+    };
+};
+
+export type SearchTweetsResponse = ({
+    status?: string;
+    tweets?: Array<{
+        id?: string;
+        text?: string;
+        created?: string;
+        conversationId?: string;
+        /**
+         * Parent tweet ID when the result is itself a reply
+         */
+        inReplyToTweetId?: (string) | null;
+        lang?: string;
+        author?: {
+            id?: string;
+            username?: string;
+            displayName?: string;
+            avatar?: string;
+            verifiedType?: string;
+        };
+        likeCount?: number;
+        replyCount?: number;
+        retweetCount?: number;
+        quoteCount?: number;
+        platform?: string;
+    }>;
+    pagination?: {
+        hasMore?: boolean;
+        cursor?: (string) | null;
+    };
+    meta?: {
+        resultCount?: number;
+        newestId?: (string) | null;
+        oldestId?: (string) | null;
+        platform?: string;
+    };
+});
+
+export type SearchTweetsError = (unknown | {
+    error?: string;
+});
+
 export type ListInboxMentionsData = {
     query?: {
         /**

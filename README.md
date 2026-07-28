@@ -765,6 +765,7 @@ try {
 | `twitterEngagement.followUser()` | Follow a user |
 | `twitterEngagement.removeBookmark()` | Remove bookmark |
 | `twitterEngagement.retweetPost()` | Retweet a post |
+| `twitterEngagement.searchTweets()` | Search recent tweets |
 | `twitterEngagement.undoRetweet()` | Undo retweet |
 | `twitterEngagement.unfollowUser()` | Unfollow a user |
 
