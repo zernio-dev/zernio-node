@@ -6431,10 +6431,15 @@ export const listAds = <ThrowOnError extends boolean = false>(options?: OptionsL
 /**
  * List Search keywords
  * Returns the Google Search keyword criteria (positive and negative) synced from
- * connected Google Ads accounts, one row per ad-group keyword. Populated by the
- * periodic ads discovery sweep (roughly every 3 hours per account), so keywords
- * added on Google appear with that delay. Campaign-level negative keywords are
- * not included; only ad-group-level criteria are.
+ * connected Google Ads accounts, one row per ad-group keyword. Refreshed about
+ * once a week per Google Ads customer (the keyword sweep rides the ads discovery
+ * pass on a slower slot, to stay inside Google's shared daily API quota), so
+ * keywords added on Google can take several days to appear. A customer synced
+ * for the first time is populated on the next discovery pass rather than
+ * waiting for its weekly slot, and connecting an account or triggering a
+ * manual sync refreshes it immediately.
+ * Campaign-level negative keywords are not included; only ad-group-level
+ * criteria are.
  *
  */
 export const listAdKeywords = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdKeywordsData, ThrowOnError>) => {
