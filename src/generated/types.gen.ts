@@ -26799,8 +26799,8 @@ export type CreateStandaloneAdData = {
          * Required on legacy and multi-creative shapes; the attach shape inherits it from the ad set. Available goals vary by platform.
          *
          * **Meta**
-         * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event such as PURCHASE or START_TRIAL.
-         * - `lead_conversion`: OUTCOME_LEADS optimizing website pixel leads. Same pixel and event fields, but with a leads-class event such as LEAD, SUBMIT_APPLICATION, SCHEDULE or CONTACT. Meta gates conversion events by objective, so leads-class events are rejected under `conversions`.
+         * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event such as PURCHASE or START_TRIAL, or `promotedObject.customConversionId` to optimise against a Custom Conversion instead.
+         * - `lead_conversion`: OUTCOME_LEADS optimizing website pixel leads. Same pixel and event fields, but with a leads-class event such as LEAD, SUBMIT_APPLICATION, SCHEDULE or CONTACT (or `promotedObject.customConversionId` to optimise against a Custom Conversion instead). Meta gates conversion events by objective, so leads-class events are rejected under `conversions`.
          * - `lead_generation`: OUTCOME_LEADS with instant forms. Requires `leadGenFormId`. `promotedObject.pageId` is optional and auto-filled from the connected Page.
          * - `app_promotion`: requires `promotedObject.applicationId` and `promotedObject.objectStoreUrl`.
          * - `catalog_sales`: Advantage+ catalog ads, for example vehicle inventory. Requires `promotedObject.productSetId`, `promotedObject.pixelId` and `promotedObject.customEventType`. Builds a catalog TEMPLATE creative from the copy fields, which may carry template tags like {{product.name}} or {{vehicle.make}}. No imageUrl or video is sent; Meta renders the visuals per catalog item. Discover catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets. Single shape only, no creatives[], adSetId, dynamicCreative or placementAssets.
@@ -27481,7 +27481,7 @@ export type CreateStandaloneAdData = {
          * Required for goals whose ad-set optimization_goal points at a specific
          * event/page/app (without it Meta rejects the ad-set create with
          * `error_subcode: 1815430` "Please select a promoted object for your ad set"):
-         * - `goal: conversions` (OFFSITE_CONVERSIONS): requires `pixelId` + `customEventType`
+         * - `goal: conversions` / `lead_conversion` (OFFSITE_CONVERSIONS): requires `pixelId` + `customEventType`, or `customConversionId` when optimising against a Custom Conversion (the conversion carries its own event definition)
          * - `goal: app_promotion` (APP_INSTALLS): requires `applicationId` + `objectStoreUrl`
          * - `goal: lead_generation` (LEAD_GENERATION): `pageId` is auto-filled from the connected Page when omitted
          *
