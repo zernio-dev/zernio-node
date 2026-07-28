@@ -15897,7 +15897,7 @@ export type SendTypingIndicatorResponse = ({
     success?: boolean;
 });
 
-export type SendTypingIndicatorError = ({
+export type SendTypingIndicatorError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

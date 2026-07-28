@@ -2968,11 +2968,12 @@ export const deleteInboxMessage = <ThrowOnError extends boolean = false>(options
  * Send typing indicator
  * Show a typing indicator in a conversation. Platform support:
  * - Facebook Messenger: Shows "Page is typing..." for 20 seconds
+ * - Instagram: Shows "typing..." to the recipient (works for both Instagram Login and Facebook Login accounts). The recipient must be signed in to Instagram to see it.
  * - Telegram: Shows "Bot is typing..." for 5 seconds
  * - WhatsApp: Shows "typing..." for up to 25 seconds. Requires a recent inbound message in the conversation (Meta references the inbound message id) and also marks that message as read as a side-effect.
  * - All others: Returns 200 but no-op (platform doesn't support it)
  *
- * Typing indicators are best-effort. The endpoint always returns 200 even if the platform call fails.
+ * Typing indicators are best-effort. The endpoint always returns 200 even if the platform call fails; `success` reports whether a typing indicator was actually sent to the platform (`false` on unsupported platforms or when the platform call failed).
  *
  */
 export const sendTypingIndicator = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendTypingIndicatorData, ThrowOnError>) => {
