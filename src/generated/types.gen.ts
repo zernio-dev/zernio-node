@@ -2798,7 +2798,7 @@ export type InstagramPlatformData = {
         graduationStrategy?: 'MANUAL' | 'SS_PERFORMANCE';
     };
     /**
-     * Tag Instagram users in photos by username and position. Not supported for stories or videos. For carousels, use mediaIndex to target specific slides (defaults to 0). Tags on video items are silently skipped.
+     * Tag Instagram users by username. The tag shape depends on the media: photos require x/y coordinates, Reels and videos take username only (coordinates are ignored), stories accept optional coordinates. For carousels, use mediaIndex to target specific slides (defaults to 0); video slides take username-only tags. Photo tags without valid coordinates are skipped.
      */
     userTags?: Array<{
         /**
@@ -2806,15 +2806,15 @@ export type InstagramPlatformData = {
          */
         username: string;
         /**
-         * X coordinate position from left edge (0.0 = left, 0.5 = center, 1.0 = right)
+         * X coordinate position from left edge (0.0 = left, 0.5 = center, 1.0 = right). Required for photos, ignored for Reels/videos, optional for stories.
          */
-        x: number;
+        x?: number;
         /**
-         * Y coordinate position from top edge (0.0 = top, 0.5 = center, 1.0 = bottom)
+         * Y coordinate position from top edge (0.0 = top, 0.5 = center, 1.0 = bottom). Required for photos, ignored for Reels/videos, optional for stories.
          */
-        y: number;
+        y?: number;
         /**
-         * Zero-based index of the carousel item to tag. Defaults to 0. Tags on video items or out-of-range indices are ignored.
+         * Zero-based index of the carousel item to tag. Defaults to 0. Tags on out-of-range indices are ignored.
          */
         mediaIndex?: number;
     }>;
