@@ -6801,7 +6801,7 @@ export type status14 = 'pending' | 'active';
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
     /**
-     * Visible button label. Required for all types except copy_code (whose label is fixed by WhatsApp).
+     * Visible button label. Required for all types except copy_code (whose label is fixed by WhatsApp) and otp (omit it and WhatsApp supplies its own label, localized to the template language; an English label on a non-English template is rejected).
      */
     text?: string;
     /**
