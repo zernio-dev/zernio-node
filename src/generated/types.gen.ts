@@ -18340,9 +18340,9 @@ export type StartSmsRegistrationData = {
     body: {
         registrationType: 'standard_10dlc' | 'sole_prop_10dlc' | 'toll_free';
         /**
-         * Your numbers this registration covers.
+         * Your numbers this registration covers. When omitted or empty on a 10DLC registration, defaults to your active SMS-enabled US local numbers not already covered by another registration.
          */
-        phoneNumbers: Array<(string)>;
+        phoneNumbers?: Array<(string)>;
         /**
          * Required for 10DLC. The legal entity behind the traffic (TCR brand).
          */
