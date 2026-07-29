@@ -189,8 +189,10 @@ try {
 | `accounts.getFollowerStats()` | Get follower stats |
 | `accounts.getGoogleBusinessReviews()` | Get reviews |
 | `accounts.getLinkedInMentions()` | Resolve LinkedIn mention |
+| `accounts.getSlackSettings()` | Get Slack account settings |
 | `accounts.getTikTokCreatorInfo()` | Get TikTok creator info |
 | `accounts.updateAccount()` | Update account |
+| `accounts.updateSlackSettings()` | Update Slack account settings |
 | `accounts.deleteAccount()` | Disconnect account |
 | `accounts.deleteGoogleBusinessReviewReply()` | Delete a review reply |
 | `accounts.batchGetGoogleBusinessReviews()` | Batch get reviews |

@@ -243,6 +243,7 @@ import {
   getRedditSubreddits,
   getRfPrediction,
   getSequence,
+  getSlackSettings,
   getSmsRegistration,
   getSmsUsage,
   getSubredditRules,
@@ -496,6 +497,7 @@ import {
   updateQueueSlot,
   updateRedditSubreddits,
   updateSequence,
+  updateSlackSettings,
   updateTrackingTag,
   updateWebhookSettings,
   updateWhatsAppBusinessProfile,
@@ -730,6 +732,8 @@ export class Zernio {
     replyToGoogleBusinessReview: replyToGoogleBusinessReview,
     deleteGoogleBusinessReviewReply: deleteGoogleBusinessReviewReply,
     getLinkedInMentions: getLinkedInMentions,
+    getSlackSettings: getSlackSettings,
+    updateSlackSettings: updateSlackSettings,
   };
 
   /**

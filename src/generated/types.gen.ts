@@ -13476,6 +13476,56 @@ export type SetRedditPostFlairError = (unknown | {
     error?: string;
 });
 
+export type GetSlackSettingsData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetSlackSettingsResponse = ({
+    account?: {
+        _id?: string;
+        platform?: string;
+        displayName?: (string) | null;
+        channelId?: (string) | null;
+        channelName?: (string) | null;
+        /**
+         * public or private
+         */
+        channelType?: (string) | null;
+        teamId?: (string) | null;
+        teamName?: (string) | null;
+        defaultUsername?: (string) | null;
+        defaultIconUrl?: (string) | null;
+    };
+});
+
+export type GetSlackSettingsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateSlackSettingsData = {
+    body: {
+        /**
+         * Author name shown on posts. Empty string clears it.
+         */
+        defaultUsername?: string;
+        /**
+         * Author avatar image URL. Empty string clears it.
+         */
+        defaultIconUrl?: string;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type UpdateSlackSettingsResponse = (unknown);
+
+export type UpdateSlackSettingsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetDiscordSettingsData = {
     path: {
         accountId: string;

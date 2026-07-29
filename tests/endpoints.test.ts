@@ -100,6 +100,16 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.getLinkedInMentions).toBeTypeOf('function');
     });
 
+    it('should have getSlackSettings method', () => {
+      expect(client.accounts.getSlackSettings).toBeDefined();
+      expect(client.accounts.getSlackSettings).toBeTypeOf('function');
+    });
+
+    it('should have updateSlackSettings method', () => {
+      expect(client.accounts.updateSlackSettings).toBeDefined();
+      expect(client.accounts.updateSlackSettings).toBeTypeOf('function');
+    });
+
   });
 
   describe('analytics', () => {
