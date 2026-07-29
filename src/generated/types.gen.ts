@@ -15820,7 +15820,31 @@ export type SendInboxMessageResponse = ({
 
 export type SendInboxMessageError = ({
     error?: string;
-    code?: 'PLATFORM_LIMITATION';
+    /**
+     * Stable machine-readable reason. PLATFORM_LIMITATION covers a capability the platform does not offer (e.g. Bluesky and Reddit DMs reject media); MISSING_PARTICIPANT means the stored conversation has no recipient to send to.
+     */
+    code?: 'PLATFORM_LIMITATION' | 'MISSING_PARTICIPANT';
+    /**
+     * Instagram/Facebook only. Meta's own diagnostic fields for the rejected send, passed through verbatim so you can tell failure classes apart and quote them to Meta. Absent when the failure did not come from Meta.
+     */
+    platformError?: {
+        /**
+         * Meta error code
+         */
+        code?: number;
+        /**
+         * Meta error_subcode
+         */
+        subcode?: number;
+        /**
+         * Meta fbtrace_id, quote this in a Meta bug report
+         */
+        fbtraceId?: string;
+        /**
+         * Meta error type (e.g. OAuthException)
+         */
+        type?: string;
+    };
 } | {
     error?: string;
 } | unknown);
