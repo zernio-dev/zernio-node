@@ -1369,7 +1369,7 @@ export type ConversionEvent = {
      */
     sourceUrl?: string;
     /**
-     * Where the conversion happened. Used by Meta; Google ignores.
+     * Where the conversion happened. Used by Meta. Google also requires an event source internally; omitting this field sends OTHER to Google. Send an explicit value for accurate origin reporting.
      */
     actionSource?: 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 'system_generated';
     /**
@@ -1381,7 +1381,7 @@ export type ConversionEvent = {
 };
 
 /**
- * Where the conversion happened. Used by Meta; Google ignores.
+ * Where the conversion happened. Used by Meta. Google also requires an event source internally; omitting this field sends OTHER to Google. Send an explicit value for accurate origin reporting.
  */
 export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 'system_generated';
 
