@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <strong>One API to post everywhere. 14 platforms, zero headaches.</strong>
+  <strong>One API to post everywhere. 15 platforms, zero headaches.</strong>
 </p>
 
 The official Node.js SDK for the [Zernio API](https://zernio.com) — schedule and publish social media posts across Instagram, TikTok, YouTube, LinkedIn, X/Twitter, Facebook, Pinterest, Threads, Bluesky, Reddit, Snapchat, Telegram, WhatsApp, and Google Business Profile with a single integration.
