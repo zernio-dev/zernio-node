@@ -2770,6 +2770,8 @@ export const listLogs = <ThrowOnError extends boolean = false>(options?: Options
  *
  * Twitter/X limitation: X has replaced traditional DMs with encrypted "X Chat" for many accounts. Messages sent or received through encrypted X Chat are not accessible via X's API (the /2/dm_events endpoint only returns legacy unencrypted DMs). This means some Twitter/X conversations may show only outgoing messages or appear empty. This is an X platform limitation that affects all third-party applications. See X's docs on encrypted messaging for more details.
  *
+ * Instagram and Facebook pre-connect history: when one of these accounts is connected, Zernio replays the DM history the account already holds on Meta, so conversations that began before the account was connected appear here. Up to 500 conversations per account are replayed. The replay runs in the background and can finish after a listing you have already taken, and replayed conversations keep their original lastMessageAt, so they sort into date order rather than appearing at the top. If you mirror this endpoint into your own store, re-run the sweep rather than relying on a single pass at connect time. Replayed history emits no webhooks and is stored as already read, so it never affects unread counts. Threads that Meta refuses to serve are skipped, and an account whose Instagram "connected tools" message access is turned off is not replayed at all.
+ *
  */
 export const listInboxConversations = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListInboxConversationsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListInboxConversationsResponse, ListInboxConversationsError, ThrowOnError>({
@@ -2863,6 +2865,13 @@ export const updateInboxConversation = <ThrowOnError extends boolean = false>(op
  * per-thread cursor. Very long threads may be upstream-truncated by
  * Reddit's inbox/sent windows (~100 most-recent items each); this is a
  * Reddit platform limitation.
+ *
+ * Instagram and Facebook conversations include history from before the
+ * account was connected, replayed from Meta. That replay covers the 500
+ * most recent messages per conversation: a longer thread keeps its newest
+ * 500 and older messages are not retrievable. Messages that arrived after
+ * the account was connected are unaffected. Replayed messages are stored
+ * as already read and emit no webhooks.
  *
  * Twitter/X limitation: X's encrypted "X Chat" messages are not accessible via the API. Conversations where the other participant uses encrypted X Chat may only show your outgoing messages. See the list conversations endpoint for more details.
  *
