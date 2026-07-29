@@ -17912,7 +17912,7 @@ export type GetCallResponse = ({
 });
 });
 
-export type GetCallError = ({
+export type GetCallError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -17932,7 +17932,7 @@ export type GetCallRecordingResponse = ({
     url?: string;
 });
 
-export type GetCallRecordingError = (unknown | {
+export type GetCallRecordingError = (unknown | ErrorResponse | {
     error?: string;
 });
 
