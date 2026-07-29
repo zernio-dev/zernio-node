@@ -19613,7 +19613,8 @@ export type ReleasePhoneNumberError = (unknown | {
 export type PurchasePhoneNumberData = {
     body: {
         /**
-         * Profile to associate the number with
+         * Preferred profile for the number. One number = one profile, so when the requested profile already holds a number the API assigns the next free profile instead (or creates one) and returns the actual assignment in `profileId` on the response.
+         *
          */
         profileId: string;
         /**
@@ -19647,7 +19648,7 @@ export type PurchasePhoneNumberData = {
          */
         wantsWhatsapp?: boolean;
         /**
-         * Optional idempotency key. Send the same value when retrying a purchase: if a number was already bought under this key, the API returns { status: "already_purchased", numberId, phoneNumber } instead of provisioning a second number. Generate a fresh key for each genuinely new purchase.
+         * Optional idempotency key. Send the same value when retrying a purchase: if a number was already bought under this key, the API returns { status: "already_purchased", numberId, phoneNumber, profileId } instead of provisioning a second number. Generate a fresh key for each genuinely new purchase.
          *
          */
         purchaseIntentId?: string;
@@ -19672,11 +19673,19 @@ export type PurchasePhoneNumberResponse = (({
         provisionedAt?: string;
         metaPreverifiedId?: string;
         metaVerificationStatus?: string;
+        /**
+         * The profile the number was actually assigned to.
+         */
+        profileId?: string;
     };
 } | {
     status?: 'already_purchased';
     numberId?: string;
     phoneNumber?: string;
+    /**
+     * The profile the number was actually assigned to.
+     */
+    profileId?: string;
 }) | {
     status?: 'kyc_required';
     country?: string;
