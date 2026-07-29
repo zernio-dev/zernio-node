@@ -25412,10 +25412,114 @@ export type GetAdPreviewsError = (unknown | {
     error?: string;
 });
 
+export type GenerateKeywordIdeasData = {
+    body: {
+        /**
+         * Zernio googleads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Numeric Google Ads customer id (no dashes); only needed when the connection has several accounts.
+         */
+        customerId?: string;
+        /**
+         * Seed terms. Provide these, seedUrl, or both.
+         */
+        seedKeywords?: Array<(string)>;
+        /**
+         * Landing page to mine for ideas. Provide this, seedKeywords, or both.
+         */
+        seedUrl?: string;
+        /**
+         * ISO 3166-1 alpha-2 country codes. Omitted = worldwide.
+         */
+        countries?: Array<(string)>;
+        /**
+         * Google languageConstant id (1000 = English).
+         */
+        languageConstantId?: string;
+        network?: 'GOOGLE_SEARCH' | 'GOOGLE_SEARCH_AND_PARTNERS';
+        includeAdultKeywords?: boolean;
+        pageSize?: number;
+        /**
+         * Cursor from paging.nextPageToken of the previous page.
+         */
+        pageToken?: string;
+    };
+};
+
+export type GenerateKeywordIdeasResponse = ({
+    /**
+     * The customer the request ran against.
+     */
+    customerId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    aggregateMetricResults?: {
+        [key: string]: unknown;
+    } | null;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        nextPageToken?: (string) | null;
+    };
+});
+
+export type GenerateKeywordIdeasError = (unknown | {
+    error?: string;
+});
+
+export type GenerateKeywordHistoricalMetricsData = {
+    body: {
+        /**
+         * Zernio googleads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Numeric Google Ads customer id (no dashes); only needed when the connection has several accounts.
+         */
+        customerId?: string;
+        keywords: Array<(string)>;
+        /**
+         * ISO 3166-1 alpha-2 country codes. Omitted = worldwide.
+         */
+        countries?: Array<(string)>;
+        /**
+         * Google languageConstant id (1000 = English).
+         */
+        languageConstantId?: string;
+        network?: 'GOOGLE_SEARCH' | 'GOOGLE_SEARCH_AND_PARTNERS';
+        includeAdultKeywords?: boolean;
+        /**
+         * Adds averageCpcMicros to each row's keywordMetrics.
+         */
+        includeAverageCpc?: boolean;
+    };
+};
+
+export type GenerateKeywordHistoricalMetricsResponse = ({
+    /**
+     * The customer the request ran against.
+     */
+    customerId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    aggregateMetricResults?: {
+        [key: string]: unknown;
+    } | null;
+});
+
+export type GenerateKeywordHistoricalMetricsError = (unknown | {
+    error?: string;
+});
+
 export type QueryAdInsightsData = {
     query: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant); its platform selects the Meta or Google contract.
          */
         accountId: string;
         /**
@@ -25438,6 +25542,10 @@ export type QueryAdInsightsData = {
          * Comma-separated Graph breakdowns (e.g. age,gender or publisher_platform).
          */
         breakdowns?: string;
+        /**
+         * Google only: numeric customer id (no dashes) when the connection has several Google Ads accounts.
+         */
+        customerId?: string;
         /**
          * Meta date_preset (e.g. last_7d, last_30d, this_month). Mutually exclusive with fromDate/toDate.
          */
@@ -25463,9 +25571,17 @@ export type QueryAdInsightsData = {
          */
         limit?: number;
         /**
-         * Meta insights node: act_<n>, campaign id, ad set id or ad id.
+         * Meta only (required there): insights node — act_<n>, campaign id, ad set id or ad id.
          */
-        objectId: string;
+        objectId?: string;
+        /**
+         * Google only: cursor from paging.nextPageToken of the previous page.
+         */
+        pageToken?: string;
+        /**
+         * Google only (required there): the GAQL SELECT statement to run.
+         */
+        query?: string;
         /**
          * Days per row (1-90), monthly, or all_days.
          */
@@ -25482,15 +25598,30 @@ export type QueryAdInsightsData = {
 };
 
 export type QueryAdInsightsResponse = ({
+    /**
+     * Meta responses only.
+     */
     objectId?: string;
+    /**
+     * Google responses only: the customer the query ran against.
+     */
+    customerId?: string;
+    /**
+     * Google responses only: the selected fields echoed by Google.
+     */
+    fieldMask?: (string) | null;
     data?: Array<{
         [key: string]: unknown;
     }>;
     paging?: {
         /**
-         * Cursor for the next page; null when exhausted.
+         * Meta cursor for the next page; null when exhausted.
          */
         after?: (string) | null;
+        /**
+         * Google cursor for the next page; null when exhausted.
+         */
+        nextPageToken?: (string) | null;
     };
 });
 

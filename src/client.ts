@@ -146,6 +146,8 @@ import {
   fetchGoogleBusinessVerificationOptions,
   followUser,
   generateAdPreviews,
+  generateKeywordHistoricalMetrics,
+  generateKeywordIdeas,
   getAccountHealth,
   getAd,
   getAdAccountFinance,
@@ -1344,6 +1346,8 @@ export class Zernio {
    */
   adinsights = {
     getCampaignAnalytics: getCampaignAnalytics,
+    generateKeywordIdeas: generateKeywordIdeas,
+    generateKeywordHistoricalMetrics: generateKeywordHistoricalMetrics,
     queryAdInsights: queryAdInsights,
     createAdInsightsReport: createAdInsightsReport,
     getAdInsightsReport: getAdInsightsReport,
@@ -1603,6 +1607,10 @@ export class Zernio {
     getLinkedInSupplyForecast: getLinkedInSupplyForecast,
     /** @deprecated Use `zernio.adinsights.getCampaignAnalytics` instead. */
     getCampaignAnalytics: getCampaignAnalytics,
+    /** @deprecated Use `zernio.adinsights.generateKeywordIdeas` instead. */
+    generateKeywordIdeas: generateKeywordIdeas,
+    /** @deprecated Use `zernio.adinsights.generateKeywordHistoricalMetrics` instead. */
+    generateKeywordHistoricalMetrics: generateKeywordHistoricalMetrics,
     /** @deprecated Use `zernio.adinsights.queryAdInsights` instead. */
     queryAdInsights: queryAdInsights,
     /** @deprecated Use `zernio.adinsights.createAdInsightsReport` instead. */

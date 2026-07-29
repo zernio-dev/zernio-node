@@ -432,6 +432,8 @@ try {
 | `adInsights.getAdAnalytics()` | Get ad analytics |
 | `adInsights.getAdInsightsReport()` | Poll an async insights report run |
 | `adInsights.getCampaignAnalytics()` | Get campaign analytics |
+| `adInsights.generateKeywordHistoricalMetrics()` | Historical keyword metrics (Google Keyword Planner) |
+| `adInsights.generateKeywordIdeas()` | Generate keyword ideas (Google Keyword Planner) |
 | `adInsights.queryAdInsights()` | Flexible live insights query |
 
 ### Ad Targeting
