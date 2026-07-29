@@ -3433,7 +3433,7 @@ export type PlatformTarget = {
     /**
      * Platform-specific overrides and options.
      */
-    platformSpecificData?: (TwitterPlatformData | ThreadsPlatformData | FacebookPlatformData | InstagramPlatformData | LinkedInPlatformData | PinterestPlatformData | YouTubePlatformData | GoogleBusinessPlatformData | TikTokPlatformData | TelegramPlatformData | SnapchatPlatformData | RedditPlatformData | BlueskyPlatformData | DiscordPlatformData);
+    platformSpecificData?: (TwitterPlatformData | ThreadsPlatformData | FacebookPlatformData | InstagramPlatformData | LinkedInPlatformData | PinterestPlatformData | YouTubePlatformData | GoogleBusinessPlatformData | TikTokPlatformData | TelegramPlatformData | SnapchatPlatformData | RedditPlatformData | BlueskyPlatformData | DiscordPlatformData | SlackPlatformData);
     /**
      * Platform-specific status: pending, publishing, published, failed
      */
@@ -4026,6 +4026,33 @@ export type SharedAdAccount = {
 };
 
 /**
+ * Slack message settings. Posts mrkdwn text (up to 40,000 chars; Slack truncates beyond that) to the channel fixed by the connected account, with up to 10 media files per post uploaded via Slack's file API (the text becomes the caption). The target channel is chosen at connect time — one connected account per channel — so channelId is NOT accepted here (a 400 is returned); connect the desired channel via /v1/connect/slack and target its accountId. Messages over 4,000 characters cannot be edited later (Slack's edit limit is stricter than its post limit).
+ *
+ */
+export type SlackPlatformData = {
+    /**
+     * Parent message ts to post this message as a thread reply (e.g. "1503435956.000247").
+     */
+    threadTs?: string;
+    /**
+     * Expand links in the message into preview cards. Default true.
+     */
+    unfurlLinks?: boolean;
+    /**
+     * Expand media links into inline previews. Default true.
+     */
+    unfurlMedia?: boolean;
+    /**
+     * Override the bot display name for this message only (requires no setup; shown with an APP badge). Does not change the app identity in the sidebar.
+     */
+    username?: string;
+    /**
+     * Override the bot avatar image URL for this message only.
+     */
+    iconUrl?: string;
+};
+
+/**
  * Requires a Public Profile. Single media item only. Content types: story (ephemeral 24h), saved_story (permanent, title max 45 chars), spotlight (video, max 160 chars).
  */
 export type SnapchatPlatformData = {
@@ -4042,7 +4069,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -4102,7 +4129,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform5 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
+export type platform5 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
@@ -7305,7 +7332,7 @@ export type ValidatePostData = {
          * Target platforms (same format as POST /v1/posts)
          */
         platforms: Array<{
-            platform: 'twitter' | 'instagram' | 'tiktok' | 'youtube' | 'facebook' | 'linkedin' | 'bluesky' | 'threads' | 'reddit' | 'pinterest' | 'telegram' | 'snapchat' | 'googlebusiness' | 'discord';
+            platform: 'twitter' | 'instagram' | 'tiktok' | 'youtube' | 'facebook' | 'linkedin' | 'bluesky' | 'threads' | 'reddit' | 'pinterest' | 'telegram' | 'snapchat' | 'googlebusiness' | 'discord' | 'slack';
             /**
              * Account to validate against. For twitter, resolves X Premium status to apply the 25000 character limit instead of 280.
              */
@@ -9094,7 +9121,7 @@ export type CreatePostData = {
              * Optional per-platform scheduled time override. When omitted, the top-level scheduledFor is used.
              */
             scheduledFor?: string;
-            platformSpecificData?: (TwitterPlatformData | ThreadsPlatformData | FacebookPlatformData | InstagramPlatformData | LinkedInPlatformData | PinterestPlatformData | YouTubePlatformData | GoogleBusinessPlatformData | TikTokPlatformData | TelegramPlatformData | SnapchatPlatformData | RedditPlatformData | BlueskyPlatformData | DiscordPlatformData);
+            platformSpecificData?: (TwitterPlatformData | ThreadsPlatformData | FacebookPlatformData | InstagramPlatformData | LinkedInPlatformData | PinterestPlatformData | YouTubePlatformData | GoogleBusinessPlatformData | TikTokPlatformData | TelegramPlatformData | SnapchatPlatformData | RedditPlatformData | BlueskyPlatformData | DiscordPlatformData | SlackPlatformData);
         }>;
         scheduledFor?: string;
         publishNow?: boolean;
@@ -9824,7 +9851,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp';
         /**
          * Filter by profile ID
          */
@@ -10111,7 +10138,7 @@ export type GetConnectUrlData = {
         /**
          * Social media platform to connect
          */
-        platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'reddit' | 'pinterest' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'whatsapp';
+        platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'reddit' | 'pinterest' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp';
     };
     query: {
         /**
