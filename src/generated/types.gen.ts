@@ -8808,7 +8808,7 @@ export type GetMediaPresignedUrlData = {
         /**
          * MIME type of the file
          */
-        contentType: 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp' | 'image/gif' | 'video/mp4' | 'video/mpeg' | 'video/quicktime' | 'video/avi' | 'video/x-msvideo' | 'video/webm' | 'video/x-m4v' | 'application/pdf';
+        contentType: 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp' | 'image/gif' | 'video/mp4' | 'video/mpeg' | 'video/quicktime' | 'video/avi' | 'video/x-msvideo' | 'video/webm' | 'video/x-m4v' | 'application/pdf' | 'audio/mpeg' | 'audio/mp4' | 'audio/aac' | 'audio/ogg' | 'audio/wav' | 'audio/webm' | 'audio/x-m4a';
         /**
          * Optional file size in bytes for pre-validation (max 5GB)
          */
