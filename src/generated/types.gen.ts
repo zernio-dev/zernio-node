@@ -3118,7 +3118,7 @@ export type LinkedInAdsPlatformData = {
      */
     thoughtLeader?: {
         /**
-         * LinkedIn share or ugcPost URN, urn:li:share:N or urn:li:ugcPost:N. Get it via "Copy link to post" on the target LinkedIn post (the URL contains -share- for a share or -ugcPost- for a ugcPost, then the numeric id).
+         * LinkedIn share or ugcPost URN, urn:li:share:N or urn:li:ugcPost:N. Get it via "Copy link to post" on the target LinkedIn post (the URL contains -share- for a share or -ugcPost- for a ugcPost, then the numeric id). For member (personal profile) posts, LinkedIn's API only accepts video and document posts (ugcPost URNs); text and image member posts (share URNs) are rejected by LinkedIn regardless of sponsorship approval (a LinkedIn API limitation; those can only be sponsored from Campaign Manager). The member must have authorised sponsorship for the ad account's organization.
          *
          */
         postUrn: string;
@@ -27208,7 +27208,7 @@ export type CreateStandaloneAdData = {
             callToAction: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP';
         }>;
         /**
-         * Meta-only. When present, switches to the attach shape: adds
+         * When present, switches to the attach shape: adds
          * one new ad to this existing ad set without creating a new
          * campaign. Budget, targeting, goal, schedule, AND bid strategy
          * are inherited from the ad set on Meta — passing `bidStrategy`
