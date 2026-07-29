@@ -5688,7 +5688,7 @@ export type WebhookPayloadConversationStarted = {
          * Internal conversation ID
          */
         id: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack';
         platformConversationId: string;
         /**
          * Contact's platform identifier (IGSID, PSID, wa_id, etc.)
@@ -5722,7 +5722,7 @@ export type WebhookPayloadConversationStarted = {
 
 export type event10 = 'conversation.started';
 
-export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms';
+export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
@@ -15013,7 +15013,7 @@ export type SearchInboxConversationsData = {
         /**
          * Filter by platform (searchable platforms only)
          */
-        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms';
+        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms' | 'slack';
         /**
          * Filter by profile ID
          */
