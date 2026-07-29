@@ -4550,7 +4550,7 @@ export type kind = 'pixel' | 'tag' | 'insight_tag';
  */
 export type TwitterPlatformData = {
     /**
-     * ID of an existing tweet to reply to. The published tweet will appear as a reply in that tweet's thread. For threads, only the first tweet replies to the target; subsequent tweets chain normally.
+     * ID of an existing tweet to reply to. The published tweet will appear as a reply in that tweet's thread. For threads, only the first tweet replies to the target; subsequent tweets chain normally. X only permits replying to your own posts or posts you are mentioned in; replying to an arbitrary other account's post is rejected by X.
      */
     replyToTweetId?: string;
     /**
