@@ -3204,6 +3204,10 @@ export const deleteTelegramCommands = <ThrowOnError extends boolean = false>(opt
  * the Marketing API token (Facebook side) or the connected Instagram account's token
  * (Instagram side); a row whose count can't be read is omitted.
  *
+ * Pagination walks each account's platform listing. Following `nextCursor` reaches past
+ * the first page on Facebook and Instagram only, since they are the platforms that
+ * support a server-side date window; on the others the listing stops at its first page.
+ *
  */
 export const listInboxComments = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListInboxCommentsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListInboxCommentsResponse, ListInboxCommentsError, ThrowOnError>({

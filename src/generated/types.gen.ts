@@ -16548,6 +16548,9 @@ export type GetInboxPostCommentsResponse = ({
     } | null;
     pagination?: {
         hasMore?: boolean;
+        /**
+         * Only present when hasMore is true. Absent on the last page, so treat its absence as the end of the thread.
+         */
         cursor?: (string) | null;
     };
     meta?: {
