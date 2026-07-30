@@ -23064,9 +23064,10 @@ export type BulkCreateContactsResponse = ({
     success?: boolean;
     created?: number;
     skipped?: number;
-    errors?: Array<{
-        [key: string]: unknown;
-    }>;
+    /**
+     * Per-contact failures, e.g. an identifier that is not a valid phone number
+     */
+    errors?: Array<(string)>;
     total?: number;
 });
 
