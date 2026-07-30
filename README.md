@@ -216,6 +216,7 @@ try {
 | `analytics.getContentDecay()` | Get content performance decay |
 | `analytics.getDailyMetrics()` | Get daily aggregated metrics |
 | `analytics.getFacebookPageInsights()` | Get Facebook Page insights |
+| `analytics.getFacebookPostEarnings()` | Get Facebook post monetization earnings |
 | `analytics.getFacebookPostReactions()` | Get Facebook post reactions |
 | `analytics.getGoogleBusinessPerformance()` | Get GBP performance metrics |
 | `analytics.getGoogleBusinessSearchKeywords()` | Get GBP search keywords |

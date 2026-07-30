@@ -148,6 +148,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getFacebookPageInsights).toBeTypeOf('function');
     });
 
+    it('should have getFacebookPostEarnings method', () => {
+      expect(client.analytics.getFacebookPostEarnings).toBeDefined();
+      expect(client.analytics.getFacebookPostEarnings).toBeTypeOf('function');
+    });
+
     it('should have getInstagramAccountInsights method', () => {
       expect(client.analytics.getInstagramAccountInsights).toBeDefined();
       expect(client.analytics.getInstagramAccountInsights).toBeTypeOf('function');
