@@ -17876,6 +17876,10 @@ export type EnableWhatsAppCallingLegacyResponse = ({
     callingEnabled?: boolean;
     sipHostname?: string;
     forwardTo?: string;
+    /**
+     * Caller ID the forward-leg callee sees on tel: forwards. business = this WhatsApp number; platform = a Zernio number (customer-brought number without verified caller ID).
+     */
+    callerIdMode?: 'business' | 'platform';
 });
 
 export type EnableWhatsAppCallingLegacyError = (unknown | {
@@ -21736,6 +21740,14 @@ export type GetWhatsAppCallingResponse = ({
      * True when the number's country blocks business-initiated (outbound) WhatsApp calling; inbound still works.
      */
     outboundDisabled?: boolean;
+    /**
+     * Caller ID the forward-leg callee sees on tel: forwards. business = this WhatsApp number; platform = a Zernio number (used when the number was brought by the customer and its caller ID is not verified for PSTN origination).
+     */
+    callerIdMode?: 'business' | 'platform';
+    /**
+     * True once the number completed caller-ID verification, making tel: forwards display the business number itself.
+     */
+    callerIdVerified?: boolean;
 });
 
 export type GetWhatsAppCallingError = (unknown | {
@@ -21770,6 +21782,10 @@ export type EnableWhatsAppCallingResponse = ({
     callingEnabled?: boolean;
     sipHostname?: string;
     forwardTo?: string;
+    /**
+     * Caller ID the forward-leg callee sees on tel: forwards. business = this WhatsApp number; platform = a Zernio number (customer-brought number without verified caller ID).
+     */
+    callerIdMode?: 'business' | 'platform';
 });
 
 export type EnableWhatsAppCallingError = (unknown | {
