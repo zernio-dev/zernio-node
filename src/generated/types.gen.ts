@@ -236,6 +236,10 @@ export type Ad = {
          */
         effectiveObjectStoryId?: (string) | null;
         /**
+         * Facebook Page backing the creative (Meta only). What the `pageId` filter on /v1/ads, /v1/ads/campaigns and /v1/ads/tree matches against. Absent for non-Meta ads and rare Meta creatives with no page signal.
+         */
+        pageId?: (string) | null;
+        /**
          * Meta `effective_instagram_media_id` — the Instagram media ID of the boosted post the ad's engagement lives on. Pass to GET /v1/ads?effectiveInstagramMediaId= to map a Business-Manager-visible IG post back to this ad.
          */
         effectiveInstagramMediaId?: (string) | null;
@@ -24667,6 +24671,10 @@ export type ListAdsData = {
          * Page number (1-based)
          */
         page?: number;
+        /**
+         * Meta only: Facebook Page ID. Returns only ads whose creative is backed by this Page (a Meta ad account serves ads for every Page in the Business Manager). Matches each ad's `creative.pageId`; ads with no page signal (rare IG-only creatives) never match. Mirrors the same filter on /v1/ads/campaigns and /v1/ads/tree.
+         */
+        pageId?: string;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Meta ad ID. Returns the ad with this platform-side ad ID.
@@ -24798,6 +24806,10 @@ export type ListAdCampaignsData = {
          * Page number (1-based)
          */
         page?: number;
+        /**
+         * Meta only: Facebook Page ID. Campaigns have no Page of their own, so this keeps campaigns having at least one ad backed by this Page, with adCount and metrics computed over those ads only. Mirrors the same filter on /v1/ads and /v1/ads/tree.
+         */
+        pageId?: string;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Profile ID
@@ -25336,6 +25348,10 @@ export type GetAdTreeData = {
          * Page number (1-based)
          */
         page?: number;
+        /**
+         * Meta only: Facebook Page ID. Prunes the tree to ads whose creative is backed by this Page — campaigns and ad sets with no ad on the Page drop out, and rolled-up metrics cover only the Page's ads. Mirrors the same filter on /v1/ads and /v1/ads/campaigns.
+         */
+        pageId?: string;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
         /**
          * Profile ID
