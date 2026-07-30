@@ -449,6 +449,7 @@ import {
   shareSmsRegistration,
   startGoogleBusinessVerification,
   startSmsRegistration,
+  startWhatsAppCallerIdVerification,
   submitPhoneNumberKyc,
   submitWhatsAppNumberKyc,
   syncExternalPosts,
@@ -526,6 +527,7 @@ import {
   validateSubreddit,
   validateWhatsAppNumberKycAddress,
   verifySmsRegistrationOtp,
+  verifyWhatsAppCallerId,
   viewPhoneNumberKycDocument,
   voteRedditThing,
 } from './generated/sdk.gen';
@@ -1087,6 +1089,8 @@ export class Zernio {
     enableWhatsAppCalling: enableWhatsAppCalling,
     updateWhatsAppCalling: updateWhatsAppCalling,
     disableWhatsAppCalling: disableWhatsAppCalling,
+    startWhatsAppCallerIdVerification: startWhatsAppCallerIdVerification,
+    verifyWhatsAppCallerId: verifyWhatsAppCallerId,
   };
 
   /**

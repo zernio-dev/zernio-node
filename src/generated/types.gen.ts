@@ -17842,6 +17842,14 @@ export type GetWhatsAppCallingConfigResponse = ({
      */
     sipAuthPasswordConfigured?: boolean;
     callIconCountries?: Array<(string)> | null;
+    /**
+     * Caller ID the forward-leg callee sees on tel: forwards. business = this WhatsApp number; platform = a Zernio number (customer-brought number without verified caller ID; verify via /v1/phone-numbers/{id}/whatsapp/caller-id-verification).
+     */
+    callerIdMode?: 'business' | 'platform';
+    /**
+     * True once the number completed caller-ID verification.
+     */
+    callerIdVerified?: boolean;
 });
 
 export type GetWhatsAppCallingConfigError = ({
@@ -21824,6 +21832,48 @@ export type DisableWhatsAppCallingData = {
 export type DisableWhatsAppCallingResponse = (unknown);
 
 export type DisableWhatsAppCallingError = (unknown | {
+    error?: string;
+});
+
+export type StartWhatsAppCallerIdVerificationData = {
+    body?: {
+        method?: 'sms' | 'call';
+    };
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type StartWhatsAppCallerIdVerificationResponse = ({
+    verified?: boolean;
+    codeSent?: boolean;
+    method?: 'sms' | 'call';
+});
+
+export type StartWhatsAppCallerIdVerificationError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type VerifyWhatsAppCallerIdData = {
+    body: {
+        code: string;
+    };
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type VerifyWhatsAppCallerIdResponse = ({
+    verified?: boolean;
+});
+
+export type VerifyWhatsAppCallerIdError = (unknown | {
     error?: string;
 });
 

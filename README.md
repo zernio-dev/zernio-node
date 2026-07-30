@@ -861,6 +861,8 @@ try {
 | `whatsappCalling.enableWhatsAppCalling()` | Enable calling on a number |
 | `whatsappCalling.enableWhatsAppCallingLegacy()` | Enable calling on a number |
 | `whatsappCalling.initiateWhatsAppCall()` | Initiate outbound call |
+| `whatsappCalling.startWhatsAppCallerIdVerification()` | Start caller-ID verification for a customer-brought number |
+| `whatsappCalling.verifyWhatsAppCallerId()` | Confirm the caller-ID verification code |
 
 ### WhatsApp Flows
 | Method | Description |
