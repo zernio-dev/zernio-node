@@ -837,6 +837,7 @@ try {
 | `whatsapp.addWhatsAppGroupParticipants()` | Add participants |
 | `whatsapp.approveWhatsAppGroupJoinRequests()` | Approve join requests |
 | `whatsapp.blockWhatsAppUsers()` | Block users |
+| `whatsapp.registerWhatsAppNumber()` | Register a connected WhatsApp number on the Cloud API |
 | `whatsapp.rejectWhatsAppGroupJoinRequests()` | Reject join requests |
 | `whatsapp.removeWhatsAppGroupParticipants()` | Remove participants |
 | `whatsapp.sendWhatsAppConversion()` | Send WhatsApp conversion event |

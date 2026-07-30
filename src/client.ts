@@ -390,6 +390,7 @@ import {
   purchasePhoneNumber,
   purchaseWhatsAppPhoneNumber,
   queryAdInsights,
+  registerWhatsAppNumber,
   rejectWhatsAppGroupJoinRequests,
   releasePhoneNumber,
   releaseWhatsAppPhoneNumber,
@@ -741,6 +742,47 @@ export class Zernio {
   };
 
   /**
+   * whatsapp API
+   */
+  whatsapp = {
+    registerWhatsAppNumber: registerWhatsAppNumber,
+    getWhatsAppMedia: getWhatsAppMedia,
+    getWhatsAppTemplates: getWhatsAppTemplates,
+    createWhatsAppTemplate: createWhatsAppTemplate,
+    getWhatsAppTemplate: getWhatsAppTemplate,
+    updateWhatsAppTemplate: updateWhatsAppTemplate,
+    deleteWhatsAppTemplate: deleteWhatsAppTemplate,
+    getWhatsAppBusinessProfile: getWhatsAppBusinessProfile,
+    updateWhatsAppBusinessProfile: updateWhatsAppBusinessProfile,
+    uploadWhatsAppProfilePhoto: uploadWhatsAppProfilePhoto,
+    getWhatsAppDisplayName: getWhatsAppDisplayName,
+    updateWhatsAppDisplayName: updateWhatsAppDisplayName,
+    getWhatsappBusinessUsername: getWhatsappBusinessUsername,
+    setWhatsappBusinessUsername: setWhatsappBusinessUsername,
+    deleteWhatsappBusinessUsername: deleteWhatsappBusinessUsername,
+    getWhatsappBusinessUsernameSuggestions: getWhatsappBusinessUsernameSuggestions,
+    getWhatsAppBlockStatus: getWhatsAppBlockStatus,
+    getWhatsAppBlockedUsers: getWhatsAppBlockedUsers,
+    blockWhatsAppUsers: blockWhatsAppUsers,
+    unblockWhatsAppUsers: unblockWhatsAppUsers,
+    getWhatsAppDataset: getWhatsAppDataset,
+    createWhatsAppDataset: createWhatsAppDataset,
+    listWhatsAppGroupChats: listWhatsAppGroupChats,
+    createWhatsAppGroupChat: createWhatsAppGroupChat,
+    getWhatsAppGroupChat: getWhatsAppGroupChat,
+    updateWhatsAppGroupChat: updateWhatsAppGroupChat,
+    deleteWhatsAppGroupChat: deleteWhatsAppGroupChat,
+    addWhatsAppGroupParticipants: addWhatsAppGroupParticipants,
+    removeWhatsAppGroupParticipants: removeWhatsAppGroupParticipants,
+    createWhatsAppGroupInviteLink: createWhatsAppGroupInviteLink,
+    listWhatsAppGroupJoinRequests: listWhatsAppGroupJoinRequests,
+    approveWhatsAppGroupJoinRequests: approveWhatsAppGroupJoinRequests,
+    rejectWhatsAppGroupJoinRequests: rejectWhatsAppGroupJoinRequests,
+    listWhatsAppConversions: listWhatsAppConversions,
+    sendWhatsAppConversion: sendWhatsAppConversion,
+  };
+
+  /**
    * API Keys API - Manage API keys
    */
   apiKeys = {
@@ -967,46 +1009,6 @@ export class Zernio {
     addMessageReaction: addMessageReaction,
     removeMessageReaction: removeMessageReaction,
     uploadMediaDirect: uploadMediaDirect,
-  };
-
-  /**
-   * whatsapp API
-   */
-  whatsapp = {
-    getWhatsAppMedia: getWhatsAppMedia,
-    getWhatsAppTemplates: getWhatsAppTemplates,
-    createWhatsAppTemplate: createWhatsAppTemplate,
-    getWhatsAppTemplate: getWhatsAppTemplate,
-    updateWhatsAppTemplate: updateWhatsAppTemplate,
-    deleteWhatsAppTemplate: deleteWhatsAppTemplate,
-    getWhatsAppBusinessProfile: getWhatsAppBusinessProfile,
-    updateWhatsAppBusinessProfile: updateWhatsAppBusinessProfile,
-    uploadWhatsAppProfilePhoto: uploadWhatsAppProfilePhoto,
-    getWhatsAppDisplayName: getWhatsAppDisplayName,
-    updateWhatsAppDisplayName: updateWhatsAppDisplayName,
-    getWhatsappBusinessUsername: getWhatsappBusinessUsername,
-    setWhatsappBusinessUsername: setWhatsappBusinessUsername,
-    deleteWhatsappBusinessUsername: deleteWhatsappBusinessUsername,
-    getWhatsappBusinessUsernameSuggestions: getWhatsappBusinessUsernameSuggestions,
-    getWhatsAppBlockStatus: getWhatsAppBlockStatus,
-    getWhatsAppBlockedUsers: getWhatsAppBlockedUsers,
-    blockWhatsAppUsers: blockWhatsAppUsers,
-    unblockWhatsAppUsers: unblockWhatsAppUsers,
-    getWhatsAppDataset: getWhatsAppDataset,
-    createWhatsAppDataset: createWhatsAppDataset,
-    listWhatsAppGroupChats: listWhatsAppGroupChats,
-    createWhatsAppGroupChat: createWhatsAppGroupChat,
-    getWhatsAppGroupChat: getWhatsAppGroupChat,
-    updateWhatsAppGroupChat: updateWhatsAppGroupChat,
-    deleteWhatsAppGroupChat: deleteWhatsAppGroupChat,
-    addWhatsAppGroupParticipants: addWhatsAppGroupParticipants,
-    removeWhatsAppGroupParticipants: removeWhatsAppGroupParticipants,
-    createWhatsAppGroupInviteLink: createWhatsAppGroupInviteLink,
-    listWhatsAppGroupJoinRequests: listWhatsAppGroupJoinRequests,
-    approveWhatsAppGroupJoinRequests: approveWhatsAppGroupJoinRequests,
-    rejectWhatsAppGroupJoinRequests: rejectWhatsAppGroupJoinRequests,
-    listWhatsAppConversions: listWhatsAppConversions,
-    sendWhatsAppConversion: sendWhatsAppConversion,
   };
 
   /**

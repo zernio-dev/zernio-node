@@ -10128,6 +10128,29 @@ export type GetAllAccountsHealthError = (ErrorResponse | {
     error?: string;
 });
 
+export type RegisterWhatsAppNumberData = {
+    body?: {
+        /**
+         * The 6-digit two-step verification PIN set on the number. Omit it only if the number has no PIN of its own.
+         */
+        pin?: string;
+    };
+    path: {
+        /**
+         * The WhatsApp account ID
+         */
+        accountId: string;
+    };
+};
+
+export type RegisterWhatsAppNumberResponse = ({
+    registered?: boolean;
+    accountId?: string;
+    phoneNumberId?: string;
+});
+
+export type RegisterWhatsAppNumberError = (ErrorResponse | unknown);
+
 export type GetAccountHealthData = {
     path: {
         /**
@@ -12484,11 +12507,19 @@ export type ConnectWhatsAppCredentialsData = {
          * Phone Number ID from Meta WhatsApp Manager
          */
         phoneNumberId: string;
+        /**
+         * The 6-digit two-step verification PIN set on the number. Required if you enabled two-step verification for it, otherwise Meta rejects the Cloud API registration with error 133005 and the number cannot send messages.
+         */
+        pin?: string;
     };
 };
 
 export type ConnectWhatsAppCredentialsResponse = ({
     message?: string;
+    /**
+     * Present when the account was created but Meta rejected the Cloud API registration. The number cannot send messages until this is resolved.
+     */
+    registrationWarning?: string;
     account?: {
         accountId?: string;
         platform?: 'whatsapp';
