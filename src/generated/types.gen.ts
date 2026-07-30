@@ -3521,11 +3521,6 @@ export type Pagination = {
 };
 
 /**
- * Page size
- */
-export type ParameterLimitParam = number;
-
-/**
  * Page number (1-based)
  */
 export type ParameterPageParam = number;
@@ -9286,12 +9281,15 @@ export type ListPostsData = {
          * Filter posts to those published via a specific social account (24-char hex ObjectId).
          */
         accountId?: string;
+        /**
+         * Filter posts to those created by a specific team user (24-char hex ObjectId).
+         */
         createdBy?: string;
         dateFrom?: string;
         dateTo?: string;
         includeHidden?: boolean;
         /**
-         * Page size
+         * Page size. Values above the maximum return 400 rather than being clamped.
          */
         limit?: number;
         /**
@@ -9318,7 +9316,7 @@ export type ListPostsData = {
 
 export type ListPostsResponse = (PostsListResponse);
 
-export type ListPostsError = ({
+export type ListPostsError = (ErrorResponse | {
     error?: string;
 });
 
@@ -9480,9 +9478,9 @@ export type GetPostData = {
 
 export type GetPostResponse = (PostGetResponse);
 
-export type GetPostError = ({
+export type GetPostError = (ErrorResponse | {
     error?: string;
-} | unknown);
+});
 
 export type UpdatePostData = {
     body: {
@@ -9549,7 +9547,7 @@ export type UpdatePostData = {
 
 export type UpdatePostResponse = (PostUpdateResponse | unknown);
 
-export type UpdatePostError = (unknown | {
+export type UpdatePostError = (ErrorResponse | {
     error?: string;
 });
 
@@ -9561,7 +9559,7 @@ export type DeletePostData = {
 
 export type DeletePostResponse = (PostDeleteResponse);
 
-export type DeletePostError = (unknown | {
+export type DeletePostError = (ErrorResponse | {
     error?: string;
 });
 
@@ -9576,7 +9574,7 @@ export type BulkUploadPostsData = {
 
 export type BulkUploadPostsResponse = (BulkUploadResult);
 
-export type BulkUploadPostsError = (unknown | {
+export type BulkUploadPostsError = (ErrorResponse | {
     error?: string;
 } | {
     error?: string;
@@ -9593,7 +9591,7 @@ export type RetryPostData = {
 
 export type RetryPostResponse = (PostRetryResponse | unknown);
 
-export type RetryPostError = (unknown | {
+export type RetryPostError = (ErrorResponse | {
     error?: string;
 } | {
     error?: string;
@@ -9619,9 +9617,9 @@ export type UnpublishPostResponse = ({
     message?: string;
 });
 
-export type UnpublishPostError = (unknown | {
+export type UnpublishPostError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
 export type EditPostData = {
     body: {
@@ -9726,9 +9724,9 @@ export type UpdatePostMetadataResponse = ({
     updatedFields?: Array<(string)>;
 });
 
-export type UpdatePostMetadataError = (unknown | {
+export type UpdatePostMetadataError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
 export type ListUsersResponse = ({
     currentUserId?: string;
