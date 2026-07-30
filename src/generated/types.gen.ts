@@ -26187,7 +26187,7 @@ export type GetAdTrackingTagsError = ({
 export type UpdateAdTrackingTagsData = {
     body: {
         /**
-         * Meta only. Click-URL params appended to a freshly-rebuilt creative.
+         * Meta only. Click-URL params appended to a freshly-rebuilt creative. Meta dynamic macros ({{ad.id}}, {{campaign.id}}, {{placement}}, ...) are sent through unescaped so Meta expands them; every other character is percent-encoded.
          */
         urlTags?: Array<{
             key: string;
@@ -27179,7 +27179,7 @@ export type BoostPostData = {
         tracking?: {
             pixelId?: string;
             /**
-             * URL parameters appended to the ad link, rendered as `key=value` pairs joined with `&`.
+             * URL parameters appended to the ad link, rendered as `key=value` pairs joined with `&`. Meta dynamic macros ({{ad.id}}, {{campaign.id}}, {{placement}}, ...) are sent through unescaped so Meta expands them; every other character is percent-encoded.
              */
             urlTags?: Array<{
                 key?: string;
@@ -27276,7 +27276,7 @@ export type CreateStandaloneAdData = {
              */
             pixelId?: string;
             /**
-             * Click-URL params appended to the ad's destination as `url_tags` (e.g. utm_source).
+             * Click-URL params appended to the ad's destination as `url_tags` (e.g. utm_source). Meta dynamic macros ({{ad.id}}, {{campaign.id}}, {{placement}}, ...) are sent through unescaped so Meta expands them; every other character is percent-encoded.
              */
             urlTags?: Array<{
                 key: string;
