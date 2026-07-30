@@ -17850,6 +17850,11 @@ export type GetWhatsAppCallingConfigResponse = ({
      * True once the number completed caller-ID verification.
      */
     callerIdVerified?: boolean;
+    /**
+     * Hard cap (seconds) on forwarded calls; null = no cap.
+     */
+    maxCallDurationSeconds?: (number) | null;
+    forwardCallerId?: 'business' | 'caller';
 });
 
 export type GetWhatsAppCallingConfigError = ({
@@ -17870,6 +17875,14 @@ export type EnableWhatsAppCallingLegacyData = {
         sipAuthPassword?: string;
         recordingEnabled?: boolean;
         callIconCountries?: Array<(string)>;
+        /**
+         * Hard cap (seconds) on a forwarded call; the carrier hangs up both legs when it fires. Safety valve against dead-air billing when a destination hangs up but the signal is lost.
+         */
+        maxCallDurationSeconds?: number;
+        /**
+         * Caller ID presented to the forward destination. caller = the WhatsApp user's number (sip: destinations only; ignored on tel: forwards). Fixes AI-agent trunks that reject seeing the business number call itself.
+         */
+        forwardCallerId?: 'business' | 'caller';
     };
     path: {
         /**
@@ -17902,6 +17915,14 @@ export type UpdateWhatsAppCallingLegacyData = {
         sipAuthPassword?: (string) | null;
         recordingEnabled?: boolean;
         callIconCountries?: Array<(string)> | null;
+        /**
+         * Hard cap (seconds) on forwarded calls; null clears the cap.
+         */
+        maxCallDurationSeconds?: (number) | null;
+        /**
+         * caller = present the WhatsApp user's number to the forward destination (sip: only).
+         */
+        forwardCallerId?: 'business' | 'caller';
     };
     path: {
         id: string;
@@ -21756,6 +21777,11 @@ export type GetWhatsAppCallingResponse = ({
      * True once the number completed caller-ID verification, making tel: forwards display the business number itself.
      */
     callerIdVerified?: boolean;
+    /**
+     * Hard cap (seconds) on forwarded calls; null = no cap.
+     */
+    maxCallDurationSeconds?: (number) | null;
+    forwardCallerId?: 'business' | 'caller';
 });
 
 export type GetWhatsAppCallingError = (unknown | {
@@ -21776,6 +21802,14 @@ export type EnableWhatsAppCallingData = {
         sipAuthPassword?: string;
         recordingEnabled?: boolean;
         callIconCountries?: Array<(string)>;
+        /**
+         * Hard cap (seconds) on a forwarded call; the carrier hangs up both legs when it fires. Safety valve against dead-air billing when a destination hangs up but the signal is lost.
+         */
+        maxCallDurationSeconds?: number;
+        /**
+         * Caller ID presented to the forward destination. caller = the WhatsApp user's number (sip: destinations only; ignored on tel: forwards). Fixes AI-agent trunks that reject seeing the business number call itself.
+         */
+        forwardCallerId?: 'business' | 'caller';
     };
     path: {
         /**
@@ -21808,6 +21842,14 @@ export type UpdateWhatsAppCallingData = {
         sipAuthPassword?: (string) | null;
         recordingEnabled?: boolean;
         callIconCountries?: Array<(string)> | null;
+        /**
+         * Hard cap (seconds) on forwarded calls; null clears the cap.
+         */
+        maxCallDurationSeconds?: (number) | null;
+        /**
+         * caller = present the WhatsApp user's number to the forward destination (sip: only).
+         */
+        forwardCallerId?: 'business' | 'caller';
     };
     path: {
         id: string;
