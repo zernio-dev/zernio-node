@@ -450,7 +450,7 @@ export type AdMetrics = {
     cpm?: number;
     engagement?: number;
     /**
-     * Count of conversion events over the requested date range. Meta: events matching the campaign's promoted_object.custom_event_type (PURCHASE, LEAD, etc.). Google: the account's tracked conversions. X and LinkedIn: their reported website/lead conversions (added 2026-07). 0 for non-conversion campaigns or when no events have fired.
+     * Count of conversion events over the requested date range. FRACTIONAL: attribution splits one conversion across touchpoints and Google additionally reports modeled conversions, so values like 0.347 are normal. Meta: events matching the campaign's promoted_object.custom_event_type (PURCHASE, LEAD, etc.). Google: the account's tracked conversions. X and LinkedIn: their reported website/lead conversions (added 2026-07). 0 for non-conversion campaigns or when no events have fired.
      */
     conversions?: number;
     /**
@@ -25068,6 +25068,24 @@ export type CreateAdCampaignData = {
         budgetAmount?: number;
         budgetType?: 'daily' | 'lifetime';
         status?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Campaign bid strategy. Meta puts `bid_strategy` where the budget lives, so this applies only alongside a campaign budget (CBO). Previously settable only via `PUT /v1/ads/campaigns/{campaignId}`.
+         */
+        bidStrategy?: 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
+        /**
+         * Whole currency units (USD: 5 = $5.00). Required for LOWEST_COST_WITH_BID_CAP and COST_CAP; ignored otherwise.
+         */
+        bidAmount?: number;
+        /**
+         * Decimal ROAS multiplier (2.0 = 2.0x). Required for LOWEST_COST_WITH_MIN_ROAS.
+         */
+        roasAverageFloor?: number;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         */
+        'Idempotency-Key'?: string;
     };
 };
 
@@ -25253,6 +25271,12 @@ export type DuplicateAdCampaignData = {
          */
         syncAfter?: boolean;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         */
+        'Idempotency-Key'?: string;
+    };
     path: {
         /**
          * Source platform campaign ID
@@ -25301,6 +25325,12 @@ export type DuplicateAdSetData = {
         renameSuffix?: string;
         syncAfter?: boolean;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         */
+        'Idempotency-Key'?: string;
+    };
     path: {
         /**
          * Source platform ad set ID
@@ -25338,6 +25368,12 @@ export type DuplicateAdData = {
         renamePrefix?: string;
         renameSuffix?: string;
         syncAfter?: boolean;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         */
+        'Idempotency-Key'?: string;
     };
     path: {
         /**
@@ -25649,7 +25685,7 @@ export type GetAdsTimelineResponse = ({
          */
         cpm?: number;
         /**
-         * Sum of conversion events over the range. Meta: events matching the campaign optimization goal. Google: tracked conversions. X / LinkedIn: reported website/lead conversions (added 2026-07).
+         * Sum of conversion events over the range. Fractional values are normal (attribution splitting + Google modeled conversions). Meta: events matching the campaign optimization goal. Google: tracked conversions. X / LinkedIn: reported website/lead conversions (added 2026-07).
          */
         conversions?: number;
         costPerConversion?: number;
@@ -27614,9 +27650,13 @@ export type CreateStandaloneAdData = {
          */
         video?: {
             /**
-             * Public URL of the video. Meta: uploaded via chunked transfer on /act_X/advideos, then the request blocks on Meta's transcoding until status.video_status === 'ready'. LinkedIn: uploaded via the Videos API (multipart), then the request blocks until LinkedIn finishes transcoding (status AVAILABLE) — short clips take ~10-30s.
+             * Public URL of the video. Meta: uploaded via chunked transfer on /act_X/advideos, then the request blocks on Meta's transcoding until status.video_status === 'ready'. LinkedIn: uploaded via the Videos API (multipart), then the request blocks until LinkedIn finishes transcoding (status AVAILABLE) — short clips take ~10-30s. Provide either `url` or `id`.
              */
-            url: string;
+            url?: string;
+            /**
+             * Meta only. Reuse a video ALREADY uploaded to this ad account instead of re-uploading the file: pass the `videoId` returned by a previous create. Wins over `url`, so N ads that differ only in copy share one upload (`existingCreativeId` only covers the identical-copy case). Provide either `url` or `id`.
+             */
+            id?: string;
             /**
              * Public URL of a still-image thumbnail for the video. OPTIONAL: when omitted on Meta, the poster is auto-generated from Meta's own preferred video thumbnail (the same candidates Ads Manager shows), so video ads publish without supplying one. Provide it to control the poster frame exactly (uploaded as an ad image and referenced in object_story_spec.video_data). Ignored by LinkedIn (auto-generated poster frame).
              */
@@ -27972,6 +28012,54 @@ export type CreateStandaloneAdData = {
              * Card CTA override. Defaults to the top-level callToAction; same enum.
              */
             callToAction?: string;
+        }>;
+        /**
+         * Meta only. Language the top-level copy is written in (e.g. `en`, `pt_BR`), used by the `translations` default rule. Defaults to `en`. Meta rejects a language asset feed whose default rule carries no locales of its own.
+         */
+        defaultLocale?: string;
+        /**
+         * Meta only. Multi-language ads (Dynamic Language Optimization): ONE ad carrying
+         * per-locale copy and, optionally, per-locale media — the "Languages" toggle in Ads
+         * Manager. Keeps social proof (likes/comments/shares) on a SINGLE post instead of
+         * splitting it across one ad per language.
+         *
+         * The ad's top-level copy and media are the DEFAULT every unlisted locale falls back
+         * to, and a variant inherits any field it omits, so send only what differs per
+         * language. Media shared across languages is uploaded once.
+         *
+         * Mutually exclusive with `dynamicCreative`, `placementAssets`, `carouselCards` and
+         * `existingCreativeId` — Meta allows one `asset_feed_spec` shape per creative.
+         *
+         */
+        translations?: Array<{
+            /**
+             * Language code, resolved to Meta's numeric locale id. Bare codes target the '(All)' umbrella (`es` = every Spanish variant); region-qualified codes target the variant (`pt_BR`, `en_GB`).
+             */
+            locale: string;
+            /**
+             * Headline for this language. Inherits the top-level `headline` when omitted.
+             */
+            headline?: string;
+            /**
+             * Primary text for this language. Inherits the top-level `body` when omitted.
+             */
+            body?: string;
+            /**
+             * Link description for this language. Inherits the top-level `description` when omitted.
+             */
+            description?: string;
+            /**
+             * Image for this language. Inherits the ad's `imageUrl` when omitted. The feed is all-image OR all-video.
+             */
+            imageUrl?: string;
+            /**
+             * Video for this language. Inherits the ad's `video.url` when omitted. The feed is all-image OR all-video.
+             */
+            videoUrl?: string;
+            /**
+             * Poster frame for this language's video.
+             */
+            thumbnailUrl?: string;
         }>;
         /**
          * Meta only. Placement asset customization: pin a SPECIFIC asset (image OR video) to

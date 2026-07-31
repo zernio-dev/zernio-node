@@ -6670,6 +6670,8 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
  * (CBO) by definition; omit it for ABO (each ad set carries its own budget). Created
  * `PAUSED` unless `status: ACTIVE`. The campaign materializes in `/v1/ads/tree` via the
  * next sync discovery pass.
+ *
+ * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
  */
 export const createAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdCampaignData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdCampaignResponse, CreateAdCampaignError, ThrowOnError>({
