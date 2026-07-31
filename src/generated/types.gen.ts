@@ -1177,6 +1177,36 @@ export type transcriptionLanguage = 'auto' | 'en' | 'es';
 export type endReason = 'hangup' | 'no_answer' | 'rejected' | 'error';
 
 /**
+ * An OAuth client (AI assistant / MCP connector) authorized by the user and still
+ * holding at least one live token.
+ *
+ */
+export type ConnectedApp = {
+    clientId?: string;
+    /**
+     * Name the client declared at registration. Registration is open, so this is self-declared and not verified.
+     */
+    clientName?: string;
+    /**
+     * Host of the client's registered redirect URI (non-http schemes are shown as scheme//host). The destination an impostor cannot fake.
+     */
+    redirectHost?: (string) | null;
+    /**
+     * Scopes granted on the most recent token.
+     */
+    scopes?: Array<(string)>;
+    authorizedAt?: (string) | null;
+    /**
+     * Last time any of the client's live tokens authenticated a request.
+     */
+    lastUsedAt?: (string) | null;
+    /**
+     * Live tokens held by the client (an active session is typically one access plus one refresh token).
+     */
+    tokenCount?: number;
+};
+
+/**
  * A discoverable conversion destination on an ad platform — a Meta pixel,
  * Google conversion action, or LinkedIn conversion rule. Returned by
  * `listConversionDestinations`, `getConversionDestination`,
@@ -10341,6 +10371,40 @@ export type DeleteApiKeyResponse = ({
 });
 
 export type DeleteApiKeyError = ({
+    error?: string;
+});
+
+export type ListConnectedAppsResponse = ({
+    connectedApps?: Array<ConnectedApp>;
+});
+
+export type ListConnectedAppsError = ({
+    error?: string;
+} | ErrorResponse);
+
+export type RevokeConnectedAppData = {
+    path: {
+        /**
+         * OAuth client id, as returned by GET /v1/me/connected-apps.
+         */
+        clientId: string;
+    };
+};
+
+export type RevokeConnectedAppResponse = ({
+    revoked?: boolean;
+    clientId?: string;
+    /**
+     * Access and refresh tokens revoked by this call.
+     */
+    revokedTokens?: number;
+    /**
+     * Pending authorization codes invalidated by this call.
+     */
+    invalidatedCodes?: number;
+});
+
+export type RevokeConnectedAppError = (ErrorResponse | {
     error?: string;
 });
 

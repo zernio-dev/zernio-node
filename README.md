@@ -494,6 +494,12 @@ try {
 | `comments.unhideInboxComment()` | Unhide comment |
 | `comments.unlikeInboxComment()` | Unlike comment |
 
+### Connected Apps
+| Method | Description |
+|--------|-------------|
+| `connectedApps.listConnectedApps()` | List connected apps |
+| `connectedApps.revokeConnectedApp()` | Revoke connected app |
+
 ### Contacts
 | Method | Description |
 |--------|-------------|

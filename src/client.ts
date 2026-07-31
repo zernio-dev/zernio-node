@@ -322,6 +322,7 @@ import {
   listCalls,
   listCommentAutomationLogs,
   listCommentAutomations,
+  listConnectedApps,
   listContacts,
   listConversionAssociations,
   listConversionDestinations,
@@ -417,6 +418,7 @@ import {
   retweetPost,
   reuseSmsRegistrationForNumber,
   reviewPhoneNumberKycPacket,
+  revokeConnectedApp,
   scheduleBroadcast,
   searchAdInterests,
   searchAdTargeting,
@@ -789,6 +791,14 @@ export class Zernio {
     listApiKeys: listApiKeys,
     createApiKey: createApiKey,
     deleteApiKey: deleteApiKey,
+  };
+
+  /**
+   * connectedapps API
+   */
+  connectedapps = {
+    listConnectedApps: listConnectedApps,
+    revokeConnectedApp: revokeConnectedApp,
   };
 
   /**
