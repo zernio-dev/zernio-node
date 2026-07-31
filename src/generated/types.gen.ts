@@ -4456,7 +4456,7 @@ export type TargetingSpec = {
     ageMin?: number;
     ageMax?: number;
     /**
-     * Restrict by gender. 'all' (default) targets everyone.
+     * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
      */
     gender?: 'all' | 'male' | 'female';
     /**
@@ -4513,7 +4513,7 @@ export type TargetingSpec = {
 };
 
 /**
- * Restrict by gender. 'all' (default) targets everyone.
+ * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
  */
 export type gender = 'all' | 'male' | 'female';
 
@@ -27271,7 +27271,7 @@ export type BoostPostData = {
             ageMin?: number;
             ageMax?: number;
             /**
-             * Meta only.
+             * Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
              */
             gender?: 'all' | 'male' | 'female';
             /**
@@ -28083,7 +28083,7 @@ export type CreateStandaloneAdData = {
             windowDays: 1 | 7 | 28;
         }>;
         /**
-         * Meta only. Restrict the audience by gender. 'male' targets men only, 'female' targets women only, 'all' (default) targets everyone. Ignored by non-Meta platforms.
+         * Restrict the audience by gender. 'male' targets men only, 'female' targets women only, 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
          */
         gender?: 'all' | 'male' | 'female';
         /**
