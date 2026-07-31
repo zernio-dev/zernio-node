@@ -6724,6 +6724,14 @@ export const updateAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * Meta-only for now. Other platforms return 501 Not Implemented — fall
  * back to DELETE /v1/ads/{adId} per ad in the meantime.
  *
+ * **Empty campaigns.** A campaign with zero ads has no local Ad documents
+ * to resolve, so it is invisible to `/v1/ads/tree` and this endpoint would
+ * 404. That state is produced by the two-step create flow (campaign, then
+ * ads via `existingCampaignId`) whenever Meta rejects the ad step. To
+ * delete such a shell, send `accountId` in the body: we skip the local
+ * lookup entirely and forward the delete to Meta. `accountId` is ignored
+ * when the campaign does have ads.
+ *
  */
 export const deleteAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAdCampaignData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteAdCampaignResponse, DeleteAdCampaignError, ThrowOnError>({
