@@ -2258,14 +2258,10 @@ export type ExternalPostWebhookPost = {
 export type source = 'external';
 
 /**
- * Feed posts support up to 10 images (no mixed video+image). Stories require single media (24h, no captions). Reels require single vertical video (9:16, 3-60s). Carousel posts (carouselCards) render a 2-5 card multi-link post, images only, mutually exclusive with story/reel. Geo-restriction is a hard visibility restriction: users outside the specified countries cannot see the post. Not supported for stories.
+ * Feed posts support up to 10 images (no mixed video+image). Stories require single media (24h, no captions). Reels require single vertical video (9:16, 3-60s). Geo-restriction is a hard visibility restriction: users outside the specified countries cannot see the post. Not supported for stories. Draft, carousel, and colored-background text options live under facebookSettings, see FacebookSettings.
  *
  */
 export type FacebookPlatformData = {
-    /**
-     * When true, creates the post as a draft in Facebook Publishing Tools instead of publishing immediately. Supported for feed posts (text, link, image, video) and reels. Not supported for stories. Drafts expire after ~30 days.
-     */
-    draft?: boolean;
     /**
      * Set to 'story' for Page Stories (24h ephemeral) or 'reel' for Reels (short vertical video). Defaults to feed post if omitted.
      */
@@ -2275,7 +2271,7 @@ export type FacebookPlatformData = {
      */
     title?: string;
     /**
-     * Optional first comment to post immediately after publishing (feed posts and reels, not stories). Skipped when draft is true.
+     * Optional first comment to post immediately after publishing (feed posts and reels, not stories). Skipped when facebookSettings.draft is true.
      */
     firstComment?: string;
     /**
@@ -2283,34 +2279,7 @@ export type FacebookPlatformData = {
      */
     pageId?: string;
     geoRestriction?: GeoRestriction;
-    /**
-     * Renders the post as a multi-link carousel (organic Page post). When set, mediaItems must be provided with the same length and all items must be images (no videos). Each cards[i] adds the click-through link and headline for the image at mediaItems[i]. Mutually exclusive with contentType=story|reel. Facebook display truncates name at ~35 chars and description at ~30 chars; longer strings are accepted but get truncated on render.
-     *
-     */
-    carouselCards?: Array<{
-        /**
-         * Per-card click destination (required).
-         */
-        link: string;
-        /**
-         * Per-card headline (optional, ~35-char display).
-         */
-        name?: string;
-        /**
-         * Per-card subhead (optional, ~30-char display).
-         */
-        description?: string;
-    }>;
-    /**
-     * Optional top-level "See more" destination shown on the carousel end card. Defaults to the first card's link when omitted. Only used together with carouselCards.
-     *
-     */
-    carouselLink?: string;
-    /**
-     * Facebook-defined preset ID that renders the post as large text on a colored background (Graph `text_format_preset_id`). Supply the raw numeric ID from Meta; we do not publish a catalog of presets and Facebook may change the available set. Pages only (ignored on personal profiles and groups) and text-only feed posts only: the request is rejected with 400 when mediaItems or carouselCards are present, when contentType is story or reel, or when content is empty. An attachment makes Facebook drop the background silently, so those are rejected up front. Length is NOT rejected: Facebook's composer stops offering a background at around 130 characters, but Meta documents no API limit, so longer content publishes and returns a warning instead. A URL detected in the content is NOT attached as a link preview while a preset is set, because a link attachment also makes Facebook drop the background.
-     *
-     */
-    textFormatPresetId?: string;
+    facebookSettings?: FacebookSettings;
 };
 
 /**
@@ -2407,6 +2376,45 @@ export type FacebookPostEarningsResponse = {
  *
  */
 export type period = 'lifetime';
+
+/**
+ * Facebook options that must be nested under platformSpecificData.facebookSettings, or sent at the request root as facebookSettings. The remaining Facebook options sit directly on platformSpecificData, see FacebookPlatformData.
+ *
+ */
+export type FacebookSettings = {
+    /**
+     * When true, creates the post as a draft in Facebook Publishing Tools instead of publishing immediately. Supported for feed posts (text, link, image, video) and reels. Not supported for stories. Drafts expire after ~30 days.
+     */
+    draft?: boolean;
+    /**
+     * Renders the post as a multi-link carousel (organic Page post). When set, mediaItems must be provided with the same length and all items must be images (no videos). Each cards[i] adds the click-through link and headline for the image at mediaItems[i]. Mutually exclusive with contentType=story|reel. Facebook display truncates name at ~35 chars and description at ~30 chars; longer strings are accepted but get truncated on render.
+     *
+     */
+    carouselCards?: Array<{
+        /**
+         * Per-card click destination (required).
+         */
+        link: string;
+        /**
+         * Per-card headline (optional, ~35-char display).
+         */
+        name?: string;
+        /**
+         * Per-card subhead (optional, ~30-char display).
+         */
+        description?: string;
+    }>;
+    /**
+     * Optional top-level "See more" destination shown on the carousel end card. Defaults to the first card's link when omitted. Only used together with carouselCards.
+     *
+     */
+    carouselLink?: string;
+    /**
+     * Facebook-defined preset ID that renders the post as large text on a colored background (Graph `text_format_preset_id`). Supply the raw numeric ID from Meta; we do not publish a catalog of presets and Facebook may change the available set. Pages only (ignored on personal profiles and groups) and text-only feed posts only: the request is rejected with 400 when mediaItems or carouselCards are present, when contentType is story or reel, or when content is empty. An attachment makes Facebook drop the background silently, so those are rejected up front. Length is NOT rejected: Facebook's composer stops offering a background at around 130 characters, but Meta documents no API limit, so longer content publishes and returns a warning instead. A URL detected in the content is NOT attached as a link preview while a preset is set, because a link attachment also makes Facebook drop the background.
+     *
+     */
+    textFormatPresetId?: string;
+};
 
 export type FollowerStatsResponse = {
     accounts?: Array<AccountWithFollowerStats>;
@@ -9400,9 +9408,9 @@ export type CreatePostData = {
          */
         tiktokSettings?: TikTokPlatformData;
         /**
-         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
+         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData.facebookSettings, with platform-specific settings taking precedence.
          */
-        facebookSettings?: FacebookPlatformData;
+        facebookSettings?: FacebookSettings;
         recycling?: RecyclingConfig;
         /**
          * Profile ID to schedule via queue. When provided without scheduledFor, the post is auto-assigned to the next available slot. Do not call /v1/queue/next-slot and use that time in scheduledFor, as that bypasses queue locking.
@@ -9564,11 +9572,11 @@ export type UpdatePostData = {
          */
         tiktokSettings?: TikTokPlatformData;
         /**
-         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
+         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData.facebookSettings, with platform-specific settings taking precedence.
          */
-        facebookSettings?: FacebookPlatformData;
+        facebookSettings?: FacebookSettings;
         recycling?: RecyclingConfig;
-        [key: string]: unknown | string | MediaItem | boolean | TikTokPlatformData | FacebookPlatformData | RecyclingConfig;
+        [key: string]: unknown | string | MediaItem | boolean | TikTokPlatformData | FacebookSettings | RecyclingConfig;
     };
     path: {
         postId: string;
