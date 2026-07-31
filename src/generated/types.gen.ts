@@ -25022,6 +25022,10 @@ export type ListAdCampaignsData = {
          * Start of metrics date range (YYYY-MM-DD, inclusive). Defaults to 90 days ago when both date params are omitted.
          */
         fromDate?: string;
+        /**
+         * Meta only. Campaign reads aggregate over ad documents, so a campaign with ZERO ads is normally invisible here — the state the two-step create (campaign, then ads via `existingCampaignId`) leaves behind whenever Meta rejects the ad step. Set true to list those too, with `adCount: 0` and zeroed metrics. Requires `accountId` and `adAccountId`, since an empty campaign has no ad row to resolve a token or ad account from.
+         */
+        includeEmpty?: boolean;
         limit?: number;
         /**
          * Page number (1-based)
@@ -25155,6 +25159,10 @@ export type UpdateAdCampaignStatusError = (unknown | {
 
 export type UpdateAdCampaignData = {
     body: {
+        /**
+         * Zernio SocialAccount id owning the ad account. Required only to update an EMPTY campaign (zero ads), which has no local Ad documents to resolve a token from.
+         */
+        accountId?: string;
         platform: 'facebook' | 'instagram';
         budget?: {
             /**

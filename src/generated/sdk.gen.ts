@@ -6697,6 +6697,12 @@ export const updateAdCampaignStatus = <ThrowOnError extends boolean = false>(opt
  * Update a campaign
  * Campaign-level edits. At least one of `budget`, `bidStrategy`, `name` or `platformSpecificData` is required.
  *
+ * **Empty campaigns.** A campaign with zero ads has no local Ad documents to
+ * resolve, so this would 404 even though it exists on Meta. Send `accountId`
+ * in the body to skip the local lookup and forward the update to Meta. The
+ * response then carries `updated: 0`, since there are no local rows to mirror
+ * onto. `accountId` is ignored when the campaign does have ads.
+ *
  * - `budget` updates the CBO (Campaign Budget Optimization) budget. For ABO campaigns
  * (where the budget lives on the ad set), use PUT /v1/ads/ad-sets/{adSetId} instead — this endpoint
  * will return 409 with code BUDGET_LEVEL_MISMATCH.
