@@ -16833,7 +16833,7 @@ export type GetInboxPostCommentsResponse = ({
 
 export type GetInboxPostCommentsError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type ReplyToInboxPostData = {
     body: {
@@ -16882,7 +16882,7 @@ export type ReplyToInboxPostResponse = ({
 
 export type ReplyToInboxPostError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type DeleteInboxCommentData = {
     path: {
@@ -16906,7 +16906,7 @@ export type DeleteInboxCommentResponse = ({
 
 export type DeleteInboxCommentError = ({
     error?: string;
-} | unknown);
+} | unknown | ErrorResponse);
 
 export type EditInboxCommentData = {
     body: {
