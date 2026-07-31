@@ -23192,8 +23192,14 @@ export type GetContactChannelsError = (unknown | {
 export type BulkCreateContactsData = {
     body: {
         profileId: string;
-        accountId: string;
-        platform: string;
+        /**
+         * Required when contacts carry channel data (platformIdentifier or a row-level accountId). Omit for a plain CRM import with no channels.
+         */
+        accountId?: string;
+        /**
+         * Ignored when accountId is set: the platform is derived from the resolved account. Only relevant to disambiguate accountId lookup; a mismatch 404s.
+         */
+        platform?: string;
         contacts: Array<{
             name: string;
             platformIdentifier: string;
