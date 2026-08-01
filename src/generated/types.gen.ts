@@ -124,9 +124,47 @@ export type Ad = {
      */
     platformObjective?: (string) | null;
     /**
-     * Meta ad set optimization goal (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION, LINK_CLICKS). Only present for Meta ads.
+     * What the delivery system optimizes for, at ad-set level. The value space depends on `platform`:
+     *
+     * - Meta: ad set `optimization_goal` (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION, LINK_CLICKS).
+     * - LinkedIn: the campaign's EFFECTIVE `optimizationTargetType`, refreshed from LinkedIn on every
+     * sync rather than echoing what was passed on create. `NONE` means manual bidding, and it is a
+     * real value, not missing data. Auto-bid values are MAX_IMPRESSION / MAX_CLICK / MAX_CONVERSION /
+     * MAX_VIDEO_VIEW / MAX_LEAD / MAX_REACH; target-cost values are TARGET_COST_PER_CLICK /
+     * TARGET_COST_PER_IMPRESSION / TARGET_COST_PER_VIDEO_VIEW; cost-cap values are the
+     * CAP_COST_AND_MAXIMIZE_* family.
+     *
      */
     optimizationGoal?: (string) | null;
+    /**
+     * LinkedIn only. The campaign's EFFECTIVE cost model (billing event) as applied by LinkedIn,
+     * refreshed on every sync rather than echoing what was passed on create. One of `CPM` (cost per
+     * thousand impressions), `CPC` (cost per click) or `CPV` (cost per video view). On LinkedIn this is
+     * the axis that pairs with `bidAmount`; there is no `bidStrategy`. For campaign type
+     * SPONSORED_INMAILS, `CPM` bills as cost-per-send x 1000. `null` for non-LinkedIn ads.
+     *
+     */
+    costType?: (string) | null;
+    /**
+     * LinkedIn only. Why the parent campaign is (or is not) delivering, verbatim from LinkedIn.
+     * A campaign can report `status: ACTIVE` and still serve nothing; this array is what says so.
+     *
+     * - `[]` means no serving data: a non-LinkedIn ad, or a LinkedIn ad not yet re-synced.
+     * - `["RUNNABLE"]` means the campaign is eligible to serve.
+     * - Anything else is a hold. Known values include ACCOUNT_SERVING_HOLD, ACCOUNT_TOTAL_BUDGET_HOLD,
+     * ACCOUNT_END_DATE_HOLD, CAMPAIGN_START_DATE_HOLD, CAMPAIGN_END_DATE_HOLD,
+     * CAMPAIGN_TOTAL_BUDGET_HOLD, CAMPAIGN_AUDIENCE_COUNT_HOLD, CAMPAIGN_GROUP_START_DATE_HOLD,
+     * CAMPAIGN_GROUP_END_DATE_HOLD, CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD, CAMPAIGN_GROUP_STATUS_HOLD and
+     * STOPPED. The list is open on purpose, so treat unrecognized values as holds rather than errors.
+     *
+     * The end-date and total-budget holds are terminal and surface as `status: completed`; the rest
+     * surface as `status: paused`. Note that a hold is not the only cause of zero delivery: with
+     * manual, target-cost or cost-cap bidding, a `bidAmount` of 0 stops delivery while
+     * `servingStatuses` still reads `["RUNNABLE"]`. Check `costType` / `bidAmount` /
+     * `optimizationGoal` as well.
+     *
+     */
+    servingStatuses?: Array<(string)>;
     /**
      * Human-readable advertiser/account name (Meta `AdAccount.name`, TikTok
      * `advertiser_name`, LinkedIn / X / Pinterest equivalents). Refreshed every
@@ -154,13 +192,19 @@ export type Ad = {
      */
     bidStrategy?: (BidStrategy | null);
     /**
-     * Bid cap in WHOLE currency units of the ad account (USD: 5 = $5.00; JPY: 100 = ¥100).
-     * Populated when bidStrategy is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`. `null` for
-     * auto-bid (`LOWEST_COST_WITHOUT_CAP`).
+     * Bid amount in WHOLE currency units of the ad account (USD: 5 = $5.00; JPY: 100 = ¥100).
      *
-     * - Meta source: `bid_amount` on the ad set (smallest-denomination int, decoded here).
+     * - Meta source: `bid_amount` on the ad set (smallest-denomination int, decoded here). Populated
+     * when bidStrategy is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`; `null` for auto-bid
+     * (`LOWEST_COST_WITHOUT_CAP`).
      * - TikTok source: priority order `bid_price` -> `conversion_bid_price` -> `deep_cpa_bid`
      * (whichever is set on the ad group). TikTok stores all three in whole currency units.
+     * - LinkedIn source: the campaign's EFFECTIVE `unitCost`, refreshed on every sync rather than
+     * echoing what was passed on create. Its meaning depends on the bidding mode implied by
+     * `optimizationGoal`: bid amount (manual), target cost, or cost cap. It pairs with `costType`,
+     * NOT with `bidStrategy`, which LinkedIn does not have. A value of `0` is a real, delivery-
+     * stopping configuration and not "unset", so do not gate this field on `bidStrategy` for
+     * LinkedIn ads.
      *
      * Source: facebook-business-sdk-codegen api_specs/specs/AdSet.json (`bid_amount`).
      *
@@ -255,6 +299,21 @@ export type Ad = {
          * All media URLs for this ad (carousel images, multiple assets). Populated for Meta (carousel child_attachments), Google Ads (responsive display marketing_images), and LinkedIn (multi-image posts).
          */
         mediaUrls?: Array<(string)>;
+        /**
+         * LinkedIn only. Whether LinkedIn is currently serving this specific creative. Complements the ad-level `servingStatuses`, which describes the parent campaign.
+         */
+        isServing?: (boolean) | null;
+        /**
+         * LinkedIn only. Why this specific creative is not being served. Empty when it is serving.
+         * A superset of the ad-level `servingStatuses`: it repeats the inherited campaign, campaign
+         * group and account holds AND adds creative-only causes such as UNDER_REVIEW, REJECTED,
+         * PROCESSING, PROCESSING_FAILED, FORM_HOLD (lead-gen-form creatives),
+         * REFERRED_CONTENT_QUALITY_HOLD, JOB_POSTING_ON_HOLD and JOB_POSTING_INVALID (job ads).
+         * Some values are format-specific and will never appear on other ad formats. The list is
+         * open, so treat unrecognized values as holds rather than errors.
+         *
+         */
+        servingHoldReasons?: Array<(string)>;
         /**
          * Ad copy/text
          */
@@ -381,7 +440,7 @@ export type AdCampaign = {
      */
     platformObjective?: (string) | null;
     /**
-     * Meta optimization goal shared across ad sets, or comma-separated values when ad sets differ (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION)
+     * Optimization goal shared across ad sets, or comma-separated values when ad sets differ. Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION. LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE); `NONE` with a manual costType is a campaign LinkedIn will not deliver.
      */
     optimizationGoal?: (string) | null;
     /**
@@ -389,7 +448,7 @@ export type AdCampaign = {
      */
     bidStrategy?: (BidStrategy | null);
     /**
-     * Representative bid cap from the top-spending ad set (whole currency units). Populated when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP.
+     * Representative bid from the top-spending ad set (whole currency units). Meta: populated when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP. LinkedIn: the campaign unitCost, ungated, where 0 is a real delivery-stopping value.
      */
     bidAmount?: (number) | null;
     /**
@@ -553,21 +612,29 @@ export type AdTreeAdSet = {
     } | null;
     metrics?: AdMetrics;
     /**
-     * Meta ad set optimization goal (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION)
+     * What the delivery system optimizes for. Meta ad set optimization goal (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION), or on LinkedIn the campaign's effective optimizationTargetType (NONE means manual bidding). See the `optimizationGoal` field on `Ad` for the full value spaces.
      */
     optimizationGoal?: (string) | null;
     /**
-     * Bid strategy for this ad set (overrides campaign level when set)
+     * Bid strategy for this ad set (overrides campaign level when set). Meta and TikTok only; LinkedIn uses `costType` instead.
      */
     bidStrategy?: (BidStrategy | null);
     /**
-     * Bid cap in whole currency units. Populated when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP.
+     * Bid amount in whole currency units. On Meta/TikTok populated when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP; on LinkedIn it is the campaign's effective unitCost and pairs with `costType`, where 0 is a real, delivery-stopping value.
      */
     bidAmount?: (number) | null;
     /**
      * Minimum ROAS as a decimal multiplier (2.0 = 2.0x). Populated when bidStrategy is LOWEST_COST_WITH_MIN_ROAS.
      */
     roasAverageFloor?: (number) | null;
+    /**
+     * LinkedIn only. Effective cost model (billing event) of the LinkedIn campaign backing this ad set: CPM, CPC or CPV. Null for non-LinkedIn ad sets.
+     */
+    costType?: (string) | null;
+    /**
+     * LinkedIn only. Why the LinkedIn campaign backing this ad set is (or is not) delivering. A LinkedIn Campaign maps to this ad-set node, so this is the level where LinkedIn's holds actually apply. Empty means no serving data, ["RUNNABLE"] means eligible to serve, anything else is a hold. See the `servingStatuses` field on `Ad` for the known values.
+     */
+    servingStatuses?: Array<(string)>;
     /**
      * Meta promoted object for this ad set (conversion event details)
      */
@@ -665,7 +732,7 @@ export type AdTreeCampaign = {
      */
     platformObjective?: (string) | null;
     /**
-     * Meta optimization goal shared across ad sets, or comma-separated values when ad sets differ (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION)
+     * Optimization goal shared across ad sets, or comma-separated values when ad sets differ. Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION. LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE); `NONE` with a manual costType is a campaign LinkedIn will not deliver.
      */
     optimizationGoal?: (string) | null;
     /**
@@ -673,7 +740,7 @@ export type AdTreeCampaign = {
      */
     bidStrategy?: (BidStrategy | null);
     /**
-     * Representative bid cap for the campaign — bubbled up from the top-spending ad set's `bid_amount` (whole currency units). Populated when the ad-set bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP.
+     * Representative bid for the campaign, bubbled up from the top-spending ad set (whole currency units). Meta: populated when the ad-set bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP. LinkedIn: the campaign unitCost, which has no bidStrategy gate and where 0 is a real, delivery-stopping value rather than unset.
      */
     bidAmount?: (number) | null;
     /**
