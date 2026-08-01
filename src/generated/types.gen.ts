@@ -22960,6 +22960,10 @@ export type ListContactsData = {
         search?: string;
         skip?: number;
         tag?: string;
+        /**
+         * Comma-separated tags, matches contacts carrying any of them
+         */
+        tags?: string;
     };
 };
 
