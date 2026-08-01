@@ -27178,7 +27178,43 @@ export type ListAdAccountsResponse = ({
         id?: string;
         name?: string;
         currency?: string;
+        /**
+         * LinkedIn only. LinkedIn's own ad account status. In practice always `ACTIVE`, because the LinkedIn query filters to active accounts. Meta, Google, TikTok and Pinterest report `accountStatus` instead; X reports `approvalStatus`.
+         */
         status?: string;
+        /**
+         * The platform's own account status, forwarded unchanged. No JSON type is
+         * declared because the type differs per platform: Meta sends an integer,
+         * Google, TikTok and Pinterest send a string. Absent on LinkedIn (reports
+         * `status`) and on X (reports `approvalStatus`).
+         *
+         * If all you need is whether the account can run ads right now, read
+         * `selectable` and skip this field. Read this one when you need to tell
+         * the states apart, because they call for different responses:
+         *
+         * - `1` ACTIVE. Running normally.
+         * - `2` DISABLED. Disabled by Meta. Read `disableReason` to tell a policy
+         * action apart from a billing one; they need very different follow-ups.
+         * - `3` UNSETTLED. There is an unpaid balance, but the account still runs
+         * ads. Not a ban.
+         * - `7` PENDING_RISK_REVIEW. Meta is reviewing the account. Wait for the
+         * outcome.
+         * - `8` PENDING_SETTLEMENT. Meta blocks new ads until an outstanding
+         * balance clears. Settle it and the account runs again.
+         * - `9` IN_GRACE_PERIOD. Still running, on a deadline.
+         * - `100` PENDING_CLOSURE. Scheduled to close.
+         * - `101` CLOSED. Terminal.
+         *
+         */
+        accountStatus?: unknown;
+        /**
+         * X only. X's own ad account approval status. Observed values are `ACCEPTED`, `PENDING` and `REJECTED`, but X does not publish the full vocabulary, so treat an unrecognised value as not usable. Other platforms report `accountStatus` or `status` instead.
+         */
+        approvalStatus?: string;
+        /**
+         * Meta only. Meta's `disable_reason` code, forwarded unchanged. Present when `accountStatus` is `2` (DISABLED) and Meta gives a reason, which is what separates a policy action from a payment problem. Meta does not publish a stable list of values for this field, so none are enumerated here: resolve the code against Meta's own ad account reference. Absent when Meta reports no reason, or when the connected token cannot read the field.
+         */
+        disableReason?: number;
         /**
          * IANA timezone of the ad account (Meta only). Drives daily-budget reset and Insights day boundaries.
          */
