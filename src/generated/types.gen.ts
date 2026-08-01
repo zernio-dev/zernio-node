@@ -23202,7 +23202,10 @@ export type BulkCreateContactsData = {
         platform?: string;
         contacts: Array<{
             name: string;
-            platformIdentifier: string;
+            /**
+             * Required when the top-level accountId is set (channel mode). A row missing it in that mode is rejected individually and reported in errors[], not a 400 for the whole import.
+             */
+            platformIdentifier?: string;
             displayIdentifier?: string;
             email?: string;
             company?: string;
