@@ -3825,6 +3825,10 @@ export type PostAnalytics = {
      * Instagram Reels only: total watch time including replays, in milliseconds. 0 for non-Reels media and other platforms.
      */
     igReelsVideoViewTotalTime?: number;
+    /**
+     * Video length in seconds. Currently Instagram Reels only; combine with igReelsAvgWatchTime (ms) to estimate retention. Null when unknown (other platforms, non-video media, or when Instagram does not expose the media URL, e.g. reels with copyrighted audio).
+     */
+    videoDurationSeconds?: (number) | null;
     engagementRate?: number;
     lastUpdated?: string;
 };
