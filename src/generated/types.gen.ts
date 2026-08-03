@@ -3626,6 +3626,11 @@ export type Pagination = {
 };
 
 /**
+ * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+ */
+export type ParameterIdempotencyKeyHeader = string;
+
+/**
  * Page number (1-based)
  */
 export type ParameterPageParam = number;
@@ -9910,7 +9915,7 @@ export type CreateProfileData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes create retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
          */
         'Idempotency-Key'?: string;
     };
@@ -16234,6 +16239,12 @@ export type SendInboxMessageData = {
             }>;
         }>;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
     path: {
         /**
          * The conversation ID (id field from list conversations endpoint). This is the platform-specific conversation identifier, not an internal database ID.
@@ -18184,7 +18195,7 @@ export type InitiateWhatsAppCallData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes dial retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
          */
         'Idempotency-Key'?: string;
     };
@@ -18459,7 +18470,7 @@ export type CreateVoiceCallData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes dial retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
          */
         'Idempotency-Key'?: string;
     };
@@ -18698,7 +18709,7 @@ export type SendSmsData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes send retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
          */
         'Idempotency-Key'?: string;
     };
@@ -28504,7 +28515,7 @@ export type CreateStandaloneAdData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes create retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
          */
         'Idempotency-Key'?: string;
     };

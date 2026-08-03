@@ -3007,6 +3007,13 @@ export const getInboxConversationMessages = <ThrowOnError extends boolean = fals
  * the `message.received` webhook with WhatsApp-specific `metadata` fields
  * (`interactiveType`, `interactiveId`, `flowResponseJson`, `flowResponseData`).
  *
+ * **Idempotency:** send an `Idempotency-Key` header to make retries safe
+ * (e.g. after a client-side timeout where delivery is unknown): same key +
+ * same body replays the original response (with `Idempotent-Replayed: true`)
+ * instead of sending the message a second time; same key + different body
+ * returns 422; a key still in flight returns 409. Works for JSON and
+ * multipart (file upload) requests alike. Keys are retained for 24 hours.
+ *
  */
 export const sendInboxMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendInboxMessageData, ThrowOnError>) => {
     return (options?.client ?? client).post<SendInboxMessageResponse, SendInboxMessageError, ThrowOnError>({
