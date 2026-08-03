@@ -27732,11 +27732,18 @@ export type BoostPostData = {
             advantage_audience?: 0 | 1;
         };
         /**
-         * Meta only. A verbatim Meta-native targeting spec (e.g.
-         * `{ "geo_locations": { "cities": [{ "key": "...", "radius": 15, "distance_unit": "kilometer" }] } }`),
-         * forwarded unchanged. Mutually exclusive with `targeting` (sending both is a 400).
-         * Use for advanced fields the structured object does not expose (flexible_spec,
-         * excluded audiences, business places).
+         * Meta only. A Meta-native targeting spec (e.g.
+         * `{ "geo_locations": { "cities": [{ "key": "...", "radius": 15, "distance_unit": "kilometer" }] } }`).
+         * Sent alone it is forwarded unchanged. Use for advanced fields the structured
+         * object does not expose (flexible_spec, excluded audiences, business places,
+         * user_os, wireless_carrier).
+         *
+         * Can be combined with `targeting`: rawTargeting is the BASE layer and the
+         * built camelCase spec is merged on top, key by key (camelCase wins on
+         * collision). The merge goes one level deep inside `geo_locations` and
+         * `excluded_geo_locations` (built sub-keys win; raw-only sub-keys such as
+         * `location_types` survive). Array values (`flexible_spec`, ...) are replaced
+         * as a whole key, never element-merged.
          *
          */
         rawTargeting?: {
@@ -27979,7 +27986,7 @@ export type CreateStandaloneAdData = {
          */
         linkUrl?: string;
         /**
-         * Meta Lead Gen forms only (facebook/instagram). The leadgen_forms ID to attach to the ad's creative — create one via POST /v1/ads/lead-forms. REQUIRED when `goal` is `lead_generation`, and on every ATTACH (`adSetId`) call that targets a lead ad set (the form attaches per-ad; Meta rejects a formless ad in a lead ad set). Ignored otherwise. The ad set's promoted_object.page_id + LEAD_GENERATION optimization + destination_type ON_AD are derived automatically from the goal. Both `placementAssets` (per-placement creative) and `dynamicCreative` (multi-text / multi-asset pool, e.g. multiple headlines and primary texts) ARE supported on instant-form lead ads — the form is attached for you, and for `dynamicCreative` the ad set is created as a Dynamic Creative ad set automatically (Meta requires that for any multi-text feed; there is no non-DCO multi-text path). Send a single `imageUrls` entry plus your text variations to get Meta's "Multiple Text Options" behavior on a lead ad.
+         * Meta Lead Gen forms only (facebook/instagram). The leadgen_forms ID to attach to the ad's creative — create one via POST /v1/ads/lead-forms. REQUIRED when `goal` is `lead_generation`, and on every ATTACH (`adSetId`) call that targets a lead ad set (the form attaches per-ad; Meta rejects a formless ad in a lead ad set). Ignored otherwise. The ad set's promoted_object.page_id + LEAD_GENERATION optimization + destination_type ON_AD are derived automatically from the goal. Both `placementAssets` (per-placement creative) and `dynamicCreative` (multi-text / multi-asset pool, e.g. multiple headlines and primary texts) ARE supported on instant-form lead ads — the form is attached for you, and for `dynamicCreative` the ad set is created as a Dynamic Creative ad set automatically (Meta requires that for any multi-text feed; there is no non-DCO multi-text path). Send a single `imageUrls` (or `videoUrls`) entry plus your text variations to get Meta's "Multiple Text Options" behavior on a lead ad.
          */
         leadGenFormId?: string;
         /**
@@ -28249,14 +28256,24 @@ export type CreateStandaloneAdData = {
          */
         savedTargetingId?: string;
         /**
-         * Meta only. A raw Meta-native targeting spec passed to the ad set VERBATIM (snake_case:
-         * `geo_locations`, `age_min`, `excluded_custom_audiences`, `flexible_spec`, `targeting_automation`,
-         * business places, etc.) — exactly the shape `GET /v1/ads/{adId}` returns for external ads. Use it to
-         * clone a campaign's targeting EXACTLY, preserving advanced fields the camelCase targeting fields can't
-         * model. Mutually exclusive with the camelCase targeting fields (countries/regions/cities/interests/
-         * ageMin/...), `audienceId`, and `savedTargetingId` (sending both → 422). Sent as-is; Meta validates and
-         * surfaces any errors. If cloning an EU campaign, also pass `dsaBeneficiary` / `dsaPayor` (those are
-         * separate fields, not part of targeting).
+         * Meta only. A raw Meta-native targeting spec (snake_case: `geo_locations`, `age_min`,
+         * `excluded_custom_audiences`, `flexible_spec`, `targeting_automation`, `user_os`,
+         * `wireless_carrier`, business places, etc.) — exactly the shape `GET /v1/ads/{adId}` returns for
+         * external ads. Sent alone it reaches the ad set VERBATIM (the clone-a-campaign's-targeting-exactly
+         * path). Meta validates and surfaces any errors.
+         *
+         * Can be combined with the camelCase targeting fields (countries/regions/cities/interests/ageMin/...,
+         * `targeting`, `savedTargetingId`, `audienceId`): rawTargeting is the BASE layer and the built
+         * camelCase spec is merged on top, key by key, with the camelCase side winning on collision (the
+         * camelCase precedence chain stays `savedTargetingId` < `targeting` < flat fields). The merge goes
+         * one level deep inside `geo_locations` and `excluded_geo_locations`: built sub-keys win, raw-only
+         * sub-keys such as `location_types` survive alongside built `countries`. Array values
+         * (`flexible_spec`, ...) are replaced as a WHOLE key when the camelCase spec builds them, never
+         * element-merged. When rawTargeting is present the defaults the camelCase builder normally injects
+         * (US geo, `targeting_automation.advantage_audience: 0`) are suppressed, so raw's values are not
+         * clobbered — include `targeting_automation` in the raw spec (or send `advantageAudience`) as Meta
+         * requires it on create. If cloning an EU campaign, also pass `dsaBeneficiary` / `dsaPayor` (those
+         * are separate fields, not part of targeting).
          *
          */
         rawTargeting?: {
@@ -28301,15 +28318,20 @@ export type CreateStandaloneAdData = {
          * optimises them into the best-performing variations within a single ad (mapped to the
          * creative's `asset_feed_spec`). When set, the top-level single-creative fields
          * (`imageUrl`, `headline`, `body`, `linkUrl`, `callToAction`) are ignored. Mutually
-         * exclusive with the `creatives[]` multi-creative shape. Meta limits: ≤10 images,
-         * ≤5 bodies / titles / descriptions.
+         * exclusive with the `creatives[]` multi-creative shape. Exactly ONE of `imageUrls` /
+         * `videoUrls` is required (Meta allows one ad format per asset feed; sending both →
+         * 400). Meta limits: ≤10 images or ≤10 videos, ≤5 bodies / titles / descriptions.
          *
          */
         dynamicCreative?: {
             /**
-             * Pool of image URLs (1-10). Uploaded to the ad account and referenced by hash in the asset feed.
+             * Pool of image URLs (1-10). Uploaded to the ad account and referenced by hash in the asset feed. Mutually exclusive with `videoUrls`.
              */
-            imageUrls: Array<(string)>;
+            imageUrls?: Array<(string)>;
+            /**
+             * Pool of video URLs (1-10). Uploaded to the ad account and referenced by video id in the asset feed. No thumbnails are needed: Meta auto-generates a poster per video. Mutually exclusive with `imageUrls`; `adFormat` defaults to SINGLE_VIDEO.
+             */
+            videoUrls?: Array<(string)>;
             /**
              * Primary-text variations (the body copy).
              */
@@ -28331,9 +28353,9 @@ export type CreateStandaloneAdData = {
              */
             callToActionTypes?: Array<('LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW')>;
             /**
-             * Asset-feed ad format. Defaults to SINGLE_IMAGE.
+             * Asset-feed ad format. Must match the pool: SINGLE_IMAGE / CAROUSEL_IMAGE require `imageUrls`, SINGLE_VIDEO requires `videoUrls` (400 otherwise). Defaults to SINGLE_IMAGE with `imageUrls`, SINGLE_VIDEO with `videoUrls`.
              */
-            adFormat?: 'SINGLE_IMAGE' | 'CAROUSEL_IMAGE';
+            adFormat?: 'SINGLE_IMAGE' | 'CAROUSEL_IMAGE' | 'SINGLE_VIDEO';
         };
         /**
          * Meta only. Hand-built carousel: 2-10 authored cards in DETERMINISTIC order, mapped to
