@@ -21122,7 +21122,7 @@ export type CreatePhoneNumberPortInData = {
             /**
              * Service-address country (a supported port-in country).
              */
-            countryCode: 'US' | 'CA' | 'GB' | 'ES' | 'DE' | 'FR' | 'NL' | 'AU';
+            countryCode: 'US' | 'CA' | 'GB' | 'ES' | 'DE' | 'FR' | 'NL' | 'AU' | 'BR';
         };
         /**
          * Document id from POST /v1/phone-numbers/port-in/documents (kind=loa).
