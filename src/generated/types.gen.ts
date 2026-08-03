@@ -9630,6 +9630,9 @@ export type UpdatePostData = {
              * Optional per-platform scheduled time override.
              */
             scheduledFor?: string;
+            /**
+             * A <platform>Settings namespace (e.g. facebookSettings, tiktokSettings) omitted from the request is preserved from the stored post. Sending the key replaces the whole namespace; it is not deep-merged.
+             */
             platformSpecificData?: {
                 [key: string]: unknown;
             };
