@@ -478,7 +478,9 @@ export type budgetLevel = 'campaign' | 'adset';
  * called with `timeIncrement=1`. Rate metrics (ctr/cpc/cpm/costPerConversion/
  * roas/videoAvgTimeWatchedActions) are recomputed per day from that day's
  * sums, so summing the additive fields across a node's `daily[]` reproduces
- * its aggregated `metrics` total. Do NOT sum or plain-average
+ * its aggregated `metrics` total. `reach` is the exception: on Meta the
+ * aggregated total is de-duplicated across the range, so daily reach does
+ * not sum to it. Do NOT sum or plain-average
  * `videoAvgTimeWatchedActions` across days: the range value is the
  * play-weighted average of the daily values.
  *
@@ -493,6 +495,9 @@ export type AdDailyMetrics = AdMetrics & {
 export type AdMetrics = {
     spend?: number;
     impressions?: number;
+    /**
+     * Unique people reached in the requested date range. Meta (facebook/instagram): Meta's own de-duplicated reach for the exact range, fetched live and cached up to ~1 hour (may lag recent delivery; on a transient Meta error the value temporarily falls back to a sum of per-day reach, which overcounts people reached on multiple days or by multiple child ads). Because it is de-duplicated, Meta reach is NOT additive: neither daily values nor child nodes sum to the range total. TikTok: sum of per-day reach, so multi-day ranges overcount vs TikTok Ads Manager. Google, LinkedIn, X, Pinterest and OpenAI report 0 (reach not synced). Only derive frequency (impressions / reach) for Meta.
+     */
     reach?: number;
     clicks?: number;
     /**
@@ -757,7 +762,7 @@ export type AdTreeCampaign = {
     } | null;
     adSets?: Array<AdTreeAdSet>;
     /**
-     * Per-day metric series for this campaign. Present only when `GET /v1/ads/tree` is called with `timeIncrement=1` (any `dailyLevel`). This is the per-campaign daily trend — summing its additive fields reproduces the campaign `metrics` total.
+     * Per-day metric series for this campaign. Present only when `GET /v1/ads/tree` is called with `timeIncrement=1` (any `dailyLevel`). This is the per-campaign daily trend — summing its additive fields reproduces the campaign `metrics` total, except `reach`: on Meta the range total is de-duplicated, so daily reach does not sum to it.
      */
     daily?: Array<AdDailyMetrics>;
 };
@@ -25745,7 +25750,7 @@ export type GetAdTreeData = {
          */
         status?: AdStatus;
         /**
-         * Set to `1` to also return a daily breakdown. Mirrors Meta Insights' `time_increment=1`: each node gains a `daily[]` array of per-day metrics (same fields as the aggregated `metrics`) alongside the range total, so you get per-entity daily trends in ONE call instead of calling the tree once per day. Only `1` (daily) is supported. The daily series covers the same date range and uses the same source data as `metrics`. See `dailyLevel` to control which levels carry it.
+         * Set to `1` to also return a daily breakdown. Mirrors Meta Insights' `time_increment=1`: each node gains a `daily[]` array of per-day metrics (same fields as the aggregated `metrics`) alongside the range total, so you get per-entity daily trends in ONE call instead of calling the tree once per day. Only `1` (daily) is supported. The daily series covers the same date range and uses the same source data as `metrics`, except Meta `reach`: the range total is Meta's de-duplicated value, so daily reach does not sum to it. See `dailyLevel` to control which levels carry it.
          */
         timeIncrement?: 1;
         /**
@@ -25801,6 +25806,9 @@ export type GetAdsTimelineResponse = ({
          */
         spend?: number;
         impressions?: number;
+        /**
+         * Reach summed across the account's ads for this single day. A person seen by two ads the same day counts twice, and reach is de-duplicated per day only: do NOT sum it across days (people reached on multiple days would be double-counted).
+         */
         reach?: number;
         clicks?: number;
         engagement?: number;
