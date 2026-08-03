@@ -6908,6 +6908,12 @@ export const updateAdSetStatus = <ThrowOnError extends boolean = false>(options:
  * (`campaign` default, or `adset` / `ad`) to choose which levels carry the series. This replaces
  * calling the tree once per day for per-campaign daily trends.
  *
+ * **Deleted objects stay in the tree.** Deleting an ad or a campaign is a soft delete: the Ad
+ * documents move to `status: cancelled` and are kept indefinitely, so their historical spend
+ * still counts toward the metrics of any date range they fall in. There is no pruning job and
+ * no retention window. Filter on `status` if your view should hide them, but do that after
+ * reading the totals, not before.
+ *
  */
 export const getAdTree = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetAdTreeData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdTreeResponse, GetAdTreeError, ThrowOnError>({
@@ -7166,6 +7172,11 @@ export const getAdAnalytics = <ThrowOnError extends boolean = false>(options: Op
  * Subject to the Google Ads API access-tier daily quota; bulk audits need Standard access.
  * - LinkedIn (linkedinads): the campaign's Dynamic UTM `dynamicValueParameters` + `customValueParameters`.
  * Returns 405 for platforms without a click-URL tracking surface (TikTok, X, Pinterest).
+ *
+ * **Not pixels.** Despite the shared path segment, this endpoint has nothing to do with
+ * measurement tags. For an ad account's pixels use
+ * `GET /v1/accounts/{accountId}/tracking-tags?adAccountId=act_...` (Meta Pixels, with `kind`
+ * and `ownerAdAccountId`) or `GET /v1/accounts/{accountId}/conversion-destinations`.
  *
  */
 export const getAdTrackingTags = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdTrackingTagsData, ThrowOnError>) => {
