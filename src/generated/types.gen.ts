@@ -9494,11 +9494,11 @@ export type CreatePostData = {
             [key: string]: unknown;
         };
         /**
-         * Root-level TikTok settings applied to all TikTok platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
+         * Root-level TikTok settings applied to the TikTok platforms sent in the same request. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
          */
         tiktokSettings?: TikTokPlatformData;
         /**
-         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData.facebookSettings, with platform-specific settings taking precedence.
+         * Root-level Facebook settings applied to the Facebook platforms sent in the same request. Merged into each platform's platformSpecificData.facebookSettings, with platform-specific settings taking precedence.
          */
         facebookSettings?: FacebookSettings;
         recycling?: RecyclingConfig;
@@ -9661,11 +9661,11 @@ export type UpdatePostData = {
          */
         queueId?: string;
         /**
-         * Root-level TikTok settings applied to all TikTok platforms. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence.
+         * Root-level TikTok settings applied to the TikTok platforms sent in the same request. Merged into each platform's platformSpecificData, with platform-specific settings taking precedence. Returns 400 if sent without a platforms array.
          */
         tiktokSettings?: TikTokPlatformData;
         /**
-         * Root-level Facebook settings applied to all Facebook platforms. Merged into each platform's platformSpecificData.facebookSettings, with platform-specific settings taking precedence.
+         * Root-level Facebook settings applied to the Facebook platforms sent in the same request. Merged into each platform's platformSpecificData.facebookSettings, with platform-specific settings taking precedence. Returns 400 if sent without a platforms array.
          */
         facebookSettings?: FacebookSettings;
         recycling?: RecyclingConfig;
