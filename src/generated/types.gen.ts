@@ -3138,8 +3138,17 @@ export type LinkedInAdsPlatformData = {
     unitCost?: number;
     /**
      * Campaign `optimizationTargetType` (e.g. `MAX_CLICK`, `TARGET_COST_PER_CLICK`,
-     * `MAX_IMPRESSION`). Forwarded verbatim — LinkedIn validates compatibility with
-     * the objective and `costType`. Omit for the objective-derived default.
+     * `MAX_IMPRESSION`). Forwarded verbatim, LinkedIn validates compatibility with
+     * the objective and `costType`. Omit for the objective-derived default:
+     * `awareness` gets `MAX_IMPRESSION`, `video_views` gets `MAX_VIDEO_VIEW`, and
+     * every other goal gets `MAX_CLICK`. `lead_generation` and `conversions` also
+     * get `MAX_CLICK`, because `MAX_LEAD` and `MAX_CONVERSION` need a lead gen form
+     * or a conversion rule that neither creation flow attaches. The default applies
+     * only to `SPONSORED_UPDATES` campaigns (every boost, and the image, video and
+     * carousel standalone ads), never to the `TEXT_AD`, `DYNAMIC` and
+     * `SPONSORED_INMAILS` campaigns the other creative formats produce. It is also
+     * skipped when `unitCost` or a non-`CPM` `costType` is set, since those select
+     * manual bidding and the bid is then yours to choose.
      *
      */
     optimizationTargetType?: string;
@@ -15314,7 +15323,7 @@ export type CreateInboxConversationData = {
          */
         participantUsername?: string;
         /**
-         * Text content of the message. At least one of message, attachment, or (for WhatsApp) templateName is required.
+         * Text content of the message. At least one of message, attachment, or (for WhatsApp) templateName is required. Required when category is set (a Direct Send utility message is a text message).
          */
         message?: string;
         /**
@@ -15322,9 +15331,13 @@ export type CreateInboxConversationData = {
          */
         skipDmCheck?: boolean;
         /**
-         * WhatsApp only. Name of the approved template to start the conversation with (required for WhatsApp).
+         * WhatsApp only. Name of the approved template to start the conversation with. Required for WhatsApp unless category is used instead (Direct Send). Cannot be combined with category.
          */
         templateName?: string;
+        /**
+         * WhatsApp only (Meta Direct Send). Combined with message and without templateName, starts the conversation with a business-initiated UTILITY message and no pre-approved template; Meta matches or auto-creates a template asynchronously. The WhatsApp Business Account must be eligible for Direct Send, otherwise the send fails with an error telling you to use an approved message template instead. Cannot be combined with templateName (templates are already categorized at creation). Utility messages only; marketing content is not allowed under this category. Accepted on the JSON body only, not on multipart requests.
+         */
+        category?: 'utility';
         /**
          * WhatsApp only. Template language code (e.g. en_US).
          */
@@ -15752,6 +15765,10 @@ export type SendInboxMessageData = {
          * URL of the attachment to send (image, video, audio, or file). The URL must be publicly accessible. For binary file uploads, use multipart/form-data instead.
          */
         attachmentUrl?: string;
+        /**
+         * WhatsApp only (Meta Direct Send). Sends this message as a business-initiated UTILITY message without an approved template, for example outside the 24-hour customer service window; Meta matches or auto-creates a template asynchronously. The WhatsApp Business Account must be eligible for Direct Send, otherwise the send fails with an error telling you to use an approved message template instead. Supported only for text messages (link preview ok) and interactive messages (reply buttons, CTA URL buttons, voice-call button, header of text/image/video/document). Cannot be combined with template, attachments, location, or contacts. Utility messages only; marketing content is not allowed under this category. Accepted on the JSON body only, not on multipart requests.
+         */
+        category?: 'utility';
         /**
          * Type of attachment. Defaults to file if not specified.
          */
