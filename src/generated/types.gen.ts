@@ -254,7 +254,7 @@ export type Ad = {
         /**
          * Primary thumbnail/image URL
          */
-        thumbnailUrl?: string;
+        thumbnailUrl?: (string) | null;
         /**
          * Alternative image URL
          */
