@@ -6972,6 +6972,10 @@ export type WhatsAppBodyComponent = {
          * Sample values for body variables (array of arrays)
          */
         body_text?: Array<Array<(string)>>;
+        /**
+         * Sample values for NAMED body variables (templates using {{customer_name}}-style tokens with parameter_format: NAMED).
+         */
+        body_text_named_params?: Array<WhatsAppNamedParamExample>;
     };
 };
 
@@ -7020,6 +7024,10 @@ export type WhatsAppHeaderComponent = {
          */
         header_text?: Array<(string)>;
         /**
+         * Sample values for NAMED header variables (templates using {{customer_name}}-style tokens with parameter_format: NAMED).
+         */
+        header_text_named_params?: Array<WhatsAppNamedParamExample>;
+        /**
          * When the header format is a media type (image, video, gif, document), provide a public URL here. Zernio will download and upload it to WhatsApp on your behalf, replacing it with the internal file handle before creating the template.
          */
         header_handle?: [
@@ -7042,6 +7050,17 @@ export type WhatsAppLimitedTimeOfferComponent = {
          */
         has_expiration?: boolean;
     };
+};
+
+export type WhatsAppNamedParamExample = {
+    /**
+     * Variable name as it appears in the text, without braces (e.g. customer_name for {{customer_name}}).
+     */
+    param_name: string;
+    /**
+     * Sample value for this variable.
+     */
+    example: string;
 };
 
 /**
@@ -18054,6 +18073,10 @@ export type CreateWhatsAppTemplateData = {
          * Template language code (e.g., en_US)
          */
         language: string;
+        /**
+         * Variable style: POSITIONAL ({{1}}, the default) or NAMED ({{customer_name}}). Named templates provide examples via body_text_named_params / header_text_named_params. Inferred as NAMED when omitted but a named-params example is present.
+         */
+        parameter_format?: 'POSITIONAL' | 'NAMED' | 'positional' | 'named';
         /**
          * Template components (header, body, footer, buttons, carousel, limited_time_offer). Required for custom templates, omit when using library_template_name.
          */
