@@ -254,6 +254,7 @@ import {
   getTikTokCreatorInfo,
   getTrackingTag,
   getTrackingTagStats,
+  getTweet,
   getUsage,
   getUsageStats,
   getUser,
@@ -1064,6 +1065,7 @@ export class Zernio {
     followUser: followUser,
     unfollowUser: unfollowUser,
     searchTweets: searchTweets,
+    getTweet: getTweet,
   };
 
   /**

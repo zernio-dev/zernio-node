@@ -774,6 +774,7 @@ try {
 ### Twitter Engagement
 | Method | Description |
 |--------|-------------|
+| `twitterEngagement.getTweet()` | Look up a tweet |
 | `twitterEngagement.bookmarkPost()` | Bookmark a tweet |
 | `twitterEngagement.followUser()` | Follow a user |
 | `twitterEngagement.removeBookmark()` | Remove bookmark |

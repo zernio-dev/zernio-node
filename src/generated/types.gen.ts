@@ -17768,6 +17768,50 @@ export type SearchTweetsError = (unknown | {
     error?: string;
 });
 
+export type GetTweetData = {
+    query: {
+        /**
+         * The social account ID whose X token is used for the lookup
+         */
+        accountId: string;
+        /**
+         * Numeric tweet ID or a tweet URL (e.g. https://x.com/user/status/123...)
+         */
+        id: string;
+    };
+};
+
+export type GetTweetResponse = ({
+    status?: string;
+    tweet?: {
+        id?: string;
+        text?: string;
+        created?: string;
+        conversationId?: string;
+        /**
+         * Parent tweet ID when the tweet is itself a reply
+         */
+        inReplyToTweetId?: (string) | null;
+        lang?: string;
+        author?: {
+            id?: string;
+            username?: string;
+            displayName?: string;
+            avatar?: string;
+            verifiedType?: string;
+        };
+        likeCount?: number;
+        replyCount?: number;
+        retweetCount?: number;
+        quoteCount?: number;
+        platform?: string;
+    };
+});
+
+export type GetTweetError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type ListInboxMentionsData = {
     query?: {
         /**
