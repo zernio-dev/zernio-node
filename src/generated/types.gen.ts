@@ -27745,6 +27745,13 @@ export type BoostPostData = {
          * `location_types` survive). Array values (`flexible_spec`, ...) are replaced
          * as a whole key, never element-merged.
          *
+         * When `rawTargeting` is present the `advantage_audience: 0` default that
+         * Zernio normally applies is no longer emitted, so it cannot clobber a
+         * `targeting_automation` sent in the raw spec. Meta requires
+         * `targeting_automation` on ad set creation, so include it in the raw spec,
+         * or send `targeting.advantage_audience` (0 or 1), which is merged over raw
+         * as `targeting_automation`.
+         *
          */
         rawTargeting?: {
             [key: string]: unknown;
