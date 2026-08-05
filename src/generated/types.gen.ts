@@ -3587,7 +3587,7 @@ export type MediaItem = {
      */
     mimeType?: string;
     /**
-     * Optional custom thumbnail/cover image URL for videos. Supported for Facebook video posts, Facebook Reels, and regular video uploads. Max 10MB, JPG/PNG recommended.
+     * Optional custom thumbnail/cover image URL for videos. Supported for Facebook video posts, Facebook Reels, regular video uploads, and LinkedIn video posts. Max 10MB, JPG/PNG recommended.
      */
     thumbnail?: string;
     /**
