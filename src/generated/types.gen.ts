@@ -9575,7 +9575,13 @@ export type ListPostsData = {
          * Filter posts to those created by a specific team user (24-char hex ObjectId).
          */
         createdBy?: string;
+        /**
+         * Zero-padded YYYY-MM-DD, or a full ISO 8601 datetime. An empty value means no date filter; any other malformed value returns 400.
+         */
         dateFrom?: string;
+        /**
+         * Zero-padded YYYY-MM-DD, or a full ISO 8601 datetime. An empty value means no date filter; any other malformed value returns 400.
+         */
         dateTo?: string;
         includeHidden?: boolean;
         /**
