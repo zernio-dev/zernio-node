@@ -9587,6 +9587,9 @@ export type ListPostsData = {
          */
         page?: number;
         platform?: string;
+        /**
+         * Filter posts to a specific profile (24-char hex ObjectId). Omit it, or send `all` or an empty value, to list posts across every profile.
+         */
         profileId?: string;
         /**
          * Search posts by text content.
