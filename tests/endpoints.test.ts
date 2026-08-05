@@ -236,6 +236,11 @@ describe('Endpoint Methods', () => {
   });
 
   describe('api Keys', () => {
+    it('should have verifyCredential method', () => {
+      expect(client.apiKeys.verifyCredential).toBeDefined();
+      expect(client.apiKeys.verifyCredential).toBeTypeOf('function');
+    });
+
     it('should have listApiKeys method', () => {
       expect(client.apiKeys.listApiKeys).toBeDefined();
       expect(client.apiKeys.listApiKeys).toBeTypeOf('function');

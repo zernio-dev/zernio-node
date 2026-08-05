@@ -270,6 +270,7 @@ try {
 | `apiKeys.listApiKeys()` | List keys |
 | `apiKeys.createApiKey()` | Create key |
 | `apiKeys.deleteApiKey()` | Delete key |
+| `apiKeys.verifyCredential()` | Verify credential |
 
 ### Media
 | Method | Description |

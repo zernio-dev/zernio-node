@@ -10554,6 +10554,20 @@ export type GetTikTokCreatorInfoError = ({
     error?: string;
 });
 
+export type VerifyCredentialResponse = ({
+    valid?: boolean;
+    userId?: string;
+    authType?: 'api_key' | 'oauth' | 'session';
+    /**
+     * Granted OAuth scopes, space-separated. Null for API keys.
+     */
+    scope?: (string) | null;
+});
+
+export type VerifyCredentialError = ({
+    error?: string;
+});
+
 export type ListApiKeysResponse = ({
     apiKeys?: Array<ApiKey>;
 });

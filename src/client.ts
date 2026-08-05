@@ -535,6 +535,7 @@ import {
   validatePostLength,
   validateSubreddit,
   validateWhatsAppNumberKycAddress,
+  verifyCredential,
   verifySmsRegistrationOtp,
   verifyWhatsAppCallerId,
   viewPhoneNumberKycDocument,
@@ -794,6 +795,7 @@ export class Zernio {
    * API Keys API - Manage API keys
    */
   apiKeys = {
+    verifyCredential: verifyCredential,
     listApiKeys: listApiKeys,
     createApiKey: createApiKey,
     deleteApiKey: deleteApiKey,
