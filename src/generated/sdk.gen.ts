@@ -865,6 +865,9 @@ export const getPost = <ThrowOnError extends boolean = false>(options: OptionsLe
  * or `queuedFromProfile`). If `isDraft` is omitted the post keeps its current draft status, so sending only
  * `scheduledFor` to a draft returns 200 but the post remains a draft.
  *
+ * Non-draft updates run the same per-platform validation as post creation (media requirements, platform-specific
+ * field rules, etc.) against the resulting platforms, returning 400 on failure.
+ *
  */
 export const updatePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdatePostData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdatePostResponse, UpdatePostError, ThrowOnError>({

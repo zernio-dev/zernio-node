@@ -3878,6 +3878,7 @@ export type PostsListResponse = {
 export type PostUpdateResponse = {
     message?: string;
     post?: Post;
+    warnings?: Array<(string)>;
 };
 
 export type Profile = {
