@@ -6460,6 +6460,25 @@ export type WebhookPayloadMessage = {
             product_retailer_id?: string;
         };
         /**
+         * WhatsApp only. Contact cards the user shared, forwarded verbatim
+         * from Meta. Read `contactsOrigin` before treating any number here
+         * as the sender's own.
+         *
+         */
+        contacts?: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * WhatsApp only. How the contact card was shared.
+         * `contact_request` means the user tapped a `request_contact_info`
+         * button, so the number is their own and consented. `other` means
+         * they picked a card from their address book: it may be anyone's,
+         * and must NOT be stored as the sender's identity. Omitted when
+         * Meta sends no origin.
+         *
+         */
+        contactsOrigin?: 'contact_request' | 'other';
+        /**
          * Instagram only. Populated when an IG user replies to one of the
          * account's stories (Meta `messaging_story_replies`). Mutually
          * exclusive in practice with `isStoryMention`.
@@ -6564,6 +6583,17 @@ export type event13 = 'message.received';
  *
  */
 export type interactiveType = 'button_reply' | 'list_reply' | 'nfm_reply';
+
+/**
+ * WhatsApp only. How the contact card was shared.
+ * `contact_request` means the user tapped a `request_contact_info`
+ * button, so the number is their own and consented. `other` means
+ * they picked a card from their address book: it may be anyone's,
+ * and must NOT be stored as the sender's identity. Omitted when
+ * Meta sends no origin.
+ *
+ */
+export type contactsOrigin = 'contact_request' | 'other';
 
 /**
  * Webhook payload for message.deleted events. Fires when the sender
@@ -16311,6 +16341,16 @@ export type SendInboxMessageData = {
          * "Send location" button; the user's reply arrives as a regular
          * location message in the conversation.
          *
+         * For `request_contact_info`, `action` may be omitted (we default it
+         * to `{ "name": "request_contact_info" }`). WhatsApp renders a
+         * localized share button that cannot be relabelled, so put the reason
+         * for asking in `body.text`: this is a consent prompt, and a bare
+         * request converts badly. The reply arrives as an inbound `contacts`
+         * message with `metadata.contactsOrigin` set to `contact_request`,
+         * and we fold the shared number back into the contact automatically.
+         * A `contacts` message with origin `other` is a card the user picked
+         * from their address book and is NOT proof of their own number.
+         *
          * For `catalog_message`, `action` may also be omitted (we default it
          * to `{ "name": "catalog_message" }`).
          *
@@ -16324,7 +16364,7 @@ export type SendInboxMessageData = {
             /**
              * Which interactive layout to render.
              */
-            type: 'list' | 'cta_url' | 'flow' | 'location_request_message' | 'voice_call' | 'product' | 'product_list' | 'catalog_message' | 'carousel';
+            type: 'list' | 'cta_url' | 'flow' | 'location_request_message' | 'request_contact_info' | 'voice_call' | 'product' | 'product_list' | 'catalog_message' | 'carousel';
             /**
              * Optional header shown above the body. Required with
              * `type: "text"` for `product_list`; not allowed for `product`
@@ -16466,6 +16506,8 @@ export type SendInboxMessageData = {
     };
 } | {
     name: 'send_location';
+} | {
+    name: 'request_contact_info';
 } | {
     /**
      * Meta catalog ID connected to the WhatsApp Business Account.
