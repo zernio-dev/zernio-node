@@ -737,6 +737,11 @@ try {
 | `sequences.pauseSequence()` | Pause sequence |
 | `sequences.unenrollContact()` | Unenroll contact |
 
+### Slack
+| Method | Description |
+|--------|-------------|
+| `slack.listSlackMembers()` | List Slack workspace members |
+
 ### SMS
 | Method | Description |
 |--------|-------------|

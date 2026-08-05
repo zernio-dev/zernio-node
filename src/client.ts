@@ -361,6 +361,7 @@ import {
   listQueueSlots,
   listSequenceEnrollments,
   listSequences,
+  listSlackMembers,
   listSmsOptOuts,
   listSmsRegistrations,
   listSmsSenderIds,
@@ -976,6 +977,13 @@ export class Zernio {
     getDiscordScheduledEvent: getDiscordScheduledEvent,
     updateDiscordScheduledEvent: updateDiscordScheduledEvent,
     deleteDiscordScheduledEvent: deleteDiscordScheduledEvent,
+  };
+
+  /**
+   * slack API
+   */
+  slack = {
+    listSlackMembers: listSlackMembers,
   };
 
   /**

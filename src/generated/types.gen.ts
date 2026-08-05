@@ -14211,6 +14211,44 @@ export type GetDiscordChannelsError = (unknown | {
     error?: string;
 });
 
+export type ListSlackMembersData = {
+    path: {
+        accountId: string;
+    };
+    query?: {
+        limit?: number;
+        /**
+         * Case-insensitive filter over display name and handle.
+         */
+        query?: string;
+    };
+};
+
+export type ListSlackMembersResponse = ({
+    members?: Array<{
+        /**
+         * Slack member id (pass as participantId to start a DM).
+         */
+        id?: string;
+        /**
+         * Display name
+         */
+        name?: string;
+        /**
+         * Slack handle
+         */
+        username?: (string) | null;
+        /**
+         * Avatar URL
+         */
+        picture?: (string) | null;
+    }>;
+});
+
+export type ListSlackMembersError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type SendDiscordDirectMessageData = {
     body: {
         /**
@@ -15571,7 +15609,7 @@ export type CreateInboxConversationData = {
          */
         accountId: string;
         /**
-         * Recipient identifier. For X this is the numeric user ID; for WhatsApp, the recipient phone number in international format (digits, country code included). Provide either this or participantUsername.
+         * Recipient identifier. For X this is the numeric user ID; for WhatsApp and SMS, the recipient phone number in international format (digits, country code included); for Slack, the workspace member id (e.g. U01ABCDEF). Provide either this or participantUsername.
          */
         participantId?: string;
         /**
