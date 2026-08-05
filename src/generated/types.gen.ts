@@ -28192,6 +28192,18 @@ export type BoostPostData = {
          *
          */
         dsaPayor?: string;
+        /**
+         * Meta only. Explicit ad-set `optimization_goal` override. When omitted,
+         * defaults to the value derived from `goal`. The value must be compatible
+         * with the objective Meta derives from `goal`, not with the objective used
+         * by `POST /v1/ads/create` for the same `goal` name: boost maps `goal:
+         * "engagement"` to objective `OUTCOME_AWARENESS`, which accepts
+         * `REACH`, `IMPRESSIONS`, `AD_RECALL_LIFT`, or THRUPLAY-class values, and
+         * rejects `POST_ENGAGEMENT` (that value is only valid under
+         * `OUTCOME_ENGAGEMENT`, which create uses for the same goal name).
+         *
+         */
+        optimizationGoal?: string;
     };
 };
 
