@@ -370,12 +370,17 @@ try {
 | `adAccounts.listAdStudies()` | A/B tests and lift studies |
 | `adAccounts.listHighDemandPeriods()` | High demand periods / budget schedules |
 | `adAccounts.listMetaBusinesses()` | Businesses list |
+| `adAccounts.listValueRuleSets()` | List value rule sets |
+| `adAccounts.createValueRuleSet()` | Create a value rule set |
 | `adAccounts.getAdAccountFinance()` | Ad account finances |
 | `adAccounts.getAdComments()` | List comments on an ad |
 | `adAccounts.getAdsActivityLog()` | Ad account change / audit log |
 | `adAccounts.getDsaDefaults()` | Get ad account DSA defaults |
 | `adAccounts.getDsaRecommendations()` | List DSA beneficiary/payor suggestions |
+| `adAccounts.getValueRuleSet()` | Read a value rule set |
 | `adAccounts.updateAdAccount()` | Update ad account settings |
+| `adAccounts.updateValueRuleSet()` | Replace a value rule set |
+| `adAccounts.deleteValueRuleSet()` | Delete a value rule set |
 
 ### Ad Audiences
 | Method | Description |

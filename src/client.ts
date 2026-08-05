@@ -72,6 +72,7 @@ import {
   createStandaloneAd,
   createTestLead,
   createTrackingTag,
+  createValueRuleSet,
   createVerification,
   createVoiceCall,
   createVoiceWebSession,
@@ -115,6 +116,7 @@ import {
   deleteSequence,
   deleteSmsSenderId,
   deleteTelegramCommands,
+  deleteValueRuleSet,
   deleteWebhookSettings,
   deleteWhatsAppFlow,
   deleteWhatsAppGroupChat,
@@ -258,6 +260,7 @@ import {
   getUsage,
   getUsageStats,
   getUser,
+  getValueRuleSet,
   getVerification,
   getVoiceCall,
   getVoiceCallEstimate,
@@ -365,6 +368,7 @@ import {
   listTrackingTagSharedAccounts,
   listTrackingTags,
   listUsers,
+  listValueRuleSets,
   listVoiceCalls,
   listWhatsAppCalls,
   listWhatsAppConversions,
@@ -505,6 +509,7 @@ import {
   updateSequence,
   updateSlackSettings,
   updateTrackingTag,
+  updateValueRuleSet,
   updateWebhookSettings,
   updateWhatsAppBusinessProfile,
   updateWhatsAppCalling,
@@ -1422,6 +1427,11 @@ export class Zernio {
     listMetaBusinesses: listMetaBusinesses,
     listAdLabels: listAdLabels,
     listHighDemandPeriods: listHighDemandPeriods,
+    listValueRuleSets: listValueRuleSets,
+    createValueRuleSet: createValueRuleSet,
+    getValueRuleSet: getValueRuleSet,
+    updateValueRuleSet: updateValueRuleSet,
+    deleteValueRuleSet: deleteValueRuleSet,
     getAdAccountFinance: getAdAccountFinance,
     listAdAccounts: listAdAccounts,
     updateAdAccount: updateAdAccount,
@@ -1575,6 +1585,16 @@ export class Zernio {
     listAdLabels: listAdLabels,
     /** @deprecated Use `zernio.adaccounts.listHighDemandPeriods` instead. */
     listHighDemandPeriods: listHighDemandPeriods,
+    /** @deprecated Use `zernio.adaccounts.listValueRuleSets` instead. */
+    listValueRuleSets: listValueRuleSets,
+    /** @deprecated Use `zernio.adaccounts.createValueRuleSet` instead. */
+    createValueRuleSet: createValueRuleSet,
+    /** @deprecated Use `zernio.adaccounts.getValueRuleSet` instead. */
+    getValueRuleSet: getValueRuleSet,
+    /** @deprecated Use `zernio.adaccounts.updateValueRuleSet` instead. */
+    updateValueRuleSet: updateValueRuleSet,
+    /** @deprecated Use `zernio.adaccounts.deleteValueRuleSet` instead. */
+    deleteValueRuleSet: deleteValueRuleSet,
     /** @deprecated Use `zernio.adaccounts.getAdAccountFinance` instead. */
     getAdAccountFinance: getAdAccountFinance,
     /** @deprecated Use `zernio.adaccounts.listAdAccounts` instead. */

@@ -5233,6 +5233,119 @@ export type UsersListResponse = {
 };
 
 /**
+ * One bid-adjustment rule. Rules are evaluated in ARRAY ORDER and only the first matching
+ * rule adjusts the bid for an overlapping audience, so the order is semantic.
+ *
+ */
+export type ValueRule = {
+    /**
+     * Platform rule id. Echo it on `PUT` to KEEP this rule, omit it to CREATE a new one.
+     * A rule left out of the array entirely is DELETED.
+     *
+     */
+    id?: string;
+    name: string;
+    /**
+     * Direction of the adjustment. There is no signed value field.
+     */
+    adjustSign: 'INCREASE' | 'DECREASE';
+    /**
+     * Unsigned percentage magnitude. `INCREASE` accepts 1-1000, `DECREASE` accepts 1-90.
+     * 0 is out of range on both.
+     *
+     */
+    adjustValue: number;
+    /**
+     * Meta returns `ACTIVE` here but documents no enum for the field. Treat it as a
+     * passthrough: echo whatever the `GET` returned, and do not synthesize values.
+     *
+     */
+    status?: string;
+    /**
+     * All criteria on a rule must match for the rule to fire.
+     */
+    criteria: Array<ValueRuleCriterion>;
+};
+
+/**
+ * Direction of the adjustment. There is no signed value field.
+ */
+export type adjustSign = 'INCREASE' | 'DECREASE';
+
+/**
+ * One matching condition inside a value rule. `criteriaValues` and `criteriaValueTypes`
+ * are POSITIONALLY paired: same length, same order.
+ *
+ */
+export type ValueRuleCriterion = {
+    /**
+     * Platform criterion id. Echo it on `PUT` to KEEP this criterion, omit it to CREATE a
+     * new one. A criterion left out of the array entirely is DELETED.
+     *
+     */
+    id?: string;
+    /**
+     * The dimension being matched. `OMNI_CHANNEL` (conversion location: APP, INSTANT_FORM,
+     * PHONE_CALL, WEBSITE) is accepted even though Meta's own enum table omits it.
+     *
+     */
+    criteriaType: 'AGE' | 'GENDER' | 'OS_TYPE' | 'DEVICE_PLATFORM' | 'LOCATION' | 'PLACEMENT' | 'OMNI_CHANNEL' | 'AUDIENCE_LABEL';
+    /**
+     * Required on every criterion. `CONTAINS` is currently the only value Meta supports.
+     */
+    operator: 'CONTAINS';
+    /**
+     * The values to match. `AGE` takes ranges such as `18-24`, `18+` or a custom `18-26`;
+     * a range whose upper bound is 65 is NOT allowed (use `18+` instead of `18-65`).
+     * `LOCATION` takes Targeting-Search keys: a two-letter country code for
+     * `LOCATION_COUNTRY`, a numeric key for region / city / comScore market.
+     * `AUDIENCE_LABEL` takes labels such as `HIGH_VALUE`, which are applied to a Custom
+     * Audience in Ads Manager: there is no API to provision them, so they are passed
+     * through unvalidated.
+     *
+     */
+    criteriaValues: Array<(string)>;
+    /**
+     * One entry per `criteriaValues` entry, in the same order. The literal `"NONE"` for
+     * every criteriaType except `LOCATION`, which uses `LOCATION_COUNTRY`,
+     * `LOCATION_REGION`, `LOCATION_CITY` or `LOCATION_COMSCORE_MARKET` and MAY mix them
+     * within one criterion. `LOCATION_DMA` was replaced by `LOCATION_COMSCORE_MARKET` on
+     * 2026-06-22 and is rejected by this API.
+     *
+     */
+    criteriaValueTypes: Array<(string)>;
+};
+
+/**
+ * The dimension being matched. `OMNI_CHANNEL` (conversion location: APP, INSTANT_FORM,
+ * PHONE_CALL, WEBSITE) is accepted even though Meta's own enum table omits it.
+ *
+ */
+export type criteriaType = 'AGE' | 'GENDER' | 'OS_TYPE' | 'DEVICE_PLATFORM' | 'LOCATION' | 'PLACEMENT' | 'OMNI_CHANNEL' | 'AUDIENCE_LABEL';
+
+/**
+ * Required on every criterion. `CONTAINS` is currently the only value Meta supports.
+ */
+export type operator = 'CONTAINS';
+
+/**
+ * A named set of bid-adjustment rules on an ad account. Attach it to an ad set with
+ * `valueRuleSetId`. Limits: 6 sets per ad account, 10 rules per set, 4 criteria per rule.
+ *
+ */
+export type ValueRuleSet = {
+    /**
+     * Platform value rule set id.
+     */
+    id: string;
+    name: string;
+    /**
+     * Evaluated in order; the first matching rule wins.
+     */
+    rules: Array<ValueRule>;
+};
+
+/**
  * A managed OTP verification. The code itself is never returned or stored (hash only).
  */
 export type Verification = {
@@ -25857,6 +25970,22 @@ export type UpdateAdSetData = {
          */
         roasAverageFloor?: number;
         /**
+         * Meta only (other platforms return 501). Value rule set to attach to this ad
+         * set, from `/v1/ads/value-rule-sets`. Sending a different id replaces the
+         * current association. To DETACH, send `valueRulesApplied: false` and omit
+         * this field.
+         *
+         */
+        valueRuleSetId?: string;
+        /**
+         * Meta only (other platforms return 501). `false` DETACHES the ad set's value
+         * rule set and must be sent WITHOUT `valueRuleSetId`; the combination returns
+         * 400. `true` is optional when attaching, since attachment is driven by
+         * `valueRuleSetId`, and requires it to be present.
+         *
+         */
+        valueRulesApplied?: boolean;
+        /**
          * Platform-specific post-launch delivery settings. The platform is implied by the
          * `platform` body param. Meta only; other platforms return 400. Unknown keys are rejected.
          *
@@ -27462,6 +27591,153 @@ export type DeleteAdCreativeError = (unknown | {
     error?: string;
 });
 
+export type ListValueRuleSetsData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page. Meta does not document paging on this edge; `after` comes back null when it omits cursors.
+         */
+        after?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListValueRuleSetsResponse = ({
+    adAccountId?: string;
+    data?: Array<ValueRuleSet>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted or when Meta omits paging.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListValueRuleSetsError = (unknown | {
+    error?: string;
+});
+
+export type CreateValueRuleSetData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        name: string;
+        /**
+         * Evaluated in order; the first matching rule wins.
+         */
+        rules: Array<ValueRule>;
+    };
+};
+
+export type CreateValueRuleSetResponse = ({
+    adAccountId?: string;
+    /**
+     * The new rule set id. Meta does not document the create response body, so this is null on the (unobserved) case where it omits the id.
+     */
+    valueRuleSetId?: (string) | null;
+});
+
+export type CreateValueRuleSetError = (unknown | {
+    error?: string;
+});
+
+export type GetValueRuleSetData = {
+    path: {
+        /**
+         * Platform value rule set id.
+         */
+        valueRuleSetId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+    };
+};
+
+export type GetValueRuleSetResponse = ({
+    valueRuleSet?: ValueRuleSet;
+});
+
+export type GetValueRuleSetError = (unknown | {
+    error?: string;
+});
+
+export type UpdateValueRuleSetData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Required: the update replaces the whole set.
+         */
+        name: string;
+        /**
+         * The COMPLETE rule list. Omitting a rule deletes it on Meta.
+         */
+        rules: Array<ValueRule>;
+    };
+    path: {
+        /**
+         * Platform value rule set id.
+         */
+        valueRuleSetId: string;
+    };
+};
+
+export type UpdateValueRuleSetResponse = ({
+    valueRuleSetId?: string;
+    name?: string;
+    rules?: Array<ValueRule>;
+    message?: string;
+});
+
+export type UpdateValueRuleSetError = (unknown | {
+    error?: string;
+});
+
+export type DeleteValueRuleSetData = {
+    path: {
+        /**
+         * Platform value rule set id.
+         */
+        valueRuleSetId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteValueRuleSetResponse = ({
+    valueRuleSetId?: string;
+    message?: string;
+});
+
+export type DeleteValueRuleSetError = (unknown | {
+    error?: string;
+});
+
 export type GetAdAccountFinanceData = {
     query: {
         /**
@@ -28660,6 +28936,32 @@ export type CreateStandaloneAdData = {
          *
          */
         roasAverageFloor?: number;
+        /**
+         * Meta only (facebook, instagram; other platforms return 400). Value rule set
+         * to attach to the new ad set, from `/v1/ads/value-rule-sets`. Attachment is
+         * driven by this id, so `valueRulesApplied` is optional alongside it.
+         *
+         * Rejected with 400 in `adSetId` attach mode: that shape inherits the existing
+         * ad set's attachment, so the field would be silently ignored. Use
+         * `PUT /v1/ads/ad-sets/{adSetId}` there instead.
+         *
+         * Ignored (stripped before the ad-set create) when `buyingType` is `RESERVED`:
+         * value rules only apply to auction ad sets on `LOWEST_COST_WITHOUT_CAP` or
+         * `COST_CAP`, and a Reach & Frequency reservation has no auction bid strategy.
+         *
+         * Read back with `GET /v1/ads/ad-sets/{adSetId}?fields=value_rule_set_id`; the
+         * attachment is not mirrored onto Zernio's ad documents.
+         *
+         */
+        valueRuleSetId?: string;
+        /**
+         * Meta only (facebook, instagram; other platforms return 400). Optional when
+         * attaching, and requires `valueRuleSetId`. `false` is REJECTED here with 400:
+         * a newly created ad set has nothing to detach, so detaching lives on
+         * `PUT /v1/ads/ad-sets/{adSetId}`.
+         *
+         */
+        valueRulesApplied?: boolean;
         /**
          * Platform-specific options. The platform is derived from `accountId`;
          * sending options for a different platform returns a 400. LinkedIn
