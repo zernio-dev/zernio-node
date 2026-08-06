@@ -920,6 +920,10 @@ export type ApiKey = {
      * 'read-write' allows all operations, 'read' restricts to GET requests only
      */
     permission?: 'read-write' | 'read';
+    /**
+     * Resource groups this key can NOT access (opt-out denylist). Absent or empty means legacy full access. A key with any group disabled is a restricted key (zrk_ prefix) and can never manage API keys, invites, or member identity. Each operation's group is published as x-resource-group. With 'messages' disabled, the KEY cannot access private messages; the ACCOUNT's pre-existing webhook subscriptions are a separate grant surface.
+     */
+    disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
 };
 
 /**
@@ -10614,6 +10618,13 @@ export type ListApiKeysResponse = ({
 
 export type ListApiKeysError = ({
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type CreateApiKeyData = {
@@ -10635,6 +10646,10 @@ export type CreateApiKeyData = {
          * 'read-write' allows all operations (default), 'read' restricts to GET requests only
          */
         permission?: 'read-write' | 'read';
+        /**
+         * Resource groups to DISABLE on this key (opt-out denylist). Omit for a legacy full-access key. A key with any group disabled mints with the zrk_ prefix, gets 403 with code=insufficient_permissions and required_group on operations in disabled groups (each operation's group is published as x-resource-group), and can never manage API keys, invites, or member identity. With 'messages' disabled, the KEY cannot access private messages; the ACCOUNT's pre-existing webhook subscriptions are a separate grant surface.
+         */
+        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
     };
 };
 
@@ -10645,6 +10660,13 @@ export type CreateApiKeyResponse = ({
 
 export type CreateApiKeyError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type DeleteApiKeyData = {
@@ -10659,6 +10681,13 @@ export type DeleteApiKeyResponse = ({
 
 export type DeleteApiKeyError = ({
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type ListConnectedAppsResponse = ({
@@ -10667,7 +10696,14 @@ export type ListConnectedAppsResponse = ({
 
 export type ListConnectedAppsError = ({
     error?: string;
-} | ErrorResponse);
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+});
 
 export type RevokeConnectedAppData = {
     path: {
@@ -10693,6 +10729,13 @@ export type RevokeConnectedAppResponse = ({
 
 export type RevokeConnectedAppError = (ErrorResponse | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type CreateInviteTokenData = {
@@ -10727,6 +10770,13 @@ export type CreateInviteTokenResponse = ({
 
 export type CreateInviteTokenError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type GetConnectUrlData = {
@@ -15138,6 +15188,13 @@ export type CreateWebhookSettingsResponse = ({
 
 export type CreateWebhookSettingsError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type UpdateWebhookSettingsData = {
@@ -15182,6 +15239,13 @@ export type UpdateWebhookSettingsResponse = ({
 
 export type UpdateWebhookSettingsError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type DeleteWebhookSettingsData = {
@@ -15258,6 +15322,13 @@ export type GetWebhookLogsResponse = ({
 
 export type GetWebhookLogsError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type TestWebhookData = {

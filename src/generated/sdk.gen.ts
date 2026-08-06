@@ -1235,9 +1235,10 @@ export const deleteApiKey = <ThrowOnError extends boolean = false>(options: Opti
  * Returns the OAuth clients (AI assistants and MCP connectors) the authenticated
  * user has authorized and that still hold a live token.
  *
- * Requires a session or a full-scope API key. A profile-scoped API key or an
- * OAuth access token is rejected with 403: an app must not be able to enumerate
- * its sibling authorizations.
+ * Requires a session or a full-access API key. A profile-scoped API key, a
+ * restricted (zrk_) API key, or an OAuth access token is rejected with 403: an
+ * app must not be able to enumerate its sibling authorizations, and connected-app
+ * management is admin-plane.
  *
  */
 export const listConnectedApps = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
@@ -1256,6 +1257,9 @@ export const listConnectedApps = <ThrowOnError extends boolean = false>(options?
  * Idempotent while the authorization is still on record: revoking an app that
  * was already revoked returns 200 with `revokedTokens: 0`.
  *
+ * Requires a session or a full-access API key. A profile-scoped API key, a
+ * restricted (zrk_) API key, or an OAuth access token is rejected with 403.
+ *
  */
 export const revokeConnectedApp = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RevokeConnectedAppData, ThrowOnError>) => {
     return (options?.client ?? client).delete<RevokeConnectedAppResponse, RevokeConnectedAppError, ThrowOnError>({
@@ -1268,6 +1272,9 @@ export const revokeConnectedApp = <ThrowOnError extends boolean = false>(options
  * Create invite token
  * Generate a secure invite link to grant team members access to your profiles.
  * Invites expire after 7 days and are single-use.
+ *
+ * Returns 403 when a requested profile is not found or not owned, or when
+ * called with a restricted (zrk_) API key: invite management is admin-plane.
  *
  */
 export const createInviteToken = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateInviteTokenData, ThrowOnError>) => {
@@ -2809,6 +2816,11 @@ export const getWebhookSettings = <ThrowOnError extends boolean = false>(options
  *
  * Webhooks are automatically disabled after 10 consecutive delivery failures.
  *
+ * A restricted (zrk_) API key can only subscribe to events whose resource group
+ * the key holds; an event outside the key's groups is rejected with 403. Note
+ * that the KEY cannot access private messages; the ACCOUNT's pre-existing
+ * webhook subscriptions are a separate grant surface.
+ *
  */
 export const createWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateWebhookSettingsData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateWebhookSettingsResponse, CreateWebhookSettingsError, ThrowOnError>({
@@ -2824,6 +2836,9 @@ export const createWebhookSettings = <ThrowOnError extends boolean = false>(opti
  * When provided, `name` must be 1-50 characters, `url` must be a valid URL, and `events` must contain at least one event. Whitespace is trimmed from `url` before validation.
  *
  * Webhooks are automatically disabled after 10 consecutive delivery failures.
+ *
+ * A restricted (zrk_) API key can only set `events` to events whose resource
+ * group the key holds; an event outside the key's groups is rejected with 403.
  *
  */
 export const updateWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWebhookSettingsData, ThrowOnError>) => {
@@ -2849,6 +2864,10 @@ export const deleteWebhookSettings = <ThrowOnError extends boolean = false>(opti
  * Retrieve recorded webhook delivery attempts for the authenticated user, most recent first.
  * Logs are retained for 30 days. Supports filtering by status, event type, webhook ID, and event ID,
  * plus offset-based pagination.
+ *
+ * For a restricted (zrk_) API key, rows for events outside the key's resource
+ * groups are omitted (`pagination.total` may over-count), and an `event` filter
+ * naming such an event is rejected with 403.
  *
  */
 export const getWebhookLogs = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetWebhookLogsData, ThrowOnError>) => {
