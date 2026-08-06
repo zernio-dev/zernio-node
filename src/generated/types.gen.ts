@@ -28995,7 +28995,9 @@ export type CreateStandaloneAdData = {
          * with "The language asset feed includes an unsupported targeting field"
          * (subcode 1885985).
          *
-         * Media DOES inherit and is uploaded once when shared. Note that Meta enforces
+         * Media DOES inherit and is uploaded once when shared, and `linkUrl` inherits
+         * too: each locale may name its own landing page and unlisted locales fall back
+         * to the ad's top-level `linkUrl`. Note that Meta enforces
          * Dynamic Creative image dimensions on language feeds, so an `imageUrl` that
          * works on a normal ad may be rejected with "The following images have invalid
          * dimensions for Dynamic Creative" (subcode 1885558). Video is not affected.
@@ -29021,6 +29023,10 @@ export type CreateStandaloneAdData = {
              * Link description for this language. REQUIRED, and must differ from every other locale and from the ad's top-level description.
              */
             description: string;
+            /**
+             * Destination URL for this language. Inherits the ad's top-level `linkUrl` when omitted, and requires it to be present (400 otherwise): the top-level URL is the destination for every locale you did not override. Unlike text, identical URLs across locales are fine (they share one asset).
+             */
+            linkUrl?: string;
             /**
              * Image for this language. Inherits the ad's `imageUrl` when omitted. The feed is all-image OR all-video.
              */
