@@ -3740,6 +3740,10 @@ export type PlatformTarget = {
      */
     publishedAt?: string;
     /**
+     * Set when a post that was successfully published later disappears from the platform (deleted on-platform or taken down by the platform). status stays "published" (it reflects the publish outcome); poll this field to detect post-publish removals. Absent while the post is live, and cleared if the post reappears. Detection runs with the analytics sync, so expect up to a few hours of lag.
+     */
+    removedFromPlatformAt?: (string) | null;
+    /**
      * Present and true only when this Instagram reel was launched as a Trial through Zernio (created with platformSpecificData.trialParams). Use it to segment trial reels in analytics. Note: Instagram's Graph API exposes no readable trial field, so this reflects creation-time intent only. It indicates the reel STARTED as a trial, not whether or when it graduated.
      */
     isTrialReel?: boolean;
