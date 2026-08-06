@@ -26237,6 +26237,10 @@ export type UpdateAdSetData = {
             promotedObject?: {
                 pixelId?: string;
                 customEventType?: string;
+                /**
+                 * Pixel custom-event name (custom_event_str); requires customEventType OTHER. Same pairing rules as /v1/ads/create.
+                 */
+                customEventStr?: string;
                 pageId?: string;
                 applicationId?: string;
                 objectStoreUrl?: string;
@@ -28477,7 +28481,7 @@ export type CreateStandaloneAdData = {
          * Required on legacy and multi-creative shapes; the attach shape inherits it from the ad set. Available goals vary by platform.
          *
          * **Meta**
-         * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event such as PURCHASE or START_TRIAL, or `promotedObject.customConversionId` to optimise against a Custom Conversion instead.
+         * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event such as PURCHASE or START_TRIAL, or `promotedObject.customConversionId` to optimise against a Custom Conversion, or `customEventType: OTHER` + `customEventStr` to optimise against a pixel custom event.
          * - `lead_conversion`: OUTCOME_LEADS optimizing website pixel leads. Same pixel and event fields, but with a leads-class event such as LEAD, SUBMIT_APPLICATION, SCHEDULE or CONTACT (or `promotedObject.customConversionId` to optimise against a Custom Conversion instead). Meta gates conversion events by objective, so leads-class events are rejected under `conversions`.
          * - `lead_generation`: OUTCOME_LEADS with instant forms. Requires `leadGenFormId`. `promotedObject.pageId` is optional and auto-filled from the connected Page.
          * - `app_promotion`: requires `promotedObject.applicationId` and `promotedObject.objectStoreUrl`.
@@ -29277,7 +29281,7 @@ export type CreateStandaloneAdData = {
          * Required for goals whose ad-set optimization_goal points at a specific
          * event/page/app (without it Meta rejects the ad-set create with
          * `error_subcode: 1815430` "Please select a promoted object for your ad set"):
-         * - `goal: conversions` / `lead_conversion` (OFFSITE_CONVERSIONS): requires `pixelId` + `customEventType`, or `customConversionId` when optimising against a Custom Conversion (the conversion carries its own event definition)
+         * - `goal: conversions` / `lead_conversion` (OFFSITE_CONVERSIONS): requires `pixelId` + `customEventType`, or `customConversionId` when optimising against a Custom Conversion (the conversion carries its own event definition). For a pixel CUSTOM event (one you named yourself in CAPI/Events Manager), send `customEventType: OTHER` + `customEventStr` with the event name.
          * - `goal: app_promotion` (APP_INSTALLS): requires `applicationId` + `objectStoreUrl`
          * - `goal: lead_generation` (LEAD_GENERATION): `pageId` is auto-filled from the connected Page when omitted
          *
@@ -29326,6 +29330,17 @@ export type CreateStandaloneAdData = {
              *
              */
             customEventType?: string;
+            /**
+             * Meta only. Pixel custom-event name to optimise against (Meta's
+             * `custom_event_str`), exactly as it appears in Events Manager and in your
+             * CAPI payloads (case-sensitive, not uppercased). Requires
+             * `customEventType: OTHER`, and `OTHER` requires this field (400 either way).
+             * The same as picking a custom event in Ads Manager's conversion-event
+             * dropdown. For rule-based Custom Conversions use `customConversionId`
+             * instead.
+             *
+             */
+            customEventStr?: string;
             /**
              * Facebook Page ID. Used by `goal: lead_generation`. Auto-filled from the
              * connected Page when omitted.
