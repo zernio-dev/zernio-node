@@ -25616,6 +25616,10 @@ export type GetCommentAutomationError = ({
 export type UpdateCommentAutomationData = {
     body?: {
         name?: string;
+        /**
+         * What fires the automation. Changing it detaches the automation from its bound post or story (a post id and a story id are different objects), unless this same request sets a new binding. 'story_reply' is Instagram only.
+         */
+        trigger?: 'comment' | 'story_reply';
         keywords?: Array<(string)>;
         /**
          * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
