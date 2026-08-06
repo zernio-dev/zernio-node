@@ -25195,7 +25195,18 @@ export type ListCommentAutomationsResponse = ({
         platformPostId?: string;
         postTitle?: string;
         keywords?: Array<(string)>;
-        matchMode?: 'exact' | 'contains';
+        /**
+         * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
+         */
+        matchMode?: 'exact' | 'contains' | 'word';
+        /**
+         * Comments containing one of these never trigger the automation, even when a trigger keyword also matches. Compared using the same matchMode.
+         */
+        excludeKeywords?: Array<(string)>;
+        /**
+         * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
+         */
+        typoTolerance?: boolean;
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
@@ -25284,7 +25295,18 @@ export type CreateCommentAutomationData = {
          * Trigger keywords (empty = any comment triggers)
          */
         keywords?: Array<(string)>;
-        matchMode?: 'exact' | 'contains';
+        /**
+         * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
+         */
+        matchMode?: 'exact' | 'contains' | 'word';
+        /**
+         * Comments containing one of these never trigger the automation, even when a trigger keyword also matches. Compared using the same matchMode.
+         */
+        excludeKeywords?: Array<(string)>;
+        /**
+         * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
+         */
+        typoTolerance?: boolean;
         /**
          * DM text to send to commenter. Max 640 chars when buttons are set, otherwise ~1000.
          */
@@ -25325,7 +25347,18 @@ export type CreateCommentAutomationResponse = ({
         trigger?: 'comment' | 'story_reply';
         platformPostId?: string;
         keywords?: Array<(string)>;
-        matchMode?: 'exact' | 'contains';
+        /**
+         * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
+         */
+        matchMode?: 'exact' | 'contains' | 'word';
+        /**
+         * Comments containing one of these never trigger the automation, even when a trigger keyword also matches. Compared using the same matchMode.
+         */
+        excludeKeywords?: Array<(string)>;
+        /**
+         * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
+         */
+        typoTolerance?: boolean;
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
@@ -25374,7 +25407,18 @@ export type GetCommentAutomationResponse = ({
         postId?: string;
         postTitle?: string;
         keywords?: Array<(string)>;
-        matchMode?: 'exact' | 'contains';
+        /**
+         * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
+         */
+        matchMode?: 'exact' | 'contains' | 'word';
+        /**
+         * Comments containing one of these never trigger the automation, even when a trigger keyword also matches. Compared using the same matchMode.
+         */
+        excludeKeywords?: Array<(string)>;
+        /**
+         * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
+         */
+        typoTolerance?: boolean;
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
@@ -25434,7 +25478,18 @@ export type UpdateCommentAutomationData = {
     body?: {
         name?: string;
         keywords?: Array<(string)>;
-        matchMode?: 'exact' | 'contains';
+        /**
+         * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
+         */
+        matchMode?: 'exact' | 'contains' | 'word';
+        /**
+         * Comments containing one of these never trigger the automation, even when a trigger keyword also matches. Compared using the same matchMode.
+         */
+        excludeKeywords?: Array<(string)>;
+        /**
+         * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
+         */
+        typoTolerance?: boolean;
         dmMessage?: string;
         /**
          * Inline DM buttons (1-3). Pass [] to clear all buttons.
@@ -25470,7 +25525,18 @@ export type UpdateCommentAutomationResponse = ({
         id?: string;
         name?: string;
         keywords?: Array<(string)>;
-        matchMode?: 'exact' | 'contains';
+        /**
+         * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
+         */
+        matchMode?: 'exact' | 'contains' | 'word';
+        /**
+         * Comments containing one of these never trigger the automation, even when a trigger keyword also matches. Compared using the same matchMode.
+         */
+        excludeKeywords?: Array<(string)>;
+        /**
+         * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
+         */
+        typoTolerance?: boolean;
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
