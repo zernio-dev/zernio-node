@@ -25761,9 +25761,34 @@ export type ListCommentAutomationLogsResponse = ({
         skip?: number;
         hasMore?: boolean;
     };
+    /**
+     * Comments that reached this automation but matched none of its keywords. These produce no log entry, so this is the only signal that a keyword is catching nothing. Retained for a short window, then dropped.
+     */
+    misses?: {
+        /**
+         * Number of non-matching comments in the retention window
+         */
+        total?: number;
+        /**
+         * How many days of non-matching comments the total covers
+         */
+        retentionDays?: number;
+        /**
+         * A few of the most recent non-matching comments, for diagnosing a keyword setup.
+         */
+        samples?: Array<{
+            commentText?: string;
+            commenterName?: string;
+            /**
+             * Set when an exclusion keyword vetoed an otherwise matching comment
+             */
+            excludedBy?: string;
+            at?: string;
+        }>;
+    };
 });
 
-export type ListCommentAutomationLogsError = ({
+export type ListCommentAutomationLogsError = (ErrorResponse | {
     error?: string;
 });
 
