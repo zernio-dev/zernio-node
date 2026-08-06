@@ -6367,9 +6367,17 @@ export type WebhookPayloadMessage = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Interactive message metadata (present when message is a quick reply tap, postback button tap, or inline keyboard callback)
+     * Platform-specific message context (present when the message is a quick reply tap, postback button tap, inline keyboard callback, or a quote-reply to an earlier message)
      */
     metadata?: {
+        /**
+         * platformMessageId of the message this one is a quote-reply to.
+         * WhatsApp (`context.id`), Instagram and Facebook Messenger
+         * (`reply_to.mid`). On `message.sent` echoes (operator replied
+         * from the native app) this is the only metadata field populated.
+         *
+         */
+        quotedMessageId?: string;
         /**
          * Payload from a quick reply tap (Facebook/Instagram Messenger).
          */
@@ -16734,7 +16742,7 @@ export type SendInboxMessageData = {
          */
         messageTag?: 'CONFIRMED_EVENT_UPDATE' | 'POST_PURCHASE_UPDATE' | 'ACCOUNT_UPDATE' | 'HUMAN_AGENT';
         /**
-         * Platform message ID to quote-reply to. For WhatsApp, pass the wamid (available in message.platformMessageId from webhooks). For Telegram, pass the Telegram message ID.
+         * Platform message ID to quote-reply to. For WhatsApp, pass the wamid; for Telegram, the Telegram message ID; for Instagram, the Meta mid (all available in message.platformMessageId from webhooks or the list-messages endpoint). On Slack it threads the reply (thread_ts) instead of quoting. Silently ignored on platforms without reply support, including Facebook Messenger (Meta's Messenger Send API has no reply_to).
          */
         replyTo?: string;
         /**
