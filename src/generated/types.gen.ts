@@ -101,6 +101,10 @@ export type Ad = {
     reviewStatus?: (AdReviewStatus);
     adType?: 'boost' | 'standalone';
     /**
+     * Creative format, classified from the media the creative carries. `null` when the creative carries no media to classify — an unsynced creative and a genuine text-only ad are indistinguishable, so neither is guessed at. Returned by `GET /v1/ads`, `GET /v1/ads/{adId}` and the ad nodes of `GET /v1/ads/tree`.
+     */
+    creativeType?: ('carousel' | 'video' | 'document' | 'image') | null;
+    /**
      * Available goals vary by platform. Meta (Facebook/Instagram) supports all 9 (incl. `lead_conversion` = website pixel lead optimization and `catalog_sales` = Advantage+ catalog ads). TikTok supports the 7 non-`lead_conversion` goals. LinkedIn supports all except app_promotion / lead_conversion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
      */
     goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'job_applicants';
@@ -360,6 +364,11 @@ export type platform = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinte
 export type adType = 'boost' | 'standalone';
 
 /**
+ * Creative format, classified from the media the creative carries. `null` when the creative carries no media to classify — an unsynced creative and a genuine text-only ad are indistinguishable, so neither is guessed at. Returned by `GET /v1/ads`, `GET /v1/ads/{adId}` and the ad nodes of `GET /v1/ads/tree`.
+ */
+export type creativeType = 'carousel' | 'video' | 'document' | 'image';
+
+/**
  * Available goals vary by platform. Meta (Facebook/Instagram) supports all 9 (incl. `lead_conversion` = website pixel lead optimization and `catalog_sales` = Advantage+ catalog ads). TikTok supports the 7 non-`lead_conversion` goals. LinkedIn supports all except app_promotion / lead_conversion. Twitter/X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest and Google Ads support only engagement, traffic, awareness, video_views.
  */
 export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'job_applicants';
@@ -492,6 +501,130 @@ export type AdDailyMetrics = AdMetrics & {
     date?: string;
 };
 
+/**
+ * The single `engagement` total split into the interactions behind it.
+ *
+ * Note that `engagement` is not the sum of these: Meta's own
+ * `post_engagement` and `page_engagement` totals already contain the
+ * individual interactions, and all of them are counted into `engagement`.
+ * Use these fields when you need a specific interaction, and `engagement`
+ * only as the coarse total it has always been.
+ *
+ * Meta-only; other platforms leave these at 0.
+ *
+ */
+export type AdEngagementCounts = {
+    /**
+     * Meta's own post-engagement total (`post_engagement`).
+     */
+    postEngagement?: number;
+    /**
+     * Meta's own page-engagement total (`page_engagement`).
+     */
+    pageEngagement?: number;
+    /**
+     * Reactions on the ad's post (`post_reaction`).
+     */
+    reactions?: number;
+    /**
+     * Comments on the ad's post.
+     */
+    comments?: number;
+    /**
+     * Shares of the ad's post. Meta reports these under the action type literally named `post`.
+     */
+    shares?: number;
+    /**
+     * Saves of the ad's post (`onsite_conversion.post_save`).
+     */
+    saves?: number;
+    /**
+     * New Page likes attributed to the ad (`like`).
+     */
+    pageLikes?: number;
+    /**
+     * 3-second video views (`video_view`). For completion-based counts use `videoThruplayWatchedActions`.
+     */
+    videoViews?: number;
+    /**
+     * Attributed link clicks (`link_click`). This is the attribution-window count, which differs from the in-session `inline_link_clicks` reported by `GET /v1/ads/{adId}/analytics`.
+     */
+    linkClicks?: number;
+};
+
+/**
+ * Named conversion-funnel steps, resolved from the same data as `actions`
+ * so you never have to parse action-type strings yourself.
+ *
+ * Meta reports one event under several action types at once
+ * (`offsite_conversion.fb_pixel_purchase`, `omni_purchase`, `purchase`, …).
+ * Each field below takes the FIRST family member present rather than
+ * summing them, which is what makes these counts safe to add up — summing
+ * the raw `actions` keys yourself double or triple counts. The same
+ * priority order backs `conversions`, so a purchase-optimised campaign
+ * reports the identical number in `conversions` and `funnel.purchases`.
+ *
+ * Every field is 0 when that step never fired. Populated for Meta ads;
+ * other platforms report a different action taxonomy and generally leave
+ * these at 0 (read `actions` for those). At ad-set and campaign level each
+ * step is summed from its per-ad values.
+ *
+ */
+export type AdFunnelCounts = {
+    /**
+     * Landing page views — the visitor actually loaded the destination, unlike a link click. Meta `landing_page_view`.
+     */
+    landingPageViews?: number;
+    /**
+     * Content views (Meta `ViewContent` pixel event).
+     */
+    contentViews?: number;
+    /**
+     * On-site searches (Meta `Search` pixel event).
+     */
+    searches?: number;
+    /**
+     * Adds to wishlist (Meta `AddToWishlist` pixel event).
+     */
+    wishlistAdds?: number;
+    /**
+     * Adds to cart (Meta `AddToCart` pixel event).
+     */
+    cartAdds?: number;
+    /**
+     * Checkouts started (Meta `InitiateCheckout` pixel event).
+     */
+    checkoutsInitiated?: number;
+    /**
+     * Payment details added at checkout (Meta `AddPaymentInfo` pixel event).
+     */
+    paymentInfoAdds?: number;
+    /**
+     * Purchases (Meta `Purchase` pixel event). Pair with `purchaseValue` for revenue.
+     */
+    purchases?: number;
+    /**
+     * Leads, from either the website pixel or an instant form — whichever the ad uses.
+     */
+    leads?: number;
+    /**
+     * Completed registrations (Meta `CompleteRegistration` pixel event).
+     */
+    registrationsCompleted?: number;
+    /**
+     * Mobile app installs attributed to the ad.
+     */
+    appInstalls?: number;
+    /**
+     * Messaging conversations started within 7 days — the headline metric for click-to-WhatsApp and click-to-Messenger ads.
+     */
+    messagingConversationsStarted?: number;
+    /**
+     * Messaging threads where the person sent a first reply.
+     */
+    messagingFirstReplies?: number;
+};
+
 export type AdMetrics = {
     spend?: number;
     impressions?: number;
@@ -577,6 +710,12 @@ export type AdMetrics = {
      * Average seconds watched per play (Meta `video_avg_time_watched_actions`). Aggregated over date ranges and across children as a play-weighted average (total watch time / total plays), never a plain average of averages.
      */
     videoAvgTimeWatchedActions?: number;
+    /**
+     * Derived `spend / videoThruplayWatchedActions`, in ad-account native currency. Rounded to 4 decimals rather than the usual 2 because a ThruPlay routinely costs well under a cent. 0 when the ad has no ThruPlays.
+     */
+    costPerThruplay?: number;
+    funnel?: AdFunnelCounts;
+    engagementBreakdown?: AdEngagementCounts;
     /**
      * Present on individual ads only, not on campaign aggregations
      */
