@@ -188,6 +188,7 @@ try {
 | `accounts.getAccountHealth()` | Check account health |
 | `accounts.getFollowerStats()` | Get follower stats |
 | `accounts.getGoogleBusinessReviews()` | Get reviews |
+| `accounts.getInstagramFollowStatus()` | Check whether an Instagram user follows the account |
 | `accounts.getLinkedInMentions()` | Resolve LinkedIn mention |
 | `accounts.getSlackSettings()` | Get Slack account settings |
 | `accounts.getTikTokCreatorInfo()` | Get TikTok creator info |

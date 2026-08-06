@@ -1392,6 +1392,62 @@ export type transcriptionLanguage = 'auto' | 'en' | 'es';
 export type endReason = 'hangup' | 'no_answer' | 'rejected' | 'error';
 
 /**
+ * Who a comment automation answers. Instagram only - Meta exposes the follow
+ * relationship on no other platform, and only for people who have MESSAGED the
+ * account (a comment grants no consent). `whenUnknown` is therefore the important
+ * setting: it decides what happens for a first-time commenter.
+ *
+ */
+export type CommentAutomationAudience = {
+    followerStatus?: 'any' | 'follower' | 'non_follower';
+    /**
+     * Skip commenters with fewer followers than this. Omit for no size rule.
+     */
+    minFollowerCount?: number;
+    /**
+     * What to do when Instagram will not reveal the follow relationship.
+     * * `send` (default) - deliver the DM anyway (fails open).
+     * * `skip` - stay silent.
+     * * `verify` - send `followGate.message` with a confirm button. Tapping it is a
+     * message, which grants consent, so the re-check on the tap resolves and the
+     * real DM (or `followGate.notFollowingMessage`) follows automatically.
+     *
+     */
+    whenUnknown?: 'send' | 'skip' | 'verify';
+};
+
+export type followerStatus = 'any' | 'follower' | 'non_follower';
+
+/**
+ * What to do when Instagram will not reveal the follow relationship.
+ * * `send` (default) - deliver the DM anyway (fails open).
+ * * `skip` - stay silent.
+ * * `verify` - send `followGate.message` with a confirm button. Tapping it is a
+ * message, which grants consent, so the re-check on the tap resolves and the
+ * real DM (or `followGate.notFollowingMessage`) follows automatically.
+ *
+ */
+export type whenUnknown = 'send' | 'skip' | 'verify';
+
+/**
+ * Copy for the follow gate. Sensible defaults are used for any field left empty.
+ */
+export type CommentAutomationFollowGate = {
+    /**
+     * Confirmation DM sent when whenUnknown=verify.
+     */
+    message?: string;
+    /**
+     * Confirm button label. Defaults to "I'm following".
+     */
+    buttonLabel?: string;
+    /**
+     * Sent to a commenter we know does not follow (followerStatus=follower). Omit to stay silent on a keyword comment; a confirm tap always gets an answer.
+     */
+    notFollowingMessage?: string;
+};
+
+/**
  * An OAuth client (AI assistant / MCP connector) authorized by the user and still
  * holding at least one live token.
  *
@@ -6144,6 +6200,26 @@ export type WebhookPayloadComment = {
             username?: string;
             name?: string;
             picture?: (string) | null;
+            /**
+             * Instagram only, best-effort. Present ONLY for commenters who have
+             * messaged the account before: Meta gates the follow relationship behind
+             * messaging consent, and commenting does not grant it. Absent otherwise -
+             * treat a missing object as "unknown", never as "not a follower". To check
+             * on demand, call GET /v1/accounts/{accountId}/follow-status/{userId}.
+             *
+             */
+            instagramProfile?: {
+                /**
+                 * The commenter follows this account.
+                 */
+                isFollower?: (boolean) | null;
+                /**
+                 * This account follows the commenter.
+                 */
+                isFollowing?: (boolean) | null;
+                followerCount?: (number) | null;
+                isVerified?: (boolean) | null;
+            };
         };
         createdAt: string;
         /**
@@ -10681,6 +10757,50 @@ export type GetAccountHealthResponse = ({
 });
 
 export type GetAccountHealthError = ({
+    error?: string;
+});
+
+export type GetInstagramFollowStatusData = {
+    path: {
+        /**
+         * Instagram account ID
+         */
+        accountId: string;
+        /**
+         * Instagram-scoped user id (IGSID) from a webhook payload
+         */
+        userId: string;
+    };
+    query?: {
+        /**
+         * Bypass the cache and re-query Meta
+         */
+        refresh?: boolean;
+    };
+};
+
+export type GetInstagramFollowStatusResponse = ({
+    userId: string;
+    accountId: string;
+    /**
+     * The user follows this account. Null = unknown, never "no".
+     */
+    isFollower: (boolean) | null;
+    /**
+     * This account follows the user.
+     */
+    isFollowedByAccount?: (boolean) | null;
+    followerCount?: (number) | null;
+    isVerified?: (boolean) | null;
+    username?: (string) | null;
+    name?: (string) | null;
+    /**
+     * Why the follow relationship could not be resolved. Null when it was.
+     */
+    unavailableReason?: ('consent_required' | 'dm_access_disabled' | 'not_messageable' | 'error') | null;
+});
+
+export type GetInstagramFollowStatusError = (ErrorResponse | {
     error?: string;
 });
 
@@ -25474,6 +25594,8 @@ export type CreateCommentAutomationData = {
          * Optional tag applied to a contact when they click a tracked link (requires linkTracking). Lets you segment clickers for broadcasts/sequences.
          */
         clickTag?: string;
+        audience?: CommentAutomationAudience;
+        followGate?: CommentAutomationFollowGate;
     };
 };
 
@@ -25514,6 +25636,8 @@ export type CreateCommentAutomationResponse = ({
         commentReplyVariations?: Array<(string)>;
         linkTracking?: boolean;
         clickTag?: string;
+        audience?: CommentAutomationAudience;
+        followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -25574,6 +25698,8 @@ export type GetCommentAutomationResponse = ({
         commentReplyVariations?: Array<(string)>;
         linkTracking?: boolean;
         clickTag?: string;
+        audience?: CommentAutomationAudience;
+        followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -25590,9 +25716,18 @@ export type GetCommentAutomationResponse = ({
         commenterName?: string;
         commentText?: string;
         /**
-         * DM outcome
+         * DM outcome. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
          */
-        status?: 'sent' | 'failed' | 'skipped';
+        status?: 'sent' | 'failed' | 'skipped' | 'gated';
+        /**
+         * How the audience rule resolved. Absent on automations without one.
+         */
+        audienceOutcome?: 'passed' | 'blocked' | 'gate_sent' | 'gate_passed' | 'gate_failed';
+        /**
+         * Follow relationship at decision time. Absent when Instagram would not tell us (the commenter never messaged the account).
+         */
+        commenterIsFollower?: boolean;
+        commenterFollowerCount?: number;
         /**
          * DM error message if status is failed
          */
@@ -25655,6 +25790,8 @@ export type UpdateCommentAutomationData = {
          * Tag applied to a contact when they click a tracked link (requires linkTracking). Empty string clears it.
          */
         clickTag?: string;
+        audience?: CommentAutomationAudience;
+        followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
     };
     path: {
@@ -25694,6 +25831,8 @@ export type UpdateCommentAutomationResponse = ({
          * Alternate public replies rotated at random with commentReply. Omitted when none.
          */
         commentReplyVariations?: Array<(string)>;
+        audience?: CommentAutomationAudience;
+        followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
         updatedAt?: string;
     };
@@ -25725,7 +25864,7 @@ export type ListCommentAutomationLogsData = {
         /**
          * Filter by result status
          */
-        status?: 'sent' | 'failed' | 'skipped';
+        status?: 'sent' | 'failed' | 'skipped' | 'gated';
     };
 };
 
@@ -25738,9 +25877,18 @@ export type ListCommentAutomationLogsResponse = ({
         commenterName?: string;
         commentText?: string;
         /**
-         * DM outcome
+         * DM outcome. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
          */
-        status?: 'sent' | 'failed' | 'skipped';
+        status?: 'sent' | 'failed' | 'skipped' | 'gated';
+        /**
+         * How the audience rule resolved. Absent on automations without one.
+         */
+        audienceOutcome?: 'passed' | 'blocked' | 'gate_sent' | 'gate_passed' | 'gate_failed';
+        /**
+         * Follow relationship at decision time. Absent when Instagram would not tell us (the commenter never messaged the account).
+         */
+        commenterIsFollower?: boolean;
+        commenterFollowerCount?: number;
         /**
          * DM error message if status is failed
          */
