@@ -4421,6 +4421,10 @@ export type SocialAccount = {
      * - wabaId: WhatsApp Business Account ID
      * - phoneNumberId: Meta phone number ID
      *
+     * For LinkedIn accounts, profileData carries the profile details refreshed on each daily snapshot:
+     * - profileData.bio: The member's headline for personal accounts, or the organization description for organization accounts. null when the member has not set one.
+     * - profileData.extraData.vanityName: The member's profile slug, i.e. the /in/{vanityName} segment of profileUrl. Personal accounts only; an organization's own slug is in metadata.organizationInfo.vanityName.
+     *
      */
     metadata?: {
         [key: string]: unknown;
