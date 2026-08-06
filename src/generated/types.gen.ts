@@ -921,7 +921,7 @@ export type ApiKey = {
      */
     permission?: 'read-write' | 'read';
     /**
-     * Resource groups this key can NOT access (opt-out denylist). Absent or empty means legacy full access. A key with any group disabled is a restricted key (zrk_ prefix) and can never manage API keys, invites, or member identity. Each operation's group is published as x-resource-group. With 'messages' disabled, the KEY cannot access private messages; the ACCOUNT's pre-existing webhook subscriptions are a separate grant surface.
+     * Resource groups this key can NOT access (opt-out denylist). Absent or empty means legacy full access. A key with any group disabled is a restricted key (zrk_ prefix) and can never manage API keys, invites, or member identity. Each operation's group is published as x-resource-group. With 'messages' disabled, the key cannot read or send private messages through any API surface, and it cannot create or edit a webhook subscription broader than itself: it cannot subscribe to, test-fire, redeliver, or read delivery logs for message events. Subscriptions created earlier, from the dashboard, or with a full-access key keep delivering whatever their own `disabledResourceGroups` allows, so restricting an existing integration end to end means restricting the subscription too. OAuth connector tokens (AI assistants and MCP clients) resolve against the same registry, but their groups are not settable yet: treat an authorized connector as full access.
      */
     disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
 };
@@ -5423,6 +5423,10 @@ export type Webhook = {
     customHeaders?: {
         [key: string]: (string);
     };
+    /**
+     * Resource groups this subscription does not receive (opt-out denylist, same vocabulary and same semantics as the field on API keys). Absent or empty means the subscription receives every event listed in `events`, which is how every subscription created before this field existed behaves. An event whose group is listed here is dropped before delivery even when it is still present in `events`, and the same check runs on every replay path (test fire, redelivery, dead-letter requeue). Editing the denylist applies to every event emitted afterwards; events already queued when the edit landed can still be delivered for up to five minutes after they were enqueued.
+     */
+    disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
 };
 
 /**
@@ -10651,7 +10655,7 @@ export type CreateApiKeyData = {
          */
         permission?: 'read-write' | 'read';
         /**
-         * Resource groups to DISABLE on this key (opt-out denylist). Omit for a legacy full-access key. A key with any group disabled mints with the zrk_ prefix, gets 403 with code=insufficient_permissions and required_group on operations in disabled groups (each operation's group is published as x-resource-group), and can never manage API keys, invites, or member identity. With 'messages' disabled, the KEY cannot access private messages; the ACCOUNT's pre-existing webhook subscriptions are a separate grant surface.
+         * Resource groups to DISABLE on this key (opt-out denylist). Omit for a legacy full-access key. A key with any group disabled mints with the zrk_ prefix, gets 403 with code=insufficient_permissions and required_group on operations in disabled groups (each operation's group is published as x-resource-group), and can never manage API keys, invites, or member identity. With 'messages' disabled, the key cannot read or send private messages through any API surface and cannot create or edit a webhook subscription broader than itself. Subscriptions that already exist are governed by their own `disabledResourceGroups`, not by this key's. OAuth connector tokens resolve against the same registry, but their groups are not settable yet.
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
     };
@@ -15152,6 +15156,13 @@ export type GetWebhookSettingsResponse = ({
 
 export type GetWebhookSettingsError = ({
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type CreateWebhookSettingsData = {
@@ -15182,6 +15193,10 @@ export type CreateWebhookSettingsData = {
         customHeaders?: {
             [key: string]: (string);
         };
+        /**
+         * Resource groups this subscription does not receive (opt-out denylist). Omit or send an empty array to receive every event in `events`. Listing a group here drops its events before delivery and on every replay path. Set at creation it applies to everything this subscription ever receives; changed later via PUT it applies to events emitted after the change, with a five-minute tail for events already queued (see that operation). When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned into whatever you send here, so a restricted key can never create a subscription wider than itself.
+         */
+        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
     };
 };
 
@@ -15233,6 +15248,10 @@ export type UpdateWebhookSettingsData = {
         customHeaders?: {
             [key: string]: (string);
         };
+        /**
+         * Replaces the subscription's denylist. Send an empty array to clear it and receive every event in `events` again. Omitting the field leaves the current denylist untouched. Applies to events emitted after the update; already-queued events can still deliver for up to five minutes after they were enqueued. When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned back in either way, so a restricted key can neither clear nor widen a subscription past its own groups.
+         */
+        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
     };
 };
 
@@ -15267,6 +15286,13 @@ export type DeleteWebhookSettingsResponse = ({
 
 export type DeleteWebhookSettingsError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
 export type GetWebhookLogsData = {
@@ -15351,6 +15377,13 @@ export type TestWebhookResponse = ({
 
 export type TestWebhookError = (unknown | {
     error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 } | {
     success?: boolean;
     message?: string;
