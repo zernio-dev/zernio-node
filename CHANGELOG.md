@@ -5,6 +5,13 @@ All notable changes to the Late Node.js SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.519] - 2026-08-07
+
+### Fixed
+- **Security: API keys leaked between client instances.** The auth interceptor was registered on a module-global HTTP client, so every `new Zernio({ apiKey })` stacked another interceptor on the same shared client and the last-constructed key won for **all** in-flight requests. In a process serving more than one tenant (a server handling concurrent requests, a worker looping over accounts), one tenant's call could go out carrying another tenant's token and return their data. Each instance now owns its client, and `baseURL` and `defaultHeaders` are per-instance for the same reason. Upgrade if you construct more than one `Zernio` in a process.
+
+Releases between 0.1.0 and 0.2.518 were automated regenerations from the OpenAPI spec and are not itemised here.
+
 ## [0.1.0] - 2025-01-16
 
 ### Added

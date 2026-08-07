@@ -191,8 +191,8 @@ function generateClientCode(namespaces: Map<string, OperationInfo[]>): string {
 
   // Generate imports
   const imports = `import packageJson from '../package.json';
+import { createClient, createConfig, type Client } from '@hey-api/client-fetch';
 import {
-  client,
 ${allFunctions.map(f => `  ${f},`).join('\n')}
 } from './generated/sdk.gen';
 
@@ -239,14 +239,14 @@ export interface ClientOptions {
 
       // Add flat methods
       for (const op of flat) {
-        connectCode += `\n    ${op.methodName}: ${op.functionName},`;
+        connectCode += `\n    ${op.methodName}: this._bind(${op.functionName}),`;
       }
 
       // Add nested namespaces
       for (const [subName, subOps] of nested.entries()) {
         connectCode += `\n    ${subName}: {`;
         for (const op of subOps) {
-          connectCode += `\n      ${op.methodName}: ${op.functionName},`;
+          connectCode += `\n      ${op.methodName}: this._bind(${op.functionName}),`;
         }
         connectCode += `\n    },`;
       }
@@ -262,7 +262,7 @@ export interface ClientOptions {
   ${namespace} = {`;
 
       for (const op of operations) {
-        code += `\n    ${op.methodName}: ${op.functionName},`;
+        code += `\n    ${op.methodName}: this._bind(${op.functionName}),`;
       }
 
       code += `\n  };`;
@@ -294,7 +294,7 @@ export interface ClientOptions {
       // pointing at its exact new namespace.
       for (const { ns, op } of adAliasEntries) {
         adsCode += `\n    /** @deprecated Use \`zernio.${ns}.${op.methodName}\` instead. */`;
-        adsCode += `\n    ${op.methodName}: ${op.functionName},`;
+        adsCode += `\n    ${op.methodName}: this._bind(${op.functionName}),`;
       }
       adsCode += `\n  };`;
       namespaceProps.push(adsCode);
@@ -332,6 +332,13 @@ export class Zernio {
   private _options: ClientOptions;
 
   /**
+   * HTTP client owned by this instance. Every namespace method below is bound
+   * to it, so two Zernio instances in the same process never see each other's
+   * credentials.
+   */
+  private _client!: Client;
+
+  /**
    * API key used for authentication.
    */
   apiKey: string;
@@ -340,6 +347,22 @@ export class Zernio {
    * Base URL for API requests.
    */
   baseURL: string;
+
+  /**
+   * Routes a generated operation through this instance's client, preserving the
+   * operation's own signature. Reads \`_client\` when the method is called, not
+   * when it is bound, because class fields initialize before the constructor
+   * body runs.
+   */
+  private _bind<F>(operation: F): F {
+    return ((options?: Record<string, unknown>) => {
+      const withClient = { ...options };
+      if (withClient['client'] === undefined) {
+        withClient['client'] = this._client;
+      }
+      return (operation as (opts: unknown) => unknown)(withClient);
+    }) as F;
+  }
 
 ${namespaceProps.join('\n\n')}
 
@@ -364,26 +387,32 @@ ${namespaceProps.join('\n\n')}
     this.baseURL = options.baseURL ?? 'https://zernio.com/api';
     this._options = options;
 
-    // Configure the generated client. User-Agent and defaultHeaders are
-    // applied at config time (not via the interceptor) because Node 20's
-    // undici treats User-Agent as a forbidden header on already-constructed
-    // Request objects, silently dropping \`headers.set('User-Agent', …)\`.
-    client.setConfig({
-      baseUrl: this.baseURL,
-      headers: {
-        'User-Agent': \`zernio-node/\${packageJson.version}\`,
-        ...(options.defaultHeaders ?? {}),
-      },
-    });
+    // One client per instance. Interceptors used to be registered on the
+    // module-global client, so every \`new Zernio()\` stacked another auth
+    // interceptor on the same shared client and the last-constructed key won
+    // for ALL in-flight requests — one tenant's call could carry another
+    // tenant's token. User-Agent and defaultHeaders are applied at config time
+    // (not via the interceptor) because Node 20's undici treats User-Agent as a
+    // forbidden header on already-constructed Request objects, silently
+    // dropping \`headers.set('User-Agent', …)\`.
+    this._client = createClient(
+      createConfig({
+        baseUrl: this.baseURL,
+        headers: {
+          'User-Agent': \`zernio-node/\${packageJson.version}\`,
+          ...(options.defaultHeaders ?? {}),
+        },
+      })
+    );
 
     // Add auth interceptor
-    client.interceptors.request.use((request) => {
+    this._client.interceptors.request.use((request) => {
       request.headers.set('Authorization', \`Bearer \${this.apiKey}\`);
       return request;
     });
 
     // Add error handling interceptor
-    client.interceptors.response.use(async (response) => {
+    this._client.interceptors.response.use(async (response) => {
       if (!response.ok) {
         let body: Record<string, unknown> | undefined;
         try {
