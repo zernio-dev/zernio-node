@@ -7168,7 +7168,7 @@ export type event19 = 'post.platform.published' | 'post.platform.failed' | 'post
 export type status12 = 'published' | 'failed' | 'deleted';
 
 /**
- * Webhook payload for reaction received events (WhatsApp, Telegram)
+ * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
  */
 export type WebhookPayloadReaction = {
     /**
@@ -7193,7 +7193,7 @@ export type WebhookPayloadReaction = {
          */
         platformMessageId: string;
         /**
-         * The participant who added or removed the reaction.
+         * Whoever added or removed the reaction. Usually the participant, but on Slack, Instagram and Facebook Messenger it is the business own platform id when the reaction was made from the native app: compare it with conversation.participantId.
          */
         sender: {
             id: string;
