@@ -5486,9 +5486,9 @@ export const createWhatsAppNumberKycLink = <ThrowOnError extends boolean = false
  * Use this instead of `PATCH /v1/accounts/{accountId}`: that one moves the
  * social account only and leaves the number itself pinned to its original
  * profile, which splits the number across two profiles. Connecting a
- * provisioned number always places it on the profile the NUMBER is on, so a
- * `profileId` passed to `GET /v1/connect/whatsapp` cannot re-home it and a
- * later reconnect pulls the account back. This endpoint is how you re-home it.
+ * Zernio-provisioned number from any profile but its own is rejected with a
+ * `409` (`WHATSAPP_NUMBER_PINNED_TO_PROFILE`). This endpoint is how you
+ * re-home the number first, so it can then be connected from the new profile.
  *
  * `id` is the number record id from `GET /v1/phone-numbers`, not an account id.
  *
