@@ -6838,23 +6838,28 @@ export const updateAdCampaignStatus = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Update a campaign
- * Campaign-level edits. At least one of `budget`, `bidStrategy`, `name` or `platformSpecificData` is required.
+ * Campaign-level edits. Send at least one of `budget`, `bidStrategy`, `name`
+ * or `platformSpecificData`. An unsupported field is always an error, never a
+ * silent drop.
  *
- * **Empty campaigns.** A campaign with zero ads has no local Ad documents to
- * resolve, so this would 404 even though it exists on Meta. Send `accountId`
- * in the body to skip the local lookup and forward the update to Meta. The
- * response then carries `updated: 0`, since there are no local rows to mirror
- * onto. `accountId` is ignored when the campaign does have ads.
+ * | Body field | Meta | Google | Others |
+ * |---|---|---|---|
+ * | `bidStrategy` | Yes | Yes | 501 |
+ * | `bidAmount`, `roasAverageFloor` | 400 — ad-set level | Yes | 400 |
+ * | `budget` (CBO; ABO returns 409) | Yes | 501 | 501 |
+ * | `name` | Yes | 501 | 501 |
+ * | `platformSpecificData.spendCap` | Yes | 400 | 400 |
+ * | `accountId` (empty campaigns) | Yes | - | - |
  *
- * - `budget` updates the CBO (Campaign Budget Optimization) budget. For ABO campaigns
- * (where the budget lives on the ad set), use PUT /v1/ads/ad-sets/{adSetId} instead — this endpoint
- * will return 409 with code BUDGET_LEVEL_MISMATCH.
- * - `bidStrategy` sets the campaign-level default bid strategy. Per Meta's spec, `bid_amount` and
- * `bid_constraints` do NOT exist at the campaign level — pass them via PUT /v1/ads/ad-sets/{adSetId}.
- * - `platformSpecificData.spendCap` (Meta only) sets the campaign's lifetime spend cap, in the ad
- * account's currency.
+ * Google maps the shared enum onto its own strategies: `LOWEST_COST_WITHOUT_CAP`
+ * to Maximize Clicks, `LOWEST_COST_WITH_BID_CAP` to Maximize Clicks with a max
+ * CPC (`bidAmount`), `COST_CAP` to Target CPA (`bidAmount`),
+ * `LOWEST_COST_WITH_MIN_ROAS` to Target ROAS (`roasAverageFloor`). A campaign on
+ * a PORTFOLIO bidding strategy is rejected: detach it in Google Ads first, since
+ * it is shared across campaigns.
  *
- * Meta-only for now. Other platforms return 501 Not Implemented.
+ * `accountId` forwards the update straight to Meta for a campaign with zero ads,
+ * which would otherwise 404; the response then carries `updated: 0`.
  *
  */
 export const updateAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdCampaignData, ThrowOnError>) => {
@@ -6869,9 +6874,6 @@ export const updateAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * Deletes the whole campaign on the platform, cascading to its ad sets
  * and ads. Locally, all Ad documents for this campaign are marked
  * `status: cancelled`.
- *
- * Meta-only for now. Other platforms return 501 Not Implemented — fall
- * back to DELETE /v1/ads/{adId} per ad in the meantime.
  *
  * **Empty campaigns.** A campaign with zero ads has no local Ad documents
  * to resolve, so it is invisible to `/v1/ads/tree` and this endpoint would

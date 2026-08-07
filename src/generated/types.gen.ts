@@ -26368,10 +26368,28 @@ export type UpdateAdCampaignStatusError = (unknown | {
 export type UpdateAdCampaignData = {
     body: {
         /**
-         * Zernio SocialAccount id owning the ad account. Required only to update an EMPTY campaign (zero ads), which has no local Ad documents to resolve a token from.
+         * Required: platform campaign IDs are not globally unique.
+         */
+        platform: 'facebook' | 'instagram' | 'google';
+        /**
+         * **Meta only.** Zernio SocialAccount id owning the ad account. Needed only for an EMPTY campaign (zero ads); ignored otherwise.
          */
         accountId?: string;
-        platform: 'facebook' | 'instagram';
+        /**
+         * **Meta + Google.** On Meta, the campaign default that ad sets inherit unless they override it. On Google, the campaign's own bidding strategy.
+         */
+        bidStrategy?: (BidStrategy);
+        /**
+         * **Google only.** Whole currency units (USD: 12 = $12.00). Max CPC for LOWEST_COST_WITH_BID_CAP, CPA target for COST_CAP; required for both.
+         */
+        bidAmount?: number;
+        /**
+         * **Google only.** Decimal ROAS multiplier (2.0 = 2.0x), required for LOWEST_COST_WITH_MIN_ROAS.
+         */
+        roasAverageFloor?: number;
+        /**
+         * **Meta only.** The CBO budget.
+         */
         budget?: {
             /**
              * Budget amount in the ad account's currency
@@ -26380,22 +26398,15 @@ export type UpdateAdCampaignData = {
             type: 'daily' | 'lifetime';
         };
         /**
-         * Campaign-level default. Ad sets inherit this unless they override.
-         */
-        bidStrategy?: (BidStrategy);
-        /**
-         * Rename the campaign (Meta only; other platforms return 501). At least one of budget/bidStrategy/name/platformSpecificData is required.
+         * **Meta only.** Rename the campaign.
          */
         name?: string;
         /**
-         * Platform-specific campaign settings. The platform is implied by the `platform`
-         * body param (same convention as platformSpecificData on POST /v1/ads/create).
-         * Meta (facebook/instagram) only; other platforms return 400.
-         *
+         * **Meta only.** Platform implied by the `platform` body param, same convention as POST /v1/ads/create.
          */
         platformSpecificData?: {
             /**
-             * Campaign lifetime spend cap, in the ad account's currency (Meta `spend_cap`). Pass null to remove the cap (0 is rejected by Meta).
+             * Campaign lifetime spend cap, in the ad account's currency (Meta `spend_cap`). Pass null to remove the cap; 0 is rejected by Meta.
              */
             spendCap?: (number) | null;
         };
@@ -26409,10 +26420,15 @@ export type UpdateAdCampaignData = {
 };
 
 export type UpdateAdCampaignResponse = ({
+    /**
+     * Local Ad documents mirrored. 0 on the empty-campaign path.
+     */
     updated?: number;
     budget?: AdBudget;
     budgetLevel?: 'campaign';
     bidStrategy?: BidStrategy;
+    bidAmount?: number;
+    roasAverageFloor?: number;
     platformSpecificData?: {
         [key: string]: unknown;
     };
