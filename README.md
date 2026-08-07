@@ -912,6 +912,7 @@ try {
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumber()` | Get phone number |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumbers()` | List phone numbers |
 | `whatsappPhoneNumbers.checkWhatsAppNumberAvailability()` | Check country availability |
+| `whatsappPhoneNumbers.moveWhatsAppNumberToProfile()` | Move a number to another profile |
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |
 | `whatsappPhoneNumbers.releaseWhatsAppPhoneNumber()` | Release phone number |
 | `whatsappPhoneNumbers.remediateWhatsAppNumber()` | Resubmit a declined number |

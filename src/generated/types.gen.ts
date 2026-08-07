@@ -22584,6 +22584,37 @@ export type CreateWhatsAppNumberKycLinkError = (unknown | {
     error?: string;
 });
 
+export type MoveWhatsAppNumberToProfileData = {
+    body: {
+        /**
+         * Destination profile id. Must belong to the same team.
+         */
+        profileId: string;
+    };
+    path: {
+        /**
+         * WhatsAppPhoneNumber id.
+         */
+        id: string;
+    };
+};
+
+export type MoveWhatsAppNumberToProfileResponse = ({
+    message?: string;
+    /**
+     * The profile the number is now on.
+     */
+    profileId?: string;
+    /**
+     * Platforms whose accounts travelled with the number (phone, sms, whatsapp). Absent when the number was already on the destination profile.
+     */
+    movedPlatforms?: Array<(string)>;
+});
+
+export type MoveWhatsAppNumberToProfileError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppNumberRemediationData = {
     path: {
         /**
