@@ -17131,7 +17131,7 @@ export type SendInboxMessageData = {
     };
     path: {
         /**
-         * The conversation ID (id field from list conversations endpoint). This is the platform-specific conversation identifier, not an internal database ID.
+         * Opaque conversation identifier, accepted verbatim from the list endpoint or from the conversationId on inbox webhooks. Format not to be assumed.
          */
         conversationId: string;
     };
