@@ -1,6 +1,6 @@
 import packageJson from '../package.json';
+import { createClient, createConfig, type Client } from '@hey-api/client-fetch';
 import {
-  client,
   activateSequence,
   activateWorkflow,
   addBroadcastRecipients,
@@ -597,6 +597,13 @@ export class Zernio {
   private _options: ClientOptions;
 
   /**
+   * HTTP client owned by this instance. Every namespace method below is bound
+   * to it, so two Zernio instances in the same process never see each other's
+   * credentials.
+   */
+  private _client!: Client;
+
+  /**
    * API key used for authentication.
    */
   apiKey: string;
@@ -607,276 +614,292 @@ export class Zernio {
   baseURL: string;
 
   /**
+   * Routes a generated operation through this instance's client, preserving the
+   * operation's own signature. Reads `_client` when the method is called, not
+   * when it is bound, because class fields initialize before the constructor
+   * body runs.
+   */
+  private _bind<F>(operation: F): F {
+    return ((options?: Record<string, unknown>) => {
+      const withClient = { ...options };
+      if (withClient['client'] === undefined) {
+        withClient['client'] = this._client;
+      }
+      return (operation as (opts: unknown) => unknown)(withClient);
+    }) as F;
+  }
+
+  /**
    * validate API
    */
   validate = {
-    validatePostLength: validatePostLength,
-    validatePost: validatePost,
-    validateMedia: validateMedia,
-    validateSubreddit: validateSubreddit,
+    validatePostLength: this._bind(validatePostLength),
+    validatePost: this._bind(validatePost),
+    validateMedia: this._bind(validateMedia),
+    validateSubreddit: this._bind(validateSubreddit),
   };
 
   /**
    * Analytics API - Get performance metrics
    */
   analytics = {
-    getAnalytics: getAnalytics,
-    getYouTubeChannelInsights: getYouTubeChannelInsights,
-    getLinkedInOrgAggregateAnalytics: getLinkedInOrgAggregateAnalytics,
-    getTikTokAccountInsights: getTikTokAccountInsights,
-    getYouTubeDailyViews: getYouTubeDailyViews,
-    getYouTubeVideoRetention: getYouTubeVideoRetention,
-    getFacebookPageInsights: getFacebookPageInsights,
-    getFacebookPostEarnings: getFacebookPostEarnings,
-    getInstagramAccountInsights: getInstagramAccountInsights,
-    getInstagramFollowerHistory: getInstagramFollowerHistory,
-    getInstagramDemographics: getInstagramDemographics,
-    getYouTubeDemographics: getYouTubeDemographics,
-    getDailyMetrics: getDailyMetrics,
-    getBestTimeToPost: getBestTimeToPost,
-    getContentDecay: getContentDecay,
-    getPostingFrequency: getPostingFrequency,
-    getPostTimeline: getPostTimeline,
-    getGoogleBusinessPerformance: getGoogleBusinessPerformance,
-    getGoogleBusinessSearchKeywords: getGoogleBusinessSearchKeywords,
-    syncExternalPosts: syncExternalPosts,
-    getLinkedInAggregateAnalytics: getLinkedInAggregateAnalytics,
-    getLinkedInPostAnalytics: getLinkedInPostAnalytics,
-    getLinkedInPostReactions: getLinkedInPostReactions,
-    getFacebookPostReactions: getFacebookPostReactions,
+    getAnalytics: this._bind(getAnalytics),
+    getYouTubeChannelInsights: this._bind(getYouTubeChannelInsights),
+    getLinkedInOrgAggregateAnalytics: this._bind(getLinkedInOrgAggregateAnalytics),
+    getTikTokAccountInsights: this._bind(getTikTokAccountInsights),
+    getYouTubeDailyViews: this._bind(getYouTubeDailyViews),
+    getYouTubeVideoRetention: this._bind(getYouTubeVideoRetention),
+    getFacebookPageInsights: this._bind(getFacebookPageInsights),
+    getFacebookPostEarnings: this._bind(getFacebookPostEarnings),
+    getInstagramAccountInsights: this._bind(getInstagramAccountInsights),
+    getInstagramFollowerHistory: this._bind(getInstagramFollowerHistory),
+    getInstagramDemographics: this._bind(getInstagramDemographics),
+    getYouTubeDemographics: this._bind(getYouTubeDemographics),
+    getDailyMetrics: this._bind(getDailyMetrics),
+    getBestTimeToPost: this._bind(getBestTimeToPost),
+    getContentDecay: this._bind(getContentDecay),
+    getPostingFrequency: this._bind(getPostingFrequency),
+    getPostTimeline: this._bind(getPostTimeline),
+    getGoogleBusinessPerformance: this._bind(getGoogleBusinessPerformance),
+    getGoogleBusinessSearchKeywords: this._bind(getGoogleBusinessSearchKeywords),
+    syncExternalPosts: this._bind(syncExternalPosts),
+    getLinkedInAggregateAnalytics: this._bind(getLinkedInAggregateAnalytics),
+    getLinkedInPostAnalytics: this._bind(getLinkedInPostAnalytics),
+    getLinkedInPostReactions: this._bind(getLinkedInPostReactions),
+    getFacebookPostReactions: this._bind(getFacebookPostReactions),
   };
 
   /**
    * inboxanalytics API
    */
   inboxanalytics = {
-    getInboxVolume: getInboxVolume,
-    getInboxHeatmap: getInboxHeatmap,
-    getInboxSourceBreakdown: getInboxSourceBreakdown,
-    getInboxResponseTime: getInboxResponseTime,
-    getInboxTopAccounts: getInboxTopAccounts,
-    listInboxConversationAnalytics: listInboxConversationAnalytics,
-    getInboxConversationAnalytics: getInboxConversationAnalytics,
+    getInboxVolume: this._bind(getInboxVolume),
+    getInboxHeatmap: this._bind(getInboxHeatmap),
+    getInboxSourceBreakdown: this._bind(getInboxSourceBreakdown),
+    getInboxResponseTime: this._bind(getInboxResponseTime),
+    getInboxTopAccounts: this._bind(getInboxTopAccounts),
+    listInboxConversationAnalytics: this._bind(listInboxConversationAnalytics),
+    getInboxConversationAnalytics: this._bind(getInboxConversationAnalytics),
   };
 
   /**
    * Account Groups API - Organize accounts into groups
    */
   accountGroups = {
-    listAccountGroups: listAccountGroups,
-    createAccountGroup: createAccountGroup,
-    updateAccountGroup: updateAccountGroup,
-    deleteAccountGroup: deleteAccountGroup,
+    listAccountGroups: this._bind(listAccountGroups),
+    createAccountGroup: this._bind(createAccountGroup),
+    updateAccountGroup: this._bind(updateAccountGroup),
+    deleteAccountGroup: this._bind(deleteAccountGroup),
   };
 
   /**
    * Media API - Upload and manage media files
    */
   media = {
-    getMediaPresignedUrl: getMediaPresignedUrl,
+    getMediaPresignedUrl: this._bind(getMediaPresignedUrl),
   };
 
   /**
    * Reddit API - Search and feed
    */
   reddit = {
-    searchReddit: searchReddit,
-    getRedditFeed: getRedditFeed,
+    searchReddit: this._bind(searchReddit),
+    getRedditFeed: this._bind(getRedditFeed),
   };
 
   /**
    * Usage API - Get usage statistics
    */
   usage = {
-    getBilling: getBilling,
-    getXApiPricing: getXApiPricing,
-    getUsage: getUsage,
-    getUsageStats: getUsageStats,
-    getCallsUsage: getCallsUsage,
-    getSmsUsage: getSmsUsage,
+    getBilling: this._bind(getBilling),
+    getXApiPricing: this._bind(getXApiPricing),
+    getUsage: this._bind(getUsage),
+    getUsageStats: this._bind(getUsageStats),
+    getCallsUsage: this._bind(getCallsUsage),
+    getSmsUsage: this._bind(getSmsUsage),
   };
 
   /**
    * Posts API - Create, schedule, and manage social media posts
    */
   posts = {
-    listPosts: listPosts,
-    createPost: createPost,
-    getPost: getPost,
-    updatePost: updatePost,
-    deletePost: deletePost,
-    bulkUploadPosts: bulkUploadPosts,
-    retryPost: retryPost,
-    unpublishPost: unpublishPost,
-    editPost: editPost,
-    updatePostMetadata: updatePostMetadata,
+    listPosts: this._bind(listPosts),
+    createPost: this._bind(createPost),
+    getPost: this._bind(getPost),
+    updatePost: this._bind(updatePost),
+    deletePost: this._bind(deletePost),
+    bulkUploadPosts: this._bind(bulkUploadPosts),
+    retryPost: this._bind(retryPost),
+    unpublishPost: this._bind(unpublishPost),
+    editPost: this._bind(editPost),
+    updatePostMetadata: this._bind(updatePostMetadata),
   };
 
   /**
    * Users API - User management
    */
   users = {
-    listUsers: listUsers,
-    getUser: getUser,
+    listUsers: this._bind(listUsers),
+    getUser: this._bind(getUser),
   };
 
   /**
    * Profiles API - Manage workspace profiles
    */
   profiles = {
-    listProfiles: listProfiles,
-    createProfile: createProfile,
-    getProfile: getProfile,
-    updateProfile: updateProfile,
-    deleteProfile: deleteProfile,
+    listProfiles: this._bind(listProfiles),
+    createProfile: this._bind(createProfile),
+    getProfile: this._bind(getProfile),
+    updateProfile: this._bind(updateProfile),
+    deleteProfile: this._bind(deleteProfile),
   };
 
   /**
    * Accounts API - Manage connected social media accounts
    */
   accounts = {
-    listAccounts: listAccounts,
-    getFollowerStats: getFollowerStats,
-    updateAccount: updateAccount,
-    moveAccountToProfile: moveAccountToProfile,
-    deleteAccount: deleteAccount,
-    getAllAccountsHealth: getAllAccountsHealth,
-    getAccountHealth: getAccountHealth,
-    getInstagramFollowStatus: getInstagramFollowStatus,
-    getTikTokCreatorInfo: getTikTokCreatorInfo,
-    getGoogleBusinessReviews: getGoogleBusinessReviews,
-    batchGetGoogleBusinessReviews: batchGetGoogleBusinessReviews,
-    replyToGoogleBusinessReview: replyToGoogleBusinessReview,
-    deleteGoogleBusinessReviewReply: deleteGoogleBusinessReviewReply,
-    getLinkedInMentions: getLinkedInMentions,
-    getSlackSettings: getSlackSettings,
-    updateSlackSettings: updateSlackSettings,
+    listAccounts: this._bind(listAccounts),
+    getFollowerStats: this._bind(getFollowerStats),
+    updateAccount: this._bind(updateAccount),
+    moveAccountToProfile: this._bind(moveAccountToProfile),
+    deleteAccount: this._bind(deleteAccount),
+    getAllAccountsHealth: this._bind(getAllAccountsHealth),
+    getAccountHealth: this._bind(getAccountHealth),
+    getInstagramFollowStatus: this._bind(getInstagramFollowStatus),
+    getTikTokCreatorInfo: this._bind(getTikTokCreatorInfo),
+    getGoogleBusinessReviews: this._bind(getGoogleBusinessReviews),
+    batchGetGoogleBusinessReviews: this._bind(batchGetGoogleBusinessReviews),
+    replyToGoogleBusinessReview: this._bind(replyToGoogleBusinessReview),
+    deleteGoogleBusinessReviewReply: this._bind(deleteGoogleBusinessReviewReply),
+    getLinkedInMentions: this._bind(getLinkedInMentions),
+    getSlackSettings: this._bind(getSlackSettings),
+    updateSlackSettings: this._bind(updateSlackSettings),
   };
 
   /**
    * whatsapp API
    */
   whatsapp = {
-    registerWhatsAppNumber: registerWhatsAppNumber,
-    getWhatsAppMedia: getWhatsAppMedia,
-    getWhatsAppTemplates: getWhatsAppTemplates,
-    createWhatsAppTemplate: createWhatsAppTemplate,
-    getWhatsAppTemplate: getWhatsAppTemplate,
-    updateWhatsAppTemplate: updateWhatsAppTemplate,
-    deleteWhatsAppTemplate: deleteWhatsAppTemplate,
-    getWhatsAppBusinessProfile: getWhatsAppBusinessProfile,
-    updateWhatsAppBusinessProfile: updateWhatsAppBusinessProfile,
-    uploadWhatsAppProfilePhoto: uploadWhatsAppProfilePhoto,
-    getWhatsAppDisplayName: getWhatsAppDisplayName,
-    updateWhatsAppDisplayName: updateWhatsAppDisplayName,
-    getWhatsappBusinessUsername: getWhatsappBusinessUsername,
-    setWhatsappBusinessUsername: setWhatsappBusinessUsername,
-    deleteWhatsappBusinessUsername: deleteWhatsappBusinessUsername,
-    getWhatsappBusinessUsernameSuggestions: getWhatsappBusinessUsernameSuggestions,
-    getWhatsAppBlockStatus: getWhatsAppBlockStatus,
-    getWhatsAppBlockedUsers: getWhatsAppBlockedUsers,
-    blockWhatsAppUsers: blockWhatsAppUsers,
-    unblockWhatsAppUsers: unblockWhatsAppUsers,
-    getWhatsAppDataset: getWhatsAppDataset,
-    createWhatsAppDataset: createWhatsAppDataset,
-    listWhatsAppGroupChats: listWhatsAppGroupChats,
-    createWhatsAppGroupChat: createWhatsAppGroupChat,
-    getWhatsAppGroupChat: getWhatsAppGroupChat,
-    updateWhatsAppGroupChat: updateWhatsAppGroupChat,
-    deleteWhatsAppGroupChat: deleteWhatsAppGroupChat,
-    addWhatsAppGroupParticipants: addWhatsAppGroupParticipants,
-    removeWhatsAppGroupParticipants: removeWhatsAppGroupParticipants,
-    createWhatsAppGroupInviteLink: createWhatsAppGroupInviteLink,
-    listWhatsAppGroupJoinRequests: listWhatsAppGroupJoinRequests,
-    approveWhatsAppGroupJoinRequests: approveWhatsAppGroupJoinRequests,
-    rejectWhatsAppGroupJoinRequests: rejectWhatsAppGroupJoinRequests,
-    listWhatsAppConversions: listWhatsAppConversions,
-    sendWhatsAppConversion: sendWhatsAppConversion,
+    registerWhatsAppNumber: this._bind(registerWhatsAppNumber),
+    getWhatsAppMedia: this._bind(getWhatsAppMedia),
+    getWhatsAppTemplates: this._bind(getWhatsAppTemplates),
+    createWhatsAppTemplate: this._bind(createWhatsAppTemplate),
+    getWhatsAppTemplate: this._bind(getWhatsAppTemplate),
+    updateWhatsAppTemplate: this._bind(updateWhatsAppTemplate),
+    deleteWhatsAppTemplate: this._bind(deleteWhatsAppTemplate),
+    getWhatsAppBusinessProfile: this._bind(getWhatsAppBusinessProfile),
+    updateWhatsAppBusinessProfile: this._bind(updateWhatsAppBusinessProfile),
+    uploadWhatsAppProfilePhoto: this._bind(uploadWhatsAppProfilePhoto),
+    getWhatsAppDisplayName: this._bind(getWhatsAppDisplayName),
+    updateWhatsAppDisplayName: this._bind(updateWhatsAppDisplayName),
+    getWhatsappBusinessUsername: this._bind(getWhatsappBusinessUsername),
+    setWhatsappBusinessUsername: this._bind(setWhatsappBusinessUsername),
+    deleteWhatsappBusinessUsername: this._bind(deleteWhatsappBusinessUsername),
+    getWhatsappBusinessUsernameSuggestions: this._bind(getWhatsappBusinessUsernameSuggestions),
+    getWhatsAppBlockStatus: this._bind(getWhatsAppBlockStatus),
+    getWhatsAppBlockedUsers: this._bind(getWhatsAppBlockedUsers),
+    blockWhatsAppUsers: this._bind(blockWhatsAppUsers),
+    unblockWhatsAppUsers: this._bind(unblockWhatsAppUsers),
+    getWhatsAppDataset: this._bind(getWhatsAppDataset),
+    createWhatsAppDataset: this._bind(createWhatsAppDataset),
+    listWhatsAppGroupChats: this._bind(listWhatsAppGroupChats),
+    createWhatsAppGroupChat: this._bind(createWhatsAppGroupChat),
+    getWhatsAppGroupChat: this._bind(getWhatsAppGroupChat),
+    updateWhatsAppGroupChat: this._bind(updateWhatsAppGroupChat),
+    deleteWhatsAppGroupChat: this._bind(deleteWhatsAppGroupChat),
+    addWhatsAppGroupParticipants: this._bind(addWhatsAppGroupParticipants),
+    removeWhatsAppGroupParticipants: this._bind(removeWhatsAppGroupParticipants),
+    createWhatsAppGroupInviteLink: this._bind(createWhatsAppGroupInviteLink),
+    listWhatsAppGroupJoinRequests: this._bind(listWhatsAppGroupJoinRequests),
+    approveWhatsAppGroupJoinRequests: this._bind(approveWhatsAppGroupJoinRequests),
+    rejectWhatsAppGroupJoinRequests: this._bind(rejectWhatsAppGroupJoinRequests),
+    listWhatsAppConversions: this._bind(listWhatsAppConversions),
+    sendWhatsAppConversion: this._bind(sendWhatsAppConversion),
   };
 
   /**
    * API Keys API - Manage API keys
    */
   apiKeys = {
-    verifyCredential: verifyCredential,
-    listApiKeys: listApiKeys,
-    createApiKey: createApiKey,
-    deleteApiKey: deleteApiKey,
+    verifyCredential: this._bind(verifyCredential),
+    listApiKeys: this._bind(listApiKeys),
+    createApiKey: this._bind(createApiKey),
+    deleteApiKey: this._bind(deleteApiKey),
   };
 
   /**
    * connectedapps API
    */
   connectedapps = {
-    listConnectedApps: listConnectedApps,
-    revokeConnectedApp: revokeConnectedApp,
+    listConnectedApps: this._bind(listConnectedApps),
+    revokeConnectedApp: this._bind(revokeConnectedApp),
   };
 
   /**
    * Invites API - Team invitations
    */
   invites = {
-    createInviteToken: createInviteToken,
+    createInviteToken: this._bind(createInviteToken),
   };
 
   /**
    * Connect API - OAuth connection flows
    */
   connect = {
-    getConnectUrl: getConnectUrl,
-    handleOAuthCallback: handleOAuthCallback,
-    connectAds: connectAds,
-    configureTikTokAdsBrandIdentity: configureTikTokAdsBrandIdentity,
-    getPendingOAuthData: getPendingOAuthData,
-    connectOpenAIAdsCredentials: connectOpenAiAdsCredentials,
-    connectWhatsAppCredentials: connectWhatsAppCredentials,
-    listWhatsAppPhoneNumbers: listWhatsAppPhoneNumbers,
-    completeWhatsAppPhoneSelection: completeWhatsAppPhoneSelection,
-    getFacebookPages: getFacebookPages,
-    updateFacebookPage: updateFacebookPage,
-    getLinkedInOrganizations: getLinkedInOrganizations,
-    updateLinkedInOrganization: updateLinkedInOrganization,
-    getPinterestBoards: getPinterestBoards,
-    updatePinterestBoards: updatePinterestBoards,
-    createPinterestBoard: createPinterestBoard,
-    getYoutubePlaylists: getYoutubePlaylists,
-    updateYoutubeDefaultPlaylist: updateYoutubeDefaultPlaylist,
-    getGmbLocations: getGmbLocations,
-    updateGmbLocation: updateGmbLocation,
-    assignGoogleBusinessLocation: assignGoogleBusinessLocation,
-    getRedditSubreddits: getRedditSubreddits,
-    updateRedditSubreddits: updateRedditSubreddits,
-    getSubredditRules: getSubredditRules,
-    voteRedditThing: voteRedditThing,
-    getRedditFlairs: getRedditFlairs,
-    setRedditPostFlair: setRedditPostFlair,
+    getConnectUrl: this._bind(getConnectUrl),
+    handleOAuthCallback: this._bind(handleOAuthCallback),
+    connectAds: this._bind(connectAds),
+    configureTikTokAdsBrandIdentity: this._bind(configureTikTokAdsBrandIdentity),
+    getPendingOAuthData: this._bind(getPendingOAuthData),
+    connectOpenAIAdsCredentials: this._bind(connectOpenAiAdsCredentials),
+    connectWhatsAppCredentials: this._bind(connectWhatsAppCredentials),
+    listWhatsAppPhoneNumbers: this._bind(listWhatsAppPhoneNumbers),
+    completeWhatsAppPhoneSelection: this._bind(completeWhatsAppPhoneSelection),
+    getFacebookPages: this._bind(getFacebookPages),
+    updateFacebookPage: this._bind(updateFacebookPage),
+    getLinkedInOrganizations: this._bind(getLinkedInOrganizations),
+    updateLinkedInOrganization: this._bind(updateLinkedInOrganization),
+    getPinterestBoards: this._bind(getPinterestBoards),
+    updatePinterestBoards: this._bind(updatePinterestBoards),
+    createPinterestBoard: this._bind(createPinterestBoard),
+    getYoutubePlaylists: this._bind(getYoutubePlaylists),
+    updateYoutubeDefaultPlaylist: this._bind(updateYoutubeDefaultPlaylist),
+    getGmbLocations: this._bind(getGmbLocations),
+    updateGmbLocation: this._bind(updateGmbLocation),
+    assignGoogleBusinessLocation: this._bind(assignGoogleBusinessLocation),
+    getRedditSubreddits: this._bind(getRedditSubreddits),
+    updateRedditSubreddits: this._bind(updateRedditSubreddits),
+    getSubredditRules: this._bind(getSubredditRules),
+    voteRedditThing: this._bind(voteRedditThing),
+    getRedditFlairs: this._bind(getRedditFlairs),
+    setRedditPostFlair: this._bind(setRedditPostFlair),
     facebook: {
-      listFacebookPages: listFacebookPages,
-      selectFacebookPage: selectFacebookPage,
+      listFacebookPages: this._bind(listFacebookPages),
+      selectFacebookPage: this._bind(selectFacebookPage),
     },
     googleBusiness: {
-      listGoogleBusinessLocations: listGoogleBusinessLocations,
-      selectGoogleBusinessLocation: selectGoogleBusinessLocation,
+      listGoogleBusinessLocations: this._bind(listGoogleBusinessLocations),
+      selectGoogleBusinessLocation: this._bind(selectGoogleBusinessLocation),
     },
     linkedin: {
-      listLinkedInOrganizations: listLinkedInOrganizations,
-      selectLinkedInOrganization: selectLinkedInOrganization,
+      listLinkedInOrganizations: this._bind(listLinkedInOrganizations),
+      selectLinkedInOrganization: this._bind(selectLinkedInOrganization),
     },
     pinterest: {
-      listPinterestBoardsForSelection: listPinterestBoardsForSelection,
-      selectPinterestBoard: selectPinterestBoard,
+      listPinterestBoardsForSelection: this._bind(listPinterestBoardsForSelection),
+      selectPinterestBoard: this._bind(selectPinterestBoard),
     },
     snapchat: {
-      listSnapchatProfiles: listSnapchatProfiles,
-      selectSnapchatProfile: selectSnapchatProfile,
+      listSnapchatProfiles: this._bind(listSnapchatProfiles),
+      selectSnapchatProfile: this._bind(selectSnapchatProfile),
     },
     bluesky: {
-      connectBlueskyCredentials: connectBlueskyCredentials,
+      connectBlueskyCredentials: this._bind(connectBlueskyCredentials),
     },
     telegram: {
-      getTelegramConnectStatus: getTelegramConnectStatus,
-      initiateTelegramConnect: initiateTelegramConnect,
-      completeTelegramConnect: completeTelegramConnect,
+      getTelegramConnectStatus: this._bind(getTelegramConnectStatus),
+      initiateTelegramConnect: this._bind(initiateTelegramConnect),
+      completeTelegramConnect: this._bind(completeTelegramConnect),
     },
   };
 
@@ -884,653 +907,653 @@ export class Zernio {
    * gmbverifications API
    */
   gmbverifications = {
-    getGoogleBusinessVerifications: getGoogleBusinessVerifications,
-    startGoogleBusinessVerification: startGoogleBusinessVerification,
-    fetchGoogleBusinessVerificationOptions: fetchGoogleBusinessVerificationOptions,
-    completeGoogleBusinessVerification: completeGoogleBusinessVerification,
+    getGoogleBusinessVerifications: this._bind(getGoogleBusinessVerifications),
+    startGoogleBusinessVerification: this._bind(startGoogleBusinessVerification),
+    fetchGoogleBusinessVerificationOptions: this._bind(fetchGoogleBusinessVerificationOptions),
+    completeGoogleBusinessVerification: this._bind(completeGoogleBusinessVerification),
   };
 
   /**
    * gmbfoodmenus API
    */
   gmbfoodmenus = {
-    getGoogleBusinessFoodMenus: getGoogleBusinessFoodMenus,
-    updateGoogleBusinessFoodMenus: updateGoogleBusinessFoodMenus,
+    getGoogleBusinessFoodMenus: this._bind(getGoogleBusinessFoodMenus),
+    updateGoogleBusinessFoodMenus: this._bind(updateGoogleBusinessFoodMenus),
   };
 
   /**
    * gmblocationdetails API
    */
   gmblocationdetails = {
-    getGoogleBusinessLocationDetails: getGoogleBusinessLocationDetails,
-    updateGoogleBusinessLocationDetails: updateGoogleBusinessLocationDetails,
+    getGoogleBusinessLocationDetails: this._bind(getGoogleBusinessLocationDetails),
+    updateGoogleBusinessLocationDetails: this._bind(updateGoogleBusinessLocationDetails),
   };
 
   /**
    * gmbmedia API
    */
   gmbmedia = {
-    listGoogleBusinessMedia: listGoogleBusinessMedia,
-    createGoogleBusinessMedia: createGoogleBusinessMedia,
-    deleteGoogleBusinessMedia: deleteGoogleBusinessMedia,
+    listGoogleBusinessMedia: this._bind(listGoogleBusinessMedia),
+    createGoogleBusinessMedia: this._bind(createGoogleBusinessMedia),
+    deleteGoogleBusinessMedia: this._bind(deleteGoogleBusinessMedia),
   };
 
   /**
    * gmbattributes API
    */
   gmbattributes = {
-    getGmbAttributeMetadata: getGmbAttributeMetadata,
-    getGoogleBusinessAttributes: getGoogleBusinessAttributes,
-    updateGoogleBusinessAttributes: updateGoogleBusinessAttributes,
+    getGmbAttributeMetadata: this._bind(getGmbAttributeMetadata),
+    getGoogleBusinessAttributes: this._bind(getGoogleBusinessAttributes),
+    updateGoogleBusinessAttributes: this._bind(updateGoogleBusinessAttributes),
   };
 
   /**
    * gmbplaceactions API
    */
   gmbplaceactions = {
-    listGoogleBusinessPlaceActions: listGoogleBusinessPlaceActions,
-    createGoogleBusinessPlaceAction: createGoogleBusinessPlaceAction,
-    deleteGoogleBusinessPlaceAction: deleteGoogleBusinessPlaceAction,
-    updateGoogleBusinessPlaceAction: updateGoogleBusinessPlaceAction,
+    listGoogleBusinessPlaceActions: this._bind(listGoogleBusinessPlaceActions),
+    createGoogleBusinessPlaceAction: this._bind(createGoogleBusinessPlaceAction),
+    deleteGoogleBusinessPlaceAction: this._bind(deleteGoogleBusinessPlaceAction),
+    updateGoogleBusinessPlaceAction: this._bind(updateGoogleBusinessPlaceAction),
   };
 
   /**
    * gmbservices API
    */
   gmbservices = {
-    getGoogleBusinessServices: getGoogleBusinessServices,
-    updateGoogleBusinessServices: updateGoogleBusinessServices,
+    getGoogleBusinessServices: this._bind(getGoogleBusinessServices),
+    updateGoogleBusinessServices: this._bind(updateGoogleBusinessServices),
   };
 
   /**
    * instagram API
    */
   instagram = {
-    listInstagramStories: listInstagramStories,
-    getInstagramPublishingLimit: getInstagramPublishingLimit,
-    getInstagramStoryInsights: getInstagramStoryInsights,
+    listInstagramStories: this._bind(listInstagramStories),
+    getInstagramPublishingLimit: this._bind(getInstagramPublishingLimit),
+    getInstagramStoryInsights: this._bind(getInstagramStoryInsights),
   };
 
   /**
    * discord API
    */
   discord = {
-    getDiscordSettings: getDiscordSettings,
-    updateDiscordSettings: updateDiscordSettings,
-    getDiscordChannels: getDiscordChannels,
-    sendDiscordDirectMessage: sendDiscordDirectMessage,
-    listDiscordGuildRoles: listDiscordGuildRoles,
-    createDiscordGuildRole: createDiscordGuildRole,
-    editDiscordGuildRole: editDiscordGuildRole,
-    deleteDiscordGuildRole: deleteDiscordGuildRole,
-    listDiscordGuildMembers: listDiscordGuildMembers,
-    searchDiscordGuildMembers: searchDiscordGuildMembers,
-    getDiscordGuildMember: getDiscordGuildMember,
-    addDiscordMemberRole: addDiscordMemberRole,
-    removeDiscordMemberRole: removeDiscordMemberRole,
-    deleteDiscordMessage: deleteDiscordMessage,
-    crosspostDiscordMessage: crosspostDiscordMessage,
-    createDiscordThread: createDiscordThread,
-    listDiscordPinnedMessages: listDiscordPinnedMessages,
-    pinDiscordMessage: pinDiscordMessage,
-    unpinDiscordMessage: unpinDiscordMessage,
-    listDiscordScheduledEvents: listDiscordScheduledEvents,
-    createDiscordScheduledEvent: createDiscordScheduledEvent,
-    getDiscordScheduledEvent: getDiscordScheduledEvent,
-    updateDiscordScheduledEvent: updateDiscordScheduledEvent,
-    deleteDiscordScheduledEvent: deleteDiscordScheduledEvent,
+    getDiscordSettings: this._bind(getDiscordSettings),
+    updateDiscordSettings: this._bind(updateDiscordSettings),
+    getDiscordChannels: this._bind(getDiscordChannels),
+    sendDiscordDirectMessage: this._bind(sendDiscordDirectMessage),
+    listDiscordGuildRoles: this._bind(listDiscordGuildRoles),
+    createDiscordGuildRole: this._bind(createDiscordGuildRole),
+    editDiscordGuildRole: this._bind(editDiscordGuildRole),
+    deleteDiscordGuildRole: this._bind(deleteDiscordGuildRole),
+    listDiscordGuildMembers: this._bind(listDiscordGuildMembers),
+    searchDiscordGuildMembers: this._bind(searchDiscordGuildMembers),
+    getDiscordGuildMember: this._bind(getDiscordGuildMember),
+    addDiscordMemberRole: this._bind(addDiscordMemberRole),
+    removeDiscordMemberRole: this._bind(removeDiscordMemberRole),
+    deleteDiscordMessage: this._bind(deleteDiscordMessage),
+    crosspostDiscordMessage: this._bind(crosspostDiscordMessage),
+    createDiscordThread: this._bind(createDiscordThread),
+    listDiscordPinnedMessages: this._bind(listDiscordPinnedMessages),
+    pinDiscordMessage: this._bind(pinDiscordMessage),
+    unpinDiscordMessage: this._bind(unpinDiscordMessage),
+    listDiscordScheduledEvents: this._bind(listDiscordScheduledEvents),
+    createDiscordScheduledEvent: this._bind(createDiscordScheduledEvent),
+    getDiscordScheduledEvent: this._bind(getDiscordScheduledEvent),
+    updateDiscordScheduledEvent: this._bind(updateDiscordScheduledEvent),
+    deleteDiscordScheduledEvent: this._bind(deleteDiscordScheduledEvent),
   };
 
   /**
    * slack API
    */
   slack = {
-    listSlackMembers: listSlackMembers,
+    listSlackMembers: this._bind(listSlackMembers),
   };
 
   /**
    * Queue API - Manage posting queue
    */
   queue = {
-    listQueueSlots: listQueueSlots,
-    createQueueSlot: createQueueSlot,
-    updateQueueSlot: updateQueueSlot,
-    deleteQueueSlot: deleteQueueSlot,
-    previewQueue: previewQueue,
-    getNextQueueSlot: getNextQueueSlot,
+    listQueueSlots: this._bind(listQueueSlots),
+    createQueueSlot: this._bind(createQueueSlot),
+    updateQueueSlot: this._bind(updateQueueSlot),
+    deleteQueueSlot: this._bind(deleteQueueSlot),
+    previewQueue: this._bind(previewQueue),
+    getNextQueueSlot: this._bind(getNextQueueSlot),
   };
 
   /**
    * Webhooks API - Configure event webhooks
    */
   webhooks = {
-    getWebhookSettings: getWebhookSettings,
-    createWebhookSettings: createWebhookSettings,
-    updateWebhookSettings: updateWebhookSettings,
-    deleteWebhookSettings: deleteWebhookSettings,
-    getWebhookLogs: getWebhookLogs,
-    testWebhook: testWebhook,
+    getWebhookSettings: this._bind(getWebhookSettings),
+    createWebhookSettings: this._bind(createWebhookSettings),
+    updateWebhookSettings: this._bind(updateWebhookSettings),
+    deleteWebhookSettings: this._bind(deleteWebhookSettings),
+    getWebhookLogs: this._bind(getWebhookLogs),
+    testWebhook: this._bind(testWebhook),
   };
 
   /**
    * Logs API - Publishing logs
    */
   logs = {
-    listLogs: listLogs,
+    listLogs: this._bind(listLogs),
   };
 
   /**
    * messages API
    */
   messages = {
-    listInboxConversations: listInboxConversations,
-    createInboxConversation: createInboxConversation,
-    searchInboxConversations: searchInboxConversations,
-    getInboxConversation: getInboxConversation,
-    updateInboxConversation: updateInboxConversation,
-    getInboxConversationMessages: getInboxConversationMessages,
-    sendInboxMessage: sendInboxMessage,
-    editInboxMessage: editInboxMessage,
-    deleteInboxMessage: deleteInboxMessage,
-    sendTypingIndicator: sendTypingIndicator,
-    markConversationRead: markConversationRead,
-    addMessageReaction: addMessageReaction,
-    removeMessageReaction: removeMessageReaction,
-    uploadMediaDirect: uploadMediaDirect,
+    listInboxConversations: this._bind(listInboxConversations),
+    createInboxConversation: this._bind(createInboxConversation),
+    searchInboxConversations: this._bind(searchInboxConversations),
+    getInboxConversation: this._bind(getInboxConversation),
+    updateInboxConversation: this._bind(updateInboxConversation),
+    getInboxConversationMessages: this._bind(getInboxConversationMessages),
+    sendInboxMessage: this._bind(sendInboxMessage),
+    editInboxMessage: this._bind(editInboxMessage),
+    deleteInboxMessage: this._bind(deleteInboxMessage),
+    sendTypingIndicator: this._bind(sendTypingIndicator),
+    markConversationRead: this._bind(markConversationRead),
+    addMessageReaction: this._bind(addMessageReaction),
+    removeMessageReaction: this._bind(removeMessageReaction),
+    uploadMediaDirect: this._bind(uploadMediaDirect),
   };
 
   /**
    * accountsettings API
    */
   accountsettings = {
-    getMessengerMenu: getMessengerMenu,
-    setMessengerMenu: setMessengerMenu,
-    deleteMessengerMenu: deleteMessengerMenu,
-    getInstagramIceBreakers: getInstagramIceBreakers,
-    setInstagramIceBreakers: setInstagramIceBreakers,
-    deleteInstagramIceBreakers: deleteInstagramIceBreakers,
-    getTelegramCommands: getTelegramCommands,
-    setTelegramCommands: setTelegramCommands,
-    deleteTelegramCommands: deleteTelegramCommands,
+    getMessengerMenu: this._bind(getMessengerMenu),
+    setMessengerMenu: this._bind(setMessengerMenu),
+    deleteMessengerMenu: this._bind(deleteMessengerMenu),
+    getInstagramIceBreakers: this._bind(getInstagramIceBreakers),
+    setInstagramIceBreakers: this._bind(setInstagramIceBreakers),
+    deleteInstagramIceBreakers: this._bind(deleteInstagramIceBreakers),
+    getTelegramCommands: this._bind(getTelegramCommands),
+    setTelegramCommands: this._bind(setTelegramCommands),
+    deleteTelegramCommands: this._bind(deleteTelegramCommands),
   };
 
   /**
    * comments API
    */
   comments = {
-    listInboxComments: listInboxComments,
-    getInboxPostComments: getInboxPostComments,
-    replyToInboxPost: replyToInboxPost,
-    deleteInboxComment: deleteInboxComment,
-    editInboxComment: editInboxComment,
-    setCommentModeration: setCommentModeration,
-    hideInboxComment: hideInboxComment,
-    unhideInboxComment: unhideInboxComment,
-    likeInboxComment: likeInboxComment,
-    unlikeInboxComment: unlikeInboxComment,
-    sendPrivateReplyToComment: sendPrivateReplyToComment,
+    listInboxComments: this._bind(listInboxComments),
+    getInboxPostComments: this._bind(getInboxPostComments),
+    replyToInboxPost: this._bind(replyToInboxPost),
+    deleteInboxComment: this._bind(deleteInboxComment),
+    editInboxComment: this._bind(editInboxComment),
+    setCommentModeration: this._bind(setCommentModeration),
+    hideInboxComment: this._bind(hideInboxComment),
+    unhideInboxComment: this._bind(unhideInboxComment),
+    likeInboxComment: this._bind(likeInboxComment),
+    unlikeInboxComment: this._bind(unlikeInboxComment),
+    sendPrivateReplyToComment: this._bind(sendPrivateReplyToComment),
   };
 
   /**
    * twitterengagement API
    */
   twitterengagement = {
-    retweetPost: retweetPost,
-    undoRetweet: undoRetweet,
-    bookmarkPost: bookmarkPost,
-    removeBookmark: removeBookmark,
-    followUser: followUser,
-    unfollowUser: unfollowUser,
-    searchTweets: searchTweets,
-    getTweet: getTweet,
+    retweetPost: this._bind(retweetPost),
+    undoRetweet: this._bind(undoRetweet),
+    bookmarkPost: this._bind(bookmarkPost),
+    removeBookmark: this._bind(removeBookmark),
+    followUser: this._bind(followUser),
+    unfollowUser: this._bind(unfollowUser),
+    searchTweets: this._bind(searchTweets),
+    getTweet: this._bind(getTweet),
   };
 
   /**
    * mentions API
    */
   mentions = {
-    listInboxMentions: listInboxMentions,
-    replyToMention: replyToMention,
+    listInboxMentions: this._bind(listInboxMentions),
+    replyToMention: this._bind(replyToMention),
   };
 
   /**
    * reviews API
    */
   reviews = {
-    listInboxReviews: listInboxReviews,
-    replyToInboxReview: replyToInboxReview,
-    deleteInboxReviewReply: deleteInboxReviewReply,
+    listInboxReviews: this._bind(listInboxReviews),
+    replyToInboxReview: this._bind(replyToInboxReview),
+    deleteInboxReviewReply: this._bind(deleteInboxReviewReply),
   };
 
   /**
    * whatsappcalling API
    */
   whatsappcalling = {
-    getWhatsAppCallingConfig: getWhatsAppCallingConfig,
-    enableWhatsAppCallingLegacy: enableWhatsAppCallingLegacy,
-    updateWhatsAppCallingLegacy: updateWhatsAppCallingLegacy,
-    disableWhatsAppCallingLegacy: disableWhatsAppCallingLegacy,
-    getWhatsAppCallPermissions: getWhatsAppCallPermissions,
-    initiateWhatsAppCall: initiateWhatsAppCall,
-    listWhatsAppCalls: listWhatsAppCalls,
-    getWhatsAppCall: getWhatsAppCall,
-    getWhatsAppCallRecording: getWhatsAppCallRecording,
-    getWhatsAppCallEstimate: getWhatsAppCallEstimate,
-    getWhatsAppCalling: getWhatsAppCalling,
-    enableWhatsAppCalling: enableWhatsAppCalling,
-    updateWhatsAppCalling: updateWhatsAppCalling,
-    disableWhatsAppCalling: disableWhatsAppCalling,
-    startWhatsAppCallerIdVerification: startWhatsAppCallerIdVerification,
-    verifyWhatsAppCallerId: verifyWhatsAppCallerId,
+    getWhatsAppCallingConfig: this._bind(getWhatsAppCallingConfig),
+    enableWhatsAppCallingLegacy: this._bind(enableWhatsAppCallingLegacy),
+    updateWhatsAppCallingLegacy: this._bind(updateWhatsAppCallingLegacy),
+    disableWhatsAppCallingLegacy: this._bind(disableWhatsAppCallingLegacy),
+    getWhatsAppCallPermissions: this._bind(getWhatsAppCallPermissions),
+    initiateWhatsAppCall: this._bind(initiateWhatsAppCall),
+    listWhatsAppCalls: this._bind(listWhatsAppCalls),
+    getWhatsAppCall: this._bind(getWhatsAppCall),
+    getWhatsAppCallRecording: this._bind(getWhatsAppCallRecording),
+    getWhatsAppCallEstimate: this._bind(getWhatsAppCallEstimate),
+    getWhatsAppCalling: this._bind(getWhatsAppCalling),
+    enableWhatsAppCalling: this._bind(enableWhatsAppCalling),
+    updateWhatsAppCalling: this._bind(updateWhatsAppCalling),
+    disableWhatsAppCalling: this._bind(disableWhatsAppCalling),
+    startWhatsAppCallerIdVerification: this._bind(startWhatsAppCallerIdVerification),
+    verifyWhatsAppCallerId: this._bind(verifyWhatsAppCallerId),
   };
 
   /**
    * calls API
    */
   calls = {
-    listCalls: listCalls,
-    getCall: getCall,
-    getCallRecording: getCallRecording,
+    listCalls: this._bind(listCalls),
+    getCall: this._bind(getCall),
+    getCallRecording: this._bind(getCallRecording),
   };
 
   /**
    * voice API
    */
   voice = {
-    createVoiceCall: createVoiceCall,
-    listVoiceCalls: listVoiceCalls,
-    getVoiceCall: getVoiceCall,
-    endVoiceCall: endVoiceCall,
-    getVoiceCallRecording: getVoiceCallRecording,
-    transferVoiceCall: transferVoiceCall,
-    getVoiceCallEstimate: getVoiceCallEstimate,
-    createVoiceWebSession: createVoiceWebSession,
-    dialVoiceWebCall: dialVoiceWebCall,
-    enableVoiceOnNumber: enableVoiceOnNumber,
-    disableVoiceOnNumber: disableVoiceOnNumber,
+    createVoiceCall: this._bind(createVoiceCall),
+    listVoiceCalls: this._bind(listVoiceCalls),
+    getVoiceCall: this._bind(getVoiceCall),
+    endVoiceCall: this._bind(endVoiceCall),
+    getVoiceCallRecording: this._bind(getVoiceCallRecording),
+    transferVoiceCall: this._bind(transferVoiceCall),
+    getVoiceCallEstimate: this._bind(getVoiceCallEstimate),
+    createVoiceWebSession: this._bind(createVoiceWebSession),
+    dialVoiceWebCall: this._bind(dialVoiceWebCall),
+    enableVoiceOnNumber: this._bind(enableVoiceOnNumber),
+    disableVoiceOnNumber: this._bind(disableVoiceOnNumber),
   };
 
   /**
    * sms API
    */
   sms = {
-    sendSms: sendSms,
-    lookupSmsNumber: lookupSmsNumber,
-    listSmsOptOuts: listSmsOptOuts,
-    createSmsSenderId: createSmsSenderId,
-    listSmsSenderIds: listSmsSenderIds,
-    requestSmsSenderIdLimitIncrease: requestSmsSenderIdLimitIncrease,
-    deleteSmsSenderId: deleteSmsSenderId,
-    startSmsRegistration: startSmsRegistration,
-    listSmsRegistrations: listSmsRegistrations,
-    preflightSmsRegistration: preflightSmsRegistration,
-    deactivateSmsRegistration: deactivateSmsRegistration,
-    getSmsRegistration: getSmsRegistration,
-    verifySmsRegistrationOtp: verifySmsRegistrationOtp,
-    resendSmsRegistrationOtp: resendSmsRegistrationOtp,
-    appealSmsRegistration: appealSmsRegistration,
-    respondToSmsRegistrationReview: respondToSmsRegistrationReview,
-    uploadSmsOptInProofFile: uploadSmsOptInProofFile,
-    uploadSmsOptInProof: uploadSmsOptInProof,
-    shareSmsRegistration: shareSmsRegistration,
-    enableSmsOnNumber: enableSmsOnNumber,
-    disableSmsOnNumber: disableSmsOnNumber,
-    reuseSmsRegistrationForNumber: reuseSmsRegistrationForNumber,
+    sendSms: this._bind(sendSms),
+    lookupSmsNumber: this._bind(lookupSmsNumber),
+    listSmsOptOuts: this._bind(listSmsOptOuts),
+    createSmsSenderId: this._bind(createSmsSenderId),
+    listSmsSenderIds: this._bind(listSmsSenderIds),
+    requestSmsSenderIdLimitIncrease: this._bind(requestSmsSenderIdLimitIncrease),
+    deleteSmsSenderId: this._bind(deleteSmsSenderId),
+    startSmsRegistration: this._bind(startSmsRegistration),
+    listSmsRegistrations: this._bind(listSmsRegistrations),
+    preflightSmsRegistration: this._bind(preflightSmsRegistration),
+    deactivateSmsRegistration: this._bind(deactivateSmsRegistration),
+    getSmsRegistration: this._bind(getSmsRegistration),
+    verifySmsRegistrationOtp: this._bind(verifySmsRegistrationOtp),
+    resendSmsRegistrationOtp: this._bind(resendSmsRegistrationOtp),
+    appealSmsRegistration: this._bind(appealSmsRegistration),
+    respondToSmsRegistrationReview: this._bind(respondToSmsRegistrationReview),
+    uploadSmsOptInProofFile: this._bind(uploadSmsOptInProofFile),
+    uploadSmsOptInProof: this._bind(uploadSmsOptInProof),
+    shareSmsRegistration: this._bind(shareSmsRegistration),
+    enableSmsOnNumber: this._bind(enableSmsOnNumber),
+    disableSmsOnNumber: this._bind(disableSmsOnNumber),
+    reuseSmsRegistrationForNumber: this._bind(reuseSmsRegistrationForNumber),
   };
 
   /**
    * whatsapptemplates API
    */
   whatsapptemplates = {
-    getWhatsAppLibraryTemplate: getWhatsAppLibraryTemplate,
+    getWhatsAppLibraryTemplate: this._bind(getWhatsAppLibraryTemplate),
   };
 
   /**
    * whatsappphonenumbers API
    */
   whatsappphonenumbers = {
-    getWhatsAppNumberInfo: getWhatsAppNumberInfo,
-    getWhatsAppPhoneNumbers: getWhatsAppPhoneNumbers,
-    purchaseWhatsAppPhoneNumber: purchaseWhatsAppPhoneNumber,
-    listWhatsAppNumberCountries: listWhatsAppNumberCountries,
-    searchAvailableWhatsAppNumbers: searchAvailableWhatsAppNumbers,
-    checkWhatsAppNumberAvailability: checkWhatsAppNumberAvailability,
-    getWhatsAppNumberKycForm: getWhatsAppNumberKycForm,
-    submitWhatsAppNumberKyc: submitWhatsAppNumberKyc,
-    uploadWhatsAppNumberKycDocument: uploadWhatsAppNumberKycDocument,
-    validateWhatsAppNumberKycAddress: validateWhatsAppNumberKycAddress,
-    createWhatsAppNumberKycLink: createWhatsAppNumberKycLink,
-    getWhatsAppNumberRemediation: getWhatsAppNumberRemediation,
-    remediateWhatsAppNumber: remediateWhatsAppNumber,
-    getWhatsAppPhoneNumber: getWhatsAppPhoneNumber,
-    releaseWhatsAppPhoneNumber: releaseWhatsAppPhoneNumber,
+    getWhatsAppNumberInfo: this._bind(getWhatsAppNumberInfo),
+    getWhatsAppPhoneNumbers: this._bind(getWhatsAppPhoneNumbers),
+    purchaseWhatsAppPhoneNumber: this._bind(purchaseWhatsAppPhoneNumber),
+    listWhatsAppNumberCountries: this._bind(listWhatsAppNumberCountries),
+    searchAvailableWhatsAppNumbers: this._bind(searchAvailableWhatsAppNumbers),
+    checkWhatsAppNumberAvailability: this._bind(checkWhatsAppNumberAvailability),
+    getWhatsAppNumberKycForm: this._bind(getWhatsAppNumberKycForm),
+    submitWhatsAppNumberKyc: this._bind(submitWhatsAppNumberKyc),
+    uploadWhatsAppNumberKycDocument: this._bind(uploadWhatsAppNumberKycDocument),
+    validateWhatsAppNumberKycAddress: this._bind(validateWhatsAppNumberKycAddress),
+    createWhatsAppNumberKycLink: this._bind(createWhatsAppNumberKycLink),
+    getWhatsAppNumberRemediation: this._bind(getWhatsAppNumberRemediation),
+    remediateWhatsAppNumber: this._bind(remediateWhatsAppNumber),
+    getWhatsAppPhoneNumber: this._bind(getWhatsAppPhoneNumber),
+    releaseWhatsAppPhoneNumber: this._bind(releaseWhatsAppPhoneNumber),
   };
 
   /**
    * phonenumbers API
    */
   phonenumbers = {
-    listPhoneNumbers: listPhoneNumbers,
-    getPhoneNumber: getPhoneNumber,
-    releasePhoneNumber: releasePhoneNumber,
-    purchasePhoneNumber: purchasePhoneNumber,
-    listPhoneNumberCountries: listPhoneNumberCountries,
-    searchAvailablePhoneNumbers: searchAvailablePhoneNumbers,
-    checkPhoneNumberAvailability: checkPhoneNumberAvailability,
-    getPhoneNumberKycForm: getPhoneNumberKycForm,
-    submitPhoneNumberKyc: submitPhoneNumberKyc,
-    viewPhoneNumberKycDocument: viewPhoneNumberKycDocument,
-    uploadPhoneNumberKycDocument: uploadPhoneNumberKycDocument,
-    validatePhoneNumberKycAddress: validatePhoneNumberKycAddress,
-    createPhoneNumberKycLink: createPhoneNumberKycLink,
-    createPhoneNumberPortIn: createPhoneNumberPortIn,
-    listPhoneNumberPortIns: listPhoneNumberPortIns,
-    checkPhoneNumberPortability: checkPhoneNumberPortability,
-    uploadPhoneNumberPortInDocument: uploadPhoneNumberPortInDocument,
-    getPhoneNumberPortInRequirements: getPhoneNumberPortInRequirements,
-    getPhoneNumberPortInOrderRequirements: getPhoneNumberPortInOrderRequirements,
-    cancelPhoneNumberPortIn: cancelPhoneNumberPortIn,
-    reviewPhoneNumberKycPacket: reviewPhoneNumberKycPacket,
-    getPhoneNumberRemediation: getPhoneNumberRemediation,
-    remediatePhoneNumber: remediatePhoneNumber,
-    replyToPhoneNumberReviewer: replyToPhoneNumberReviewer,
-    respondToPhoneNumberReviewer: respondToPhoneNumberReviewer,
+    listPhoneNumbers: this._bind(listPhoneNumbers),
+    getPhoneNumber: this._bind(getPhoneNumber),
+    releasePhoneNumber: this._bind(releasePhoneNumber),
+    purchasePhoneNumber: this._bind(purchasePhoneNumber),
+    listPhoneNumberCountries: this._bind(listPhoneNumberCountries),
+    searchAvailablePhoneNumbers: this._bind(searchAvailablePhoneNumbers),
+    checkPhoneNumberAvailability: this._bind(checkPhoneNumberAvailability),
+    getPhoneNumberKycForm: this._bind(getPhoneNumberKycForm),
+    submitPhoneNumberKyc: this._bind(submitPhoneNumberKyc),
+    viewPhoneNumberKycDocument: this._bind(viewPhoneNumberKycDocument),
+    uploadPhoneNumberKycDocument: this._bind(uploadPhoneNumberKycDocument),
+    validatePhoneNumberKycAddress: this._bind(validatePhoneNumberKycAddress),
+    createPhoneNumberKycLink: this._bind(createPhoneNumberKycLink),
+    createPhoneNumberPortIn: this._bind(createPhoneNumberPortIn),
+    listPhoneNumberPortIns: this._bind(listPhoneNumberPortIns),
+    checkPhoneNumberPortability: this._bind(checkPhoneNumberPortability),
+    uploadPhoneNumberPortInDocument: this._bind(uploadPhoneNumberPortInDocument),
+    getPhoneNumberPortInRequirements: this._bind(getPhoneNumberPortInRequirements),
+    getPhoneNumberPortInOrderRequirements: this._bind(getPhoneNumberPortInOrderRequirements),
+    cancelPhoneNumberPortIn: this._bind(cancelPhoneNumberPortIn),
+    reviewPhoneNumberKycPacket: this._bind(reviewPhoneNumberKycPacket),
+    getPhoneNumberRemediation: this._bind(getPhoneNumberRemediation),
+    remediatePhoneNumber: this._bind(remediatePhoneNumber),
+    replyToPhoneNumberReviewer: this._bind(replyToPhoneNumberReviewer),
+    respondToPhoneNumberReviewer: this._bind(respondToPhoneNumberReviewer),
   };
 
   /**
    * whatsappsandbox API
    */
   whatsappsandbox = {
-    listWhatsAppSandboxSessions: listWhatsAppSandboxSessions,
-    createWhatsAppSandboxSession: createWhatsAppSandboxSession,
-    deleteWhatsAppSandboxSession: deleteWhatsAppSandboxSession,
+    listWhatsAppSandboxSessions: this._bind(listWhatsAppSandboxSessions),
+    createWhatsAppSandboxSession: this._bind(createWhatsAppSandboxSession),
+    deleteWhatsAppSandboxSession: this._bind(deleteWhatsAppSandboxSession),
   };
 
   /**
    * whatsappflows API
    */
   whatsappflows = {
-    listWhatsAppFlows: listWhatsAppFlows,
-    createWhatsAppFlow: createWhatsAppFlow,
-    getWhatsAppFlow: getWhatsAppFlow,
-    updateWhatsAppFlow: updateWhatsAppFlow,
-    deleteWhatsAppFlow: deleteWhatsAppFlow,
-    getWhatsAppFlowJson: getWhatsAppFlowJson,
-    uploadWhatsAppFlowJson: uploadWhatsAppFlowJson,
-    getWhatsAppFlowPreview: getWhatsAppFlowPreview,
-    listWhatsAppFlowVersions: listWhatsAppFlowVersions,
-    publishWhatsAppFlow: publishWhatsAppFlow,
-    deprecateWhatsAppFlow: deprecateWhatsAppFlow,
-    sendWhatsAppFlowMessage: sendWhatsAppFlowMessage,
-    listWhatsAppFlowResponses: listWhatsAppFlowResponses,
+    listWhatsAppFlows: this._bind(listWhatsAppFlows),
+    createWhatsAppFlow: this._bind(createWhatsAppFlow),
+    getWhatsAppFlow: this._bind(getWhatsAppFlow),
+    updateWhatsAppFlow: this._bind(updateWhatsAppFlow),
+    deleteWhatsAppFlow: this._bind(deleteWhatsAppFlow),
+    getWhatsAppFlowJson: this._bind(getWhatsAppFlowJson),
+    uploadWhatsAppFlowJson: this._bind(uploadWhatsAppFlowJson),
+    getWhatsAppFlowPreview: this._bind(getWhatsAppFlowPreview),
+    listWhatsAppFlowVersions: this._bind(listWhatsAppFlowVersions),
+    publishWhatsAppFlow: this._bind(publishWhatsAppFlow),
+    deprecateWhatsAppFlow: this._bind(deprecateWhatsAppFlow),
+    sendWhatsAppFlowMessage: this._bind(sendWhatsAppFlowMessage),
+    listWhatsAppFlowResponses: this._bind(listWhatsAppFlowResponses),
   };
 
   /**
    * contacts API
    */
   contacts = {
-    listContacts: listContacts,
-    createContact: createContact,
-    getContact: getContact,
-    updateContact: updateContact,
-    deleteContact: deleteContact,
-    getContactChannels: getContactChannels,
-    bulkCreateContacts: bulkCreateContacts,
+    listContacts: this._bind(listContacts),
+    createContact: this._bind(createContact),
+    getContact: this._bind(getContact),
+    updateContact: this._bind(updateContact),
+    deleteContact: this._bind(deleteContact),
+    getContactChannels: this._bind(getContactChannels),
+    bulkCreateContacts: this._bind(bulkCreateContacts),
   };
 
   /**
    * customfields API
    */
   customfields = {
-    setContactFieldValue: setContactFieldValue,
-    clearContactFieldValue: clearContactFieldValue,
-    listCustomFields: listCustomFields,
-    createCustomField: createCustomField,
-    updateCustomField: updateCustomField,
-    deleteCustomField: deleteCustomField,
+    setContactFieldValue: this._bind(setContactFieldValue),
+    clearContactFieldValue: this._bind(clearContactFieldValue),
+    listCustomFields: this._bind(listCustomFields),
+    createCustomField: this._bind(createCustomField),
+    updateCustomField: this._bind(updateCustomField),
+    deleteCustomField: this._bind(deleteCustomField),
   };
 
   /**
    * broadcasts API
    */
   broadcasts = {
-    listBroadcasts: listBroadcasts,
-    createBroadcast: createBroadcast,
-    getBroadcast: getBroadcast,
-    updateBroadcast: updateBroadcast,
-    deleteBroadcast: deleteBroadcast,
-    sendBroadcast: sendBroadcast,
-    scheduleBroadcast: scheduleBroadcast,
-    cancelBroadcast: cancelBroadcast,
-    listBroadcastRecipients: listBroadcastRecipients,
-    addBroadcastRecipients: addBroadcastRecipients,
+    listBroadcasts: this._bind(listBroadcasts),
+    createBroadcast: this._bind(createBroadcast),
+    getBroadcast: this._bind(getBroadcast),
+    updateBroadcast: this._bind(updateBroadcast),
+    deleteBroadcast: this._bind(deleteBroadcast),
+    sendBroadcast: this._bind(sendBroadcast),
+    scheduleBroadcast: this._bind(scheduleBroadcast),
+    cancelBroadcast: this._bind(cancelBroadcast),
+    listBroadcastRecipients: this._bind(listBroadcastRecipients),
+    addBroadcastRecipients: this._bind(addBroadcastRecipients),
   };
 
   /**
    * workflows API
    */
   workflows = {
-    listWorkflows: listWorkflows,
-    createWorkflow: createWorkflow,
-    getWorkflow: getWorkflow,
-    updateWorkflow: updateWorkflow,
-    deleteWorkflow: deleteWorkflow,
-    activateWorkflow: activateWorkflow,
-    pauseWorkflow: pauseWorkflow,
-    listWorkflowExecutions: listWorkflowExecutions,
-    triggerWorkflow: triggerWorkflow,
-    listWorkflowExecutionEvents: listWorkflowExecutionEvents,
-    duplicateWorkflow: duplicateWorkflow,
-    listWorkflowVersions: listWorkflowVersions,
-    getWorkflowVersion: getWorkflowVersion,
-    restoreWorkflowVersion: restoreWorkflowVersion,
+    listWorkflows: this._bind(listWorkflows),
+    createWorkflow: this._bind(createWorkflow),
+    getWorkflow: this._bind(getWorkflow),
+    updateWorkflow: this._bind(updateWorkflow),
+    deleteWorkflow: this._bind(deleteWorkflow),
+    activateWorkflow: this._bind(activateWorkflow),
+    pauseWorkflow: this._bind(pauseWorkflow),
+    listWorkflowExecutions: this._bind(listWorkflowExecutions),
+    triggerWorkflow: this._bind(triggerWorkflow),
+    listWorkflowExecutionEvents: this._bind(listWorkflowExecutionEvents),
+    duplicateWorkflow: this._bind(duplicateWorkflow),
+    listWorkflowVersions: this._bind(listWorkflowVersions),
+    getWorkflowVersion: this._bind(getWorkflowVersion),
+    restoreWorkflowVersion: this._bind(restoreWorkflowVersion),
   };
 
   /**
    * sequences API
    */
   sequences = {
-    listSequences: listSequences,
-    createSequence: createSequence,
-    getSequence: getSequence,
-    updateSequence: updateSequence,
-    deleteSequence: deleteSequence,
-    activateSequence: activateSequence,
-    pauseSequence: pauseSequence,
-    enrollContacts: enrollContacts,
-    unenrollContact: unenrollContact,
-    listSequenceEnrollments: listSequenceEnrollments,
+    listSequences: this._bind(listSequences),
+    createSequence: this._bind(createSequence),
+    getSequence: this._bind(getSequence),
+    updateSequence: this._bind(updateSequence),
+    deleteSequence: this._bind(deleteSequence),
+    activateSequence: this._bind(activateSequence),
+    pauseSequence: this._bind(pauseSequence),
+    enrollContacts: this._bind(enrollContacts),
+    unenrollContact: this._bind(unenrollContact),
+    listSequenceEnrollments: this._bind(listSequenceEnrollments),
   };
 
   /**
    * commentautomations API
    */
   commentautomations = {
-    listCommentAutomations: listCommentAutomations,
-    createCommentAutomation: createCommentAutomation,
-    getCommentAutomation: getCommentAutomation,
-    updateCommentAutomation: updateCommentAutomation,
-    deleteCommentAutomation: deleteCommentAutomation,
-    listCommentAutomationLogs: listCommentAutomationLogs,
+    listCommentAutomations: this._bind(listCommentAutomations),
+    createCommentAutomation: this._bind(createCommentAutomation),
+    getCommentAutomation: this._bind(getCommentAutomation),
+    updateCommentAutomation: this._bind(updateCommentAutomation),
+    deleteCommentAutomation: this._bind(deleteCommentAutomation),
+    listCommentAutomationLogs: this._bind(listCommentAutomationLogs),
   };
 
   /**
    * adcampaigns API
    */
   adcampaigns = {
-    listAds: listAds,
-    listAdKeywords: listAdKeywords,
-    listAdCampaigns: listAdCampaigns,
-    createAdCampaign: createAdCampaign,
-    updateAdCampaignStatus: updateAdCampaignStatus,
-    updateAdCampaign: updateAdCampaign,
-    deleteAdCampaign: deleteAdCampaign,
-    bulkUpdateAdCampaignStatus: bulkUpdateAdCampaignStatus,
-    duplicateAdCampaign: duplicateAdCampaign,
-    duplicateAdSet: duplicateAdSet,
-    duplicateAd: duplicateAd,
-    getAdSetDetails: getAdSetDetails,
-    updateAdSet: updateAdSet,
-    updateAdSetStatus: updateAdSetStatus,
-    getAdTree: getAdTree,
-    getAdsTimeline: getAdsTimeline,
-    getAd: getAd,
-    updateAd: updateAd,
-    deleteAd: deleteAd,
-    updateAdStatus: updateAdStatus,
-    boostPost: boostPost,
-    createStandaloneAd: createStandaloneAd,
+    listAds: this._bind(listAds),
+    listAdKeywords: this._bind(listAdKeywords),
+    listAdCampaigns: this._bind(listAdCampaigns),
+    createAdCampaign: this._bind(createAdCampaign),
+    updateAdCampaignStatus: this._bind(updateAdCampaignStatus),
+    updateAdCampaign: this._bind(updateAdCampaign),
+    deleteAdCampaign: this._bind(deleteAdCampaign),
+    bulkUpdateAdCampaignStatus: this._bind(bulkUpdateAdCampaignStatus),
+    duplicateAdCampaign: this._bind(duplicateAdCampaign),
+    duplicateAdSet: this._bind(duplicateAdSet),
+    duplicateAd: this._bind(duplicateAd),
+    getAdSetDetails: this._bind(getAdSetDetails),
+    updateAdSet: this._bind(updateAdSet),
+    updateAdSetStatus: this._bind(updateAdSetStatus),
+    getAdTree: this._bind(getAdTree),
+    getAdsTimeline: this._bind(getAdsTimeline),
+    getAd: this._bind(getAd),
+    updateAd: this._bind(updateAd),
+    deleteAd: this._bind(deleteAd),
+    updateAdStatus: this._bind(updateAdStatus),
+    boostPost: this._bind(boostPost),
+    createStandaloneAd: this._bind(createStandaloneAd),
   };
 
   /**
    * adinsights API
    */
   adinsights = {
-    getCampaignAnalytics: getCampaignAnalytics,
-    generateKeywordIdeas: generateKeywordIdeas,
-    generateKeywordHistoricalMetrics: generateKeywordHistoricalMetrics,
-    queryAdInsights: queryAdInsights,
-    createAdInsightsReport: createAdInsightsReport,
-    getAdInsightsReport: getAdInsightsReport,
-    getAdAnalytics: getAdAnalytics,
+    getCampaignAnalytics: this._bind(getCampaignAnalytics),
+    generateKeywordIdeas: this._bind(generateKeywordIdeas),
+    generateKeywordHistoricalMetrics: this._bind(generateKeywordHistoricalMetrics),
+    queryAdInsights: this._bind(queryAdInsights),
+    createAdInsightsReport: this._bind(createAdInsightsReport),
+    getAdInsightsReport: this._bind(getAdInsightsReport),
+    getAdAnalytics: this._bind(getAdAnalytics),
   };
 
   /**
    * adcreatives API
    */
   adcreatives = {
-    generateAdPreviews: generateAdPreviews,
-    getAdPreviews: getAdPreviews,
-    listAdCreatives: listAdCreatives,
-    createAdCreative: createAdCreative,
-    getAdCreative: getAdCreative,
-    updateAdCreative: updateAdCreative,
-    deleteAdCreative: deleteAdCreative,
-    uploadAdImage: uploadAdImage,
-    listAdImages: listAdImages,
-    listAdCatalogs: listAdCatalogs,
-    listAdCatalogProductSets: listAdCatalogProductSets,
+    generateAdPreviews: this._bind(generateAdPreviews),
+    getAdPreviews: this._bind(getAdPreviews),
+    listAdCreatives: this._bind(listAdCreatives),
+    createAdCreative: this._bind(createAdCreative),
+    getAdCreative: this._bind(getAdCreative),
+    updateAdCreative: this._bind(updateAdCreative),
+    deleteAdCreative: this._bind(deleteAdCreative),
+    uploadAdImage: this._bind(uploadAdImage),
+    listAdImages: this._bind(listAdImages),
+    listAdCatalogs: this._bind(listAdCatalogs),
+    listAdCatalogProductSets: this._bind(listAdCatalogProductSets),
   };
 
   /**
    * trackingtags API
    */
   trackingtags = {
-    getAdTrackingTags: getAdTrackingTags,
-    updateAdTrackingTags: updateAdTrackingTags,
-    listTrackingTags: listTrackingTags,
-    createTrackingTag: createTrackingTag,
-    getTrackingTag: getTrackingTag,
-    updateTrackingTag: updateTrackingTag,
-    listTrackingTagSharedAccounts: listTrackingTagSharedAccounts,
-    addTrackingTagSharedAccount: addTrackingTagSharedAccount,
-    removeTrackingTagSharedAccount: removeTrackingTagSharedAccount,
-    getTrackingTagStats: getTrackingTagStats,
+    getAdTrackingTags: this._bind(getAdTrackingTags),
+    updateAdTrackingTags: this._bind(updateAdTrackingTags),
+    listTrackingTags: this._bind(listTrackingTags),
+    createTrackingTag: this._bind(createTrackingTag),
+    getTrackingTag: this._bind(getTrackingTag),
+    updateTrackingTag: this._bind(updateTrackingTag),
+    listTrackingTagSharedAccounts: this._bind(listTrackingTagSharedAccounts),
+    addTrackingTagSharedAccount: this._bind(addTrackingTagSharedAccount),
+    removeTrackingTagSharedAccount: this._bind(removeTrackingTagSharedAccount),
+    getTrackingTagStats: this._bind(getTrackingTagStats),
   };
 
   /**
    * adaccounts API
    */
   adaccounts = {
-    getAdComments: getAdComments,
-    listAdsBusinessCenters: listAdsBusinessCenters,
-    getAdsActivityLog: getAdsActivityLog,
-    listAdStudies: listAdStudies,
-    listMetaBusinesses: listMetaBusinesses,
-    listAdLabels: listAdLabels,
-    listHighDemandPeriods: listHighDemandPeriods,
-    listValueRuleSets: listValueRuleSets,
-    createValueRuleSet: createValueRuleSet,
-    getValueRuleSet: getValueRuleSet,
-    updateValueRuleSet: updateValueRuleSet,
-    deleteValueRuleSet: deleteValueRuleSet,
-    getAdAccountFinance: getAdAccountFinance,
-    listAdAccounts: listAdAccounts,
-    updateAdAccount: updateAdAccount,
-    getDsaDefaults: getDsaDefaults,
-    getDsaRecommendations: getDsaRecommendations,
+    getAdComments: this._bind(getAdComments),
+    listAdsBusinessCenters: this._bind(listAdsBusinessCenters),
+    getAdsActivityLog: this._bind(getAdsActivityLog),
+    listAdStudies: this._bind(listAdStudies),
+    listMetaBusinesses: this._bind(listMetaBusinesses),
+    listAdLabels: this._bind(listAdLabels),
+    listHighDemandPeriods: this._bind(listHighDemandPeriods),
+    listValueRuleSets: this._bind(listValueRuleSets),
+    createValueRuleSet: this._bind(createValueRuleSet),
+    getValueRuleSet: this._bind(getValueRuleSet),
+    updateValueRuleSet: this._bind(updateValueRuleSet),
+    deleteValueRuleSet: this._bind(deleteValueRuleSet),
+    getAdAccountFinance: this._bind(getAdAccountFinance),
+    listAdAccounts: this._bind(listAdAccounts),
+    updateAdAccount: this._bind(updateAdAccount),
+    getDsaDefaults: this._bind(getDsaDefaults),
+    getDsaRecommendations: this._bind(getDsaRecommendations),
   };
 
   /**
    * reachandfrequency API
    */
   reachandfrequency = {
-    createRfPrediction: createRfPrediction,
-    getRfPrediction: getRfPrediction,
-    cancelRfReservation: cancelRfReservation,
-    reserveRfPrediction: reserveRfPrediction,
+    createRfPrediction: this._bind(createRfPrediction),
+    getRfPrediction: this._bind(getRfPrediction),
+    cancelRfReservation: this._bind(cancelRfReservation),
+    reserveRfPrediction: this._bind(reserveRfPrediction),
   };
 
   /**
    * leadgen API
    */
   leadgen = {
-    listLeads: listLeads,
-    listLeadForms: listLeadForms,
-    createLeadForm: createLeadForm,
-    getLeadForm: getLeadForm,
-    archiveLeadForm: archiveLeadForm,
-    listFormLeads: listFormLeads,
-    createTestLead: createTestLead,
+    listLeads: this._bind(listLeads),
+    listLeadForms: this._bind(listLeadForms),
+    createLeadForm: this._bind(createLeadForm),
+    getLeadForm: this._bind(getLeadForm),
+    archiveLeadForm: this._bind(archiveLeadForm),
+    listFormLeads: this._bind(listFormLeads),
+    createTestLead: this._bind(createTestLead),
   };
 
   /**
    * adtargeting API
    */
   adtargeting = {
-    searchAdInterests: searchAdInterests,
-    searchAdTargeting: searchAdTargeting,
-    estimateAdReach: estimateAdReach,
-    getLinkedInBidPricing: getLinkedInBidPricing,
-    getLinkedInSupplyForecast: getLinkedInSupplyForecast,
+    searchAdInterests: this._bind(searchAdInterests),
+    searchAdTargeting: this._bind(searchAdTargeting),
+    estimateAdReach: this._bind(estimateAdReach),
+    getLinkedInBidPricing: this._bind(getLinkedInBidPricing),
+    getLinkedInSupplyForecast: this._bind(getLinkedInSupplyForecast),
   };
 
   /**
    * adaudiences API
    */
   adaudiences = {
-    listAdAudiences: listAdAudiences,
-    createAdAudience: createAdAudience,
-    getAdAudience: getAdAudience,
-    updateAdAudience: updateAdAudience,
-    deleteAdAudience: deleteAdAudience,
-    addUsersToAdAudience: addUsersToAdAudience,
+    listAdAudiences: this._bind(listAdAudiences),
+    createAdAudience: this._bind(createAdAudience),
+    getAdAudience: this._bind(getAdAudience),
+    updateAdAudience: this._bind(updateAdAudience),
+    deleteAdAudience: this._bind(deleteAdAudience),
+    addUsersToAdAudience: this._bind(addUsersToAdAudience),
   };
 
   /**
    * conversions API
    */
   conversions = {
-    getConversionsQuality: getConversionsQuality,
-    sendConversions: sendConversions,
-    adjustConversions: adjustConversions,
-    listConversionDestinations: listConversionDestinations,
-    createConversionDestination: createConversionDestination,
-    getConversionDestination: getConversionDestination,
-    updateConversionDestination: updateConversionDestination,
-    deleteConversionDestination: deleteConversionDestination,
-    listConversionAssociations: listConversionAssociations,
-    addConversionAssociations: addConversionAssociations,
-    removeConversionAssociations: removeConversionAssociations,
-    getConversionMetrics: getConversionMetrics,
+    getConversionsQuality: this._bind(getConversionsQuality),
+    sendConversions: this._bind(sendConversions),
+    adjustConversions: this._bind(adjustConversions),
+    listConversionDestinations: this._bind(listConversionDestinations),
+    createConversionDestination: this._bind(createConversionDestination),
+    getConversionDestination: this._bind(getConversionDestination),
+    updateConversionDestination: this._bind(updateConversionDestination),
+    deleteConversionDestination: this._bind(deleteConversionDestination),
+    listConversionAssociations: this._bind(listConversionAssociations),
+    addConversionAssociations: this._bind(addConversionAssociations),
+    removeConversionAssociations: this._bind(removeConversionAssociations),
+    getConversionMetrics: this._bind(getConversionMetrics),
   };
 
   /**
    * messagingads API
    */
   messagingads = {
-    createMessagingAd: createMessagingAd,
-    createCallAd: createCallAd,
-    createCtwaAd: createCtwaAd,
+    createMessagingAd: this._bind(createMessagingAd),
+    createCallAd: this._bind(createCallAd),
+    createCtwaAd: this._bind(createCtwaAd),
   };
 
   /**
    * verify API
    */
   verify = {
-    createVerification: createVerification,
-    getVerification: getVerification,
-    checkVerification: checkVerification,
+    createVerification: this._bind(createVerification),
+    getVerification: this._bind(getVerification),
+    checkVerification: this._bind(checkVerification),
   };
 
   /**
@@ -1540,213 +1563,213 @@ export class Zernio {
    */
   ads = {
     /** @deprecated Use `zernio.adcampaigns.listAds` instead. */
-    listAds: listAds,
+    listAds: this._bind(listAds),
     /** @deprecated Use `zernio.adcampaigns.listAdKeywords` instead. */
-    listAdKeywords: listAdKeywords,
+    listAdKeywords: this._bind(listAdKeywords),
     /** @deprecated Use `zernio.adcampaigns.listAdCampaigns` instead. */
-    listAdCampaigns: listAdCampaigns,
+    listAdCampaigns: this._bind(listAdCampaigns),
     /** @deprecated Use `zernio.adcampaigns.createAdCampaign` instead. */
-    createAdCampaign: createAdCampaign,
+    createAdCampaign: this._bind(createAdCampaign),
     /** @deprecated Use `zernio.adcampaigns.updateAdCampaignStatus` instead. */
-    updateAdCampaignStatus: updateAdCampaignStatus,
+    updateAdCampaignStatus: this._bind(updateAdCampaignStatus),
     /** @deprecated Use `zernio.adcampaigns.updateAdCampaign` instead. */
-    updateAdCampaign: updateAdCampaign,
+    updateAdCampaign: this._bind(updateAdCampaign),
     /** @deprecated Use `zernio.adcampaigns.deleteAdCampaign` instead. */
-    deleteAdCampaign: deleteAdCampaign,
+    deleteAdCampaign: this._bind(deleteAdCampaign),
     /** @deprecated Use `zernio.adcampaigns.bulkUpdateAdCampaignStatus` instead. */
-    bulkUpdateAdCampaignStatus: bulkUpdateAdCampaignStatus,
+    bulkUpdateAdCampaignStatus: this._bind(bulkUpdateAdCampaignStatus),
     /** @deprecated Use `zernio.adcampaigns.duplicateAdCampaign` instead. */
-    duplicateAdCampaign: duplicateAdCampaign,
+    duplicateAdCampaign: this._bind(duplicateAdCampaign),
     /** @deprecated Use `zernio.adcampaigns.duplicateAdSet` instead. */
-    duplicateAdSet: duplicateAdSet,
+    duplicateAdSet: this._bind(duplicateAdSet),
     /** @deprecated Use `zernio.adcampaigns.duplicateAd` instead. */
-    duplicateAd: duplicateAd,
+    duplicateAd: this._bind(duplicateAd),
     /** @deprecated Use `zernio.adcampaigns.getAdSetDetails` instead. */
-    getAdSetDetails: getAdSetDetails,
+    getAdSetDetails: this._bind(getAdSetDetails),
     /** @deprecated Use `zernio.adcampaigns.updateAdSet` instead. */
-    updateAdSet: updateAdSet,
+    updateAdSet: this._bind(updateAdSet),
     /** @deprecated Use `zernio.adcampaigns.updateAdSetStatus` instead. */
-    updateAdSetStatus: updateAdSetStatus,
+    updateAdSetStatus: this._bind(updateAdSetStatus),
     /** @deprecated Use `zernio.adcampaigns.getAdTree` instead. */
-    getAdTree: getAdTree,
+    getAdTree: this._bind(getAdTree),
     /** @deprecated Use `zernio.adcampaigns.getAdsTimeline` instead. */
-    getAdsTimeline: getAdsTimeline,
+    getAdsTimeline: this._bind(getAdsTimeline),
     /** @deprecated Use `zernio.adcampaigns.getAd` instead. */
-    getAd: getAd,
+    getAd: this._bind(getAd),
     /** @deprecated Use `zernio.adcampaigns.updateAd` instead. */
-    updateAd: updateAd,
+    updateAd: this._bind(updateAd),
     /** @deprecated Use `zernio.adcampaigns.deleteAd` instead. */
-    deleteAd: deleteAd,
+    deleteAd: this._bind(deleteAd),
     /** @deprecated Use `zernio.adcampaigns.updateAdStatus` instead. */
-    updateAdStatus: updateAdStatus,
+    updateAdStatus: this._bind(updateAdStatus),
     /** @deprecated Use `zernio.adcampaigns.boostPost` instead. */
-    boostPost: boostPost,
+    boostPost: this._bind(boostPost),
     /** @deprecated Use `zernio.adcampaigns.createStandaloneAd` instead. */
-    createStandaloneAd: createStandaloneAd,
+    createStandaloneAd: this._bind(createStandaloneAd),
     /** @deprecated Use `zernio.adaccounts.getAdComments` instead. */
-    getAdComments: getAdComments,
+    getAdComments: this._bind(getAdComments),
     /** @deprecated Use `zernio.adaccounts.listAdsBusinessCenters` instead. */
-    listAdsBusinessCenters: listAdsBusinessCenters,
+    listAdsBusinessCenters: this._bind(listAdsBusinessCenters),
     /** @deprecated Use `zernio.adaccounts.getAdsActivityLog` instead. */
-    getAdsActivityLog: getAdsActivityLog,
+    getAdsActivityLog: this._bind(getAdsActivityLog),
     /** @deprecated Use `zernio.adaccounts.listAdStudies` instead. */
-    listAdStudies: listAdStudies,
+    listAdStudies: this._bind(listAdStudies),
     /** @deprecated Use `zernio.adaccounts.listMetaBusinesses` instead. */
-    listMetaBusinesses: listMetaBusinesses,
+    listMetaBusinesses: this._bind(listMetaBusinesses),
     /** @deprecated Use `zernio.adaccounts.listAdLabels` instead. */
-    listAdLabels: listAdLabels,
+    listAdLabels: this._bind(listAdLabels),
     /** @deprecated Use `zernio.adaccounts.listHighDemandPeriods` instead. */
-    listHighDemandPeriods: listHighDemandPeriods,
+    listHighDemandPeriods: this._bind(listHighDemandPeriods),
     /** @deprecated Use `zernio.adaccounts.listValueRuleSets` instead. */
-    listValueRuleSets: listValueRuleSets,
+    listValueRuleSets: this._bind(listValueRuleSets),
     /** @deprecated Use `zernio.adaccounts.createValueRuleSet` instead. */
-    createValueRuleSet: createValueRuleSet,
+    createValueRuleSet: this._bind(createValueRuleSet),
     /** @deprecated Use `zernio.adaccounts.getValueRuleSet` instead. */
-    getValueRuleSet: getValueRuleSet,
+    getValueRuleSet: this._bind(getValueRuleSet),
     /** @deprecated Use `zernio.adaccounts.updateValueRuleSet` instead. */
-    updateValueRuleSet: updateValueRuleSet,
+    updateValueRuleSet: this._bind(updateValueRuleSet),
     /** @deprecated Use `zernio.adaccounts.deleteValueRuleSet` instead. */
-    deleteValueRuleSet: deleteValueRuleSet,
+    deleteValueRuleSet: this._bind(deleteValueRuleSet),
     /** @deprecated Use `zernio.adaccounts.getAdAccountFinance` instead. */
-    getAdAccountFinance: getAdAccountFinance,
+    getAdAccountFinance: this._bind(getAdAccountFinance),
     /** @deprecated Use `zernio.adaccounts.listAdAccounts` instead. */
-    listAdAccounts: listAdAccounts,
+    listAdAccounts: this._bind(listAdAccounts),
     /** @deprecated Use `zernio.adaccounts.updateAdAccount` instead. */
-    updateAdAccount: updateAdAccount,
+    updateAdAccount: this._bind(updateAdAccount),
     /** @deprecated Use `zernio.adaccounts.getDsaDefaults` instead. */
-    getDsaDefaults: getDsaDefaults,
+    getDsaDefaults: this._bind(getDsaDefaults),
     /** @deprecated Use `zernio.adaccounts.getDsaRecommendations` instead. */
-    getDsaRecommendations: getDsaRecommendations,
+    getDsaRecommendations: this._bind(getDsaRecommendations),
     /** @deprecated Use `zernio.adcreatives.generateAdPreviews` instead. */
-    generateAdPreviews: generateAdPreviews,
+    generateAdPreviews: this._bind(generateAdPreviews),
     /** @deprecated Use `zernio.adcreatives.getAdPreviews` instead. */
-    getAdPreviews: getAdPreviews,
+    getAdPreviews: this._bind(getAdPreviews),
     /** @deprecated Use `zernio.adcreatives.listAdCreatives` instead. */
-    listAdCreatives: listAdCreatives,
+    listAdCreatives: this._bind(listAdCreatives),
     /** @deprecated Use `zernio.adcreatives.createAdCreative` instead. */
-    createAdCreative: createAdCreative,
+    createAdCreative: this._bind(createAdCreative),
     /** @deprecated Use `zernio.adcreatives.getAdCreative` instead. */
-    getAdCreative: getAdCreative,
+    getAdCreative: this._bind(getAdCreative),
     /** @deprecated Use `zernio.adcreatives.updateAdCreative` instead. */
-    updateAdCreative: updateAdCreative,
+    updateAdCreative: this._bind(updateAdCreative),
     /** @deprecated Use `zernio.adcreatives.deleteAdCreative` instead. */
-    deleteAdCreative: deleteAdCreative,
+    deleteAdCreative: this._bind(deleteAdCreative),
     /** @deprecated Use `zernio.adcreatives.uploadAdImage` instead. */
-    uploadAdImage: uploadAdImage,
+    uploadAdImage: this._bind(uploadAdImage),
     /** @deprecated Use `zernio.adcreatives.listAdImages` instead. */
-    listAdImages: listAdImages,
+    listAdImages: this._bind(listAdImages),
     /** @deprecated Use `zernio.adcreatives.listAdCatalogs` instead. */
-    listAdCatalogs: listAdCatalogs,
+    listAdCatalogs: this._bind(listAdCatalogs),
     /** @deprecated Use `zernio.adcreatives.listAdCatalogProductSets` instead. */
-    listAdCatalogProductSets: listAdCatalogProductSets,
+    listAdCatalogProductSets: this._bind(listAdCatalogProductSets),
     /** @deprecated Use `zernio.adaudiences.listAdAudiences` instead. */
-    listAdAudiences: listAdAudiences,
+    listAdAudiences: this._bind(listAdAudiences),
     /** @deprecated Use `zernio.adaudiences.createAdAudience` instead. */
-    createAdAudience: createAdAudience,
+    createAdAudience: this._bind(createAdAudience),
     /** @deprecated Use `zernio.adaudiences.getAdAudience` instead. */
-    getAdAudience: getAdAudience,
+    getAdAudience: this._bind(getAdAudience),
     /** @deprecated Use `zernio.adaudiences.updateAdAudience` instead. */
-    updateAdAudience: updateAdAudience,
+    updateAdAudience: this._bind(updateAdAudience),
     /** @deprecated Use `zernio.adaudiences.deleteAdAudience` instead. */
-    deleteAdAudience: deleteAdAudience,
+    deleteAdAudience: this._bind(deleteAdAudience),
     /** @deprecated Use `zernio.adaudiences.addUsersToAdAudience` instead. */
-    addUsersToAdAudience: addUsersToAdAudience,
+    addUsersToAdAudience: this._bind(addUsersToAdAudience),
     /** @deprecated Use `zernio.adtargeting.searchAdInterests` instead. */
-    searchAdInterests: searchAdInterests,
+    searchAdInterests: this._bind(searchAdInterests),
     /** @deprecated Use `zernio.adtargeting.searchAdTargeting` instead. */
-    searchAdTargeting: searchAdTargeting,
+    searchAdTargeting: this._bind(searchAdTargeting),
     /** @deprecated Use `zernio.adtargeting.estimateAdReach` instead. */
-    estimateAdReach: estimateAdReach,
+    estimateAdReach: this._bind(estimateAdReach),
     /** @deprecated Use `zernio.adtargeting.getLinkedInBidPricing` instead. */
-    getLinkedInBidPricing: getLinkedInBidPricing,
+    getLinkedInBidPricing: this._bind(getLinkedInBidPricing),
     /** @deprecated Use `zernio.adtargeting.getLinkedInSupplyForecast` instead. */
-    getLinkedInSupplyForecast: getLinkedInSupplyForecast,
+    getLinkedInSupplyForecast: this._bind(getLinkedInSupplyForecast),
     /** @deprecated Use `zernio.adinsights.getCampaignAnalytics` instead. */
-    getCampaignAnalytics: getCampaignAnalytics,
+    getCampaignAnalytics: this._bind(getCampaignAnalytics),
     /** @deprecated Use `zernio.adinsights.generateKeywordIdeas` instead. */
-    generateKeywordIdeas: generateKeywordIdeas,
+    generateKeywordIdeas: this._bind(generateKeywordIdeas),
     /** @deprecated Use `zernio.adinsights.generateKeywordHistoricalMetrics` instead. */
-    generateKeywordHistoricalMetrics: generateKeywordHistoricalMetrics,
+    generateKeywordHistoricalMetrics: this._bind(generateKeywordHistoricalMetrics),
     /** @deprecated Use `zernio.adinsights.queryAdInsights` instead. */
-    queryAdInsights: queryAdInsights,
+    queryAdInsights: this._bind(queryAdInsights),
     /** @deprecated Use `zernio.adinsights.createAdInsightsReport` instead. */
-    createAdInsightsReport: createAdInsightsReport,
+    createAdInsightsReport: this._bind(createAdInsightsReport),
     /** @deprecated Use `zernio.adinsights.getAdInsightsReport` instead. */
-    getAdInsightsReport: getAdInsightsReport,
+    getAdInsightsReport: this._bind(getAdInsightsReport),
     /** @deprecated Use `zernio.adinsights.getAdAnalytics` instead. */
-    getAdAnalytics: getAdAnalytics,
+    getAdAnalytics: this._bind(getAdAnalytics),
     /** @deprecated Use `zernio.conversions.getConversionsQuality` instead. */
-    getConversionsQuality: getConversionsQuality,
+    getConversionsQuality: this._bind(getConversionsQuality),
     /** @deprecated Use `zernio.conversions.sendConversions` instead. */
-    sendConversions: sendConversions,
+    sendConversions: this._bind(sendConversions),
     /** @deprecated Use `zernio.conversions.adjustConversions` instead. */
-    adjustConversions: adjustConversions,
+    adjustConversions: this._bind(adjustConversions),
     /** @deprecated Use `zernio.conversions.listConversionDestinations` instead. */
-    listConversionDestinations: listConversionDestinations,
+    listConversionDestinations: this._bind(listConversionDestinations),
     /** @deprecated Use `zernio.conversions.createConversionDestination` instead. */
-    createConversionDestination: createConversionDestination,
+    createConversionDestination: this._bind(createConversionDestination),
     /** @deprecated Use `zernio.conversions.getConversionDestination` instead. */
-    getConversionDestination: getConversionDestination,
+    getConversionDestination: this._bind(getConversionDestination),
     /** @deprecated Use `zernio.conversions.updateConversionDestination` instead. */
-    updateConversionDestination: updateConversionDestination,
+    updateConversionDestination: this._bind(updateConversionDestination),
     /** @deprecated Use `zernio.conversions.deleteConversionDestination` instead. */
-    deleteConversionDestination: deleteConversionDestination,
+    deleteConversionDestination: this._bind(deleteConversionDestination),
     /** @deprecated Use `zernio.conversions.listConversionAssociations` instead. */
-    listConversionAssociations: listConversionAssociations,
+    listConversionAssociations: this._bind(listConversionAssociations),
     /** @deprecated Use `zernio.conversions.addConversionAssociations` instead. */
-    addConversionAssociations: addConversionAssociations,
+    addConversionAssociations: this._bind(addConversionAssociations),
     /** @deprecated Use `zernio.conversions.removeConversionAssociations` instead. */
-    removeConversionAssociations: removeConversionAssociations,
+    removeConversionAssociations: this._bind(removeConversionAssociations),
     /** @deprecated Use `zernio.conversions.getConversionMetrics` instead. */
-    getConversionMetrics: getConversionMetrics,
+    getConversionMetrics: this._bind(getConversionMetrics),
     /** @deprecated Use `zernio.messagingads.createMessagingAd` instead. */
-    createMessagingAd: createMessagingAd,
+    createMessagingAd: this._bind(createMessagingAd),
     /** @deprecated Use `zernio.messagingads.createCallAd` instead. */
-    createCallAd: createCallAd,
+    createCallAd: this._bind(createCallAd),
     /** @deprecated Use `zernio.messagingads.createCtwaAd` instead. */
-    createCtwaAd: createCtwaAd,
+    createCtwaAd: this._bind(createCtwaAd),
     /** @deprecated Use `zernio.reachandfrequency.createRfPrediction` instead. */
-    createRfPrediction: createRfPrediction,
+    createRfPrediction: this._bind(createRfPrediction),
     /** @deprecated Use `zernio.reachandfrequency.getRfPrediction` instead. */
-    getRfPrediction: getRfPrediction,
+    getRfPrediction: this._bind(getRfPrediction),
     /** @deprecated Use `zernio.reachandfrequency.cancelRfReservation` instead. */
-    cancelRfReservation: cancelRfReservation,
+    cancelRfReservation: this._bind(cancelRfReservation),
     /** @deprecated Use `zernio.reachandfrequency.reserveRfPrediction` instead. */
-    reserveRfPrediction: reserveRfPrediction,
+    reserveRfPrediction: this._bind(reserveRfPrediction),
     /** @deprecated Use `zernio.leadgen.listLeads` instead. */
-    listLeads: listLeads,
+    listLeads: this._bind(listLeads),
     /** @deprecated Use `zernio.leadgen.listLeadForms` instead. */
-    listLeadForms: listLeadForms,
+    listLeadForms: this._bind(listLeadForms),
     /** @deprecated Use `zernio.leadgen.createLeadForm` instead. */
-    createLeadForm: createLeadForm,
+    createLeadForm: this._bind(createLeadForm),
     /** @deprecated Use `zernio.leadgen.getLeadForm` instead. */
-    getLeadForm: getLeadForm,
+    getLeadForm: this._bind(getLeadForm),
     /** @deprecated Use `zernio.leadgen.archiveLeadForm` instead. */
-    archiveLeadForm: archiveLeadForm,
+    archiveLeadForm: this._bind(archiveLeadForm),
     /** @deprecated Use `zernio.leadgen.listFormLeads` instead. */
-    listFormLeads: listFormLeads,
+    listFormLeads: this._bind(listFormLeads),
     /** @deprecated Use `zernio.leadgen.createTestLead` instead. */
-    createTestLead: createTestLead,
+    createTestLead: this._bind(createTestLead),
     /** @deprecated Use `zernio.trackingtags.getAdTrackingTags` instead. */
-    getAdTrackingTags: getAdTrackingTags,
+    getAdTrackingTags: this._bind(getAdTrackingTags),
     /** @deprecated Use `zernio.trackingtags.updateAdTrackingTags` instead. */
-    updateAdTrackingTags: updateAdTrackingTags,
+    updateAdTrackingTags: this._bind(updateAdTrackingTags),
     /** @deprecated Use `zernio.trackingtags.listTrackingTags` instead. */
-    listTrackingTags: listTrackingTags,
+    listTrackingTags: this._bind(listTrackingTags),
     /** @deprecated Use `zernio.trackingtags.createTrackingTag` instead. */
-    createTrackingTag: createTrackingTag,
+    createTrackingTag: this._bind(createTrackingTag),
     /** @deprecated Use `zernio.trackingtags.getTrackingTag` instead. */
-    getTrackingTag: getTrackingTag,
+    getTrackingTag: this._bind(getTrackingTag),
     /** @deprecated Use `zernio.trackingtags.updateTrackingTag` instead. */
-    updateTrackingTag: updateTrackingTag,
+    updateTrackingTag: this._bind(updateTrackingTag),
     /** @deprecated Use `zernio.trackingtags.listTrackingTagSharedAccounts` instead. */
-    listTrackingTagSharedAccounts: listTrackingTagSharedAccounts,
+    listTrackingTagSharedAccounts: this._bind(listTrackingTagSharedAccounts),
     /** @deprecated Use `zernio.trackingtags.addTrackingTagSharedAccount` instead. */
-    addTrackingTagSharedAccount: addTrackingTagSharedAccount,
+    addTrackingTagSharedAccount: this._bind(addTrackingTagSharedAccount),
     /** @deprecated Use `zernio.trackingtags.removeTrackingTagSharedAccount` instead. */
-    removeTrackingTagSharedAccount: removeTrackingTagSharedAccount,
+    removeTrackingTagSharedAccount: this._bind(removeTrackingTagSharedAccount),
     /** @deprecated Use `zernio.trackingtags.getTrackingTagStats` instead. */
-    getTrackingTagStats: getTrackingTagStats,
+    getTrackingTagStats: this._bind(getTrackingTagStats),
   };
 
   /**
@@ -1770,26 +1793,32 @@ export class Zernio {
     this.baseURL = options.baseURL ?? 'https://zernio.com/api';
     this._options = options;
 
-    // Configure the generated client. User-Agent and defaultHeaders are
-    // applied at config time (not via the interceptor) because Node 20's
-    // undici treats User-Agent as a forbidden header on already-constructed
-    // Request objects, silently dropping `headers.set('User-Agent', …)`.
-    client.setConfig({
-      baseUrl: this.baseURL,
-      headers: {
-        'User-Agent': `zernio-node/${packageJson.version}`,
-        ...(options.defaultHeaders ?? {}),
-      },
-    });
+    // One client per instance. Interceptors used to be registered on the
+    // module-global client, so every `new Zernio()` stacked another auth
+    // interceptor on the same shared client and the last-constructed key won
+    // for ALL in-flight requests — one tenant's call could carry another
+    // tenant's token. User-Agent and defaultHeaders are applied at config time
+    // (not via the interceptor) because Node 20's undici treats User-Agent as a
+    // forbidden header on already-constructed Request objects, silently
+    // dropping `headers.set('User-Agent', …)`.
+    this._client = createClient(
+      createConfig({
+        baseUrl: this.baseURL,
+        headers: {
+          'User-Agent': `zernio-node/${packageJson.version}`,
+          ...(options.defaultHeaders ?? {}),
+        },
+      })
+    );
 
     // Add auth interceptor
-    client.interceptors.request.use((request) => {
+    this._client.interceptors.request.use((request) => {
       request.headers.set('Authorization', `Bearer ${this.apiKey}`);
       return request;
     });
 
     // Add error handling interceptor
-    client.interceptors.response.use(async (response) => {
+    this._client.interceptors.response.use(async (response) => {
       if (!response.ok) {
         let body: Record<string, unknown> | undefined;
         try {
