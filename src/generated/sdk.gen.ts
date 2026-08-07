@@ -7855,7 +7855,19 @@ export const getDsaRecommendations = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Boost post as ad
- * Creates a paid ad campaign from an existing published post. Creates the full platform campaign hierarchy (campaign, ad set, ad).
+ * Creates a paid ad from an existing published post, keeping the post's
+ * engagement. By default it provisions the whole hierarchy (campaign, ad
+ * set, ad).
+ *
+ * **Attach shape (Meta).** Send `adSetId` to put the ad under an EXISTING
+ * ad set instead, so that ad set keeps its learning phase. It then owns
+ * `budget`, `schedule` and `targeting`, and sending any of those alongside
+ * `adSetId` is a 400 rather than a silent drop. `budget` is required only
+ * without `adSetId`.
+ *
+ * `instagramAccountId`, `destinationType` and `adSetId` are Meta-only and
+ * return 400 on other platforms.
+ *
  */
 export const boostPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BoostPostData, ThrowOnError>) => {
     return (options?.client ?? client).post<BoostPostResponse, BoostPostError, ThrowOnError>({
@@ -8607,6 +8619,8 @@ export const createCallAd = <ThrowOnError extends boolean = false>(options: Opti
  * - **Single-creative**: supply top-level `headline`, `body`, and one of `imageUrl` / `video`. Creates 1 campaign + 1 ad set + 1 ad.
  *
  * - **Multi-creative**: supply a `creatives[]` array with N entries (each carrying its own headline, body, and image/video). Creates 1 campaign + 1 ad set + N ads sharing budget and targeting so Meta A/Bs the creatives inside a single auction instead of fragmenting budget across N parallel campaigns. Recommended when launching multiple creative variants for the same campaign.
+ *
+ * **Attach shape.** Send `adSetId` (with either creative shape) to add the ads to an EXISTING messaging ad set instead of building a campaign, so the ad set keeps its learning phase — the way to refresh a CTWA creative without resetting delivery. The ad set then owns budget, targeting and schedule, so `budgetAmount`, `budgetType`, `endDate`, `objective`, `countries`, `interests` and `audienceId` are rejected with a 400 alongside it rather than silently dropped. The target ad set's `destination_type` must match the ad's destination (a WhatsApp ad needs a `WHATSAPP` ad set), otherwise Meta would accept an ad that never delivers.
  *
  * Prerequisites enforced by Meta (surfaced as platform_error on failure): the Facebook Page must be paired with a verified WhatsApp Business number, the WhatsApp Business Account must be business-verified, and the Meta access token must carry ads_management.
  */
