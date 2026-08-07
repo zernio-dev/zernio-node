@@ -1448,6 +1448,54 @@ export type CommentAutomationFollowGate = {
 };
 
 /**
+ * A Meta generic template (product card) sent as the automation's first DM.
+ * It REPLACES the plain `dmMessage` bubble: a Meta message carries one body
+ * shape, and a comment gets exactly one private reply, so the card and the
+ * text cannot both be delivered. Put your selling copy in `subtitle`.
+ * Mutually exclusive with `buttons` (sending both is a 400). Works on both
+ * the `comment` and `story_reply` triggers.
+ * Up to 10 elements, rendered as a horizontally swipeable carousel.
+ * Rendering confirmed on the Instagram and Messenger mobile apps.
+ *
+ */
+export type CommentAutomationTemplate = {
+    type: 'generic';
+    elements: Array<CommentAutomationTemplateElement>;
+};
+
+export type type2 = 'generic';
+
+export type CommentAutomationTemplateElement = {
+    /**
+     * Card headline (80 chars max). Also used as the Inbox preview for the sent DM.
+     */
+    title: string;
+    /**
+     * Card description, e.g. the price or a short pitch (80 chars max).
+     */
+    subtitle?: string;
+    /**
+     * Publicly reachable http(s) image rendered large above the card.
+     */
+    imageUrl?: string;
+    /**
+     * Up to 3 card buttons. A generic template has NO phone button, on either platform. `url` buttons are click-tracked when linkTracking is on.
+     */
+    buttons?: Array<{
+        type: 'url' | 'postback';
+        title: string;
+        /**
+         * Target URL (required when type is url)
+         */
+        url?: string;
+        /**
+         * Postback payload delivered via the messaging_postbacks webhook (required when type is postback)
+         */
+        payload?: string;
+    }>;
+};
+
+/**
  * An OAuth client (AI assistant / MCP connector) authorized by the user and still
  * holding at least one live token.
  *
@@ -2360,7 +2408,7 @@ export type DmButton = {
     phone?: string;
 };
 
-export type type2 = 'url' | 'postback' | 'phone';
+export type type3 = 'url' | 'postback' | 'phone';
 
 /**
  * Canonical error envelope. `error` is the human-readable message; `type`,
@@ -2411,7 +2459,7 @@ export type ErrorResponse = {
 /**
  * Error class for programmatic handling.
  */
-export type type3 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+export type type4 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
  * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published (url required) and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
@@ -2423,7 +2471,7 @@ export type ExternalPostMediaItem = {
     thumbnail?: string;
 };
 
-export type type4 = 'image' | 'video';
+export type type5 = 'image' | 'video';
 
 /**
  * A post synced from a platform (published directly on the platform, not
@@ -2907,7 +2955,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type5 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type6 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -3814,7 +3862,7 @@ export type MediaItem = {
     tiktokProcessed?: boolean;
 };
 
-export type type6 = 'image' | 'video' | 'gif' | 'document';
+export type type7 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
@@ -5166,7 +5214,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type7 = 'image' | 'video' | 'document';
+export type type8 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -7536,7 +7584,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type8 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type9 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -7694,7 +7742,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type9 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type10 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -16607,6 +16655,10 @@ export type SendInboxMessageData = {
         /**
          * Action buttons. Mutually exclusive with quickReplies. Max 3 items.
          *
+         * Instagram / Facebook: also mutually exclusive with `template`.
+         * A Meta message carries one body shape, so sending both is a 400
+         * rather than a silent drop of the buttons.
+         *
          * WhatsApp: buttons always render as interactive reply buttons.
          * Only `title` and `payload` are used — `type`, `url`, and `phone`
          * are ignored (WhatsApp has no URL/phone button in this field; use
@@ -16645,7 +16697,9 @@ export type SendInboxMessageData = {
          *
          * Instagram / Facebook: a generic template (carousel). Set `type: generic`
          * and provide up to 10 `elements`, each with a `title` (required) and
-         * optional `subtitle`, `imageUrl`, and `buttons`.
+         * optional `subtitle`, `imageUrl`, and `buttons`. Mutually exclusive with
+         * the top-level `buttons` field (sending both is a 400); put the card's
+         * buttons on its `elements` instead.
          *
          * WhatsApp: sends an approved WhatsApp template message, the only message
          * type WhatsApp accepts when the 24-hour customer-service window is closed.
@@ -25486,6 +25540,7 @@ export type ListCommentAutomationsResponse = ({
          * Inline DM buttons (up to 3). Omitted when none are set.
          */
         buttons?: Array<DmButton>;
+        template?: CommentAutomationTemplate;
         commentReply?: string;
         /**
          * Alternate DM texts rotated at random with dmMessage. Omitted when none.
@@ -25598,6 +25653,10 @@ export type CreateCommentAutomationData = {
          */
         buttons?: Array<DmButton>;
         /**
+         * Optional product card sent INSTEAD of the plain dmMessage bubble. Mutually exclusive with buttons. dmMessage stays required: it is what gets sent the moment the card is cleared.
+         */
+        template?: (CommentAutomationTemplate);
+        /**
          * Optional public reply to the comment
          */
         commentReply?: string;
@@ -25656,6 +25715,7 @@ export type CreateCommentAutomationResponse = ({
          * Inline DM buttons (up to 3). Omitted when none are set.
          */
         buttons?: Array<DmButton>;
+        template?: CommentAutomationTemplate;
         commentReply?: string;
         /**
          * Alternate DM texts rotated at random with dmMessage. Omitted when none.
@@ -25726,6 +25786,7 @@ export type GetCommentAutomationResponse = ({
          * Inline DM buttons (up to 3). Omitted when none are set.
          */
         buttons?: Array<DmButton>;
+        template?: CommentAutomationTemplate;
         commentReply?: string;
         /**
          * Alternate DM texts rotated at random with dmMessage. Omitted when none.
@@ -25824,6 +25885,10 @@ export type UpdateCommentAutomationData = {
          * Inline DM buttons (1-3). Pass [] to clear all buttons.
          */
         buttons?: Array<DmButton>;
+        /**
+         * Product card sent instead of the plain dmMessage bubble. Pass null to clear it and fall back to dmMessage. Mutually exclusive with buttons, including with the buttons already stored on the automation.
+         */
+        template?: (CommentAutomationTemplate | null);
         commentReply?: string;
         /**
          * Alternate DM texts for random rotation (see create). Pass [] to clear.
@@ -25881,6 +25946,7 @@ export type UpdateCommentAutomationResponse = ({
          * Inline DM buttons (up to 3). Omitted when none are set.
          */
         buttons?: Array<DmButton>;
+        template?: CommentAutomationTemplate;
         commentReply?: string;
         /**
          * Alternate DM texts rotated at random with dmMessage. Omitted when none.
