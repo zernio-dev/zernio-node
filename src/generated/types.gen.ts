@@ -30133,10 +30133,11 @@ export type CreateLeadFormData = {
     thankYouButtonText?: string;
     thankYouButtonType?: string;
     thankYouWebsiteUrl?: string;
+    /**
+     * Set true for a higher-intent form (adds a review step before submit).
+     */
     isOptimizedForQuality?: boolean;
-    formType?: 'MORE_VOLUME' | 'HIGHER_INTENT' | 'RICH_CREATIVE';
     blockDisplayForNonTargetedViewer?: boolean;
-    allowOrganicLeadGen?: boolean;
     questionPageCustomHeadline?: string;
     contextCard?: {
         title?: string;
