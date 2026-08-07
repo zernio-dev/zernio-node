@@ -13504,7 +13504,7 @@ export type CompleteTelegramConnectResponse = (({
     message?: string;
 }));
 
-export type CompleteTelegramConnectError = ({
+export type CompleteTelegramConnectError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
