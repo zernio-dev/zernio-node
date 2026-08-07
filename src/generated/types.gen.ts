@@ -1624,6 +1624,15 @@ export type ConversionEvent = {
          */
         gender?: string;
         /**
+         * Meta lead ID from a Lead Ad submission, as a string. Required
+         * for Conversion Leads CRM events: send it with
+         * `actionSource: 'crm'` and
+         * `platformData: { event_source: 'crm', lead_event_source: '<CRM name>' }`.
+         * Forwarded unhashed to Meta's `user_data.lead_id`. Meta only.
+         *
+         */
+        leadId?: string;
+        /**
          * Platform click identifiers captured from the originating ad click.
          */
         clickIds?: {
@@ -1678,7 +1687,13 @@ export type ConversionEvent = {
      */
     actionSource?: 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 'system_generated';
     /**
-     * Escape hatch for platform-specific fields we haven't normalized. Forwarded as-is.
+     * Escape hatch for platform-specific fields we haven't normalized.
+     * On Meta, keys are shallow-merged into `custom_data` only: fields
+     * Zernio already builds (`value`, `currency`, `contents`,
+     * `num_items`) always win on collision, and `user_data` (hashed
+     * match keys) is never touched. Use first-class fields (e.g.
+     * `user.leadId`) for anything that must reach `user_data`.
+     *
      */
     platformData?: {
         [key: string]: unknown;
@@ -25488,6 +25503,14 @@ export type ListCommentAutomationsResponse = ({
          * Tag applied to a contact when they click a tracked link.
          */
         clickTag?: string;
+        /**
+         * Seconds waited after the trigger before the DM is sent. Absent when the DM goes out immediately.
+         */
+        dmDelaySeconds?: number;
+        /**
+         * Seconds waited before the public reply is posted. Absent when it follows the DM immediately.
+         */
+        commentReplyDelaySeconds?: number;
         isActive?: boolean;
         stats?: {
             triggered?: number;
@@ -25594,6 +25617,14 @@ export type CreateCommentAutomationData = {
          * Optional tag applied to a contact when they click a tracked link (requires linkTracking). Lets you segment clickers for broadcasts/sequences.
          */
         clickTag?: string;
+        /**
+         * Seconds to wait after the trigger before sending the DM. Omit or send 0 to reply immediately (the default). Max 86400 (24h). The trigger is still matched and deduplicated the moment the comment arrives, so a delay only moves when the response is sent.
+         */
+        dmDelaySeconds?: number;
+        /**
+         * Seconds to wait before posting the public comment reply. Omit or send 0 to post it right after the DM (the default). The reply never goes out before the DM, so a value below dmDelaySeconds is raised to it. Ignored when trigger=story_reply, which has no public reply.
+         */
+        commentReplyDelaySeconds?: number;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
     };
@@ -25636,6 +25667,14 @@ export type CreateCommentAutomationResponse = ({
         commentReplyVariations?: Array<(string)>;
         linkTracking?: boolean;
         clickTag?: string;
+        /**
+         * Seconds waited after the trigger before the DM is sent. Absent when the DM goes out immediately.
+         */
+        dmDelaySeconds?: number;
+        /**
+         * Seconds waited before the public reply is posted. Absent when it follows the DM immediately.
+         */
+        commentReplyDelaySeconds?: number;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
@@ -25698,6 +25737,14 @@ export type GetCommentAutomationResponse = ({
         commentReplyVariations?: Array<(string)>;
         linkTracking?: boolean;
         clickTag?: string;
+        /**
+         * Seconds waited after the trigger before the DM is sent. Absent when the DM goes out immediately.
+         */
+        dmDelaySeconds?: number;
+        /**
+         * Seconds waited before the public reply is posted. Absent when it follows the DM immediately.
+         */
+        commentReplyDelaySeconds?: number;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
@@ -25716,9 +25763,9 @@ export type GetCommentAutomationResponse = ({
         commenterName?: string;
         commentText?: string;
         /**
-         * DM outcome. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
+         * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
          */
-        status?: 'sent' | 'failed' | 'skipped' | 'gated';
+        status?: 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
         /**
          * How the audience rule resolved. Absent on automations without one.
          */
@@ -25740,6 +25787,10 @@ export type GetCommentAutomationResponse = ({
          * Public-reply error message if commentReplyStatus is failed
          */
         commentReplyError?: string;
+        /**
+         * When the next queued send fires. Present only while something is still pending.
+         */
+        nextDueAt?: string;
         createdAt?: string;
     }>;
 });
@@ -25790,6 +25841,14 @@ export type UpdateCommentAutomationData = {
          * Tag applied to a contact when they click a tracked link (requires linkTracking). Empty string clears it.
          */
         clickTag?: string;
+        /**
+         * Seconds to wait after the trigger before sending the DM. Send 0 to clear the delay and reply immediately.
+         */
+        dmDelaySeconds?: number;
+        /**
+         * Seconds to wait before posting the public comment reply. Send 0 to clear it. The reply never goes out before the DM.
+         */
+        commentReplyDelaySeconds?: number;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
@@ -25864,7 +25923,7 @@ export type ListCommentAutomationLogsData = {
         /**
          * Filter by result status
          */
-        status?: 'sent' | 'failed' | 'skipped' | 'gated';
+        status?: 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
     };
 };
 
@@ -25877,9 +25936,9 @@ export type ListCommentAutomationLogsResponse = ({
         commenterName?: string;
         commentText?: string;
         /**
-         * DM outcome. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
+         * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
          */
-        status?: 'sent' | 'failed' | 'skipped' | 'gated';
+        status?: 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
         /**
          * How the audience rule resolved. Absent on automations without one.
          */
@@ -25901,6 +25960,10 @@ export type ListCommentAutomationLogsResponse = ({
          * Public-reply error message if commentReplyStatus is failed
          */
         commentReplyError?: string;
+        /**
+         * When the next queued send fires. Present only while something is still pending.
+         */
+        nextDueAt?: string;
         createdAt?: string;
     }>;
     pagination?: {
