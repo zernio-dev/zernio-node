@@ -18284,6 +18284,10 @@ export type LikeInboxCommentData = {
          */
         accountId: string;
         /**
+         * (LinkedIn only) Reaction to create. Defaults to LIKE; ignored on other platforms.
+         */
+        reactionType?: 'LIKE' | 'PRAISE' | 'EMPATHY' | 'INTEREST' | 'APPRECIATION' | 'ENTERTAINMENT';
+        /**
          * (Bluesky only) Content identifier for the comment
          */
         cid?: string;
@@ -18333,6 +18337,77 @@ export type UnlikeInboxCommentResponse = ({
 export type UnlikeInboxCommentError = (unknown | {
     error?: string;
 });
+
+export type LikePostData = {
+    body: {
+        /**
+         * The social account acting as the liker
+         */
+        accountId: string;
+        /**
+         * (LinkedIn only) Reaction to create. Defaults to LIKE; ignored on other platforms.
+         */
+        reactionType?: 'LIKE' | 'PRAISE' | 'EMPATHY' | 'INTEREST' | 'APPRECIATION' | 'ENTERTAINMENT';
+        /**
+         * (Bluesky only) Content identifier of the post
+         */
+        cid?: string;
+    };
+    path: {
+        /**
+         * Zernio post ID or the platform's native post ID
+         */
+        postId: string;
+    };
+};
+
+export type LikePostResponse = ({
+    status?: string;
+    /**
+     * The resolved native post ID
+     */
+    postId?: string;
+    platform?: string;
+    liked?: boolean;
+    /**
+     * (Bluesky only) URI to use for unliking
+     */
+    likeUri?: string;
+});
+
+export type LikePostError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UnlikePostData = {
+    path: {
+        /**
+         * Zernio post ID or the platform's native post ID
+         */
+        postId: string;
+    };
+    query: {
+        accountId: string;
+        /**
+         * (Bluesky only) The like URI returned when liking
+         */
+        likeUri?: string;
+    };
+};
+
+export type UnlikePostResponse = ({
+    status?: string;
+    /**
+     * The resolved native post ID
+     */
+    postId?: string;
+    platform?: string;
+    liked?: boolean;
+});
+
+export type UnlikePostError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type SendPrivateReplyToCommentData = {
     body: {

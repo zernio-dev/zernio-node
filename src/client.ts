@@ -308,6 +308,7 @@ import {
   initiateTelegramConnect,
   initiateWhatsAppCall,
   likeInboxComment,
+  likePost,
   listAccountGroups,
   listAccounts,
   listAdAccounts,
@@ -476,6 +477,7 @@ import {
   unfollowUser,
   unhideInboxComment,
   unlikeInboxComment,
+  unlikePost,
   unpinDiscordMessage,
   unpublishPost,
   updateAccount,
@@ -1098,6 +1100,8 @@ export class Zernio {
     unhideInboxComment: this._bind(unhideInboxComment),
     likeInboxComment: this._bind(likeInboxComment),
     unlikeInboxComment: this._bind(unlikeInboxComment),
+    likePost: this._bind(likePost),
+    unlikePost: this._bind(unlikePost),
     sendPrivateReplyToComment: this._bind(sendPrivateReplyToComment),
   };
 

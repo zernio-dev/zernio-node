@@ -497,11 +497,13 @@ try {
 | `comments.editInboxComment()` | Edit comment |
 | `comments.hideInboxComment()` | Hide comment |
 | `comments.likeInboxComment()` | Like comment |
+| `comments.likePost()` | Like post |
 | `comments.replyToInboxPost()` | Reply to comment |
 | `comments.sendPrivateReplyToComment()` | Send private reply |
 | `comments.setCommentModeration()` | Set comment moderation status |
 | `comments.unhideInboxComment()` | Unhide comment |
 | `comments.unlikeInboxComment()` | Unlike comment |
+| `comments.unlikePost()` | Unlike post |
 
 ### Connected Apps
 | Method | Description |
