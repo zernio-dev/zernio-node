@@ -11157,7 +11157,7 @@ export type GetConnectUrlData = {
          *
          * `facebook_login`: the Facebook Login dialog, i.e. "Instagram API with Facebook Login". The user authorizes a Facebook Page that has a linked Instagram professional account, and every API call for that account then runs through the Page. Use this when the customer manages Instagram through a Page and expects the Facebook consent screen. Because the user has to pick which Page to connect, the callback continues at the account-selection step, `/v1/connect/instagram/select-account`.
          *
-         * `facebook_login` does not support `headless=true`: its callback always redirects to Zernio's hosted account-selection page. Pass a `redirect_url` and let the standard flow return the user to you.
+         * `facebook_login` supports `headless=true` like the other selection platforms: the callback redirects to your `redirect_url` with `profileId`, `tempToken`, `platform=instagram`, `step=select_account` and `connect_token`, which you pass into the select-account endpoints to finish. The default `instagram_login` has no selection step, so it connects the account directly.
          *
          */
         loginMethod?: 'instagram_login' | 'facebook_login';
