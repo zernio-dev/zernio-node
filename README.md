@@ -664,6 +664,7 @@ try {
 | `messages.createInboxConversation()` | Create conversation |
 | `messages.getInboxConversation()` | Get conversation |
 | `messages.getInboxConversationMessages()` | List messages |
+| `messages.getMessageAttachment()` | Resolve message attachment |
 | `messages.updateInboxConversation()` | Update conversation status |
 | `messages.deleteInboxMessage()` | Delete message |
 | `messages.addMessageReaction()` | Add reaction |

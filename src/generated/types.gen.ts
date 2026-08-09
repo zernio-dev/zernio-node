@@ -16686,7 +16686,14 @@ export type GetInboxConversationMessagesResponse = ({
         attachments?: Array<{
             id?: string;
             type?: 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'share';
+            /**
+             * Direct media link. On Instagram and Facebook this is a signed Meta CDN url that EXPIRES: use it now, do not store it. Persist `refreshUrl` instead.
+             */
             url?: string;
+            /**
+             * Instagram and Facebook only. Endpoint that resolves this attachment to a working url every time, re-minting it from Meta when the stored one has expired. Safe to store and render indefinitely.
+             */
+            refreshUrl?: (string) | null;
             filename?: (string) | null;
             previewUrl?: (string) | null;
         }>;
@@ -17742,6 +17749,49 @@ export type DeleteTelegramCommandsData = {
 export type DeleteTelegramCommandsResponse = (unknown);
 
 export type DeleteTelegramCommandsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetMessageAttachmentData = {
+    path: {
+        /**
+         * The conversation ID (Zernio id or platform conversation id)
+         */
+        conversationId: string;
+        /**
+         * Zero-based position of the attachment in the message's attachments array
+         */
+        index: number;
+        /**
+         * The message id as returned by the list-messages endpoint (the platform message id)
+         */
+        messageId: string;
+    };
+    query: {
+        /**
+         * Social account ID
+         */
+        accountId: string;
+        /**
+         * `redirect` (default) answers 302 to the media; `json` returns the url in the body
+         */
+        format?: 'redirect' | 'json';
+    };
+};
+
+export type GetMessageAttachmentResponse = ({
+    status?: string;
+    /**
+     * Live media url. Short-lived; re-request this endpoint rather than storing it.
+     */
+    url?: string;
+    /**
+     * True when the stored url had expired and was re-minted from the platform.
+     */
+    refreshed?: boolean;
+});
+
+export type GetMessageAttachmentError = (unknown | ErrorResponse | {
     error?: string;
 });
 

@@ -229,6 +229,7 @@ import {
   getLinkedInPostReactions,
   getLinkedInSupplyForecast,
   getMediaPresignedUrl,
+  getMessageAttachment,
   getMessengerMenu,
   getNextQueueSlot,
   getPendingOAuthData,
@@ -1065,6 +1066,7 @@ export class Zernio {
     addMessageReaction: this._bind(addMessageReaction),
     removeMessageReaction: this._bind(removeMessageReaction),
     uploadMediaDirect: this._bind(uploadMediaDirect),
+    getMessageAttachment: this._bind(getMessageAttachment),
   };
 
   /**
