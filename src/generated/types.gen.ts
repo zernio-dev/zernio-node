@@ -11151,6 +11151,17 @@ export type GetConnectUrlData = {
          */
         headless?: boolean;
         /**
+         * Instagram only. Which of the two Instagram connection methods to use. Ignored for every other platform.
+         *
+         * `instagram_login` (the default, and what you get if you omit this): the Instagram Login dialog. The user authorizes their Instagram professional account directly, no Facebook Page required.
+         *
+         * `facebook_login`: the Facebook Login dialog, i.e. "Instagram API with Facebook Login". The user authorizes a Facebook Page that has a linked Instagram professional account, and every API call for that account then runs through the Page. Use this when the customer manages Instagram through a Page and expects the Facebook consent screen. Because the user has to pick which Page to connect, the callback continues at the account-selection step, `/v1/connect/instagram/select-account`.
+         *
+         * `facebook_login` does not support `headless=true`: its callback always redirects to Zernio's hosted account-selection page. Pass a `redirect_url` and let the standard flow return the user to you.
+         *
+         */
+        loginMethod?: 'instagram_login' | 'facebook_login';
+        /**
          * Your Zernio profile ID (get from /v1/profiles). For WhatsApp, a Zernio-provisioned number can only be connected on the profile it was provisioned to; connecting from any other profile is rejected with a 409.
          */
         profileId: string;
@@ -11460,6 +11471,149 @@ export type SelectFacebookPageError = (unknown | {
 } | {
     error?: string;
     code?: 'RECONNECT_ACCOUNT_MISMATCH';
+});
+
+export type ListInstagramPagesData = {
+    query: {
+        /**
+         * Profile ID from your connection flow
+         */
+        profileId: string;
+        /**
+         * Long-lived Facebook user access token from the OAuth callback redirect
+         */
+        tempToken: string;
+    };
+};
+
+export type ListInstagramPagesResponse = ({
+    pages?: Array<{
+        /**
+         * Facebook Page ID
+         */
+        id?: string;
+        /**
+         * Page name
+         */
+        name?: string;
+        /**
+         * Page-specific access token
+         */
+        access_token?: string;
+        /**
+         * The Instagram professional account linked to this Page
+         */
+        instagram_business_account?: {
+            /**
+             * Instagram Business Account ID
+             */
+            id?: string;
+            username?: string;
+            profile_picture_url?: string;
+        };
+    }>;
+});
+
+export type ListInstagramPagesError = (unknown | {
+    error?: string;
+});
+
+export type SelectInstagramAccountData = {
+    body: {
+        /**
+         * Profile ID from your connection flow
+         */
+        profileId: string;
+        /**
+         * The Facebook Page ID selected by the user, from GET /v1/connect/instagram/select-account
+         */
+        pageId: string;
+        /**
+         * Long-lived Facebook user access token from the OAuth callback redirect
+         */
+        tempToken: string;
+        /**
+         * Optional custom redirect URL to return to after selection
+         */
+        redirect_url?: string;
+    };
+};
+
+export type SelectInstagramAccountResponse = ({
+    message?: string;
+    /**
+     * Redirect URL if a custom redirect_url was provided
+     */
+    redirect_url?: string;
+    account?: {
+        /**
+         * ID of the created SocialAccount
+         */
+        accountId?: string;
+        platform?: 'instagram';
+        username?: string;
+        /**
+         * Name of the Facebook Page backing this account
+         */
+        displayName?: string;
+        profilePicture?: string;
+        isActive?: boolean;
+        loginMethod?: 'facebook_login';
+    };
+});
+
+export type SelectInstagramAccountError = (unknown | {
+    error?: string;
+} | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this is
+     * the Zernio billing tab. For `enterprise_required` this
+     * is the Zernio enterprise contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
 });
 
 export type ListGoogleBusinessLocationsData = {

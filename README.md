@@ -304,6 +304,7 @@ try {
 |--------|-------------|
 | `connect.listFacebookPages()` | List Facebook pages |
 | `connect.listGoogleBusinessLocations()` | List GBP locations |
+| `connect.listInstagramPages()` | List Pages with a linked Instagram account |
 | `connect.listLinkedInOrganizations()` | List LinkedIn orgs |
 | `connect.listPinterestBoardsForSelection()` | List Pinterest boards |
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
@@ -338,6 +339,7 @@ try {
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
 | `connect.selectFacebookPage()` | Select Facebook page |
 | `connect.selectGoogleBusinessLocation()` | Select GBP location |
+| `connect.selectInstagramAccount()` | Select the Page whose Instagram account to connect |
 | `connect.selectLinkedInOrganization()` | Select LinkedIn org |
 | `connect.selectPinterestBoard()` | Select Pinterest board |
 | `connect.selectSnapchatProfile()` | Select Snapchat profile |

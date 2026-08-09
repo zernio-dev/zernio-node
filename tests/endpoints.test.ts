@@ -284,6 +284,16 @@ describe('Endpoint Methods', () => {
       expect(client.connect.configureTikTokAdsBrandIdentity).toBeTypeOf('function');
     });
 
+    it('should have listInstagramPages method', () => {
+      expect(client.connect.listInstagramPages).toBeDefined();
+      expect(client.connect.listInstagramPages).toBeTypeOf('function');
+    });
+
+    it('should have selectInstagramAccount method', () => {
+      expect(client.connect.selectInstagramAccount).toBeDefined();
+      expect(client.connect.selectInstagramAccount).toBeTypeOf('function');
+    });
+
     it('should have getPendingOAuthData method', () => {
       expect(client.connect.getPendingOAuthData).toBeDefined();
       expect(client.connect.getPendingOAuthData).toBeTypeOf('function');
