@@ -25768,6 +25768,10 @@ export type ListCommentAutomationsResponse = ({
          * Seconds waited before the public reply is posted. Absent when it follows the DM immediately.
          */
         commentReplyDelaySeconds?: number;
+        /**
+         * Whether these keywords also fire on a plain inbound DM.
+         */
+        alsoMatchInDms?: boolean;
         isActive?: boolean;
         stats?: {
             triggered?: number;
@@ -25886,6 +25890,10 @@ export type CreateCommentAutomationData = {
          * Seconds to wait before posting the public comment reply. Omit or send 0 to post it right after the DM (the default). The reply never goes out before the DM, so a value below dmDelaySeconds is raised to it. Ignored when trigger=story_reply, which has no public reply.
          */
         commentReplyDelaySeconds?: number;
+        /**
+         * Also fire these keywords on a plain inbound DM, so the automation answers people who message the keyword instead of commenting it. Requires at least one keyword (an empty keyword list means 'match anything', which would answer every inbound message) and is rejected on story_reply automations, which already trigger on DMs. Dedup is per door: a contact who already received the DM from their comment can still receive it from a DM.
+         */
+        alsoMatchInDms?: boolean;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
     };
@@ -25939,6 +25947,10 @@ export type CreateCommentAutomationResponse = ({
         commentReplyDelaySeconds?: number;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
+        /**
+         * Whether these keywords also fire on a plain inbound DM.
+         */
+        alsoMatchInDms?: boolean;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -26010,6 +26022,10 @@ export type GetCommentAutomationResponse = ({
         commentReplyDelaySeconds?: number;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
+        /**
+         * Whether these keywords also fire on a plain inbound DM.
+         */
+        alsoMatchInDms?: boolean;
         isActive?: boolean;
         stats?: {
             totalTriggered?: number;
@@ -26025,6 +26041,10 @@ export type GetCommentAutomationResponse = ({
         commenterId?: string;
         commenterName?: string;
         commentText?: string;
+        /**
+         * Which door triggered this send. Absent on rows written before this field existed (all of those are comment-triggered).
+         */
+        source?: 'comment' | 'story_reply' | 'dm';
         /**
          * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
          */
@@ -26109,6 +26129,10 @@ export type UpdateCommentAutomationData = {
          */
         clickTag?: string;
         /**
+         * Also fire these keywords on a plain inbound DM. Enabling it requires the automation to end up with at least one keyword (this request's keywords if you send them, otherwise the stored ones) and is rejected on story_reply automations.
+         */
+        alsoMatchInDms?: boolean;
+        /**
          * Seconds to wait after the trigger before sending the DM. Send 0 to clear the delay and reply immediately.
          */
         dmDelaySeconds?: number;
@@ -26160,6 +26184,10 @@ export type UpdateCommentAutomationResponse = ({
         commentReplyVariations?: Array<(string)>;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
+        /**
+         * Whether these keywords also fire on a plain inbound DM.
+         */
+        alsoMatchInDms?: boolean;
         isActive?: boolean;
         updatedAt?: string;
     };
@@ -26203,6 +26231,10 @@ export type ListCommentAutomationLogsResponse = ({
         commenterId?: string;
         commenterName?: string;
         commentText?: string;
+        /**
+         * Which door triggered this send. Absent on rows written before this field existed (all of those are comment-triggered).
+         */
+        source?: 'comment' | 'story_reply' | 'dm';
         /**
          * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
          */

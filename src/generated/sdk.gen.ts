@@ -6751,6 +6751,12 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
  * confirmation DM (`followGate`) and then delivers the real DM automatically. People we
  * already know follow you skip the tap entirely.
  *
+ * Set `alsoMatchInDms: true` on a `comment` automation to also answer people who send
+ * a keyword as a direct message instead of commenting it. One automation then covers
+ * both doors, and each door is deduplicated separately (someone who already got the DM
+ * from their comment still gets it if they later DM the keyword). Requires at least one
+ * keyword.
+ *
  * Links in the DM's buttons can be click-tracked (`linkTracking`, on by default) and
  * clickers optionally tagged (`clickTag`) for segmentation. Stats returned include
  * delivered, read, and link clicks.
