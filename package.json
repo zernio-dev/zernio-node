@@ -33,6 +33,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:deno": "deno test --allow-read --allow-env tests/deno/smoke.ts",
     "prepublishOnly": "npm run build",
     "fetch-spec": "curl -o openapi.yaml https://zernio.com/openapi.yaml"
   },
