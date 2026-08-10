@@ -7175,6 +7175,10 @@ export const getAdSetDetails = <ThrowOnError extends boolean = false>(options: O
  * - `LOWEST_COST_WITHOUT_CAP`: no `bidAmount`, no `roasAverageFloor`.
  * - `LOWEST_COST_WITH_BID_CAP` / `COST_CAP`: `bidAmount` REQUIRED (whole currency units).
  * - `LOWEST_COST_WITH_MIN_ROAS`: `roasAverageFloor` REQUIRED (decimal multiplier, e.g. 2.0 = 2.0x ROAS).
+ * - Meta only: send `bidAmount` WITHOUT `bidStrategy` to change the cap amount on an ad set
+ * under a COST_CAP / LOWEST_COST_WITH_BID_CAP parent campaign, leaving the strategy itself
+ * (inherited from the campaign) untouched. `roasAverageFloor` without `bidStrategy` is
+ * rejected (it has no meaning outside LOWEST_COST_WITH_MIN_ROAS).
  *
  * Delivery settings are validated by Meta against the campaign objective;
  * incompatible combinations (e.g. a billingEvent the optimization goal
