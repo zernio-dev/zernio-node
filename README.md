@@ -446,6 +446,7 @@ try {
 | `adInsights.createAdInsightsReport()` | Submit an async insights report run |
 | `adInsights.getAdAnalytics()` | Get ad analytics |
 | `adInsights.getAdInsightsReport()` | Poll an async insights report run |
+| `adInsights.getAdsSearchTerms()` | Google Ads search terms report |
 | `adInsights.getCampaignAnalytics()` | Get campaign analytics |
 | `adInsights.generateKeywordHistoricalMetrics()` | Historical keyword metrics (Google Keyword Planner) |
 | `adInsights.generateKeywordIdeas()` | Generate keyword ideas (Google Keyword Planner) |

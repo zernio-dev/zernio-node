@@ -165,6 +165,7 @@ import {
   getAdTrackingTags,
   getAdTree,
   getAdsActivityLog,
+  getAdsSearchTerms,
   getAdsTimeline,
   getAllAccountsHealth,
   getAnalytics,
@@ -1424,6 +1425,7 @@ export class Zernio {
    * adinsights API
    */
   adinsights = {
+    getAdsSearchTerms: this._bind(getAdsSearchTerms),
     getCampaignAnalytics: this._bind(getCampaignAnalytics),
     generateKeywordIdeas: this._bind(generateKeywordIdeas),
     generateKeywordHistoricalMetrics: this._bind(generateKeywordHistoricalMetrics),
@@ -1708,6 +1710,8 @@ export class Zernio {
     getLinkedInBidPricing: this._bind(getLinkedInBidPricing),
     /** @deprecated Use `zernio.adtargeting.getLinkedInSupplyForecast` instead. */
     getLinkedInSupplyForecast: this._bind(getLinkedInSupplyForecast),
+    /** @deprecated Use `zernio.adinsights.getAdsSearchTerms` instead. */
+    getAdsSearchTerms: this._bind(getAdsSearchTerms),
     /** @deprecated Use `zernio.adinsights.getCampaignAnalytics` instead. */
     getCampaignAnalytics: this._bind(getCampaignAnalytics),
     /** @deprecated Use `zernio.adinsights.generateKeywordIdeas` instead. */

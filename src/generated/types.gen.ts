@@ -3915,6 +3915,21 @@ export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
 };
 
+/**
+ * Meta (facebook/instagram) options for platformSpecificData on POST /v1/ads/boost and /v1/ads/create. Unknown keys are rejected, not dropped.
+ */
+export type MetaAdsPlatformData = {
+    bidStrategy?: BidStrategy;
+    /**
+     * Whole currency units (USD: 5 = $5.00). Required when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP.
+     */
+    bidAmount?: number;
+    /**
+     * Decimal ROAS multiplier (2.0 = 2.0x). Required when bidStrategy is LOWEST_COST_WITH_MIN_ROAS.
+     */
+    roasAverageFloor?: number;
+};
+
 export type Money = {
     /**
      * ISO 4217 currency code (e.g. USD, EUR)
@@ -6394,6 +6409,18 @@ export type WebhookPayloadComment = {
          * Platform's post ID
          */
         platformPostId: string;
+        /**
+         * Post text, from our synced copy — no platform call is made on the comment path, so null when the post was never synced.
+         */
+        content: (string) | null;
+        /**
+         * Post thumbnail or first media item URL. Platform CDN URLs expire, fetch promptly.
+         */
+        imageUrl: (string) | null;
+        /**
+         * Public URL of the post. Null for posts published through Zernio that were never re-synced.
+         */
+        permalink: (string) | null;
     };
     account: {
         /**
@@ -26527,6 +26554,76 @@ export type ListAdsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type GetAdsSearchTermsData = {
+    query: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Numeric Google ad group id filter.
+         */
+        adGroupId?: string;
+        /**
+         * Numeric Google campaign id filter.
+         */
+        campaignId?: string;
+        /**
+         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         */
+        customerId?: string;
+        /**
+         * Defaults to 30 days ago.
+         */
+        fromDate?: string;
+        /**
+         * Cursor from paging.nextPageToken of the previous page.
+         */
+        pageToken?: string;
+        /**
+         * Defaults to today.
+         */
+        toDate?: string;
+    };
+};
+
+export type GetAdsSearchTermsResponse = ({
+    customerId?: string;
+    data?: Array<{
+        searchTerm?: (string) | null;
+        /**
+         * ADDED / EXCLUDED / ADDED_EXCLUDED / NONE — whether the term is already a keyword or a negative.
+         */
+        status?: (string) | null;
+        /**
+         * How the term matched (BROAD, PHRASE, EXACT, NEAR_PHRASE, NEAR_EXACT).
+         */
+        matchType?: (string) | null;
+        campaignId?: (string) | null;
+        campaignName?: (string) | null;
+        adGroupId?: (string) | null;
+        adGroupName?: (string) | null;
+        impressions?: number;
+        clicks?: number;
+        /**
+         * Cost in micros of the account currency (divide by 1,000,000).
+         */
+        costMicros?: number;
+        conversions?: number;
+        conversionsValue?: number;
+    }>;
+    paging?: {
+        /**
+         * Null when the last page was returned.
+         */
+        nextPageToken?: (string) | null;
+    };
+});
+
+export type GetAdsSearchTermsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type ListAdKeywordsData = {
     query?: {
         /**
@@ -29317,33 +29414,47 @@ export type BoostPostData = {
             [key: string]: unknown;
         };
         /**
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         *
          * Meta bid strategy applied to the ad set. On TikTok, mapped to
          * `bid_type` / `bid_price` / `deep_bid_type` automatically.
          *
+         * @deprecated
          */
         bidStrategy?: (BidStrategy);
         /**
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         *
          * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when
          * `bidStrategy` is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`. Backward-compat: providing
          * `bidAmount` without `bidStrategy` is treated as `LOWEST_COST_WITH_BID_CAP`.
          *
+         * @deprecated
          */
         bidAmount?: number;
         /**
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         *
          * Minimum ROAS as a decimal multiplier (e.g. 2.0 = 2.0x ROAS). Required when
          * `bidStrategy` is `LOWEST_COST_WITH_MIN_ROAS`. Sent to Meta as
          * `bid_constraints.roas_average_floor` × 10000 (Meta uses fixed-point integers).
          *
+         * @deprecated
          */
         roasAverageFloor?: number;
         /**
          * Platform-specific options. The platform is derived from `accountId`;
          * sending options for a different platform returns a 400. LinkedIn
-         * (campaign bidding and delivery controls) is the only platform with
-         * options today.
+         * (campaign bidding and delivery controls) and Meta (the bid trio)
+         * have options today.
+         *
+         * **Meta**: `bidStrategy`, `bidAmount` and `roasAverageFloor` may be
+         * sent here instead of at the root — the preferred home going forward.
+         * Sending the bid fields in BOTH places returns a 400
+         * (`mutually_exclusive_fields`).
          *
          */
-        platformSpecificData?: (LinkedInAdsPlatformData);
+        platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData);
         /**
          * Meta only. Tracking specs (pixel, URL tags).
          */
@@ -30171,20 +30282,30 @@ export type CreateStandaloneAdData = {
          */
         gender?: 'all' | 'male' | 'female';
         /**
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         *
          * Meta bid strategy applied to the ad set.
+         *
+         * @deprecated
          */
         bidStrategy?: (BidStrategy);
         /**
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         *
          * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when
          * `bidStrategy` is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`.
          *
+         * @deprecated
          */
         bidAmount?: number;
         /**
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         *
          * Minimum ROAS as a decimal multiplier (e.g. 2.0 = 2.0x ROAS). Required when
          * `bidStrategy` is `LOWEST_COST_WITH_MIN_ROAS`. Sent to Meta as
          * `bid_constraints.roas_average_floor` × 10000.
          *
+         * @deprecated
          */
         roasAverageFloor?: number;
         /**
@@ -30216,11 +30337,16 @@ export type CreateStandaloneAdData = {
         /**
          * Platform-specific options. The platform is derived from `accountId`;
          * sending options for a different platform returns a 400. LinkedIn
-         * (campaign bidding and delivery controls) is the only platform with
-         * options today.
+         * (campaign bidding and delivery controls) and Meta (the bid trio)
+         * have options today.
+         *
+         * **Meta**: `bidStrategy`, `bidAmount` and `roasAverageFloor` may be
+         * sent here instead of at the root — the preferred home going forward.
+         * Sending the bid fields in BOTH places returns a 400
+         * (`mutually_exclusive_fields`).
          *
          */
-        platformSpecificData?: (LinkedInAdsPlatformData);
+        platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData);
         /**
          * Legal entity that benefits from the ad. Required when targeting EU users
          * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
