@@ -372,9 +372,12 @@ try {
 | `adAccounts.listAdLabels()` | Ad labels |
 | `adAccounts.listAdsBusinessCenters()` | List TikTok Business Centers |
 | `adAccounts.listAdStudies()` | A/B tests and lift studies |
+| `adAccounts.listCustomConversions()` | List custom conversions |
 | `adAccounts.listHighDemandPeriods()` | High demand periods / budget schedules |
 | `adAccounts.listMetaBusinesses()` | Businesses list |
 | `adAccounts.listValueRuleSets()` | List value rule sets |
+| `adAccounts.createCustomConversion()` | Create or reuse a custom conversion |
+| `adAccounts.createHighDemandPeriod()` | Schedule a budget increase |
 | `adAccounts.createValueRuleSet()` | Create a value rule set |
 | `adAccounts.getAdAccountFinance()` | Ad account finances |
 | `adAccounts.getAdComments()` | List comments on an ad |

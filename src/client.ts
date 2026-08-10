@@ -50,12 +50,14 @@ import {
   createContact,
   createConversionDestination,
   createCtwaAd,
+  createCustomConversion,
   createCustomField,
   createDiscordGuildRole,
   createDiscordScheduledEvent,
   createDiscordThread,
   createGoogleBusinessMedia,
   createGoogleBusinessPlaceAction,
+  createHighDemandPeriod,
   createInboxConversation,
   createInviteToken,
   createLeadForm,
@@ -333,6 +335,7 @@ import {
   listContacts,
   listConversionAssociations,
   listConversionDestinations,
+  listCustomConversions,
   listCustomFields,
   listDiscordGuildMembers,
   listDiscordGuildRoles,
@@ -1474,6 +1477,7 @@ export class Zernio {
     listMetaBusinesses: this._bind(listMetaBusinesses),
     listAdLabels: this._bind(listAdLabels),
     listHighDemandPeriods: this._bind(listHighDemandPeriods),
+    createHighDemandPeriod: this._bind(createHighDemandPeriod),
     listValueRuleSets: this._bind(listValueRuleSets),
     createValueRuleSet: this._bind(createValueRuleSet),
     getValueRuleSet: this._bind(getValueRuleSet),
@@ -1484,6 +1488,8 @@ export class Zernio {
     updateAdAccount: this._bind(updateAdAccount),
     getDsaDefaults: this._bind(getDsaDefaults),
     getDsaRecommendations: this._bind(getDsaRecommendations),
+    listCustomConversions: this._bind(listCustomConversions),
+    createCustomConversion: this._bind(createCustomConversion),
   };
 
   /**
@@ -1632,6 +1638,8 @@ export class Zernio {
     listAdLabels: this._bind(listAdLabels),
     /** @deprecated Use `zernio.adaccounts.listHighDemandPeriods` instead. */
     listHighDemandPeriods: this._bind(listHighDemandPeriods),
+    /** @deprecated Use `zernio.adaccounts.createHighDemandPeriod` instead. */
+    createHighDemandPeriod: this._bind(createHighDemandPeriod),
     /** @deprecated Use `zernio.adaccounts.listValueRuleSets` instead. */
     listValueRuleSets: this._bind(listValueRuleSets),
     /** @deprecated Use `zernio.adaccounts.createValueRuleSet` instead. */
@@ -1652,6 +1660,10 @@ export class Zernio {
     getDsaDefaults: this._bind(getDsaDefaults),
     /** @deprecated Use `zernio.adaccounts.getDsaRecommendations` instead. */
     getDsaRecommendations: this._bind(getDsaRecommendations),
+    /** @deprecated Use `zernio.adaccounts.listCustomConversions` instead. */
+    listCustomConversions: this._bind(listCustomConversions),
+    /** @deprecated Use `zernio.adaccounts.createCustomConversion` instead. */
+    createCustomConversion: this._bind(createCustomConversion),
     /** @deprecated Use `zernio.adcreatives.generateAdPreviews` instead. */
     generateAdPreviews: this._bind(generateAdPreviews),
     /** @deprecated Use `zernio.adcreatives.getAdPreviews` instead. */

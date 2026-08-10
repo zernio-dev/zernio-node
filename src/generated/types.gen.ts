@@ -2120,6 +2120,36 @@ export type CtwaSingleResponse = {
 
 export type adType3 = 'single';
 
+export type CustomConversion = {
+    id?: string;
+    name?: (string) | null;
+    /**
+     * Meta's rule, parsed back from the string Meta stores.
+     */
+    rule?: {
+        [key: string]: unknown;
+    } | null;
+    customEventType?: (string) | null;
+    /**
+     * Meta's event_source_id — the pixel the rule reads from.
+     */
+    pixelId?: (string) | null;
+    isArchived?: boolean;
+};
+
+export type CustomConversionResult = {
+    adAccountId?: string;
+    /**
+     * Drops straight into promotedObject.customConversionId on POST /v1/ads/create.
+     */
+    customConversionId?: string;
+    /**
+     * True when an existing conversion matched name + pixelId; the response is then a 200.
+     */
+    reused?: boolean;
+    customConversion?: CustomConversion;
+};
+
 /**
  * A Discord guild member, returned verbatim from Discord's API.
  */
@@ -28521,6 +28551,56 @@ export type ListHighDemandPeriodsError = (unknown | {
     error?: string;
 });
 
+export type CreateHighDemandPeriodData = {
+    body: {
+        /**
+         * Zernio SocialAccount id used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Platform campaign id. Exactly one of campaignId / adSetId.
+         */
+        campaignId?: string;
+        /**
+         * Platform ad set id. Exactly one of campaignId / adSetId.
+         */
+        adSetId?: string;
+        /**
+         * With ABSOLUTE, a budget in the ad account's currency in WHOLE units (50 = $50.00). With MULTIPLIER, a factor of the existing budget (2 = double it) and NOT a currency amount.
+         */
+        budgetValue: number;
+        budgetValueType: 'ABSOLUTE' | 'MULTIPLIER';
+        /**
+         * Unix seconds, on a 15-minute boundary (:00, :15, :30, :45).
+         */
+        timeStart: number;
+        /**
+         * Unix seconds, on a 15-minute boundary and after timeStart.
+         */
+        timeEnd: number;
+        recurrenceType?: 'ONE_TIME' | 'WEEKLY' | 'MONTHLY';
+        /**
+         * Ad account currency, for the ABSOLUTE minor-unit conversion. Ignored for MULTIPLIER.
+         */
+        currency?: string;
+    };
+};
+
+export type CreateHighDemandPeriodResponse = ({
+    /**
+     * The campaign / ad set the schedule was attached to.
+     */
+    objectId?: string;
+    /**
+     * Meta budget schedule id.
+     */
+    id?: string;
+});
+
+export type CreateHighDemandPeriodError = (unknown | {
+    error?: string;
+});
+
 export type ListAdCreativesData = {
     query: {
         /**
@@ -28612,6 +28692,10 @@ export type CreateAdCreativeData = {
         creativeFeatures?: {
             [key: string]: ('OPT_IN' | 'OPT_OUT');
         };
+        /**
+         * Meta only. Multi-advertiser ads: whether Meta may show this ad alongside other advertisers' in one unit. Meta auto-enrols since Aug 2024, so send OPT_OUT to leave. It is a top-level creative field, NOT a `creativeFeatures` key — Meta rejects it there.
+         */
+        multiAdvertiser?: 'OPT_IN' | 'OPT_OUT';
     };
 };
 
@@ -29439,6 +29523,10 @@ export type CreateStandaloneAdData = {
         creativeFeatures?: {
             [key: string]: ('OPT_IN' | 'OPT_OUT');
         };
+        /**
+         * Meta only. Multi-advertiser ads: whether Meta may show this ad alongside other advertisers' in one unit. Meta auto-enrols since Aug 2024, so send OPT_OUT to leave. It is a top-level creative field, NOT a `creativeFeatures` key — Meta rejects it there.
+         */
+        multiAdvertiser?: 'OPT_IN' | 'OPT_OUT';
         /**
          * Meta only, single standalone shape only (no creatives[], adSetId, or RESERVED). Dry-run: each node runs Meta's execution_options validate_only and NOTHING is created or persisted. Children need real parents, so a fresh tree validates the campaign + creative (the ad set needs its campaign to exist — pass existingCampaignId to validate it too; the ad itself is never validatable pre-create). A Meta validation failure returns the 400 verbatim; success returns 200 with per-node results instead of an ad.
          */
@@ -32169,6 +32257,69 @@ export type CreateCtwaAdData = {
 export type CreateCtwaAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));
 
 export type CreateCtwaAdError = (unknown | {
+    error?: string;
+});
+
+export type ListCustomConversionsData = {
+    path: {
+        /**
+         * Meta ads SocialAccount id.
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+    };
+};
+
+export type ListCustomConversionsResponse = ({
+    adAccountId?: string;
+    data?: Array<CustomConversion>;
+});
+
+export type ListCustomConversionsError = (unknown | {
+    error?: string;
+});
+
+export type CreateCustomConversionData = {
+    body: {
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Also the reuse key, together with pixelId.
+         */
+        name: string;
+        /**
+         * Meta pixel id (event_source_id). From GET /v1/accounts/{accountId}/tracking-tags.
+         */
+        pixelId: string;
+        /**
+         * Meta custom_event_type, e.g. LEAD, PURCHASE, OTHER.
+         */
+        customEventType: string;
+        /**
+         * Meta conversion rule, forwarded verbatim.
+         */
+        rule: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        /**
+         * Meta ads SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type CreateCustomConversionResponse = (CustomConversionResult);
+
+export type CreateCustomConversionError = (unknown | {
     error?: string;
 });
 
