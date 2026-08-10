@@ -2148,6 +2148,10 @@ export const getInstagramPublishingLimit = <ThrowOnError extends boolean = false
  * - `unavailable` — story has expired and we never received its webhook
  * payload (for example, the account connected after the story expired)
  *
+ * Meta can report an expired story as an empty successful result rather
+ * than an error, so an expired story resolves to `cached` or `unavailable`
+ * even though the upstream request itself succeeded.
+ *
  * Field semantics follow Meta's API. Counts below 5 may be returned as 0
  * due to Meta's privacy floor on small audiences. The `navigation` field
  * is the sum of `tapsForward + tapsBack + exits + swipesForward`.
