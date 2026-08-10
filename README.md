@@ -643,8 +643,10 @@ try {
 | Method | Description |
 |--------|-------------|
 | `instagram.listInstagramStories()` | List active Instagram stories |
+| `instagram.getInstagramAudio()` | Get Instagram audio metadata |
 | `instagram.getInstagramPublishingLimit()` | Get Instagram publishing limit |
 | `instagram.getInstagramStoryInsights()` | Get Instagram story insights |
+| `instagram.searchInstagramAudio()` | Search Instagram audio |
 
 ### Lead Gen
 | Method | Description |

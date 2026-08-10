@@ -216,6 +216,7 @@ import {
   getInboxTopAccounts,
   getInboxVolume,
   getInstagramAccountInsights,
+  getInstagramAudio,
   getInstagramDemographics,
   getInstagramFollowStatus,
   getInstagramFollowerHistory,
@@ -441,6 +442,7 @@ import {
   searchAvailableWhatsAppNumbers,
   searchDiscordGuildMembers,
   searchInboxConversations,
+  searchInstagramAudio,
   searchReddit,
   searchTweets,
   selectFacebookPage,
@@ -1034,6 +1036,8 @@ export class Zernio {
   instagram = {
     listInstagramStories: this._bind(listInstagramStories),
     getInstagramPublishingLimit: this._bind(getInstagramPublishingLimit),
+    searchInstagramAudio: this._bind(searchInstagramAudio),
+    getInstagramAudio: this._bind(getInstagramAudio),
     getInstagramStoryInsights: this._bind(getInstagramStoryInsights),
   };
 

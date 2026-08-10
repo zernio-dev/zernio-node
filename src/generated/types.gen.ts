@@ -3313,6 +3313,61 @@ export type platform3 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tik
 
 export type metricType = 'time_series' | 'total_value';
 
+/**
+ * One asset from the Instagram audio catalog. Licensed music carries artist/artwork fields; original sounds carry creator fields instead, so most fields are nullable.
+ */
+export type InstagramAudioAsset = {
+    /**
+     * Audio asset ID. Pass it as platformSpecificData.audioConfiguration.audioId when creating a Reel.
+     */
+    audioId?: string;
+    /**
+     * Track or sound title.
+     */
+    title?: (string) | null;
+    /**
+     * Catalog type of the asset.
+     */
+    audioType?: ('music' | 'original_sound') | null;
+    /**
+     * Asset duration in milliseconds.
+     */
+    durationInMs?: (number) | null;
+    /**
+     * Artist name (licensed music only).
+     */
+    displayArtist?: (string) | null;
+    /**
+     * Cover artwork thumbnail (licensed music only).
+     */
+    coverArtworkThumbnailUrl?: (string) | null;
+    /**
+     * Temporary preview URL. Meta expires it after roughly 1.5 days; re-fetch the asset to refresh it.
+     */
+    downloadUrl?: (string) | null;
+    /**
+     * Creator username (original sounds only).
+     */
+    igUsername?: (string) | null;
+    /**
+     * Creator profile picture (original sounds only).
+     */
+    profilePictureUrl?: (string) | null;
+    /**
+     * Whether the asset is eligible for ads use.
+     */
+    isAdsEligible?: (boolean) | null;
+    /**
+     * Instagram web link to preview the audio.
+     */
+    onPlatformAudioPreviewLink?: (string) | null;
+};
+
+/**
+ * Catalog type of the asset.
+ */
+export type audioType = 'music' | 'original_sound';
+
 export type InstagramDemographicsResponse = {
     success?: boolean;
     /**
@@ -3401,9 +3456,26 @@ export type InstagramPlatformData = {
         mediaIndex?: number;
     }>;
     /**
-     * Custom name for original audio in Reels. Replaces the default "Original Audio" label. Can only be set once.
+     * Custom name for original audio in Reels. Replaces the default "Original Audio" label. Can only be set once. Unrelated to audioConfiguration, which attaches a catalog track.
      */
     audioName?: string;
+    /**
+     * Attach a licensed music track or original sound from the Instagram audio catalog to a Reel. Reels only (single video post, not a story or image). Requires an Instagram account connected via Facebook Login; classic Instagram Login accounts get a 400 (instagram_audio_requires_facebook_login). Get audio IDs from GET /v1/accounts/{accountId}/instagram/audio. If the track becomes unavailable by publish time (removed, region-blocked, licensing change), the post fails with a user-error; it is not published without the audio.
+     */
+    audioConfiguration?: {
+        /**
+         * Audio asset ID from the audio search endpoint.
+         */
+        audioId: string;
+        /**
+         * Volume of the attached audio track, 0-100. Defaults to 100.
+         */
+        audioVolume?: number;
+        /**
+         * Volume of the video's own sound, 0-100. Defaults to 100. Set 0 to mute the original video audio.
+         */
+        videoVolume?: number;
+    };
     /**
      * Millisecond offset from video start for the Reel cover frame. Ignored when instagramThumbnail or reelCover is provided. Defaults to 0.
      */
@@ -14160,6 +14232,54 @@ export type GetInstagramPublishingLimitResponse = ({
 export type GetInstagramPublishingLimitError = (unknown | {
     error?: string;
 });
+
+export type SearchInstagramAudioData = {
+    path: {
+        /**
+         * The ID of the Instagram account
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * Catalog to search: licensed music or original sounds from Reels.
+         */
+        audioType: 'music' | 'original_sound';
+        /**
+         * Search keywords. Omit to get the current trending list.
+         */
+        q?: string;
+    };
+};
+
+export type SearchInstagramAudioResponse = ({
+    audio?: Array<InstagramAudioAsset>;
+});
+
+export type SearchInstagramAudioError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetInstagramAudioData = {
+    path: {
+        /**
+         * The ID of the Instagram account
+         */
+        accountId: string;
+        /**
+         * Instagram audio asset ID
+         */
+        audioId: string;
+    };
+};
+
+export type GetInstagramAudioResponse = ({
+    audio?: InstagramAudioAsset;
+});
+
+export type GetInstagramAudioError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type GetInstagramStoryInsightsData = {
     path: {
