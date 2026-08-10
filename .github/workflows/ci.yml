@@ -38,3 +38,36 @@ jobs:
 
       - name: Run tests
         run: npm test
+
+  deno:
+    # Deno (and other WinterCG runtimes) validate `RequestInit` strictly, so
+    # bugs that leak internal SDK fields into `new Request(...)` are invisible
+    # to the Node test suite but break every call on Deno Deploy / Supabase
+    # Edge Functions. This job runs a real SDK call (stubbed fetch, no network)
+    # against the built bundle under Deno.
+    name: Deno smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build SDK
+        run: npm run build
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Run Deno smoke test
+        run: npm run test:deno
