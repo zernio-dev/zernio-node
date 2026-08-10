@@ -614,6 +614,13 @@ export class Zernio {
   private _client!: Client;
 
   /**
+   * Wrapper around `_client` that `_bind` injects into operations. Identical
+   * to `_client` except that its HTTP methods strip the `client` selector from
+   * request options before dispatch (see `_stripClientSelector`).
+   */
+  private _dispatchClient!: Client;
+
+  /**
    * API key used for authentication.
    */
   apiKey: string;
@@ -633,10 +640,54 @@ export class Zernio {
     return ((options?: Record<string, unknown>) => {
       const withClient = { ...options };
       if (withClient['client'] === undefined) {
-        withClient['client'] = this._client;
+        withClient['client'] = this._dispatchClient;
       }
       return (operation as (opts: unknown) => unknown)(withClient);
     }) as F;
+  }
+
+  /**
+   * TODO: remove once hey-api ships a fix for
+   * https://github.com/hey-api/hey-api/issues/4177 and we can upgrade.
+   *
+   * `_bind` injects the per-instance client into each operation's options
+   * under the `client` key, and the generated operations forward that whole
+   * options object to @hey-api/client-fetch, which spreads it into the fetch
+   * `RequestInit`. Node's undici ignores unknown init fields, but Deno defines
+   * its own `client` init option (a `Deno.HttpClient`) and validates it, so
+   * `new Request(...)` throws and every SDK call fails on Deno, Deno Deploy,
+   * and Supabase Edge Functions. The selector has already done its job by the
+   * time an HTTP method runs, so this wrapper strips it before hey-api builds
+   * the request. The real client is left untouched — config and interceptors
+   * still live on it, and the wrapper delegates everything else to it.
+   */
+  private static _stripClientSelector(client: Client): Client {
+    const wrapped = Object.create(client) as Client;
+    const methods = [
+      'connect',
+      'delete',
+      'get',
+      'head',
+      'options',
+      'patch',
+      'post',
+      'put',
+      'trace',
+    ] as const;
+    for (const method of methods) {
+      const dispatch = client[method] as (requestOptions?: unknown) => unknown;
+      (wrapped as unknown as Record<string, unknown>)[method] = (
+        requestOptions?: Record<string, unknown>
+      ) => {
+        if (requestOptions && 'client' in requestOptions) {
+          const sanitized = { ...requestOptions };
+          delete sanitized['client'];
+          return dispatch(sanitized);
+        }
+        return dispatch(requestOptions);
+      };
+    }
+    return wrapped;
   }
 
   /**
@@ -1838,6 +1889,11 @@ export class Zernio {
         },
       })
     );
+
+    // Deno / WinterCG compatibility: operations dispatch through a wrapper
+    // that strips the `client` selector from request options (see
+    // `_stripClientSelector`).
+    this._dispatchClient = Zernio._stripClientSelector(this._client);
 
     // Add auth interceptor
     this._client.interceptors.request.use((request) => {
