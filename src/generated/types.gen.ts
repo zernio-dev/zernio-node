@@ -25081,6 +25081,10 @@ export type ListBroadcastRecipientsResponse = ({
          * Plain-language translation of errorCode (e.g. for 131026, that the recipient has likely opted out of marketing messages). Null for unmapped codes; fall back to error.
          */
         errorExplanation?: (string) | null;
+        /**
+         * Meta trace id (fbtrace_id) for the failed send. Quote this when escalating to Meta Direct Support. Only populated for status=failed on Meta platforms.
+         */
+        errorTraceId?: (string) | null;
         sentAt?: string;
         deliveredAt?: string;
         readAt?: string;
