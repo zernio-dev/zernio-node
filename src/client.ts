@@ -1835,6 +1835,32 @@ export class Zernio {
       })
     );
 
+    // `_bind` injects this instance's client under the `client` key so each
+    // operation runs on the right per-instance client. @hey-api/client-fetch
+    // then spreads the whole per-request options object — `client` included —
+    // into the fetch `RequestInit`. Node's undici ignores unknown init fields,
+    // but Deno (and other WinterCG runtimes) reject a `client` that is not a
+    // `Deno.HttpClient`, so `new Request(...)` throws
+    // "Failed to construct 'Request': Argument 2 `client` must be a
+    // Deno.HttpClient" and every call fails under Deno Deploy, Supabase Edge
+    // Functions, Cloudflare Workers, etc. The selector has already done its job
+    // before the HTTP method runs, so strip it before the request is built.
+    const dispatchers = this._client as unknown as Record<
+      string,
+      (requestOptions?: Record<string, unknown>) => unknown
+    >;
+    for (const method of ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace', 'connect']) {
+      const dispatch = dispatchers[method].bind(this._client);
+      dispatchers[method] = (requestOptions) => {
+        if (requestOptions && 'client' in requestOptions) {
+          const withoutClientSelector = { ...requestOptions };
+          delete withoutClientSelector['client'];
+          return dispatch(withoutClientSelector);
+        }
+        return dispatch(requestOptions);
+      };
+    }
+
     // Add auth interceptor
     this._client.interceptors.request.use((request) => {
       request.headers.set('Authorization', `Bearer ${this.apiKey}`);
