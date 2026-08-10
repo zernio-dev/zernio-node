@@ -9642,10 +9642,6 @@ export type GetMediaPresignedUrlData = {
          * Optional file size in bytes for pre-validation (max 5GB)
          */
         size?: number;
-        /**
-         * Write the file to permanent storage instead of temporary storage. Temporary files auto-delete 7 days after upload; permanent files never expire.
-         */
-        permanent?: boolean;
     };
 };
 
@@ -9655,11 +9651,11 @@ export type GetMediaPresignedUrlResponse = ({
      */
     uploadUrl?: string;
     /**
-     * Public URL where the file will be accessible after upload. Served from the temp/ prefix by default (expires 7 days after upload) or from media/ when permanent is true.
+     * Public URL where the file will be accessible after upload
      */
     publicUrl?: string;
     /**
-     * Storage key/path of the file. Prefixed temp/ by default, media/ when permanent is true.
+     * Storage key/path of the file
      */
     key?: string;
     /**
