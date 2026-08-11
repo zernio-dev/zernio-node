@@ -27638,10 +27638,25 @@ export type UpdateAdData = {
             type?: 'daily' | 'lifetime';
         };
         /**
-         * Meta + TikTok only. Pinterest / X / LinkedIn / Google return 501.
+         * Meta + TikTok (demographics/interests) and Google (keyword edits only).
+         * Pinterest / X / LinkedIn return 501.
          *
          */
         targeting?: {
+            /**
+             * Google only. The FULL new set of positive keywords for the ad group; live keywords not listed are removed. Entries are strings (BROAD) or { text, matchType } with matchType exact | phrase | broad. Mirrored to GET /v1/ads/keywords immediately.
+             */
+            keywords?: Array<(string | {
+    text: string;
+    matchType?: 'exact' | 'phrase' | 'broad';
+})>;
+            /**
+             * Google only. Same declarative contract as keywords, for the ad group's negative keywords.
+             */
+            negativeKeywords?: Array<(string | {
+    text: string;
+    matchType?: 'exact' | 'phrase' | 'broad';
+})>;
             ageMin?: number;
             ageMax?: number;
             countries?: Array<(string)>;
@@ -30373,9 +30388,13 @@ export type CreateStandaloneAdData = {
          */
         campaignType?: 'display' | 'search';
         /**
-         * Google Search only
+         * Google Search only. BROAD-match keywords on the new ad group (first 20).
          */
         keywords?: Array<(string)>;
+        /**
+         * Google Search only; other platforms return 400. BROAD-match negative keywords on the new ad group. Editable later via PUT /v1/ads/{adId} targeting.negativeKeywords.
+         */
+        negativeKeywords?: Array<(string)>;
         /**
          * Google Search RSA only. Extra headlines.
          */
