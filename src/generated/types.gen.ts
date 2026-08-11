@@ -675,43 +675,43 @@ export type AdMetrics = {
      */
     roas?: number;
     /**
-     * Meta video ads only (0 for non-video ads and other platforms), like all video* fields below. Number of times the video started playing (Meta `video_play_actions`), summed over the date range and across children at ad-set/campaign level.
+     * Number of times the video started playing, summed over the date range and across children at ad-set/campaign level. 0 for non-video ads. Sources: Meta `video_play_actions`, TikTok `video_play_actions`.
      */
     videoPlayActions?: number;
     /**
-     * Views of at least 30 seconds (or to the end, for shorter videos). Meta `video_30_sec_watched_actions`.
+     * Views of at least 30 seconds (or to the end, for shorter videos). Sources: Meta `video_30_sec_watched_actions` (Meta only).
      */
     video30SecWatchedActions?: number;
     /**
-     * ThruPlays (watched to completion, or at least 15 seconds). Meta `video_thruplay_watched_actions`.
+     * ThruPlays (watched to completion, or at least 15 seconds). Sources: Meta `video_thruplay_watched_actions` (Meta only).
      */
     videoThruplayWatchedActions?: number;
     /**
-     * Views reaching 25% of the video's length. With the other percentile fields, powers hook/hold/drop-off analysis (e.g. hook rate = videoP25WatchedActions / videoPlayActions). Meta `video_p25_watched_actions`.
+     * Views reaching 25% of the video's length. With the other percentile fields, powers hook/hold/drop-off analysis (e.g. hook rate = videoP25WatchedActions / videoPlayActions). Sources: Meta `video_p25_watched_actions`, TikTok `video_views_p25`.
      */
     videoP25WatchedActions?: number;
     /**
-     * Views reaching 50% of the video's length. Meta `video_p50_watched_actions`.
+     * Views reaching 50% of the video's length. Sources: Meta `video_p50_watched_actions`, TikTok `video_views_p50`.
      */
     videoP50WatchedActions?: number;
     /**
-     * Views reaching 75% of the video's length. Meta `video_p75_watched_actions`.
+     * Views reaching 75% of the video's length. Sources: Meta `video_p75_watched_actions`, TikTok `video_views_p75`.
      */
     videoP75WatchedActions?: number;
     /**
-     * Views reaching 95% of the video's length. Meta `video_p95_watched_actions`.
+     * Views reaching 95% of the video's length. Sources: Meta `video_p95_watched_actions` (Meta only).
      */
     videoP95WatchedActions?: number;
     /**
-     * Views reaching 100% of the video's length. Meta `video_p100_watched_actions`.
+     * Views reaching 100% of the video's length. Sources: Meta `video_p100_watched_actions`, TikTok `video_views_p100`.
      */
     videoP100WatchedActions?: number;
     /**
-     * Average seconds watched per play (Meta `video_avg_time_watched_actions`). Aggregated over date ranges and across children as a play-weighted average (total watch time / total plays), never a plain average of averages.
+     * Average seconds watched per play. Aggregated over date ranges and across children as a play-weighted average (total watch time / total plays), never a plain average of averages. Sources: Meta `video_avg_time_watched_actions`, TikTok `average_video_play`.
      */
     videoAvgTimeWatchedActions?: number;
     /**
-     * Derived `spend / videoThruplayWatchedActions`, in ad-account native currency. Rounded to 4 decimals rather than the usual 2 because a ThruPlay routinely costs well under a cent. 0 when the ad has no ThruPlays.
+     * Derived `spend / videoThruplayWatchedActions`, in ad-account native currency. Rounded to 4 decimals rather than the usual 2 because a ThruPlay routinely costs well under a cent. 0 when the ad has no ThruPlays (ThruPlay is Meta-only).
      */
     costPerThruplay?: number;
     funnel?: AdFunnelCounts;
