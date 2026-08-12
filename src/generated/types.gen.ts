@@ -7239,6 +7239,29 @@ export type WebhookPayloadMessage = {
                 flow_id?: string;
             };
         } | null;
+        /**
+         * WhatsApp only. Meta's own reason this message has no
+         * renderable body. Present when Meta attached an error to the
+         * inbound payload; in practice the `unsupported`, `errors` and
+         * `unknown` types (code 131051: message type currently not
+         * supported). `text` on those messages is the fixed
+         * `[Unsupported message]` placeholder.
+         *
+         */
+        unsupported?: {
+            /**
+             * Meta's numeric error code (e.g. 131051).
+             */
+            code?: number;
+            /**
+             * Meta's short error title.
+             */
+            title?: string;
+            /**
+             * Meta's human-readable error detail string.
+             */
+            details?: string;
+        };
     } | null;
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
