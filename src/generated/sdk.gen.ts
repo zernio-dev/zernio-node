@@ -6311,7 +6311,7 @@ export const listWhatsAppFlowResponses = <ThrowOnError extends boolean = false>(
 
 /**
  * List contacts
- * List and search contacts for a profile. Supports filtering by tags, platform, subscription status, and full-text search.
+ * List and search contacts for a profile. Supports filtering by tags, platform, subscription status, and text search on name, email and company.
  */
 export const listContacts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListContactsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListContactsResponse, ListContactsError, ThrowOnError>({

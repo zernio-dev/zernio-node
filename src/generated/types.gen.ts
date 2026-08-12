@@ -7196,7 +7196,7 @@ export type WebhookPayloadMessageSent = {
         sender: {
             id: string;
             /**
-             * Zernio CRM Contact id for this sender, when one exists.
+             * Always omitted on this event: the sender is the business, not a contact. Use conversation.contactId to join back to the CRM Contact.
              */
             contactId?: string;
             name?: string;
@@ -24479,6 +24479,9 @@ export type ListContactsData = {
          * Filter by profile. Omit to list across all profiles. Matches the profile recorded on the contact itself, which is set when the contact is created and is independent of the profile its account currently belongs to. Filter by accountId to list a contact through its channel instead.
          */
         profileId?: string;
+        /**
+         * Case-insensitive substring match on the contact name, email and company. Phone numbers and other platform identifiers are not matched: they live on the contact channel, not on the contact. To reach a contact from an inbox webhook, use the conversation.contactId it already carries.
+         */
         search?: string;
         skip?: number;
         tag?: string;
