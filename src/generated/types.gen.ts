@@ -2718,10 +2718,6 @@ export type ExternalPostSummary = {
      */
     mediaType?: string;
     /**
-     * Primary media URL
-     */
-    mediaUrl?: string;
-    /**
      * Thumbnail URL
      */
     thumbnailUrl?: string;
