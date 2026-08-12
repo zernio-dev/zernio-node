@@ -29907,6 +29907,12 @@ export type BoostPostData = {
          */
         optimizationGoal?: string;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type BoostPostResponse = ({

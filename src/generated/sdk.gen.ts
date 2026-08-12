@@ -8098,6 +8098,16 @@ export const getDsaRecommendations = <ThrowOnError extends boolean = false>(opti
  * `instagramAccountId`, `destinationType` and `adSetId` are Meta-only and
  * return 400 on other platforms.
  *
+ * **Retries.** Boosts are NOT idempotent and can take minutes when Meta requires re-hosting an
+ * Instagram video, so do not retry on client timeout. Send an
+ * Idempotency-Key header to make retries safe: same key and body replays
+ * the original 201, and distinct keys always create distinct ads.
+ * Without the header, an identical request is treated as a retry: while
+ * one is in flight it returns 409, and within 10 minutes of a completed
+ * boost it returns the already-created ad instead of creating another.
+ * To intentionally duplicate an ad, send distinct Idempotency-Keys (or
+ * vary the body, e.g. the name).
+ *
  */
 export const boostPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BoostPostData, ThrowOnError>) => {
     return (options?.client ?? client).post<BoostPostResponse, BoostPostError, ThrowOnError>({
