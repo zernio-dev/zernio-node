@@ -27238,10 +27238,18 @@ export type ListAdCampaignsData = {
          */
         fromDate?: string;
         /**
+         * Return only campaigns that delivered between `fromDate` and `toDate` — spend above zero, or impressions served at zero spend. Unlike `status`, which reads a campaign's CURRENT state, this filters on what happened inside the window. Filters the campaign set itself, so `pagination.total` counts only matching campaigns. Mirrors the same filter on /v1/ads/tree.
+         */
+        hasDelivery?: boolean;
+        /**
          * Meta only. Campaign reads aggregate over ad documents, so a campaign with ZERO ads is normally invisible here — the state the two-step create (campaign, then ads via `existingCampaignId`) leaves behind whenever Meta rejects the ad step. Set true to list those too, with `adCount: 0` and zeroed metrics. Requires `accountId` and `adAccountId`, since an empty campaign has no ad row to resolve a token or ad account from.
          */
         includeEmpty?: boolean;
         limit?: number;
+        /**
+         * Return only campaigns whose spend between `fromDate` and `toDate` reaches this amount, in each campaign's OWN currency (the `currency` field on the campaign). Implies `hasDelivery`; `minSpend=0` applies no filter. Mirrors the same filter on /v1/ads/tree.
+         */
+        minSpend?: number;
         /**
          * Page number (1-based)
          */
@@ -27860,13 +27868,21 @@ export type GetAdTreeData = {
          */
         dailyLevel?: 'campaign' | 'adset' | 'ad';
         /**
-         * Start of the METRICS date range (YYYY-MM-DD). Affects only the spend/impression numbers overlaid on each node, NOT which campaigns are returned. Defaults to 90 days ago.
+         * Start of the METRICS date range (YYYY-MM-DD). On its own it affects only the spend/impression numbers overlaid on each node, not which campaigns are returned — pass `hasDelivery` or `minSpend` to also filter the campaign set to this window. Defaults to 90 days ago.
          */
         fromDate?: string;
+        /**
+         * Return only campaigns that delivered between `fromDate` and `toDate` — spend above zero, or impressions served at zero spend. Unlike `status`, which reads a campaign's CURRENT state, this filters on what happened inside the window, so a campaign that spent then and is paused today is still returned. Filters the campaign set itself, so `pagination.total` counts only matching campaigns.
+         */
+        hasDelivery?: boolean;
         /**
          * Campaigns per page
          */
         limit?: number;
+        /**
+         * Return only campaigns whose spend between `fromDate` and `toDate` reaches this amount. Expressed in each campaign's OWN currency (the `currency` field on the campaign node): spend is stored per ad account in its native currency and one response can span several. Implies `hasDelivery`; `minSpend=0` applies no filter.
+         */
+        minSpend?: number;
         /**
          * Page number (1-based)
          */
