@@ -4082,7 +4082,7 @@ export type LinkedInAggregateAnalyticsTotalResponse = {
 export type aggregation2 = 'TOTAL';
 
 /**
- * Up to 20 images, no multi-video. Single PDF supported (max 100MB). Link previews auto-generated when no media attached. Use organizationUrn for multi-org posting. Geo-restriction only works for organization pages (not personal profiles) and requires the targeted audience to exceed 300 followers.
+ * Up to 20 images, no multi-video. Single PDF supported (max 100MB). Link previews auto-generated when no media attached. Use organizationUrn for multi-org posting. Geo-restriction only works for organization pages (not personal profiles) and requires the targeted audience to exceed 300 followers. Polls are supported via the poll object: 2-4 options, cannot be combined with media or reshareUrl, cannot be edited after publishing, and API-created polls are non-sponsored only.
  *
  */
 export type LinkedInPlatformData = {
@@ -4107,7 +4107,29 @@ export type LinkedInPlatformData = {
      */
     reshareUrl?: string;
     geoRestriction?: GeoRestriction;
+    /**
+     * Create a LinkedIn poll with this post. Cannot be combined with media or reshareUrl. Polls cannot be edited after publishing on LinkedIn, and API-created polls are non-sponsored only (they cannot be promoted as ads).
+     */
+    poll?: {
+        /**
+         * Poll question (max 140 characters)
+         */
+        question: string;
+        /**
+         * Poll options (2-4 choices, max 30 characters each)
+         */
+        options: Array<(string)>;
+        /**
+         * How long the poll accepts votes. Defaults to SEVEN_DAYS.
+         */
+        duration?: 'ONE_DAY' | 'THREE_DAYS' | 'SEVEN_DAYS' | 'FOURTEEN_DAYS';
+    };
 };
+
+/**
+ * How long the poll accepts votes. Defaults to SEVEN_DAYS.
+ */
+export type duration = 'ONE_DAY' | 'THREE_DAYS' | 'SEVEN_DAYS' | 'FOURTEEN_DAYS';
 
 /**
  * Media referenced in posts. URLs must be publicly reachable over HTTPS. Use POST /v1/media/presign for uploads up to 5GB. Zernio auto-compresses images and videos that exceed platform limits (videos over 200 MB may not be compressed).
