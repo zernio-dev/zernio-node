@@ -997,7 +997,7 @@ export type AdTreeCampaign = {
     accountId?: string;
     profileId?: string;
     /**
-     * Google-only. Raw campaign.advertising_channel_type (SEARCH, PERFORMANCE_MAX, VIDEO, DEMAND_GEN, DISPLAY, SHOPPING, ...). Serving surface, distinct from platformObjective (advertiser intent). Null/absent for non-Google platforms.
+     * Google-only. Raw campaign.advertising_channel_type (SEARCH, PERFORMANCE_MAX, LOCAL_SERVICES, VIDEO, DEMAND_GEN, DISPLAY, SHOPPING, ...). Serving surface, distinct from platformObjective (advertiser intent). Null/absent for non-Google platforms.
      */
     advertisingChannelType?: (string) | null;
     /**
@@ -26936,6 +26936,146 @@ export type GetAdsSearchTermsResponse = ({
 });
 
 export type GetAdsSearchTermsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListLocalServicesLeadsData = {
+    query: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * true = only leads Google charged for.
+         */
+        chargedOnly?: boolean;
+        /**
+         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         */
+        customerId?: string;
+        /**
+         * Leads created at/after this day.
+         */
+        fromDate?: string;
+        /**
+         * Google LocalServicesLeadStatus enum value (e.g. NEW, BOOKED, WIPED_OUT).
+         */
+        leadStatus?: string;
+        leadType?: 'PHONE_CALL' | 'MESSAGE' | 'BOOKING';
+        /**
+         * Cursor from paging.nextPageToken of the previous page.
+         */
+        pageToken?: string;
+        /**
+         * Leads created at/before this day.
+         */
+        toDate?: string;
+    };
+};
+
+export type ListLocalServicesLeadsResponse = ({
+    customerId?: string;
+    data?: Array<{
+        /**
+         * Lead id; pass to /v1/ads/local-services/leads/{leadId}/conversations.
+         */
+        id?: (string) | null;
+        /**
+         * PHONE_CALL / MESSAGE / BOOKING.
+         */
+        leadType?: (string) | null;
+        categoryId?: (string) | null;
+        serviceId?: (string) | null;
+        /**
+         * Null for WIPED_OUT leads (contact erased by Google).
+         */
+        contact?: {
+            consumerName?: (string) | null;
+            email?: (string) | null;
+            phoneNumber?: (string) | null;
+        } | null;
+        status?: (string) | null;
+        /**
+         * Google datetime in the customer's timezone (YYYY-MM-DD HH:MM:SS).
+         */
+        createdTime?: (string) | null;
+        locale?: (string) | null;
+        charged?: boolean;
+        creditState?: (string) | null;
+        creditStateLastUpdate?: (string) | null;
+    }>;
+    paging?: {
+        /**
+         * Null when the last page was returned.
+         */
+        nextPageToken?: (string) | null;
+    };
+});
+
+export type ListLocalServicesLeadsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListLocalServicesLeadConversationsData = {
+    path: {
+        /**
+         * Numeric lead id from /v1/ads/local-services/leads.
+         */
+        leadId: string;
+    };
+    query: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         */
+        customerId?: string;
+        /**
+         * Cursor from paging.nextPageToken of the previous page.
+         */
+        pageToken?: string;
+    };
+};
+
+export type ListLocalServicesLeadConversationsResponse = ({
+    customerId?: string;
+    data?: Array<{
+        id?: (string) | null;
+        /**
+         * PHONE_CALL / MESSAGE / SMS / EMAIL / WHATSAPP / ADS_API.
+         */
+        channel?: (string) | null;
+        /**
+         * ADVERTISER or CONSUMER.
+         */
+        participantType?: (string) | null;
+        eventDateTime?: (string) | null;
+        /**
+         * Only on PHONE_CALL entries.
+         */
+        phoneCall?: {
+            callDurationMillis?: (number) | null;
+            callRecordingUrl?: (string) | null;
+        } | null;
+        /**
+         * Only on message-channel entries.
+         */
+        message?: {
+            text?: (string) | null;
+            attachmentUrls?: Array<(string)>;
+        } | null;
+    }>;
+    paging?: {
+        /**
+         * Null when the last page was returned.
+         */
+        nextPageToken?: (string) | null;
+    };
+});
+
+export type ListLocalServicesLeadConversationsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

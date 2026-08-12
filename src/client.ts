@@ -359,6 +359,8 @@ import {
   listLeadForms,
   listLeads,
   listLinkedInOrganizations,
+  listLocalServicesLeadConversations,
+  listLocalServicesLeads,
   listLogs,
   listMetaBusinesses,
   listPhoneNumberCountries,
@@ -1481,6 +1483,8 @@ export class Zernio {
    */
   adinsights = {
     getAdsSearchTerms: this._bind(getAdsSearchTerms),
+    listLocalServicesLeads: this._bind(listLocalServicesLeads),
+    listLocalServicesLeadConversations: this._bind(listLocalServicesLeadConversations),
     getCampaignAnalytics: this._bind(getCampaignAnalytics),
     generateKeywordIdeas: this._bind(generateKeywordIdeas),
     generateKeywordHistoricalMetrics: this._bind(generateKeywordHistoricalMetrics),
@@ -1767,6 +1771,10 @@ export class Zernio {
     getLinkedInSupplyForecast: this._bind(getLinkedInSupplyForecast),
     /** @deprecated Use `zernio.adinsights.getAdsSearchTerms` instead. */
     getAdsSearchTerms: this._bind(getAdsSearchTerms),
+    /** @deprecated Use `zernio.adinsights.listLocalServicesLeads` instead. */
+    listLocalServicesLeads: this._bind(listLocalServicesLeads),
+    /** @deprecated Use `zernio.adinsights.listLocalServicesLeadConversations` instead. */
+    listLocalServicesLeadConversations: this._bind(listLocalServicesLeadConversations),
     /** @deprecated Use `zernio.adinsights.getCampaignAnalytics` instead. */
     getCampaignAnalytics: this._bind(getCampaignAnalytics),
     /** @deprecated Use `zernio.adinsights.generateKeywordIdeas` instead. */

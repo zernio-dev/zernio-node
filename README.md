@@ -443,6 +443,8 @@ try {
 ### Ad Insights
 | Method | Description |
 |--------|-------------|
+| `adInsights.listLocalServicesLeadConversations()` | Conversations of a Local Services lead |
+| `adInsights.listLocalServicesLeads()` | Google Local Services Ads leads |
 | `adInsights.createAdInsightsReport()` | Submit an async insights report run |
 | `adInsights.getAdAnalytics()` | Get ad analytics |
 | `adInsights.getAdInsightsReport()` | Poll an async insights report run |
