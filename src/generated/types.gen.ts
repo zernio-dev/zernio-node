@@ -375,6 +375,34 @@ export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lea
 
 export type type = 'daily' | 'lifetime';
 
+export type AdAnalyticsResponse = {
+    /**
+     * Present and true while historical data is being backfilled.
+     */
+    backfillPending?: boolean;
+    ad?: {
+        id?: string;
+        name?: string;
+        platform?: string;
+        status?: string;
+        /**
+         * ISO 4217 code of the ad account that owns this ad (e.g. USD, THB, INR). All money values in `summary` and `daily` are in this currency. Null only on legacy ads synced before currency was persisted.
+         */
+        currency?: (string) | null;
+    };
+    analytics?: {
+        summary?: AdMetrics;
+        daily?: Array<(AdMetrics & {
+    date?: string;
+})>;
+        breakdowns?: {
+            [key: string]: Array<{
+                [key: string]: unknown;
+            }>;
+        };
+    };
+};
+
 /**
  * Budget amount in the ad account's native currency (see the campaign's `currency` field for the code).
  */
@@ -757,7 +785,74 @@ export type AdMetrics = {
  */
 export type AdReviewStatus = 'in_review' | 'approved' | 'rejected' | 'with_issues';
 
+export type AdsListResponse = {
+    ads?: Array<Ad>;
+    pagination?: Pagination;
+    /**
+     * Present and true while historical data is being backfilled.
+     */
+    backfillPending?: boolean;
+};
+
 export type AdStatus = 'active' | 'paused' | 'pending_review' | 'rejected' | 'completed' | 'cancelled' | 'error';
+
+export type AdsTimelineResponse = {
+    /**
+     * Present and true while historical data is being backfilled.
+     */
+    backfillPending?: boolean;
+    rows?: Array<{
+        date?: string;
+        /**
+         * Native currency units (matches /ads/tree convention).
+         */
+        spend?: number;
+        impressions?: number;
+        /**
+         * Reach summed across the account's ads for this single day. A person seen by two ads the same day counts twice, and reach is de-duplicated per day only: do NOT sum it across days (people reached on multiple days would be double-counted).
+         */
+        reach?: number;
+        clicks?: number;
+        engagement?: number;
+        /**
+         * Click-through rate as a percentage (0–100).
+         */
+        ctr?: number;
+        /**
+         * Cost per click in native currency.
+         */
+        cpc?: number;
+        /**
+         * Cost per 1000 impressions in native currency.
+         */
+        cpm?: number;
+        /**
+         * Sum of conversion events over the range. Fractional values are normal (attribution splitting + Google modeled conversions). Meta: events matching the campaign optimization goal. Google: tracked conversions. X / LinkedIn: reported website/lead conversions (added 2026-07).
+         */
+        conversions?: number;
+        costPerConversion?: number;
+        /**
+         * Per-action-type counts merged across all ads on this day. Keys are platform-native action types.
+         */
+        actions?: {
+            [key: string]: (number);
+        };
+        /**
+         * Monetary mirror of `actions` in native currency.
+         */
+        actionValues?: {
+            [key: string]: (number);
+        };
+        /**
+         * Sum of purchase-type action values on this day, native currency.
+         */
+        purchaseValue?: number;
+        /**
+         * Derived purchaseValue / spend.
+         */
+        roas?: number;
+    }>;
+};
 
 /**
  * Ad set (or ad group/line item depending on platform) with rolled-up metrics and child ads
@@ -934,6 +1029,15 @@ export type AdTreeCampaign = {
      * Per-day metric series for this campaign. Present only when `GET /v1/ads/tree` is called with `timeIncrement=1` (any `dailyLevel`). This is the per-campaign daily trend — summing its additive fields reproduces the campaign `metrics` total, except `reach`: on Meta the range total is de-duplicated, so daily reach does not sum to it.
      */
     daily?: Array<AdDailyMetrics>;
+};
+
+export type AdTreeResponse = {
+    campaigns?: Array<AdTreeCampaign>;
+    pagination?: Pagination;
+    /**
+     * Present and true while historical data is being backfilled.
+     */
+    backfillPending?: boolean;
 };
 
 export type AnalyticsListResponse = {
@@ -1420,6 +1524,37 @@ export type forwardCallerId = 'business' | 'caller';
 export type transcriptionLanguage = 'auto' | 'en' | 'es';
 
 export type endReason = 'hangup' | 'no_answer' | 'rejected' | 'error';
+
+export type CampaignAnalyticsResponse = {
+    /**
+     * Present and true while historical data is being backfilled.
+     */
+    backfillPending?: boolean;
+    campaign?: {
+        id?: string;
+        name?: (string) | null;
+        platform?: string;
+        /**
+         * Effective campaign status (ACTIVE when any child ad is active).
+         */
+        status?: (string) | null;
+        /**
+         * ISO 4217 code of the ad account (e.g. USD, THB). All money values in `summary` and `daily` are in this currency.
+         */
+        currency?: (string) | null;
+    };
+    analytics?: {
+        summary?: AdMetrics;
+        daily?: Array<(AdMetrics & {
+    date?: string;
+})>;
+        breakdowns?: {
+            [key: string]: Array<{
+                [key: string]: unknown;
+            }>;
+        };
+    };
+};
 
 /**
  * Who a comment automation answers. Instagram only - Meta exposes the follow
@@ -26698,14 +26833,9 @@ export type ListAdsData = {
     };
 };
 
-export type ListAdsResponse = ({
-    ads?: Array<Ad>;
-    /**
-     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
-     */
-    backfillPending?: boolean;
-    pagination?: Pagination;
-} | unknown);
+export type ListAdsResponse = (AdsListResponse | (AdsListResponse & {
+    backfillPending: true;
+}));
 
 export type ListAdsError = (ErrorResponse | {
     error?: string;
@@ -27539,14 +27669,9 @@ export type GetAdTreeData = {
     };
 };
 
-export type GetAdTreeResponse = ({
-    campaigns?: Array<AdTreeCampaign>;
-    /**
-     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
-     */
-    backfillPending?: boolean;
-    pagination?: Pagination;
-} | unknown);
+export type GetAdTreeResponse = (AdTreeResponse | (AdTreeResponse & {
+    backfillPending: true;
+}));
 
 export type GetAdTreeError = ({
     error?: string;
@@ -27577,63 +27702,9 @@ export type GetAdsTimelineData = {
     };
 };
 
-export type GetAdsTimelineResponse = ({
-    rows?: Array<{
-        date?: string;
-        /**
-         * Native currency units (matches /ads/tree convention).
-         */
-        spend?: number;
-        impressions?: number;
-        /**
-         * Reach summed across the account's ads for this single day. A person seen by two ads the same day counts twice, and reach is de-duplicated per day only: do NOT sum it across days (people reached on multiple days would be double-counted).
-         */
-        reach?: number;
-        clicks?: number;
-        engagement?: number;
-        /**
-         * Click-through rate as a percentage (0–100).
-         */
-        ctr?: number;
-        /**
-         * Cost per click in native currency.
-         */
-        cpc?: number;
-        /**
-         * Cost per 1000 impressions in native currency.
-         */
-        cpm?: number;
-        /**
-         * Sum of conversion events over the range. Fractional values are normal (attribution splitting + Google modeled conversions). Meta: events matching the campaign optimization goal. Google: tracked conversions. X / LinkedIn: reported website/lead conversions (added 2026-07).
-         */
-        conversions?: number;
-        costPerConversion?: number;
-        /**
-         * Per-action-type counts merged across all ads on this day. Keys are platform-native action types.
-         */
-        actions?: {
-            [key: string]: (number);
-        };
-        /**
-         * Monetary mirror of `actions` in native currency.
-         */
-        actionValues?: {
-            [key: string]: (number);
-        };
-        /**
-         * Sum of purchase-type action values on this day, native currency.
-         */
-        purchaseValue?: number;
-        /**
-         * Derived purchaseValue / spend.
-         */
-        roas?: number;
-    }>;
-    /**
-     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
-     */
-    backfillPending?: boolean;
-} | unknown);
+export type GetAdsTimelineResponse = (AdsTimelineResponse | (AdsTimelineResponse & {
+    backfillPending: true;
+}));
 
 export type GetAdsTimelineError = (ErrorResponse | {
     error?: string;
@@ -27827,36 +27898,9 @@ export type GetCampaignAnalyticsData = {
     };
 };
 
-export type GetCampaignAnalyticsResponse = ({
-    campaign?: {
-        id?: string;
-        name?: (string) | null;
-        platform?: string;
-        /**
-         * Effective campaign status (ACTIVE when any child ad is active).
-         */
-        status?: (string) | null;
-        /**
-         * ISO 4217 code of the ad account (e.g. USD, THB). All money values in `summary` and `daily` are in this currency.
-         */
-        currency?: (string) | null;
-    };
-    /**
-     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
-     */
-    backfillPending?: boolean;
-    analytics?: {
-        summary?: AdMetrics;
-        daily?: Array<(AdMetrics & {
-    date?: string;
-})>;
-        breakdowns?: {
-            [key: string]: Array<{
-                [key: string]: unknown;
-            }>;
-        };
-    };
-} | unknown);
+export type GetCampaignAnalyticsResponse = (CampaignAnalyticsResponse | (CampaignAnalyticsResponse & {
+    backfillPending: true;
+}));
 
 export type GetCampaignAnalyticsError = (ErrorResponse | {
     error?: string;
@@ -28280,34 +28324,9 @@ export type GetAdAnalyticsData = {
     };
 };
 
-export type GetAdAnalyticsResponse = ({
-    ad?: {
-        id?: string;
-        name?: string;
-        platform?: string;
-        trigger?: 'comment' | 'story_reply';
-        status?: string;
-        /**
-         * ISO 4217 code of the ad account that owns this ad (e.g. USD, THB, INR). All money values in `summary` and `daily` are in this currency. Null only on legacy ads synced before currency was persisted.
-         */
-        currency?: (string) | null;
-    };
-    /**
-     * Present and true only on `202` responses: part of the requested date range is still being backfilled from the platform in the background. Retry the same request shortly; it returns 200 once the range is fully ingested.
-     */
-    backfillPending?: boolean;
-    analytics?: {
-        summary?: AdMetrics;
-        daily?: Array<(AdMetrics & {
-    date?: string;
-})>;
-        breakdowns?: {
-            [key: string]: Array<{
-                [key: string]: unknown;
-            }>;
-        };
-    };
-} | unknown);
+export type GetAdAnalyticsResponse = (AdAnalyticsResponse | (AdAnalyticsResponse & {
+    backfillPending: true;
+}));
 
 export type GetAdAnalyticsError = (ErrorResponse | {
     error?: string;
