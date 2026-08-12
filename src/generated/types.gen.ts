@@ -6180,6 +6180,9 @@ export type WebhookPayloadAccountAdsInitialSyncCompleted = {
          */
         errorCategory?: 'token_invalid' | 'permission_denied' | 'no_ad_accounts' | 'rate_limited' | 'discovery_failed' | 'unknown';
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6228,6 +6231,9 @@ export type WebhookPayloadAccountConnected = {
         username: string;
         displayName?: string;
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6263,6 +6269,9 @@ export type WebhookPayloadAccountDisconnected = {
          */
         reason: string;
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6382,7 +6391,7 @@ export type WebhookPayloadAdStatusChanged = {
         message?: string;
     };
     /**
-     * ISO-8601 timestamp the webhook was produced.
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
      */
     timestamp: string;
 };
@@ -6434,6 +6443,9 @@ export type WebhookPayloadCallEnded = {
         };
     };
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6462,6 +6474,9 @@ export type WebhookPayloadCallFailed = {
         };
     };
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6493,6 +6508,9 @@ export type WebhookPayloadCallPermissionRequest = {
         responseSource?: string;
     };
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6544,6 +6562,9 @@ export type WebhookPayloadCallReceived = {
         startedAt?: string;
     };
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6693,6 +6714,9 @@ export type WebhookPayloadComment = {
         platform: string;
         username: string;
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6747,6 +6771,9 @@ export type WebhookPayloadConversationStarted = {
      * When the conversation document was created.
      */
     startedAt: string;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6778,6 +6805,9 @@ export type WebhookPayloadExternalPost = {
         platform: string;
         username: string;
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -6842,6 +6872,9 @@ export type WebhookPayloadLead = {
         accountId?: string;
         platform: 'facebook';
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7207,6 +7240,9 @@ export type WebhookPayloadMessage = {
             };
         } | null;
     } | null;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7250,6 +7286,9 @@ export type WebhookPayloadMessageDeleted = {
     deletedAt: string;
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7293,6 +7332,9 @@ export type WebhookPayloadMessageDeliveryStatus = {
     } | null;
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7325,6 +7367,9 @@ export type WebhookPayloadMessageEdited = {
     editedAt: string;
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7399,6 +7444,9 @@ export type WebhookPayloadMessageSent = {
     };
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7442,6 +7490,9 @@ export type WebhookPayloadPost = {
             [key: string]: unknown;
         };
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7538,6 +7589,9 @@ export type WebhookPayloadPostPlatform = {
         username: string;
         displayName?: string;
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7594,6 +7648,9 @@ export type WebhookPayloadReaction = {
     };
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7620,6 +7677,9 @@ export type WebhookPayloadReviewNew = {
         platform: string;
         username: string;
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7648,6 +7708,9 @@ export type WebhookPayloadReviewUpdated = {
         platform: string;
         username: string;
     };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
     timestamp: string;
 };
 
@@ -7666,6 +7729,9 @@ export type WebhookPayloadTest = {
      * Human-readable test message
      */
     message: string;
+    /**
+     * UTC time at which Zernio generated this test event (set once when the payload is built). Test fires are sent synchronously as a single attempt; a later redelivery of this event keeps the original value.
+     */
     timestamp: string;
 };
 
@@ -7719,7 +7785,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
         reason: string;
     };
     /**
-     * ISO-8601 timestamp the webhook was produced.
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
      */
     timestamp: string;
 };
@@ -18359,7 +18425,7 @@ export type GetInboxPostCommentsResponse = ({
          */
         cid?: (string) | null;
         /**
-         * Parent comment ID for nested replies
+         * ID of the parent comment. Present on entries inside replies[] for Facebook, Instagram and X/Twitter. On X/Twitter it is also present on top-level entries, where it holds the ID of the post replied to. Omitted entirely (key absent, not null) on top-level Facebook and Instagram entries and on every other platform, which express the parent relationship only through replies[] nesting.
          */
         parentId?: (string) | null;
         /**
