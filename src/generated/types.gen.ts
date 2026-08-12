@@ -30639,6 +30639,22 @@ export type CreateStandaloneAdData = {
          */
         identityType?: 'TT_USER' | 'CUSTOMIZED_USER';
         /**
+         * TikTok only. Creates the ad as a TikTok Upgraded Smart+
+         * campaign: TikTok automates targeting, bidding and delivery. Supports goals
+         * `conversions` (Smart+ Web Conversions), `lead_generation` (Smart+ Lead
+         * Generation with a website form on `linkUrl`; TikTok Instant Forms not supported)
+         * and `app_promotion` (Smart+ App installs; the ad's destination is the app store,
+         * so `linkUrl` is not used). The web goals require `promotedObject.pixelId` AND
+         * `promotedObject.customEventType`; `app_promotion` requires
+         * `promotedObject.applicationId` instead.
+         * Targeting works like on any TikTok ad (defaults to `countries: ["US"]` when
+         * omitted); TikTok automates delivery within it.
+         * The budget lives on the Smart+ campaign (Campaign Budget Optimization); a `lifetime`
+         * budget additionally requires `endDate`. Cannot be combined with `adSetId`.
+         *
+         */
+        smartPlus?: boolean;
+        /**
          * What the ad optimises against. Behaviour depends on the platform.
          *
          * **Meta**: forwarded to the ad set's `promoted_object` (snake-cased).
@@ -30651,12 +30667,15 @@ export type CreateStandaloneAdData = {
          *
          * Other Meta goals (engagement, traffic, awareness, video_views) ignore this field.
          *
-         * **TikTok**: only `goal: conversions` uses it.
+         * **TikTok**: used by `goal: conversions` and the Smart+ goals (`smartPlus: true`).
          * - `pixelId` maps to the ad group's `pixel_id`. Required: a TikTok website-conversion
          * ad group without a pixel is rejected with `40002: Please select a pixel`.
          * - `customEventType` maps to the ad group's `optimization_event` (the pixel event to
-         * optimise for). Optional: TikTok accepts a pixel-only auto-bid conversion ad group.
+         * optimise for). Optional on the regular conversions flow, required on Smart+.
          * See the `customEventType` field below for the valid TikTok codes.
+         * - `applicationId` (Smart+ `goal: app_promotion` only) maps to the ad group's `app_id`:
+         * the App ID of an app registered on the TikTok Ads account (Assets → Events →
+         * App Events). Install optimization needs the app's MMP tracking configured.
          *
          * The remaining `promotedObject.*` fields are Meta-only. Platforms other than
          * Meta and TikTok ignore `promotedObject` entirely.
