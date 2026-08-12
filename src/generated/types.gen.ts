@@ -17149,7 +17149,7 @@ export type SendInboxMessageData = {
          */
         message?: string;
         /**
-         * URL of the attachment to send (image, video, audio, or file). The URL must be publicly accessible. For binary file uploads, use multipart/form-data instead.
+         * URL of the attachment to send (image, video, audio, or file). The URL must be publicly accessible. For binary file uploads, use multipart/form-data instead. On WhatsApp, combining an image, video, or file with `buttons` renders the media as the header of one interactive reply-button message; audio cannot be combined with buttons.
          */
         attachmentUrl?: string;
         /**
@@ -17206,6 +17206,12 @@ export type SendInboxMessageData = {
          * reply-button message, provide `title` + `payload` and set
          * `type: postback`, e.g.
          * `{ "type": "postback", "title": "Yes", "payload": "yes" }`.
+         *
+         * Combine `buttons` with `attachmentUrl` and `attachmentType`
+         * `image`, `video`, or `file` to render one WhatsApp message with
+         * a media header, body text, and reply buttons. Audio is not a
+         * supported interactive header and returns 400 when combined
+         * with buttons.
          *
          */
         buttons?: Array<{
