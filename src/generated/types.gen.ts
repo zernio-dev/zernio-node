@@ -547,7 +547,7 @@ export type AdEngagementCounts = {
      */
     videoViews?: number;
     /**
-     * Attributed link clicks (`link_click`). This is the attribution-window count, which differs from the in-session `inline_link_clicks` reported by `GET /v1/ads/{adId}/analytics`.
+     * Attributed link clicks (`link_click`). This is the attribution-window count, which differs from the in-session count in the sibling `inlineLinkClicks` field.
      */
     linkClicks?: number;
 };
@@ -674,6 +674,36 @@ export type AdMetrics = {
      * Return on ad spend — derived as `purchaseValue / spend`. 0 when `spend` is 0. Equivalent to Meta's `purchase_roas` under default attribution. At ad-set and campaign levels this is recomputed from summed purchaseValue + spend (NOT averaged across children) so it's mathematically correct at every rollup level.
      */
     roas?: number;
+    /**
+     * Derived `spend / actions[type]` for every action type with a non-zero count, in ad-account native currency. Same keys as `actions`. Rounded to 4 decimals because cheap actions cost well under a cent. Recomputed from summed spend + counts at every rollup level. Empty object when spend is 0 or no actions are reported.
+     */
+    costPerAction?: {
+        [key: string]: (number);
+    };
+    /**
+     * Clicks leading off Meta's surfaces to the advertiser's destination. Meta-only; other platforms report 0.
+     */
+    outboundClicks?: number;
+    /**
+     * Derived `outboundClicks / impressions * 100`, recomputed from sums at every rollup level.
+     */
+    outboundClicksCtr?: number;
+    /**
+     * In-session link clicks. Differs from the attributed `link_click` count in `actions`/`engagementBreakdown.linkClicks`, which uses the attribution window. Meta-only.
+     */
+    inlineLinkClicks?: number;
+    /**
+     * Derived `inlineLinkClicks / impressions * 100`, recomputed from sums at every rollup level.
+     */
+    inlineLinkClickCtr?: number;
+    /**
+     * People who clicked at least once. NOT additive: summed across days/children it overcounts people who clicked on multiple days or ads, so treat rollups as an upper bound (same caveat as `reach`). Meta-only.
+     */
+    uniqueClicks?: number;
+    /**
+     * Derived `uniqueClicks / impressions * 100` (NOT Meta's reach-based unique_ctr). Inherits the non-additivity caveat of `uniqueClicks`.
+     */
+    uniqueCtr?: number;
     /**
      * Number of times the video started playing, summed over the date range and across children at ad-set/campaign level. 0 for non-video ads. Sources: Meta `video_play_actions`, TikTok `video_play_actions`.
      */
