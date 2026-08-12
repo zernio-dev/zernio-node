@@ -538,20 +538,24 @@ export type AdDailyMetrics = AdMetrics & {
  * Use these fields when you need a specific interaction, and `engagement`
  * only as the coarse total it has always been.
  *
- * Meta-only; other platforms leave these at 0.
+ * Populated for Meta and, since 2026-08, TikTok (`reactions` = paid
+ * likes, `comments`, `shares`; TikTok's `follow` count lives in
+ * `actions.follow`, not here). Other platforms leave these at 0.
+ * TikTok history note: paused TikTok ads are not re-synced, so
+ * campaigns that ended before the rollout keep 0s here.
  *
  */
 export type AdEngagementCounts = {
     /**
-     * Meta's own post-engagement total (`post_engagement`).
+     * Meta's own post-engagement total (`post_engagement`). Meta-only.
      */
     postEngagement?: number;
     /**
-     * Meta's own page-engagement total (`page_engagement`).
+     * Meta's own page-engagement total (`page_engagement`). Meta-only.
      */
     pageEngagement?: number;
     /**
-     * Reactions on the ad's post (`post_reaction`).
+     * Reactions on the ad's post (`post_reaction`). For TikTok these are its paid likes.
      */
     reactions?: number;
     /**
@@ -559,7 +563,7 @@ export type AdEngagementCounts = {
      */
     comments?: number;
     /**
-     * Shares of the ad's post. Meta reports these under the action type literally named `post`.
+     * Shares of the ad's post. Meta reports these under the action type literally named `post`; TikTok under `share`.
      */
     shares?: number;
     /**
@@ -683,7 +687,7 @@ export type AdMetrics = {
      */
     costPerConversion?: number;
     /**
-     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...) — both engagement and conversion events. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen). Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
+     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...) — both engagement and conversion events. TikTok: pixel conversions (purchase, add_to_cart, initiate_checkout, view_content, complete_payment, lead) plus the paid-engagement family (follow, post_reaction for paid likes, comment, share) — follow is how FOLLOWERS-goal campaigns report their result. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen). Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
      */
     actions?: {
         [key: string]: (number);
