@@ -8316,6 +8316,21 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * `urn:li:geo:*` URN usable as a `regions[].key` on `POST /v1/ads/create`,
  * `POST /v1/ads/boost` and `POST /v1/ads/targeting/reach-estimate`.
  *
+ * Pinterest resolves against three whole-catalog endpoints (interests, locations,
+ * regions) with no server-side query or pagination, so matching, ranking and the
+ * `limit` cutoff all happen in Zernio; the catalog is independent of any ad account
+ * and results never carry `audienceSize`. Names come back localized to the connected
+ * Pinterest account's language (there is no way to force a locale), so match against
+ * whatever language that account returns. `geoType` routes to a different catalog:
+ * `country` and `metro_area` read the locations catalog (`type` is `country` or
+ * `metro`); `region` reads the regions catalog (`type` is `region`, its id a
+ * `regions[].key` on `POST /v1/ads/create`); `all` and the default `city` merge both
+ * catalogs with honest per-entry `type`s, since Pinterest has no city-level catalog
+ * and `city` is an alias for `all`, not a literal city search. `zip`, `subcity`,
+ * `neighborhood`, `place` and `geo_market` return a 400: Pinterest exposes no
+ * postal-code catalog, pass postal codes directly as `targeting.zips: [{ key }]` on
+ * `POST /v1/ads/create`.
+ *
  * For geo queries, `q` should contain only the locality name (e.g. `"Amsterdam"`,
  * not `"Amsterdam, NL"`). Use `countryCode` to disambiguate.
  *

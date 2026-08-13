@@ -8222,6 +8222,10 @@ export type WorkflowNode = {
         x?: number;
         y?: number;
     };
+    /**
+     * Optional display name shown on the builder canvas and inspector, falling back to the node type when absent. The nodes array is replaced wholesale on update, so it must be resent to be kept.
+     */
+    label?: string;
 };
 
 /**
@@ -31734,9 +31738,9 @@ export type SearchAdTargetingData = {
          */
         dimension?: 'geo' | 'interest' | 'behavior' | 'income';
         /**
-         * Only used when `dimension=geo`. The kind of location to resolve. Defaults to `city`.
+         * Only used when `dimension=geo`. The kind of location to resolve. `all` searches every type in one relevance-ranked call. Defaults to `city`.
          */
-        geoType?: 'country' | 'region' | 'city' | 'zip' | 'metro';
+        geoType?: 'all' | 'country' | 'region' | 'city' | 'subcity' | 'neighborhood' | 'place' | 'zip' | 'metro_area' | 'geo_market';
         /**
          * Maximum results to return.
          */
