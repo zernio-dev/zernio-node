@@ -3523,8 +3523,18 @@ export const getMessageAttachment = <ThrowOnError extends boolean = false>(optio
  * (Instagram side); a row whose count can't be read is omitted.
  *
  * Pagination walks each account's platform listing. Following `nextCursor` reaches past
- * the first page on Facebook and Instagram only, since they are the platforms that
- * support a server-side date window; on the others the listing stops at its first page.
+ * the first page on Facebook, Instagram, Threads, LinkedIn and YouTube, since they are
+ * the platforms that support a server-side date window; on the others the listing stops
+ * at its first page. Cursor pagination is only coherent for the default sort
+ * (`sortBy=date`, `sortOrder=desc`): with `sortOrder=asc`, or with `sortBy=comments`,
+ * the cursor filter does not match the sort order and the second page is unreliable.
+ *
+ * `nextCursor` is opaque: pass it back verbatim, never construct or parse it, its
+ * composition may change without notice. Because each page re-queries a live window,
+ * results can still shift between requests, so dedupe by `id` on the client.
+ *
+ * `commentCount` semantics differ by platform: YouTube's includes replies, Facebook's counts
+ * top-level comments only.
  *
  */
 export const listInboxComments = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListInboxCommentsData, ThrowOnError>) => {
@@ -3537,6 +3547,11 @@ export const listInboxComments = <ThrowOnError extends boolean = false>(options?
 /**
  * Get post comments
  * Fetch comments for a specific post. Requires accountId query parameter.
+ *
+ * On Facebook and Instagram, passing a COMMENT id as `postId` is also supported and
+ * returns that comment's replies instead of the post's top-level comments. This is not
+ * available on YouTube, where `postId` must be a video id.
+ *
  */
 export const getInboxPostComments = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInboxPostCommentsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetInboxPostCommentsResponse, GetInboxPostCommentsError, ThrowOnError>({

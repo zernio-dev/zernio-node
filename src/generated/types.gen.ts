@@ -18527,7 +18527,7 @@ export type ListInboxCommentsError = ({
 export type GetInboxPostCommentsData = {
     path: {
         /**
-         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved. LinkedIn third-party posts accept full activity URN or numeric ID.
+         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved. LinkedIn third-party posts accept full activity URN or numeric ID. On Facebook and Instagram, a comment ID is also accepted here and returns that comment's replies.
          */
         postId: string;
     };
@@ -18538,7 +18538,7 @@ export type GetInboxPostCommentsData = {
          */
         commentId?: string;
         /**
-         * Pagination cursor
+         * Pagination cursor, returned by a previous call as `pagination.cursor`. This is the platform's own opaque paging value passed through verbatim: never construct, decode or validate it client-side.
          */
         cursor?: string;
         /**
@@ -18570,6 +18570,9 @@ export type GetInboxPostCommentsResponse = ({
             verifiedType?: ('blue' | 'government' | 'business' | 'none') | null;
         };
         likeCount?: number;
+        /**
+         * The platform's own reply count, which includes hidden and deleted replies. Can exceed replies[].length even when repliesHasMore is false or absent.
+         */
         replyCount?: number;
         /**
          * The platform this comment is from
@@ -18582,6 +18585,10 @@ export type GetInboxPostCommentsResponse = ({
         replies?: Array<{
             [key: string]: unknown;
         }>;
+        /**
+         * Facebook only. True when replies[] (capped at 10) does not hold the comment's full reply thread; fetch the rest by passing the comment id as postId to GET /v1/inbox/comments/{postId}. Absent (not false) on every other platform, including Instagram, which has no equivalent signal.
+         */
+        repliesHasMore?: boolean;
         canReply?: boolean;
         canDelete?: boolean;
         /**
