@@ -8309,6 +8309,13 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * markets, and every id is usable in `regions`/`cities`/`metros` keys on
  * `POST /v1/ads/create`.
  *
+ * LinkedIn geo searches also return every matching level in one list, and
+ * neither `geoType` nor `countryCode` is applied: LinkedIn's typeahead only
+ * returns a name and a URN per result, with no level or country field to
+ * filter on. Every result has `type` set to `location`, and its id is a
+ * `urn:li:geo:*` URN usable as a `regions[].key` on `POST /v1/ads/create`,
+ * `POST /v1/ads/boost` and `POST /v1/ads/targeting/reach-estimate`.
+ *
  * For geo queries, `q` should contain only the locality name (e.g. `"Amsterdam"`,
  * not `"Amsterdam, NL"`). Use `countryCode` to disambiguate.
  *

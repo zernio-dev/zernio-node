@@ -31759,7 +31759,7 @@ export type SearchAdTargetingResponse = ({
          */
         name: string;
         /**
-         * What the result is (e.g. city, region, country, zip, metro, interest, behavior, income).
+         * What the result is (e.g. city, region, country, zip, metro, location, interest, behavior, income).
          */
         type: string;
         /**
