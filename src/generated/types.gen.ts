@@ -18772,6 +18772,9 @@ export type DeleteInboxCommentData = {
     };
     query: {
         accountId: string;
+        /**
+         * For LinkedIn, accepts either the numeric comment ID or the composite comment URN returned by the comments listing (e.g. urn:li:comment:(threadUrn,id))
+         */
         commentId: string;
     };
 };
