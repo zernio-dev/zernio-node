@@ -4171,7 +4171,7 @@ export type LinkedInPlatformData = {
      */
     disableLinkPreview?: boolean;
     /**
-     * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. The published post becomes a quote-reshare: your content is shown as the commentary and the original post is embedded underneath (LinkedIn's "repost with your thoughts"). Mutually exclusive with media. Works on personal profiles and organization pages.
+     * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. With content, the published post is a quote-reshare: your text is the commentary and the original is embedded underneath (LinkedIn's "repost with your thoughts"). Leave content empty (and omit customContent) to publish a plain repost with no text, LinkedIn's one-click "Repost". Mutually exclusive with media. Works on personal profiles and organization pages.
      */
     reshareUrl?: string;
     geoRestriction?: GeoRestriction;
@@ -10420,7 +10420,7 @@ export type CreatePostData = {
     body: {
         title?: string;
         /**
-         * Post caption/text. Optional when media is attached or all platforms have customContent. Required for text-only posts.
+         * Post caption/text. Optional when media is attached, all platforms have customContent, or every platform entry is a LinkedIn plain repost (platformSpecificData.reshareUrl with no text). Required for text-only posts.
          */
         content?: string;
         mediaItems?: Array<MediaItem>;
