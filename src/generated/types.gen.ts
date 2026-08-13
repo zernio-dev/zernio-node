@@ -1287,6 +1287,74 @@ export type BillingSnapshot = {
 export type billingSystem = 'metronome' | 'stripe';
 
 /**
+ * A blog container on the connected platform. All content lives on the platform; Zernio proxies it and stores nothing.
+ */
+export type Blog = {
+    /**
+     * Platform-native blog id (numeric string for Shopify).
+     */
+    id?: string;
+    platform?: 'shopify';
+    title?: string;
+    /**
+     * URL slug of the blog.
+     */
+    handle?: string;
+};
+
+export type platform2 = 'shopify';
+
+/**
+ * An article inside a blog on the connected platform.
+ */
+export type BlogArticle = {
+    /**
+     * Platform-native article id (numeric string for Shopify).
+     */
+    id?: string;
+    /**
+     * Platform-native id of the blog the article belongs to.
+     */
+    blogId?: string;
+    platform?: 'shopify';
+    title?: string;
+    /**
+     * Article body as HTML.
+     */
+    bodyHtml?: (string) | null;
+    /**
+     * URL slug of the article.
+     */
+    handle?: string;
+    tags?: Array<(string)>;
+    /**
+     * Display name of the article author.
+     */
+    author?: (string) | null;
+    /**
+     * Short summary shown in blog listings.
+     */
+    excerpt?: (string) | null;
+    /**
+     * Featured image.
+     */
+    image?: {
+        url?: string;
+        altText?: (string) | null;
+    } | null;
+    /**
+     * False while the article is a draft or its publish date is still in the future.
+     */
+    isPublished?: boolean;
+    /**
+     * When the article was (or is scheduled to be) published; null for drafts.
+     */
+    publishedAt?: (string) | null;
+    createdAt?: (string) | null;
+    updatedAt?: (string) | null;
+};
+
+/**
  * Bluesky post settings. Supports text posts with up to 4 images or a single video. threadItems creates a reply chain (Bluesky thread). Images exceeding 1MB are automatically compressed. Alt text supported via mediaItem properties.
  *
  */
@@ -3346,7 +3414,7 @@ export type InboxWebhookMessage = {
     isRead: boolean;
 };
 
-export type platform2 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
+export type platform3 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
 
 export type direction2 = 'incoming' | 'outgoing';
 
@@ -3474,7 +3542,7 @@ export type InstagramAccountInsightsResponse = {
 /**
  * Platform that served this response.
  */
-export type platform3 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
+export type platform4 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
 
 export type metricType = 'time_series' | 'total_value';
 
@@ -4848,7 +4916,7 @@ export type ReviewWebhookReview = {
 /**
  * Platform the review originated on. Currently Google Business Profile only.
  */
-export type platform4 = 'googlebusiness';
+export type platform5 = 'googlebusiness';
 
 /**
  * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
@@ -5010,7 +5078,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform5 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
+export type platform6 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
@@ -5445,7 +5513,7 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform6 = 'metaads';
+export type platform7 = 'metaads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -6722,7 +6790,7 @@ export type WebhookPayloadComment = {
 
 export type event9 = 'comment.received';
 
-export type platform7 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
+export type platform8 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
 
 /**
  * Fired once when a new conversation begins, in either direction. A conversation
@@ -6779,7 +6847,7 @@ export type WebhookPayloadConversationStarted = {
 
 export type event10 = 'conversation.started';
 
-export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack';
+export type platform9 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
@@ -6880,7 +6948,7 @@ export type WebhookPayloadLead = {
 
 export type event12 = 'lead.received';
 
-export type platform9 = 'facebook';
+export type platform10 = 'facebook';
 
 /**
  * Webhook payload for message received events
@@ -7815,7 +7883,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
 
 export type event24 = 'whatsapp.template.status_updated';
 
-export type platform10 = 'whatsapp';
+export type platform11 = 'whatsapp';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -11567,6 +11635,17 @@ export type GetConnectUrlData = {
          */
         loginMethod?: 'instagram_login' | 'facebook_login';
         /**
+         * WhatsApp only. Ignored for every other platform. Controls which screen Meta's Embedded Signup popup shows.
+         *
+         * If omitted, the connection defaults to coexistence (same as `business_app` below), preserving existing behavior for numbers already on the WhatsApp Business app.
+         *
+         * `api`: standard Embedded Signup, showing Meta's WABA/number picker. Use this to connect a phone number already on Cloud API elsewhere.
+         *
+         * `business_app`: coexistence, i.e. 'Connect existing WhatsApp Business app' (a number shared between Cloud API and the consumer WhatsApp Business app).
+         *
+         */
+        onboarding?: 'api' | 'business_app';
+        /**
          * Your Zernio profile ID (get from /v1/profiles). For WhatsApp, a Zernio-provisioned number can only be connected on the profile it was provisioned to; connecting from any other profile is rejected with a 409.
          */
         profileId: string;
@@ -11744,6 +11823,88 @@ export type ConnectAdsResponse = (({
 
 export type ConnectAdsError = (unknown | {
     error?: string;
+});
+
+export type GetShopifyConnectUrlData = {
+    query: {
+        /**
+         * Your Zernio profile ID (get from /v1/profiles).
+         */
+        profileId: string;
+        /**
+         * Your custom redirect URL after connection completes. Accepts an http(s) URL, a custom app scheme for mobile deeplinks (e.g. myapp://callback), or a relative path. On failure an `error` query param is appended.
+         */
+        redirect_url?: string;
+        /**
+         * The myshopify.com store domain to connect, e.g. `your-store.myshopify.com` (the bare `your-store` prefix is accepted too).
+         */
+        shop: string;
+    };
+};
+
+export type GetShopifyConnectUrlResponse = ({
+    /**
+     * URL to redirect your user to for OAuth authorization
+     */
+    authUrl?: string;
+    /**
+     * State parameter for security (handled automatically)
+     */
+    state?: string;
+});
+
+export type GetShopifyConnectUrlError = (unknown | {
+    error?: string;
+} | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this is
+     * the Zernio billing tab. For `enterprise_required` this
+     * is the Zernio enterprise contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
 });
 
 export type ConfigureTikTokAdsBrandIdentityData = {
@@ -33165,6 +33326,353 @@ export type GetTrackingTagStatsResponse = ({
 export type GetTrackingTagStatsError = (unknown | {
     error?: string;
 });
+
+export type ListBlogsData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Opaque cursor from a previous response. Omit for the first page.
+         */
+        cursor?: string;
+        /**
+         * Page size (1-50).
+         */
+        limit?: number;
+    };
+};
+
+export type ListBlogsResponse = ({
+    platform?: 'shopify';
+    blogs?: Array<Blog>;
+    /**
+     * Cursor for the next page; null when there are no more pages.
+     */
+    nextCursor?: (string) | null;
+});
+
+export type ListBlogsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateBlogData = {
+    body: {
+        title: string;
+        /**
+         * URL slug. Generated from the title when omitted.
+         */
+        handle?: string;
+    };
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type CreateBlogResponse = ({
+    platform?: 'shopify';
+    blog?: Blog;
+});
+
+export type CreateBlogError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetBlogData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+};
+
+export type GetBlogResponse = ({
+    platform?: 'shopify';
+    blog?: Blog;
+});
+
+export type GetBlogError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateBlogData = {
+    body: {
+        title?: string;
+        /**
+         * URL slug. Changing it changes the blog URL on the store.
+         */
+        handle?: string;
+    };
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+};
+
+export type UpdateBlogResponse = ({
+    platform?: 'shopify';
+    blog?: Blog;
+});
+
+export type UpdateBlogError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteBlogData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+};
+
+export type DeleteBlogResponse = (void);
+
+export type DeleteBlogError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListBlogArticlesData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+    query?: {
+        /**
+         * Opaque cursor from a previous response. Omit for the first page.
+         */
+        cursor?: string;
+        /**
+         * Page size (1-50).
+         */
+        limit?: number;
+    };
+};
+
+export type ListBlogArticlesResponse = ({
+    platform?: 'shopify';
+    articles?: Array<BlogArticle>;
+    /**
+     * Cursor for the next page; null when there are no more pages.
+     */
+    nextCursor?: (string) | null;
+});
+
+export type ListBlogArticlesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateBlogArticleData = {
+    body: {
+        title: string;
+        /**
+         * Article body as HTML.
+         */
+        bodyHtml?: string;
+        /**
+         * URL slug. Generated from the title when omitted.
+         */
+        handle?: string;
+        tags?: Array<(string)>;
+        /**
+         * Display name of the article author.
+         */
+        author?: string;
+        /**
+         * Short summary shown in blog listings.
+         */
+        excerpt?: string;
+        /**
+         * Featured image. The platform downloads it, so the URL must be publicly reachable.
+         */
+        image?: {
+            url: string;
+            altText?: string;
+        };
+        /**
+         * Search-engine overrides. Maps to Shopify global metafields (title_tag and description_tag).
+         */
+        seo?: {
+            title?: string;
+            description?: string;
+        };
+        /**
+         * Set false to create the article as a draft.
+         */
+        isPublished?: boolean;
+        /**
+         * ISO 8601 datetime with offset (or Z). A future date schedules publication natively on the platform.
+         */
+        publishDate?: string;
+    };
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+};
+
+export type CreateBlogArticleResponse = ({
+    platform?: 'shopify';
+    article?: BlogArticle;
+});
+
+export type CreateBlogArticleError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetBlogArticleData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric article id. Non-numeric values return 400.
+         */
+        articleId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+};
+
+export type GetBlogArticleResponse = ({
+    platform?: 'shopify';
+    article?: BlogArticle;
+});
+
+export type GetBlogArticleError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateBlogArticleData = {
+    body: {
+        title?: string;
+        /**
+         * Article body as HTML.
+         */
+        bodyHtml?: string;
+        /**
+         * URL slug of the article.
+         */
+        handle?: string;
+        /**
+         * Replaces the full tag list.
+         */
+        tags?: Array<(string)>;
+        /**
+         * Display name of the article author.
+         */
+        author?: string;
+        /**
+         * Short summary shown in blog listings.
+         */
+        excerpt?: string;
+        /**
+         * Featured image. The platform downloads it, so the URL must be publicly reachable.
+         */
+        image?: {
+            url: string;
+            altText?: string;
+        };
+        /**
+         * Search-engine overrides. Maps to Shopify global metafields (title_tag and description_tag).
+         */
+        seo?: {
+            title?: string;
+            description?: string;
+        };
+        /**
+         * Set false to unpublish the article back to a draft.
+         */
+        isPublished?: boolean;
+        /**
+         * ISO 8601 datetime with offset (or Z). A future date schedules publication natively on the platform.
+         */
+        publishDate?: string;
+    };
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric article id. Non-numeric values return 400.
+         */
+        articleId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+};
+
+export type UpdateBlogArticleResponse = ({
+    platform?: 'shopify';
+    article?: BlogArticle;
+});
+
+export type UpdateBlogArticleError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteBlogArticleData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric article id. Non-numeric values return 400.
+         */
+        articleId: string;
+        /**
+         * Platform-native numeric blog id. Non-numeric values return 400.
+         */
+        blogId: string;
+    };
+};
+
+export type DeleteBlogArticleResponse = (void);
+
+export type DeleteBlogArticleError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type CreateVerificationData = {
     body: {

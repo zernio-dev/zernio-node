@@ -318,6 +318,7 @@ try {
 | `connect.getPinterestBoards()` | List Pinterest boards |
 | `connect.getRedditFlairs()` | List subreddit flairs |
 | `connect.getRedditSubreddits()` | List Reddit subreddits |
+| `connect.getShopifyConnectUrl()` | Get Shopify OAuth connect URL |
 | `connect.getSubredditRules()` | Get subreddit rules |
 | `connect.getTelegramConnectStatus()` | Generate Telegram code |
 | `connect.getYoutubePlaylists()` | List YouTube playlists |
@@ -462,6 +463,20 @@ try {
 | `adTargeting.estimateAdReach()` | Estimate audience reach |
 | `adTargeting.searchAdInterests()` | Search targeting interests |
 | `adTargeting.searchAdTargeting()` | Search targeting options |
+
+### Blogs
+| Method | Description |
+|--------|-------------|
+| `blogs.listBlogArticles()` | List blog articles |
+| `blogs.listBlogs()` | List blogs |
+| `blogs.createBlog()` | Create a blog |
+| `blogs.createBlogArticle()` | Create a blog article |
+| `blogs.getBlog()` | Get a blog |
+| `blogs.getBlogArticle()` | Get a blog article |
+| `blogs.updateBlog()` | Update a blog |
+| `blogs.updateBlogArticle()` | Update a blog article |
+| `blogs.deleteBlog()` | Delete a blog |
+| `blogs.deleteBlogArticle()` | Delete a blog article |
 
 ### Broadcasts
 | Method | Description |

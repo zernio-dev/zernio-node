@@ -44,6 +44,8 @@ import {
   createAdCreative,
   createAdInsightsReport,
   createApiKey,
+  createBlog,
+  createBlogArticle,
   createBroadcast,
   createCallAd,
   createCommentAutomation,
@@ -96,6 +98,8 @@ import {
   deleteAdCampaign,
   deleteAdCreative,
   deleteApiKey,
+  deleteBlog,
+  deleteBlogArticle,
   deleteBroadcast,
   deleteCommentAutomation,
   deleteContact,
@@ -171,6 +175,8 @@ import {
   getAnalytics,
   getBestTimeToPost,
   getBilling,
+  getBlog,
+  getBlogArticle,
   getBroadcast,
   getCall,
   getCallRecording,
@@ -252,6 +258,7 @@ import {
   getRedditSubreddits,
   getRfPrediction,
   getSequence,
+  getShopifyConnectUrl,
   getSlackSettings,
   getSmsRegistration,
   getSmsUsage,
@@ -328,6 +335,8 @@ import {
   listAds,
   listAdsBusinessCenters,
   listApiKeys,
+  listBlogArticles,
+  listBlogs,
   listBroadcastRecipients,
   listBroadcasts,
   listCalls,
@@ -500,6 +509,8 @@ import {
   updateAdSetStatus,
   updateAdStatus,
   updateAdTrackingTags,
+  updateBlog,
+  updateBlogArticle,
   updateBroadcast,
   updateCommentAutomation,
   updateContact,
@@ -914,6 +925,7 @@ export class Zernio {
     getConnectUrl: this._bind(getConnectUrl),
     handleOAuthCallback: this._bind(handleOAuthCallback),
     connectAds: this._bind(connectAds),
+    getShopifyConnectUrl: this._bind(getShopifyConnectUrl),
     configureTikTokAdsBrandIdentity: this._bind(configureTikTokAdsBrandIdentity),
     listInstagramPages: this._bind(listInstagramPages),
     selectInstagramAccount: this._bind(selectInstagramAccount),
@@ -1624,6 +1636,22 @@ export class Zernio {
     createMessagingAd: this._bind(createMessagingAd),
     createCallAd: this._bind(createCallAd),
     createCtwaAd: this._bind(createCtwaAd),
+  };
+
+  /**
+   * blogs API
+   */
+  blogs = {
+    listBlogs: this._bind(listBlogs),
+    createBlog: this._bind(createBlog),
+    getBlog: this._bind(getBlog),
+    updateBlog: this._bind(updateBlog),
+    deleteBlog: this._bind(deleteBlog),
+    listBlogArticles: this._bind(listBlogArticles),
+    createBlogArticle: this._bind(createBlogArticle),
+    getBlogArticle: this._bind(getBlogArticle),
+    updateBlogArticle: this._bind(updateBlogArticle),
+    deleteBlogArticle: this._bind(deleteBlogArticle),
   };
 
   /**
