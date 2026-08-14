@@ -2122,8 +2122,11 @@ export type CtwaAdRequestBody = {
     budgetType?: 'daily' | 'lifetime';
     /**
      * ISO 4217 currency code matching the ad account's currency
-     * (e.g. `USD`). Optional; Meta infers from the ad account
-     * when omitted.
+     * (e.g. `USD`). Optional: Zernio resolves it from the ad account
+     * when omitted. The value selects the minor-unit exponent Zernio
+     * converts budget/bid amounts by before calling Meta (most
+     * currencies are cents; zero-decimal currencies like JPY/KRW are
+     * sent as-is).
      *
      */
     currency?: string;
@@ -30086,6 +30089,9 @@ export type BoostPostData = {
          * Meta only. Ad-set destination_type — where the click LANDS, as opposed to instagramAccountId which is who the ad runs as. Lead ads force ON_AD and ignore this.
          */
         destinationType?: 'INSTAGRAM_PROFILE' | 'WEBSITE' | 'ON_AD' | 'MESSENGER' | 'WHATSAPP';
+        /**
+         * ISO 4217 currency code matching the ad account's currency. Meta only. Optional: Zernio resolves it from the ad account when omitted. The value selects the minor-unit exponent Zernio converts budget/bid amounts by before calling Meta (most currencies are cents; zero-decimal currencies like JPY/KRW are sent as-is).
+         */
         currency?: string;
         schedule?: {
             startDate?: string;
@@ -30460,6 +30466,9 @@ export type CreateStandaloneAdData = {
          *
          */
         budgetLevel?: 'adset' | 'campaign';
+        /**
+         * ISO 4217 currency code matching the ad account's currency (e.g. `USD`). Meta only. Optional: Zernio resolves it from the ad account when omitted. The value selects the minor-unit exponent Zernio converts budget/bid amounts by before calling Meta (most currencies are cents; zero-decimal currencies like JPY/KRW are sent as-is).
+         */
         currency?: string;
         /**
          * Required for Meta, Google, Pinterest, LinkedIn, and OpenAI Ads on legacy + attach shapes (skip for multi-creative — use `creatives[].headline`). Ignored for TikTok and X/Twitter. Max: Meta=255, Google=30, Pinterest=100, LinkedIn=400, OpenAI=50 (min 3). On LinkedIn this is the ad's headline (the bold text on the creative); for traffic ads it's the link card title. On OpenAI Ads this is the chat card's title.
