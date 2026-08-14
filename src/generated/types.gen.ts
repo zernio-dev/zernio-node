@@ -22688,6 +22688,10 @@ export type SubmitPhoneNumberKycData = {
             first_name?: string;
             last_name?: string;
             street_address?: string;
+            /**
+             * Address complement: apartment, suite, unit, or the quadra/lote used in some countries. Optional. Does not substitute for a building number on street_address.
+             */
+            extended_address?: string;
             locality?: string;
             administrative_area?: string;
             postal_code?: string;
@@ -22763,6 +22767,10 @@ export type ValidatePhoneNumberKycAddressData = {
          */
         country: string;
         street_address: string;
+        /**
+         * Address complement: apartment, suite, unit, or the quadra/lote used in some countries. Optional. Does not substitute for a building number on street_address.
+         */
+        extended_address?: string;
         /**
          * City / town.
          */
@@ -23489,6 +23497,10 @@ export type SubmitWhatsAppNumberKycData = {
             first_name?: string;
             last_name?: string;
             street_address?: string;
+            /**
+             * Address complement: apartment, suite, unit, or the quadra/lote used in some countries. Optional. Does not substitute for a building number on street_address.
+             */
+            extended_address?: string;
             locality?: string;
             administrative_area?: string;
             postal_code?: string;
@@ -23549,6 +23561,10 @@ export type ValidateWhatsAppNumberKycAddressData = {
          */
         country: string;
         street_address: string;
+        /**
+         * Address complement: apartment, suite, unit, or the quadra/lote used in some countries. Optional. Does not substitute for a building number on street_address.
+         */
+        extended_address?: string;
         /**
          * City / town.
          */
