@@ -31261,6 +31261,9 @@ export type CreateStandaloneAdData = {
         promotedObject?: {
             /**
              * Pixel ID. **Meta:** Facebook Pixel ID, required for `goal: conversions`.
+             * Requires `customEventType` alongside it; Meta rejects any promoted_object
+             * carrying `pixel_id` without `custom_event_type` (error_subcode 1885014),
+             * even when `customConversionId` is also present.
              * **TikTok:** TikTok Pixel ID, required for `goal: conversions`.
              * To discover the pixels an ad account can use, call
              * `GET /v1/accounts/{accountId}/tracking-tags?adAccountId=act_...` (each entry
@@ -31316,7 +31319,12 @@ export type CreateStandaloneAdData = {
              */
             objectStoreUrl?: string;
             /**
-             * Custom Conversion ID, when optimising against one instead of a standard event.
+             * Custom Conversion ID, when optimising against one instead of a standard
+             * event. Accepted alone by this API, without `pixelId` or `customEventType`.
+             * If `pixelId` is also sent, `customEventType` is still required on the
+             * promoted_object (Meta rejects `pixel_id` without `custom_event_type`,
+             * error_subcode 1885014).
+             *
              */
             customConversionId?: string;
             /**
