@@ -4389,6 +4389,15 @@ export const dialVoiceWebCall = <ThrowOnError extends boolean = false>(options: 
  * US numbers must have an approved carrier registration
  * (`/v1/sms/registrations`) before messages deliver.
  *
+ * **Replies and delivery status arrive as webhooks**, not by polling:
+ * an inbound reply fires `message.received` with `platform: "sms"`, the
+ * first message of a new thread also fires `conversation.started`, and
+ * this message's own outcome fires `message.delivered` or
+ * `message.failed` (the latter carrying the carrier's error code).
+ *
+ * **Opted-out recipients:** a send to a number that replied STOP is
+ * refused with `409`, never silently dropped.
+ *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe:
  * same key + same body replays the original response instead of sending a
  * second message; same key + different body returns 422; a key still in

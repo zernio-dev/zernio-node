@@ -3347,7 +3347,7 @@ export type InboxWebhookMessage = {
      * Internal conversation ID
      */
     conversationId: string;
-    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
+    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
     /**
      * Platform's message ID
      */
@@ -3446,7 +3446,7 @@ export type InboxWebhookMessage = {
     isRead: boolean;
 };
 
-export type platform3 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
+export type platform3 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
 
 export type direction2 = 'incoming' | 'outgoing';
 
@@ -7000,7 +7000,7 @@ export type WebhookPayloadMessage = {
          * Internal conversation ID
          */
         conversationId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
         /**
          * Platform's message ID
          */
@@ -7441,10 +7441,12 @@ export type event14 = 'message.deleted';
  * delivery state for an outgoing message.
  *
  * Platform support:
- * * message.delivered — WhatsApp, Facebook Messenger.
- * * message.read      — WhatsApp, Facebook Messenger, Instagram.
- * * message.failed    — WhatsApp only (other platforms don't expose
- * per-message failure via webhook).
+ * * message.delivered: WhatsApp, Facebook Messenger, SMS.
+ * * message.read: WhatsApp, Facebook Messenger, Instagram. Not SMS
+ * (carriers report delivery, never read).
+ * * message.failed: WhatsApp and SMS (other platforms don't expose
+ * per-message failure via webhook). On SMS, `error.code` is the
+ * carrier's numeric code and `error.message` its reason.
  *
  */
 export type WebhookPayloadMessageDeliveryStatus = {
@@ -7592,6 +7594,8 @@ export type WebhookPayloadMessageSent = {
 };
 
 export type event17 = 'message.sent';
+
+export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
 
 /**
  * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. This is not the inbox metadata.source lineage field.
@@ -8005,7 +8009,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
 
 export type event25 = 'whatsapp.template.status_updated';
 
-export type platform11 = 'whatsapp';
+export type platform12 = 'whatsapp';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
