@@ -6055,7 +6055,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -7242,17 +7242,27 @@ export type WebhookPayloadMessage = {
          */
         isStoryMention?: boolean;
         /**
-         * Ad-click attribution forwarded verbatim from Meta. Populated only on
+         * Click attribution forwarded verbatim from Meta. Populated only on
          * the FIRST inbound message after the click; absent on subsequent
-         * messages of the same conversation.
+         * messages of the same conversation. On Instagram and Messenger a
+         * RETURNING click also attaches it to the first message that
+         * follows, so read it on every `message.received` for per-click
+         * attribution; a click that opens an existing thread WITHOUT a
+         * message arrives as the separate `referral.received` event.
          *
-         * The populated subset identifies the source platform:
+         * The populated subset identifies the source:
          * - `ctwa_clid` and `source_*` fields: WhatsApp CTWA
          * (Click-to-WhatsApp). Attribution window is 7 days from click.
          * Forward to Meta Conversions API for Business Messaging replay.
          * - `ad_id` and `ads_context_data`: Facebook Messenger CTM
          * (Click-to-Message) or Instagram CTD (Click-to-Direct). Use
          * `ad_id` to attribute the conversation to a specific ad.
+         * - `ref` without `ad_id`: an ig.me / m.me link carrying a
+         * `?ref=` parameter (`source` is `SHORTLINK`, `SHORTLINKS` or
+         * `IGME-SOURCE-LINK` depending on surface - treat it as
+         * opaque). Instagram delivers ig.me refs on new threads only
+         * when the account has at least one Ice Breaker configured
+         * (`PUT /v1/accounts/{accountId}/instagram-ice-breakers`).
          *
          */
         referral?: {
@@ -7276,23 +7286,31 @@ export type WebhookPayloadMessage = {
              */
             ad_id?: string;
             /**
-             * Optional `ref` parameter passed through from the Meta ad
-             * creative. Facebook Messenger CTM / Instagram CTD only.
+             * The `ref` parameter passed through from the Meta ad creative
+             * or from an ig.me / m.me link. Instagram / Facebook Messenger
+             * only.
              *
              */
             ref?: string;
             /**
-             * Meta-supplied source identifier (e.g. `ADS`). Facebook Messenger
-             * CTM / Instagram CTD only.
+             * Meta-supplied source identifier (`ADS` for ad clicks;
+             * `SHORTLINK`, `SHORTLINKS` or `IGME-SOURCE-LINK` for ref
+             * links). Instagram / Facebook Messenger only.
              *
              */
             source?: string;
             /**
-             * Meta-supplied referral type (e.g. `OPEN_THREAD`). Facebook
-             * Messenger CTM / Instagram CTD only.
+             * Meta-supplied referral type (e.g. `OPEN_THREAD`). Instagram /
+             * Facebook Messenger only.
              *
              */
             type?: string;
+            /**
+             * URI of the originating site, when Meta supplies one (m.me
+             * links opened from the web). Facebook Messenger only.
+             *
+             */
+            referer_uri?: string;
             /**
              * Snapshot of the ad's public context at click time. Facebook
              * Messenger CTM / Instagram CTD only.
@@ -7750,6 +7768,78 @@ export type event20 = 'reaction.received';
 export type action = 'added' | 'removed';
 
 /**
+ * Webhook payload for referral received events (Instagram, Facebook Messenger)
+ */
+export type WebhookPayloadReferral = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'referral.received';
+    /**
+     * Meta's referral object, forwarded verbatim. Same shape as
+     * `metadata.referral` on `message.received`: `ref` + `source` for
+     * ig.me / m.me links, `ad_id` + `ads_context_data` for returning
+     * Messenger ad clicks.
+     *
+     */
+    referral: {
+        /**
+         * The `ref` parameter of the clicked ig.me / m.me link or ad.
+         */
+        ref?: string;
+        /**
+         * Meta-supplied source (`SHORTLINK`, `SHORTLINKS`, `IGME-SOURCE-LINK`, `ADS` - treat as opaque).
+         */
+        source?: string;
+        /**
+         * Meta-supplied referral type (e.g. `OPEN_THREAD`).
+         */
+        type?: string;
+        /**
+         * URI of the originating site, when Meta supplies one. Facebook Messenger only.
+         */
+        referer_uri?: string;
+        /**
+         * The Meta ad ID, on returning ad clicks. Facebook Messenger only.
+         */
+        ad_id?: string;
+        /**
+         * Snapshot of the ad's public context at click time.
+         */
+        ads_context_data?: {
+            ad_title?: string;
+            photo_url?: string;
+            video_url?: string;
+            post_id?: string;
+            product_id?: string;
+            flow_id?: string;
+        };
+    };
+    /**
+     * Who clicked - the conversation participant.
+     */
+    sender: {
+        /**
+         * Platform-scoped user ID (IGSID / PSID).
+         */
+        id: string;
+        /**
+         * Zernio CRM Contact id for this sender, when one exists.
+         */
+        contactId?: string;
+    };
+    conversation: InboxWebhookConversation;
+    account: InboxWebhookAccount;
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
+    timestamp: string;
+};
+
+export type event21 = 'referral.received';
+
+/**
  * Webhook payload for the review.new event (new review posted on a connected account).
  */
 export type WebhookPayloadReviewNew = {
@@ -7774,7 +7864,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event21 = 'review.new';
+export type event22 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits
@@ -7805,7 +7895,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event22 = 'review.updated';
+export type event23 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -7826,7 +7916,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event23 = 'webhook.test';
+export type event24 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.template.status_updated` event.
@@ -7881,7 +7971,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event24 = 'whatsapp.template.status_updated';
+export type event25 = 'whatsapp.template.status_updated';
 
 export type platform11 = 'whatsapp';
 
@@ -16305,7 +16395,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -16360,7 +16450,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -16742,13 +16832,15 @@ export type ListInboxConversationsResponse = ({
             fetchedAt?: (string) | null;
         } | null;
         /**
-         * Ad-click attribution for a conversation that started from a Meta ad.
-         * Absent when the conversation did not originate from an ad click.
+         * Click attribution for a conversation that started from a Meta ad or
+         * a ref-tagged ig.me / m.me link. Absent when the conversation did not
+         * originate from an attributable click.
          *
-         * Captured from the referral Meta attaches to the first inbound message
-         * after the click, which is the only message that carries it. If the same
-         * person later clicks a different ad, the original values are kept, so the
-         * first ad wins. One exception on WhatsApp: when Meta omits `ctwa_clid`
+         * Captured from the referral Meta delivers for the click. If the same
+         * person later arrives through a different ad or link, the original
+         * values are kept, so the first referral wins; read the fresh referral
+         * per click on the `message.received` / `referral.received` webhooks
+         * instead. One exception on WhatsApp: when Meta omits `ctwa_clid`
          * from that referral, a later Meta automatic event can supply it and
          * refresh `ctwa_captured_at`, so treat `ctwa_captured_at` as the time
          * Zernio stored the value, not the time of the click.
@@ -16757,9 +16849,11 @@ export type ListInboxConversationsResponse = ({
          *
          * - `ctwa_*` is WhatsApp Click-to-WhatsApp. The ad ID is
          * `ctwa_source_id`. There is no `meta_ad_id` on WhatsApp.
-         * - `meta_ad_*` is Instagram Click-to-Direct and Facebook Messenger
-         * Click-to-Message. The ad ID is `meta_ad_id`. `ctwa_clid` never
-         * appears on these platforms.
+         * - `meta_ad_*` is Instagram Click-to-Direct, Facebook Messenger
+         * Click-to-Message, and ig.me / m.me ref links. The ad ID is
+         * `meta_ad_id` (ad clicks only; a link capture carries
+         * `meta_ad_ref` without it). `ctwa_clid` never appears on these
+         * platforms.
          *
          * Every key is optional and only the keys Meta supplied are returned, so
          * read defensively. Meta does not send a campaign or ad set ID, so none
@@ -16799,11 +16893,11 @@ export type ListInboxConversationsResponse = ({
              */
             ctwa_captured_at?: string;
             /**
-             * Instagram and Facebook only. The Meta ad ID the user clicked. Always present when an Instagram or Facebook referral was captured.
+             * Instagram and Facebook only. The Meta ad ID the user clicked. Present for ad clicks; absent when the capture came from an ig.me / m.me ref link.
              */
             meta_ad_id?: string;
             /**
-             * Instagram and Facebook only. Meta-supplied source identifier, for example ADS.
+             * Instagram and Facebook only. Meta-supplied source identifier: ADS for ad clicks; SHORTLINK, SHORTLINKS or IGME-SOURCE-LINK for ref links (treat as opaque).
              */
             meta_ad_source?: string;
             /**
@@ -16811,7 +16905,7 @@ export type ListInboxConversationsResponse = ({
              */
             meta_ad_type?: string;
             /**
-             * Instagram and Facebook only. The ref parameter passed through from the ad creative.
+             * Instagram and Facebook only. The ref parameter passed through from the ad creative or the ig.me / m.me link.
              */
             meta_ad_ref?: string;
             /**
