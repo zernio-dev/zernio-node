@@ -1145,17 +1145,25 @@ export type AnalyticsSinglePostResponse = {
     mediaItems?: Array<{
         type?: 'image' | 'video';
         /**
-         * Direct URL to the media
+         * 'Direct URL to the media file. Null when the platform withholds it: check mediaStatus before downloading. Instagram omits the video file for Reels it flags as containing copyrighted material (its docs name audio as the usual cause), so type stays "video" while the file is permanently unreachable.'
          */
-        url?: string;
+        url?: (string) | null;
         /**
-         * Thumbnail URL (same as url for images)
+         * Thumbnail URL (same as url for images). Still present when url is null.
          */
-        thumbnail?: string;
+        thumbnail?: (string) | null;
         /**
          * Accessibility alt text set on the media, when present.
          */
         altText?: string;
+        /**
+         * Present only when the media file could not be retrieved. Absent means the file is available at url.
+         */
+        mediaStatus?: 'unavailable';
+        /**
+         * Why the file is missing. platform_withheld means the platform declined to return it and retrying will not help.
+         */
+        unavailableReason?: 'platform_withheld';
     }>;
 };
 
@@ -2746,16 +2754,40 @@ export type ErrorResponse = {
 export type type4 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
- * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published (url required) and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
+ * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
  *
  */
 export type ExternalPostMediaItem = {
     type: 'image' | 'video';
-    url: string;
+    /**
+     * 'Direct URL to the media file. Null when the platform withholds it: check mediaStatus before downloading. Instagram omits the video file for Reels it flags as containing copyrighted material (its docs name audio as the usual cause), so type stays "video" while the file is permanently unreachable.'
+     */
+    url: (string) | null;
+    /**
+     * Cover image. Still present when url is null.
+     */
     thumbnail?: string;
+    /**
+     * Present only when the media file could not be retrieved. Absent means the file is available at url.
+     */
+    mediaStatus?: 'unavailable';
+    /**
+     * Why the file is missing. platform_withheld means the platform declined to return it and retrying will not help.
+     */
+    unavailableReason?: 'platform_withheld';
 };
 
 export type type5 = 'image' | 'video';
+
+/**
+ * Present only when the media file could not be retrieved. Absent means the file is available at url.
+ */
+export type mediaStatus = 'unavailable';
+
+/**
+ * Why the file is missing. platform_withheld means the platform declined to return it and retrying will not help.
+ */
+export type unavailableReason = 'platform_withheld';
 
 /**
  * A post synced from a platform (published directly on the platform, not
