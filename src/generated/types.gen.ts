@@ -11526,9 +11526,40 @@ export type GetAccountHealthResponse = ({
      * Actionable recommendations to fix issues
      */
     recommendations?: Array<(string)>;
+    /**
+     * WhatsApp accounts only. Live probe of the Meta link behind the channel, performed at request time (the same read as GET /v1/whatsapp/number-info).
+     */
+    platformConnection?: {
+        /**
+         * `connected` = Meta served the channel object. `disconnected` = Meta refused to serve it (Graph error 100, subcode 33), which is how a phone-side coexistence disconnect surfaces. `unknown` = the live read failed for another reason (timeout, transient Meta error), not evidence either way.
+         */
+        status?: 'connected' | 'disconnected' | 'unknown';
+        /**
+         * When this live probe ran (always the current request; never cached)
+         */
+        checkedAt?: string;
+        /**
+         * Meta's own `status` field from the phone-number node (for example CONNECTED), when the object was readable
+         */
+        phoneStatus?: (string) | null;
+        /**
+         * Set only when status is `disconnected`
+         */
+        metaError?: {
+            /**
+             * Meta Graph error code (100)
+             */
+            code?: number;
+            /**
+             * Meta Graph error subcode (33)
+             */
+            subcode?: number;
+            message?: string;
+        } | null;
+    };
 });
 
-export type GetAccountHealthError = ({
+export type GetAccountHealthError = (ErrorResponse | {
     error?: string;
 });
 
