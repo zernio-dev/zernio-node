@@ -4517,7 +4517,7 @@ export type PostAnalytics = {
     comments?: number;
     shares?: number;
     /**
-     * Number of saves/bookmarks (Instagram, Pinterest)
+     * Number of saves/bookmarks (Instagram, Pinterest, X/Twitter)
      */
     saves?: number;
     clicks?: number;
