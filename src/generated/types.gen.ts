@@ -5049,7 +5049,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -5113,7 +5113,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform6 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
+export type platform6 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
