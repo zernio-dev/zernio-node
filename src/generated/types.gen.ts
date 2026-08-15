@@ -17228,7 +17228,7 @@ export type SearchInboxConversationsData = {
          */
         accountId?: string;
         /**
-         * Pagination cursor for next page
+         * Opaque pagination cursor. Pass back pagination.nextCursor verbatim; do not construct one.
          */
         cursor?: string;
         /**
