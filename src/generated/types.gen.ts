@@ -25921,7 +25921,7 @@ export type ListBroadcastRecipientsResponse = ({
         contactId?: string;
         channelId?: string;
         platformIdentifier?: string;
-        contactName?: string;
+        contactName?: (string) | null;
         status?: 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
         messageId?: string;
         error?: string;
@@ -26725,10 +26725,10 @@ export type ListSequenceEnrollmentsResponse = ({
         contactName?: string;
         currentStepIndex?: number;
         status?: 'active' | 'completed' | 'exited' | 'paused';
-        exitReason?: string;
-        nextStepAt?: string;
+        exitReason?: (string) | null;
+        nextStepAt?: (string) | null;
         stepsSent?: number;
-        lastStepSentAt?: string;
+        lastStepSentAt?: (string) | null;
         createdAt?: string;
     }>;
     pagination?: {
