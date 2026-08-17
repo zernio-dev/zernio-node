@@ -186,6 +186,7 @@ try {
 | `accounts.getAllAccountsHealth()` | Check accounts health |
 | `accounts.listAccounts()` | List accounts |
 | `accounts.getAccountHealth()` | Check account health |
+| `accounts.getBlueskySettings()` | Get Bluesky account settings |
 | `accounts.getFollowerStats()` | Get follower stats |
 | `accounts.getGoogleBusinessReviews()` | Get reviews |
 | `accounts.getInstagramFollowStatus()` | Check whether an Instagram user follows the account |
@@ -193,6 +194,7 @@ try {
 | `accounts.getSlackSettings()` | Get Slack account settings |
 | `accounts.getTikTokCreatorInfo()` | Get TikTok creator info |
 | `accounts.updateAccount()` | Update account |
+| `accounts.updateBlueskySettings()` | Update Bluesky account settings |
 | `accounts.updateSlackSettings()` | Update Slack account settings |
 | `accounts.deleteAccount()` | Disconnect account |
 | `accounts.deleteGoogleBusinessReviewReply()` | Delete a review reply |

@@ -1367,10 +1367,15 @@ export type BlogArticle = {
 };
 
 /**
- * Bluesky post settings. Supports text posts with up to 4 images or a single video. threadItems creates a reply chain (Bluesky thread). Images exceeding 1MB are automatically compressed. Alt text supported via mediaItem properties.
+ * Bluesky post settings. Supports text posts with up to 4 images or a single video. threadItems creates a reply chain (Bluesky thread). Images exceeding 1MB are automatically compressed. Alt text supported via mediaItem properties. Use langs to tag post language for feed-generator filtering.
  *
  */
 export type BlueskyPlatformData = {
+    /**
+     * Language(s) of the post text as 1-3 BCP-47 codes (e.g. "pt", "en-US"), written to the post record's langs field. Bluesky feed generators filter on this field, so posts without it never appear in language-scoped feeds. Can only be set at creation (Bluesky has no post editing). When threadItems is used, every item in the thread carries the same langs. When omitted, the account's default (set via PATCH /v1/accounts/{accountId}/bluesky-settings) applies; with no default either, the field is absent from the record.
+     *
+     */
+    langs?: Array<(string)>;
     /**
      * Complete sequence of posts in a Bluesky thread. The first item becomes the root post, subsequent items are chained as replies. When threadItems is provided, the top-level content field is used only for display and search purposes, it is NOT published. You must include your first post as threadItems[0].
      *
@@ -6536,6 +6541,14 @@ export type WebhookPayloadCallEnded = {
         endedAt?: string;
         durationSeconds?: number;
         endReason?: 'hangup' | 'no_answer' | 'rejected' | 'error';
+        /**
+         * Raw carrier hangup cause behind endReason (e.g. normal_clearing, call_rejected, not_found). Null when the carrier reported none.
+         */
+        hangupCause?: (string) | null;
+        /**
+         * SIP response code that ended the call when SIP-signalled (e.g. '403', '486', '603'). endReason collapses all three to 'rejected', so this is what separates a refused destination from a busy line. Null on non-SIP legs.
+         */
+        sipHangupCause?: (string) | null;
         recordingUrl?: string;
         recordingExpiresAt?: string;
         billing?: {
@@ -15567,6 +15580,35 @@ export type UpdateSlackSettingsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type GetBlueskySettingsData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetBlueskySettingsResponse = ({
+    defaultLangs?: Array<(string)> | null;
+});
+
+export type GetBlueskySettingsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateBlueskySettingsData = {
+    body: {
+        defaultLangs: Array<(string)> | null;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type UpdateBlueskySettingsResponse = (unknown);
+
+export type UpdateBlueskySettingsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetDiscordSettingsData = {
     path: {
         accountId: string;
@@ -22753,6 +22795,10 @@ export type GetPhoneNumberKycFormResponse = ({
             }>;
         }>;
     } | null;
+    /**
+     * true when this account already has a number for this country in regulatory review (status pending_regulatory). Scope is the whole account across all profiles, and the country only (any number type), so it is not a per-end-client signal on a multi-tenant setup. Informational only: it never blocks a submission, and several same-country numbers may sit in review at once. For a per-end-client view, call GET /v1/phone-numbers with `profileId` and `status=pending_regulatory`; that view also lists numbers declined in the last 30 days.
+     */
+    pendingReview?: boolean;
 });
 
 export type GetPhoneNumberKycFormError = (unknown | {
@@ -23562,6 +23608,10 @@ export type GetWhatsAppNumberKycFormResponse = ({
             }>;
         }>;
     } | null;
+    /**
+     * true when this account already has a number for this country in regulatory review (status pending_regulatory). Scope is the whole account across all profiles, and the country only (any number type), so it is not a per-end-client signal on a multi-tenant setup. Informational only: it never blocks a submission, and several same-country numbers may sit in review at once. For a per-end-client view, call GET /v1/phone-numbers with `profileId` and `status=pending_regulatory`; that view also lists numbers declined in the last 30 days.
+     */
+    pendingReview?: boolean;
 });
 
 export type GetWhatsAppNumberKycFormError = (unknown | {

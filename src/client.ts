@@ -177,6 +177,7 @@ import {
   getBilling,
   getBlog,
   getBlogArticle,
+  getBlueskySettings,
   getBroadcast,
   getCall,
   getCallRecording,
@@ -511,6 +512,7 @@ import {
   updateAdTrackingTags,
   updateBlog,
   updateBlogArticle,
+  updateBlueskySettings,
   updateBroadcast,
   updateCommentAutomation,
   updateContact,
@@ -850,6 +852,8 @@ export class Zernio {
     getLinkedInMentions: this._bind(getLinkedInMentions),
     getSlackSettings: this._bind(getSlackSettings),
     updateSlackSettings: this._bind(updateSlackSettings),
+    getBlueskySettings: this._bind(getBlueskySettings),
+    updateBlueskySettings: this._bind(updateBlueskySettings),
   };
 
   /**

@@ -115,6 +115,16 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.updateSlackSettings).toBeTypeOf('function');
     });
 
+    it('should have getBlueskySettings method', () => {
+      expect(client.accounts.getBlueskySettings).toBeDefined();
+      expect(client.accounts.getBlueskySettings).toBeTypeOf('function');
+    });
+
+    it('should have updateBlueskySettings method', () => {
+      expect(client.accounts.updateBlueskySettings).toBeDefined();
+      expect(client.accounts.updateBlueskySettings).toBeTypeOf('function');
+    });
+
   });
 
   describe('analytics', () => {
