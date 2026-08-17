@@ -17505,7 +17505,7 @@ export type GetInboxConversationMessagesData = {
          */
         accountId: string;
         /**
-         * Opaque pagination cursor. Pass `pagination.nextCursor` from a prior response.
+         * Opaque pagination cursor. Pass `pagination.nextCursor` from a prior response verbatim: a cursor we cannot parse returns 400 rather than silently restarting from the first page.
          */
         cursor?: string;
         /**
@@ -17648,7 +17648,7 @@ export type GetInboxConversationMessagesResponse = ({
     lastUpdated?: string;
 });
 
-export type GetInboxConversationMessagesError = ({
+export type GetInboxConversationMessagesError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
