@@ -27826,18 +27826,21 @@ export type UpdateAdCampaignStatusData = {
 
 export type UpdateAdCampaignStatusResponse = ({
     /**
-     * Number of ads updated
+     * The status written to the campaign
+     */
+    status?: 'active' | 'paused';
+    /**
+     * Number of ads whose own stored status changed too. 0 is normal on a resume whose ads are all awaiting the platform.
      */
     updated?: number;
     /**
-     * Number of ads skipped
+     * Number of ads whose own status was left as it was
      */
     skipped?: number;
-    skippedReasons?: Array<(string)>;
     /**
-     * Human-readable summary (present when no ads were actionable)
+     * Why each group of ads was skipped
      */
-    message?: string;
+    skippedReasons?: Array<(string)>;
 });
 
 export type UpdateAdCampaignStatusError = (unknown | {
@@ -28170,7 +28173,7 @@ export type UpdateAdSetData = {
             type?: 'daily' | 'lifetime';
         };
         /**
-         * Omit if not toggling delivery state
+         * Writes the ad set's own on/off switch (Meta: `configured_status`) on Meta and LinkedIn, whatever delivery status its ads report. Omit if not toggling delivery state.
          */
         status?: 'active' | 'paused';
         /**
@@ -28276,9 +28279,26 @@ export type UpdateAdSetData = {
 export type UpdateAdSetResponse = ({
     budget?: AdBudget;
     budgetLevel?: 'adset';
+    /**
+     * The status written to the ad set. Absent when nothing was written (see statusMessage).
+     */
     status?: 'active' | 'paused';
+    /**
+     * Number of ads whose own stored status changed alongside the ad set switch
+     */
     statusUpdated?: number;
+    /**
+     * Number of ads whose own status was left as it was
+     */
     statusSkipped?: number;
+    /**
+     * Why each group of ads was skipped
+     */
+    statusSkippedReasons?: Array<(string)>;
+    /**
+     * Present only where the platform has no ad-set switch and no child ad was actionable; `status` is then absent because nothing was written
+     */
+    statusMessage?: string;
     bidStrategy?: BidStrategy;
     bidAmount?: (number) | null;
     roasAverageFloor?: (number) | null;
@@ -28305,8 +28325,26 @@ export type UpdateAdSetStatusData = {
 };
 
 export type UpdateAdSetStatusResponse = ({
+    /**
+     * The status written to the ad set. Absent when nothing was written (see message).
+     */
+    status?: 'active' | 'paused';
+    /**
+     * Number of ads whose own stored status changed too. 0 is normal on a resume whose ads are all awaiting the platform.
+     */
     updated?: number;
+    /**
+     * Number of ads whose own status was left as it was
+     */
     skipped?: number;
+    /**
+     * Why each group of ads was skipped
+     */
+    skippedReasons?: Array<(string)>;
+    /**
+     * Present only where the platform has no ad-set switch and no child ad was actionable
+     */
+    message?: string;
 });
 
 export type UpdateAdSetStatusError = (unknown | {
@@ -30568,7 +30606,7 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Meta and TikTok. Publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused and skips activation, so you can review before they spend. On TikTok the whole campaign > ad group > ad hierarchy stays paused.
+         * Meta and TikTok. Publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused so you can review before they spend. On Meta the pause is held on the campaign this call creates, leaving the ad set and ad switched on, so a single PUT /v1/ads/campaigns/{campaignId}/status with `active` brings the whole thing live. It is held at every level instead when the pause cannot rely on the campaign: `existingCampaignId` (that campaign may be running and is never touched) or `campaignStatus: ACTIVE`. On TikTok the whole campaign > ad group > ad hierarchy stays paused.
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
