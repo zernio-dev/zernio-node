@@ -272,6 +272,10 @@ export type Ad = {
          */
         videoUrl?: (string) | null;
         /**
+         * Meta ad creative id backing this ad. Reusable via existingCreativeId on POST /v1/ads/create.
+         */
+        creativeId?: (string) | null;
+        /**
          * Meta creative object_type (e.g. SHARE, VIDEO, PRIVACY_CHECK_FAIL, POST_DELETED). Use this to render state-aware previews — when Meta moderation strips image/video fields, only thumbnailUrl at 64x64 is available.
          */
         objectType?: string;
@@ -30615,6 +30619,10 @@ export type CreateStandaloneAdData = {
          * Meta and TikTok. Publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused so you can review before they spend. On Meta the pause is held on the campaign this call creates, leaving the ad set and ad switched on, so a single PUT /v1/ads/campaigns/{campaignId}/status with `active` brings the whole thing live. It is held at every level instead when the pause cannot rely on the campaign: `existingCampaignId` (that campaign may be running and is never touched) or `campaignStatus: ACTIVE`. On TikTok the whole campaign > ad group > ad hierarchy stays paused.
          */
         status?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Meta only. Overrides `status` for the campaign level alone, so you can create a live campaign whose ad set and ad stay paused, or the reverse. Omitted, it follows `status`.
+         */
+        campaignStatus?: 'ACTIVE' | 'PAUSED';
         /**
          * Meta only. Where the budget lives, which selects the Meta budget model:
          * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the
