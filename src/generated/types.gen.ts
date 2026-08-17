@@ -2852,6 +2852,9 @@ export type ExternalPostSummary = {
         views?: number;
         reach?: number;
         impressions?: number;
+        /**
+         * Percentage, rounded to 2 decimals. Same definition as PostAnalytics.engagementRate: (likes + comments + shares + saves) / (impressions or reach or views) * 100, where the denominator is the first of the three that is non-zero. Clicks and follows are never counted.
+         */
         engagementRate?: number;
         /**
          * When these metrics were last refreshed
@@ -4174,7 +4177,7 @@ export type LinkedInAggregateAnalyticsTotalResponse = {
          */
         sends?: number;
         /**
-         * Overall engagement rate as percentage
+         * Overall engagement rate, as a percentage rounded to 2 decimals: (reactions + comments + shares + saves + sends) / impressions * 100. Clicks are not counted, and there is no fallback denominator, so this is 0 whenever impressions is 0. This is NOT the same formula as PostAnalytics.engagementRate on GET /v1/analytics.
          */
         engagementRate?: number;
     };
@@ -4538,6 +4541,9 @@ export type PostAnalytics = {
      * Video length in seconds. Currently Instagram Reels only; combine with igReelsAvgWatchTime (ms) to estimate retention. Null when unknown (other platforms, non-video media, or when Instagram does not expose the media URL, e.g. reels with copyrighted audio).
      */
     videoDurationSeconds?: (number) | null;
+    /**
+     * Percentage, rounded to 2 decimals: (likes + comments + shares + saves) / (impressions or reach or views) * 100. Clicks and follows are never counted. The denominator is the FIRST of impressions, reach, views that is non-zero, so it is not the same basis on every post: a post with impressions divides by impressions, one without falls back to reach, then to views. If you need a single consistent basis (e.g. interactions / reach), compute it from the raw fields above. The engagementRate on the LinkedIn account endpoints is a different formula.
+     */
     engagementRate?: number;
     lastUpdated?: string;
 };
@@ -14668,7 +14674,7 @@ export type GetLinkedInPostAnalyticsResponse = ({
          */
         views?: number;
         /**
-         * Engagement rate as percentage
+         * Engagement rate, as a percentage rounded to 2 decimals: (likes + comments + shares + clicks + saves + sends) / impressions * 100. Unlike PostAnalytics.engagementRate on GET /v1/analytics, this one DOES count clicks and has no fallback denominator, so it is 0 whenever impressions is 0. For organization accounts the value is the rate LinkedIn returns, not one computed here.
          */
         engagementRate?: number;
     };
