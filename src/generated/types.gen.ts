@@ -4450,9 +4450,9 @@ export type PlatformTarget = {
      */
     errorMessage?: string;
     /**
-     * Error category for programmatic handling: auth_expired (token expired/revoked), user_content (wrong format/too long), user_abuse (rate limits/spam), account_issue (config problems), platform_rejected (policy violation), platform_error (5xx/maintenance), system_error (Zernio infra), unknown
+     * Error category for programmatic handling: auth_expired (token expired/revoked), user_content (wrong format/too long), user_abuse (rate limits/spam), account_issue (config problems), platform_rejected (policy violation), platform_error (5xx/maintenance), platform_rate_limit (platform throttling, retried automatically), quota_exhausted (shared daily API quota empty, resumes at the platform's reset), system_error (Zernio infra), unknown
      */
-    errorCategory?: 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'system_error' | 'unknown';
+    errorCategory?: 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'platform_rate_limit' | 'quota_exhausted' | 'system_error' | 'unknown';
     /**
      * Who caused the error: user (fix content/reconnect), platform (outage/API change), system (Zernio issue, rare)
      */
@@ -4465,9 +4465,9 @@ export type PlatformTarget = {
 export type trialGraduationStrategy = 'MANUAL' | 'SS_PERFORMANCE';
 
 /**
- * Error category for programmatic handling: auth_expired (token expired/revoked), user_content (wrong format/too long), user_abuse (rate limits/spam), account_issue (config problems), platform_rejected (policy violation), platform_error (5xx/maintenance), system_error (Zernio infra), unknown
+ * Error category for programmatic handling: auth_expired (token expired/revoked), user_content (wrong format/too long), user_abuse (rate limits/spam), account_issue (config problems), platform_rejected (policy violation), platform_error (5xx/maintenance), platform_rate_limit (platform throttling, retried automatically), quota_exhausted (shared daily API quota empty, resumes at the platform's reset), system_error (Zernio infra), unknown
  */
-export type errorCategory = 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'system_error' | 'unknown';
+export type errorCategory = 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'platform_rate_limit' | 'quota_exhausted' | 'system_error' | 'unknown';
 
 /**
  * Who caused the error: user (fix content/reconnect), platform (outage/API change), system (Zernio issue, rare)
