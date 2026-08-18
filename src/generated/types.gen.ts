@@ -6732,6 +6732,10 @@ export type WebhookPayloadComment = {
             name?: string;
             picture?: (string) | null;
             /**
+             * True when this comment was authored by the connected account itself (Meta re-delivers the account's own replies as comments events). Populated on the Instagram and Facebook realtime webhooks only; absent means not evaluated, never "not the account".
+             */
+            isOwnAccount?: boolean;
+            /**
              * Instagram only, best-effort. Present ONLY for commenters who have
              * messaged the account before: Meta gates the follow relationship behind
              * messaging consent, and commenting does not grant it. Absent otherwise -
