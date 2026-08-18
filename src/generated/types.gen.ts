@@ -7406,6 +7406,17 @@ export type WebhookPayloadMessage = {
              */
             details?: string;
         };
+        /**
+         * Instagram / Facebook Messenger only. Set when the message
+         * carries nothing an integrator can render (a `template`
+         * attachment with no text and no parseable content, or Meta's
+         * own `is_unsupported` flag). Sibling of `unsupported` above
+         * (WhatsApp only, carries Meta's error code/title/details): this
+         * field has no error envelope, just the boolean. Absence means
+         * "not flagged", never "checked and renderable".
+         *
+         */
+        noRenderableContent?: boolean;
     } | null;
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
