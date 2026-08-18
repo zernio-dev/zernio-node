@@ -22810,7 +22810,7 @@ export type SubmitPhoneNumberKycData = {
         profileId: string;
         country: string;
         /**
-         * Idempotency token for this submission attempt. A retry/double-submit with the same token returns the same number; omit and each call creates a new number.
+         * Idempotency token for this submission attempt. Once the number has been ordered, a retry with the same token returns that same number instead of ordering another. A submission that fails before the number is ordered releases the token, so you can correct your details and re-submit with it. Omit it and every call provisions a new number.
          */
         submissionId?: string;
         /**
@@ -23623,7 +23623,7 @@ export type SubmitWhatsAppNumberKycData = {
         profileId: string;
         country: string;
         /**
-         * Idempotency token for this submission attempt. A retry/double-submit with the same token returns the same number; omit and each call creates a new number.
+         * Idempotency token for this submission attempt. Once the number has been ordered, a retry with the same token returns that same number instead of ordering another. A submission that fails before the number is ordered releases the token, so you can correct your details and re-submit with it. Omit it and every call provisions a new number.
          */
         submissionId?: string;
         /**
