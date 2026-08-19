@@ -4426,9 +4426,9 @@ export type PlatformTarget = {
      */
     platformPostId?: string;
     /**
-     * Public URL of the published post. Included in the response for immediate posts; for scheduled posts, fetch via GET /v1/posts/{postId} after publish time.
+     * Public URL of the published post. Included in the response for immediate posts; for scheduled posts, fetch via GET /v1/posts/{postId} after publish time. Empty when the platform confirmed the publish without returning an id a permalink can be built from (TikTok returns a publish id for some uploads); the TikTok reconcile cron backfills it later.
      */
-    platformPostUrl?: string;
+    platformPostUrl?: (string) | null;
     /**
      * Timestamp when the post was published to this platform
      */
@@ -31337,6 +31337,8 @@ export type CreateStandaloneAdData = {
          * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
          *
          * Meta bid strategy applied to the ad set.
+         *
+         * OpenAI Ads: required on every ad group via this flat field, the only channel it supports (`platformSpecificData` is Meta/LinkedIn-only and returns 400 for OpenAI). No auto-bid option exists; send `LOWEST_COST_WITH_BID_CAP` or `COST_CAP` together with `bidAmount`, omitting it returns 400.
          *
          * @deprecated
          */
