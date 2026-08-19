@@ -5571,10 +5571,11 @@ export type platform7 = 'metaads';
 export type kind = 'pixel' | 'tag' | 'insight_tag';
 
 /**
- * X (Twitter) geo-restriction applies at the media level. Media in geo-restricted tweets will be hidden for users outside the specified countries; the tweet text itself remains visible globally. Requires media to be attached (ignored for text-only tweets).
+ * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
  *
  */
 export type TwitterPlatformData = {
+    article?: XArticle;
     /**
      * ID of an existing tweet to reply to. The published tweet will appear as a reply in that tweet's thread. For threads, only the first tweet replies to the target; subsequent tweets chain normally. X only permits replying to your own posts or posts you are mentioned in; replying to an arbitrary other account's post is rejected by X.
      */
@@ -8580,6 +8581,170 @@ export type XApiPricing = {
     operations?: Array<XApiOperation>;
 };
 
+/**
+ * Long-form X Article payload. X Articles require an eligible X Premium+ account.
+ * Articles are mutually exclusive with top-level/custom tweet media and with threadItems,
+ * poll, quoteTweetId, replyToTweetId, inReplyToTweetId, replySettings, sensitiveMedia,
+ * paidPartnership, and madeWithAi. Publishing normally performs two billable X API
+ * requests at $0.010 each (draft + publish, $0.020 total); mode `draft` performs only
+ * the $0.010 draft request. `articleDraftId` is an internal recovery checkpoint and
+ * must not be supplied by API clients.
+ *
+ */
+export type XArticle = {
+    title: string;
+    content_state: XArticleContentState;
+    /**
+     * Publish creates an X Article draft and then publishes it. Draft stops after draft creation and returns the X draft ID without a public URL.
+     */
+    mode?: 'publish' | 'draft';
+    cover?: {
+        /**
+         * Public JPG, JPEG, PNG, or WebP URL. GIF, MP4, AVIF, extensionless URLs, and caller-supplied native media IDs are rejected.
+         */
+        url: string;
+        altText?: string;
+    };
+};
+
+/**
+ * Publish creates an X Article draft and then publishes it. Draft stops after draft creation and returns the X draft ID without a public URL.
+ */
+export type mode = 'publish' | 'draft';
+
+export type XArticleBlock = {
+    type: 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+    text: string;
+    key?: string;
+    data?: {
+        cashtags?: Array<XArticleTextRange>;
+        hashtags?: Array<XArticleTextRange>;
+        mentions?: Array<XArticleTextRange>;
+        urls?: Array<XArticleTextRange>;
+    };
+    inline_style_ranges?: Array<XArticleInlineStyleRange>;
+    entity_ranges?: Array<XArticleEntityRange>;
+};
+
+export type type11 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+
+/**
+ * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
+ */
+export type XArticleContentState = {
+    blocks: Array<XArticleBlock>;
+    entities: Array<XArticleEntity>;
+};
+
+/**
+ * Entity keys must be unique decimal strings matching their zero-based array index (`"0"`, `"1"`, ...).
+ */
+export type XArticleEntity = {
+    key: string;
+    value: {
+        type: "post";
+        mutability: 'immutable' | 'mutable' | 'segmented';
+        data: {
+            post_id: string;
+        };
+    };
+} | {
+    key: string;
+    value: {
+        type: "link";
+        mutability: 'immutable' | 'mutable' | 'segmented';
+        data: {
+            url: string;
+        };
+    };
+} | {
+    key: string;
+    value: {
+        type: "image";
+        mutability: 'immutable' | 'mutable' | 'segmented';
+        data: {
+            /**
+             * Public image, GIF, or MP4 URL. Zernio uploads it to X and replaces it with native media metadata. Caller-supplied media IDs are rejected.
+             */
+            url: string;
+            caption?: string;
+            /**
+             * Supported for image and GIF URLs; rejected for MP4 media.
+             */
+            altText?: string;
+        };
+    };
+} | {
+    key: string;
+    value: {
+        type: "emoji";
+        mutability: 'immutable' | 'mutable' | 'segmented';
+        data: {
+            entity_key: string;
+        };
+    };
+} | {
+    key: string;
+    value: {
+        type: "markdown";
+        mutability: 'immutable' | 'mutable' | 'segmented';
+        data: {
+            markdown: string;
+        };
+    };
+} | {
+    key: string;
+    value: {
+        type: 'divider' | 'latex';
+        mutability: 'immutable' | 'mutable' | 'segmented';
+        data: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type mutability = 'immutable' | 'mutable' | 'segmented';
+
+export type type12 = 'divider' | 'latex';
+
+/**
+ * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
+ */
+export type XArticleEntityRange = {
+    /**
+     * Zero-based index into content_state.entities.
+     */
+    key: number;
+    offset: number;
+    length: number;
+};
+
+/**
+ * The offset plus length must not exceed the containing block's text length.
+ */
+export type XArticleInlineStyleRange = {
+    offset: number;
+    length: number;
+    style: 'bold' | 'italic' | 'strikethrough';
+};
+
+export type style = 'bold' | 'italic' | 'strikethrough';
+
+export type XArticleTextRange = {
+    /**
+     * Inclusive start index in the block text.
+     */
+    from_index: number;
+    /**
+     * Exclusive end index in the block text. Must be greater than or equal to from_index and no greater than the block text length.
+     */
+    to_index: number;
+    /**
+     * Text represented by this metadata range.
+     */
+    text: string;
+};
+
 export type YouTubeDailyViewsResponse = {
     success?: boolean;
     /**
@@ -10673,7 +10838,7 @@ export type CreatePostData = {
     body: {
         title?: string;
         /**
-         * Post caption/text. Optional when media is attached, all platforms have customContent, or every platform entry is a LinkedIn plain repost (platformSpecificData.reshareUrl with no text). Required for text-only posts.
+         * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn plain repost (platformSpecificData.reshareUrl with no text). Required for other text-only posts.
          */
         content?: string;
         mediaItems?: Array<MediaItem>;

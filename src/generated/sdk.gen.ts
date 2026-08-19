@@ -791,7 +791,7 @@ export const listPosts = <ThrowOnError extends boolean = false>(options?: Option
 /**
  * Create post
  * Create and optionally publish a post. Immediate posts (`publishNow: true`) include `platformPostUrl` in the response.
- * Content is optional when media is attached, all platforms have `customContent`, or every platform entry is a LinkedIn plain repost (`platformSpecificData.reshareUrl` with no text). See each platform's schema for media constraints.
+ * Content is optional when media is attached, all platforms have `customContent`, every platform entry is an X Article (`platformSpecificData.article`), or every platform entry is a LinkedIn plain repost (`platformSpecificData.reshareUrl` with no text). See each platform's schema for media constraints.
  *
  * ## Idempotency
  *
