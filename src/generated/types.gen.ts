@@ -31670,7 +31670,7 @@ export type ListLeadsResponse = ({
          */
         id?: string;
         /**
-         * Meta lead id.
+         * Meta lead id. On LinkedIn, the leadFormResponse id.
          */
         leadgenId?: string;
         formId?: string;
@@ -31678,6 +31678,9 @@ export type ListLeadsResponse = ({
         accountId?: string;
         adId?: (string) | null;
         adsetId?: (string) | null;
+        /**
+         * On LinkedIn, this is the LinkedIn Campaign id, which corresponds to platformAdSetId on GET /v1/ads (LinkedIn's Campaign Group is Zernio's campaign).
+         */
         campaignId?: (string) | null;
         isOrganic?: boolean;
         /**
@@ -31685,7 +31688,7 @@ export type ListLeadsResponse = ({
          */
         createdTime?: (string) | null;
         /**
-         * Question key → answer.
+         * Question key → answer. On LinkedIn, the key is the lowercased predefinedField, else the question name, else the numeric questionId; multiple-choice values are option labels (unlike Meta, which returns the option key).
          */
         fields?: {
             [key: string]: (string);
