@@ -1161,9 +1161,9 @@ export type AnalyticsSinglePostResponse = {
          */
         altText?: string;
         /**
-         * Present only when the media file could not be retrieved. Absent means the file is available at url.
+         * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
          */
-        mediaStatus?: 'unavailable';
+        mediaStatus?: 'available' | 'unavailable';
         /**
          * Why the file is missing. platform_withheld means the platform declined to return it and retrying will not help.
          */
@@ -2780,9 +2780,9 @@ export type ExternalPostMediaItem = {
      */
     thumbnail?: string;
     /**
-     * 'Present only when the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). Absent means the file is available at url.'
+     * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
      */
-    mediaStatus?: 'unavailable';
+    mediaStatus?: 'available' | 'unavailable';
     /**
      * Why the file is missing. platform_withheld means the platform declined to return it and retrying will not help.
      */
@@ -2792,9 +2792,9 @@ export type ExternalPostMediaItem = {
 export type type5 = 'image' | 'video';
 
 /**
- * 'Present only when the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). Absent means the file is available at url.'
+ * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
  */
-export type mediaStatus = 'unavailable';
+export type mediaStatus = 'available' | 'unavailable';
 
 /**
  * Why the file is missing. platform_withheld means the platform declined to return it and retrying will not help.
