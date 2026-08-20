@@ -2772,7 +2772,7 @@ export type type4 = 'invalid_request_error' | 'authentication_error' | 'permissi
 export type ExternalPostMediaItem = {
     type: 'image' | 'video';
     /**
-     * 'Direct URL to the media file. Null when the platform withholds it: check mediaStatus before downloading. Instagram omits the video file for Reels it flags as containing copyrighted material (its docs name audio as the usual cause), so type stays "video" while the file is permanently unreachable.'
+     * 'Direct URL to the media file. Null when the platform withholds it: check mediaStatus before downloading. Instagram omits the video file for Reels it flags as containing copyrighted material (its docs name audio as the usual cause), so type stays "video" while the file is permanently unreachable. For LinkedIn videos where the platform returns no file, url falls back to the cover image and the item carries mediaStatus: unavailable.'
      */
     url: (string) | null;
     /**
@@ -2780,7 +2780,7 @@ export type ExternalPostMediaItem = {
      */
     thumbnail?: string;
     /**
-     * Present only when the media file could not be retrieved. Absent means the file is available at url.
+     * 'Present only when the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). Absent means the file is available at url.'
      */
     mediaStatus?: 'unavailable';
     /**
@@ -2792,7 +2792,7 @@ export type ExternalPostMediaItem = {
 export type type5 = 'image' | 'video';
 
 /**
- * Present only when the media file could not be retrieved. Absent means the file is available at url.
+ * 'Present only when the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). Absent means the file is available at url.'
  */
 export type mediaStatus = 'unavailable';
 
