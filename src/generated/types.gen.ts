@@ -1243,11 +1243,19 @@ export type BidStrategy = 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP'
  *
  */
 export type BillingSnapshot = {
-    billingSystem?: 'metronome' | 'stripe';
+    billingSystem?: 'metronome' | 'stripe' | 'shopify';
     plan?: {
         name?: string;
         isUsageBased?: boolean;
+        /**
+         * True when the key belongs to an account with an active paid billing relationship (Stripe subscription, Metronome enrollment, or Shopify-managed billing).
+         */
+        isPaid?: boolean;
     };
+    /**
+     * myshopify.com domain owning the subscription; present only when billingSystem is shopify.
+     */
+    shopifyShopDomain?: (string) | null;
     /**
      * Current billing cycle. `start`/`end` are resolved for usage-based accounts only.
      */
@@ -1296,7 +1304,7 @@ export type BillingSnapshot = {
     };
 };
 
-export type billingSystem = 'metronome' | 'stripe';
+export type billingSystem = 'metronome' | 'stripe' | 'shopify';
 
 /**
  * A blog container on the connected platform. All content lives on the platform; Zernio proxies it and stores nothing.
@@ -5924,6 +5932,11 @@ export type UsageStats = {
         xSpendLimitCents?: (number) | null;
     };
 };
+
+/**
+ * Which billing system the account is on. Shape of `usage`/`spend` differs.
+ */
+export type billingSystem2 = 'stripe' | 'metronome';
 
 export type billingPeriod = 'monthly' | 'yearly';
 
