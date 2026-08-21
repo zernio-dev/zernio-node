@@ -27784,7 +27784,10 @@ export type ListAdsData = {
 };
 
 export type ListAdsResponse = (AdsListResponse | (AdsListResponse & {
-    backfillPending: true;
+    /**
+     * Always true on this response. Part of the requested range is still being backfilled; retry until the request returns 200.
+     */
+    backfillPending: boolean;
 }));
 
 export type ListAdsError = (ErrorResponse | {
@@ -28814,7 +28817,10 @@ export type GetAdTreeData = {
 };
 
 export type GetAdTreeResponse = (AdTreeResponse | (AdTreeResponse & {
-    backfillPending: true;
+    /**
+     * Always true on this response. Part of the requested range is still being backfilled; retry until the request returns 200.
+     */
+    backfillPending: boolean;
 }));
 
 export type GetAdTreeError = ({
@@ -28847,7 +28853,10 @@ export type GetAdsTimelineData = {
 };
 
 export type GetAdsTimelineResponse = (AdsTimelineResponse | (AdsTimelineResponse & {
-    backfillPending: true;
+    /**
+     * Always true on this response. Part of the requested range is still being backfilled; retry until the request returns 200.
+     */
+    backfillPending: boolean;
 }));
 
 export type GetAdsTimelineError = (ErrorResponse | {
@@ -29043,7 +29052,10 @@ export type GetCampaignAnalyticsData = {
 };
 
 export type GetCampaignAnalyticsResponse = (CampaignAnalyticsResponse | (CampaignAnalyticsResponse & {
-    backfillPending: true;
+    /**
+     * Always true on this response. Part of the requested range is still being backfilled; retry until the request returns 200.
+     */
+    backfillPending: boolean;
 }));
 
 export type GetCampaignAnalyticsError = (ErrorResponse | {
@@ -29469,7 +29481,10 @@ export type GetAdAnalyticsData = {
 };
 
 export type GetAdAnalyticsResponse = (AdAnalyticsResponse | (AdAnalyticsResponse & {
-    backfillPending: true;
+    /**
+     * Always true on this response. Part of the requested range is still being backfilled; retry until the request returns 200.
+     */
+    backfillPending: boolean;
 }));
 
 export type GetAdAnalyticsError = (ErrorResponse | {
