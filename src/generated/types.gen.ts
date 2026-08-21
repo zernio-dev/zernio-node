@@ -22430,6 +22430,10 @@ export type ListPhoneNumbersResponse = ({
          * Reviewer rejection reason when status is regulatory_declined.
          */
         regulatoryDeclineReason?: (string) | null;
+        /**
+         * Whether WhatsApp Business Calling is enabled on this number (manage via /v1/whatsapp/phone-numbers/{id}/calling).
+         */
+        callingEnabled?: boolean;
         createdAt?: string;
     }>;
     /**
@@ -22446,6 +22450,10 @@ export type ListPhoneNumbersResponse = ({
         displayName?: (string) | null;
         profileId?: (string) | null;
         connectedAt?: (string) | null;
+        /**
+         * Whether WhatsApp Business Calling is enabled on this number.
+         */
+        callingEnabled?: boolean;
     }>;
     /**
      * The shared WhatsApp sandbox (one Zernio-owned number, all users test
@@ -22836,6 +22844,10 @@ export type GetWhatsAppPhoneNumbersResponse = ({
          * Reviewer rejection reason when status is regulatory_declined.
          */
         regulatoryDeclineReason?: (string) | null;
+        /**
+         * Whether WhatsApp Business Calling is enabled on this number (manage via /v1/whatsapp/phone-numbers/{id}/calling).
+         */
+        callingEnabled?: boolean;
         createdAt?: string;
     }>;
     /**
@@ -22852,6 +22864,10 @@ export type GetWhatsAppPhoneNumbersResponse = ({
         displayName?: (string) | null;
         profileId?: (string) | null;
         connectedAt?: (string) | null;
+        /**
+         * Whether WhatsApp Business Calling is enabled on this number.
+         */
+        callingEnabled?: boolean;
     }>;
     /**
      * The shared WhatsApp sandbox (one Zernio-owned number, all users test
