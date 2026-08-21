@@ -337,6 +337,7 @@ try {
 | `connect.connectAds()` | Connect ads for a platform |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |
 | `connect.connectOpenAIAdsCredentials()` | Connect an OpenAI Ads account |
+| `connect.connectShopifyWithToken()` | Connect a Shopify store with a custom-app Admin token |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |

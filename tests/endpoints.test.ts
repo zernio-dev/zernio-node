@@ -294,6 +294,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.getShopifyConnectUrl).toBeTypeOf('function');
     });
 
+    it('should have connectShopifyWithToken method', () => {
+      expect(client.connect.connectShopifyWithToken).toBeDefined();
+      expect(client.connect.connectShopifyWithToken).toBeTypeOf('function');
+    });
+
     it('should have configureTikTokAdsBrandIdentity method', () => {
       expect(client.connect.configureTikTokAdsBrandIdentity).toBeDefined();
       expect(client.connect.configureTikTokAdsBrandIdentity).toBeTypeOf('function');
