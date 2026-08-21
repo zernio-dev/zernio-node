@@ -30949,7 +30949,7 @@ export type CreateStandaloneAdData = {
              */
             id?: string;
             /**
-             * Public URL of a still-image thumbnail for the video. OPTIONAL: when omitted on Meta, the poster is auto-generated from Meta's own preferred video thumbnail (the same candidates Ads Manager shows), so video ads publish without supplying one. Provide it to control the poster frame exactly (uploaded as an ad image and referenced in object_story_spec.video_data). Ignored by LinkedIn (auto-generated poster frame).
+             * Public URL of a still-image thumbnail for the video. OPTIONAL: when omitted on Meta, the poster is auto-generated from Meta's own preferred video thumbnail (the same candidates Ads Manager shows), so video ads usually publish without supplying one. When Meta produces no candidate the request fails with a 502 platform_error (reason: video_thumbnail_unavailable) — retry, or supply this field. Provide it to control the poster frame exactly (uploaded as an ad image and referenced in object_story_spec.video_data). Ignored by LinkedIn (auto-generated poster frame).
              */
             thumbnailUrl?: string;
         };
@@ -30976,7 +30976,7 @@ export type CreateStandaloneAdData = {
              */
             imageUrl?: string;
             /**
-             * Video creative for this entry. Mutually exclusive with `imageUrl`. thumbnailUrl is optional — when omitted, the poster is auto-generated from Meta's preferred video thumbnail.
+             * Video creative for this entry. Mutually exclusive with `imageUrl`. thumbnailUrl is optional: when omitted, the poster is auto-generated from Meta's preferred video thumbnail, and the request fails with a 502 platform_error (reason: video_thumbnail_unavailable) if Meta produces no candidate.
              */
             video?: {
                 url: string;
