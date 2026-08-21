@@ -22295,6 +22295,37 @@ export type UnblockWhatsAppUsersError = ({
     error?: string;
 } | unknown);
 
+export type ListWhatsAppAccountEventsData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Maximum events to return
+         */
+        limit?: number;
+    };
+};
+
+export type ListWhatsAppAccountEventsResponse = ({
+    events?: Array<{
+        id?: string;
+        /**
+         * Event kind, e.g. template_approved, template_rejected, account_restricted, account_disconnected
+         */
+        type?: string;
+        severity?: 'info' | 'success' | 'warning' | 'critical';
+        title?: string;
+        detail?: (string) | null;
+        createdAt?: string;
+    }>;
+});
+
+export type ListWhatsAppAccountEventsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppDatasetData = {
     query: {
         /**

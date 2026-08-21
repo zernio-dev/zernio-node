@@ -859,6 +859,7 @@ try {
 ### WhatsApp
 | Method | Description |
 |--------|-------------|
+| `whatsapp.listWhatsAppAccountEvents()` | List account notifications |
 | `whatsapp.listWhatsAppConversions()` | List conversion events |
 | `whatsapp.listWhatsAppGroupChats()` | List active groups |
 | `whatsapp.listWhatsAppGroupJoinRequests()` | List join requests |
