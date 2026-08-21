@@ -21176,7 +21176,7 @@ export type SendSmsResponse = ({
     status?: 'sent';
 });
 
-export type SendSmsError = ({
+export type SendSmsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
