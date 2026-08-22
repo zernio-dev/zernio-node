@@ -436,6 +436,7 @@ try {
 | `adCreatives.listAdCatalogs()` | List Meta product catalogs |
 | `adCreatives.listAdCreatives()` | Creative library |
 | `adCreatives.listAdImages()` | Ad image library |
+| `adCreatives.listAdVideos()` | Ad video library |
 | `adCreatives.createAdCreative()` | Create a standalone creative |
 | `adCreatives.getAdCreative()` | Creative details |
 | `adCreatives.getAdPreviews()` | Render previews of an existing ad |

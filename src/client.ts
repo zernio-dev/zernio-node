@@ -334,6 +334,7 @@ import {
   listAdKeywords,
   listAdLabels,
   listAdStudies,
+  listAdVideos,
   listAds,
   listAdsBusinessCenters,
   listApiKeys,
@@ -1527,6 +1528,7 @@ export class Zernio {
     deleteAdCreative: this._bind(deleteAdCreative),
     uploadAdImage: this._bind(uploadAdImage),
     listAdImages: this._bind(listAdImages),
+    listAdVideos: this._bind(listAdVideos),
     listAdCatalogs: this._bind(listAdCatalogs),
     listAdCatalogProductSets: this._bind(listAdCatalogProductSets),
   };
@@ -1779,6 +1781,8 @@ export class Zernio {
     uploadAdImage: this._bind(uploadAdImage),
     /** @deprecated Use `zernio.adcreatives.listAdImages` instead. */
     listAdImages: this._bind(listAdImages),
+    /** @deprecated Use `zernio.adcreatives.listAdVideos` instead. */
+    listAdVideos: this._bind(listAdVideos),
     /** @deprecated Use `zernio.adcreatives.listAdCatalogs` instead. */
     listAdCatalogs: this._bind(listAdCatalogs),
     /** @deprecated Use `zernio.adcreatives.listAdCatalogProductSets` instead. */

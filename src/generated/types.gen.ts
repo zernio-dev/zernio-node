@@ -31162,7 +31162,7 @@ export type CreateStandaloneAdData = {
             square?: string;
         };
         /**
-         * Meta (facebook, instagram) and LinkedIn. When set, creates a VIDEO ad on the legacy (or, for Meta, attach) shape. Mutually exclusive with `imageUrl`. For Meta multi-creative, set `video` per entry inside `creatives[]` instead. For LinkedIn the video is uploaded to LinkedIn under the authoring Company Page (see `organizationId`) and the campaign format is set to SINGLE_VIDEO; LinkedIn ignores `thumbnailUrl` (it auto-generates the poster frame) — supply MP4 H.264/AAC, 3s-30min, 75KB-500MB.
+         * Meta (facebook, instagram) and LinkedIn. Creates a single VIDEO ad. Mutually exclusive with `imageUrl`. Supply `url` to upload a file, or `id` to reuse a video already on the ad account (list them with GET /v1/ads/videos). Works on the single-ad and attach (`adSetId`) shapes; for Meta multi-creative, set `video` per entry inside `creatives[]` instead. For LinkedIn the video is uploaded to LinkedIn under the authoring Company Page (see `organizationId`) and the campaign format is set to SINGLE_VIDEO; LinkedIn ignores `thumbnailUrl` (it auto-generates the poster frame) — supply MP4 H.264/AAC, 3s-30min, 75KB-500MB.
          */
         video?: {
             /**
@@ -32514,6 +32514,48 @@ export type ListAdImagesError = (unknown | {
     error?: string;
 });
 
+export type ListAdVideosData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Comma-separated Graph field override (supports nested {} projections).
+         */
+        fields?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListAdVideosResponse = ({
+    adAccountId?: string;
+    data?: Array<{
+        [key: string]: unknown;
+    }>;
+    paging?: {
+        /**
+         * Cursor for the next page; null when exhausted.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListAdVideosError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type SearchAdInterestsData = {
     query: {
         /**
@@ -33006,7 +33048,35 @@ export type CreateAdAudienceData = {
      */
     ratio?: number;
     /**
-     * Optional raw Meta rule, forwarded verbatim: pixel event rule for website audiences, or the engagement rule for meta_engagement (overrides the built rule, e.g. for event/canvas/lead-form sources).
+     * website only. Narrows the audience from all visitors to visitors of
+     * URLs containing this substring. Ignored when `rule` is supplied.
+     *
+     */
+    urlContains?: string;
+    /**
+     * Optional raw Meta rule, replacing the one we build. Omit it for all
+     * visitors of `pixelId`, or use `urlContains` for the common page-match
+     * case.
+     *
+     * For `website` this is Meta's Flexible Audience Rule and is VALIDATED
+     * before we call Meta: every entry in `inclusions.rules` (and
+     * `exclusions.rules`) must carry `event_sources`, `retention_seconds`
+     * AND `filter`. Meta rejects a rule missing any of the three with code
+     * 100 / subcode 1713098 ("Invalid rule JSON format"), so a bad shape is
+     * a 400 here instead. The pre-2018 flat shapes (`{url: ...}`,
+     * `{event: ...}`) are not accepted by Meta at all (subcode 1870029).
+     *
+     * Example, visitors of /checkout in the last 30 days:
+     * `{"inclusions":{"operator":"or","rules":[{"event_sources":[{"id":"<pixelId>","type":"pixel"}],"retention_seconds":2592000,"filter":{"operator":"and","filters":[{"field":"url","operator":"i_contains","value":"/checkout"}]}}]}}`
+     *
+     * Note Meta DERIVES `retention_days` from `retention_seconds` and
+     * stores `event_sources[].id` as a number, so a rule read back will
+     * not be byte-identical to the one you sent.
+     *
+     * For `meta_engagement` the rule is forwarded verbatim and NOT
+     * validated: that type has two dialects (the `video` source uses a
+     * legacy flat array), so no single schema covers both.
+     *
      */
     rule?: {
         [key: string]: unknown;
