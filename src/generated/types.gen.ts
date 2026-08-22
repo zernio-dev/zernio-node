@@ -11220,11 +11220,16 @@ export type EditPostData = {
         /**
          * The platform to edit the post on.
          */
-        platform: 'twitter' | 'discord' | 'facebook' | 'reddit';
+        platform: 'twitter' | 'discord' | 'facebook' | 'reddit' | 'linkedin' | 'telegram' | 'pinterest' | 'googlebusiness' | 'youtube' | 'slack';
         /**
          * The new post text content
          */
         content: string;
+        /**
+         * Which account's copy of the post to edit when the post was published to several accounts on the same platform; defaults to the first.
+         *
+         */
+        accountId?: string;
     };
     path: {
         postId: string;
@@ -11234,7 +11239,7 @@ export type EditPostData = {
 export type EditPostResponse = ({
     success?: boolean;
     /**
-     * The platform post ID after the edit. X assigns a new ID; Discord, Facebook, and Reddit return the original ID unchanged.
+     * The platform post ID after the edit. X assigns a new ID; every other platform returns the original ID unchanged.
      *
      */
     id?: string;

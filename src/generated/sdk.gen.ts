@@ -930,7 +930,10 @@ export const unpublishPost = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Edit published post
  * Edit the text of an already-published post. Supported on X (Twitter), Discord,
- * Facebook, and Reddit. Each platform enforces its own rules:
+ * Facebook, Reddit, LinkedIn, Telegram, Pinterest, Google Business Profile, YouTube,
+ * and Slack. When a post was published to several accounts on the same platform,
+ * pass `accountId` to pick which account's copy to edit (the first entry is edited
+ * otherwise). Each platform enforces its own rules:
  *
  * **X (Twitter)**
  * - Connected X account must have an active X Premium subscription
@@ -954,6 +957,49 @@ export const unpublishPost = <ThrowOnError extends boolean = false>(options: Opt
  * - Self-posts only. A link post has no editable body and is rejected before the write
  * - Body only. Reddit exposes no API to edit a post title, ever
  * - The post ID is unchanged
+ *
+ * **LinkedIn**
+ * - Text only, no time limit. Media, polls, articles, and reshare targets cannot be
+ * changed
+ * - Works for member and organization posts published through this API. The post
+ * keeps its ID and LinkedIn shows an "edited" marker
+ * - Text is limited to 3,000 characters; mentions and hashtags are preserved
+ *
+ * **Telegram**
+ * - No time limit; messages published through Zernio are editable indefinitely
+ * - Text posts: edits the message text (up to 4096 characters)
+ * - Media posts: edits the caption only (up to 1024 characters). The media itself
+ * cannot be swapped
+ * - For albums, the caption shown on the album (its first message) is edited
+ * - The message ID is unchanged
+ *
+ * **Pinterest**
+ * - Description only, maximum 800 characters. Media, link, and board cannot be
+ * changed, and a pin title derived from the old content's first line at publish
+ * stays as-is
+ * - Pinterest's pin-update endpoint is currently in closed beta; until the app is
+ * allowlisted by Pinterest, edits are rejected with a "beta feature not yet
+ * enabled" error
+ * - The pin ID is unchanged
+ *
+ * **Google Business Profile**
+ * - Post body (summary) text only. Call-to-action, event/offer fields, and media are
+ * untouched
+ * - No time limit and no edit limit. The post ID is unchanged
+ * - The post must still exist on Google: a post deleted from the Business Profile
+ * dashboard, or an event/offer post past its end date, returns a 404
+ *
+ * **YouTube**
+ * - `content` replaces the video description only. The title is unchanged, even if
+ * it was originally derived from the content's first line at publish time
+ * - Title, tags, thumbnail, and privacy edits belong to `POST /v1/posts/{postId}/update-metadata`
+ * - No time window and no edit cap. The video ID is unchanged
+ *
+ * **Slack**
+ * - Text only, up to 4,000 characters. Media cannot be swapped, and media posts
+ * whose share message reference never resolved cannot be edited
+ * - No time limit unless workspace admins restrict message editing
+ * - The message ID is unchanged
  *
  * Media edits are not supported on any platform. The post record in Zernio is updated
  * with the new content and an edit-history entry.
