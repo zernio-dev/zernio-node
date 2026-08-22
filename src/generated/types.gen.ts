@@ -1086,6 +1086,22 @@ export type AnalyticsListResponse = {
              */
             altText?: string;
         }>;
+        /**
+         * Instagram only: the platform media product type (e.g. FEED, REELS, STORY, AD). Absent when the platform did not report it.
+         */
+        mediaProductType?: string;
+        /**
+         * Instagram only: whether Instagram labeled the media as AI-generated. Absent when the platform did not report it.
+         */
+        isAiGenerated?: boolean;
+        /**
+         * Instagram reels only: whether the reel is also shared to the main feed. Absent when the platform did not report it.
+         */
+        isSharedToFeed?: boolean;
+        /**
+         * Instagram only: audio type of the media (MUSIC or ORIGINAL_SOUND). Absent when the platform did not report it.
+         */
+        mediaAudioType?: string;
     }>;
     pagination?: Pagination;
     /**
@@ -1169,6 +1185,22 @@ export type AnalyticsSinglePostResponse = {
          */
         unavailableReason?: 'platform_withheld';
     }>;
+    /**
+     * Instagram only: the platform media product type (e.g. FEED, REELS, STORY, AD). Absent when the platform did not report it.
+     */
+    mediaProductType?: string;
+    /**
+     * Instagram only: whether Instagram labeled the media as AI-generated. Absent when the platform did not report it.
+     */
+    isAiGenerated?: boolean;
+    /**
+     * Instagram reels only: whether the reel is also shared to the main feed. Absent when the platform did not report it.
+     */
+    isSharedToFeed?: boolean;
+    /**
+     * Instagram only: audio type of the media (MUSIC or ORIGINAL_SOUND). Absent when the platform did not report it.
+     */
+    mediaAudioType?: string;
 };
 
 /**
@@ -2852,6 +2884,22 @@ export type ExternalPostSummary = {
         [key: string]: unknown;
     }>;
     /**
+     * Instagram only: the platform media product type (e.g. FEED, REELS, STORY, AD). Absent when the platform did not report it.
+     */
+    mediaProductType?: string;
+    /**
+     * Instagram only: whether Instagram labeled the media as AI-generated. Absent when the platform did not report it.
+     */
+    isAiGenerated?: boolean;
+    /**
+     * Instagram reels only: whether the reel is also shared to the main feed. Absent when the platform did not report it.
+     */
+    isSharedToFeed?: boolean;
+    /**
+     * Instagram only: audio type of the media (MUSIC or ORIGINAL_SOUND). Absent when the platform did not report it.
+     */
+    mediaAudioType?: string;
+    /**
      * Engagement + insights for the post. `likes` and `comments` are
      * available immediately after an on-demand sync (they come from the
      * platform listing). `reach`, `impressions`, `views` depend on the
@@ -2911,6 +2959,22 @@ export type ExternalPostWebhookPost = {
     mediaItems: Array<ExternalPostMediaItem>;
     thumbnailUrl: (string) | null;
     publishedAt: string;
+    /**
+     * Instagram only: the platform media product type (e.g. FEED, REELS, STORY, AD). Absent when the platform did not report it.
+     */
+    mediaProductType?: string;
+    /**
+     * Instagram only: whether Instagram labeled the media as AI-generated. Absent when the platform did not report it.
+     */
+    isAiGenerated?: boolean;
+    /**
+     * Instagram reels only: whether the reel is also shared to the main feed. Absent when the platform did not report it.
+     */
+    isSharedToFeed?: boolean;
+    /**
+     * Instagram only: audio type of the media (MUSIC or ORIGINAL_SOUND). Absent when the platform did not report it.
+     */
+    mediaAudioType?: string;
     /**
      * Always "external" — distinguishes these from Zernio-originated post.* events.
      */
@@ -22311,6 +22375,10 @@ export type ListWhatsAppAccountEventsData = {
 export type ListWhatsAppAccountEventsResponse = ({
     events?: Array<{
         id?: string;
+        /**
+         * WhatsApp social account the event belongs to
+         */
+        accountId?: string;
         /**
          * Event kind, e.g. template_approved, template_rejected, account_restricted, account_disconnected
          */
