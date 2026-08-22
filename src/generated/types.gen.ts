@@ -17620,7 +17620,13 @@ export type CreateInboxConversationError = ({
     error?: string;
 } | unknown | {
     error?: string;
+    code?: 'account_not_found' | 'PARTICIPANT_NOT_FOUND';
+} | {
+    error?: string;
     code?: 'DM_NOT_ALLOWED';
+} | {
+    error?: string;
+    code?: 'rate_limited';
 });
 
 export type SearchInboxConversationsData = {
