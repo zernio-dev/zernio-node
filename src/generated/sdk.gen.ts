@@ -3312,6 +3312,17 @@ export const getInboxConversationMessages = <ThrowOnError extends boolean = fals
  * returns 422; a key still in flight returns 409. Works for JSON and
  * multipart (file upload) requests alike. Keys are retained for 24 hours.
  *
+ * Only successful (2xx) responses are stored for replay: if the request
+ * throws or returns a non-2xx status, the key is released so the same key
+ * can be retried once the problem is fixed. The header therefore protects
+ * the "request succeeded but the response was lost" case. For an ambiguous
+ * failure (a 5xx or a network timeout), reconcile before retrying: a
+ * failure after the platform already accepted the message also releases
+ * the key, and a blind retry could send it twice. List the conversation's
+ * messages first, and treat an empty result as inconclusive rather than
+ * as proof nothing was sent, since a send that failed while being recorded
+ * leaves no trace on our side.
+ *
  */
 export const sendInboxMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendInboxMessageData, ThrowOnError>) => {
     return (options?.client ?? client).post<SendInboxMessageResponse, SendInboxMessageError, ThrowOnError>({
