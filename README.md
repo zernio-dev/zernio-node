@@ -402,6 +402,7 @@ try {
 | `adAudiences.updateAdAudience()` | Update an audience |
 | `adAudiences.deleteAdAudience()` | Delete custom audience |
 | `adAudiences.addUsersToAdAudience()` | Add users to audience |
+| `adAudiences.replaceAdAudienceCompanies()` | Replace audience companies |
 
 ### Ad Campaigns
 | Method | Description |

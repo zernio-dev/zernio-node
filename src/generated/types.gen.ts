@@ -32997,8 +32997,10 @@ export type CreateAdAudienceData = {
     /**
      * Required for company_list audiences (LinkedIn only): plain-text
      * company rows for account targeting. Each row needs at least one
-     * identifier. LinkedIn recommends 1,000+ companies for a usable
-     * match rate and takes up to 48h to process the list.
+     * identifier. Not hashed, LinkedIn matches these against its own
+     * company graph. LinkedIn recommends 1,000+ companies for a usable
+     * match rate and takes up to 48h to process the list. Replace the
+     * list later with POST /v1/ads/audiences/{audienceId}/companies.
      *
      */
     companies?: Array<{
@@ -33191,6 +33193,35 @@ export type AddUsersToAdAudienceResponse = ({
 });
 
 export type AddUsersToAdAudienceError = (unknown | {
+    error?: string;
+});
+
+export type ReplaceAdAudienceCompaniesData = {
+    body: {
+        /**
+         * The complete company list. Each row needs at least one of name, domain, website or linkedinPageUrl.
+         */
+        companies: Array<{
+            name?: string;
+            domain?: string;
+            website?: string;
+            linkedinPageUrl?: string;
+        }>;
+    };
+    path: {
+        audienceId: string;
+    };
+};
+
+export type ReplaceAdAudienceCompaniesResponse = ({
+    message?: string;
+    /**
+     * Rows sent to LinkedIn. Matching happens asynchronously, so this is not the matched company count.
+     */
+    numReceived?: number;
+});
+
+export type ReplaceAdAudienceCompaniesError = (unknown | {
     error?: string;
 });
 

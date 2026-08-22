@@ -434,6 +434,7 @@ import {
   removeMessageReaction,
   removeTrackingTagSharedAccount,
   removeWhatsAppGroupParticipants,
+  replaceAdAudienceCompanies,
   replyToGoogleBusinessReview,
   replyToInboxPost,
   replyToInboxReview,
@@ -1619,6 +1620,7 @@ export class Zernio {
     updateAdAudience: this._bind(updateAdAudience),
     deleteAdAudience: this._bind(deleteAdAudience),
     addUsersToAdAudience: this._bind(addUsersToAdAudience),
+    replaceAdAudienceCompanies: this._bind(replaceAdAudienceCompanies),
   };
 
   /**
@@ -1799,6 +1801,8 @@ export class Zernio {
     deleteAdAudience: this._bind(deleteAdAudience),
     /** @deprecated Use `zernio.adaudiences.addUsersToAdAudience` instead. */
     addUsersToAdAudience: this._bind(addUsersToAdAudience),
+    /** @deprecated Use `zernio.adaudiences.replaceAdAudienceCompanies` instead. */
+    replaceAdAudienceCompanies: this._bind(replaceAdAudienceCompanies),
     /** @deprecated Use `zernio.adtargeting.searchAdInterests` instead. */
     searchAdInterests: this._bind(searchAdInterests),
     /** @deprecated Use `zernio.adtargeting.searchAdTargeting` instead. */
