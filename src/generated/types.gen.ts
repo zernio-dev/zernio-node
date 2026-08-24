@@ -26697,6 +26697,17 @@ export type ListBroadcastRecipientsResponse = ({
         skip?: number;
         hasMore?: boolean;
     };
+    /**
+     * Delivery totals across all recipients in the broadcast, independent of pagination and status filtering.
+     */
+    summary?: {
+        total?: number;
+        pending?: number;
+        sent?: number;
+        delivered?: number;
+        read?: number;
+        failed?: number;
+    };
 });
 
 export type ListBroadcastRecipientsError = (unknown | {
