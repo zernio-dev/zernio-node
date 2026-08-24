@@ -100,6 +100,7 @@ import {
   deleteAdAudience,
   deleteAdCampaign,
   deleteAdCreative,
+  deleteAdVideo,
   deleteApiKey,
   deleteBlog,
   deleteBlogArticle,
@@ -561,6 +562,7 @@ import {
   updateWorkflow,
   updateYoutubeDefaultPlaylist,
   uploadAdImage,
+  uploadAdVideo,
   uploadMediaDirect,
   uploadPhoneNumberKycDocument,
   uploadPhoneNumberPortInDocument,
@@ -1543,7 +1545,9 @@ export class Zernio {
     deleteAdCreative: this._bind(deleteAdCreative),
     uploadAdImage: this._bind(uploadAdImage),
     listAdImages: this._bind(listAdImages),
+    uploadAdVideo: this._bind(uploadAdVideo),
     listAdVideos: this._bind(listAdVideos),
+    deleteAdVideo: this._bind(deleteAdVideo),
     listAdCatalogs: this._bind(listAdCatalogs),
     listAdCatalogProductSets: this._bind(listAdCatalogProductSets),
   };
@@ -1797,8 +1801,12 @@ export class Zernio {
     uploadAdImage: this._bind(uploadAdImage),
     /** @deprecated Use `zernio.adcreatives.listAdImages` instead. */
     listAdImages: this._bind(listAdImages),
+    /** @deprecated Use `zernio.adcreatives.uploadAdVideo` instead. */
+    uploadAdVideo: this._bind(uploadAdVideo),
     /** @deprecated Use `zernio.adcreatives.listAdVideos` instead. */
     listAdVideos: this._bind(listAdVideos),
+    /** @deprecated Use `zernio.adcreatives.deleteAdVideo` instead. */
+    deleteAdVideo: this._bind(deleteAdVideo),
     /** @deprecated Use `zernio.adcreatives.listAdCatalogs` instead. */
     listAdCatalogs: this._bind(listAdCatalogs),
     /** @deprecated Use `zernio.adcreatives.listAdCatalogProductSets` instead. */

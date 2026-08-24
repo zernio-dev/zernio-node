@@ -32820,6 +32820,49 @@ export type ListAdImagesError = (unknown | {
     error?: string;
 });
 
+export type UploadAdVideoData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Public https URL of the video; downloaded server-side (SSRF-guarded) before chunked upload. Provide exactly one of videoUrl or videoBase64.
+         */
+        videoUrl?: string;
+        /**
+         * Raw base64 video bytes, or a full data URL (the data:video/...;base64, prefix is stripped). Capped by Vercel's body limit (~4.5 MB payload). Provide exactly one of videoUrl or videoBase64.
+         */
+        videoBase64?: string;
+        /**
+         * Optional filename shown alongside the upload session. Applied only when uploading via videoBase64.
+         */
+        filename?: string;
+    };
+};
+
+export type UploadAdVideoResponse = ({
+    adAccountId?: string;
+    video?: {
+        /**
+         * Meta video id, reusable as video.id on POST /v1/ads/create and inside POST /v1/ads/preview creativeSpec.
+         */
+        id?: string;
+        /**
+         * Meta-hosted poster URL if available; null when Meta has not produced a poster yet.
+         */
+        thumbnailUrl?: (string) | null;
+    };
+});
+
+export type UploadAdVideoError = (unknown | {
+    error?: string;
+});
+
 export type ListAdVideosData = {
     query: {
         /**
@@ -32859,6 +32902,35 @@ export type ListAdVideosResponse = ({
 });
 
 export type ListAdVideosError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteAdVideoData = {
+    path: {
+        /**
+         * Meta ad video id (numeric).
+         */
+        videoId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>) that owns the video.
+         */
+        adAccountId: string;
+    };
+};
+
+export type DeleteAdVideoResponse = ({
+    adAccountId?: string;
+    videoId?: string;
+    success?: boolean;
+});
+
+export type DeleteAdVideoError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

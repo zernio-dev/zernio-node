@@ -443,8 +443,10 @@ try {
 | `adCreatives.getAdPreviews()` | Render previews of an existing ad |
 | `adCreatives.updateAdCreative()` | Rename a creative |
 | `adCreatives.deleteAdCreative()` | Delete a creative |
+| `adCreatives.deleteAdVideo()` | Delete an ad video |
 | `adCreatives.generateAdPreviews()` | Render pre-create ad previews |
 | `adCreatives.uploadAdImage()` | Upload an ad image from base64 |
+| `adCreatives.uploadAdVideo()` | Upload an ad video |
 
 ### Ad Insights
 | Method | Description |
