@@ -872,6 +872,10 @@ export type AdTreeAdSet = {
      * Derived from child ad statuses
      */
     status?: (AdStatus);
+    /**
+     * Earliest `platformCreatedAt` (platform ad creation time; falls back to `createdAt`, Zernio's sync time, for ads synced before that field existed) across this ad set's ads. Not the ad set's own creation time on the platform — a proxy usable for sorting.
+     */
+    createdTime?: (string) | null;
     adCount?: number;
     /**
      * Effective budget at this level (back-compat). For CBO campaigns this mirrors the parent campaign's budget; for ABO this is the ad-set-specific budget. Use `adSetBudget` / parent `campaignBudget` + `budgetLevel` to disambiguate.
@@ -937,6 +941,10 @@ export type AdTreeCampaign = {
     platformCampaignId?: string;
     platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     campaignName?: string;
+    /**
+     * Earliest `platformCreatedAt` (platform ad creation time; falls back to `createdAt`, Zernio's sync time, for ads synced before that field existed) across every ad in the campaign. Not the platform campaign's own creation time (Meta's `Campaign.created_time` etc. is not synced) — a campaign created empty and populated later will show its first ad's time, not the campaign's. Usable for sorting "most recently created" without the numeric-campaign-id heuristic. Same source as `AdTreeAdSet.createdTime` and `Ad.platformCreatedAt`; mirrors `AdCampaign.earliestAd`.
+     */
+    createdTime?: (string) | null;
     /**
      * Delivery status derived from child ad statuses. Distinct from `reviewStatus`, which reflects the platform-side review state.
      */
@@ -2126,9 +2134,11 @@ export type CtwaAdRequestBody = {
      * Multi-creative shape: N CTWA ads under one campaign + one
      * ad set, sharing budget and targeting. Mutually exclusive
      * with the top-level single-creative fields (`headline` /
-     * `body` / `imageUrl` / `video`). Each entry must supply its
-     * own headline, body, and exactly one of `imageUrl` /
-     * `video`.
+     * `body` / `imageUrl` / `video`): setting both is a 400,
+     * unlike `POST /v1/ads/create` where the top-level fields
+     * are silently ignored in multi-creative mode. Each entry
+     * must supply its own headline, body, and exactly one of
+     * `imageUrl` / `video`.
      *
      */
     creatives?: Array<{
