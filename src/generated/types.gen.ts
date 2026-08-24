@@ -5743,7 +5743,7 @@ export type UploadTokenStatusResponse = {
     files?: Array<UploadedFile>;
     createdAt?: string;
     expiresAt?: string;
-    completedAt?: string;
+    completedAt?: (string) | null;
 };
 
 /**
