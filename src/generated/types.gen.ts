@@ -4290,7 +4290,7 @@ export type LinkedInPlatformData = {
      */
     disableLinkPreview?: boolean;
     /**
-     * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. With content, the published post is a quote-reshare: your text is the commentary and the original is embedded underneath (LinkedIn's "repost with your thoughts"). Leave content empty (and omit customContent) to publish a plain repost with no text, LinkedIn's one-click "Repost". Mutually exclusive with media. Works on personal profiles and organization pages.
+     * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. The published post is always a reshare authored by your account with the original embedded underneath: with content your text is the commentary (LinkedIn's "repost with your thoughts"), and with no content it publishes as a text-free reshare. Note that a text-free reshare is NOT LinkedIn's one-click "Repost" (the feed treatment where the original author stays the author); LinkedIn's API exposes no way to create that, so the post still appears authored by you with the original embedded. Mutually exclusive with media. Works on personal profiles and organization pages.
      */
     reshareUrl?: string;
     geoRestriction?: GeoRestriction;
@@ -10915,7 +10915,7 @@ export type CreatePostData = {
     body: {
         title?: string;
         /**
-         * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn plain repost (platformSpecificData.reshareUrl with no text). Required for other text-only posts.
+         * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn text-free reshare (platformSpecificData.reshareUrl with no text). Required for other text-only posts.
          */
         content?: string;
         mediaItems?: Array<MediaItem>;
