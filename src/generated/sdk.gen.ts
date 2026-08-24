@@ -3624,6 +3624,11 @@ export const getMessageAttachment = <ThrowOnError extends boolean = false>(optio
  * List commented posts
  * Returns posts with comment counts from all connected accounts. Aggregates data across multiple accounts.
  *
+ * Responses are cached for up to 10 minutes, so the feed may lag new comments by that
+ * window. Do not poll this endpoint for real-time updates: subscribe to the
+ * `comment.received` webhook, which fires for every new comment across your posts and
+ * carries the post reference needed to keep this list current.
+ *
  * For users with the Ads add-on (Metronome plans always qualify), the user's Meta ads
  * (boosted/dark posts) are included too. There's one row per (ad, placement-with-comments):
  * an ad that runs on both Facebook feed and Instagram feed produces up to two rows (the
@@ -3664,6 +3669,11 @@ export const listInboxComments = <ThrowOnError extends boolean = false>(options?
  * On Facebook and Instagram, passing a COMMENT id as `postId` is also supported and
  * returns that comment's replies instead of the post's top-level comments. This is not
  * available on YouTube, where `postId` must be a video id.
+ *
+ * Responses are cached for up to 10 minutes, so a page may lag new comments by that
+ * window. Do not poll this endpoint for real-time updates: subscribe to the
+ * `comment.received` webhook, which delivers new comments as they arrive. Your own
+ * writes (creating, replying to, or deleting a comment) refresh the cache immediately.
  *
  */
 export const getInboxPostComments = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInboxPostCommentsData, ThrowOnError>) => {
