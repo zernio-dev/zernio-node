@@ -2104,13 +2104,23 @@ export type CtwaAdRequestBody = {
      *
      */
     video?: {
-        url: string;
         /**
-         * Required by Meta for every video creative. Used as the
-         * ad thumbnail.
+         * Public URL of the video to upload. Provide either `url` or `id`.
+         */
+        url?: string;
+        /**
+         * Reuse a video already uploaded to this ad account (list them with GET /v1/ads/videos) instead of re-uploading. Wins over `url`. Provide either `url` or `id`.
+         */
+        id?: string;
+        /**
+         * OPTIONAL: when omitted, the poster is auto-generated from
+         * Meta's own preferred video thumbnail. When Meta produces no
+         * candidate the request fails with a 502 platform_error
+         * (reason: video_thumbnail_unavailable) — retry, or supply
+         * this field to control the poster frame exactly.
          *
          */
-        thumbnailUrl: string;
+        thumbnailUrl?: string;
     };
     /**
      * Multi-creative shape: N CTWA ads under one campaign + one
@@ -2139,22 +2149,31 @@ export type CtwaAdRequestBody = {
          *
          */
         video?: {
-            url: string;
             /**
-             * Required by Meta for every video creative. Used
-             * as the ad thumbnail.
+             * Public URL of the video to upload. Provide either `url` or `id`.
+             */
+            url?: string;
+            /**
+             * Reuse a video already uploaded to this ad account (list them with GET /v1/ads/videos) instead of re-uploading. Wins over `url`. Provide either `url` or `id`.
+             */
+            id?: string;
+            /**
+             * OPTIONAL: when omitted, the poster is auto-generated
+             * from Meta's own preferred video thumbnail. When Meta
+             * produces no candidate the request fails with a 502
+             * platform_error (reason: video_thumbnail_unavailable).
              *
              */
-            thumbnailUrl: string;
+            thumbnailUrl?: string;
         };
     }>;
     /**
      * Attach the creatives to this EXISTING messaging ad set instead of
      * building a campaign, so the ad set keeps its learning phase. It then
      * owns budget, targeting and schedule, so `budgetAmount`, `budgetType`,
-     * `endDate`, `objective`, `countries`, `interests` and `audienceId` are
-     * rejected with a 400 alongside it. Its `destination_type` must match
-     * the ad's destination.
+     * `endDate`, `objective`, `countries`, `interests`, `audienceId` and
+     * `campaignStatus` are rejected with a 400 alongside it. Its
+     * `destination_type` must match the ad's destination.
      *
      */
     adSetId?: string;
@@ -2299,6 +2318,22 @@ export type CtwaAdRequestBody = {
      */
     objective?: 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS';
     /**
+     * Ad-level status. Defaults to `ACTIVE`. `PAUSED` skips activating the
+     * newly created ad(s) after Meta accepts them.
+     *
+     */
+    status?: 'ACTIVE' | 'PAUSED';
+    /**
+     * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
+     * to `ACTIVE`. `PAUSED` holds activation at the campaign so it never
+     * spends before the advertiser reviews it, while the ad set and ad still
+     * switch on (one resume call brings the whole hierarchy live). Only
+     * meaningful when a new campaign is being created; rejected with a 400
+     * alongside `adSetId` (the attach shape reuses an existing campaign).
+     *
+     */
+    campaignStatus?: 'ACTIVE' | 'PAUSED';
+    /**
      * Meta bid strategy applied to the shared ad set. Defaults to
      * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
      * `LOWEST_COST_WITH_BID_CAP` and `COST_CAP` require
@@ -2362,6 +2397,24 @@ export type advantageAudience = 0 | 1;
  *
  */
 export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS';
+
+/**
+ * Ad-level status. Defaults to `ACTIVE`. `PAUSED` skips activating the
+ * newly created ad(s) after Meta accepts them.
+ *
+ */
+export type status4 = 'ACTIVE' | 'PAUSED';
+
+/**
+ * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
+ * to `ACTIVE`. `PAUSED` holds activation at the campaign so it never
+ * spends before the advertiser reviews it, while the ad set and ad still
+ * switch on (one resume call brings the whole hierarchy live). Only
+ * meaningful when a new campaign is being created; rejected with a 400
+ * alongside `adSetId` (the attach shape reuses an existing campaign).
+ *
+ */
+export type campaignStatus = 'ACTIVE' | 'PAUSED';
 
 /**
  * Meta bid strategy applied to the shared ad set. Defaults to
@@ -2718,7 +2771,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status4 = 1 | 2 | 3 | 4;
+export type status5 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -3420,7 +3473,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status5 = 'active' | 'archived';
+export type status6 = 'active' | 'archived';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -4466,7 +4519,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status6 = 'published' | 'failed';
+export type status7 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -4593,7 +4646,7 @@ export type Post = {
     updatedAt?: string;
 };
 
-export type status7 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
+export type status8 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'failed' | 'partial';
 
 export type visibility = 'public' | 'private' | 'unlisted';
 
@@ -5738,7 +5791,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status8 = 'pending' | 'completed' | 'expired';
+export type status9 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -6159,7 +6212,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status9 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status10 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel2 = 'sms';
 
@@ -6278,7 +6331,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status10 = 'success' | 'failed';
+export type status11 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -6390,7 +6443,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status11 = 'success' | 'failure';
+export type status12 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -7873,7 +7926,7 @@ export type event19 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status12 = 'published' | 'failed' | 'deleted';
+export type status13 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
@@ -8231,7 +8284,7 @@ export type event26 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status13 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status14 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -8380,7 +8433,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status14 = 'pending' | 'active';
+export type status15 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -8499,7 +8552,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status15 = 'success' | 'failed' | 'pending';
+export type status16 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
