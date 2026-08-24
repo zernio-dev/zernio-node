@@ -14631,6 +14631,10 @@ export type ConnectWhatsAppCredentialsResponse = ({
      * Present when the account was created but Meta rejected the Cloud API registration. The number cannot send messages until this is resolved.
      */
     registrationWarning?: string;
+    /**
+     * Present when the WABA webhook subscription (with the Zernio override callback) succeeded. Explains the delivery cutover and warns against unsubscribing the app from the WABA afterward.
+     */
+    webhookNotice?: string;
     account?: {
         accountId?: string;
         platform?: 'whatsapp';
@@ -14646,7 +14650,15 @@ export type ConnectWhatsAppCredentialsResponse = ({
         /**
          * The connected phone number
          */
-        selectedPhoneNumber?: string;
+        phoneNumber?: string;
+        /**
+         * Meta-verified business name for the phone number
+         */
+        verifiedName?: string;
+        /**
+         * Meta quality rating for the phone number (e.g. GREEN, YELLOW, RED, UNKNOWN)
+         */
+        qualityRating?: string;
     };
 });
 
