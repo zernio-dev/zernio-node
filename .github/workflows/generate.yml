@@ -7,6 +7,13 @@ on:
 
   # Allow manual trigger
   workflow_dispatch:
+    inputs:
+      # Recovery path: failed publishes still commit the version bump, so a
+      # later no-change run skips publish and npm stays behind the repo.
+      force_publish:
+        description: 'Publish the committed version even if regeneration produces no changes'
+        type: boolean
+        default: false
 
 concurrency:
   group: regenerate-sdk
@@ -23,6 +30,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          # Explicit ref: for repository_dispatch, the default github.sha is
+          # resolved at dispatch time, so a run queued behind another run
+          # checks out a tip that misses the earlier push and then conflicts.
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
@@ -100,16 +111,18 @@ jobs:
           - Auto-generated SDK updates
           - Version: $NEW_VERSION"
           # Retry with rebase to survive concurrent dispatches that land
-          # back-to-back pushes to main.
+          # back-to-back pushes to main. -X theirs: the replayed commit is a
+          # full regeneration from a fresher spec fetch, so on conflicting
+          # hunks the regenerated content wins instead of aborting the run.
           for attempt in 1 2 3; do
             if git push; then break; fi
             echo "Push attempt $attempt failed; rebasing and retrying..."
-            git pull --rebase origin main
+            git pull --rebase -X theirs origin main
             sleep $((attempt * 5))
           done
 
       - name: Check if version already published
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true' || inputs.force_publish == true
         id: check_published
         run: |
           CURRENT_VERSION=$(node -p "require('./package.json').version")
@@ -128,25 +141,34 @@ jobs:
       # freezes (this exact failure went unnoticed 2026-05-19 → 2026-05-25,
       # 12 versions behind). Keep the legacy publish below best-effort.
       - name: Publish to npm as @zernio/node
-        if: steps.changes.outputs.has_changes == 'true' && steps.check_published.outputs.skip != 'true'
+        if: (steps.changes.outputs.has_changes == 'true' || inputs.force_publish == true) && steps.check_published.outputs.skip != 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm as @getlatedev/node (legacy)
-        if: steps.changes.outputs.has_changes == 'true' && steps.check_published.outputs.skip != 'true'
+        if: (steps.changes.outputs.has_changes == 'true' || inputs.force_publish == true) && steps.check_published.outputs.skip != 'true'
         run: |
           node -e "const p=JSON.parse(require('fs').readFileSync('package.json','utf8')); p.name='@getlatedev/node'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2)+'\n')"
           npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      # Tag comes from package.json, not steps.version: under force_publish
+      # there is no bump step, the committed version is what ships.
+      - name: Resolve release tag
+        if: steps.changes.outputs.has_changes == 'true' || inputs.force_publish == true
+        id: tag
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "tag=v${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
-        if: steps.changes.outputs.has_changes == 'true'
+        if: steps.changes.outputs.has_changes == 'true' || inputs.force_publish == true
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.version.outputs.new_version }}
-          name: ${{ steps.version.outputs.new_version }}
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ${{ steps.tag.outputs.tag }}
           generate_release_notes: true
           body: |
             ## Auto-generated SDK Update
@@ -154,7 +176,7 @@ jobs:
             This release was automatically generated from the latest OpenAPI spec.
 
             ```bash
-            npm install @zernio/node@${{ steps.version.outputs.new_version }}
+            npm install @zernio/node@${{ steps.tag.outputs.tag }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
