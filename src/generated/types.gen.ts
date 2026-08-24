@@ -11477,7 +11477,10 @@ export type GetProfileError = ({
 export type UpdateProfileData = {
     body: {
         name?: string;
-        description?: string;
+        /**
+         * Set to null to clear the description.
+         */
+        description?: (string) | null;
         color?: string;
         isDefault?: boolean;
     };
@@ -33220,9 +33223,7 @@ export type CreateAdAudienceData = {
     /**
      * Required for meta_engagement audiences (Meta only): what people
      * engaged with. `page` = a Facebook Page, `instagram` = an IG
-     * professional account, `video` = a video. The source object must be
-     * eligible for engagement audiences or Meta rejects with subcode
-     * 1713151 ("Invalid Event Name"), surfaced verbatim.
+     * professional account, `video` = a video.
      *
      */
     engagementSource?: 'page' | 'instagram' | 'video';
