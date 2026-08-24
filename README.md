@@ -846,16 +846,23 @@ try {
 ### Voice
 | Method | Description |
 |--------|-------------|
+| `voice.listSipTrunks()` | List SIP trunks |
 | `voice.listVoiceCalls()` | List phone calls |
+| `voice.createSipTrunk()` | Create a SIP trunk |
 | `voice.createVoiceCall()` | Place an outbound phone call |
 | `voice.createVoiceWebSession()` | Mint a browser softphone session |
+| `voice.getSipTrunk()` | Get a SIP trunk |
 | `voice.getVoiceCall()` | Get a phone call |
 | `voice.getVoiceCallEstimate()` | Estimate call cost |
 | `voice.getVoiceCallRecording()` | Get a call recording |
+| `voice.deleteSipTrunk()` | Delete a SIP trunk |
+| `voice.attachNumberToSipTrunk()` | Attach a number to a SIP trunk |
+| `voice.detachNumberFromSipTrunk()` | Detach a number from its SIP trunk |
 | `voice.dialVoiceWebCall()` | Dial from the browser softphone |
 | `voice.disableVoiceOnNumber()` | Disable phone calling on a number |
 | `voice.enableVoiceOnNumber()` | Enable phone calling on a number |
 | `voice.endVoiceCall()` | Hang up a live call |
+| `voice.rotateSipTrunkCredentials()` | Rotate a SIP trunk's password |
 | `voice.transferVoiceCall()` | Blind-transfer a live call |
 
 ### WhatsApp

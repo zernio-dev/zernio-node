@@ -22492,6 +22492,10 @@ export type ListPhoneNumbersResponse = ({
          * False for numbers you brought yourself (connected via Meta embedded signup) — they live on your own carrier, so SMS/Calls can't be enabled on them.
          */
         hostedByZernio?: boolean;
+        /**
+         * SIP trunk the number is attached to; null when not trunked. While attached, enabling Calls or WhatsApp calling, requesting WhatsApp verification, and releasing the number all return 409.
+         */
+        sipTrunkId?: (string) | null;
         profileId?: {
             [key: string]: unknown;
         };
@@ -22583,6 +22587,10 @@ export type GetPhoneNumberResponse = ({
          */
         regulatoryDeclineReason?: (string) | null;
         provisionedAt?: string;
+        /**
+         * SIP trunk the number is attached to; null when not trunked. While attached, enabling Calls or WhatsApp calling, requesting WhatsApp verification, and releasing the number all return 409.
+         */
+        sipTrunkId?: (string) | null;
     };
 });
 
@@ -22906,6 +22914,10 @@ export type GetWhatsAppPhoneNumbersResponse = ({
          * False for numbers you brought yourself (connected via Meta embedded signup) — they live on your own carrier, so SMS/Calls can't be enabled on them.
          */
         hostedByZernio?: boolean;
+        /**
+         * SIP trunk the number is attached to; null when not trunked. While attached, enabling Calls or WhatsApp calling, requesting WhatsApp verification, and releasing the number all return 409.
+         */
+        sipTrunkId?: (string) | null;
         profileId?: {
             [key: string]: unknown;
         };
@@ -24455,6 +24467,191 @@ export type DisableVoiceOnNumberError = ({
     error?: string;
 } | unknown);
 
+export type CreateSipTrunkData = {
+    body: {
+        /**
+         * Display name for the trunk.
+         */
+        label: string;
+        /**
+         * Fully-qualified hostname inbound calls are delivered to (e.g. sip.rtc.elevenlabs.io, sip.retellai.com).
+         */
+        sipHost: string;
+        /**
+         * Defaults to 5061 for tls, 5060 otherwise.
+         */
+        sipPort?: number;
+        /**
+         * Signaling transport toward sipHost. Default tls (with SRTP media).
+         */
+        transport?: 'tls' | 'tcp' | 'udp';
+    };
+};
+
+export type CreateSipTrunkResponse = ({
+    id?: string;
+    label?: string;
+    sipHost?: string;
+    sipPort?: number;
+    transport?: 'tls' | 'tcp' | 'udp';
+    termination?: {
+        /**
+         * Telnyx termination host the platform dials for outbound (sip.telnyx.com).
+         */
+        uri?: string;
+        /**
+         * SIP digest username.
+         */
+        username?: string;
+    };
+    numbersAttached?: number;
+    createdAt?: (string) | null;
+    /**
+     * SIP digest password, shown only in this response.
+     */
+    digestPassword?: string;
+});
+
+export type CreateSipTrunkError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListSipTrunksResponse = ({
+    trunks?: Array<{
+        id?: string;
+        label?: string;
+        sipHost?: string;
+        sipPort?: number;
+        transport?: 'tls' | 'tcp' | 'udp';
+        termination?: {
+            uri?: string;
+            username?: string;
+        };
+        numbersAttached?: number;
+        createdAt?: (string) | null;
+    }>;
+    /**
+     * Whether this workspace can create SIP trunks. Managing existing trunks always works.
+     */
+    enabled?: boolean;
+});
+
+export type ListSipTrunksError = ({
+    error?: string;
+});
+
+export type GetSipTrunkData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetSipTrunkResponse = ({
+    id?: string;
+    label?: string;
+    sipHost?: string;
+    sipPort?: number;
+    transport?: 'tls' | 'tcp' | 'udp';
+    termination?: {
+        uri?: string;
+        username?: string;
+    };
+    numbersAttached?: number;
+    createdAt?: (string) | null;
+    numbers?: Array<{
+        /**
+         * Phone number record ID.
+         */
+        id?: string;
+        phoneNumber?: string;
+    }>;
+});
+
+export type GetSipTrunkError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteSipTrunkData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DeleteSipTrunkResponse = ({
+    deleted?: boolean;
+});
+
+export type DeleteSipTrunkError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RotateSipTrunkCredentialsData = {
+    path: {
+        id: string;
+    };
+};
+
+export type RotateSipTrunkCredentialsResponse = ({
+    termination?: {
+        /**
+         * Telnyx termination host the platform dials for outbound (sip.telnyx.com).
+         */
+        uri?: string;
+        /**
+         * SIP digest username.
+         */
+        username?: string;
+    };
+    digestPassword?: string;
+});
+
+export type RotateSipTrunkCredentialsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AttachNumberToSipTrunkData = {
+    body: {
+        /**
+         * SIP trunk ID (from POST /v1/phone-numbers/sip-trunks).
+         */
+        trunkId: string;
+    };
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type AttachNumberToSipTrunkResponse = ({
+    attached?: boolean;
+    phoneNumber?: string;
+    trunkId?: string;
+});
+
+export type AttachNumberToSipTrunkError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DetachNumberFromSipTrunkData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DetachNumberFromSipTrunkResponse = ({
+    /**
+     * Always false after a successful detach.
+     */
+    attached?: boolean;
+    phoneNumber?: string;
+});
+
+export type DetachNumberFromSipTrunkError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type EnableSmsOnNumberData = {
     path: {
         /**
@@ -24761,6 +24958,10 @@ export type GetWhatsAppPhoneNumberResponse = ({
          */
         regulatoryDeclineReason?: (string) | null;
         provisionedAt?: string;
+        /**
+         * SIP trunk the number is attached to; null when not trunked. While attached, enabling Calls or WhatsApp calling, requesting WhatsApp verification, and releasing the number all return 409.
+         */
+        sipTrunkId?: (string) | null;
     };
 });
 
