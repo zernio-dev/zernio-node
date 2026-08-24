@@ -25450,6 +25450,10 @@ export type CreateWhatsAppFlowData = {
          * When cloning, true keeps the clone in cloneFlowId's version lineage (auto-numbered next version); false/absent creates an independent flow. Ignored without cloneFlowId.
          */
         asVersion?: boolean;
+        /**
+         * HTTPS-only data exchange endpoint for the flow. Settable only while the flow is in DRAFT, and the flow's uploaded Flow JSON must declare data_api_version "3.0" for the endpoint to be used.
+         */
+        endpointUri?: string;
     };
 };
 
@@ -25527,6 +25531,10 @@ export type UpdateWhatsAppFlowData = {
          */
         name?: string;
         categories?: Array<('SIGN_UP' | 'SIGN_IN' | 'APPOINTMENT_BOOKING' | 'LEAD_GENERATION' | 'CONTACT_US' | 'CUSTOMER_SUPPORT' | 'SURVEY' | 'OTHER')>;
+        /**
+         * HTTPS-only data exchange endpoint for the flow. Settable only while the flow is in DRAFT, and the flow's uploaded Flow JSON must declare data_api_version "3.0" for the endpoint to be used.
+         */
+        endpointUri?: string;
     };
     path: {
         /**

@@ -6442,7 +6442,7 @@ export const getWhatsAppFlow = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Update flow
- * Update metadata (name, categories) of a DRAFT flow. Published flows are immutable.
+ * Update metadata (name, categories, endpointUri) of a DRAFT flow. Published flows are immutable.
  *
  */
 export const updateWhatsAppFlow = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWhatsAppFlowData, ThrowOnError>) => {
