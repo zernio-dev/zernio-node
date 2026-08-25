@@ -1862,6 +1862,8 @@ export const batchGetGoogleBusinessReviews = <ThrowOnError extends boolean = fal
  * Posts (or updates) the business owner reply to a Google Business review.
  * The reply is associated with the account's currently selected location (set via /v1/accounts/{accountId}/gmb-locations).
  * Calling this endpoint a second time on the same review overwrites the previous reply (PUT semantics on Google's side).
+ * Google keeps no history, so an automated retry silently replaces a reply someone edited by hand in the Google Business Profile UI.
+ * Read the review before retrying if a human may have answered it.
  *
  */
 export const replyToGoogleBusinessReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToGoogleBusinessReviewData, ThrowOnError>) => {
