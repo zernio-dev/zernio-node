@@ -12434,7 +12434,12 @@ export type HandleOAuthCallbackData = {
         profileId: string;
     };
     path: {
-        platform: string;
+        /**
+         * Social platform to complete the connect for. Discord, Slack and Telegram are absent because they are
+         * served by their own dedicated routes, documented separately.
+         *
+         */
+        platform: 'instagram' | 'twitter' | 'threads' | 'linkedin' | 'youtube' | 'tiktok' | 'reddit' | 'pinterest';
     };
 };
 
@@ -12442,6 +12447,56 @@ export type HandleOAuthCallbackResponse = (unknown);
 
 export type HandleOAuthCallbackError = (unknown | {
     error?: string;
+} | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this is
+     * the Zernio billing tab. For `enterprise_required` this
+     * is the Zernio enterprise contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
 });
 
 export type ConnectAdsData = {
@@ -14944,6 +14999,232 @@ export type CompleteWhatsAppPhoneSelectionResponse = ({
 
 export type CompleteWhatsAppPhoneSelectionError = (ErrorResponse | {
     error?: string;
+} | unknown);
+
+export type ConnectWhatsAppEmbeddedSignupData = {
+    body: {
+        /**
+         * Authorization code from the WA_EMBEDDED_SIGNUP postMessage
+         */
+        code: string;
+        profileId: string;
+        /**
+         * WhatsApp Business Account id, when the SDK reported one
+         */
+        wabaId?: string;
+        phoneNumberId?: string;
+        /**
+         * Number is also live in the WhatsApp Business app
+         */
+        isCoexistence?: boolean;
+        /**
+         * Rejects the connect when Meta returns a different number
+         */
+        expectedPhoneNumber?: string;
+    };
+};
+
+export type ConnectWhatsAppEmbeddedSignupResponse = (unknown);
+
+export type ConnectWhatsAppEmbeddedSignupError = (ErrorResponse | {
+    error?: string;
+} | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this is
+     * the Zernio billing tab. For `enterprise_required` this
+     * is the Zernio enterprise contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | unknown);
+
+export type ConnectDiscordChannelData = {
+    body: {
+        /**
+         * Discord server (guild) the channel belongs to
+         */
+        guildId: string;
+        /**
+         * Text, announcement or forum channel to publish to
+         */
+        channelId: string;
+        /**
+         * Profile to connect the channel to
+         */
+        profileId: string;
+    };
+};
+
+export type ConnectDiscordChannelResponse = (unknown);
+
+export type ConnectDiscordChannelError = (ErrorResponse | {
+    error?: string;
+} | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this is
+     * the Zernio billing tab. For `enterprise_required` this
+     * is the Zernio enterprise contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | unknown);
+
+export type ConnectSlackChannelData = {
+    body: {
+        profileId: string;
+        /**
+         * Slack channel id, C... or G...
+         */
+        channelId: string;
+        /**
+         * Nonce from the OAuth redirect. Required unless accountId is sent.
+         */
+        pendingDataToken?: string;
+        /**
+         * Existing Slack account whose workspace token is reused. Required unless pendingDataToken is sent.
+         */
+        accountId?: string;
+    };
+};
+
+export type ConnectSlackChannelResponse = (unknown);
+
+export type ConnectSlackChannelError = (ErrorResponse | {
+    error?: string;
+} | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this is
+     * the Zernio billing tab. For `enterprise_required` this
+     * is the Zernio enterprise contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
 } | unknown);
 
 export type GetTelegramConnectStatusData = {

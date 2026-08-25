@@ -339,6 +339,21 @@ describe('Endpoint Methods', () => {
       expect(client.connect.completeWhatsAppPhoneSelection).toBeTypeOf('function');
     });
 
+    it('should have connectWhatsAppEmbeddedSignup method', () => {
+      expect(client.connect.connectWhatsAppEmbeddedSignup).toBeDefined();
+      expect(client.connect.connectWhatsAppEmbeddedSignup).toBeTypeOf('function');
+    });
+
+    it('should have connectDiscordChannel method', () => {
+      expect(client.connect.connectDiscordChannel).toBeDefined();
+      expect(client.connect.connectDiscordChannel).toBeTypeOf('function');
+    });
+
+    it('should have connectSlackChannel method', () => {
+      expect(client.connect.connectSlackChannel).toBeDefined();
+      expect(client.connect.connectSlackChannel).toBeTypeOf('function');
+    });
+
     it('should have getFacebookPages method', () => {
       expect(client.connect.getFacebookPages).toBeDefined();
       expect(client.connect.getFacebookPages).toBeTypeOf('function');
