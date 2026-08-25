@@ -20603,6 +20603,9 @@ export type UpdateWhatsAppTemplateResponse = ({
     template?: {
         id?: string;
         name?: string;
+        /**
+         * Approval state read back from Meta after the update, normally PENDING. If the state cannot be read back, the last known status is returned instead.
+         */
         status?: string;
     };
 });
