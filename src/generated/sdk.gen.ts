@@ -7960,8 +7960,8 @@ export const updateAdTrackingTags = <ThrowOnError extends boolean = false>(optio
  * Instagram account on the profile can read the ad's media, the call returns
  * ads_connection_required (the Facebook side, if any, is still readable via ?placement=facebook).
  *
- * Meta-only. Other ad platforms (TikTok, LinkedIn, Pinterest, Google, X) do not
- * expose a public per-ad comments API and return feature_not_available.
+ * Meta-only for now. Other ad platforms (TikTok, LinkedIn, Pinterest, Google, X)
+ * are not wired to this endpoint and return feature_not_available.
  *
  * Requires the Ads add-on. Response shape matches GET /v1/inbox/comments/{postId}.
  *
