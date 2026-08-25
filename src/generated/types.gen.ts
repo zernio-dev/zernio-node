@@ -2131,6 +2131,22 @@ export type CtwaAdRequestBody = {
         thumbnailUrl?: string;
     };
     /**
+     * Custom chat welcome message (Meta's `page_welcome_message`,
+     * "Mensaje de bienvenida" / "Mensaje predefinido" in Ads Manager).
+     * Single-creative shape only; for `creatives[]` set it per entry.
+     *
+     */
+    welcomeMessage?: {
+        /**
+         * Greeting shown when the chat opens. Replaces Meta's default ("Hi! Can we help you?").
+         */
+        text: string;
+        /**
+         * Message put into the user's text input, ready to send. Replaces Meta's default ("Hi! I want more info."). Lets one ad steer the opening message toward what it promotes (e.g. a specific product).
+         */
+        prefillText: string;
+    };
+    /**
      * Multi-creative shape: N CTWA ads under one campaign + one
      * ad set, sharing budget and targeting. Mutually exclusive
      * with the top-level single-creative fields (`headline` /
@@ -2175,6 +2191,19 @@ export type CtwaAdRequestBody = {
              *
              */
             thumbnailUrl?: string;
+        };
+        /**
+         * Custom chat welcome message for this entry. See the top-level `welcomeMessage` for the single-creative shape.
+         */
+        welcomeMessage?: {
+            /**
+             * Greeting shown when the chat opens. Replaces Meta's default.
+             */
+            text: string;
+            /**
+             * Message put into the user's text input, ready to send. Replaces Meta's default.
+             */
+            prefillText: string;
         };
     }>;
     /**
