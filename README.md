@@ -440,6 +440,7 @@ try {
 | `adCreatives.listAdVideos()` | Ad video library |
 | `adCreatives.createAdCreative()` | Create a standalone creative |
 | `adCreatives.getAdCreative()` | Creative details |
+| `adCreatives.getAdMedia()` | Direct video and image URLs for an ad |
 | `adCreatives.getAdPreviews()` | Render previews of an existing ad |
 | `adCreatives.updateAdCreative()` | Rename a creative |
 | `adCreatives.deleteAdCreative()` | Delete a creative |

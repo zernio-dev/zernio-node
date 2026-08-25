@@ -170,6 +170,7 @@ import {
   getAdComments,
   getAdCreative,
   getAdInsightsReport,
+  getAdMedia,
   getAdPreviews,
   getAdSetDetails,
   getAdTrackingTags,
@@ -1538,6 +1539,7 @@ export class Zernio {
   adcreatives = {
     generateAdPreviews: this._bind(generateAdPreviews),
     getAdPreviews: this._bind(getAdPreviews),
+    getAdMedia: this._bind(getAdMedia),
     listAdCreatives: this._bind(listAdCreatives),
     createAdCreative: this._bind(createAdCreative),
     getAdCreative: this._bind(getAdCreative),
@@ -1787,6 +1789,8 @@ export class Zernio {
     generateAdPreviews: this._bind(generateAdPreviews),
     /** @deprecated Use `zernio.adcreatives.getAdPreviews` instead. */
     getAdPreviews: this._bind(getAdPreviews),
+    /** @deprecated Use `zernio.adcreatives.getAdMedia` instead. */
+    getAdMedia: this._bind(getAdMedia),
     /** @deprecated Use `zernio.adcreatives.listAdCreatives` instead. */
     listAdCreatives: this._bind(listAdCreatives),
     /** @deprecated Use `zernio.adcreatives.createAdCreative` instead. */

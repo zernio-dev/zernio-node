@@ -29547,6 +29547,50 @@ export type GetAdPreviewsError = (unknown | {
     error?: string;
 });
 
+export type GetAdMediaData = {
+    path: {
+        /**
+         * Zernio ad id (24-char hex) or platform ad id.
+         */
+        adId: string;
+    };
+};
+
+export type GetAdMediaResponse = ({
+    adId?: string;
+    /**
+     * 'facebook' or 'instagram' — only Meta is supported for now.
+     */
+    platform?: string;
+    media?: Array<{
+        type?: 'image' | 'video';
+        /**
+         * Direct file URL (signed; short-lived — see description).
+         */
+        url?: string;
+        /**
+         * Video poster URL (videos only).
+         */
+        thumbnailUrl?: string;
+        /**
+         * Meta video id (videos only), reusable as video.id on the create endpoints.
+         */
+        videoId?: string;
+        /**
+         * Video length in seconds (videos only).
+         */
+        length?: number;
+        /**
+         * 0-based position for carousel children or asset_feed_spec entries.
+         */
+        index?: number;
+    }>;
+});
+
+export type GetAdMediaError = (unknown | {
+    error?: string;
+});
+
 export type GenerateKeywordIdeasData = {
     body: {
         /**
