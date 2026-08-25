@@ -7351,7 +7351,8 @@ export type WebhookPayloadMessage = {
         /**
          * WhatsApp only. Which kind of interactive reply the user sent:
          * `button_reply` (tap on an interactive button), `list_reply` (tap on a
-         * list row), or `nfm_reply` (a WhatsApp Flow submission).
+         * list row), or `nfm_reply` (a WhatsApp Flow submission or an
+         * `address_message` submission, see `nfmReplyName`).
          *
          */
         interactiveType?: 'button_reply' | 'list_reply' | 'nfm_reply';
@@ -7378,12 +7379,23 @@ export type WebhookPayloadMessage = {
         /**
          * WhatsApp only. Parsed Flow response JSON. Populated when
          * `flowResponseJson` is valid JSON; otherwise omitted. Keys and
-         * value types depend on the specific Flow that was submitted.
+         * value types depend on the specific Flow that was submitted. An
+         * `address_message` submission (`nfmReplyName: address_message`) carries
+         * the address fields (`name`, `address`, `city`, `state`, `in_pin_code`,
+         * ...), either at the top level or nested under `values`; read both.
          *
          */
         flowResponseData?: {
             [key: string]: unknown;
         };
+        /**
+         * WhatsApp only. `nfm_reply.name` as Meta sent it, e.g. `flow` or
+         * `address_message`. Address submissions share the `nfm_reply`
+         * envelope with Flow submissions and are otherwise indistinguishable
+         * in `flowResponseData`; use this field to tell them apart.
+         *
+         */
+        nfmReplyName?: string;
         /**
          * WhatsApp only. Cart submitted by the user from a commerce message
          * (catalog, product, or product-list message). Meta's `order` object
@@ -7609,7 +7621,8 @@ export type event13 = 'message.received';
 /**
  * WhatsApp only. Which kind of interactive reply the user sent:
  * `button_reply` (tap on an interactive button), `list_reply` (tap on a
- * list row), or `nfm_reply` (a WhatsApp Flow submission).
+ * list row), or `nfm_reply` (a WhatsApp Flow submission or an
+ * `address_message` submission, see `nfmReplyName`).
  *
  */
 export type interactiveType = 'button_reply' | 'list_reply' | 'nfm_reply';
@@ -18345,8 +18358,7 @@ export type SendInboxMessageData = {
          * commerce messages (single product, product list, catalog, and
          * carousel). When set, takes priority over `buttons` and
          * `quickReplies`. The shape mirrors Meta's Cloud API `interactive`
-         * object verbatim, so any payload that works against Meta directly
-         * will also work here.
+         * object for the types in the enum below.
          *
          * Use `buttons` / `quickReplies` for simple button replies
          * (WhatsApp's `interactive.type: "button"`): the abstraction caps at
@@ -18392,6 +18404,18 @@ export type SendInboxMessageData = {
          * For `catalog_message`, `action` may also be omitted (we default it
          * to `{ "name": "catalog_message" }`).
          *
+         * For `address_message`, `parameters.country` is required (Meta
+         * rejects the whole send without it); everything else in
+         * `parameters` (`values`, `saved_addresses`, `validation_errors`)
+         * is forwarded to Meta as-is. This is Meta's native structured
+         * shipping-address capture, generally available in India as of
+         * 2026-08; check Meta's documentation for current country
+         * availability before relying on it elsewhere. The submitted
+         * address arrives as an `nfm_reply` on the `message.received`
+         * webhook, same as a Flow submission, but with
+         * `metadata.nfmReplyName` set to `address_message` so you can
+         * tell the two apart.
+         *
          * Tap events come back via the `message.received` webhook with
          * `metadata.interactiveType` set to `list_reply` or `nfm_reply`.
          * Carts submitted from commerce messages arrive as `metadata.order`;
@@ -18402,7 +18426,7 @@ export type SendInboxMessageData = {
             /**
              * Which interactive layout to render.
              */
-            type: 'list' | 'cta_url' | 'flow' | 'location_request_message' | 'request_contact_info' | 'voice_call' | 'product' | 'product_list' | 'catalog_message' | 'carousel';
+            type: 'list' | 'cta_url' | 'flow' | 'location_request_message' | 'request_contact_info' | 'voice_call' | 'product' | 'product_list' | 'catalog_message' | 'carousel' | 'address_message';
             /**
              * Optional header shown above the body. Required with
              * `type: "text"` for `product_list`; not allowed for `product`
@@ -18613,6 +18637,32 @@ export type SendInboxMessageData = {
         };
         [key: string]: unknown | number | string;
     }>;
+} | {
+    name: 'address_message';
+    parameters: {
+        /**
+         * ISO 3166-1 alpha-2 country code Meta should localize the address form for (e.g. IN). Required: Meta rejects the send without it.
+         */
+        country: string;
+        /**
+         * Optional pre-filled address field values.
+         */
+        values?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Optional list of the recipient's previously saved addresses to offer as quick picks.
+         */
+        saved_addresses?: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Optional per-field error messages to show when re-prompting after a failed validation.
+         */
+        validation_errors?: {
+            [key: string]: (string);
+        };
+    };
 });
         };
         /**
