@@ -17697,6 +17697,13 @@ export type ListInboxConversationsResponse = ({
             retryAfter?: (number) | null;
         }>;
         lastUpdated?: string;
+        /**
+         * Connected accounts that were not queried: their platform does not support this feature, or the account is not enabled for it
+         */
+        accountsSkipped?: Array<{
+            accountId?: string;
+            platform?: string;
+        }>;
     };
 });
 
@@ -19402,6 +19409,13 @@ export type ListInboxCommentsResponse = ({
             retryAfter?: (number) | null;
         }>;
         lastUpdated?: string;
+        /**
+         * Connected accounts that were not queried: their platform does not support this feature, or the account is not enabled for it
+         */
+        accountsSkipped?: Array<{
+            accountId?: string;
+            platform?: string;
+        }>;
     };
 });
 
@@ -20488,6 +20502,13 @@ export type ListInboxReviewsResponse = ({
             retryAfter?: (number) | null;
         }>;
         lastUpdated?: string;
+        /**
+         * Connected accounts that were not queried: their platform does not support this feature, or the account is not enabled for it
+         */
+        accountsSkipped?: Array<{
+            accountId?: string;
+            platform?: string;
+        }>;
     };
     summary?: {
         totalReviews?: number;
