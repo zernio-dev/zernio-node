@@ -8603,9 +8603,13 @@ export const uploadAdVideo = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * Ad video library
  * Lists the ad account's video library (Meta's `/act_X/advideos`), rows returned verbatim.
- * The default projection covers id, title, status, poster frames and length; `fields` is a
- * raw-passthrough override. Any `id` here is reusable as `video.id` on the create
- * endpoints, so N ads that differ only in copy share one upload.
+ * The default projection covers id, title, status, poster frames, length and `source` (the
+ * playable MP4); `fields` is a raw-passthrough override. Any `id` here is reusable as
+ * `video.id` on the create endpoints, so N ads that differ only in copy share one upload.
+ *
+ * `source` lets you PLAY a video before picking it, which a poster frame alone can't settle
+ * when several videos share a first frame. It is a signed CDN URL that EXPIRES, so treat it
+ * as good for preview at selection time only — never persist it, re-list to get a fresh one.
  *
  * This is the only way to reach a video uploaded OUTSIDE Zernio (Ads Manager, another
  * tool); videos we uploaded also come back as `creative.videoId` on GET /v1/ads.
