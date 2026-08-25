@@ -32503,6 +32503,34 @@ export type CreateStandaloneAdData = {
          */
         additionalDescriptions?: Array<(string)>;
         /**
+         * Google Search only. Sitelink assets to create and attach at the campaign level.
+         * Each entry becomes an Asset (with sitelink_asset + Asset.final_urls) plus a
+         * CampaignAsset link (field_type SITELINK). Approval is async — Google reviews
+         * assets after creation; poll asset.policy_summary later to read the verdict.
+         * Google requires at least two sitelinks to surface them on an ad; four or more
+         * is Google's own recommendation for maximum visibility. The response's
+         * creative.sitelinks[] echoes each input plus its Google resourceName.
+         *
+         */
+        sitelinks?: Array<{
+            /**
+             * The clickable link text shown under the ad. 25-char cap comes from Google.
+             */
+            text: string;
+            /**
+             * Final URL the sitelink navigates to.
+             */
+            linkUrl: string;
+            /**
+             * First description line under the link text (optional). 35-char cap.
+             */
+            description1?: string;
+            /**
+             * Second description line (optional; usually paired with description1).
+             */
+            description2?: string;
+        }>;
+        /**
          * Meta only. Controls the Advantage audience feature (targeting_automation). 0 = disabled (default), 1 = enabled. Meta Marketing API requires this field on all ad set creation requests.
          */
         advantageAudience?: 0 | 1;
