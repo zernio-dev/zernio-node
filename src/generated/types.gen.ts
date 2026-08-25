@@ -29274,7 +29274,7 @@ export type GetAdTreeData = {
          */
         accountId?: string;
         /**
-         * Platform ad account ID
+         * One or more platform ad account IDs to scope the tree to (agency profiles connect a whole Business Manager but a workspace usually cares about a subset). Comma-separate for multiple (`?adAccountId=act_1,act_2,act_3`); single value keeps its old shape. Max 50 accounts per request; the plural aliases `adAccountIds` and `platformAdAccountIds` are rejected with a 400 to stop them from silently returning the unfiltered fleet.
          */
         adAccountId?: string;
         /**
