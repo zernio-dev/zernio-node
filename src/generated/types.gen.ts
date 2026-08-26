@@ -3908,7 +3908,7 @@ export type metric = 'follower_demographics' | 'engaged_audience_demographics';
 export type timeframe = 'this_week' | 'this_month';
 
 /**
- * Feed aspect ratio 0.8-1.91, carousels up to 10 items, stories require media (no captions). User tag coordinates 0.0-1.0 from top-left. Images over 8 MB and videos over platform limits are auto-compressed.
+ * Feed aspect ratio 0.5625-1.91, carousels up to 10 items, stories require media (no captions). User tag coordinates 0.0-1.0 from top-left. Images over 8 MB and videos over platform limits are auto-compressed.
  */
 export type InstagramPlatformData = {
     /**
