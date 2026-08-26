@@ -22531,6 +22531,10 @@ export type GetWhatsAppLibraryTemplateData = {
          */
         accountId: string;
         /**
+         * Desired language variant (e.g. es, en_US). If the template is not offered in it, the first available variant is returned and named in the response language field.
+         */
+        language?: string;
+        /**
          * Exact library template name
          */
         name: string;
@@ -22544,6 +22548,7 @@ export type GetWhatsAppLibraryTemplateResponse = ({
         category?: string;
         body?: string;
         body_params?: Array<(string)>;
+        availableLanguages?: Array<(string)>;
         buttons?: Array<{
             /**
              * QUICK_REPLY, URL, PHONE_NUMBER, OTP, FLOW, ...
