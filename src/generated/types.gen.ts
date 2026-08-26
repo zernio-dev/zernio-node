@@ -4524,6 +4524,10 @@ export type PinterestPlatformData = {
      */
     boardId?: string;
     /**
+     * Target section inside the board. Optional; the pin lands on the board itself when omitted. Pinterest rejects the pin if the section does not belong to boardId, so send both together.
+     */
+    boardSectionId?: string;
+    /**
      * Destination link (pin URL)
      */
     link?: string;
@@ -4535,6 +4539,10 @@ export type PinterestPlatformData = {
      * Optional key frame time in seconds for derived video cover
      */
     coverImageKeyFrameTime?: number;
+    /**
+     * When true, the Pin is created with Pinterest's AI_MODIFIED disclosure (ai_disclosures), which shows an "AI modified" label. Applies to image and video Pins. Pinterest offers no "not AI" value, so false simply omits the disclosure. Pinterest may still label a Pin on its own detection.
+     */
+    isAiGenerated?: boolean;
 };
 
 export type PlatformAnalytics = {
