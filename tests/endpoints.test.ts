@@ -90,6 +90,11 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.batchGetGoogleBusinessReviews).toBeTypeOf('function');
     });
 
+    it('should have getGoogleBusinessReview method', () => {
+      expect(client.accounts.getGoogleBusinessReview).toBeDefined();
+      expect(client.accounts.getGoogleBusinessReview).toBeTypeOf('function');
+    });
+
     it('should have replyToGoogleBusinessReview method', () => {
       expect(client.accounts.replyToGoogleBusinessReview).toBeDefined();
       expect(client.accounts.replyToGoogleBusinessReview).toBeTypeOf('function');

@@ -3449,6 +3449,61 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 export type type6 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
+ * A Google Business Profile review, as returned by every gmb-reviews read endpoint.
+ */
+export type GoogleBusinessReview = {
+    /**
+     * Review ID
+     */
+    id?: string;
+    /**
+     * Full resource name
+     */
+    name?: string;
+    reviewer?: {
+        displayName?: string;
+        profilePhotoUrl?: (string) | null;
+        isAnonymous?: boolean;
+    };
+    /**
+     * Numeric star rating (0 when Google sends no rating)
+     */
+    rating?: number;
+    /**
+     * Google's string rating
+     */
+    starRating?: 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
+    /**
+     * Review text
+     */
+    comment?: string;
+    createTime?: string;
+    updateTime?: string;
+    reviewReply?: {
+        /**
+         * Business owner reply
+         */
+        comment?: string;
+        updateTime?: string;
+    } | null;
+    /**
+     * Number of photos attached to the review (photos only, videos are not counted)
+     */
+    photoCount?: number;
+    /**
+     * Photos attached to the review by the reviewer
+     */
+    photos?: Array<{
+        url?: string;
+    }>;
+};
+
+/**
+ * Google's string rating
+ */
+export type starRating = 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
+
+/**
  * Attachment snapshot inside an edit-history entry.
  */
 export type InboxMessageEditAttachment = {
@@ -7657,8 +7712,10 @@ export type contactsOrigin = 'contact_request' | 'other';
 /**
  * Webhook payload for message.deleted events. Fires when the sender
  * deletes (unsends) a message. Supported platforms: Instagram (incoming
- * unsend) and WhatsApp (when the business deletes an outgoing message
- * via the Cloud API).
+ * unsend) and WhatsApp, in both directions: an outgoing message the
+ * business deleted (via the Cloud API, or from the WhatsApp Business app
+ * on a Coexistence number) and an incoming message the customer deleted.
+ * Read `message.direction` to tell the two apart.
  *
  * The message.text and message.attachments fields retain the content
  * that existed before the delete. The Zernio dashboard UI does not show
@@ -13205,52 +13262,7 @@ export type GetGoogleBusinessReviewsResponse = ({
     success?: boolean;
     accountId?: string;
     locationId?: string;
-    reviews?: Array<{
-        /**
-         * Review ID
-         */
-        id?: string;
-        /**
-         * Full resource name
-         */
-        name?: string;
-        reviewer?: {
-            displayName?: string;
-            profilePhotoUrl?: (string) | null;
-            isAnonymous?: boolean;
-        };
-        /**
-         * Numeric star rating
-         */
-        rating?: number;
-        /**
-         * Google's string rating
-         */
-        starRating?: 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
-        /**
-         * Review text
-         */
-        comment?: string;
-        createTime?: string;
-        updateTime?: string;
-        reviewReply?: {
-            /**
-             * Business owner reply
-             */
-            comment?: string;
-            updateTime?: string;
-        } | null;
-        /**
-         * Number of photos attached to the review (photos only, videos are not counted)
-         */
-        photoCount?: number;
-        /**
-         * Photos attached to the review by the reviewer
-         */
-        photos?: Array<{
-            url?: string;
-        }>;
-    }>;
+    reviews?: Array<GoogleBusinessReview>;
     /**
      * Overall average rating
      */
@@ -14341,6 +14353,34 @@ export type BatchGetGoogleBusinessReviewsResponse = ({
 });
 
 export type BatchGetGoogleBusinessReviewsError = (ErrorResponse);
+
+export type GetGoogleBusinessReviewData = {
+    path: {
+        /**
+         * The Zernio account ID (from /v1/accounts)
+         */
+        accountId: string;
+        /**
+         * The review ID portion (e.g. "AIe9_BGx1234567890"), not the full resource name
+         */
+        reviewId: string;
+    };
+    query?: {
+        /**
+         * Override which location to read the review from. If omitted, uses the account's selected location. Use GET /gmb-locations to list valid IDs.
+         */
+        locationId?: string;
+    };
+};
+
+export type GetGoogleBusinessReviewResponse = ({
+    success?: boolean;
+    accountId?: string;
+    locationId?: string;
+    review?: GoogleBusinessReview;
+});
+
+export type GetGoogleBusinessReviewError = (ErrorResponse);
 
 export type ReplyToGoogleBusinessReviewData = {
     body: {

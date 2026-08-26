@@ -188,6 +188,7 @@ try {
 | `accounts.getAccountHealth()` | Check account health |
 | `accounts.getBlueskySettings()` | Get Bluesky account settings |
 | `accounts.getFollowerStats()` | Get follower stats |
+| `accounts.getGoogleBusinessReview()` | Get a review |
 | `accounts.getGoogleBusinessReviews()` | Get reviews |
 | `accounts.getInstagramFollowStatus()` | Check whether an Instagram user follows the account |
 | `accounts.getLinkedInMentions()` | Resolve LinkedIn mention |
