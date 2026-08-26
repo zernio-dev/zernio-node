@@ -3924,6 +3924,10 @@ export type InstagramPlatformData = {
         videoVolume?: number;
     };
     /**
+     * Publish the video without sound. Applies to Reels, Stories, and video carousel slides; ignored for images. Instagram has no mute parameter, so we strip the audio track from the file before handing it to Instagram: the published video is permanently silent and the original audio cannot be restored from Instagram. If the audio cannot be stripped the post fails rather than publishing with sound; videos above 200MB cannot be muted at all, so mute them before uploading. Unrelated to audioConfiguration.videoVolume, which only lowers the original sound when a catalog track is attached.
+     */
+    muteAudio?: boolean;
+    /**
      * Millisecond offset from video start for the Reel cover frame. Ignored when instagramThumbnail or reelCover is provided. Defaults to 0.
      */
     thumbOffset?: number;
