@@ -19387,7 +19387,7 @@ export type AddMessageReactionData = {
          */
         conversationId: string;
         /**
-         * The platform message ID to react to
+         * The platform message ID (as returned by GET /messages) or the Zernio message ID (as returned by the reaction webhook)
          */
         messageId: string;
     };
@@ -19395,6 +19395,14 @@ export type AddMessageReactionData = {
 
 export type AddMessageReactionResponse = ({
     success?: boolean;
+    /**
+     * The Zernio message ID the reaction was resolved against
+     */
+    messageId?: string;
+    /**
+     * The platform message ID the reaction was sent for
+     */
+    platformMessageId?: string;
 });
 
 export type AddMessageReactionError = (unknown | {
@@ -19408,7 +19416,7 @@ export type RemoveMessageReactionData = {
          */
         conversationId: string;
         /**
-         * The platform message ID
+         * The platform message ID (as returned by GET /messages) or the Zernio message ID (as returned by the reaction webhook)
          */
         messageId: string;
     };
@@ -19422,6 +19430,14 @@ export type RemoveMessageReactionData = {
 
 export type RemoveMessageReactionResponse = ({
     success?: boolean;
+    /**
+     * The Zernio message ID the removal was resolved against
+     */
+    messageId?: string;
+    /**
+     * The platform message ID the removal was sent for
+     */
+    platformMessageId?: string;
 });
 
 export type RemoveMessageReactionError = (unknown | {
@@ -33132,9 +33148,17 @@ export type CreateLeadFormData = {
     thankYouButtonType?: string;
     thankYouWebsiteUrl?: string;
     /**
+     * Adds a 'Continue in Messenger' option to the thank-you page (Meta thank_you_page.enable_messenger), so the lead can carry on chatting with the Page. Set thankYouButtonType to MESSAGE_BUSINESS or P2B_MESSENGER to make the chat the primary button.
+     */
+    thankYouEnableMessenger?: boolean;
+    /**
      * Set true for a higher-intent form (adds a review step before submit).
      */
     isOptimizedForQuality?: boolean;
+    /**
+     * Requires the lead to verify their phone number over SMS before the form submits (Meta is_phone_sms_verify_enabled). Only meaningful on a form with a PHONE question. Meta can restrict this parameter to apps holding a capability: when it does, the create fails with a 422 naming platformSpecificData.isPhoneSmsVerifyEnabled, and the toggle then has to be set in Meta's form builder.
+     */
+    isPhoneSmsVerifyEnabled?: boolean;
     blockDisplayForNonTargetedViewer?: boolean;
     questionPageCustomHeadline?: string;
     contextCard?: {
