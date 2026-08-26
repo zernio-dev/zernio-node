@@ -7398,8 +7398,8 @@ export type WebhookPayloadMessage = {
         /**
          * platformMessageId of the message this one is a quote-reply to.
          * WhatsApp (`context.id`), Instagram and Facebook Messenger
-         * (`reply_to.mid`). On `message.sent` echoes (operator replied
-         * from the native app) this is the only metadata field populated.
+         * (`reply_to.mid`). Outgoing quote-replies carry the same field on
+         * `message.sent`; see WebhookPayloadMessageSent.metadata.
          *
          */
         quotedMessageId?: string;
@@ -7839,7 +7839,10 @@ export type WebhookPayloadMessageSent = {
          * Internal conversation ID
          */
         conversationId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
+        /**
+         * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
+         */
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack';
         /**
          * Platform's message ID
          */
@@ -7894,6 +7897,28 @@ export type WebhookPayloadMessageSent = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
+     * Platform-specific context for the sent message. The key is present only when the send carried some context, and absent otherwise: it is never null and never an empty object.
+     */
+    metadata?: {
+        /**
+         * platformMessageId of the message this send is a quote-reply to.
+         * Set when the reply was sent through Zernio with `replyTo` on the
+         * inbox send API (WhatsApp and Telegram), and when the operator
+         * replied from the native WhatsApp Business, Instagram or Messenger
+         * app. WhatsApp API sends carry it on the event fired from the
+         * delivery status, so it arrives on the same `message.sent` as any
+         * other WhatsApp send.
+         *
+         */
+        quotedMessageId?: string;
+        /**
+         * Slack only. Parent thread ts of the sent message. Pass it back as
+         * `replyTo` on the inbox send API to keep replying inside the thread.
+         *
+         */
+        threadTs?: string;
+    };
+    /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
      */
     timestamp: string;
@@ -7901,7 +7926,10 @@ export type WebhookPayloadMessageSent = {
 
 export type event17 = 'message.sent';
 
-export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp';
+/**
+ * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
+ */
+export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack';
 
 /**
  * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. This is not the inbox metadata.source lineage field.
@@ -11578,6 +11606,10 @@ export type ListUsersResponse = ({
         isRoot?: boolean;
         profileAccess?: Array<(string)>;
         createdAt?: string;
+        /**
+         * Last sign-in, stamped at most once an hour, so it is accurate to within an hour rather than to the exact session. Omitted for members with no recorded sign-in since the field shipped, which does not mean they never signed in.
+         */
+        lastLoginAt?: string;
     }>;
 });
 
