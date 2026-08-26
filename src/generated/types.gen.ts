@@ -4781,6 +4781,14 @@ export type PostAnalytics = {
      */
     igReelsVideoViewTotalTime?: number;
     /**
+     * Instagram Reels only: the rate of initial views that skipped the reel within its first 3 seconds, as reported by Meta. Passed through exactly as Meta reports it, with no rescaling, so do not assume a 0-1 share. Meta labels the metric estimated and in development, so it can move between syncs. 0 for non-Reels media and other platforms. When a post is published to several accounts, the aggregate is weighted by views.
+     */
+    reelsSkipRate?: number;
+    /**
+     * Instagram only: reposts of the media by other users, minus deleted reposts. Available on feed posts, reels and stories. 0 for other platforms, including Threads, where reposts are counted in shares instead.
+     */
+    reposts?: number;
+    /**
      * Video length in seconds. Currently Instagram Reels only; combine with igReelsAvgWatchTime (ms) to estimate retention. Null when unknown (other platforms, non-video media, or when Instagram does not expose the media URL, e.g. reels with copyrighted audio).
      */
     videoDurationSeconds?: (number) | null;
@@ -7394,6 +7402,14 @@ export type WebhookPayloadMessage = {
          */
         sentAt: string;
         isRead: boolean;
+        /**
+         * Which Zernio surface produced the message. Always present and
+         * always `null` on this event, since nobody on our side produced an
+         * inbound message; it is only informative on `message.sent`, which
+         * documents the vocabulary.
+         *
+         */
+        sentVia?: ('human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api') | null;
     };
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
@@ -7696,6 +7712,15 @@ export type WebhookPayloadMessage = {
 export type event13 = 'message.received';
 
 /**
+ * Which Zernio surface produced the message. Always present and
+ * always `null` on this event, since nobody on our side produced an
+ * inbound message; it is only informative on `message.sent`, which
+ * documents the vocabulary.
+ *
+ */
+export type sentVia = 'human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api';
+
+/**
  * WhatsApp only. Which kind of interactive reply the user sent:
  * `button_reply` (tap on an interactive button), `list_reply` (tap on a
  * list row), or `nfm_reply` (a WhatsApp Flow submission or an
@@ -7896,9 +7921,25 @@ export type WebhookPayloadMessageSent = {
         sentAt: string;
         isRead: boolean;
         /**
-         * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. This is not the inbox metadata.source lineage field.
+         * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
          */
         source?: 'whatsapp_business_app' | 'cloud_api';
+        /**
+         * Which Zernio surface produced this message: `human` (an operator
+         * in the Zernio inbox), `api` (a call to this API), `broadcast`,
+         * `sequence`, `workflow`, `comment_automation`, or `bulk-api`
+         * (POST /v1/whatsapp/bulk). Same vocabulary as the `source` filter
+         * on the inbox analytics endpoints, and the same value a later
+         * GET on this message returns.
+         *
+         * Always present, and `null` whenever the lineage is unknown: a
+         * message sent from the platform's own app, and every message
+         * stored before this field shipped (2026-08). Existing messages
+         * are NOT backfilled, so treat `null` as "unknown", never as
+         * "sent by a human".
+         *
+         */
+        sentVia?: ('human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api') | null;
     };
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
@@ -7938,7 +7979,7 @@ export type event17 = 'message.sent';
 export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack';
 
 /**
- * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. This is not the inbox metadata.source lineage field.
+ * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts). Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
  */
 export type source3 = 'whatsapp_business_app' | 'cloud_api';
 
@@ -9502,9 +9543,9 @@ export type GetAnalyticsData = {
          */
         profileId?: string;
         /**
-         * Sort by date, engagement, or a specific metric
+         * Sort by date, engagement, or a specific metric. Instagram-only metrics (follows, reposts, reels_skip_rate, ig_reels_*) sort posts with no value as 0.
          */
-        sortBy?: 'date' | 'engagement' | 'impressions' | 'reach' | 'likes' | 'comments' | 'shares' | 'saves' | 'clicks' | 'views' | 'follows';
+        sortBy?: 'date' | 'engagement' | 'impressions' | 'reach' | 'likes' | 'comments' | 'shares' | 'saves' | 'clicks' | 'views' | 'follows' | 'ig_reels_avg_watch_time' | 'ig_reels_video_view_total_time' | 'reposts' | 'reels_skip_rate';
         /**
          * Filter by post source: late (posted via Zernio API), external (synced from platform), all (default)
          */
@@ -18135,9 +18176,26 @@ export type CreateInboxConversationData = {
          */
         templateLanguage?: string;
         /**
-         * WhatsApp only. Template variable values as one flat array, in the order the variables appear across the whole template: text-header variables first, then body variables, then one value per dynamic URL button (in button order). Works with positional placeholders ({{1}}, {{2}}, ...) and with named placeholders ({{name}}, {{company}} - how Meta Business Manager creates templates), where values fill the named slots in order of appearance. Example - a body with {{1}}, {{2}} plus a URL button https://example.com/{{1}} takes three values: [body1, body2, buttonSuffix]. Media headers (image, video, document) are filled automatically from the approved template and take no value here (use headerMedia to override the header asset per send).
+         * WhatsApp only. Template variable values as one flat array, in the order the variables appear across the whole template: text-header variables first, then body variables, then one value per dynamic URL button (in button order). Works with positional placeholders ({{1}}, {{2}}, ...) and with named placeholders ({{name}}, {{company}} - how Meta Business Manager creates templates), where values fill the named slots in order of appearance. Example - a body with {{1}}, {{2}} plus a URL button https://example.com/{{1}} takes three values: [body1, body2, buttonSuffix]. Media headers (image, video, document) are filled automatically from the approved template and take no value here (use headerMedia to override the header asset per send). Buttons that are not dynamic-URL buttons (copy-code, flow) take no value here either; use templateButtonParams.
          */
         templateParams?: Array<(string)>;
+        /**
+         * WhatsApp only. Values for template buttons that carry one at send time, each addressed by the button's position in the approved template. This is the only way to send a copy-code button's payload (a Pix payment code, a coupon) or a flow token, because templateParams is a flat array of text variables and covers dynamic URL buttons only. Supplying a button here overrides whatever templateParams would have derived for that same index, so the send never carries one button twice; repeating an index within this array is rejected with 400. Each index must name a button of the matching kind on the approved template, which is also checked before the send and returns 400 (INVALID_TEMPLATE_BUTTON_PARAM) rather than a Meta rejection.
+         */
+        templateButtonParams?: Array<{
+            /**
+             * Zero-based position of the button in the approved template's buttons.
+             */
+            index: number;
+            /**
+             * The button kind, which decides how the value is sent: copy_code sends it as the coupon_code payload, flow as the flow token, url as the dynamic suffix appended to the button's base URL.
+             */
+            subType: 'url' | 'copy_code' | 'flow';
+            /**
+             * The value to send (e.g. the Pix copy-and-paste code for a copy_code button).
+             */
+            value: string;
+        }>;
         /**
          * WhatsApp only. Overrides a media-header template's header asset for THIS send, so a template with an image/video/document header can carry a different asset per message (e.g. each recipient their own invoice PDF). Without it, the template's approved sample asset is sent. Provide exactly one of link or id.
          */
@@ -18616,11 +18674,30 @@ export type GetInboxConversationMessagesResponse = ({
          * `waInteractive` (a compact descriptor of WhatsApp interactive
          * content sent: buttons / list / cta_url / flow / location_request),
          * and for inbound interactive taps `interactiveType` / `interactiveId`.
+         * It can also carry `source` (`whatsapp_business_app` /
+         * `coexistence_history` on a WhatsApp Coexistence number, `bulk-api` on
+         * a POST /v1/whatsapp/bulk send), which is where the message reached us
+         * from rather than who produced it: read `sentVia` for that.
          *
          */
         metadata?: {
             [key: string]: unknown;
         };
+        /**
+         * Which Zernio surface produced this outgoing message: `human` (an
+         * operator in the Zernio inbox), `api` (a call to this API),
+         * `broadcast`, `sequence`, `workflow`, `comment_automation`, or
+         * `bulk-api` (POST /v1/whatsapp/bulk). Same vocabulary as the `source`
+         * filter on the inbox analytics endpoints.
+         *
+         * Always present, and `null` whenever the lineage is unknown: every
+         * incoming message, any outgoing message sent from the platform's own
+         * app, and every message stored before this field shipped
+         * (2026-08). Existing messages are NOT backfilled, so treat `null`
+         * as "unknown", never as "sent by a human".
+         *
+         */
+        sentVia?: ('human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api') | null;
     }>;
     lastUpdated?: string;
 });
