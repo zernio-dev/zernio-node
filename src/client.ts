@@ -15,6 +15,7 @@ import {
   approveWhatsAppGroupJoinRequests,
   archiveLeadForm,
   assignGoogleBusinessLocation,
+  attachCampaignAssets,
   attachNumberToSipTrunk,
   batchGetGoogleBusinessReviews,
   blockWhatsAppUsers,
@@ -1521,6 +1522,7 @@ export class Zernio {
     updateAd: this._bind(updateAd),
     deleteAd: this._bind(deleteAd),
     updateAdStatus: this._bind(updateAdStatus),
+    attachCampaignAssets: this._bind(attachCampaignAssets),
     boostPost: this._bind(boostPost),
     createStandaloneAd: this._bind(createStandaloneAd),
   };
@@ -1749,6 +1751,8 @@ export class Zernio {
     deleteAd: this._bind(deleteAd),
     /** @deprecated Use `zernio.adcampaigns.updateAdStatus` instead. */
     updateAdStatus: this._bind(updateAdStatus),
+    /** @deprecated Use `zernio.adcampaigns.attachCampaignAssets` instead. */
+    attachCampaignAssets: this._bind(attachCampaignAssets),
     /** @deprecated Use `zernio.adcampaigns.boostPost` instead. */
     boostPost: this._bind(boostPost),
     /** @deprecated Use `zernio.adcampaigns.createStandaloneAd` instead. */

@@ -483,7 +483,7 @@ export type AdCampaign = {
     /**
      * A single string when every ad set shares one optimization goal; a JSON array of the distinct goals when ad sets differ (never a comma-joined string); array element order is not guaranteed, treat it as an unordered set; the key is absent when no ad set carries a goal. Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION. LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE); `NONE` with a manual costType is a campaign LinkedIn will not deliver.
      */
-    optimizationGoal?: Array<(string)>;
+    optimizationGoal?: (string | Array<(string)>);
     /**
      * Campaign-level bid strategy. Ad sets inherit this unless they override.
      */
@@ -1019,7 +1019,7 @@ export type AdTreeCampaign = {
     /**
      * A single string when every ad set shares one optimization goal; a JSON array of the distinct goals when ad sets differ (never a comma-joined string); array element order is not guaranteed, treat it as an unordered set; the key is absent when no ad set carries a goal. Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION. LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE); `NONE` with a manual costType is a campaign LinkedIn will not deliver.
      */
-    optimizationGoal?: Array<(string)>;
+    optimizationGoal?: (string | Array<(string)>);
     /**
      * Campaign-level bid strategy. Ad sets inherit this unless they override.
      */
@@ -5495,7 +5495,13 @@ export type TargetingSpec = {
             address?: string;
         }>;
     };
+    /**
+     * Minimum age. Applied on Meta, TikTok and Pinterest; ignored on Google, LinkedIn and X. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
+     */
     ageMin?: number;
+    /**
+     * Maximum age. Same per-platform application and clamping as ageMin.
+     */
     ageMax?: number;
     /**
      * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
@@ -29957,6 +29963,46 @@ export type UpdateAdStatusError = (unknown | {
     error?: string;
 });
 
+export type AttachCampaignAssetsData = {
+    body: {
+        /**
+         * Zernio Google Ads SocialAccount id — resolves the customer id + refresh token.
+         */
+        accountId: string;
+        /**
+         * See POST /v1/ads/create sitelinks — same shape.
+         */
+        sitelinks?: Array<{
+            text: string;
+            linkUrl: string;
+            description1?: string;
+            description2?: string;
+        }>;
+        callouts?: Array<(string)>;
+        structuredSnippets?: Array<{
+            header: 'Amenities' | 'Brands' | 'Courses' | 'Degree programs' | 'Destinations' | 'Featured hotels' | 'Insurance coverage' | 'Models' | 'Neighborhoods' | 'Service catalog' | 'Shows' | 'Styles' | 'Types';
+            values: Array<(string)>;
+        }>;
+    };
+    path: {
+        /**
+         * Numeric Google platform campaign id.
+         */
+        campaignId: string;
+    };
+};
+
+export type AttachCampaignAssetsResponse = ({
+    campaignId?: string;
+    sitelinkAssetResourceNames?: Array<(string)>;
+    calloutAssetResourceNames?: Array<(string)>;
+    structuredSnippetAssetResourceNames?: Array<(string)>;
+});
+
+export type AttachCampaignAssetsError = (unknown | {
+    error?: string;
+});
+
 export type GetCampaignAnalyticsData = {
     path: {
         /**
@@ -32648,6 +32694,29 @@ export type CreateStandaloneAdData = {
              * Second description line (optional; usually paired with description1).
              */
             description2?: string;
+        }>;
+        /**
+         * Google Search only. Short callout texts (max 25 chars each) that appear as
+         * non-clickable annotations under the ad, e.g. "Free shipping", "24/7 support".
+         * Each becomes one Asset (`callout_asset`) plus a CampaignAsset link with
+         * field_type CALLOUT. Response's creative.callouts[] echoes each input plus
+         * its Google resourceName.
+         *
+         */
+        callouts?: Array<(string)>;
+        /**
+         * Google Search only. Structured snippets — one header from Google's
+         * predefined list plus 3-10 values (max 25 chars each). Each becomes one
+         * Asset (`structured_snippet_asset`) plus a CampaignAsset link with
+         * field_type STRUCTURED_SNIPPET.
+         *
+         */
+        structuredSnippets?: Array<{
+            /**
+             * One of Google's 13 predefined snippet headers.
+             */
+            header: 'Amenities' | 'Brands' | 'Courses' | 'Degree programs' | 'Destinations' | 'Featured hotels' | 'Insurance coverage' | 'Models' | 'Neighborhoods' | 'Service catalog' | 'Shows' | 'Styles' | 'Types';
+            values: Array<(string)>;
         }>;
         /**
          * Meta only. Controls the Advantage audience feature (targeting_automation). 0 = disabled (default), 1 = enabled. Meta Marketing API requires this field on all ad set creation requests.
