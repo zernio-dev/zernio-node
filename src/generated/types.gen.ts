@@ -12559,7 +12559,17 @@ export type ConnectAdsData = {
          */
         profileId: string;
         /**
-         * Custom redirect URL after OAuth completes (same-token platforms only). Accepts an http(s) URL, a custom app scheme for mobile deeplinks (e.g. myapp://callback), or a relative path.
+         * Custom URL the browser is sent to once the OAuth flow finishes. Honored on
+         * every ads platform, including the separate-token (`tiktok`, `twitter`) and
+         * standalone (`googleads`) flows. Accepts an http(s) URL, a custom app scheme
+         * for mobile deeplinks (e.g. myapp://callback), or a relative path. On success
+         * `tiktok`, `twitter` and `googleads` land on the URL unchanged, while the
+         * same-token platforms (`facebook`, `instagram`, `linkedin`, `pinterest`)
+         * append `connected`, `profileId`, `accountId`, `username` and, on API-key
+         * calls, `connect_token`. On failure every platform appends error details,
+         * starting with `error` and `platform`. When omitted, the browser lands on
+         * the Zernio dashboard.
+         *
          */
         redirect_url?: string;
     };
