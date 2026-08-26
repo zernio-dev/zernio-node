@@ -29259,7 +29259,7 @@ export type UpdateAdCampaignError = (unknown | {
 
 export type DeleteAdCampaignData = {
     body: {
-        platform: 'facebook' | 'instagram';
+        platform: 'facebook' | 'instagram' | 'google';
         /**
          * Zernio SocialAccount id owning the ad account. Required only to delete an EMPTY campaign (zero ads), which has no local Ad documents to resolve a token from.
          */
