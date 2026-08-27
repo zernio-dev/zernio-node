@@ -4473,6 +4473,11 @@ export type LinkedInPlatformData = {
 export type duration = 'ONE_DAY' | 'THREE_DAYS' | 'SEVEN_DAYS' | 'FOURTEEN_DAYS';
 
 /**
+ * MIME type of the file to upload. Rejected with a 400 (INVALID_FIELD_VALUE on contentType) when it is not one of these values, so generic types such as application/octet-stream are not accepted here.
+ */
+export type MediaContentType = 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp' | 'image/gif' | 'video/mp4' | 'video/mpeg' | 'video/quicktime' | 'video/avi' | 'video/x-msvideo' | 'video/webm' | 'video/x-m4v' | 'application/pdf' | 'audio/mpeg' | 'audio/mp4' | 'audio/aac' | 'audio/ogg' | 'audio/wav' | 'audio/webm' | 'audio/x-m4a';
+
+/**
  * Media referenced in posts. URLs must be publicly reachable over HTTPS. Use POST /v1/media/presign for uploads up to 5GB. Zernio auto-compresses images and videos that exceed platform limits (videos over 200 MB may not be compressed).
  */
 export type MediaItem = {
@@ -4648,9 +4653,11 @@ export type PlatformTarget = {
      */
     scheduledFor?: string;
     /**
-     * Platform-specific overrides and options.
+     * The platform-specific options stored on this target, echoed back as they were sent. Typed per platform on the way in (see the *PlatformData schemas on the request body); free-form on the way out, because a response is not guaranteed to match exactly one of those variants and generated clients that pick a variant by structure reject the entire response when it doesn't. Zernio's internal publishing state (snapshots, container ids, publish stage) is never returned here, and the key is omitted rather than sent as an empty object.
      */
-    platformSpecificData?: (TwitterPlatformData | ThreadsPlatformData | FacebookPlatformData | InstagramPlatformData | LinkedInPlatformData | PinterestPlatformData | YouTubePlatformData | GoogleBusinessPlatformData | TikTokPlatformData | TelegramPlatformData | SnapchatPlatformData | RedditPlatformData | BlueskyPlatformData | DiscordPlatformData | SlackPlatformData);
+    platformSpecificData?: {
+        [key: string]: unknown;
+    };
     /**
      * Platform-specific status: pending, publishing, published, failed
      */
@@ -10922,10 +10929,7 @@ export type GetMediaPresignedUrlData = {
          * Name of the file to upload
          */
         filename: string;
-        /**
-         * MIME type of the file
-         */
-        contentType: 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp' | 'image/gif' | 'video/mp4' | 'video/mpeg' | 'video/quicktime' | 'video/avi' | 'video/x-msvideo' | 'video/webm' | 'video/x-m4v' | 'application/pdf' | 'audio/mpeg' | 'audio/mp4' | 'audio/aac' | 'audio/ogg' | 'audio/wav' | 'audio/webm' | 'audio/x-m4a';
+        contentType: MediaContentType;
         /**
          * Optional file size in bytes for pre-validation (max 5GB)
          */
