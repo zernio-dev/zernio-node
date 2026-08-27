@@ -8789,6 +8789,17 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * `urn:li:geo:*` URN usable as a `regions[].key` on `POST /v1/ads/create`,
  * `POST /v1/ads/boost` and `POST /v1/ads/targeting/reach-estimate`.
  *
+ * Google geo searches resolve against Google's geoTargetConstants and return
+ * every matching level in one list; `geoType` is not applied (Google's
+ * `target_type` is an open taxonomy that does not map one-to-one onto the
+ * `geoType` enum), so filter client-side on the returned `type` (`country`,
+ * `region`, `city`, `zip`, `metro`, or the lowercased Google target type for
+ * rarer levels). `countryCode` scopes the search to one country. Each id is
+ * Google's numeric criterion id, usable as a `regions`/`cities`/`zips`/`metros`
+ * `key` on `POST /v1/ads/create`. Google city radius is not supported (pass a
+ * `customLocations` lat/lng pin for a radius); country targeting also accepts
+ * plain ISO codes via `countries` with no search call.
+ *
  * Pinterest resolves against three whole-catalog endpoints (interests, locations,
  * regions) with no server-side query or pagination, so matching, ranking and the
  * `limit` cutoff all happen in Zernio; the catalog is independent of any ad account
