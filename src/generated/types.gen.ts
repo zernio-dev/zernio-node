@@ -29735,6 +29735,27 @@ export type UpdateAdSetError = (unknown | {
     error?: string;
 });
 
+export type DeleteAdSetData = {
+    path: {
+        /**
+         * Platform ad set ID
+         */
+        adSetId: string;
+    };
+};
+
+export type DeleteAdSetResponse = ({
+    deleted?: boolean;
+    /**
+     * Local Ad documents marked cancelled
+     */
+    adCount?: number;
+});
+
+export type DeleteAdSetError = ({
+    error?: string;
+} | unknown);
+
 export type UpdateAdSetStatusData = {
     body: {
         status: 'active' | 'paused';

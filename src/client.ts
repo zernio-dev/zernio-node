@@ -104,6 +104,7 @@ import {
   deleteAdAudience,
   deleteAdCampaign,
   deleteAdCreative,
+  deleteAdSet,
   deleteAdVideo,
   deleteApiKey,
   deleteBlog,
@@ -1515,6 +1516,7 @@ export class Zernio {
     duplicateAd: this._bind(duplicateAd),
     getAdSetDetails: this._bind(getAdSetDetails),
     updateAdSet: this._bind(updateAdSet),
+    deleteAdSet: this._bind(deleteAdSet),
     updateAdSetStatus: this._bind(updateAdSetStatus),
     getAdTree: this._bind(getAdTree),
     getAdsTimeline: this._bind(getAdsTimeline),
@@ -1737,6 +1739,8 @@ export class Zernio {
     getAdSetDetails: this._bind(getAdSetDetails),
     /** @deprecated Use `zernio.adcampaigns.updateAdSet` instead. */
     updateAdSet: this._bind(updateAdSet),
+    /** @deprecated Use `zernio.adcampaigns.deleteAdSet` instead. */
+    deleteAdSet: this._bind(deleteAdSet),
     /** @deprecated Use `zernio.adcampaigns.updateAdSetStatus` instead. */
     updateAdSetStatus: this._bind(updateAdSetStatus),
     /** @deprecated Use `zernio.adcampaigns.getAdTree` instead. */

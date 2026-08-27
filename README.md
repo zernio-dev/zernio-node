@@ -429,6 +429,7 @@ try {
 | `adCampaigns.updateAdStatus()` | Pause or resume a single ad |
 | `adCampaigns.deleteAd()` | Cancel an ad |
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
+| `adCampaigns.deleteAdSet()` | Delete an ad set |
 | `adCampaigns.attachCampaignAssets()` | Attach extension assets to a Google Search campaign |
 | `adCampaigns.boostPost()` | Boost post as ad |
 | `adCampaigns.duplicateAd()` | Duplicate an ad |
