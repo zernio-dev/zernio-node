@@ -7891,7 +7891,7 @@ export type event15 = 'message.delivered' | 'message.read' | 'message.failed';
 /**
  * Webhook payload for message.edited events. Fires when the sender
  * edits a previously-sent message. Supported platforms: Instagram,
- * Facebook Messenger, Telegram. The message object reflects the
+ * Facebook Messenger, Telegram, WhatsApp. The message object reflects the
  * LATEST state; editHistory contains every prior version in order
  * (oldest first), so the last entry is the version immediately before
  * the current content.
