@@ -19583,6 +19583,38 @@ export type SendInboxMessageResponse = ({
             type?: string;
             url?: string;
         }>;
+        /**
+         * Facebook/Instagram only. Present when an attachment and text were both requested: Meta has no single body shape for both, so the send is two Meta messages under the hood. First element === messageId (the attachment); second is the follow-up text.
+         */
+        messageIds?: Array<(string)>;
+        /**
+         * Facebook/Instagram only. The attachment was delivered but the follow-up text message was rejected by Meta and was not stored; the response is still a 200 because the attachment send succeeded.
+         */
+        partialFailure?: {
+            part?: 'text';
+            error?: string;
+            /**
+             * Meta's own diagnostic fields for the rejected follow-up, same shape as the 400 response's platformError.
+             */
+            platformError?: {
+                /**
+                 * Meta error code
+                 */
+                code?: number;
+                /**
+                 * Meta error_subcode
+                 */
+                subcode?: number;
+                /**
+                 * Meta fbtrace_id, quote this in a Meta bug report
+                 */
+                fbtraceId?: string;
+                /**
+                 * Meta error type (e.g. OAuthException)
+                 */
+                type?: string;
+            };
+        };
     };
 });
 
