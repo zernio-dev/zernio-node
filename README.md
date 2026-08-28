@@ -186,6 +186,7 @@ try {
 | `accounts.getAllAccountsHealth()` | Check accounts health |
 | `accounts.listAccounts()` | List accounts |
 | `accounts.getAccountHealth()` | Check account health |
+| `accounts.getAccountPosts()` | List posts published on the platform |
 | `accounts.getBlueskySettings()` | Get Bluesky account settings |
 | `accounts.getFollowerStats()` | Get follower stats |
 | `accounts.getGoogleBusinessReview()` | Get a review |

@@ -12287,6 +12287,57 @@ export type GetAccountHealthError = (ErrorResponse | {
     error?: string;
 });
 
+export type GetAccountPostsData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetAccountPostsResponse = ({
+    status?: 'success';
+    posts?: Array<{
+        /**
+         * The platform's own post id (the video ID on YouTube)
+         */
+        id?: string;
+        platform?: string;
+        /**
+         * Caption or title, empty string when the post has no text
+         */
+        message?: string;
+        createdTime?: string;
+        /**
+         * Public URL of the post on the platform
+         */
+        permalink?: string;
+        /**
+         * Thumbnail or media URL
+         */
+        picture?: string;
+        mediaType?: string;
+        commentCount?: number;
+        likeCount?: number;
+        /**
+         * Facebook and LinkedIn only
+         */
+        reactionCount?: number;
+        shareCount?: number;
+        /**
+         * Bluesky content id, required to reply to the post
+         */
+        cid?: string;
+        /**
+         * Reddit only
+         */
+        subreddit?: string;
+    }>;
+    lastUpdated?: string;
+});
+
+export type GetAccountPostsError = (unknown | {
+    error?: string;
+});
+
 export type GetInstagramFollowStatusData = {
     path: {
         /**

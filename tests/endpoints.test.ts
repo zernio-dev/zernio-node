@@ -70,6 +70,11 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.getAccountHealth).toBeTypeOf('function');
     });
 
+    it('should have getAccountPosts method', () => {
+      expect(client.accounts.getAccountPosts).toBeDefined();
+      expect(client.accounts.getAccountPosts).toBeTypeOf('function');
+    });
+
     it('should have getInstagramFollowStatus method', () => {
       expect(client.accounts.getInstagramFollowStatus).toBeDefined();
       expect(client.accounts.getInstagramFollowStatus).toBeTypeOf('function');
