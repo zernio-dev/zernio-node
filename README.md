@@ -900,14 +900,17 @@ try {
 | `whatsapp.getWhatsAppGroupChat()` | Get group info |
 | `whatsapp.getWhatsAppMedia()` | Download WhatsApp media |
 | `whatsapp.getWhatsAppTemplate()` | Get template |
+| `whatsapp.getWhatsAppTemplateById()` | Get template by id |
 | `whatsapp.getWhatsAppTemplates()` | List templates |
 | `whatsapp.updateWhatsAppBusinessProfile()` | Update business profile |
 | `whatsapp.updateWhatsAppDisplayName()` | Request display name change |
 | `whatsapp.updateWhatsAppGroupChat()` | Update group settings |
 | `whatsapp.updateWhatsAppTemplate()` | Update template |
+| `whatsapp.updateWhatsAppTemplateById()` | Update template by id |
 | `whatsapp.deleteWhatsappBusinessUsername()` | Delete business username |
 | `whatsapp.deleteWhatsAppGroupChat()` | Delete group |
 | `whatsapp.deleteWhatsAppTemplate()` | Delete template |
+| `whatsapp.deleteWhatsAppTemplateById()` | Delete template by id |
 | `whatsapp.addWhatsAppGroupParticipants()` | Add participants |
 | `whatsapp.approveWhatsAppGroupJoinRequests()` | Approve join requests |
 | `whatsapp.blockWhatsAppUsers()` | Block users |

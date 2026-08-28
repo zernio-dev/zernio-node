@@ -21369,6 +21369,15 @@ export type GetWhatsAppTemplatesData = {
          * WhatsApp social account ID
          */
         accountId: string;
+        /**
+         * Exact language code (e.g. en_US).
+         */
+        language?: string;
+        /**
+         * Exact template name; returns every language variant of that family.
+         */
+        name?: string;
+        status?: 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
     };
 };
 
@@ -21471,9 +21480,168 @@ export type CreateWhatsAppTemplateError = (unknown | {
 export type GetWhatsAppTemplateData = {
     path: {
         /**
-         * Template name
+         * Template name (the family).
          */
         templateName: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Language code of the variant (e.g. en_US, es, pt_BR). Required when the family has several languages.
+         */
+        language?: string;
+    };
+};
+
+export type GetWhatsAppTemplateResponse = ({
+    success?: boolean;
+    template?: {
+        /**
+         * Meta template id. Unique per language variant; usable on /v1/whatsapp/templates/id/{templateId}.
+         */
+        id?: string;
+        name?: string;
+        status?: string;
+        category?: string;
+        /**
+         * The variant actually returned.
+         */
+        language?: string;
+        components?: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Only when status is REJECTED.
+         */
+        rejected_reason?: string;
+        /**
+         * Post-approval quality (GREEN/YELLOW/RED), when Meta reports one.
+         */
+        quality_score?: {
+            [key: string]: unknown;
+        };
+    };
+});
+
+export type GetWhatsAppTemplateError = (ErrorResponse | {
+    error?: string;
+} | unknown | {
+    error?: string;
+    type?: 'invalid_request_error';
+    code?: 'ambiguous_template';
+    param?: 'language';
+    details?: {
+        languages?: Array<(string)>;
+    };
+});
+
+export type UpdateWhatsAppTemplateData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Language code of the variant to edit (e.g. en_US, es, pt_BR). Required when the family has several languages. Body only: a language query parameter on PATCH is a 400.
+         */
+        language?: string;
+        /**
+         * Updated template components
+         */
+        components: Array<WhatsAppTemplateComponent>;
+    };
+    path: {
+        /**
+         * Template name (the family).
+         */
+        templateName: string;
+    };
+};
+
+export type UpdateWhatsAppTemplateResponse = ({
+    success?: boolean;
+    template?: {
+        /**
+         * Meta id of the edited variant.
+         */
+        id?: string;
+        name?: string;
+        /**
+         * The variant that was edited.
+         */
+        language?: string;
+        /**
+         * Approval state read back from Meta after the update, normally PENDING. If the state cannot be read back, the last known status is returned instead.
+         */
+        status?: string;
+    };
+});
+
+export type UpdateWhatsAppTemplateError = (ErrorResponse | {
+    error?: string;
+} | unknown | {
+    error?: string;
+    type?: 'invalid_request_error';
+    code?: 'ambiguous_template';
+    param?: 'language';
+    details?: {
+        languages?: Array<(string)>;
+    };
+});
+
+export type DeleteWhatsAppTemplateData = {
+    path: {
+        /**
+         * Template name (the family).
+         */
+        templateName: string;
+    };
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * Delete only this language variant (e.g. es). Omit to delete the whole family.
+         */
+        language?: string;
+    };
+};
+
+export type DeleteWhatsAppTemplateResponse = ({
+    success?: boolean;
+    /**
+     * Whether the whole family or one variant was deleted.
+     */
+    scope?: 'all_languages' | 'language';
+    /**
+     * The deleted variant; only when scope is language.
+     */
+    language?: string;
+    message?: string;
+});
+
+export type DeleteWhatsAppTemplateError = (ErrorResponse | {
+    error?: string;
+} | unknown | {
+    error?: string;
+    type?: 'invalid_request_error';
+    code?: 'ambiguous_template';
+    param?: 'language';
+    details?: {
+        languages?: Array<(string)>;
+    };
+});
+
+export type GetWhatsAppTemplateByIdData = {
+    path: {
+        /**
+         * Meta template id (numeric).
+         */
+        templateId: string;
     };
     query: {
         /**
@@ -21483,25 +21651,41 @@ export type GetWhatsAppTemplateData = {
     };
 };
 
-export type GetWhatsAppTemplateResponse = ({
+export type GetWhatsAppTemplateByIdResponse = ({
     success?: boolean;
     template?: {
+        /**
+         * Meta template id. Unique per language variant; usable on /v1/whatsapp/templates/id/{templateId}.
+         */
         id?: string;
         name?: string;
         status?: string;
         category?: string;
+        /**
+         * The variant actually returned.
+         */
         language?: string;
         components?: Array<{
             [key: string]: unknown;
         }>;
+        /**
+         * Only when status is REJECTED.
+         */
+        rejected_reason?: string;
+        /**
+         * Post-approval quality (GREEN/YELLOW/RED), when Meta reports one.
+         */
+        quality_score?: {
+            [key: string]: unknown;
+        };
     };
 });
 
-export type GetWhatsAppTemplateError = (unknown | {
+export type GetWhatsAppTemplateByIdError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
-export type UpdateWhatsAppTemplateData = {
+export type UpdateWhatsAppTemplateByIdData = {
     body: {
         /**
          * WhatsApp social account ID
@@ -21514,17 +21698,18 @@ export type UpdateWhatsAppTemplateData = {
     };
     path: {
         /**
-         * Template name
+         * Meta template id (numeric).
          */
-        templateName: string;
+        templateId: string;
     };
 };
 
-export type UpdateWhatsAppTemplateResponse = ({
+export type UpdateWhatsAppTemplateByIdResponse = ({
     success?: boolean;
     template?: {
         id?: string;
         name?: string;
+        language?: string;
         /**
          * Approval state read back from Meta after the update, normally PENDING. If the state cannot be read back, the last known status is returned instead.
          */
@@ -21532,16 +21717,16 @@ export type UpdateWhatsAppTemplateResponse = ({
     };
 });
 
-export type UpdateWhatsAppTemplateError = (unknown | {
+export type UpdateWhatsAppTemplateByIdError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
-export type DeleteWhatsAppTemplateData = {
+export type DeleteWhatsAppTemplateByIdData = {
     path: {
         /**
-         * Template name
+         * Meta template id (numeric).
          */
-        templateName: string;
+        templateId: string;
     };
     query: {
         /**
@@ -21551,14 +21736,16 @@ export type DeleteWhatsAppTemplateData = {
     };
 };
 
-export type DeleteWhatsAppTemplateResponse = ({
+export type DeleteWhatsAppTemplateByIdResponse = ({
     success?: boolean;
+    scope?: 'language';
+    language?: string;
     message?: string;
 });
 
-export type DeleteWhatsAppTemplateError = (unknown | {
+export type DeleteWhatsAppTemplateByIdError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
 export type GetWhatsAppCallingConfigData = {
     query: {
