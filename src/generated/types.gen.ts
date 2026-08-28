@@ -18471,6 +18471,27 @@ export type CreateInboxConversationData = {
              */
             filename?: string;
         };
+        /**
+         * WhatsApp only. Required to send a template whose approved header format is LOCATION: Meta only accepts the location's lat/long at send time, never at template creation, so there is nothing to fill in automatically. Cannot be combined with headerMedia (a template has exactly one header).
+         */
+        headerLocation?: {
+            /**
+             * Latitude in decimal degrees.
+             */
+            latitude: number;
+            /**
+             * Longitude in decimal degrees.
+             */
+            longitude: number;
+            /**
+             * Location name shown to the recipient (e.g. a business name).
+             */
+            name?: string;
+            /**
+             * Location address shown to the recipient.
+             */
+            address?: string;
+        };
     };
 };
 
