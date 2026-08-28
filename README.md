@@ -324,6 +324,7 @@ try {
 | `connect.getShopifyConnectUrl()` | Get Shopify OAuth connect URL |
 | `connect.getSubredditRules()` | Get subreddit rules |
 | `connect.getTelegramConnectStatus()` | Generate Telegram code |
+| `connect.getYoutubeCaptions()` | Get a YouTube video transcript |
 | `connect.getYoutubePlaylists()` | List YouTube playlists |
 | `connect.updateFacebookPage()` | Update Facebook page |
 | `connect.updateGmbLocation()` | Update GBP location |

@@ -394,6 +394,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.createPinterestBoard).toBeTypeOf('function');
     });
 
+    it('should have getYoutubeCaptions method', () => {
+      expect(client.connect.getYoutubeCaptions).toBeDefined();
+      expect(client.connect.getYoutubeCaptions).toBeTypeOf('function');
+    });
+
     it('should have getYoutubePlaylists method', () => {
       expect(client.connect.getYoutubePlaylists).toBeDefined();
       expect(client.connect.getYoutubePlaylists).toBeTypeOf('function');

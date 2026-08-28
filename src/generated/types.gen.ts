@@ -16084,6 +16084,93 @@ export type CreatePinterestBoardError = (unknown | {
     error?: string;
 });
 
+export type GetYoutubeCaptionsData = {
+    path: {
+        /**
+         * The connected YouTube account.
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * `json` returns timed `cues`; `srt` returns the raw SubRip body instead. `text` is present either way.
+         */
+        format?: 'json' | 'srt';
+        /**
+         * BCP-47 language tag as YouTube labels the track. `en` also matches an `en-GB` track. Omit to take the best available track.
+         */
+        language?: string;
+        /**
+         * Re-download from YouTube instead of serving the stored copy. Spends 200 quota units.
+         */
+        refresh?: boolean;
+        /**
+         * The YouTube video id (the `platformPostId` on a synced external post).
+         */
+        videoId: string;
+    };
+};
+
+export type GetYoutubeCaptionsResponse = ({
+    accountId?: string;
+    videoId?: string;
+    /**
+     * The language of the returned track.
+     */
+    language?: string;
+    /**
+     * YouTube's own caption track id.
+     */
+    trackId?: string;
+    /**
+     * `asr` is YouTube's auto-generated track; `standard` was uploaded by the channel.
+     */
+    trackKind?: 'asr' | 'standard';
+    /**
+     * `cache` when served from our stored copy, `youtube` when this call spent the quota units.
+     */
+    source?: 'cache' | 'youtube';
+    /**
+     * When the stored copy was downloaded from YouTube.
+     */
+    fetchedAt?: string;
+    /**
+     * The whole transcript as one paragraph, no timings.
+     */
+    text?: string;
+    /**
+     * Timed cues. Present when format is json. Auto-generated cues overlap in time by design (captions roll), so `start` can precede the previous cue's `end`.
+     */
+    cues?: Array<{
+        /**
+         * Seconds from the start of the video.
+         */
+        start?: number;
+        end?: number;
+        text?: string;
+    }>;
+    /**
+     * Raw SubRip body. Present when format is srt.
+     */
+    srt?: string;
+    /**
+     * Every track on the video, so you can re-request another language. On a cached read this is the listing as it stood when we downloaded, so a language added to the video since then appears only after a `refresh=true` or when you request that language directly.
+     */
+    availableTracks?: Array<{
+        trackId?: string;
+        language?: string;
+        trackKind?: 'asr' | 'standard';
+        /**
+         * The track's display name. Empty for auto-generated tracks.
+         */
+        name?: string;
+    }>;
+});
+
+export type GetYoutubeCaptionsError = (ErrorResponse | {
+    error?: string;
+});
+
 export type GetYoutubePlaylistsData = {
     path: {
         accountId: string;
