@@ -3773,6 +3773,23 @@ export const getInboxPostComments = <ThrowOnError extends boolean = false>(optio
 /**
  * Reply to comment
  * Post a reply to a post or specific comment. Requires accountId in request body.
+ *
+ * **Idempotency:** send an `Idempotency-Key` header to make retries safe
+ * (e.g. after a client-side timeout where delivery is unknown): same key +
+ * same body replays the original response (with `Idempotent-Replayed: true`)
+ * instead of posting the comment a second time; same key + different body
+ * returns 422; a key still in flight returns 409. Keys are retained for 24
+ * hours and are scoped to the credential and to this exact path, so reusing
+ * a key against a different postId returns 422 rather than replaying the
+ * other post's response.
+ *
+ * Only successful (2xx) responses are stored for replay. If the request
+ * throws or returns a non-2xx status the key is released, so the header
+ * protects the "request succeeded but the response was lost" case. After an
+ * ambiguous failure (a 5xx or a network timeout) list the post's comments
+ * before retrying with the same key, and treat an empty result as
+ * inconclusive rather than as proof nothing was posted.
+ *
  */
 export const replyToInboxPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToInboxPostData, ThrowOnError>) => {
     return (options?.client ?? client).post<ReplyToInboxPostResponse, ReplyToInboxPostError, ThrowOnError>({
@@ -4157,6 +4174,23 @@ export const listInboxReviews = <ThrowOnError extends boolean = false>(options?:
 /**
  * Reply to review
  * Post a reply to a review. Requires accountId in request body.
+ *
+ * **Idempotency:** send an `Idempotency-Key` header to make retries safe
+ * (e.g. after a client-side timeout where delivery is unknown): same key +
+ * same body replays the original response (with `Idempotent-Replayed: true`)
+ * instead of sending the reply to the platform again; same key + different
+ * body returns 422; a key still in flight returns 409. Keys are retained for
+ * 24 hours and are scoped to the credential and to this exact path, so
+ * reusing a key against a different reviewId returns 422 rather than
+ * replaying the other review's response.
+ *
+ * Only successful (2xx) responses are stored for replay. If the request
+ * throws or returns a non-2xx status the key is released, so the header
+ * protects the "request succeeded but the response was lost" case. After an
+ * ambiguous failure (a 5xx or a network timeout) fetch the review before
+ * retrying with the same key, and treat a missing reply as inconclusive
+ * rather than as proof nothing was sent.
+ *
  */
 export const replyToInboxReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToInboxReviewData, ThrowOnError>) => {
     return (options?.client ?? client).post<ReplyToInboxReviewResponse, ReplyToInboxReviewError, ThrowOnError>({

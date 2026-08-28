@@ -20326,6 +20326,12 @@ export type ReplyToInboxPostData = {
          */
         rootCid?: string;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
     path: {
         /**
          * Zernio post ID or platform-specific post ID. LinkedIn third-party posts accept full activity URN or numeric ID.
@@ -21205,6 +21211,12 @@ export type ReplyToInboxReviewData = {
     body: {
         accountId: string;
         message: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
     };
     path: {
         /**
