@@ -5933,6 +5933,31 @@ export type UploadTokenStatusResponse = {
     completedAt?: (string) | null;
 };
 
+export type UsageAttributionGroup = UsageAttributionSlice & {
+    /**
+     * Profile id or account id, per `groupBy`.
+     */
+    key: string;
+};
+
+export type UsageAttributionSlice = {
+    /**
+     * USD per product family.
+     */
+    byProduct?: {
+        accounts?: number;
+        numbers?: number;
+        calls?: number;
+        sms?: number;
+        verify?: number;
+        dlc?: number;
+        xApi?: number;
+        credits?: number;
+        other?: number;
+    };
+    totalUsd?: number;
+};
+
 /**
  * Billed spend by product family over a window, from Metronome's invoice
  * breakdown (the CHARGE view). Returned by `GET /v1/usage`.
@@ -5988,14 +6013,14 @@ export type UsageMetering = {
         quantity?: number;
     }>;
     /**
-     * Peak counts over the window (Metronome COUNT metrics + live active-number count).
+     * Peak counts over the window (Metronome COUNT metrics + live active-number count). Null when `profileId` / `accountId` is set.
      */
     peaks?: {
         accounts?: number;
         numbers?: number;
-    };
+    } | null;
     /**
-     * Billable call volumes over the window.
+     * Billable call volumes over the window. Null when `profileId` / `accountId` is set.
      */
     callUsage?: {
         whatsapp?: {
@@ -6006,7 +6031,7 @@ export type UsageMetering = {
             count?: number;
             minutes?: number;
         };
-    };
+    } | null;
     period?: {
         start?: string;
         end?: string;
@@ -6041,6 +6066,33 @@ export type UsageMetering = {
          */
         reverseCharge?: boolean;
     } | null;
+    /**
+     * Present with `groupBy`. The window's spend split per profile or account; `sum(groups) + unattributed` equals `totals` per product.
+     */
+    attribution?: {
+        groupBy?: 'profile' | 'account';
+        groups?: Array<UsageAttributionGroup>;
+        /**
+         * Spend no profile/account can claim: credits, 10DLC fees, Verify, and usage whose record no longer resolves to an account. Zero for a restricted principal.
+         */
+        unattributed?: UsageAttributionSlice;
+        /**
+         * The window totals; for a restricted principal, the sum of the visible groups.
+         */
+        totals?: UsageAttributionSlice;
+        /**
+         * True when the caller (profile-scoped API key or member) cannot see every profile: `groups` are filtered, `totals` sum them, `unattributed` is zero, and the top-level `days` / `totals` / `lineItems` are projected onto the visible groups with `peaks`, `callUsage` and `tax` null.
+         */
+        restricted?: boolean;
+    };
+    /**
+     * Present with `profileId` / `accountId`: echoes the group the payload was projected onto.
+     */
+    scope?: ({
+    profileId: string;
+} | {
+    accountId: string;
+});
 };
 
 export type granularity = 'day' | 'month' | 'total';
@@ -6049,6 +6101,8 @@ export type granularity = 'day' | 'month' | 'total';
  * `cycle` = a real billing period resolved; `window` = trailing/custom window (or cycle fallback).
  */
 export type source2 = 'cycle' | 'window';
+
+export type groupBy = 'profile' | 'account';
 
 /**
  * Plan and usage stats. The response shape depends on `billingSystem`:
@@ -11018,6 +11072,10 @@ export type GetXApiPricingError = ({
 export type GetUsageData = {
     query?: {
         /**
+         * Metering mode (pair with `range`). Project the payload onto this account's attributed share. Mutually exclusive with `profileId`, and `groupBy` (if given) must be `account`; 404 when the account is not visible to the caller.
+         */
+        accountId?: string;
+        /**
          * Inclusive start (UTC date). Required when `range=custom`.
          */
         from?: string;
@@ -11028,6 +11086,14 @@ export type GetUsageData = {
          *
          */
         granularity?: 'day' | 'month' | 'total';
+        /**
+         * Metering mode. Adds `attribution`: the window's spend split per profile or per account (keys are ids; resolve names via `GET /v1/profiles` / `GET /v1/accounts`).
+         */
+        groupBy?: 'profile' | 'account';
+        /**
+         * Metering mode (pair with `range`). Project the payload onto this profile's attributed share. Mutually exclusive with `accountId`, and `groupBy` (if given) must be `profile`; 404 when the profile is not in your workspace (or outside a scoped key's profiles).
+         */
+        profileId?: string;
         /**
          * Window to report. `cycle` / `prev-cycle` resolve to the customer's
          * real billing-period bounds (falling back to a trailing 30 days when

@@ -695,6 +695,20 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  * Also served at `GET /v1/usage/daily`. Usage-based accounts only —
  * legacy Stripe accounts get `{ "supported": false, "days": [] }`.
  *
+ * **Attribution (metering mode):** `groupBy=profile|account` adds an
+ * `attribution` breakdown of the window's spend per profile or account,
+ * assembled from your own records and pro-rated against the invoice so
+ * `sum(groups) + unattributed` equals `totals` exactly. `profileId` /
+ * `accountId` instead project the whole payload (`days`, `totals`,
+ * `lineItems`) onto that one group; `peaks`, `callUsage` and `tax` are
+ * then `null` (workspace-level facts). Projected `days` spread the
+ * group's period share over each day (usage is attributed per period,
+ * not per day). Profile-scoped API keys and members only see their
+ * profiles' groups (`attribution.restricted: true`, with `totals`
+ * summing the visible groups). Credits, 10DLC fees and Verify are always
+ * unattributed. `profileId` / `accountId` on their own do not select
+ * metering mode: pair them with `range`.
+ *
  * For per-domain consumption *volumes* use `GET /v1/usage/calls` and
  * `GET /v1/usage/sms`. For the billing statement (balance, credits,
  * caps, payment status) use `GET /v1/billing`.
