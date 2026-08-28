@@ -729,13 +729,16 @@ try {
 | `phoneNumbers.listPhoneNumberCountries()` | List offerable number countries |
 | `phoneNumbers.listPhoneNumberPortIns()` | List port-in orders |
 | `phoneNumbers.listPhoneNumbers()` | List phone numbers |
+| `phoneNumbers.listPhoneNumberStockWatches()` | List stock watches |
 | `phoneNumbers.createPhoneNumberKycLink()` | Create a hosted KYC link |
 | `phoneNumbers.createPhoneNumberPortIn()` | Port numbers in |
+| `phoneNumbers.createPhoneNumberStockWatch()` | Watch an out-of-stock country |
 | `phoneNumbers.getPhoneNumber()` | Get phone number |
 | `phoneNumbers.getPhoneNumberKycForm()` | Get KYC form spec |
 | `phoneNumbers.getPhoneNumberPortInOrderRequirements()` | A port-in order's pending requirements |
 | `phoneNumbers.getPhoneNumberPortInRequirements()` | Country porting requirements |
 | `phoneNumbers.getPhoneNumberRemediation()` | Get declined requirements |
+| `phoneNumbers.deletePhoneNumberStockWatch()` | Stop watching a country |
 | `phoneNumbers.cancelPhoneNumberPortIn()` | Cancel a port-in |
 | `phoneNumbers.checkPhoneNumberAvailability()` | Check country availability |
 | `phoneNumbers.checkPhoneNumberPortability()` | Check portability |

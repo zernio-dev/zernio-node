@@ -72,6 +72,7 @@ import {
   createMessagingAd,
   createPhoneNumberKycLink,
   createPhoneNumberPortIn,
+  createPhoneNumberStockWatch,
   createPinterestBoard,
   createPost,
   createProfile,
@@ -125,6 +126,7 @@ import {
   deleteInboxReviewReply,
   deleteInstagramIceBreakers,
   deleteMessengerMenu,
+  deletePhoneNumberStockWatch,
   deletePost,
   deleteProfile,
   deleteQueueSlot,
@@ -391,6 +393,7 @@ import {
   listMetaBusinesses,
   listPhoneNumberCountries,
   listPhoneNumberPortIns,
+  listPhoneNumberStockWatches,
   listPhoneNumbers,
   listPinterestBoardsForSelection,
   listPosts,
@@ -1382,6 +1385,9 @@ export class Zernio {
     remediatePhoneNumber: this._bind(remediatePhoneNumber),
     replyToPhoneNumberReviewer: this._bind(replyToPhoneNumberReviewer),
     respondToPhoneNumberReviewer: this._bind(respondToPhoneNumberReviewer),
+    createPhoneNumberStockWatch: this._bind(createPhoneNumberStockWatch),
+    listPhoneNumberStockWatches: this._bind(listPhoneNumberStockWatches),
+    deletePhoneNumberStockWatch: this._bind(deletePhoneNumberStockWatch),
   };
 
   /**

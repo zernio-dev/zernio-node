@@ -4578,6 +4578,16 @@ export type ParameterIdempotencyKeyHeader = string;
  */
 export type ParameterPageParam = number;
 
+export type PhoneNumberStockWatch = {
+    id: string;
+    /**
+     * ISO 3166-1 alpha-2.
+     */
+    country: string;
+    countryName: string;
+    createdAt: string;
+};
+
 export type PinterestPlatformData = {
     /**
      * Pin title. Defaults to first line of content or "Pin". Must be ≤ 100 characters.
@@ -6424,7 +6434,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -8045,6 +8055,42 @@ export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 't
 export type source3 = 'whatsapp_business_app' | 'cloud_api';
 
 /**
+ * Webhook payload for phone_number.stock_available events
+ */
+export type WebhookPayloadPhoneNumberStockAvailable = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'phone_number.stock_available';
+    stock: {
+        /**
+         * ISO 3166-1 alpha-2 country code of the watched country.
+         */
+        country: string;
+        /**
+         * Number types deliverable at sweep time. Only types with stock are listed.
+         */
+        types: Array<{
+            /**
+             * local, mobile, national or toll_free.
+             */
+            numberType: string;
+            /**
+             * Deliverable numbers at sweep time; first come, first served.
+             */
+            availableCount: number;
+        }>;
+    };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
+    timestamp: string;
+};
+
+export type event18 = 'phone_number.stock_available';
+
+/**
  * Webhook payload for post events
  */
 export type WebhookPayloadPost = {
@@ -8083,7 +8129,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event18 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event19 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -8182,7 +8228,7 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event19 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
+export type event20 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
 
 /**
  * Terminal status this event fires on. Matches the event suffix.
@@ -8241,7 +8287,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event20 = 'reaction.received';
+export type event21 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -8315,7 +8361,7 @@ export type WebhookPayloadReferral = {
     timestamp: string;
 };
 
-export type event21 = 'referral.received';
+export type event22 = 'referral.received';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -8342,7 +8388,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event22 = 'review.new';
+export type event23 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits
@@ -8373,7 +8419,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event23 = 'review.updated';
+export type event24 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -8394,7 +8440,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event24 = 'webhook.test';
+export type event25 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event.
@@ -8443,7 +8489,7 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     timestamp: string;
 };
 
-export type event25 = 'whatsapp.account.name_status_updated';
+export type event26 = 'whatsapp.account.name_status_updated';
 
 export type platform12 = 'whatsapp';
 
@@ -8514,7 +8560,7 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     timestamp: string;
 };
 
-export type event26 = 'whatsapp.template.category_updated';
+export type event27 = 'whatsapp.template.category_updated';
 
 /**
  * `scheduled` is Meta's 24h advance notice of an upcoming
@@ -8591,7 +8637,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event27 = 'whatsapp.template.status_updated';
+export type event28 = 'whatsapp.template.status_updated';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -17715,7 +17761,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -17770,7 +17816,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'verification.approved' | 'verification.failed')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -25348,6 +25394,43 @@ export type DisableVoiceOnNumberResponse = ({
 });
 
 export type DisableVoiceOnNumberError = ({
+    error?: string;
+} | unknown);
+
+export type CreatePhoneNumberStockWatchData = {
+    body: {
+        /**
+         * ISO 3166-1 alpha-2 code of a country listed by GET /v1/phone-numbers/countries.
+         */
+        country: string;
+    };
+};
+
+export type CreatePhoneNumberStockWatchResponse = (PhoneNumberStockWatch);
+
+export type CreatePhoneNumberStockWatchError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListPhoneNumberStockWatchesResponse = ({
+    watches?: Array<PhoneNumberStockWatch>;
+});
+
+export type ListPhoneNumberStockWatchesError = ({
+    error?: string;
+});
+
+export type DeletePhoneNumberStockWatchData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DeletePhoneNumberStockWatchResponse = ({
+    deleted?: boolean;
+});
+
+export type DeletePhoneNumberStockWatchError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
