@@ -30611,6 +30611,10 @@ export type AttachCampaignAssetsData = {
          */
         accountId: string;
         /**
+         * Numeric Google Ads customer id. Required when the connection has multiple Google Ads accounts; optional (and inferred) when it has only one.
+         */
+        customerId?: string;
+        /**
          * See POST /v1/ads/create sitelinks — same shape.
          */
         sitelinks?: Array<{
