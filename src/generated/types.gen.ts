@@ -4786,9 +4786,9 @@ export type PostAnalytics = {
     clicks?: number;
     views?: number;
     /**
-     * Instagram feed posts and stories only: organic accounts that started following from this post. 0 for reels and other platforms.
+     * Instagram feed posts and stories only: organic accounts that started following from this post. Null on Instagram Reels and non-Reels video, where Meta does not expose this metric for the media. 0 for other platforms.
      */
-    follows?: number;
+    follows?: (number) | null;
     /**
      * Instagram Reels only: average watch time per play, in milliseconds. 0 for non-Reels media and other platforms.
      */
@@ -9650,7 +9650,7 @@ export type GetAnalyticsData = {
          */
         profileId?: string;
         /**
-         * Sort by date, engagement, or a specific metric. Instagram-only metrics (follows, reposts, reels_skip_rate, ig_reels_*) sort posts with no value as 0.
+         * Sort by date, engagement, or a specific metric. Instagram-only metrics (follows, reposts, reels_skip_rate, ig_reels_*) sort a null value as 0.
          */
         sortBy?: 'date' | 'engagement' | 'impressions' | 'reach' | 'likes' | 'comments' | 'shares' | 'saves' | 'clicks' | 'views' | 'follows' | 'ig_reels_avg_watch_time' | 'ig_reels_video_view_total_time' | 'reposts' | 'reels_skip_rate';
         /**
