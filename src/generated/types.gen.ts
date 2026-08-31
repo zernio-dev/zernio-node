@@ -1478,7 +1478,7 @@ export type BulkUploadResult = {
         errors?: Array<(string)>;
     }>;
     /**
-     * Top-level advisory warnings (e.g. `rows_exceed_advisory_limit:500`). Empty when none.
+     * Top-level advisory warnings, e.g. `rows_exceed_advisory_limit:500` or `unknown_columns:<a,b,c>` (comma-separated unrecognized CSV column names). Empty when none.
      */
     warnings?: Array<(string)>;
     /**
@@ -30553,8 +30553,8 @@ export type UpdateAdData = {
             type?: 'daily' | 'lifetime';
         };
         /**
-         * Meta + TikTok (demographics/interests) and Google (keyword edits only).
-         * Pinterest / X / LinkedIn return 501.
+         * Meta + TikTok (demographics/interests), Google (keyword edits only),
+         * and LinkedIn (geo countries). Pinterest / X return 501.
          *
          */
         targeting?: {
@@ -30588,7 +30588,7 @@ export type UpdateAdData = {
             advantage_audience?: 0 | 1;
         };
         /**
-         * Replace the ad's creative. Meta + TikTok only.
+         * Replace the ad's creative. Meta, TikTok, and LinkedIn.
          *
          * - **Meta**: requires `headline`, `body`, `callToAction`, `linkUrl`, `imageUrl`. The
          * ad's existing creative is replaced via a new `/act_X/adcreatives` upload + ad
@@ -30596,6 +30596,9 @@ export type UpdateAdData = {
          * - **TikTok**: patch-style. Pass any subset; `headline` is ignored (TikTok creatives
          * have no headline slot). `body` becomes the in-feed `ad_text`; `linkUrl` becomes
          * `landing_page_url`; `videoUrl` triggers a fresh upload.
+         * - **LinkedIn**: uploads new media (image via `imageUrl` or video via `videoUrl`),
+         * creates a new inline media creative on the same campaign, and pauses the old
+         * creative (best-effort). The old creative is retained for historical reporting.
          *
          */
         creative?: {
@@ -32636,6 +32639,14 @@ export type BoostPostData = {
          */
         dsaPayor?: string;
         /**
+         * Lead Gen form ID to attach to the boosted ad's creative. REQUIRED when `goal` is `lead_generation`. On Meta this is the leadgen_forms ID (create one via POST /v1/ads/lead-forms). On LinkedIn this is the adForm ID (create one via POST /v1/ads/lead-forms with a LinkedIn account); the creative's `leadgenCallToAction.destination` is set to `urn:li:adForm:{id}`. Ignored for other goals.
+         */
+        leadGenFormId?: string;
+        /**
+         * Meta, TikTok, and LinkedIn. Publish state of the created entities. Omitted or ACTIVE publishes live (default); PAUSED creates them paused so you can review before they spend. On LinkedIn the whole campaign group, campaign, and creative hierarchy stays PAUSED (intendedStatus PAUSED on each).
+         */
+        status?: 'ACTIVE' | 'PAUSED';
+        /**
          * Meta only. Explicit ad-set `optimization_goal` override. When omitted,
          * defaults to the value derived from `goal`. The value must be compatible
          * with the objective Meta derives from `goal`, not with the objective used
@@ -32714,8 +32725,9 @@ export type CreateStandaloneAdData = {
          *
          * **LinkedIn**
          * - `engagement`, `traffic`, `awareness` and `video_views` create standalone Direct Sponsored Content ads. `traffic` requires `linkUrl`; `video_views` requires `video`.
+         * - `lead_generation`: requires `leadGenFormId` (an adForm ID from POST /v1/ads/lead-forms). The campaign objective is set to MAX_LEAD and the creative's `leadgenCallToAction` destination is set to `urn:li:adForm:{id}`.
          * - `job_applicants` requires a `platformSpecificData.jobs` creative.
-         * - For `lead_generation` or `conversions` on LinkedIn, or to promote an existing post, use POST /v1/ads/boost.
+         * - For `conversions` on LinkedIn, or to promote an existing post, use POST /v1/ads/boost.
          *
          * **OpenAI Ads**
          * - Only `traffic`, `awareness`, and `conversions` are supported (other goals return 400). Maps to OpenAI's `bidding_type` (clicks, impressions, conversions respectively). `conversions` requires an active conversion event setting on the account; create a tracking tag with `defaultEventType` via the tracking-tags API (`POST /v1/accounts/{accountId}/tracking-tags`), or configure a conversion event in OpenAI Ads Manager, or the request returns 422.
@@ -32761,7 +32773,7 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Meta and TikTok. Publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused so you can review before they spend. On Meta the pause is held on the campaign this call creates, leaving the ad set and ad switched on, so a single PUT /v1/ads/campaigns/{campaignId}/status with `active` brings the whole thing live. It is held at every level instead when the pause cannot rely on the campaign: `existingCampaignId` (that campaign may be running and is never touched) or `campaignStatus: ACTIVE`. On TikTok the whole campaign > ad group > ad hierarchy stays paused.
+         * Meta, TikTok, and LinkedIn. Publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused so you can review before they spend. On Meta the pause is held on the campaign this call creates, leaving the ad set and ad switched on, so a single PUT /v1/ads/campaigns/{campaignId}/status with `active` brings the whole thing live. It is held at every level instead when the pause cannot rely on the campaign: `existingCampaignId` (that campaign may be running and is never touched) or `campaignStatus: ACTIVE`. On TikTok the whole campaign > ad group > ad hierarchy stays paused. On LinkedIn the whole campaign group, campaign, and creative hierarchy stays PAUSED (intendedStatus PAUSED on each).
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
@@ -32809,7 +32821,7 @@ export type CreateStandaloneAdData = {
          */
         linkUrl?: string;
         /**
-         * Meta Lead Gen forms only (facebook/instagram). The leadgen_forms ID to attach to the ad's creative — create one via POST /v1/ads/lead-forms. REQUIRED when `goal` is `lead_generation`, and on every ATTACH (`adSetId`) call that targets a lead ad set (the form attaches per-ad; Meta rejects a formless ad in a lead ad set). Ignored otherwise. The ad set's promoted_object.page_id + LEAD_GENERATION optimization + destination_type ON_AD are derived automatically from the goal. Both `placementAssets` (per-placement creative) and `dynamicCreative` (multi-text / multi-asset pool, e.g. multiple headlines and primary texts) ARE supported on instant-form lead ads — the form is attached for you, and for `dynamicCreative` the ad set is created as a Dynamic Creative ad set automatically (Meta requires that for any multi-text feed; there is no non-DCO multi-text path). Send a single `imageUrls` (or `videoUrls`) entry plus your text variations to get Meta's "Multiple Text Options" behavior on a lead ad.
+         * Lead Gen form ID to attach to the ad's creative. REQUIRED when `goal` is `lead_generation`. Create one via POST /v1/ads/lead-forms. On Meta (facebook/instagram) this is the leadgen_forms ID; the ad set's promoted_object.page_id + LEAD_GENERATION optimization + destination_type ON_AD are derived automatically from the goal. On LinkedIn this is the adForm ID; the creative's `leadgenCallToAction.destination` is set to `urn:li:adForm:{id}` and the campaign objective is set to MAX_LEAD. Forms must be owned by the sponsoredAccount (not the organization) for the URN to resolve. Also required on every Meta ATTACH (`adSetId`) call that targets a lead ad set (the form attaches per-ad; Meta rejects a formless ad in a lead ad set). Both `placementAssets` (per-placement creative) and `dynamicCreative` (multi-text / multi-asset pool, e.g. multiple headlines and primary texts) ARE supported on Meta instant-form lead ads.
          */
         leadGenFormId?: string;
         /**

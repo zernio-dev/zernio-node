@@ -908,6 +908,25 @@ export const deletePost = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Bulk upload from CSV
  * Create multiple posts by uploading a CSV file. Use dryRun=true to validate without creating posts.
+ *
+ * CSV columns:
+ * - Required: `platforms`, `profiles`, and a schedule (one of `schedule_time`, a `schedule_time_<platform>` override, `publish_now=true`, `use_queue=true`, or `is_draft=true`).
+ * - Content: at least one of `post_content`, `title`, or `media_urls` is required.
+ * - Aliases: a handful of columns accept the JSON field name from POST /v1/posts, since integrators infer the CSV shape from that endpoint's body. When both are present the real CSV column wins, unless it is blank for that row, in which case the alias value is used.
+ * - `content` aliases `post_content`
+ * - `timezone` aliases `tz`
+ * - `scheduledFor` aliases `schedule_time`
+ * - `mediaUrls` aliases `media_urls`
+ * - Per-platform overrides use three dynamic column prefixes, one column per platform (e.g. `schedule_time_instagram`, `custom_content_tiktok`, `custom_media_youtube`): `schedule_time_<platform>`, `custom_content_<platform>`, `custom_media_<platform>`.
+ * - Any other column is not read. It does not error, but it is reported in the response's `warnings` array as `unknown_columns:<a,b,c>` (see BulkUploadResult), so a misnamed or unsupported column is never silently dropped.
+ * - Row limits: 5000 rows is a hard cap that returns 400 above it. 500 rows is only an advisory threshold, it adds `rows_exceed_advisory_limit:500` to `warnings` and the request still processes.
+ *
+ * Example row (header + one data row):
+ * ```
+ * post_content,platforms,profiles,schedule_time,tz
+ * "Hello world",instagram,MyProfile,2026-09-01 10:00,America/New_York
+ * ```
+ *
  */
 export const bulkUploadPosts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BulkUploadPostsData, ThrowOnError>) => {
     return (options?.client ?? client).post<BulkUploadPostsResponse, BulkUploadPostsError, ThrowOnError>({
@@ -8006,7 +8025,10 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * kind on the ad group (criteria not in the list are removed); a kind left out is
  * untouched. Any other `targeting` field returns 400: Google cannot mutate broad
  * targeting post-create without recreating the campaign. `creative` returns 501.
- * - **Pinterest / X / LinkedIn / OpenAI Ads**: status + budget only. Sending
+ * - **LinkedIn**: status, budget, targeting (geo countries only, applied to the
+ * LinkedIn Campaign via PARTIAL_UPDATE), and creative (uploads new media, creates a
+ * replacement inline creative on the same campaign, pauses the old one).
+ * - **Pinterest / X / OpenAI Ads**: status + budget only. Sending
  * `targeting` or `creative` returns 501 with code `unsupported_platform_operation`.
  * OpenAI Ads budget is lifetime-only (see `budget.type` below).
  *
