@@ -15124,7 +15124,57 @@ export type ConnectOpenAiAdsCredentialsResponse = ({
     redirectUrl?: string;
 });
 
-export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown);
+export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this is
+     * the Zernio billing tab. For `enterprise_required` this
+     * is the Zernio enterprise contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+});
 
 export type ConnectWhatsAppCredentialsData = {
     body: {
@@ -20185,7 +20235,7 @@ export type ListInboxCommentsResponse = ({
             platform?: string;
             error?: string;
             /**
-             * Error code if available
+             * Error code if available (e.g. TOKEN_EXPIRED, or X_INBOX_NOT_ENABLED for an X account whose owner has not enabled X inbox)
              */
             code?: (string) | null;
             /**
