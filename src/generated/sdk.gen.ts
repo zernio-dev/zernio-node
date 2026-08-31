@@ -1467,7 +1467,24 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
  * Connect ads for a platform
  * Unified ads connection endpoint. Creates a dedicated ads SocialAccount for the specified platform.
  *
- * Same-token platforms (facebook, instagram, linkedin, pinterest): Creates an ads SocialAccount (metaads, linkedinads, pinterestads) with a copied OAuth token from the parent posting account. If the ads account already exists, returns alreadyConnected: true. No extra OAuth needed.
+ * Same-token platforms (facebook, instagram, linkedin, pinterest): the ads SocialAccount
+ * (metaads, linkedinads, pinterestads) reuses the OAuth token of the parent posting account,
+ * but only when an active parent exists and, for facebook and instagram, its stored token
+ * carries ads_management and ads_read (linkedin and pinterest need no extra scope). In that
+ * case no extra OAuth happens and the response is alreadyConnected: true. When no such parent
+ * exists, or the scopes are missing, the endpoint returns an authUrl and a full OAuth round
+ * trip is required. When a parent exists but carries no token usable for ad accounts, the call
+ * fails with 400 RECONNECT_REQUIRED. Independently of the branch, the call can return 403
+ * ADS_ADDON_REQUIRED without the ads add-on and 402 PAYMENT_REQUIRED when the billing gate is
+ * closed.
+ *
+ * Meta Ads prerequisite: connecting Meta Ads (via facebook or instagram) requires a Facebook
+ * Page. Not because the ad account is read through a Page, but because both parent posting
+ * accounts are: the facebook flow only offers Pages you manage, and the instagram flow with
+ * loginMethod=facebook_login only offers Instagram accounts linked to one of those Pages.
+ * Without a Page there is no parent account to inherit a token from. A user who manages no
+ * Facebook Page cannot complete this connection, and the facebook flow ends with
+ * error=no_facebook_pages.
  *
  * Separate-token platforms (tiktok, twitter): Starts the platform-specific marketing API OAuth flow and creates an ads SocialAccount (tiktokads, xads) with its own token. If the ads account already exists, returns alreadyConnected: true.
  * - tiktok: accountId is OPTIONAL. With accountId, the new tiktokads account links to that posting account (parentAccountId set) — Spark Ads + standalone ads using the posting TT_USER identity become available. Without accountId, ads-only mode kicks in: the new tiktokads account has parentAccountId=null and standalone ads use a synthetic CUSTOMIZED_USER ("Brand Identity"); Spark Ads are unavailable because TikTok requires a posting account for them. The Brand Identity is configured separately via PATCH /v1/connect/tiktok-ads (or inline on POST /v1/ads/create via the brandIdentity field).
@@ -3769,7 +3786,16 @@ export const deleteTelegramCommands = <ThrowOnError extends boolean = false>(opt
  * and stops working later. This endpoint checks the stored url and, when it
  * has gone stale, re-mints the message's media from Meta and persists it
  * before answering. The message id never expires, so this URL is the one to
- * store — it is returned on each attachment as `refreshUrl`.
+ * store. It is returned ready-made on each attachment as `refreshUrl` when
+ * you read a message over REST.
+ *
+ * **Webhook payloads do not carry `refreshUrl`**, so a webhook-driven
+ * integration builds this URL itself. Every piece is in the event:
+ * `message.conversationId`, `message.platformMessageId`, the attachment's
+ * zero-based position, and `account.accountId`. Note that **`accountId` is a
+ * required query parameter**; omitting it returns `400`
+ * `missing_required_field`, which is the same requirement
+ * `GET /v1/whatsapp/media/{mediaId}` has.
  *
  * By default it responds `302` to the live media url, so it can be used
  * directly as an `<img src>` on a browser session. API-key integrators
