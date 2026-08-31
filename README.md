@@ -267,6 +267,7 @@ try {
 | `webhooks.getWebhookSettings()` | List webhooks |
 | `webhooks.updateWebhookSettings()` | Update webhook |
 | `webhooks.deleteWebhookSettings()` | Delete webhook |
+| `webhooks.redeliverWebhookEvent()` | Redeliver a webhook event |
 | `webhooks.testWebhook()` | Send test webhook |
 
 ### API Keys

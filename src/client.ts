@@ -443,6 +443,7 @@ import {
   purchasePhoneNumber,
   purchaseWhatsAppPhoneNumber,
   queryAdInsights,
+  redeliverWebhookEvent,
   registerWhatsAppNumber,
   rejectWhatsAppGroupJoinRequests,
   releasePhoneNumber,
@@ -1156,6 +1157,7 @@ export class Zernio {
     updateWebhookSettings: this._bind(updateWebhookSettings),
     deleteWebhookSettings: this._bind(deleteWebhookSettings),
     getWebhookLogs: this._bind(getWebhookLogs),
+    redeliverWebhookEvent: this._bind(redeliverWebhookEvent),
     testWebhook: this._bind(testWebhook),
   };
 

@@ -18060,6 +18060,38 @@ export type GetWebhookLogsError = (unknown | {
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
 });
 
+export type RedeliverWebhookEventData = {
+    body: {
+        /**
+         * ID of the webhook subscription that delivered the event
+         */
+        webhookId: string;
+        /**
+         * Stable event ID of the delivery to replay
+         */
+        eventId: string;
+    };
+};
+
+export type RedeliverWebhookEventResponse = ({
+    success?: boolean;
+    message?: string;
+});
+
+export type RedeliverWebhookEventError = (unknown | {
+    error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+} | {
+    success?: boolean;
+    message?: string;
+});
+
 export type TestWebhookData = {
     body: {
         /**

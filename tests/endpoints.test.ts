@@ -775,6 +775,11 @@ describe('Endpoint Methods', () => {
       expect(client.webhooks.getWebhookLogs).toBeTypeOf('function');
     });
 
+    it('should have redeliverWebhookEvent method', () => {
+      expect(client.webhooks.redeliverWebhookEvent).toBeDefined();
+      expect(client.webhooks.redeliverWebhookEvent).toBeTypeOf('function');
+    });
+
     it('should have testWebhook method', () => {
       expect(client.webhooks.testWebhook).toBeDefined();
       expect(client.webhooks.testWebhook).toBeTypeOf('function');
