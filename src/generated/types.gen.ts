@@ -4821,6 +4821,10 @@ export type PostAnalytics = {
 export type PostCreateResponse = {
     message?: string;
     post?: Post;
+    /**
+     * Advisory notices about a post that was still created: media truncated for a platform, a recycling caveat, or a field that was ignored because it sat outside platforms[].platformSpecificData. Absent when there are none.
+     */
+    warnings?: Array<(string)>;
 };
 
 export type PostDeleteResponse = {
