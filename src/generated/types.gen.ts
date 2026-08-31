@@ -5363,7 +5363,8 @@ export type SocialAccount = {
     /**
      * Whether the user explicitly activated this account. false means the account was
      * created as a side effect (e.g., posting account auto-created when user connected
-     * ads first). Posting UI and scheduler ignore accounts with enabled: false.
+     * ads first). Such accounts are hidden from this list, cannot be posted to
+     * (`ACCOUNT_NOT_ENABLED_FOR_POSTING`), and are not billed as connected accounts.
      *
      */
     enabled?: boolean;
@@ -11427,7 +11428,7 @@ export type CreatePostError = ({
     /**
      * Stable machine-readable cause. Absent for ownership failures.
      */
-    code?: 'ACCOUNT_DISCONNECTED' | 'PROFILE_OVER_LIMIT';
+    code?: 'ACCOUNT_DISCONNECTED' | 'ACCOUNT_NOT_ENABLED_FOR_POSTING' | 'PROFILE_OVER_LIMIT';
 } | {
     error?: string;
     details?: {
