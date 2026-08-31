@@ -4729,8 +4729,7 @@ export type Post = {
     _id?: string;
     userId?: (string | User);
     /**
-     * YouTube: title must be ≤ 100 characters.
-     *
+     * Stored on the post for reference/display only. This field is NOT used as the video title when publishing. To set a YouTube video title, use platformSpecificData.title on the youtube platform target (falls back to the first line of content when omitted).
      */
     title?: string;
     content?: string;
@@ -4743,6 +4742,9 @@ export type Post = {
      * YouTube constraints: each tag max 100 chars, combined max 500 chars, duplicates removed.
      */
     tags?: Array<(string)>;
+    /**
+     * Stored for reference only. Hashtags are NOT automatically appended to the caption when publishing. Include hashtags directly in the content field (platforms like Instagram only support hashtags as caption text). For YouTube keywords, use the tags field instead.
+     */
     hashtags?: Array<(string)>;
     /**
      * Stored for reference only. This field does NOT automatically create @mentions when publishing. For LinkedIn @mentions, use the /v1/accounts/{accountId}/linkedin-mentions endpoint to resolve profile URLs to URNs, then embed the returned mentionFormat directly in the post content field.
@@ -11346,6 +11348,9 @@ export type ListPostsError = (ErrorResponse | {
 
 export type CreatePostData = {
     body: {
+        /**
+         * Stored on the post for reference/display only. This field is NOT used as the video title when publishing. To set a YouTube video title, use platformSpecificData.title on the youtube platform target (falls back to the first line of content when omitted).
+         */
         title?: string;
         /**
          * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn text-free reshare (platformSpecificData.reshareUrl with no text). Required for other text-only posts.
@@ -11380,6 +11385,9 @@ export type CreatePostData = {
          * Tags/keywords. YouTube constraints: each tag max 100 chars, combined max 500 chars, duplicates auto-removed.
          */
         tags?: Array<(string)>;
+        /**
+         * Stored for reference only. Hashtags are NOT automatically appended to the caption when publishing. Include hashtags directly in the content field (platforms like Instagram only support hashtags as caption text). For YouTube keywords, use the tags field instead.
+         */
         hashtags?: Array<(string)>;
         /**
          * Stored for reference only. This field does NOT automatically create @mentions when publishing. For LinkedIn @mentions, use the /v1/accounts/{accountId}/linkedin-mentions endpoint to resolve profile URLs to URNs, then embed the returned mentionFormat directly in the post content field.
@@ -11508,6 +11516,9 @@ export type GetPostError = (ErrorResponse | {
 
 export type UpdatePostData = {
     body: {
+        /**
+         * Stored on the post for reference/display only. This field is NOT used as the video title when publishing. To set a YouTube video title, use platformSpecificData.title on the youtube platform target (falls back to the first line of content when omitted).
+         */
         title?: string;
         content?: string;
         mediaItems?: Array<MediaItem>;
@@ -11542,6 +11553,9 @@ export type UpdatePostData = {
         timezone?: string;
         visibility?: 'public' | 'private' | 'unlisted';
         tags?: Array<(string)>;
+        /**
+         * Stored for reference only. Hashtags are NOT automatically appended to the caption when publishing. Include hashtags directly in the content field (platforms like Instagram only support hashtags as caption text). For YouTube keywords, use the tags field instead.
+         */
         hashtags?: Array<(string)>;
         mentions?: Array<(string)>;
         crosspostingEnabled?: boolean;
