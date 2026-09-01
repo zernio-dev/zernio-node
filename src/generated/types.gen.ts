@@ -7545,8 +7545,9 @@ export type WebhookPayloadMessage = {
         /**
          * platformMessageId of the message this one is a quote-reply to.
          * WhatsApp (`context.id`), Instagram and Facebook Messenger
-         * (`reply_to.mid`). Outgoing quote-replies carry the same field on
-         * `message.sent`; see WebhookPayloadMessageSent.metadata.
+         * (`reply_to.mid`). On outgoing messages the same field appears on
+         * `message.sent`, but only on some surfaces: see
+         * WebhookPayloadMessageSent.metadata.quotedMessageId.
          *
          */
         quotedMessageId?: string;
@@ -8105,13 +8106,27 @@ export type WebhookPayloadMessageSent = {
      */
     metadata?: {
         /**
-         * platformMessageId of the message this send is a quote-reply to.
-         * Set when the reply was sent through Zernio with `replyTo` on the
-         * inbox send API (WhatsApp and Telegram), and when the operator
-         * replied from the native WhatsApp Business, Instagram or Messenger
-         * app. WhatsApp API sends carry it on the event fired from the
-         * delivery status, so it arrives on the same `message.sent` as any
-         * other WhatsApp send.
+         * `platformMessageId` of the message this send is a quote-reply to.
+         *
+         * Present when the reply was sent through Zernio with `replyTo` on
+         * the inbox send API (WhatsApp and Telegram). A WhatsApp API send
+         * fires its `message.sent` off the delivery status, and the quote
+         * reference is forwarded from the stored send there, so it arrives
+         * on the same `message.sent` as any other WhatsApp send.
+         *
+         * Not delivered on Instagram echoes. Zernio forwards
+         * `reply_to.mid` whenever Meta puts it on an echo, but on
+         * Instagram Meta does not send it, so a reply the operator quoted
+         * in the Instagram app arrives with no `quotedMessageId`.
+         * Facebook Messenger rides a separate subscription
+         * (`message_echoes`) and has not been measured, so treat it as
+         * unverified rather than supported.
+         *
+         * Absent on WhatsApp Coexistence echoes. Meta omits the quote
+         * context from `smb_message_echoes`, so a reply the operator sent
+         * from the WhatsApp Business app arrives with no `quotedMessageId`
+         * even though WhatsApp shows it as a quote-reply. Do not read the
+         * absence of this field as "not a reply".
          *
          */
         quotedMessageId?: string;
@@ -19097,6 +19112,16 @@ export type GetInboxConversationMessagesResponse = ({
      */
     sortOrderApplied?: 'asc' | 'desc';
     messages?: Array<{
+        /**
+         * The platform's own message id: the `wamid` on WhatsApp, the
+         * `mid` on Instagram and Facebook Messenger. This is what
+         * `metadata.quotedMessageId` points at, the value to pass as
+         * `replyTo` on the platforms that support quote-replies, and the
+         * `{messageId}` segment of the attachment-resolve URL. Webhooks
+         * deliver the same value as `message.platformMessageId`; this
+         * response has no field by that name.
+         *
+         */
         id?: string;
         conversationId?: string;
         accountId?: string;
@@ -19192,7 +19217,8 @@ export type GetInboxConversationMessagesResponse = ({
         }>;
         /**
          * Platform-specific extras. Free-form, but commonly includes:
-         * `quotedMessageId` (platformMessageId this message replies to),
+         * `quotedMessageId` (the `id` of the message this one replies to,
+         * delivered as `message.platformMessageId` on webhooks),
          * `waInteractive` (a compact descriptor of WhatsApp interactive
          * content sent: buttons / list / cta_url / flow / location_request),
          * and for inbound interactive taps `interactiveType` / `interactiveId`.
@@ -19749,7 +19775,7 @@ export type SendInboxMessageData = {
          */
         messageTag?: 'CONFIRMED_EVENT_UPDATE' | 'POST_PURCHASE_UPDATE' | 'ACCOUNT_UPDATE' | 'HUMAN_AGENT';
         /**
-         * Platform message ID to quote-reply to. For WhatsApp, pass the wamid; for Telegram, the Telegram message ID (both available in message.platformMessageId from webhooks or the list-messages endpoint). On Slack it threads the reply (thread_ts) instead of quoting. Silently ignored on platforms without send-side reply support, including Instagram and Facebook Messenger (Meta's Send API rejects reply_to on Instagram and does not expose it on Messenger).
+         * Platform message ID to quote-reply to. For WhatsApp, pass the wamid; for Telegram, the Telegram message ID (delivered as message.platformMessageId on webhooks, and as `id` on each entry of the list-messages endpoint). On Slack it threads the reply (thread_ts) instead of quoting. Silently ignored on platforms without send-side reply support, including Instagram and Facebook Messenger (Meta's Send API rejects reply_to on Instagram and does not expose it on Messenger).
          */
         replyTo?: string;
         /**
