@@ -1986,9 +1986,9 @@ export const deleteGoogleBusinessReviewReply = <ThrowOnError extends boolean = f
  * Get pending OAuth data
  * Fetch pending OAuth data for headless mode using the pendingDataToken from the redirect URL.
  *
- * **Scope**: This endpoint is used for LinkedIn organizations, Snapchat profiles, and Pinterest boards, where the selection list is too large to fit in URL params. The redirect carries a `pendingDataToken` instead of the full payload; the response includes the corresponding selection array (e.g. `boards` for Pinterest). WhatsApp, Facebook, Google Business and other platforms pass selection state directly via URL query params on the redirect (`profileId`, `tempToken`, `step`), no pending record is created, so this endpoint will return 404 for those flows. Use the platform-specific selection endpoint instead (e.g. `/v1/connect/whatsapp/select-phone-number`).
+ * **Scope**: This endpoint is used for LinkedIn organizations, Google Business locations, Slack channels, Snapchat profiles, and Pinterest boards, where the selection list is too large to fit in URL params. The redirect carries a `pendingDataToken` instead of the full payload; the response includes the corresponding selection array (e.g. `boards` for Pinterest). WhatsApp, Facebook and other platforms pass selection state directly via URL query params on the redirect (`profileId`, `tempToken`, `step`), no pending record is created, so this endpoint will return 404 for those flows. Use the platform-specific selection endpoint instead (e.g. `/v1/connect/whatsapp/select-phone-number`).
  *
- * Token is one-time use and expires after 10 minutes. No authentication required.
+ * Reading the token does not consume it, so this fetch is repeatable until the token expires 1 hour after issuance. Completing the platform selection deletes the pending record, so the token stops working from then on. No authentication required.
  *
  */
 export const getPendingOAuthData = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetPendingOAuthDataData, ThrowOnError>) => {
