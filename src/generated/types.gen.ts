@@ -30816,10 +30816,11 @@ export type UpdateAdData = {
          * have no headline slot). `body` becomes the in-feed `ad_text`; `linkUrl` becomes
          * `landing_page_url`; `videoUrl` triggers a fresh upload. `description`, `videoId`
          * and `existingCreativeId` are Meta-only and return 400.
-         * - **LinkedIn**: uploads new media (image via `imageUrl` or video via `videoUrl`),
-         * creates a new inline media creative on the same campaign, and pauses the old
-         * creative (best-effort). The old creative is retained for historical reporting.
-         * `videoId` and `existingCreativeId` are Meta-only and return 400.
+         * - **LinkedIn**: requires new media (image via `imageUrl` or video via `videoUrl`);
+         * a text-only creative update returns 400. Uploads the media, creates a new inline
+         * media creative on the same campaign, and pauses the old creative (best-effort).
+         * The old creative is retained for historical reporting. `videoId` and
+         * `existingCreativeId` are Meta-only and return 400.
          *
          */
         creative?: {

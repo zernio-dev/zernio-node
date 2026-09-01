@@ -3300,7 +3300,7 @@ export const getWebhookLogs = <ThrowOnError extends boolean = false>(options?: O
  * emitted, not the current state of the resource.
  *
  * Only deliveries inside the 30-day log retention window can be replayed; past that
- * the payload is gone and the request fails with a 500. Replays run the same
+ * the payload is gone and the request fails with a 422. Replays run the same
  * resource-group checks as live delivery, against both the key's groups and the
  * subscription's `disabledResourceGroups`.
  *
