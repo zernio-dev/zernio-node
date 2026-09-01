@@ -27372,7 +27372,7 @@ export type ListContactsData = {
         accountId?: string;
         isSubscribed?: 'true' | 'false';
         limit?: number;
-        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp';
+        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack';
         /**
          * Filter by profile. Omit to list across all profiles. Matches the profile recorded on the contact itself, which is set when the contact is created and is independent of the profile its account currently belongs to. Filter by accountId to list a contact through its channel instead.
          */
@@ -27442,7 +27442,10 @@ export type CreateContactData = {
          * Optional. Creates a channel if provided with platform + platformIdentifier
          */
         accountId?: string;
-        platform?: string;
+        /**
+         * Channel platform. Only the enum values support contact channels; any other platform is rejected with code platform_not_supported.
+         */
+        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack';
         platformIdentifier?: string;
         displayIdentifier?: string;
     };
