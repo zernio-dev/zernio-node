@@ -9072,8 +9072,13 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences.
  *
  * The `dimension` param selects what is searched, `geo` (locations, further scoped
- * by `geoType`), `interest`, `behavior`, or `income`. Availability of each dimension
- * varies by platform (e.g. behaviours are Meta/TikTok only). Results are normalized
+ * by `geoType`), `interest`, `behavior`, `income`, or the Meta-only work
+ * demographics `workPosition`, `workEmployer` and `workIndustry` (their ids feed
+ * `TargetingSpec.workPositions`/`workEmployers`/`workIndustries`). Availability of
+ * each dimension varies by platform (e.g. behaviours are Meta/TikTok only).
+ * Work industries are a fixed ~30-entry Meta catalog with no server-side query,
+ * so `workIndustry` matching, ranking and `limit` happen in Zernio.
+ * Results are normalized
  * across platforms into a single shape, so the same client code consumes Meta,
  * TikTok, LinkedIn, X, Pinterest, and Google results.
  *
