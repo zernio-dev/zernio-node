@@ -7697,11 +7697,16 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
 
 /**
  * Create a standalone campaign
- * Creates a campaign WITHOUT its first ad set / ad (the ODAX shell only). Ad sets join it
- * later via `existingCampaignId` on the create endpoints. A budget here is campaign-level
- * (CBO) by definition; omit it for ABO (each ad set carries its own budget). Created
- * `PAUSED` unless `status: ACTIVE`. The campaign materializes in `/v1/ads/tree` via the
- * next sync discovery pass.
+ * Creates a campaign WITHOUT its first ad set / ad, on the platform of the given
+ * `accountId`. Ad sets join it later via `existingCampaignId` on the create endpoints.
+ * Platform notes: on Meta a budget here is campaign-level (CBO) by definition; omit it
+ * for ABO (each ad set carries its own budget), and `specialAdCategories` /
+ * `bidStrategy` are Meta-only (400 elsewhere). Google, X and OpenAI require a budget
+ * (422 without one; OpenAI accepts only `budgetType: lifetime`). LinkedIn creates the
+ * campaign GROUP (our campaign level) and rejects a budget, which lives on the
+ * campaign (ad set) level there; it comes back `status: DRAFT`. TikTok campaigns are
+ * created without a status and report `ENABLE`. Created `PAUSED` unless
+ * `status: ACTIVE` where the platform supports it.
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
  */

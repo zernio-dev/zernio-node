@@ -29997,11 +29997,11 @@ export type ListAdCampaignsError = (ErrorResponse | {
 export type CreateAdCampaignData = {
     body: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         name: string;
@@ -31008,7 +31008,7 @@ export type GenerateAdPreviewsData = {
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         /**
@@ -31726,7 +31726,7 @@ export type CreateRfPredictionData = {
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         /**
@@ -32083,7 +32083,7 @@ export type CreateAdCreativeData = {
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         headline: string;
@@ -32179,7 +32179,7 @@ export type GetAdCreativeError = (unknown | {
 export type UpdateAdCreativeData = {
     body: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
         name: string;
@@ -32265,11 +32265,11 @@ export type ListValueRuleSetsError = (unknown | {
 export type CreateValueRuleSetData = {
     body: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         name: string;
@@ -32318,7 +32318,7 @@ export type GetValueRuleSetError = (unknown | {
 export type UpdateValueRuleSetData = {
     body: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
         /**
@@ -34431,11 +34431,11 @@ export type CreateTestLeadError = (ErrorResponse | {
 export type UploadAdImageData = {
     body: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         /**
@@ -34512,11 +34512,11 @@ export type ListAdImagesError = (unknown | {
 export type UploadAdVideoData = {
     body: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         /**
@@ -36077,7 +36077,7 @@ export type ListCustomConversionsError = (unknown | {
 export type CreateCustomConversionData = {
     body: {
         /**
-         * Meta ad account id (act_<n>).
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
          */
         adAccountId: string;
         /**
