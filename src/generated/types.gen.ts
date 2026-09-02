@@ -2413,6 +2413,10 @@ export type CtwaAdRequestBody = {
      *
      */
     dsaPayor?: string;
+    /**
+     * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV, INDIA_FINSERV). Forwarded to the ad set.
+     */
+    regionalRegulatedCategories?: Array<(string)>;
 };
 
 /**
@@ -32816,6 +32820,10 @@ export type BoostPostData = {
          */
         specialAdCategoryCountry?: Array<(string)>;
         /**
+         * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV, INDIA_FINSERV). Forwarded to the ad set.
+         */
+        regionalRegulatedCategories?: Array<(string)>;
+        /**
          * Destination URL for the CTA button. Send it together with `callToAction`.
          *
          * **Meta**: adds a top-level `call_to_action` to the post-reference creative.
@@ -33384,6 +33392,14 @@ export type CreateStandaloneAdData = {
          *
          */
         specialAdCategoryCountry?: Array<(string)>;
+        /**
+         * Meta only. Regional regulation categories required when the ad set targets certain countries.
+         * Known values: SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV,
+         * INDIA_FINSERV, TAIWAN_FINSERV. Meta rejects the ad set without this when the targeting geo
+         * includes the corresponding country.
+         *
+         */
+        regionalRegulatedCategories?: Array<(string)>;
         /**
          * Required for lifetime budgets
          */
