@@ -4117,6 +4117,22 @@ export type InstagramPlatformData = {
      * When true, the post is labeled by Instagram as containing AI-generated media. Per Meta, this self-disclosure label is for AI-generated media, not AI-written captions. Applies to feed posts, Reels, Stories, and carousels.
      */
     isAiGenerated?: boolean;
+    /**
+     * When true, Instagram shows the "Paid partnership" label on the post. Applies to feed posts, Reels, and carousels; not supported on Stories (400). Requires an Instagram account connected via Facebook Login; classic Instagram Login accounts get a 400 (instagram_paid_partnership_requires_facebook_login). Implied when brandedContentSponsors is set.
+     */
+    isPaidPartnership?: boolean;
+    /**
+     * Up to 2 brands to tag as sponsors, each an Instagram username (leading @ optional) or a numeric Instagram user ID. Usernames are resolved at publish time via the Business Discovery API on the publishing account; a sponsor that cannot be resolved (private, personal, or nonexistent account) fails the post with a user error naming it. Sponsors must be professional (Business or Creator) accounts. A brand that has pre-approved the creator shows as "Paid partnership with @brand" immediately; otherwise the plain label shows and the brand receives an approval request. Sets isPaidPartnership. Same login and content-type rules as isPaidPartnership.
+     */
+    brandedContentSponsors?: Array<(string)>;
+    /**
+     * When false, comments are turned off on the post right after it is published (Meta exposes this as comment_enabled on the media object). Applies to feed posts, Reels, and carousels; ignored for Stories, which have no comments. Works with both Instagram connection methods. Best-effort: if the toggle fails after a successful publish, the post still succeeds and stays live with comments on.
+     */
+    commentsEnabled?: boolean;
+    /**
+     * Tags the post with a location. The ID of a Facebook Page that has location data (digits only); it is sent to Instagram as location_id. Applies to feed posts, Reels, and the carousel as a whole; Stories and individual carousel slides are unsupported (a Story with locationId is rejected with a 400). A Page without location data or that does not exist fails the post with a user error at publish time.
+     */
+    locationId?: string;
 };
 
 /**
