@@ -33309,9 +33309,31 @@ export type CreateStandaloneAdData = {
          */
         body?: string;
         /**
-         * Meta only (facebook/instagram). Link description — the secondary text shown below the headline (Meta's link_data.description; on video creatives mapped to video_data.link_description). When omitted, Meta auto-pulls the destination URL's OpenGraph description. Applies on legacy, attach, and placementAssets shapes; for multi-creative use creatives[].description (this field is the shared fallback). For multi-text variations use dynamicCreative.descriptions instead.
+         * Meta only (facebook/instagram). Link description — the secondary text shown below the headline (Meta's link_data.description; on video creatives mapped to video_data.link_description). When omitted, Meta auto-pulls the destination URL's OpenGraph description. Applies on legacy, attach, and placementAssets shapes; for multi-creative use creatives[].description (this field is the shared fallback). For multi-text variations use `descriptions` (array) instead.
          */
         description?: string;
+        /**
+         * Meta only. Multiple Text Options (Advantage+ Flexible Format): supply 1-5 primary-text
+         * variations and Meta optimises delivery across them, WITHOUT enabling full Dynamic Creative
+         * (`dynamicCreative`). Uses `optimization_type: DEGREES_OF_FREEDOM` on the asset feed, so
+         * multiple ads per ad set are allowed (unlike `dynamicCreative` which is limited to one).
+         * Requires `imageUrl` or `video`, `linkUrl`, and `callToAction`. When set, the top-level
+         * `body` field is used as the `object_story_spec.link_data.message` (the preview text) and
+         * `headlines` must also be present. Mutually exclusive with `dynamicCreative`,
+         * `placementAssets`, `carouselCards`, and `creatives[]`.
+         *
+         */
+        bodies?: Array<(string)>;
+        /**
+         * Meta only. Headline variations for Multiple Text Options. Must be sent alongside `bodies`.
+         * The top-level `headline` field is used as the `object_story_spec.link_data.name`.
+         *
+         */
+        headlines?: Array<(string)>;
+        /**
+         * Meta only. Optional description variations for Multiple Text Options. Sent alongside `bodies` and `headlines`.
+         */
+        descriptions?: Array<(string)>;
         /**
          * Required on legacy + attach shapes for Meta. Honoured on TikTok (passes through to the Spark Ad creative's `call_to_action`) and on LinkedIn (the CTA button on the ad; defaults to LEARN_MORE when `linkUrl` is set). LinkedIn accepts: LEARN_MORE, SIGN_UP, DOWNLOAD, SUBSCRIBE, REGISTER, JOIN, ATTEND, REQUEST_DEMO, VIEW_QUOTE, APPLY, SEE_MORE, SHOP_NOW, BUY_NOW. Ignored by Google, Pinterest, and X/Twitter.
          */
