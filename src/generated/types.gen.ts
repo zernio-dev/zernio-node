@@ -24247,7 +24247,7 @@ export type ListPhoneNumbersResponse = ({
          */
         telnyxOrderId?: (string) | null;
         /**
-         * Per-country monthly price in cents ($2..$25).
+         * What this number bills each month, in cents. Stamped when the number was bought, so an existing number keeps its price when the rate card changes.
          */
         monthlyCents?: number;
         /**
@@ -24486,6 +24486,9 @@ export type ListPhoneNumberCountriesResponse = ({
          */
         code?: string;
         tier?: 1 | 2 | 3 | 4;
+        /**
+         * Price a NEW number in this country costs per month, in cents, for the default (first) type. 1.5x the carrier's monthly cost, rounded up to a whole dollar, minimum $3.
+         */
         monthlyCents?: number;
         needsKyc?: boolean;
         /**
@@ -24516,6 +24519,9 @@ export type ListPhoneNumberCountriesResponse = ({
             numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
             tier?: 1 | 2 | 3 | 4;
             needsKyc?: boolean;
+            /**
+             * Price a NEW number of this type costs per month, in cents.
+             */
             monthlyCents?: number;
             /**
              * Always false for toll_free (WhatsApp does not reliably register toll-free numbers).
@@ -24669,7 +24675,7 @@ export type GetWhatsAppPhoneNumbersResponse = ({
          */
         telnyxOrderId?: (string) | null;
         /**
-         * Per-country monthly price in cents ($2..$25).
+         * What this number bills each month, in cents. Stamped when the number was bought, so an existing number keeps its price when the rate card changes.
          */
         monthlyCents?: number;
         /**
@@ -24809,6 +24815,9 @@ export type ListWhatsAppNumberCountriesResponse = ({
          */
         code?: string;
         tier?: 1 | 2 | 3 | 4;
+        /**
+         * Price a NEW number in this country costs per month, in cents, for the default (first) type. 1.5x the carrier's monthly cost, rounded up to a whole dollar, minimum $3.
+         */
         monthlyCents?: number;
         needsKyc?: boolean;
         outboundCallingAvailable?: boolean;

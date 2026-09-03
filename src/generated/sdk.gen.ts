@@ -5587,6 +5587,10 @@ export const releasePhoneNumber = <ThrowOnError extends boolean = false>(options
  * no checkout redirect). No payment method on file returns `402 PAYMENT_REQUIRED`;
  * a regulated country returns `202` with `status: "kyc_required"` and a `kycUrl`.
  *
+ * The monthly price is the one `GET /v1/phone-numbers/countries` quotes for that
+ * country and `numberType` at the time of purchase, and it is stamped on the number:
+ * later rate-card changes never move a number you already own.
+ *
  * Requires usage-based billing (the Usage plan). The maximum number of phone numbers
  * is determined by the user's plan.
  *
@@ -5680,6 +5684,10 @@ export const getWhatsAppPhoneNumbers = <ThrowOnError extends boolean = false>(op
  * number provisions inline and bills per month on your usage-based invoice (there is
  * no checkout redirect). No payment method on file returns `402 PAYMENT_REQUIRED`;
  * a regulated country returns `202` with `status: "kyc_required"` and a `kycUrl`.
+ *
+ * The monthly price is the one `GET /v1/phone-numbers/countries` quotes for that
+ * country and `numberType` at the time of purchase, and it is stamped on the number:
+ * later rate-card changes never move a number you already own.
  *
  * Requires usage-based billing (the Usage plan). The maximum number of phone numbers
  * is determined by the user's plan.
