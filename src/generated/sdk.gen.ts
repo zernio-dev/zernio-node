@@ -915,7 +915,7 @@ export const createPost = <ThrowOnError extends boolean = false>(options: Option
  *
  * LinkedIn personal profiles: LinkedIn has no listing API for personal profiles, so a `url` is REQUIRED and imports that single post. Pass any LinkedIn post URL (`linkedin.com/posts/…`, `linkedin.com/feed/update/urn:li:activity:…`) or a `urn:li:share:…` / `urn:li:ugcPost:…` URN. Works for posts published outside Zernio and before the account was connected, any age; the post must be authored by the connected member. Imported posts return full analytics (impressions, reach, reactions, comments, reshares, saves) and keep refreshing on the background analytics cycle, but carry no content/media (LinkedIn does not expose them for personal profiles).
  *
- * `url` accepts any format the platform uses (e.g. `instagram.com/p/…`, `instagram.com/reel/…`, `youtu.be/…`, `youtube.com/shorts/…`, `tiktok.com/@user/video/…`, and `vm.tiktok.com` short links). Pass `postId` (the platform media/video id) as an alternative locator.
+ * `url` accepts any format the platform uses (e.g. `instagram.com/p/…`, `instagram.com/reel/…`, `youtu.be/…`, `youtube.com/shorts/…`, `tiktok.com/@user/video/…`, `vm.tiktok.com` short links, `pinterest.com/pin/…` on any regional domain, and `pin.it` short links). Pass `postId` (the platform media/video/pin id) as an alternative locator.
  *
  * Note: post-level analytics (reach, impressions) still carry the platform's own delay (e.g. ~24h on Instagram). This endpoint confirms the post exists and returns its metadata plus basic engagement (likes, comments), not delayed insights.
  *
