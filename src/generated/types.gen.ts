@@ -19148,7 +19148,7 @@ export type SearchInboxConversationsError = (unknown | {
 export type GetInboxConversationData = {
     path: {
         /**
-         * The conversation ID (id field from list conversations endpoint). This is the platform-specific conversation identifier, not an internal database ID.
+         * Opaque conversation identifier, accepted verbatim from the list endpoint or from the conversationId on inbox webhooks. Format not to be assumed.
          */
         conversationId: string;
     };
@@ -19295,7 +19295,7 @@ export type UpdateInboxConversationData = {
     };
     path: {
         /**
-         * The conversation ID (id field from list conversations endpoint). This is the platform-specific conversation identifier, not an internal database ID.
+         * Opaque conversation identifier, accepted verbatim from the list endpoint or from the conversationId on inbox webhooks. Format not to be assumed.
          */
         conversationId: string;
     };
@@ -19319,7 +19319,7 @@ export type UpdateInboxConversationError = ({
 export type GetInboxConversationMessagesData = {
     path: {
         /**
-         * The conversation ID (id field from list conversations endpoint). This is the platform-specific conversation identifier, not an internal database ID.
+         * Opaque conversation identifier, accepted verbatim from the list endpoint or from the conversationId on inbox webhooks. Format not to be assumed.
          */
         conversationId: string;
     };
