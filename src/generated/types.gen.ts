@@ -27550,6 +27550,69 @@ export type DeprecateWhatsAppFlowError = (unknown | {
     error?: string;
 });
 
+export type GetWhatsAppFlowsEncryptionKeyData = {
+    query: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppFlowsEncryptionKeyResponse = ({
+    /**
+     * The registered RSA public key in PEM format, or null when none is registered.
+     */
+    publicKey?: (string) | null;
+    /**
+     * VALID (key matches Meta's records) or MISMATCH (no key registered, or the key does not match); null when unknown.
+     */
+    signatureStatus?: ('VALID' | 'MISMATCH') | null;
+    /**
+     * Whether a key is currently registered. Derived from publicKey, not signatureStatus.
+     */
+    registered?: boolean;
+});
+
+export type GetWhatsAppFlowsEncryptionKeyError = (ErrorResponse | {
+    error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+} | unknown);
+
+export type SetWhatsAppFlowsEncryptionKeyData = {
+    body: {
+        /**
+         * WhatsApp social account ID
+         */
+        accountId: string;
+        /**
+         * RSA public key in PEM format. Rejected if it is a private key or not a valid RSA public key PEM.
+         */
+        businessPublicKey: string;
+    };
+};
+
+export type SetWhatsAppFlowsEncryptionKeyResponse = ({
+    success?: boolean;
+});
+
+export type SetWhatsAppFlowsEncryptionKeyError = (ErrorResponse | {
+    error?: string;
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+} | unknown);
+
 export type SendWhatsAppFlowMessageData = {
     body: {
         /**

@@ -954,11 +954,13 @@ try {
 | `whatsappFlows.getWhatsAppFlow()` | Get flow |
 | `whatsappFlows.getWhatsAppFlowJson()` | Get flow JSON asset |
 | `whatsappFlows.getWhatsAppFlowPreview()` | Get flow preview URL |
+| `whatsappFlows.getWhatsAppFlowsEncryptionKey()` | Get Flows encryption key status |
 | `whatsappFlows.updateWhatsAppFlow()` | Update flow |
 | `whatsappFlows.deleteWhatsAppFlow()` | Delete flow |
 | `whatsappFlows.deprecateWhatsAppFlow()` | Deprecate flow |
 | `whatsappFlows.publishWhatsAppFlow()` | Publish flow |
 | `whatsappFlows.sendWhatsAppFlowMessage()` | Send flow message |
+| `whatsappFlows.setWhatsAppFlowsEncryptionKey()` | Register a Flows encryption key |
 | `whatsappFlows.uploadWhatsAppFlowJson()` | Upload flow JSON |
 
 ### WhatsApp Phone Numbers
