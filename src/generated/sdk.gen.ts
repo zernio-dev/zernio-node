@@ -1276,7 +1276,7 @@ export const moveAccountToProfile = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Disconnect account
- * Disconnects and removes a connected social account.
+ * Disconnects and removes a connected social account. Repeating the call for an account already disconnected returns 404, the account stays in its 1h grace window and the disconnect is not re-run.
  */
 export const deleteAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAccountData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteAccountResponse, DeleteAccountError, ThrowOnError>({
