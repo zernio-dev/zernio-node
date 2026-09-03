@@ -189,6 +189,7 @@ import {
   getAdsTimeline,
   getAllAccountsHealth,
   getAnalytics,
+  getAnalyticsDelta,
   getBestTimeToPost,
   getBilling,
   getBlog,
@@ -751,6 +752,7 @@ export class Zernio {
    */
   analytics = {
     getAnalytics: this._bind(getAnalytics),
+    getAnalyticsDelta: this._bind(getAnalyticsDelta),
     getYouTubeChannelInsights: this._bind(getYouTubeChannelInsights),
     getLinkedInOrgAggregateAnalytics: this._bind(getLinkedInOrgAggregateAnalytics),
     getTikTokAccountInsights: this._bind(getTikTokAccountInsights),

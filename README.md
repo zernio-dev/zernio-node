@@ -217,6 +217,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `analytics.getAnalytics()` | Get post analytics |
+| `analytics.getAnalyticsDelta()` | Analytics changed since a cursor |
 | `analytics.getBestTimeToPost()` | Get best times to post |
 | `analytics.getContentDecay()` | Get content performance decay |
 | `analytics.getDailyMetrics()` | Get daily aggregated metrics |

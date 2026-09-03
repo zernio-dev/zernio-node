@@ -1056,6 +1056,104 @@ export type AdTreeResponse = {
     backfillPending?: boolean;
 };
 
+/**
+ * One changed analytics snapshot. Metrics are the absolute values recorded at
+ * `syncedAt`, not the amount they moved by since the previous snapshot, so a later
+ * entry for the same `postId` always supersedes an earlier one.
+ *
+ */
+export type AnalyticsDeltaEntry = {
+    /**
+     * External post ID. The same identifier as `posts[]._id` in GET /v1/analytics.
+     */
+    postId: string;
+    /**
+     * Social account this post was published through
+     */
+    accountId: string;
+    /**
+     * Profile the account belongs to
+     */
+    profileId: string;
+    platform: string;
+    /**
+     * Platform-side post ID (for example the YouTube video ID)
+     */
+    platformPostId: string;
+    /**
+     * When the post was published, ISO-8601 UTC
+     */
+    publishedAt: string;
+    /**
+     * When the sync cycle that produced this snapshot STARTED, ISO-8601 UTC. This
+     * is NOT the order entries arrive in and it is not a resume point: a slow cycle
+     * writes its rows after a faster cycle that started later, so `syncedAt` can go
+     * backwards between consecutive entries. Use `nextCursor` to resume.
+     *
+     */
+    syncedAt: string;
+    /**
+     * True when the post was detected as deleted on the platform at this sync
+     */
+    isDeleted: boolean;
+    /**
+     * Metrics a platform does not report are 0, not absent.
+     */
+    metrics: {
+        impressions: number;
+        reach: number;
+        likes: number;
+        comments: number;
+        shares: number;
+        saves: number;
+        sends: number;
+        clicks: number;
+        views: number;
+        /**
+         * Follows attributed to this post (Instagram)
+         */
+        follows: number;
+        /**
+         * Instagram Reels average watch time, in milliseconds
+         */
+        igReelsAvgWatchTime: number;
+        /**
+         * Instagram Reels total watch time, in milliseconds
+         */
+        igReelsVideoViewTotalTime: number;
+        reposts: number;
+        /**
+         * Instagram Reels skip rate, 0 to 1
+         */
+        reelsSkipRate: number;
+    };
+};
+
+export type AnalyticsDeltaResponse = {
+    /**
+     * Changed snapshots, oldest first, in the order the feed received them. Empty on
+     * the bootstrap call (no `cursor` supplied) and whenever nothing has changed
+     * since your cursor.
+     *
+     */
+    data: Array<AnalyticsDeltaEntry>;
+    /**
+     * Cursor to send on the next call. ALWAYS present, including on an empty page,
+     * so you always have something to advance with, and it never moves backwards.
+     * Opaque: pass it back verbatim, and do not parse, construct or compare cursors.
+     *
+     */
+    nextCursor: string;
+    /**
+     * True when more changes are already waiting past `nextCursor`, so call again
+     * immediately. False means you are caught up: keep `nextCursor` and poll again
+     * later. This feed never ends, so `hasMore: false` does NOT mean `nextCursor`
+     * is null.
+     *
+     */
+    hasMore: boolean;
+};
+
 export type AnalyticsListResponse = {
     overview?: AnalyticsOverview;
     posts?: Array<{
@@ -2414,9 +2512,26 @@ export type CtwaAdRequestBody = {
      */
     dsaPayor?: string;
     /**
-     * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV, INDIA_FINSERV). Forwarded to the ad set.
+     * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. BRAZIL_REGULATION, SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV, INDIA_FINSERV, TAIWAN_FINSERV). Forwarded to the ad set.
      */
     regionalRegulatedCategories?: Array<(string)>;
+    /**
+     * Meta only. Beneficiary/payer entity IDs required alongside regionalRegulatedCategories.
+     * Values are numeric IDs from the advertiser's Meta verification/authorization setup.
+     * Keys depend on the declared category: BRAZIL_REGULATION and THAILAND_UNIVERSAL use
+     * universal_beneficiary / universal_payer; SINGAPORE_UNIVERSAL uses
+     * singapore_universal_beneficiary / singapore_universal_payer; TAIWAN_UNIVERSAL uses
+     * taiwan_universal_beneficiary / taiwan_universal_payer; TAIWAN_FINSERV uses
+     * taiwan_finserv_beneficiary / taiwan_finserv_payer; AUSTRALIA_FINSERV uses
+     * australia_finserv_beneficiary / australia_finserv_payer; INDIA_FINSERV uses
+     * india_finserv_beneficiary / india_finserv_payer.
+     * Both beneficiary and payer must be included. If omitted and the advertiser has
+     * set defaults in Meta Ads Manager advertising settings, Meta auto-fills them.
+     *
+     */
+    regionalRegulationIdentities?: {
+        [key: string]: (number);
+    };
 };
 
 /**
@@ -6466,7 +6581,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -6883,6 +6998,79 @@ export type event4 = 'ad.status_changed';
 export type level = 'CAMPAIGN' | 'AD_SET' | 'AD';
 
 /**
+ * Webhook payload for `analytics.synced`. Fired once per connected account each
+ * time its analytics sync cycle completes successfully. Poll-driven (roughly
+ * hourly per account), not real-time, and never fired for a skipped or failed
+ * cycle.
+ *
+ * A TRIGGER, not a transport: it deliberately carries no metrics and no cursor.
+ * When it arrives, call `GET /v1/analytics/delta` with YOUR OWN last `nextCursor`
+ * to read what changed, across every account, in one paginated stream.
+ *
+ * The absent cursor is deliberate. The feed's ordering position is assigned inside
+ * the analytics store when the row is materialized, which normally has not
+ * happened yet at the moment this event fires, so a cursor minted here could sit
+ * ahead of the very rows the event announces and make you skip them. Your own
+ * `nextCursor` is always in the feed's own ordering and can never do that.
+ *
+ * Because of that same lag, a delta read issued the instant this event lands can
+ * legitimately come back empty. That is not "nothing changed": poll again with the
+ * same cursor you just used rather than treating the account as done.
+ *
+ * Subscribe to this event on a DEDICATED webhook endpoint. It is high volume
+ * (roughly one delivery per connected account per hour) and a subscription's
+ * consecutive-failure count is shared across all of its events, so an outage while
+ * this event is flowing can suppress the low-volume publishing events that share
+ * the same subscription.
+ *
+ */
+export type WebhookPayloadAnalyticsSynced = {
+    /**
+     * Stable webhook event ID
+     */
+    id: string;
+    event: 'analytics.synced';
+    account: {
+        /**
+         * The account's unique identifier (same as used in /v1/accounts/{accountId})
+         */
+        accountId: string;
+        /**
+         * The profile this account belongs to
+         */
+        profileId: string;
+        platform: string;
+        username: string;
+    };
+    /**
+     * Summary of the analytics sync cycle that just completed.
+     */
+    sync: {
+        /**
+         * When the cycle COMPLETED. Not a join key for the delta feed: the rows a
+         * cycle produces carry a `syncedAt` stamped when the cycle STARTED, which
+         * is measured at around one second earlier at the median and up to a
+         * couple of minutes earlier in the tail. Correlate on `account.accountId`.
+         *
+         */
+        syncedAt: string;
+        /**
+         * Post records created or modified by this cycle. Not the number of delta
+         * feed rows the cycle produced, which the syncer does not report, so a
+         * cycle with a non-zero `postsUpdated` can still yield an empty delta page.
+         *
+         */
+        postsUpdated: number;
+    };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued).
+     */
+    timestamp: string;
+};
+
+export type event5 = 'analytics.synced';
+
+/**
  * Webhook payload for the `call.ended` event. Fires on call hangup
  * with the duration and a zero-markup billing breakdown.
  *
@@ -6936,7 +7124,7 @@ export type WebhookPayloadCallEnded = {
     timestamp: string;
 };
 
-export type event5 = 'call.ended';
+export type event6 = 'call.ended';
 
 /**
  * Webhook payload for the `call.failed` event. Fired when a call
@@ -6967,7 +7155,7 @@ export type WebhookPayloadCallFailed = {
     timestamp: string;
 };
 
-export type event6 = 'call.failed';
+export type event7 = 'call.failed';
 
 /**
  * Webhook payload for the `call.permission_request` event. Fires
@@ -7001,7 +7189,7 @@ export type WebhookPayloadCallPermissionRequest = {
     timestamp: string;
 };
 
-export type event7 = 'call.permission_request';
+export type event8 = 'call.permission_request';
 
 export type response = 'accept' | 'reject';
 
@@ -7055,7 +7243,7 @@ export type WebhookPayloadCallReceived = {
     timestamp: string;
 };
 
-export type event8 = 'call.received';
+export type event9 = 'call.received';
 
 /**
  * Webhook payload for comment received events (Instagram, Facebook, Twitter/X, YouTube, LinkedIn, Bluesky, Reddit)
@@ -7211,7 +7399,7 @@ export type WebhookPayloadComment = {
     timestamp: string;
 };
 
-export type event9 = 'comment.received';
+export type event10 = 'comment.received';
 
 export type platform8 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit';
 
@@ -7268,7 +7456,7 @@ export type WebhookPayloadConversationStarted = {
     timestamp: string;
 };
 
-export type event10 = 'conversation.started';
+export type event11 = 'conversation.started';
 
 export type platform9 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack';
 
@@ -7302,7 +7490,7 @@ export type WebhookPayloadExternalPost = {
     timestamp: string;
 };
 
-export type event11 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+export type event12 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
 
 /**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
@@ -7369,7 +7557,7 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event12 = 'lead.received';
+export type event13 = 'lead.received';
 
 export type platform10 = 'facebook';
 
@@ -7839,7 +8027,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event13 = 'message.received';
+export type event14 = 'message.received';
 
 /**
  * Which Zernio surface produced the message. Always present and
@@ -7897,7 +8085,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event14 = 'message.deleted';
+export type event15 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, and
@@ -7945,7 +8133,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event15 = 'message.delivered' | 'message.read' | 'message.failed';
+export type event16 = 'message.delivered' | 'message.read' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -7980,7 +8168,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event16 = 'message.edited';
+export type event17 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API, or from the WhatsApp Business app on Coexistence numbers)
@@ -8147,7 +8335,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event17 = 'message.sent';
+export type event18 = 'message.sent';
 
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
@@ -8193,7 +8381,7 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
     timestamp: string;
 };
 
-export type event18 = 'phone_number.stock_available';
+export type event19 = 'phone_number.stock_available';
 
 /**
  * Webhook payload for post events
@@ -8234,7 +8422,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event19 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event20 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -8333,7 +8521,7 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event20 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
+export type event21 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
 
 /**
  * Terminal status this event fires on. Matches the event suffix.
@@ -8392,7 +8580,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event21 = 'reaction.received';
+export type event22 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -8466,7 +8654,7 @@ export type WebhookPayloadReferral = {
     timestamp: string;
 };
 
-export type event22 = 'referral.received';
+export type event23 = 'referral.received';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -8493,7 +8681,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event23 = 'review.new';
+export type event24 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits
@@ -8524,7 +8712,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event24 = 'review.updated';
+export type event25 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -8545,7 +8733,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event25 = 'webhook.test';
+export type event26 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event.
@@ -8594,7 +8782,7 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     timestamp: string;
 };
 
-export type event26 = 'whatsapp.account.name_status_updated';
+export type event27 = 'whatsapp.account.name_status_updated';
 
 export type platform12 = 'whatsapp';
 
@@ -8665,7 +8853,7 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     timestamp: string;
 };
 
-export type event27 = 'whatsapp.template.category_updated';
+export type event28 = 'whatsapp.template.category_updated';
 
 /**
  * `scheduled` is Meta's 24h advance notice of an upcoming
@@ -8742,7 +8930,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event28 = 'whatsapp.template.status_updated';
+export type event29 = 'whatsapp.template.status_updated';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -9785,6 +9973,39 @@ export type GetAnalyticsError = ({
     error?: string;
     code?: string;
 } | AnalyticsSinglePostResponse | ErrorResponse);
+
+export type GetAnalyticsDeltaData = {
+    query?: {
+        /**
+         * Opaque cursor from a previous response's `nextCursor`. Omit it to start from
+         * now: the response is then an empty page carrying the feed's current position.
+         * Rejected with a `400` when malformed, or when older than the retention window.
+         *
+         */
+        cursor?: string;
+        /**
+         * Page size. Out-of-range values are a 400, never a silent clamp.
+         */
+        limit?: number;
+        /**
+         * Filter to a single platform (for example "youtube"). Omit for every platform.
+         */
+        platform?: string;
+        /**
+         * Filter by profile ID (default "all"). Must be a valid profile ID or "all".
+         */
+        profileId?: string;
+    };
+};
+
+export type GetAnalyticsDeltaResponse = (AnalyticsDeltaResponse);
+
+export type GetAnalyticsDeltaError = (ErrorResponse | {
+    error?: string;
+} | {
+    error?: string;
+    code?: string;
+});
 
 export type GetYouTubeChannelInsightsData = {
     query: {
@@ -18042,7 +18263,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -18097,7 +18318,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -32820,9 +33041,15 @@ export type BoostPostData = {
          */
         specialAdCategoryCountry?: Array<(string)>;
         /**
-         * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV, INDIA_FINSERV). Forwarded to the ad set.
+         * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. BRAZIL_REGULATION, SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV, INDIA_FINSERV, TAIWAN_FINSERV). Forwarded to the ad set.
          */
         regionalRegulatedCategories?: Array<(string)>;
+        /**
+         * Meta only. Beneficiary/payer entity IDs for regionalRegulatedCategories. Values are numeric IDs from Meta verification. Keys vary by category (e.g. universal_beneficiary / universal_payer for BRAZIL_REGULATION and THAILAND_UNIVERSAL). If omitted, Meta uses Ads Manager defaults when configured.
+         */
+        regionalRegulationIdentities?: {
+            [key: string]: (number);
+        };
         /**
          * Destination URL for the CTA button. Send it together with `callToAction`.
          *
@@ -33394,12 +33621,22 @@ export type CreateStandaloneAdData = {
         specialAdCategoryCountry?: Array<(string)>;
         /**
          * Meta only. Regional regulation categories required when the ad set targets certain countries.
-         * Known values: SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, AUSTRALIA_FINSERV,
-         * INDIA_FINSERV, TAIWAN_FINSERV. Meta rejects the ad set without this when the targeting geo
-         * includes the corresponding country.
+         * Known values: BRAZIL_REGULATION, SINGAPORE_UNIVERSAL, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL,
+         * AUSTRALIA_FINSERV, INDIA_FINSERV, TAIWAN_FINSERV. Meta rejects the ad set without this when
+         * the targeting geo includes the corresponding country.
          *
          */
         regionalRegulatedCategories?: Array<(string)>;
+        /**
+         * Meta only. Beneficiary/payer entity IDs for regionalRegulatedCategories. Values are
+         * numeric IDs from Meta verification. Keys vary by category (e.g. universal_beneficiary /
+         * universal_payer for BRAZIL_REGULATION and THAILAND_UNIVERSAL). If omitted, Meta uses
+         * Ads Manager defaults when configured.
+         *
+         */
+        regionalRegulationIdentities?: {
+            [key: string]: (number);
+        };
         /**
          * Required for lifetime budgets
          */

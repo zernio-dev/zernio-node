@@ -143,6 +143,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getAnalytics).toBeTypeOf('function');
     });
 
+    it('should have getAnalyticsDelta method', () => {
+      expect(client.analytics.getAnalyticsDelta).toBeDefined();
+      expect(client.analytics.getAnalyticsDelta).toBeTypeOf('function');
+    });
+
     it('should have getYouTubeChannelInsights method', () => {
       expect(client.analytics.getYouTubeChannelInsights).toBeDefined();
       expect(client.analytics.getYouTubeChannelInsights).toBeTypeOf('function');
