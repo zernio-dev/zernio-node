@@ -7735,14 +7735,29 @@ export type WebhookPayloadMessage = {
      */
     metadata?: {
         /**
-         * platformMessageId of the message this one is a quote-reply to.
-         * WhatsApp (`context.id`), Instagram and Facebook Messenger
-         * (`reply_to.mid`). On outgoing messages the same field appears on
-         * `message.sent`, but only on some surfaces: see
+         * Raw platform envelope id (WhatsApp `context.id`; Instagram and
+         * Facebook Messenger `reply_to.mid`) of the message this one is a
+         * quote-reply to, forwarded verbatim. It may not equal the stored
+         * id of that message (see `quotedMessage.platformMessageId`). On
+         * outgoing messages the same field appears on `message.sent`, but
+         * only on some surfaces: see
          * WebhookPayloadMessageSent.metadata.quotedMessageId.
          *
          */
         quotedMessageId?: string;
+        /**
+         * Zernio's own ids for the message this one quote-replies to. Present only when that message is stored; WhatsApp only today.
+         */
+        quotedMessage?: {
+            /**
+             * Internal id of the stored quoted message.
+             */
+            messageId?: string;
+            /**
+             * The STORED message's platform id (what message.sent and list-messages return). Can differ from quotedMessageId, because Meta renders one message under a different wamid per perspective.
+             */
+            platformMessageId?: string;
+        };
         /**
          * Payload from a quick reply tap (Facebook/Instagram Messenger).
          */
