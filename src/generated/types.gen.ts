@@ -925,7 +925,7 @@ export type AdTreeAdSet = {
         page_id?: string;
     } | null;
     /**
-     * Individual ads within this ad set (capped at 100). Returns a subset of Ad fields from the aggregation: `_id`, `name`, `platform`, `status`, `configuredStatus`, `reviewStatus`, `budget`, `metrics`, `creative`, `goal` and the `platform*` ids are always included; `targeting` and `schedule` may be absent. `configuredStatus` (the ad's own on/off toggle) and `reviewStatus` (the platform's review verdict) are part of this contract, not incidental: a rejected ad is only distinguishable from a healthy one through `reviewStatus`. When `timeIncrement=1&dailyLevel=ad`, each entry also carries a `daily[]` array of `AdDailyMetrics`.
+     * Individual ads within this ad set (capped at 100). When the ad set has more than 100 ads these are the 100 highest-spending over the requested date range, so this array depends on `fromDate`/`toDate`; `adCount` is always the true ad set size. Returns a subset of Ad fields from the aggregation: `_id`, `name`, `platform`, `status`, `configuredStatus`, `reviewStatus`, `budget`, `metrics`, `creative`, `goal` and the `platform*` ids are always included; `targeting` and `schedule` may be absent. `configuredStatus` (the ad's own on/off toggle) and `reviewStatus` (the platform's review verdict) are part of this contract, not incidental: a rejected ad is only distinguishable from a healthy one through `reviewStatus`. When `timeIncrement=1&dailyLevel=ad`, each entry also carries a `daily[]` array of `AdDailyMetrics`.
      */
     ads?: Array<Ad>;
     /**
