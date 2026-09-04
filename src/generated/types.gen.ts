@@ -3004,7 +3004,7 @@ export type ErrorResponse = {
         [key: string]: unknown;
     };
     /**
-     * Additional structured context (e.g. field-level validation errors).
+     * Additional structured context (e.g. field-level validation errors), for example `privateReplyConsumed` on the private-reply endpoint's 400 when the comment's single reply is already spent.
      */
     details?: {
         [key: string]: unknown;
@@ -12528,6 +12528,15 @@ export type GetAllAccountsHealthResponse = ({
         tokenExpiresAt?: string;
         needsReconnect?: boolean;
         issues?: Array<(string)>;
+        /**
+         * Observed from Meta's own error subcodes on our own sends (2534122, 1893063, 2534029), not a live probe. Set on the first refused send and cleared when a later send succeeds, so it lags reality by one send in each direction.
+         */
+        messagingRestriction?: {
+            subcode?: number;
+            message?: string;
+            firstSeenAt?: string;
+            lastSeenAt?: string;
+        } | null;
     }>;
 });
 
@@ -12619,6 +12628,15 @@ export type GetAccountHealthResponse = ({
      * Actionable recommendations to fix issues
      */
     recommendations?: Array<(string)>;
+    /**
+     * Observed from Meta's own error subcodes on our own sends (2534122, 1893063, 2534029), not a live probe. Set on the first refused send and cleared when a later send succeeds, so it lags reality by one send in each direction.
+     */
+    messagingRestriction?: {
+        subcode?: number;
+        message?: string;
+        firstSeenAt?: string;
+        lastSeenAt?: string;
+    } | null;
     /**
      * WhatsApp accounts only. Live probe of the Meta link behind the channel, performed at request time (the same read as GET /v1/whatsapp/number-info).
      */
@@ -21353,10 +21371,7 @@ export type SendPrivateReplyToCommentResponse = ({
     platform?: 'instagram' | 'facebook';
 });
 
-export type SendPrivateReplyToCommentError = ({
-    error?: string;
-    code?: 'PLATFORM_LIMITATION';
-} | {
+export type SendPrivateReplyToCommentError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

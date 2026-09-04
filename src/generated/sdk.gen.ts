@@ -4167,7 +4167,9 @@ export const unlikePost = <ThrowOnError extends boolean = false>(options: Option
  * cards and attachments to commenters who do not follow the account (Meta code 2, subcode
  * 1545133, returned here as a non-retryable 400 that says so), and the failed call still
  * consumes the comment's single private reply. To reach non-followers send plain text and
- * add buttons once they reply. `quickReplies` and `buttons` are mutually exclusive.
+ * add buttons once they reply. `quickReplies` and `buttons` are mutually exclusive. When
+ * the comment's single private reply is spent (by this call or an earlier one) the 400
+ * carries `details.privateReplyConsumed: true`; never retry it.
  *
  */
 export const sendPrivateReplyToComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendPrivateReplyToCommentData, ThrowOnError>) => {
