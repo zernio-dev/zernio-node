@@ -4668,6 +4668,14 @@ export type MetaAdsPlatformData = {
      * Decimal ROAS multiplier (2.0 = 2.0x). Required when bidStrategy is LOWEST_COST_WITH_MIN_ROAS; sending it without bidStrategy is a 400.
      */
     roasAverageFloor?: number;
+    /**
+     * Meta daily_min_spend_target on the ad set being created: the least it should spend per day, in whole currency units. It reserves a share of a CAMPAIGN budget, so it requires budgetLevel campaign or an existingCampaignId whose campaign has the budget (Advantage campaign budget / CBO); with an ad-set budget it is a 400, because Meta rejects a spend limit on an ad set that owns its budget. A target, not a guarantee. Mutually exclusive with lifetimeMinSpendTarget: the flavour must match the campaign budget type. Rejected with 400 on POST /v1/ads/boost and in adSetId attach mode: use PUT /v1/ads/ad-sets/{adSetId} for an ad set that already exists.
+     */
+    dailyMinSpendTarget?: number;
+    /**
+     * Meta lifetime_min_spend_target: the lifetime-budget flavour of dailyMinSpendTarget, in whole currency units. Same rules and same rejections.
+     */
+    lifetimeMinSpendTarget?: number;
 };
 
 export type Money = {
@@ -30834,6 +30842,27 @@ export type UpdateAdSetData = {
              */
             endDate?: string;
             /**
+             * Meta `daily_min_spend_target`: the least this ad set should spend per day, in whole
+             * currency units of the ad account. It reserves a share of a CAMPAIGN budget for one ad
+             * set, so it requires a campaign using Advantage campaign budget (CBO). On an ad set
+             * that owns its budget (ABO) this returns 409 — move the budget to the campaign with
+             * `PUT /v1/ads/campaigns/{campaignId}` first. Meta treats it as a target, not a
+             * guarantee, and rejects the combined minimum of a campaign's ad sets going over the
+             * campaign budget.
+             * Mutually exclusive with `lifetimeMinSpendTarget` (400): the flavour must match the
+             * campaign budget type, a daily budget takes a daily target.
+             * Read it back with `GET /v1/ads/ad-sets/{adSetId}?fields=daily_min_spend_target`.
+             *
+             */
+            dailyMinSpendTarget?: number;
+            /**
+             * Meta `lifetime_min_spend_target`: the lifetime-budget flavour of
+             * `dailyMinSpendTarget`, in whole currency units. Send this one when the campaign
+             * budget is a lifetime budget. Same rules and same rejections.
+             *
+             */
+            lifetimeMinSpendTarget?: number;
+            /**
              * Meta ad-set promoted_object, forwarded verbatim (same shape as /v1/ads/create). Unknown keys are rejected with 400.
              */
             promotedObject?: {
@@ -34192,6 +34221,9 @@ export type CreateStandaloneAdData = {
          * Sending the bid fields in BOTH places returns a 400
          * (`mutually_exclusive_fields`), and sending any of them in
          * `adSetId` attach mode is a 400 too (the ad set already has its bid).
+         * `dailyMinSpendTarget` / `lifetimeMinSpendTarget` set the new ad set's
+         * minimum spend and live here only; they are rejected in `adSetId` attach
+         * mode as well.
          *
          */
         platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData);
