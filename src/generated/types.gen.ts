@@ -13070,7 +13070,7 @@ export type GetConnectUrlData = {
          */
         profileId: string;
         /**
-         * Your custom redirect URL after connection completes. Accepts an http(s) URL, a custom app scheme for mobile deeplinks (e.g. myapp://callback), or a relative path. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
+         * Your custom redirect URL after connection completes. MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is rejected with 400 INVALID_REDIRECT_URL. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
          *
          * On failure, the browser is sent to the same redirect_url with `error` and `platform` appended.
          * `error` and `platform` are always present. `error_message`, `is_user_fixable`, `reason` and
@@ -13334,8 +13334,9 @@ export type ConnectAdsData = {
         /**
          * Custom URL the browser is sent to once the OAuth flow finishes. Honored on
          * every ads platform, including the separate-token (`tiktok`, `twitter`) and
-         * standalone (`googleads`) flows. Accepts an http(s) URL, a custom app scheme
-         * for mobile deeplinks (e.g. myapp://callback), or a relative path. On success
+         * standalone (`googleads`) flows. MUST be an absolute http(s) URL or a custom
+         * app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is
+         * rejected with 400 INVALID_REDIRECT_URL. On success
          * `tiktok`, `twitter` and `googleads` land on the URL unchanged, while the
          * same-token platforms (`facebook`, `instagram`, `linkedin`, `pinterest`)
          * append `connected`, `profileId`, `accountId`, `username` and, on API-key
@@ -13380,7 +13381,7 @@ export type GetShopifyConnectUrlData = {
          */
         profileId: string;
         /**
-         * Your custom redirect URL after connection completes. Accepts an http(s) URL, a custom app scheme for mobile deeplinks (e.g. myapp://callback), or a relative path. On failure an `error` query param is appended.
+         * Your custom redirect URL after connection completes. MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is rejected with 400 INVALID_REDIRECT_URL. On failure an `error` query param is appended.
          */
         redirect_url?: string;
         /**
