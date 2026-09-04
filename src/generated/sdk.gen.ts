@@ -7814,7 +7814,8 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
  * Platform notes: on Meta a budget here is campaign-level (CBO) by definition; omit it
  * for ABO (each ad set carries its own budget), and `specialAdCategories` /
  * `bidStrategy` are Meta-only (400 elsewhere). Google, X and OpenAI require a budget
- * (422 without one; OpenAI accepts only `budgetType: lifetime`). LinkedIn creates the
+ * (422 without one; OpenAI accepts only `budgetType: lifetime`, Google only
+ * `budgetType: daily`). LinkedIn creates the
  * campaign GROUP (our campaign level) and rejects a budget, which lives on the
  * campaign (ad set) level there; it comes back `status: DRAFT`. TikTok campaigns are
  * created without a status and report `ENABLE`. Created `PAUSED` unless

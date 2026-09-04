@@ -34056,7 +34056,7 @@ export type CreateStandaloneAdData = {
          */
         campaignType?: 'display' | 'search';
         /**
-         * Google Search only. BROAD-match keywords on the new ad group (first 20).
+         * Google Search only. BROAD-match keywords on the new ad group. Editable later via PUT /v1/ads/{adId} targeting.keywords, which also sets match types.
          */
         keywords?: Array<(string)>;
         /**
