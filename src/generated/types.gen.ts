@@ -7122,6 +7122,17 @@ export type WebhookPayloadCallEnded = {
          * SIP response code that ended the call when SIP-signalled (e.g. '403', '486', '603'). endReason collapses all three to 'rejected', so this is what separates a refused destination from a busy line. Null on non-SIP legs.
          */
         sipHangupCause?: (string) | null;
+        /**
+         * True when the inbound call was handled by voicemail, whether scheduled or because the forward did not connect.
+         */
+        isVoicemail?: boolean;
+        /**
+         * Failures recorded on the call up to hangup (bridge failed, dial failed, recording error). Empty on a clean call. `message` is free-form diagnostic text and is not stable, do not parse it. `code` is 0 unless a provider code is known. Errors the carrier reports after hangup appear only on GET /v1/calls/{id}.
+         */
+        callErrors?: Array<{
+            code?: number;
+            message?: string;
+        }>;
         recordingUrl?: string;
         recordingExpiresAt?: string;
         billing?: {
