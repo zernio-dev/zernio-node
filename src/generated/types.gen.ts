@@ -37282,7 +37282,7 @@ export type CreateStandaloneAdData = {
          */
         multiAdvertiser?: 'OPT_IN' | 'OPT_OUT';
         /**
-         * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image, existing video.id or existingCreativeId; media pools, new video uploads, creatives[], adSetId and RESERVED buying return 400. Existing campaign or creative nodes are marked skipped. Success returns 200 with per-node results; Meta rejection returns an error.
+         * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image, all-image placementAssets with per-rule copy, existing video.id or existingCreativeId; other media pools, new video uploads, creatives[], adSetId and RESERVED buying return 400. Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped. Success returns 200 with per-node results; Meta rejection returns an error.
          */
         validateOnly?: boolean;
         /**
@@ -37342,7 +37342,7 @@ export type CreateStandaloneAdData = {
          * `body` field is used as the `object_story_spec.link_data.message` (the preview text) and
          * `headlines` must also be present. On a video creative the copy lands in
          * `video_data.message` / `video_data.title` instead of `link_data`. Mutually exclusive
-         * with `dynamicCreative`, `placementAssets`, `carouselCards`, and `creatives[]`.
+         * with `dynamicCreative`, `placementAssets`, `carouselCards`, and `creatives[]`. For placement-specific copy, use the singular `placementAssets.rules[].body` and `headline` fields instead.
          *
          */
         bodies?: Array<(string)>;
@@ -37925,15 +37925,19 @@ export type CreateStandaloneAdData = {
          * on the legacy single shape AND the attach shape (`adSetId` + placementAssets adds one
          * placement-customized ad to an existing ad set, the way to build N per-placement ads
          * sharing one ad set: create the first normally, attach the rest). Cannot be combined
-         * with `creatives[]`. Shared copy (headline, body, link,
-         * CTA) comes from the top-level single-creative fields since only the asset varies by
-         * placement. Each rule's `placements` accepts the same fields as the top-level
+         * with `creatives[]` or top-level `bodies`/`headlines`/`descriptions` arrays. Each rule
+         * can override `headline`, `body` and `description` with one string per field. Omitted
+         * fields and unmatched placements use the top-level copy; `linkUrl` and `callToAction`
+         * remain shared. Zernio emits labelled text with `optimization_type: PLACEMENT`.
+         * Multiple text options rotating within a placement are not supported by this input. Each rule's `placements` accepts the same fields as the top-level
          * `placements` object; Meta enforces co-selection rules and returns an actionable error.
          *
-         * Note on text rendering: Meta suppresses primary text and headline on fullscreen
-         * placements (Stories and Reels) in actual ad delivery; the fields are accepted and
-         * the ad publishes, but the copy is not shown to users. For visible copy on those
-         * placements, bake the text into the creative image or video itself.
+         * Meta controls text rendering by placement and format. Validation accepts these fields
+         * but does not prove that every field appears in delivery. Preview the ad; put copy that
+         * must always be visible into the image or video itself.
+         *
+         * `validateOnly: true` supports all-image placementAssets without uploading or creating
+         * anything. Video placement validation remains unsupported because it requires uploads.
          *
          * A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad
          * format). Image mode: `defaultImageUrl` + `rules[].imageUrl`. Video mode:
@@ -37970,6 +37974,18 @@ export type CreateStandaloneAdData = {
                  * Video mode (optional). Poster image for this rule's video; auto-generated when omitted.
                  */
                 thumbnailUrl?: string;
+                /**
+                 * One headline pinned to this rule. Omit to inherit the top-level headline.
+                 */
+                headline?: string;
+                /**
+                 * One primary text pinned to this rule. Omit to inherit the top-level body.
+                 */
+                body?: string;
+                /**
+                 * One link description pinned to this rule. Omit to inherit the top-level description.
+                 */
+                description?: string;
                 /**
                  * Placements this asset is pinned to. At least one field must be set (an empty rule is invalid; that role is served by the default asset). Same enums as the top-level `placements` object.
                  */
