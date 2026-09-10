@@ -8196,6 +8196,10 @@ export const getCampaignBidding = <ThrowOnError extends boolean = false>(options
  * | `platformSpecificData.spendCap` | Yes | 400 | 400 |
  * | `accountId` (empty campaigns) | Yes | - | - |
  *
+ * Meta budget edits check the live campaign budget, so an older local ABO stamp
+ * cannot block a CBO campaign. A successful edit repairs local ad budget fields.
+ * A live ABO campaign still returns 409 with the ad-set budget endpoint.
+ *
  * On Google: `LOWEST_COST_WITHOUT_CAP` = Maximize Conversions, `COST_CAP` +
  * `bidAmount` = Target CPA, `LOWEST_COST_WITH_MIN_ROAS` + `roasAverageFloor` =
  * Target ROAS, `LOWEST_COST_WITH_BID_CAP` + `bidAmount` = Maximize Clicks with a
