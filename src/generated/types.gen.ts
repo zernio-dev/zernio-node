@@ -8514,7 +8514,7 @@ export type WebhookPayloadCallReceived = {
 export type event9 = 'call.received';
 
 /**
- * Webhook payload for comment received events (Instagram, Facebook, X, YouTube, LinkedIn, Bluesky, Reddit, TikTok). TikTok events carry only the author id: the comment.update webhook has no username, picture or owner flag.
+ * Webhook payload for comment received events (Instagram, Facebook, Threads, YouTube, LinkedIn, Bluesky, Reddit, TikTok). X/Twitter does NOT fire this event. TikTok events carry only the author id: the comment.update webhook has no username, picture or owner flag.
  */
 export type WebhookPayloadComment = {
     /**
@@ -8535,7 +8535,7 @@ export type WebhookPayloadComment = {
          * Platform's post ID
          */
         platformPostId: string;
-        platform: 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+        platform: 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
         /**
          * Comment text content
          */
@@ -8669,7 +8669,7 @@ export type WebhookPayloadComment = {
 
 export type event10 = 'comment.received';
 
-export type platform10 = 'instagram' | 'facebook' | 'twitter' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform10 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 /**
  * WhatsApp only. Who answers a conversation changed: Meta Business Agent took it over,
