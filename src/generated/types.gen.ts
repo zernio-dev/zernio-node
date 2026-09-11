@@ -33334,7 +33334,7 @@ export type GetAdSetDetailsData = {
          */
         accountId: string;
         /**
-         * Comma-separated Graph field override (supports nested {} projections).
+         * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
     };
@@ -35243,7 +35243,7 @@ export type ListAdStudiesData = {
          */
         after?: string;
         /**
-         * Comma-separated Graph field override (supports nested {} projections).
+         * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
         /**
@@ -35585,7 +35585,7 @@ export type ListAdCreativesData = {
          */
         after?: string;
         /**
-         * Comma-separated Graph field override (supports nested {} projections).
+         * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
         /**
@@ -35694,7 +35694,7 @@ export type GetAdCreativeData = {
          */
         accountId: string;
         /**
-         * Comma-separated Graph field override (supports nested {} projections).
+         * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
     };
@@ -38784,7 +38784,7 @@ export type ListAdImagesData = {
          */
         after?: string;
         /**
-         * Comma-separated Graph field override (supports nested {} projections).
+         * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
         /**
@@ -38869,7 +38869,7 @@ export type ListAdVideosData = {
          */
         after?: string;
         /**
-         * Comma-separated Graph field override (supports nested {} projections).
+         * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
         /**
@@ -39031,7 +39031,7 @@ export type SearchAdLibraryData = {
          */
         countries?: string;
         /**
-         * Meta only. Raw Graph projection override, e.g. add spend,impressions,demographic_distribution for political ads.
+         * Meta only. Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
         /**
