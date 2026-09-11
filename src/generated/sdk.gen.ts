@@ -8370,7 +8370,12 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  * `locations` accepts the same shapes as campaign creation: a bare array of
  * ISO country codes, or an object with `countries`/`regions`/`cities`/`zips`/`metros`
  * key lists (`key` from GET /v1/ads/targeting/search?dimension=geo). Negative
- * (excluded) locations are left untouched by this endpoint.
+ * (excluded) locations are left untouched by this endpoint. An empty location list
+ * returns 400 instead of removing every criterion: a Google campaign with no location
+ * criteria targets every country, so omit `locations` to leave targeting alone.
+ *
+ * The removes and the creates go out in ONE Google `googleAds:mutate`, so a failed
+ * edit leaves the campaign's previous set intact rather than a half-applied one.
  *
  * `languages` is an array of Google's language codes (ISO 639-1, plus variants
  * such as `zh_CN`); an unknown code returns 400.
@@ -8663,10 +8668,13 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * - **TikTok**: status, budget, targeting (via `/v2/adgroup/update/`), and creative
  * (via `/v2/ad/update/` patch-style: `headline` is ignored, `body` becomes `ad_text`).
  * - **Google**: status, budget, KEYWORD edits via `targeting.keywords` /
- * `targeting.negativeKeywords`, and DEVICE bid adjustments via `targeting.devices`.
+ * `targeting.negativeKeywords`, DEVICE bid adjustments via `targeting.devices`,
+ * LOCATION edits via `targeting.locations` (or the equivalent top-level
+ * `targeting.countries` / `regions` / `cities` / `zips` / `metros`), and LANGUAGE
+ * edits via `targeting.languages`.
  * Each list you send becomes the FULL new set of its kind (criteria not in the
  * list are removed); a kind left out is untouched. Any other `targeting` field
- * returns 400: Google cannot mutate broad targeting post-create without recreating
+ * returns 400: Google cannot mutate it post-create without recreating
  * the campaign. RSA text updates use top-level `headlines`, `descriptions` and `finalUrls`.
  * Each supplied array replaces the full list; omit a field to preserve it. Use 3-15 headlines
  * (1-30 characters) and 2-4 descriptions (1-90 characters). Omit an asset to remove it;
@@ -8680,6 +8688,19 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * - **Pinterest / X / OpenAI Ads**: status + budget only. Sending
  * `targeting` or `creative` returns 501 with code `unsupported_platform_operation`.
  * OpenAI Ads budget is lifetime-only (see `budget.type` below).
+ *
+ * **Google location and language replacement:** locations, languages and devices are
+ * campaign-level criteria on Google, so these edits apply to every ad group and ad in
+ * the ad's campaign. Send the complete list you want to keep. Zernio diffs it against
+ * the campaign's live criteria and sends the removes and the creates in ONE
+ * `googleAds:mutate`, so the campaign is never left with a half-applied set; criteria
+ * already in the list keep their criterion ID and history. Excluded (negative)
+ * locations are left untouched. Two cases are refused rather than applied: an empty
+ * location list returns 400 (a Google campaign with no location criteria targets every
+ * country, which is never what "remove my locations" means, so omit the field instead),
+ * and radius targeting (`customLocations`) returns 422 because it is a separate Google
+ * criterion type that this replacement neither creates nor removes. Send either
+ * `targeting.locations` or the top-level geo fields, not both: mixing them returns 400.
  *
  * **Google keyword replacement:** These edits affect the ad's entire ad group,
  * including sibling ads. Positive (`targeting.keywords`) and negative

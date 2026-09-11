@@ -33805,7 +33805,36 @@ export type UpdateAdData = {
 })>;
             ageMin?: number;
             ageMax?: number;
+            /**
+             * ISO 3166-1 alpha-2 codes. On Google this is the FULL new country set for the campaign (same contract as `locations`); on LinkedIn it replaces the campaign's geo criteria.
+             */
             countries?: Array<(string)>;
+            /**
+             * Google and LinkedIn. The FULL new location set for the campaign. Bare country-code array, or an object with countries/regions/cities/zips/metros key lists (`key` from GET /v1/ads/targeting/search?dimension=geo). Equivalent to the top-level geo fields; sending both returns 400. Empty returns 400, `customLocations` returns 422.
+             */
+            locations?: (Array<(string)> | {
+    countries?: Array<(string)>;
+    regions?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    cities?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    zips?: Array<{
+        key: string;
+        name?: string;
+    }>;
+    metros?: Array<{
+        key: string;
+        name?: string;
+    }>;
+});
+            /**
+             * Google only. The FULL new language set for the campaign, as Google language codes (ISO 639-1, plus variants such as `zh_CN`). An unknown code returns 400.
+             */
+            languages?: Array<(string)>;
             /**
              * Interest objects from /v1/ads/interests. Each must include id and name.
              */
