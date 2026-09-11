@@ -7192,7 +7192,7 @@ export type TikTokPlatformData = {
      */
     videoCoverTimestampMs?: number;
     /**
-     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). The image is stitched as a single frame at the start of the video and used as the cover. Overrides videoCoverTimestampMs when provided.
+     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). The image is stitched as a single frame at the start of the video and used as the cover. Accounts connected through the TikTok for Business app instead pass the URL to TikTok as the cover directly, with no stitching, and the URL must resolve on a domain we have verified with TikTok. Overrides videoCoverTimestampMs when provided.
      */
     videoCoverImageUrl?: string;
     /**
@@ -7204,11 +7204,11 @@ export type TikTokPlatformData = {
      */
     autoAddMusic?: boolean;
     /**
-     * Set true to disclose AI-generated content
+     * Set true to disclose AI-generated content. Accounts connected through the TikTok for Business app carry the disclosure on video posts only: the business photo endpoint has no AI disclosure field, so true on a direct photo post is rejected at creation rather than published undisclosed. Send draft true to publish such a photo post and set the disclosure in the TikTok app.
      */
     videoMadeWithAi?: boolean;
     /**
-     * Optional long-form description for photo posts (max 4000 chars). Recommended when content exceeds 90 chars, as photo titles are auto-truncated.
+     * Optional long-form caption for photo posts (max 4000 chars). Recommended when content exceeds 90 chars, as photo titles are auto-truncated. Falls back to the post content when omitted.
      */
     description?: string;
 };
