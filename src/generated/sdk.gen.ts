@@ -1567,6 +1567,15 @@ export const createInviteToken = <ThrowOnError extends boolean = false>(options:
  * Initiate an OAuth connection flow. Returns an authUrl to redirect the user to.
  * Standard flow: Zernio hosts the selection UI, then redirects to your redirect_url. Headless mode (headless=true): user is redirected to your redirect_url with OAuth data for custom UI. Use the platform-specific selection endpoints to complete.
  *
+ * TikTok: every connection now goes through the TikTok for Business app. One TikTok account per
+ * profile, so connecting on a profile that already holds one replaces it. Reconnecting the SAME
+ * account keeps it and all of its history; authorizing a DIFFERENT TikTok account takes the slot
+ * over and permanently deletes the previous account's analytics, inbox and DM history. The two
+ * are told apart by the `@handle` stored at the last connect, so an account whose handle has
+ * been renamed on TikTok since then reads as a different account. An authorization that leaves
+ * out a permission the connected account needs changes nothing at all and comes back as
+ * `missing_tiktok_permissions`; connect again and accept every permission on TikTok's screen.
+ *
  */
 export const getConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetConnectUrlData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetConnectUrlResponse, GetConnectUrlError, ThrowOnError>({

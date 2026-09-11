@@ -7160,7 +7160,7 @@ export type TikTokPlatformData = {
      */
     videoCoverTimestampMs?: number;
     /**
-     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). The image is stitched as a single frame at the start of the video and used as the cover. Accounts connected through the TikTok for Business app instead pass the URL to TikTok as the cover directly, with no stitching, and the URL must resolve on a domain we have verified with TikTok. Overrides videoCoverTimestampMs when provided.
+     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). Any downloadable URL works: we rehost it ourselves. The image is stitched as a single frame at the start of the video to serve as the cover. Accounts connected through the TikTok for Business app hand it to TikTok as the cover instead, with no stitching, falling back to videoCoverTimestampMs without it. Overrides videoCoverTimestampMs when provided.
      */
     videoCoverImageUrl?: string;
     /**
@@ -13106,7 +13106,7 @@ export type CreatePostData = {
          */
         isDraft?: boolean;
         /**
-         * TikTok only. Preview whether each `tiktok` entry in `platforms` could publish right now under the TikTok Direct Post daily limits, without creating, scheduling or publishing anything: no post is persisted and no upload slot is claimed, so it can be repeated freely. The request still goes through auth, the payment gate and body validation, then returns HTTP 200 with `{ dryRun: true, canPublish, tiktok: [...] }` instead of 201. Only `tiktok` entries are evaluated; other platforms in the body are ignored, and a body with no `tiktok` entry is rejected with 400 `invalid_field_value` on `platforms`. An entry with `platformSpecificData.tiktokSettings.draft: true` (Creator Inbox upload) is not subject to the limit and always reports `canPublish: true`.
+         * TikTok only. Preview whether each `tiktok` entry in `platforms` could publish right now under the TikTok Direct Post daily limits, without creating, scheduling or publishing anything: no post is persisted and no upload slot is claimed, so it can be repeated freely. The request still goes through auth, the payment gate and body validation, then returns HTTP 200 with `{ dryRun: true, canPublish, tiktok: [...] }` instead of 201. Only `tiktok` entries are evaluated; other platforms in the body are ignored, and a body with no `tiktok` entry is rejected with 400 `invalid_field_value` on `platforms`. An entry with `platformSpecificData.tiktokSettings.draft: true` (Creator Inbox upload) is not subject to the limit and always reports `canPublish: true`. Accounts connected through the TikTok for Business app do not go through these limits at all and also always report `canPublish: true`, so on those accounts a dry run confirms the request is well-formed rather than gating it.
          */
         dryRun?: boolean;
         /**
@@ -14593,8 +14593,8 @@ export type GetConnectUrlData = {
          * OAuth and callback:
          * oauth_denied, invalid_callback, invalid_state, unsupported_platform, connection_failed,
          * internal_error, token_exchange_failed, byok_config_error, personal_account_not_supported,
-         * missing_google_permissions, platform_requires_destination, reconnect_account_mismatch,
-         * invalid_request
+         * missing_google_permissions, missing_tiktok_permissions, platform_requires_destination,
+         * reconnect_account_mismatch, invalid_request
          *
          * Access and limits:
          * profile_not_found, invalid_profile_id, access_denied, account_limit_exceeded,
@@ -14634,6 +14634,10 @@ export type GetConnectUrlData = {
          * 2. On the tiktok and twitter ads flows `platform` carries the ads platform id
          * (`tiktokads`, `xads`), not the value used in the request path. The googleads and shopify
          * flows report `googleads` and `shopify`.
+         *
+         * 3. `missing_tiktok_permissions` means the TikTok authorization left out a permission the
+         * already-connected account needs, so nothing was changed and it keeps working as before.
+         * It is user-fixable: connect again and accept every permission on TikTok's screen.
          *
          */
         redirect_url?: string;
