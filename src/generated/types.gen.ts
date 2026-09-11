@@ -4553,6 +4553,60 @@ export type GooglePmaxAssetGroupInput = {
     youtubeVideoId?: string;
 };
 
+/**
+ * Replacement assets for an existing Performance Max asset group, sent on PUT /v1/ads/{adId}.
+ * Google assets are immutable (AssetService only creates), so each field you send becomes new
+ * assets linked to the asset group, and the assets that role held are unlinked in the same
+ * atomic request. Send one field or many; a field you omit is left untouched. Re-sending a
+ * value the asset group already carries is a no-op for that asset, not a re-upload.
+ * Unlinked assets stay in the account's asset library: Google has no asset delete.
+ * At least one description must be 60 characters or fewer. Texts within each list must be distinct.
+ *
+ */
+export type GooglePmaxAssetGroupUpdate = {
+    /**
+     * Replaces the asset group's final URL.
+     */
+    finalUrl?: string;
+    /**
+     * Replaces every HEADLINE asset on the group.
+     */
+    headlines?: Array<(string)>;
+    /**
+     * Replaces the LONG_HEADLINE asset.
+     */
+    longHeadline?: string;
+    /**
+     * Replaces every DESCRIPTION asset. At least one must be 60 characters or fewer.
+     */
+    descriptions?: Array<(string)>;
+    /**
+     * Replaces the BUSINESS_NAME asset.
+     */
+    businessName?: string;
+    /**
+     * Public HTTP(S) image URLs. Each role you send replaces that role's images; roles you omit stay. GIF, JPEG or PNG, at most 5120 KB per image.
+     */
+    images?: {
+        /**
+         * Replaces MARKETING_IMAGE assets. Aspect ratio 1.91:1, minimum 600 x 314 pixels.
+         */
+        landscape?: Array<(string)>;
+        /**
+         * Replaces SQUARE_MARKETING_IMAGE assets. Aspect ratio 1:1, minimum 300 x 300 pixels.
+         */
+        square?: Array<(string)>;
+        /**
+         * Replaces LOGO assets. Aspect ratio 1:1, minimum 128 x 128 pixels.
+         */
+        logo?: Array<(string)>;
+    };
+    /**
+     * Replaces YOUTUBE_VIDEO assets with existing YouTube video ids. Video uploads and arbitrary video URLs are not supported.
+     */
+    youtubeVideoIds?: Array<(string)>;
+};
+
 export type GoogleRsaDescription = {
     text: string;
     /**
@@ -33736,17 +33790,21 @@ export type GetAdError = (ErrorResponse | {
 export type UpdateAdData = {
     body: {
         /**
-         * Google RSA only. Replaces the complete headline list. No padding or truncation on update.
+         * Google Search and Display only. Replaces the complete headline list. Search takes 3-15, Display 1-5 and rejects pinnedField; the count is checked once the ad's channel is known. No padding or truncation on update.
          */
         headlines?: Array<GoogleRsaHeadline>;
         /**
-         * Google RSA only. Replaces the complete description list. No padding or truncation on update.
+         * Google Search and Display only. Replaces the complete description list. Search takes 2-4, Display 1-5 and rejects pinnedField. No padding or truncation on update.
          */
         descriptions?: Array<GoogleRsaDescription>;
         /**
-         * Google RSA only. Replaces final URLs. Omitted lists stay unchanged.
+         * Google Search and Display only. Replaces final URLs. Omitted lists stay unchanged. For Performance Max use assetGroup.finalUrl.
          */
         finalUrls?: Array<(string)>;
+        /**
+         * Google Performance Max only. Replaces whole asset roles on the ad's asset group. Returns 422 on any other platform or channel.
+         */
+        assetGroup?: (GooglePmaxAssetGroupUpdate);
         status?: 'active' | 'paused';
         budget?: {
             /**
@@ -33883,6 +33941,18 @@ export type UpdateAdData = {
              * Meta and LinkedIn (TikTok has no headline slot)
              */
             headline?: string;
+            /**
+             * Google Display only. Replaces the responsive display ad's long headline.
+             */
+            longHeadline?: string;
+            /**
+             * Google Display only. Replaces the responsive display ad's business name.
+             */
+            businessName?: string;
+            /**
+             * Google Display only. Uploaded as a new square (1:1) marketing image asset that replaces the current one.
+             */
+            squareImageUrl?: string;
             body?: string;
             /**
              * Link description slot (Meta `link_data.description` / `video_data.link_description`, LinkedIn creative description).

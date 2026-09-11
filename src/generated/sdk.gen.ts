@@ -8675,11 +8675,21 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * Each list you send becomes the FULL new set of its kind (criteria not in the
  * list are removed); a kind left out is untouched. Any other `targeting` field
  * returns 400: Google cannot mutate it post-create without recreating
- * the campaign. RSA text updates use top-level `headlines`, `descriptions` and `finalUrls`.
- * Each supplied array replaces the full list; omit a field to preserve it. Use 3-15 headlines
+ * the campaign. Creative edits are dispatched on the ad's `advertisingChannelType`,
+ * and every supported field replaces a whole set; a field you omit is preserved.
+ * - **Search**: top-level `headlines`, `descriptions` and `finalUrls`. Use 3-15 headlines
  * (1-30 characters) and 2-4 descriptions (1-90 characters). Omit an asset to remove it;
  * omit pinnedField on an included asset to unpin it. Updates do not pad or truncate text.
- * The legacy creative fields remain unsupported for Google.
+ * The legacy creative fields remain unsupported.
+ * - **Display**: top-level `headlines` (1-5, no pinnedField, display ads have no pinned
+ * positions), `descriptions` (1-5) and `finalUrls`, plus `creative.longHeadline`,
+ * `creative.businessName`, `creative.imageUrl` (the landscape marketing image) and
+ * `creative.squareImageUrl`. Each image URL is uploaded as a new Google asset and the ad
+ * is pointed at it; Google assets are immutable, so the previous asset stays in the
+ * account's asset library.
+ * - **Performance Max**: top-level `assetGroup`, which swaps asset roles on the ad's asset
+ * group. The other creative fields return 422 for this channel, and `assetGroup` returns
+ * 422 on any other channel.
  * - **LinkedIn**: status, budget, targeting (countries or regions, excludedLocations (countries),
  * the B2B facets, and audience segments; applied to the LinkedIn Campaign via
  * PARTIAL_UPDATE, and REPLACES the campaign's entire targetingCriteria, not a merge),
