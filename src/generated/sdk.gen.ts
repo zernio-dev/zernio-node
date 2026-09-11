@@ -8177,6 +8177,12 @@ export const createAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * On Meta this flips the campaign only. An ad set paused in its own right stays paused, so pair this with
  * PUT /v1/ads/ad-sets/{adSetId}/status when you also need the ad set switched back on.
  *
+ * Google keeps an independent on/off switch at campaign, ad group and ad level and the most restrictive
+ * one wins, so `active` switches the campaign on TOGETHER with the ad groups and ads Zernio tracks under
+ * it, in one mutate. Without that the campaign reads ENABLED while a paused ad group or ad keeps it from
+ * serving. `paused` writes the campaign alone, which already stops delivery and leaves each ad's own
+ * switch as you set it.
+ *
  */
 export const updateAdCampaignStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdCampaignStatusData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdateAdCampaignStatusResponse, UpdateAdCampaignStatusError, ThrowOnError>({
@@ -8374,10 +8380,11 @@ export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(option
  * (10 minutes fresh, up to 7 days last-good), not always a live read. Google
  * only; every other platform returns 501.
  *
- * `devices` always lists all four device types with `included` reflecting
- * Google's negative device criteria (a device absent from any negative
- * criterion is included by default). This read has no bid-modifier source,
- * so `bidModifier` is always `null` even for a device with one configured.
+ * `devices` lists the device criteria the campaign carries, which depends on
+ * its channel: Search campaigns have MOBILE, DESKTOP and TABLET, Display
+ * campaigns also have CONNECTED_TV. `bidModifier` is Google's bid adjustment
+ * for that device, `null` when it has none, and `0` when the device is
+ * switched off; `included` is false for exactly that case.
  *
  */
 export const getCampaignTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCampaignTargetingData, ThrowOnError>) => {
@@ -8395,6 +8402,11 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  * existing criteria on the campaign (a full set, not a delta). Fields left
  * out of the body are untouched. Google only; every other platform returns
  * 501.
+ *
+ * `devices` is the full set of device bid modifiers: a supported device you
+ * leave out is switched off with a bid modifier of 0, since Google cannot
+ * remove a device criterion. A device the campaign's channel does not carry,
+ * and a set that switches every device off, both return 422.
  *
  * `locations` accepts the same shapes as campaign creation: a bare array of
  * ISO country codes, or an object with `countries`/`regions`/`cities`/`zips`/`metros`
@@ -8699,7 +8711,9 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * `targeting.countries` / `regions` / `cities` / `zips` / `metros`), and LANGUAGE
  * edits via `targeting.languages`.
  * Each list you send becomes the FULL new set of its kind (criteria not in the
- * list are removed); a kind left out is untouched. Any other `targeting` field
+ * list are removed, except devices, which Google cannot remove and which are
+ * switched off with a bid modifier of 0 instead); a kind left out is untouched.
+ * Any other `targeting` field
  * returns 400: Google cannot mutate it post-create without recreating
  * the campaign. Creative edits are dispatched on the ad's `advertisingChannelType`,
  * and every supported field replaces a whole set; a field you omit is preserved.

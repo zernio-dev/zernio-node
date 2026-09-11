@@ -33059,7 +33059,7 @@ export type GetCampaignTargetingResponse = ({
         device?: 'MOBILE' | 'DESKTOP' | 'TABLET' | 'CONNECTED_TV';
         included?: boolean;
         /**
-         * Always null on this read (see description).
+         * Google's bid adjustment for this device: null when it has none, 0 when the device is switched off, otherwise 0.1 to 10.
          */
         bidModifier?: (number) | null;
     }>;
@@ -33860,12 +33860,12 @@ export type UpdateAdData = {
     matchType?: 'exact' | 'phrase' | 'broad';
 })>;
             /**
-             * Google only. The FULL new set of device criteria for the campaign; devices not listed are excluded. Entries are a device name alone (included, no bid adjustment) or { device, bidModifier }.
+             * Google only. The FULL new set of device bid modifiers for the campaign. Entries are a device name alone (targeted, bid modifier reset to 1) or { device, bidModifier }. A supported device you leave out is switched off, written as a bid modifier of 0. Google never removes a device criterion, so an excluded device reads back as bidModifier 0 rather than disappearing, and a set that switches every device off returns 422. Which devices a campaign carries depends on its channel: Search campaigns have MOBILE, DESKTOP and TABLET, Display campaigns also have CONNECTED_TV, and sending a device the campaign does not carry returns 422.
              */
             devices?: Array<('MOBILE' | 'DESKTOP' | 'TABLET' | 'CONNECTED_TV' | {
     device: 'MOBILE' | 'DESKTOP' | 'TABLET' | 'CONNECTED_TV';
     /**
-     * Google device bid modifier, 0.1 to 10 (minus 90% to plus 900%). Omit a device to exclude it.
+     * Google device bid modifier. 0 switches the device off (minus 100%); otherwise 0.1 to 10 (minus 90% to plus 900%). Google rejects any value between 0 and 0.1.
      */
     bidModifier?: number;
 })>;
@@ -37407,11 +37407,11 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Google Performance Max accepts PAUSED only and always creates a paused campaign. Meta, TikTok, and LinkedIn: publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused so you can review before they spend. On Meta the pause is held on the campaign this call creates, leaving the ad set and ad switched on, so a single PUT /v1/ads/campaigns/{campaignId}/status with `active` brings the whole thing live. It is held at every level instead when the pause cannot rely on the campaign: `existingCampaignId` (that campaign may be running and is never touched) or `campaignStatus: ACTIVE`. On TikTok the whole campaign > ad group > ad hierarchy stays paused. On LinkedIn the whole campaign group, campaign, and creative hierarchy stays PAUSED (intendedStatus PAUSED on each).
+         * Google Performance Max accepts PAUSED only and always creates a paused campaign. Google Search and Display, Meta, TikTok, and LinkedIn: publish state of the created entities. Omitted or ACTIVE publishes live (default, back-compat); PAUSED creates them paused so you can review before they spend. On Meta the pause is held on the campaign this call creates, leaving the ad set and ad switched on, so a single PUT /v1/ads/campaigns/{campaignId}/status with `active` brings the whole thing live. It is held at every level instead when the pause cannot rely on the campaign: `existingCampaignId` (that campaign may be running and is never touched) or `campaignStatus: ACTIVE`. Google Search and Display follow the same rule, and because Google keeps an independent switch at campaign, ad group and ad level, a PAUSED create leaves the campaign it creates PAUSED at Google. On TikTok the whole campaign > ad group > ad hierarchy stays paused. On LinkedIn the whole campaign group, campaign, and creative hierarchy stays PAUSED (intendedStatus PAUSED on each).
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Meta only. Overrides `status` for the campaign level alone, so you can create a live campaign whose ad set and ad stay paused, or the reverse. Omitted, it follows `status`.
+         * Meta and Google. Overrides `status` for the campaign level alone, so you can create a live campaign whose ad set and ad stay paused, or the reverse. Omitted, it follows `status`.
          */
         campaignStatus?: 'ACTIVE' | 'PAUSED';
         /**
@@ -38415,7 +38415,7 @@ export type CreateStandaloneAdResponse = ({
         node?: 'campaign' | 'adSet' | 'creative' | 'ad' | 'performanceMaxCampaign';
         status?: 'validated' | 'skipped';
         /**
-         * Why the node could not be validated (only on skipped).
+         * Why the node could not be validated (on skipped), or what the dry run could not check and what the request would do as sent (on validated). A Performance Max validation with no location targeting reports here that the campaign would run worldwide.
          */
         reason?: string;
     }>;
