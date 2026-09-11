@@ -5771,6 +5771,123 @@ export type MetaInstagramIdentityRef = {
 };
 
 /**
+ * A Meta Lead Gen form as Graph returns it, in Meta's own snake_case. Read through GET /v1/ads/lead-forms/{formId}. Every setting POST /v1/ads/lead-forms writes is present here, so a form can be diffed against what was created and drift from edits made in Meta's form builder is detectable. A compound field is omitted entirely when the form has no value for it, and `fields` narrows the selection.
+ *
+ */
+export type MetaLeadForm = {
+    id?: string;
+    name?: string;
+    /**
+     * One of ACTIVE, ARCHIVED, DELETED or DRAFT.
+     */
+    status?: string;
+    locale?: string;
+    created_time?: string;
+    /**
+     * Owning Facebook Page. A form on any other Page is a 404, whether read or archived.
+     */
+    page_id?: string;
+    leads_count?: number;
+    organic_leads_count?: number;
+    /**
+     * Leads Meta has aged out of the retention window.
+     */
+    expired_leads_count?: number;
+    privacy_policy_url?: string;
+    follow_up_action_url?: string;
+    follow_up_action_text?: string;
+    question_page_custom_headline?: string;
+    is_optimized_for_quality?: boolean;
+    block_display_for_non_targeted_viewer?: boolean;
+    /**
+     * Whether the form can also be submitted from an organic Page post.
+     */
+    allow_organic_lead?: boolean;
+    /**
+     * Custom key/value pairs attached to every lead of this form.
+     */
+    tracking_parameters?: Array<{
+        key?: string;
+        value?: string;
+    }>;
+    /**
+     * Privacy policy and custom disclaimer as Meta stores them.
+     */
+    legal_content?: {
+        id?: string;
+        privacy_policy?: {
+            url?: string;
+            link_text?: string;
+        };
+        /**
+         * Set in Meta form builder only; there is no create parameter for it.
+         */
+        custom_disclaimer?: {
+            [key: string]: unknown;
+        };
+    };
+    context_card?: {
+        id?: string;
+        title?: string;
+        style?: 'LIST_STYLE' | 'PARAGRAPH_STYLE';
+        content?: Array<(string)>;
+        button_text?: string;
+        cover_photo?: {
+            id?: string;
+        };
+    };
+    /**
+     * The form's single ending page, mirroring the thankYou* create fields. Meta has exactly one per form; there is no multiple-ending-page API (thank_you_pages and ending_pages are not Graph fields).
+     *
+     */
+    thank_you_page?: {
+        id?: string;
+        title?: string;
+        body?: string;
+        button_text?: string;
+        button_type?: string;
+        website_url?: string;
+        enable_messenger?: boolean;
+        status?: string;
+        lead_gen_use_case?: string;
+        business_phone_number?: string;
+        country_code?: string;
+    };
+    questions?: Array<{
+        id?: string;
+        key?: string;
+        label?: string;
+        /**
+         * EMAIL, PHONE, FULL_NAME, CUSTOM, ...
+         */
+        type?: string;
+        inline_context?: string;
+        options?: Array<{
+            key?: string;
+            value?: string;
+        }>;
+        /**
+         * READ-ONLY. Conditional logic can only be authored in Meta form builder; Meta has no create parameter for it.
+         */
+        conditional_questions_group_id?: string;
+        /**
+         * READ-ONLY. Which answers reveal the conditional group.
+         */
+        conditional_questions_choices?: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * READ-ONLY. Questions revealed by the conditional group.
+         */
+        dependent_conditional_questions?: Array<{
+            [key: string]: unknown;
+        }>;
+    }>;
+};
+
+export type style = 'LIST_STYLE' | 'PARAGRAPH_STYLE';
+
+/**
  * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
  */
 export type MetaPromotion = {
@@ -10916,7 +11033,7 @@ export type XArticleInlineStyleRange = {
     style: 'bold' | 'italic' | 'strikethrough';
 };
 
-export type style = 'bold' | 'italic' | 'strikethrough';
+export type style2 = 'bold' | 'italic' | 'strikethrough';
 
 export type XArticleTextRange = {
     /**
@@ -38743,19 +38860,24 @@ export type GetLeadFormData = {
          * Connected facebook or linkedin ads account id (selects the platform).
          */
         accountId: string;
+        /**
+         * Meta only. A Graph field selection passed through verbatim to GET /{form-id}, replacing the default projection, so fields Meta adds later are reachable without an API change. Field names, commas and {} expansion only; anything else (Graph field modifiers such as .limit(), or characters that could open another query parameter) is a 400. Ownership of the form is verified before the selection runs, so this cannot reach any Page but the one accountId manages. Unknown field names are rejected by Meta as a 400.
+         *
+         */
+        fields?: string;
     };
 };
 
 export type GetLeadFormResponse = ({
     status?: string;
-    form?: {
-        [key: string]: unknown;
-    };
+    form?: (MetaLeadForm | {
+    [key: string]: unknown;
+});
 });
 
 export type GetLeadFormError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
 export type ArchiveLeadFormData = {
     path: {
@@ -38780,7 +38902,7 @@ export type ArchiveLeadFormResponse = ({
 
 export type ArchiveLeadFormError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
 export type ListFormLeadsData = {
     path: {

@@ -10143,6 +10143,8 @@ export const createLeadForm = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Get a lead form
+ * Returns the full form, including the thank-you page, so a form can be diffed against what was created. Meta forms are scoped to the Page the accountId manages: a form on any other Page is a 404, never a read.
+ *
  */
 export const getLeadForm = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetLeadFormData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetLeadFormResponse, GetLeadFormError, ThrowOnError>({
@@ -10153,7 +10155,7 @@ export const getLeadForm = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Archive a lead form
- * Neither platform hard-deletes a form; this archives it (Meta status=ARCHIVED; LinkedIn state=ARCHIVED via PARTIAL_UPDATE).
+ * Neither platform hard-deletes a form; this archives it (Meta status=ARCHIVED; LinkedIn state=ARCHIVED via PARTIAL_UPDATE). Meta forms must belong to the Page the accountId manages.
  */
 export const archiveLeadForm = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ArchiveLeadFormData, ThrowOnError>) => {
     return (options?.client ?? client).delete<ArchiveLeadFormResponse, ArchiveLeadFormError, ThrowOnError>({
