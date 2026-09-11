@@ -32888,6 +32888,38 @@ export type GetCampaignBiddingError = (unknown | {
     error?: string;
 } | ErrorResponse);
 
+export type GetAdCampaignDetailsData = {
+    path: {
+        /**
+         * Meta campaign id (platformCampaignId).
+         */
+        campaignId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers.
+         */
+        fields?: string;
+    };
+};
+
+export type GetAdCampaignDetailsResponse = ({
+    /**
+     * Raw Meta campaign; keys are the requested Graph fields.
+     */
+    campaign?: {
+        [key: string]: unknown;
+    };
+});
+
+export type GetAdCampaignDetailsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type UpdateAdCampaignData = {
     body: {
         /**
@@ -38634,7 +38666,7 @@ export type ListLeadsError = (ErrorResponse | {
 export type ListLeadFormsData = {
     query: {
         /**
-         * Connected Facebook, Meta ads business-login or LinkedIn ads account ID.
+         * Connected Meta ads, Facebook or LinkedIn ads account ID. A Meta ads connection resolves its Page through the Facebook account linked to the same profile.
          */
         accountId: string;
         /**
@@ -38857,7 +38889,7 @@ export type GetLeadFormData = {
     };
     query: {
         /**
-         * Connected facebook or linkedin ads account id (selects the platform).
+         * Connected Meta ads, facebook or linkedin ads account id (selects the platform). A Meta ads connection resolves its Page through the Facebook account linked to the same profile.
          */
         accountId: string;
         /**
@@ -38888,7 +38920,7 @@ export type ArchiveLeadFormData = {
     };
     query: {
         /**
-         * Connected facebook or linkedin ads account id (selects the platform).
+         * Connected Meta ads, facebook or linkedin ads account id (selects the platform). A Meta ads connection resolves its Page through the Facebook account linked to the same profile.
          */
         accountId: string;
     };

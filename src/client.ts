@@ -204,6 +204,7 @@ import {
   getAdAccountFinance,
   getAdAnalytics,
   getAdAudience,
+  getAdCampaignDetails,
   getAdComments,
   getAdCreative,
   getAdInsightsReport,
@@ -1670,6 +1671,7 @@ export class Zernio {
     createAdCampaign: this._bind(createAdCampaign),
     updateAdCampaignStatus: this._bind(updateAdCampaignStatus),
     getCampaignBidding: this._bind(getCampaignBidding),
+    getAdCampaignDetails: this._bind(getAdCampaignDetails),
     updateAdCampaign: this._bind(updateAdCampaign),
     deleteAdCampaign: this._bind(deleteAdCampaign),
     listCampaignNegativeKeywords: this._bind(listCampaignNegativeKeywords),
@@ -2021,6 +2023,8 @@ export class Zernio {
     updateAdCampaignStatus: this._bind(updateAdCampaignStatus),
     /** @deprecated Use `zernio.adcampaigns.getCampaignBidding` instead. */
     getCampaignBidding: this._bind(getCampaignBidding),
+    /** @deprecated Use `zernio.adcampaigns.getAdCampaignDetails` instead. */
+    getAdCampaignDetails: this._bind(getAdCampaignDetails),
     /** @deprecated Use `zernio.adcampaigns.updateAdCampaign` instead. */
     updateAdCampaign: this._bind(updateAdCampaign),
     /** @deprecated Use `zernio.adcampaigns.deleteAdCampaign` instead. */

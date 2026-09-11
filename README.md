@@ -467,6 +467,7 @@ try {
 | `adCampaigns.createBidStrategy()` | Create portfolio bid strategy |
 | `adCampaigns.createStandaloneAd()` | Create standalone ad |
 | `adCampaigns.getAd()` | Get ad details |
+| `adCampaigns.getAdCampaignDetails()` | Get live campaign details |
 | `adCampaigns.getAdSetDetails()` | Get live ad-set details |
 | `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |
