@@ -10236,6 +10236,8 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * - `language`: Google-only
  * - `workPosition`, `workEmployer`, `workIndustry`: the Meta-only work demographics, whose
  * ids feed `TargetingSpec.workPositions`/`workEmployers`/`workIndustries`
+ * - `industry`, `jobFunction`, `seniority`, `companySize`: the LinkedIn-only B2B facets, whose
+ * URNs feed `TargetingSpec.industries`/`jobFunctions`/`seniorities`/`companySizes`
  *
  * Availability of each dimension varies by platform (e.g. behaviours are Meta/TikTok only).
  * Work industries are a fixed ~30-entry Meta catalog with no server-side query,
@@ -10259,6 +10261,15 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * filter on. Every result has `type` set to `location`, and its id is a
  * `urn:li:geo:*` URN usable as a `regions[].key` on `POST /v1/ads/create`,
  * `POST /v1/ads/boost` and `POST /v1/ads/targeting/reach-estimate`.
+ *
+ * LinkedIn B2B searches (`industry`, `jobFunction`, `seniority`, `companySize`) return the
+ * full URN to pass straight back, so no URN id fragment has to be assembled by hand:
+ * `urn:li:industry:4`, `urn:li:function:8`, `urn:li:seniority:6`,
+ * `urn:li:staffCountRange:(51,200)`. Only `industry` is a server-side name search
+ * (LinkedIn's typeahead finder). LinkedIn exposes no typeahead for job functions,
+ * seniorities and company sizes, so Zernio fetches each whole table (26, 10 and 9 entries),
+ * caches it, and does the matching, ranking and `limit` cutoff itself. Those three never
+ * carry `audienceSize`, and `countryCode` and `geoType` are not applied to any of the four.
  *
  * Google geo searches resolve against Google's geoTargetConstants and return
  * every matching level in one list; `geoType` is not applied (Google's

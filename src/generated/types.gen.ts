@@ -6938,19 +6938,19 @@ export type TargetingSpec = {
         name?: string;
     }>;
     /**
-     * LinkedIn B2B only. Industry URN id fragments.
+     * LinkedIn B2B only. Industry URN id fragments, or the full urn:li:industry:* URN from /v1/ads/targeting/search?dimension=industry.
      */
     industries?: Array<(string)>;
     /**
-     * LinkedIn B2B only.
+     * LinkedIn B2B only. Single-letter size codes (A to I), or the full urn:li:staffCountRange:* URN from /v1/ads/targeting/search?dimension=companySize.
      */
     companySizes?: Array<(string)>;
     /**
-     * LinkedIn B2B only.
+     * LinkedIn B2B only. Seniority URN id fragments, or the full urn:li:seniority:* URN from /v1/ads/targeting/search?dimension=seniority.
      */
     seniorities?: Array<(string)>;
     /**
-     * LinkedIn B2B only.
+     * LinkedIn B2B only. Function URN id fragments, or the full urn:li:function:* URN from /v1/ads/targeting/search?dimension=jobFunction.
      */
     jobFunctions?: Array<(string)>;
     /**
@@ -38961,9 +38961,9 @@ export type SearchAdTargetingData = {
          */
         countryCode?: string;
         /**
-         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities, `income` resolves income-tier options, `language` resolves Google's targetable language_constant table (Google only), `workPosition`/`workEmployer`/`workIndustry` resolve Meta work demographics. Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
+         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities, `income` resolves income-tier options, `language` resolves Google's targetable language_constant table (Google only), `workPosition`/`workEmployer`/`workIndustry` resolve Meta work demographics, `industry`/`jobFunction`/`seniority`/`companySize` resolve LinkedIn B2B facets (LinkedIn only). Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
          */
-        dimension?: 'geo' | 'interest' | 'behavior' | 'income' | 'language' | 'workPosition' | 'workEmployer' | 'workIndustry';
+        dimension?: 'geo' | 'interest' | 'behavior' | 'income' | 'language' | 'workPosition' | 'workEmployer' | 'workIndustry' | 'industry' | 'jobFunction' | 'seniority' | 'companySize';
         /**
          * Only used when `dimension=geo`. The kind of location to resolve. `all` searches every type in one relevance-ranked call. Defaults to `city`.
          */
@@ -38990,7 +38990,7 @@ export type SearchAdTargetingResponse = ({
          */
         name: string;
         /**
-         * What the result is (e.g. city, region, country, zip, metro, location, interest, behavior, income).
+         * What the result is (e.g. city, region, country, zip, metro, location, interest, behavior, income, industry, jobFunction, seniority, companySize).
          */
         type: string;
         /**
