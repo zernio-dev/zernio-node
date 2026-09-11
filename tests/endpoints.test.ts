@@ -384,6 +384,16 @@ describe('Endpoint Methods', () => {
       expect(client.connect.connectSlackChannel).toBeTypeOf('function');
     });
 
+    it('should have getPageWebhookSubscription method', () => {
+      expect(client.connect.getPageWebhookSubscription).toBeDefined();
+      expect(client.connect.getPageWebhookSubscription).toBeTypeOf('function');
+    });
+
+    it('should have resyncPageWebhookSubscription method', () => {
+      expect(client.connect.resyncPageWebhookSubscription).toBeDefined();
+      expect(client.connect.resyncPageWebhookSubscription).toBeTypeOf('function');
+    });
+
     it('should have getFacebookPages method', () => {
       expect(client.connect.getFacebookPages).toBeDefined();
       expect(client.connect.getFacebookPages).toBeTypeOf('function');

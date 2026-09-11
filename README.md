@@ -326,6 +326,7 @@ try {
 | `connect.getFacebookPages()` | List Facebook pages |
 | `connect.getGmbLocations()` | List Google Business Profile locations |
 | `connect.getLinkedInOrganizations()` | List LinkedIn orgs |
+| `connect.getPageWebhookSubscription()` | Read a Facebook Page's webhook subscription |
 | `connect.getPendingOAuthData()` | Get pending OAuth data |
 | `connect.getPinterestBoards()` | List Pinterest boards |
 | `connect.getRedditFlairs()` | List subreddit flairs |
@@ -357,6 +358,7 @@ try {
 | `connect.connectWhatsAppEmbeddedSignup()` | Connect WhatsApp from Embedded Signup |
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
+| `connect.resyncPageWebhookSubscription()` | Re-subscribe a Facebook Page to Zernio's webhooks |
 | `connect.selectFacebookPage()` | Select Facebook page |
 | `connect.selectGoogleBusinessLocation()` | Select Google Business Profile location |
 | `connect.selectInstagramAccount()` | Select the Page whose Instagram account to connect |

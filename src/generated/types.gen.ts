@@ -17943,6 +17943,52 @@ export type CompleteTelegramConnectError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type GetPageWebhookSubscriptionData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetPageWebhookSubscriptionResponse = ({
+    pageId?: string;
+    /**
+     * False when the Page carries no subscription for our app at all.
+     */
+    appSubscribed?: boolean;
+    /**
+     * Whether lead ads submitted on this Page reach Zernio in real time.
+     */
+    leadgen?: boolean;
+    subscribedFields?: Array<(string)>;
+    /**
+     * Present only when leadgen is missing.
+     */
+    warning?: (string) | null;
+});
+
+export type GetPageWebhookSubscriptionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ResyncPageWebhookSubscriptionData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type ResyncPageWebhookSubscriptionResponse = ({
+    resubscribed?: boolean;
+    pageId?: string;
+    appSubscribed?: boolean;
+    leadgen?: boolean;
+    subscribedFields?: Array<(string)>;
+    warning?: (string) | null;
+});
+
+export type ResyncPageWebhookSubscriptionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetFacebookPagesData = {
     path: {
         accountId: string;
