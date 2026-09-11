@@ -292,11 +292,6 @@ export type Ad = {
          */
         videoUrl?: (string) | null;
         /**
-         * Meta offer read from the live creative on creation or GET /v1/ads/{adId}. Null when metadata is not returned or cannot be read. Requested values are never echoed as applied.
-         */
-        promotion?: MetaPromotion;
-        promotionStatus?: MetaPromotionStatus;
-        /**
          * Meta ad creative id backing this ad. Reusable via existingCreativeId on POST /v1/ads/create.
          */
         creativeId?: (string) | null;
@@ -5754,7 +5749,7 @@ export type MetaAdsPlatformData = {
 };
 
 /**
- * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys and unspecified features default to OPT_OUT. auto_promotion_tag is an enhancement; use the separate promotion field for an explicit offer. The deprecated standard_enhancements bundle is rejected by Meta.
+ * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys and unspecified features default to OPT_OUT. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. The deprecated standard_enhancements bundle is rejected by Meta.
  */
 export type MetaCreativeFeatures = {
     [key: string]: ('OPT_IN' | 'OPT_OUT');
@@ -5776,40 +5771,9 @@ export type MetaInstagramIdentityRef = {
 };
 
 /**
- * Meta explicit Promotion offer. Maps to creative_sourcing_spec.promotion_metadata_spec with promotion_source ADVERTISER_INPUT. Dates become Unix seconds. Send null to omit an explicit offer on a new creative or remove it when rebuilding. Creation success alone does not confirm application: inspect promotionStatus in the response.
+ * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
  */
-export type MetaPromotion = {
-    /**
-     * Promotion type accepted by Meta. PERCENTAGE_OFF values cannot exceed 100.
-     */
-    type: 'AMOUNT_OFF' | 'FREE_RETURN' | 'FREE_SHIPPING' | 'PERCENTAGE_OFF' | 'PROMO_CODE';
-    /**
-     * Nonnegative promotion value passed to Meta unchanged. AMOUNT_OFF units are not confirmed, including major versus minor currency units. For PERCENTAGE_OFF this is the percentage discount, at most 100.
-     */
-    value: number;
-    /**
-     * Optional promotion code.
-     */
-    code?: string;
-    /**
-     * Optional ISO 8601 start timestamp with a timezone offset or Z.
-     */
-    startDate?: string;
-    /**
-     * Optional ISO 8601 end timestamp with a timezone offset or Z. Must be after startDate when both are set.
-     */
-    endDate?: string;
-} | null;
-
-/**
- * Promotion type accepted by Meta. PERCENTAGE_OFF values cannot exceed 100.
- */
-export type type8 = 'AMOUNT_OFF' | 'FREE_RETURN' | 'FREE_SHIPPING' | 'PERCENTAGE_OFF' | 'PROMO_CODE';
-
-/**
- * Meta creative readback result. applied means Meta returned promotion metadata; not_returned means the read succeeded without promotion metadata; unavailable means the read failed. Only applied confirms the returned offer. Missing metadata is not proof that Ads Manager displays the requested Promotion.
- */
-export type MetaPromotionStatus = 'applied' | 'not_returned' | 'unavailable';
+export type MetaPromotion = null;
 
 export type Money = {
     /**
@@ -6062,7 +6026,7 @@ export type PortfolioBidStrategy = {
     targetRoas?: (number) | null;
 };
 
-export type type9 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+export type type8 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
 
 export type Post = {
     _id?: string;
@@ -7385,7 +7349,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type10 = 'image' | 'video' | 'document';
+export type type9 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -10550,7 +10514,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type11 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type10 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -10712,7 +10676,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type12 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type11 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -10848,7 +10812,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type13 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type12 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -10927,7 +10891,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type14 = 'divider' | 'latex';
+export type type13 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -33767,12 +33731,6 @@ export type GetAdData = {
          */
         adId: string;
     };
-    query?: {
-        /**
-         * Meta only. Read current promotion metadata from Meta and include promotionStatus. Omit for stored creative settings with no promotion-specific Graph call.
-         */
-        refreshPromotion?: boolean;
-    };
 };
 
 export type GetAdResponse = ({
@@ -33923,10 +33881,9 @@ export type UpdateAdData = {
          * GET /v1/ads/creatives and ignores every other field. Meta creatives are
          * immutable, so any change creates a new creative and repoints the ad; the old
          * creative is retained on the ad account for historical reporting.
-         * `promotion` and `creativeFeatures` are Meta-only. Omitted settings are
-         * preserved from the live creative, including full rebuilds. Send
-         * `promotion: null` to remove the explicit offer from the replacement.
-         * A supplied creativeFeatures map overrides individual existing keys.
+         * `creativeFeatures` is Meta-only. Omitted settings are preserved from the
+         * live creative, including full rebuilds. A supplied creativeFeatures map
+         * overrides individual existing keys.
          * - **TikTok**: patch-style. Pass any subset; `headline` is ignored (TikTok creatives
          * have no headline slot). `body` becomes the in-feed `ad_text`; `linkUrl` becomes
          * `landing_page_url`; `videoUrl` triggers a fresh upload. `description`, `videoId`
@@ -33939,6 +33896,9 @@ export type UpdateAdData = {
          *
          */
         creative?: {
+            /**
+             * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+             */
             promotion?: MetaPromotion;
             creativeFeatures?: MetaCreativeFeatures;
             /**
@@ -35758,9 +35718,12 @@ export type CreateAdCreativeData = {
          * Appended to every outbound URL (e.g. utm_source=fb).
          */
         urlTags?: string;
+        /**
+         * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+         */
         promotion?: MetaPromotion;
         /**
-         * Meta only. Applied to each new creative, including standalone and attach shapes. With creatives[], these are defaults; an item replaces the whole feature map, including an empty map. auto_promotion_tag is an enhancement; an explicit offer uses promotion.
+         * Meta only. Applied to each new creative, including standalone and attach shapes. With creatives[], these are defaults; an item replaces the whole feature map, including an empty map. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting.
          */
         creativeFeatures?: MetaCreativeFeatures;
         /**
@@ -35776,8 +35739,6 @@ export type CreateAdCreativeResponse = ({
      * Platform creative id, reusable via existingCreativeId.
      */
     creativeId?: string;
-    promotion?: MetaPromotion;
-    promotionStatus?: MetaPromotionStatus;
 });
 
 export type CreateAdCreativeError = (unknown | {
@@ -37375,9 +37336,12 @@ export type CreateStandaloneAdData = {
          * Meta only. The RESERVED prediction id the R&F ad set runs on (reserving mints a new id, so pass that one). Requires buyingType RESERVED.
          */
         rfPredictionId?: string;
+        /**
+         * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+         */
         promotion?: MetaPromotion;
         /**
-         * Meta only. Applied to each new creative, including standalone and attach shapes. With creatives[], these are defaults; an item replaces the whole feature map, including an empty map. auto_promotion_tag is an enhancement; an explicit offer uses promotion.
+         * Meta only. Applied to each new creative, including standalone and attach shapes. With creatives[], these are defaults; an item replaces the whole feature map, including an empty map. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting.
          */
         creativeFeatures?: MetaCreativeFeatures;
         /**
@@ -37518,10 +37482,6 @@ export type CreateStandaloneAdData = {
          *
          */
         creatives?: Array<{
-            /**
-             * Overrides the top-level offer for this item. Omit to inherit; null disables the inherited offer.
-             */
-            promotion?: MetaPromotion;
             /**
              * Replaces the entire top-level creativeFeatures map for this item. Omit to inherit; an empty map clears these defaults.
              */

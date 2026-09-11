@@ -8644,11 +8644,8 @@ export const getAdsTimeline = <ThrowOnError extends boolean = false>(options: Op
  * - the creative's `effective_instagram_media_id` (Instagram side)
  *
  * Any of the four resolve to the same ad. Caller doesn't need a translation step.
- * By default, creative.promotion and creative.creativeFeatures contain stored requested
- * settings, which do not confirm platform application. With `refreshPromotion=true`,
- * Meta promotion metadata is read live and exposed as `ad.creative.promotion`
- * with `promotionStatus`. Only `applied` confirms an offer; `not_returned` means the
- * creative read succeeded without promotion metadata, and `unavailable` means it failed.
+ * `creative.creativeFeatures` holds the stored requested settings, which do not confirm
+ * platform application.
  *
  */
 export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdData, ThrowOnError>) => {
@@ -9426,11 +9423,8 @@ export const listAdCreatives = <ThrowOnError extends boolean = false>(options: O
  * `existingCreativeId`. Provide exactly one of `imageUrl` (uploaded server-side),
  * `imageHash` (from POST /v1/ads/images or the library list), or `carouselCards` (2-10
  * hand-built cards). The Page (and linked Instagram account, when present) is resolved
- * from `accountId` as the story actor. `promotion` configures an explicit offer separately
- * from Advantage+ `creativeFeatures`. Only when `promotion` is supplied does the response
- * read the creative back from Meta;
- * `promotionStatus: not_returned` means Meta accepted creation but omitted promotion
- * metadata, so the requested offer is not confirmed as applied.
+ * from `accountId` as the story actor. `creativeFeatures` configures Advantage+
+ * enhancements. `promotion` is not supported and any object is rejected with 400.
  */
 export const createAdCreative = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdCreativeData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdCreativeResponse, CreateAdCreativeError, ThrowOnError>({
@@ -10039,15 +10033,11 @@ export const listGoogleAssetGroups = <ThrowOnError extends boolean = false>(opti
  * - Meta-only multi-creative shape via the creatives array: one ad set with N ads sharing budget and targeting.
  * - Attach shape via adSetId: adds one new ad to an existing ad set, inheriting its budget, targeting, and schedule (Meta, Google Ads, TikTok, and LinkedIn). On LinkedIn adSetId is the existing Campaign id, and the budget, schedule, targeting and bidding fields must be omitted.
  *
- * Meta accepts `promotion` and `creativeFeatures` on the single and attach shapes and
- * as defaults for `creatives[]`. An item replaces the whole feature map; its `promotion`
- * replaces the default offer, and `promotion: null` disables that default for the item.
+ * Meta accepts `creativeFeatures` on the single and attach shapes and as defaults for
+ * `creatives[]`; an item replaces the whole feature map. `promotion` is not supported on any
+ * shape and any object is rejected with 400.
  * Reusing `existingCreativeId` uses the existing creative settings instead of new settings.
  * Requested settings are persisted for lists, exports, and default ad-detail reads.
- * Only ads supplied a `promotion` receive live readback; multi-create batches those reads
- * in groups of up to 50 IDs without per-ad fallback. Inspect `ad.creative.promotionStatus` (or
- * `ads[].creative.promotionStatus`). `not_returned` means Meta omitted the metadata;
- * successful creation does not by itself prove the offer was applied or will display.
  *
  * Per-platform required fields, budget minimums, and video-ad rules are documented on each property below.
  *
