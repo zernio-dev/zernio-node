@@ -5773,7 +5773,9 @@ export type MetaInstagramIdentityRef = {
 /**
  * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
  */
-export type MetaPromotion = null;
+export type MetaPromotion = {
+    [key: string]: unknown;
+} | null;
 
 export type Money = {
     /**
