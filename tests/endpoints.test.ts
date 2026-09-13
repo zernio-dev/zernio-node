@@ -439,6 +439,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.getYoutubePlaylists).toBeTypeOf('function');
     });
 
+    it('should have createYoutubePlaylist method', () => {
+      expect(client.connect.createYoutubePlaylist).toBeDefined();
+      expect(client.connect.createYoutubePlaylist).toBeTypeOf('function');
+    });
+
     it('should have updateYoutubeDefaultPlaylist method', () => {
       expect(client.connect.updateYoutubeDefaultPlaylist).toBeDefined();
       expect(client.connect.updateYoutubeDefaultPlaylist).toBeTypeOf('function');

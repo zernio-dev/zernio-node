@@ -322,6 +322,7 @@ try {
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
 | `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
 | `connect.createPinterestBoard()` | Create Pinterest board |
+| `connect.createYoutubePlaylist()` | Create YouTube playlist |
 | `connect.getConnectUrl()` | Get OAuth connect URL |
 | `connect.getFacebookPages()` | List Facebook pages |
 | `connect.getGmbLocations()` | List Google Business Profile locations |

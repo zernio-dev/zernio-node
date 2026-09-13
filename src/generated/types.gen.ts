@@ -18828,6 +18828,38 @@ export type GetYoutubePlaylistsError = (unknown | {
     error?: string;
 });
 
+export type CreateYoutubePlaylistData = {
+    body: {
+        /**
+         * Playlist title. Leading and trailing whitespace is removed.
+         */
+        title: string;
+        /**
+         * Optional playlist description.
+         */
+        description?: string;
+        privacy?: 'private' | 'public' | 'unlisted';
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type CreateYoutubePlaylistResponse = ({
+    playlist: {
+        id: string;
+        title: string;
+        description: string;
+        privacy: 'private' | 'public' | 'unlisted';
+        itemCount: number;
+        thumbnailUrl: string;
+    };
+});
+
+export type CreateYoutubePlaylistError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type UpdateYoutubeDefaultPlaylistData = {
     body: {
         defaultPlaylistId: string;
