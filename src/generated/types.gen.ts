@@ -9585,9 +9585,18 @@ export type WebhookPayloadMessageDeliveryStatus = {
         title?: string;
         message?: string;
         /**
+         * Platform's extended detail for `code` (WhatsApp: Meta's `error_data.details`), when the platform sent one. Absent on SMS.
+         */
+        details?: string;
+        /**
+         * Link to the platform's documentation for `code`, when the platform sent one.
+         */
+        href?: string;
+        /**
          * Plain-language translation of `code` (e.g. for 131026, that the
          * recipient has likely opted out of marketing messages while utility
-         * templates are unaffected). Null for unmapped codes; fall back to
+         * templates are unaffected, or for 131031, that Meta restricted the
+         * WhatsApp Business Account). Null for unmapped codes; fall back to
          * title/message.
          *
          */
@@ -21532,6 +21541,14 @@ export type GetInboxConversationMessagesResponse = ({
             code?: number;
             title?: string;
             message?: string;
+            /**
+             * Platform's extended detail for `code` (WhatsApp: Meta's `error_data.details`), when the platform sent one. Absent on SMS.
+             */
+            details?: string;
+            /**
+             * Link to the platform's documentation for `code`, when the platform sent one.
+             */
+            href?: string;
         } | null;
         /**
          * Emoji reactions on this message (WhatsApp / Telegram). At most one per party in a 1:1 thread.
