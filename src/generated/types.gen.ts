@@ -7309,9 +7309,34 @@ export type TikTokPlatformData = {
      */
     photoCoverIndex?: number;
     /**
-     * When true, TikTok may add recommended music (photos only)
+     * When true, TikTok may add recommended music (photos only). With the brand-organic or branded-content toggle on, TikTok allows Commercial Music Library tracks only, so this attaches nothing there; use musicSoundInfo instead.
      */
     autoAddMusic?: boolean;
+    /**
+     * Commercial Music Library track to attach. Accounts connected through the TikTok for Business app only: a developer-app account rejects the post at publish time with a message that says so. Pick musicSoundId from GET /v1/accounts/{accountId}/tiktok/commercial-music. Ignored on drafts, where TikTok ignores every post_info field.
+     */
+    musicSoundInfo?: {
+        /**
+         * The commercial_music_id of the track.
+         */
+        musicSoundId: string;
+        /**
+         * Track volume. TikTok defaults an omitted volume to 0, which publishes the track silently, so we default to the app's 50. Video posts only.
+         */
+        musicSoundVolume?: number;
+        /**
+         * Start point of the track in milliseconds (default 0). Video posts only.
+         */
+        musicSoundStart?: number;
+        /**
+         * End point of the track in milliseconds (default: the video length). Must be greater than musicSoundStart. Video posts only.
+         */
+        musicSoundEnd?: number;
+    };
+    /**
+     * Volume of the video's own sound when a commercial track is attached (0 to 100). Requires musicSoundInfo. Video posts only.
+     */
+    videoOriginalSoundVolume?: number;
     /**
      * Set true to disclose AI-generated content. Accounts connected through the TikTok for Business app carry the disclosure on video posts only: the business photo endpoint has no AI disclosure field, so true on a direct photo post is rejected at creation rather than published undisclosed. Send draft true to publish such a photo post and set the disclosure in the TikTok app.
      */
@@ -14362,6 +14387,52 @@ export type GetInstagramFollowStatusResponse = ({
 export type GetInstagramFollowStatusError = (ErrorResponse | {
     error?: string;
 });
+
+export type ListTikTokCommercialMusicData = {
+    path: {
+        /**
+         * The TikTok account ID
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Two-letter ISO 3166-1 country code of the chart to read (for example ES). Defaults to TikTok's global chart.
+         */
+        countryCode?: string;
+    };
+};
+
+export type ListTikTokCommercialMusicResponse = ({
+    tracks?: Array<{
+        /**
+         * The commercial_music_id to send as musicSoundId
+         */
+        id?: string;
+        name?: string;
+        artist?: string;
+        durationSec?: number;
+        genres?: Array<(string)>;
+        /**
+         * Preview audio of the full track
+         */
+        previewUrl?: string;
+        thumbnailUrl?: string;
+        /**
+         * Position in the trending chart, 1 first
+         */
+        rank?: number;
+        /**
+         * The trending excerpt of the track, when TikTok provides one
+         */
+        clip?: {
+            durationSec?: number;
+            previewUrl?: string;
+        };
+    }>;
+});
+
+export type ListTikTokCommercialMusicError = (ErrorResponse | unknown);
 
 export type GetTikTokCreatorInfoData = {
     path: {

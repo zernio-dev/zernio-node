@@ -80,6 +80,11 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.getInstagramFollowStatus).toBeTypeOf('function');
     });
 
+    it('should have listTikTokCommercialMusic method', () => {
+      expect(client.accounts.listTikTokCommercialMusic).toBeDefined();
+      expect(client.accounts.listTikTokCommercialMusic).toBeTypeOf('function');
+    });
+
     it('should have getTikTokCreatorInfo method', () => {
       expect(client.accounts.getTikTokCreatorInfo).toBeDefined();
       expect(client.accounts.getTikTokCreatorInfo).toBeTypeOf('function');

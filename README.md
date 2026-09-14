@@ -185,6 +185,7 @@ try {
 |--------|-------------|
 | `accounts.getAllAccountsHealth()` | Check accounts health |
 | `accounts.listAccounts()` | List accounts |
+| `accounts.listTikTokCommercialMusic()` | List trending commercial music |
 | `accounts.getAccountHealth()` | Check account health |
 | `accounts.getAccountPosts()` | List posts published on the platform |
 | `accounts.getBlueskySettings()` | Get Bluesky account settings |
