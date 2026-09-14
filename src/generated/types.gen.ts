@@ -6984,6 +6984,10 @@ export type TargetingSpec = {
      */
     excludedLocations?: {
         countries?: Array<(string)>;
+        /**
+         * Meta only. Continents and trade blocs to exclude (`excluded_geo_locations.country_groups`).
+         */
+        countryGroups?: Array<('africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'central_america' | 'caribbean' | 'eea' | 'euro_area' | 'nafta' | 'mercosur' | 'afta' | 'apec' | 'gcc' | 'cisfta' | 'emerging_markets' | 'itunes_app_store' | 'android_free_store' | 'android_paid_store')>;
         regions?: Array<{
             key: string;
             name?: string;
@@ -37879,6 +37883,14 @@ export type CreateStandaloneAdData = {
          * ISO 3166-1 alpha-2 country codes (e.g. ['NL']). Defaults to ['US'] when no other geo targeting (flat or nested `targeting`) is provided. (LinkedIn and OpenAI Ads currently honour country-level targeting only; any other targeting field returns 400 for OpenAI Ads.)
          */
         countries?: Array<(string)>;
+        /**
+         * Meta only. Continents and trade blocs (`geo_locations.country_groups`),
+         * for targeting a whole region without listing its countries. Combines with
+         * `countries` rather than replacing it. Discoverable via
+         * `GET /v1/ads/targeting/search?dimension=geo&geoType=country_group`.
+         *
+         */
+        countryGroups?: Array<('africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'central_america' | 'caribbean' | 'eea' | 'euro_area' | 'nafta' | 'mercosur' | 'afta' | 'apec' | 'gcc' | 'cisfta' | 'emerging_markets' | 'itunes_app_store' | 'android_free_store' | 'android_paid_store')>;
         /**
          * City-level geo targeting (Meta and TikTok). Each city is targeted by the platform's opaque `key` (the city ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`. Optional `radius` + `distance_unit` (Meta only) extend the targeting beyond the city limits (e.g. radius 25 km around the city center). Both must be set together, or both omitted (Meta defaults to ~16 km when omitted).
          *
