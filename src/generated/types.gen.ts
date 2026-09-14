@@ -7317,7 +7317,7 @@ export type TikTokPlatformData = {
      */
     musicSoundInfo?: {
         /**
-         * The commercial_music_id of the track.
+         * The id field of a track from GET /v1/accounts/{accountId}/tiktok/commercial-music (a song clip id). TikTok fails the publish with a generic 51065 when given the commercial music id instead.
          */
         musicSoundId: string;
         /**
@@ -14445,9 +14445,13 @@ export type ListTikTokCommercialMusicData = {
 export type ListTikTokCommercialMusicResponse = ({
     tracks?: Array<{
         /**
-         * The commercial_music_id to send as musicSoundId
+         * The id to send as musicSoundId (the full track's song clip id). TikTok rejects the commercial music id itself at publish time.
          */
         id?: string;
+        /**
+         * TikTok's commercial_music_id, for reference only
+         */
+        commercialMusicId?: string;
         name?: string;
         artist?: string;
         durationSec?: number;
@@ -14462,9 +14466,10 @@ export type ListTikTokCommercialMusicResponse = ({
          */
         rank?: number;
         /**
-         * The trending excerpt of the track, when TikTok provides one
+         * The trending excerpt of the track, when TikTok provides one. Its id is also accepted as musicSoundId.
          */
         clip?: {
+            id?: string;
             durationSec?: number;
             previewUrl?: string;
         };
