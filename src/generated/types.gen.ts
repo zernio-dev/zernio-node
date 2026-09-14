@@ -10698,6 +10698,45 @@ export type otp_type = 'copy_code' | 'one_tap' | 'zero_tap';
 
 export type WhatsAppTemplateComponent = WhatsAppHeaderComponent | WhatsAppBodyComponent | WhatsAppFooterComponent | WhatsAppButtonsComponent | WhatsAppCarouselComponent | WhatsAppLimitedTimeOfferComponent;
 
+export type WhatsAppTemplateLookupError = {
+    error: string;
+    type: 'platform_error';
+    code: 'platform_api_error';
+    platform: 'whatsapp';
+    /**
+     * Sanitized Meta lookup error fields, present when Meta returned them.
+     */
+    platformError?: {
+        code?: number;
+        message?: string;
+        error_data?: {
+            details?: string;
+        };
+    };
+    details: {
+        phase: 'template_lookup';
+        /**
+         * Meta endpoint path without query parameters or access tokens
+         */
+        endpoint: string;
+        upstreamStatus?: number;
+        /**
+         * Safe provider headers retained from the lookup response.
+         */
+        providerHeaders?: {
+            'retry-after'?: string;
+            'x-app-usage'?: string;
+            'x-business-use-case-usage'?: string;
+        };
+    };
+};
+
+export type type11 = 'platform_error';
+
+export type code = 'platform_api_error';
+
+export type phase = 'template_lookup';
+
 /**
  * A directed edge between two nodes.
  */
@@ -10851,7 +10890,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type11 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type12 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -10987,7 +11026,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type12 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type13 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -11066,7 +11105,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type13 = 'divider' | 'latex';
+export type type14 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -21210,21 +21249,21 @@ export type CreateInboxConversationResponse = ({
     };
 });
 
-export type CreateInboxConversationError = ({
+export type CreateInboxConversationError = (({
     error?: string;
-    code?: 'PLATFORM_NOT_SUPPORTED' | 'PLATFORM_LIMITATION' | 'TEMPLATE_REQUIRED' | 'INVALID_TEMPLATE_PARAMS' | 'INVALID_TEMPLATE_BUTTON_PARAM' | 'INVALID_TEMPLATE_CARD_PARAM' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED';
-} | {
+    code?: 'PLATFORM_NOT_SUPPORTED' | 'PLATFORM_LIMITATION' | 'TEMPLATE_REQUIRED' | 'INVALID_TEMPLATE_PARAMS' | 'INVALID_TEMPLATE_BUTTON_PARAM' | 'INVALID_TEMPLATE_HEADER' | 'INVALID_TEMPLATE_CARD_PARAM' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED';
+} | WhatsAppTemplateLookupError) | {
     error?: string;
-} | unknown | {
+} | unknown | ({
     error?: string;
     code?: 'account_not_found' | 'PARTICIPANT_NOT_FOUND';
-} | {
+} | WhatsAppTemplateLookupError) | ({
     error?: string;
     code?: 'DM_NOT_ALLOWED';
-} | {
+} | WhatsAppTemplateLookupError) | ({
     error?: string;
     code?: 'rate_limited';
-});
+} | WhatsAppTemplateLookupError) | WhatsAppTemplateLookupError);
 
 export type SearchInboxConversationsData = {
     query: {
@@ -22356,13 +22395,13 @@ export type SendInboxMessageError = ({
     /**
      * Stable machine-readable reason. PLATFORM_LIMITATION covers a capability the platform does not offer (e.g. Bluesky and Reddit DMs reject media); MISSING_PARTICIPANT means the stored conversation has no recipient to send to; DIRECT_SEND_NOT_ELIGIBLE and DIRECT_SEND_BLOCKED mean the WhatsApp Business Account needs Meta to grant or restore Direct Send access; DIRECT_SEND_LIMITED is temporary, Meta lifts it on its own; platform_api_error means Meta itself rejected the send (see platformError).
      */
-    code?: 'PLATFORM_LIMITATION' | 'MISSING_PARTICIPANT' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED' | 'platform_api_error';
+    code?: 'PLATFORM_LIMITATION' | 'MISSING_PARTICIPANT' | 'INVALID_TEMPLATE_HEADER' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED' | 'platform_api_error';
     /**
-     * Present alongside code platform_api_error. The platform that rejected the send (e.g. instagram, facebook).
+     * Present alongside code platform_api_error. The platform that rejected the send (e.g. instagram, facebook, whatsapp).
      */
     platform?: string;
     /**
-     * Instagram/Facebook only. Meta's own diagnostic fields for the rejected send, passed through verbatim so you can tell failure classes apart and quote them to Meta. Absent when the failure did not come from Meta.
+     * Instagram, Facebook, or WhatsApp. Meta's diagnostic fields for the rejected send or template lookup. WhatsApp lookup errors retain only code, message, and error_data.details. Absent when the failure did not come from Meta.
      */
     platformError?: {
         /**
@@ -22384,7 +22423,7 @@ export type SendInboxMessageError = ({
     };
 } | {
     error?: string;
-} | ErrorResponse | unknown);
+} | ErrorResponse | unknown | WhatsAppTemplateLookupError | (ErrorResponse | WhatsAppTemplateLookupError));
 
 export type GetWhatsAppMediaData = {
     path: {
