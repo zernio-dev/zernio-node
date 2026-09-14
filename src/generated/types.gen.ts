@@ -3231,6 +3231,15 @@ export type CtwaAdRequestBody = {
         name?: string;
     }>;
     /**
+     * Meta only. Continents and trade blocs (`geo_locations.country_groups`),
+     * for targeting a whole region without listing its countries. Combines
+     * with `countries` rather than replacing it, and is also accepted under
+     * `excludedLocations`. Discoverable via
+     * `GET /v1/ads/targeting/search?dimension=geo&geoType=country_group`.
+     *
+     */
+    countryGroups?: Array<('africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'central_america' | 'caribbean' | 'eea' | 'euro_area' | 'nafta' | 'mercosur' | 'afta' | 'apec' | 'gcc' | 'cisfta' | 'emerging_markets' | 'itunes_app_store' | 'android_free_store' | 'android_paid_store')>;
+    /**
      * Point-radius geo (Meta `geo_locations.custom_locations`).
      * Use for targeting a radius around a specific lat/long when
      * no Meta city/region key fits. `distanceUnit` is required.
@@ -6944,6 +6953,15 @@ export type TargetingSpec = {
         key: string;
         name?: string;
     }>;
+    /**
+     * Meta only. Continents and trade blocs (`geo_locations.country_groups`),
+     * for targeting a whole region without listing its countries. Combines
+     * with `countries` rather than replacing it, and is also accepted under
+     * `excludedLocations`. Discoverable via
+     * `GET /v1/ads/targeting/search?dimension=geo&geoType=country_group`.
+     *
+     */
+    countryGroups?: Array<('africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'central_america' | 'caribbean' | 'eea' | 'euro_area' | 'nafta' | 'mercosur' | 'afta' | 'apec' | 'gcc' | 'cisfta' | 'emerging_markets' | 'itunes_app_store' | 'android_free_store' | 'android_paid_store')>;
     /**
      * Point-radius (lat/lng) targeting (Meta custom_locations / Google proximity). Honoured on Meta and Google; ignored on platforms without radius support.
      */
@@ -39285,7 +39303,7 @@ export type SearchAdTargetingData = {
         /**
          * Only used when `dimension=geo`. The kind of location to resolve. `all` searches every type in one relevance-ranked call. Defaults to `city`.
          */
-        geoType?: 'all' | 'country' | 'region' | 'city' | 'subcity' | 'neighborhood' | 'place' | 'zip' | 'metro_area' | 'geo_market';
+        geoType?: 'all' | 'country' | 'country_group' | 'region' | 'city' | 'subcity' | 'neighborhood' | 'place' | 'zip' | 'metro_area' | 'geo_market';
         /**
          * Maximum results to return.
          */
