@@ -22767,9 +22767,9 @@ export type ListInboxCommentsData = {
          */
         minComments?: number;
         /**
-         * Filter by platform. `metaads` is a synthetic value meaning the user's ads (boosted/dark posts) only; `facebook`/`instagram` return organic posts only.
+         * Filter by platform. `metaads` is a synthetic value meaning the user's ads (boosted/dark posts) only; `facebook`/`instagram` return organic posts only. `tiktok` covers accounts connected through the TikTok Business app only; developer-app TikTok accounts are returned under `meta.accountsSkipped`.
          */
-        platform?: 'facebook' | 'instagram' | 'twitter' | 'bluesky' | 'threads' | 'youtube' | 'linkedin' | 'reddit' | 'metaads';
+        platform?: 'facebook' | 'instagram' | 'twitter' | 'bluesky' | 'threads' | 'youtube' | 'linkedin' | 'reddit' | 'tiktok' | 'metaads';
         /**
          * Filter by profile ID
          */
