@@ -242,6 +242,7 @@ import {
   getCall,
   getCallRecording,
   getCallsUsage,
+  getCampaignAdSchedule,
   getCampaignAnalytics,
   getCampaignBidding,
   getCampaignTargeting,
@@ -664,6 +665,7 @@ import {
   updateBusinessAgentSkill,
   updateBusinessAgentUiSkill,
   updateBusinessAgentWebsite,
+  updateCampaignAdSchedule,
   updateCampaignAssets,
   updateCampaignTargeting,
   updateCommentAutomation,
@@ -1674,6 +1676,8 @@ export class Zernio {
     listAdCampaigns: this._bind(listAdCampaigns),
     createAdCampaign: this._bind(createAdCampaign),
     updateAdCampaignStatus: this._bind(updateAdCampaignStatus),
+    getCampaignAdSchedule: this._bind(getCampaignAdSchedule),
+    updateCampaignAdSchedule: this._bind(updateCampaignAdSchedule),
     getCampaignBidding: this._bind(getCampaignBidding),
     getAdCampaignDetails: this._bind(getAdCampaignDetails),
     updateAdCampaign: this._bind(updateAdCampaign),
@@ -2025,6 +2029,10 @@ export class Zernio {
     createAdCampaign: this._bind(createAdCampaign),
     /** @deprecated Use `zernio.adcampaigns.updateAdCampaignStatus` instead. */
     updateAdCampaignStatus: this._bind(updateAdCampaignStatus),
+    /** @deprecated Use `zernio.adcampaigns.getCampaignAdSchedule` instead. */
+    getCampaignAdSchedule: this._bind(getCampaignAdSchedule),
+    /** @deprecated Use `zernio.adcampaigns.updateCampaignAdSchedule` instead. */
+    updateCampaignAdSchedule: this._bind(updateCampaignAdSchedule),
     /** @deprecated Use `zernio.adcampaigns.getCampaignBidding` instead. */
     getCampaignBidding: this._bind(getCampaignBidding),
     /** @deprecated Use `zernio.adcampaigns.getAdCampaignDetails` instead. */

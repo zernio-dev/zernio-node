@@ -473,6 +473,7 @@ try {
 | `adCampaigns.getAdSetDetails()` | Get live ad-set details |
 | `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |
+| `adCampaigns.getCampaignAdSchedule()` | Read a campaign's ad schedule (dayparting) |
 | `adCampaigns.getCampaignBidding()` | Read a campaign's current bidding |
 | `adCampaigns.getCampaignTargeting()` | Read a Google campaign's device, location, and language targeting |
 | `adCampaigns.updateAd()` | Update ad |
@@ -484,6 +485,7 @@ try {
 | `adCampaigns.updateAdSetStatus()` | Pause or resume a single ad set |
 | `adCampaigns.updateAdStatus()` | Pause or resume a single ad |
 | `adCampaigns.updateBidStrategy()` | Update portfolio bid strategy |
+| `adCampaigns.updateCampaignAdSchedule()` | Replace a campaign's ad schedule (dayparting) |
 | `adCampaigns.updateCampaignAssets()` | Update campaign assets |
 | `adCampaigns.updateCampaignTargeting()` | Edit a Google campaign's device, location, or language targeting |
 | `adCampaigns.deleteAd()` | Cancel an ad |

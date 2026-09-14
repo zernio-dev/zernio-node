@@ -724,9 +724,35 @@ export type AdKeyword = {
     status?: 'active' | 'paused';
     negative?: boolean;
     /**
-     * Google Quality Score, 1-10. Null when unrated.
+     * Deprecated, use `quality.score`. Google Quality Score, 1-10. Null when unrated.
      */
     qualityScore?: (number) | null;
+    /**
+     * Google Quality Score and the three component ratings behind it
+     * (`ad_group_criterion.quality_info`). Every field is null until Google has rated the
+     * keyword: a keyword with too little traffic is unrated, and negatives are never rated.
+     * Google's own UNKNOWN / UNSPECIFIED buckets are reported as null so "unrated" has a
+     * single representation.
+     *
+     */
+    quality?: {
+        /**
+         * Quality Score, 1-10.
+         */
+        score?: (number) | null;
+        /**
+         * How the click-through rate compares with other ads in the same position (`search_predicted_ctr`).
+         */
+        expectedCtr?: ('BELOW_AVERAGE' | 'AVERAGE' | 'ABOVE_AVERAGE') | null;
+        /**
+         * How closely the ad matches the intent behind the search (`creative_quality_score`).
+         */
+        adRelevance?: ('BELOW_AVERAGE' | 'AVERAGE' | 'ABOVE_AVERAGE') | null;
+        /**
+         * How relevant and useful the landing page is to people who click (`post_click_quality_score`).
+         */
+        landingPageExperience?: ('BELOW_AVERAGE' | 'AVERAGE' | 'ABOVE_AVERAGE') | null;
+    };
     syncedAt?: (string) | null;
     /**
      * Trailing 30-day window. Null on rows synced before the metrics columns existed (re-synced on the keyword's next weekly sweep).
@@ -756,6 +782,21 @@ export type platform2 = 'google';
 export type matchType = 'exact' | 'phrase' | 'broad' | 'unknown';
 
 export type status = 'active' | 'paused';
+
+/**
+ * How the click-through rate compares with other ads in the same position (`search_predicted_ctr`).
+ */
+export type expectedCtr = 'BELOW_AVERAGE' | 'AVERAGE' | 'ABOVE_AVERAGE';
+
+/**
+ * How closely the ad matches the intent behind the search (`creative_quality_score`).
+ */
+export type adRelevance = 'BELOW_AVERAGE' | 'AVERAGE' | 'ABOVE_AVERAGE';
+
+/**
+ * How relevant and useful the landing page is to people who click (`post_click_quality_score`).
+ */
+export type landingPageExperience = 'BELOW_AVERAGE' | 'AVERAGE' | 'ABOVE_AVERAGE';
 
 export type AdMetrics = {
     spend?: number;
@@ -1047,6 +1088,35 @@ export type AdPromotedObject = {
  * Platform-side review state, independent of the delivery `status` and the `configuredStatus` on/off toggle. `in_review` means the platform is still reviewing. Absent when the platform reports no review signal (e.g. a paused ad whose review state is masked behind the pause).
  */
 export type AdReviewStatus = 'in_review' | 'approved' | 'rejected' | 'with_issues';
+
+/**
+ * One ad schedule window as Google stores it. Half-open: it is exclusive of the end minute, so 09:00-12:00 and 12:00-17:00 are adjacent, not overlapping.
+ */
+export type AdScheduleWindow = {
+    /**
+     * Google campaign criterion id. Changes whenever the window is rewritten, because Google cannot edit a schedule in place.
+     */
+    criterionId?: string;
+    resourceName?: string;
+    dayOfWeek?: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+    startHour?: number;
+    startMinute?: 0 | 15 | 30 | 45;
+    /**
+     * 24 means midnight at the end of the day.
+     */
+    endHour?: number;
+    endMinute?: 0 | 15 | 30 | 45;
+    /**
+     * Bid adjustment for this window, 0.1-10.0. Null when the window runs at the campaign bid.
+     */
+    bidModifier?: (number) | null;
+};
+
+export type dayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+
+export type startMinute = 0 | 15 | 30 | 45;
+
+export type endMinute = 0 | 15 | 30 | 45;
 
 export type AdsListResponse = {
     ads?: Array<Ad>;
@@ -33064,6 +33134,134 @@ export type UpdateAdCampaignStatusResponse = ({
 export type UpdateAdCampaignStatusError = (unknown | {
     error?: string;
 });
+
+export type GetCampaignAdScheduleData = {
+    path: {
+        /**
+         * Numeric Google platform campaign id.
+         */
+        campaignId: string;
+    };
+    query?: {
+        /**
+         * Start of an explicit performance range (YYYY-MM-DD). Use together with toDate.
+         */
+        fromDate?: string;
+        /**
+         * Also return delivery by day of week and by hour. Costs one extra Google call.
+         */
+        includePerformance?: boolean;
+        /**
+         * Disambiguates the campaign id when the connection spans platforms.
+         */
+        platform?: 'google';
+        /**
+         * End of an explicit performance range (YYYY-MM-DD). Must be on or after fromDate.
+         */
+        toDate?: string;
+        /**
+         * Trailing window for the performance split. Ignored when fromDate and toDate are both given.
+         */
+        windowDays?: number;
+    };
+};
+
+export type GetCampaignAdScheduleResponse = ({
+    campaignId?: string;
+    schedule?: Array<AdScheduleWindow>;
+    /**
+     * True when the campaign carries no ad schedule at all, so it can serve at any time.
+     */
+    servesAroundTheClock?: boolean;
+    cachedAt?: (string) | null;
+    /**
+     * True when a quota-exhausted read served the last-good copy.
+     */
+    stale?: boolean;
+    /**
+     * Only present when includePerformance=true.
+     */
+    performance?: {
+        /**
+         * The trailing window used, or null when an explicit fromDate/toDate range was given.
+         */
+        windowDays?: (number) | null;
+        /**
+         * One entry per day that delivered, Monday first.
+         */
+        byDayOfWeek?: Array<{
+            dayOfWeek?: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+            impressions?: number;
+            clicks?: number;
+            /**
+             * Account currency, not USD-normalized.
+             */
+            cost?: number;
+            conversions?: number;
+        }>;
+        /**
+         * One entry per hour that delivered, 0-23 in the account time zone.
+         */
+        byHour?: Array<{
+            hour?: number;
+            impressions?: number;
+            clicks?: number;
+            /**
+             * Account currency, not USD-normalized.
+             */
+            cost?: number;
+            conversions?: number;
+        }>;
+    };
+});
+
+export type GetCampaignAdScheduleError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCampaignAdScheduleData = {
+    body: {
+        /**
+         * The complete set of windows. Required, so clearing the schedule is always deliberate rather than an omission.
+         */
+        schedule: Array<{
+            dayOfWeek: 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+            startHour: number;
+            /**
+             * Quarter-hours only.
+             */
+            startMinute?: 0 | 15 | 30 | 45;
+            /**
+             * 24 means midnight at the end of the day.
+             */
+            endHour: number;
+            /**
+             * Quarter-hours only. Must be 0 when endHour is 24.
+             */
+            endMinute?: 0 | 15 | 30 | 45;
+            /**
+             * Bid adjustment for this window. Null runs it at the campaign bid.
+             */
+            bidModifier?: (number) | null;
+        }>;
+    };
+    path: {
+        /**
+         * Numeric Google platform campaign id.
+         */
+        campaignId: string;
+    };
+};
+
+export type UpdateCampaignAdScheduleResponse = ({
+    campaignId?: string;
+    schedule?: Array<AdScheduleWindow>;
+    servesAroundTheClock?: boolean;
+});
+
+export type UpdateCampaignAdScheduleError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type GetCampaignBiddingData = {
     path: {
