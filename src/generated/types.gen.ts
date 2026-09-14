@@ -31975,6 +31975,17 @@ export type GetCommentAutomationResponse = ({
          */
         error?: string;
         /**
+         * Platform error codes of the failed DM (Meta `code` and `error_subcode`), when the platform sent them. Absent on successful rows and on rows written before this field existed.
+         */
+        platformError?: {
+            code?: number;
+            subcode?: number;
+        };
+        /**
+         * True when the failed send spent the comment's single Instagram private reply (subcode 1545133 or 2534023), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs, on Facebook, and on rows written before this field existed.
+         */
+        privateReplyConsumed?: boolean;
+        /**
          * Outcome of the optional public reply on the triggering comment. 'skipped' if no commentReply was configured or if the DM failed (the public reply is not attempted in that case).
          */
         commentReplyStatus?: 'sent' | 'failed' | 'skipped';
@@ -32164,6 +32175,17 @@ export type ListCommentAutomationLogsResponse = ({
          * DM error message if status is failed
          */
         error?: string;
+        /**
+         * Platform error codes of the failed DM (Meta `code` and `error_subcode`), when the platform sent them. Absent on successful rows and on rows written before this field existed.
+         */
+        platformError?: {
+            code?: number;
+            subcode?: number;
+        };
+        /**
+         * True when the failed send spent the comment's single Instagram private reply (subcode 1545133 or 2534023), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs, on Facebook, and on rows written before this field existed.
+         */
+        privateReplyConsumed?: boolean;
         /**
          * Outcome of the optional public reply on the triggering comment. 'skipped' if no commentReply was configured or if the DM failed (the public reply is not attempted in that case).
          */
