@@ -24353,7 +24353,7 @@ export type ReplyToInboxReviewResponse = ({
     platform?: string;
 });
 
-export type ReplyToInboxReviewError = ({
+export type ReplyToInboxReviewError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
