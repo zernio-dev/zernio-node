@@ -10451,15 +10451,20 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * TikTok geo searches return every matching level in one list (`type` is
  * `country`, `region`, `city`, `district`, or `metro` for DMA areas), and
  * `geoType` is not applied. Results are scoped to the advertiser's targetable
- * markets, and every id is usable in `regions`/`cities`/`metros` keys on
- * `POST /v1/ads/create`.
+ * markets. A `country` result's id is its ISO 3166-1 alpha-2 code, for
+ * `targeting.countries`; every other id is TikTok's numeric location id,
+ * usable in `regions`/`cities`/`metros` keys on `POST /v1/ads/create`.
  *
  * LinkedIn geo searches also return every matching level in one list, and
  * neither `geoType` nor `countryCode` is applied: LinkedIn's typeahead only
  * returns a name and a URN per result, with no level or country field to
- * filter on. Every result has `type` set to `location`, and its id is a
- * `urn:li:geo:*` URN usable as a `regions[].key` on `POST /v1/ads/create`,
- * `POST /v1/ads/boost` and `POST /v1/ads/targeting/reach-estimate`.
+ * filter on. A result whose URN is a country Zernio holds a code for has
+ * `type: country` and its ISO 3166-1 alpha-2 code as the id, for
+ * `targeting.countries`. Every other result has `type: region` and keeps
+ * its `urn:li:geo:*` URN as the id, usable as a `regions[].key` on
+ * `POST /v1/ads/create`, `POST /v1/ads/boost` and
+ * `POST /v1/ads/targeting/reach-estimate` (LinkedIn puts countries and
+ * regions in the same `locations` facet, so both target the same way).
  *
  * LinkedIn B2B searches (`industry`, `jobFunction`, `seniority`, `companySize`) return the
  * full URN to pass straight back, so no URN id fragment has to be assembled by hand:
@@ -10475,11 +10480,13 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * `target_type` is an open taxonomy that does not map one-to-one onto the
  * `geoType` enum), so filter client-side on the returned `type` (`country`,
  * `region`, `city`, `zip`, `metro`, or the lowercased Google target type for
- * rarer levels). `countryCode` scopes the search to one country. Each id is
- * Google's numeric criterion id, usable as a `regions`/`cities`/`zips`/`metros`
- * `key` on `POST /v1/ads/create`. Google city radius is not supported (pass a
- * `customLocations` lat/lng pin for a radius); country targeting also accepts
- * plain ISO codes via `countries` with no search call.
+ * rarer levels). `countryCode` scopes the search to one country. A `country`
+ * result's id is its ISO 3166-1 alpha-2 code, for `targeting.countries`;
+ * every other id is Google's numeric criterion id, usable as a
+ * `regions`/`cities`/`zips`/`metros` `key` on `POST /v1/ads/create`. Google
+ * city radius is not supported (pass a `customLocations` lat/lng pin for a
+ * radius); country targeting also accepts plain ISO codes via `countries`
+ * with no search call.
  *
  * Pinterest resolves against three whole-catalog endpoints (interests, locations,
  * regions) with no server-side query or pagination, so matching, ranking and the
