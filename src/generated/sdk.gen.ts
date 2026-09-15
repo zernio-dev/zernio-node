@@ -8856,12 +8856,18 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * the campaign's live criteria and sends the removes and the creates in ONE
  * `googleAds:mutate`, so the campaign is never left with a half-applied set; criteria
  * already in the list keep their criterion ID and history. Excluded (negative)
- * locations are left untouched. Two cases are refused rather than applied: an empty
- * location list returns 400 (a Google campaign with no location criteria targets every
- * country, which is never what "remove my locations" means, so omit the field instead),
- * and radius targeting (`customLocations`) returns 422 because it is a separate Google
- * criterion type that this replacement neither creates nor removes. Send either
- * `targeting.locations` or the top-level geo fields, not both: mixing them returns 400.
+ * locations are left untouched. An empty location list returns 400 (a Google campaign
+ * with no location criteria targets every country, which is never what "remove my
+ * locations" means, so omit the field instead). Send either `targeting.locations` or the
+ * top-level geo fields, not both: mixing them returns 400.
+ *
+ * **Google radius targeting:** `customLocations` is editable and is replaced the same
+ * way, but as its OWN set. Google models a place (LOCATION) and a point plus radius
+ * (PROXIMITY) as different criterion types, so the two are independent: sending
+ * `customLocations` replaces every radius and leaves the cities and countries alone,
+ * and sending places replaces those and leaves the radius alone. Send
+ * `customLocations: []` to drop radius targeting entirely. A circle you re-send
+ * unchanged keeps its criterion ID rather than being removed and recreated.
  *
  * **Google keyword replacement:** These edits affect the ad's entire ad group,
  * including sibling ads. Positive (`targeting.keywords`) and negative
