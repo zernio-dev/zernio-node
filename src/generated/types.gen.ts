@@ -3936,6 +3936,13 @@ export type ErrorResponse = {
      * (every Google account is affected and there is nothing to change on your side),
      * `ACCOUNT` means your own ad account. A Meta 429 carries neither field.
      *
+     * A Zernio Google Ads budget 429 carries `budgetScope` instead, and never
+     * `quotaExhausted`: these are Zernio's own limits, applied before the call
+     * reaches Google. `user` is your own burst or daily allowance, so the work is
+     * yours to reschedule; `platform` is the fleet-wide daily budget shared with
+     * every other customer, so only waiting for the reset clears it. The two
+     * scopes are separate axes from `quotaScope`, not the same pool named twice.
+     *
      */
     details?: {
         /**
@@ -3946,6 +3953,10 @@ export type ErrorResponse = {
          * Google Ads 429 only, when Google names the scope. DEVELOPER is the shared developer-token budget; ACCOUNT is your ad account.
          */
         quotaScope?: 'DEVELOPER' | 'ACCOUNT';
+        /**
+         * Zernio Google Ads operations-budget 429 only (never set alongside `quotaExhausted`). `user` is your own burst/daily allowance; `platform` is the fleet-wide daily budget shared across customers.
+         */
+        budgetScope?: 'user' | 'platform';
         [key: string]: unknown | boolean | string;
     };
 };
@@ -3959,6 +3970,11 @@ export type type4 = 'invalid_request_error' | 'authentication_error' | 'permissi
  * Google Ads 429 only, when Google names the scope. DEVELOPER is the shared developer-token budget; ACCOUNT is your ad account.
  */
 export type quotaScope = 'DEVELOPER' | 'ACCOUNT';
+
+/**
+ * Zernio Google Ads operations-budget 429 only (never set alongside `quotaExhausted`). `user` is your own burst/daily allowance; `platform` is the fleet-wide daily budget shared across customers.
+ */
+export type budgetScope = 'user' | 'platform';
 
 /**
  * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
