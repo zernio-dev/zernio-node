@@ -15,6 +15,7 @@ export interface ZernioErrorBody {
   type?: string;
   code?: string;
   param?: string;
+  docUrl?: string;
   platform?: string;
   platformError?: Record<string, unknown>;
   details?: Record<string, unknown>;
@@ -28,6 +29,8 @@ export class ZernioApiError extends Error {
   public readonly type?: string;
   /** The request field that caused the error, when the API names one. */
   public readonly param?: string;
+  /** Link to the documentation for this error, when the API provides one. */
+  public readonly docUrl?: string;
   /** Upstream platform, present when type is platform_error. */
   public readonly platform?: string;
   /** The upstream platform's own payload, verbatim (Meta: code, subcode, fbtrace_id). */
@@ -49,6 +52,7 @@ export class ZernioApiError extends Error {
     this.details = details;
     this.type = body?.type;
     this.param = body?.param;
+    this.docUrl = body?.docUrl;
     this.platform = body?.platform;
     this.platformError = body?.platformError;
     this.body = body;

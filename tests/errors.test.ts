@@ -248,15 +248,17 @@ describe('parseApiError carries the whole envelope', () => {
     type: 'platform_error',
     code: 'platform_api_error',
     param: 'text',
+    docUrl: 'https://docs.zernio.com/errors/platform_api_error',
     platform: 'instagram',
     platformError: { code: 10, subcode: 2534022, fbtrace_id: 'Abc123' },
     details: { conversationId: 'c1' },
   };
 
-  it('surfaces type, param, platform and platformError', () => {
+  it('surfaces type, param, docUrl, platform and platformError', () => {
     const err = parseApiError(new Response(null, { status: 403 }), metaBody);
     expect(err.type).toBe('platform_error');
     expect(err.param).toBe('text');
+    expect(err.docUrl).toBe('https://docs.zernio.com/errors/platform_api_error');
     expect(err.platform).toBe('instagram');
     expect(err.platformError).toEqual({ code: 10, subcode: 2534022, fbtrace_id: 'Abc123' });
   });
@@ -306,6 +308,7 @@ describe('parseApiError carries the whole envelope', () => {
   it('leaves the new fields undefined when the API sent no body', () => {
     const err = parseApiError(new Response(null, { status: 500 }));
     expect(err.type).toBeUndefined();
+    expect(err.docUrl).toBeUndefined();
     expect(err.platformError).toBeUndefined();
     expect(err.statusCode).toBe(500);
   });
