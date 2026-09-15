@@ -33031,7 +33031,7 @@ export type CreateAdCampaignData = {
         isSkadnetworkAttribution?: boolean;
         promotedObject?: AdPromotedObject;
         /**
-         * Meta only. Defaults to AUCTION and is explicitly sent on new campaigns, including validateOnly. SKAdNetwork app promotion requires AUCTION.
+         * Meta only. OMIT on non-Meta platforms (Google Ads, etc.): any value is rejected with a 400. On Meta the server applies AUCTION when omitted, so it does not need to be sent; RESERVED = Reach & Frequency. SKAdNetwork app promotion requires AUCTION.
          */
         buyingType?: 'AUCTION' | 'RESERVED';
         /**
