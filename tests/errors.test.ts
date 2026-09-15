@@ -235,3 +235,78 @@ describe('parseApiError', () => {
     expect(error.statusCode).toBe(500);
   });
 });
+
+// Reported by an integrator on 2026-09-14 and first raised 57 releases earlier:
+// parseApiError built ZernioApiError from error/code/details only, so of the
+// seven canonical envelope fields, type, param, platform and platformError were
+// dropped on EVERY endpoint. For Meta sends that is fatal to error handling,
+// because a closed messaging window and a blocked recipient both arrive as
+// code platform_api_error and only platformError.subcode separates them.
+describe('parseApiError carries the whole envelope', () => {
+  const metaBody = {
+    error: 'This message is sent outside of allowed window.',
+    type: 'platform_error',
+    code: 'platform_api_error',
+    param: 'text',
+    platform: 'instagram',
+    platformError: { code: 10, subcode: 2534022, fbtrace_id: 'Abc123' },
+    details: { conversationId: 'c1' },
+  };
+
+  it('surfaces type, param, platform and platformError', () => {
+    const err = parseApiError(new Response(null, { status: 403 }), metaBody);
+    expect(err.type).toBe('platform_error');
+    expect(err.param).toBe('text');
+    expect(err.platform).toBe('instagram');
+    expect(err.platformError).toEqual({ code: 10, subcode: 2534022, fbtrace_id: 'Abc123' });
+  });
+
+  it('keeps the subcode that separates one Meta refusal from another', () => {
+    const err = parseApiError(new Response(null, { status: 403 }), metaBody);
+    expect((err.platformError as { subcode?: number })?.subcode).toBe(2534022);
+  });
+
+  it('attaches the parsed body verbatim for anything not modelled', () => {
+    const err = parseApiError(new Response(null, { status: 403 }), metaBody);
+    expect(err.body).toEqual(metaBody);
+  });
+
+  it('still fills the fields it always did', () => {
+    const err = parseApiError(new Response(null, { status: 403 }), metaBody);
+    expect(err.message).toBe(metaBody.error);
+    expect(err.statusCode).toBe(403);
+    expect(err.code).toBe('platform_api_error');
+    expect(err.details).toEqual({ conversationId: 'c1' });
+  });
+
+  it('carries the envelope through a 429 too, keeping the API-sent code', () => {
+    const err = parseApiError(new Response(null, { status: 429 }), {
+      error: 'Google Ads API error (429): Too many requests.',
+      type: 'rate_limit_error',
+      code: 'rate_limited',
+      details: { quotaExhausted: true, quotaScope: 'DEVELOPER' },
+    });
+    expect(err.code).toBe('rate_limited');
+    expect(err.type).toBe('rate_limit_error');
+    expect(err.details).toEqual({ quotaExhausted: true, quotaScope: 'DEVELOPER' });
+  });
+
+  it('carries the envelope through a 400 validation error', () => {
+    const err = parseApiError(new Response(null, { status: 400 }), {
+      error: 'Invalid field',
+      type: 'invalid_request_error',
+      code: 'invalid_field_value',
+      param: 'targeting.customLocations',
+      details: { fields: { foo: ['bad'] } },
+    });
+    expect(err.param).toBe('targeting.customLocations');
+    expect(err.type).toBe('invalid_request_error');
+  });
+
+  it('leaves the new fields undefined when the API sent no body', () => {
+    const err = parseApiError(new Response(null, { status: 500 }));
+    expect(err.type).toBeUndefined();
+    expect(err.platformError).toBeUndefined();
+    expect(err.statusCode).toBe(500);
+  });
+});
