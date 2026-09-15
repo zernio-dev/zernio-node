@@ -7412,6 +7412,18 @@ export type TikTokPlatformData = {
      */
     videoMadeWithAi?: boolean;
     /**
+     * Location tag to attach, as the id of a result from GET /v1/accounts/{accountId}/tiktok/locations. Accounts connected through the TikTok for Business app and video posts only: a developer-app account rejects the post at publish time with a message that says so, and a direct photo post is rejected at creation since the business photo endpoint has no location field. Requires locationName. Ignored on drafts, where TikTok ignores every post_info field.
+     */
+    locationId?: string;
+    /**
+     * Display name of the location tag, as returned next to its id. Required with locationId; a locationId without it is rejected at creation.
+     */
+    locationName?: string;
+    /**
+     * Set true to publish the video as an "Only show in ads" post: it is kept off the profile and exists to be used as a Spark Ad. Accounts connected through the TikTok for Business app and video posts only, with the same rejections as locationId. Ignored on drafts.
+     */
+    isAdsOnly?: boolean;
+    /**
      * Optional long-form caption for photo posts (max 4000 chars). Recommended when content exceeds 90 chars, as photo titles are auto-truncated. Falls back to the post content when omitted.
      */
     description?: string;
@@ -14547,6 +14559,40 @@ export type ListTikTokCommercialMusicResponse = ({
 });
 
 export type ListTikTokCommercialMusicError = (ErrorResponse | unknown);
+
+export type SearchTikTokLocationsData = {
+    path: {
+        /**
+         * The TikTok account ID
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * Place name to search, for example a city, a venue or an address
+         */
+        query: string;
+    };
+};
+
+export type SearchTikTokLocationsResponse = ({
+    locations?: Array<{
+        /**
+         * The value to send as locationId
+         */
+        id?: string;
+        /**
+         * The value to send as locationName
+         */
+        name?: string;
+        /**
+         * Address or region TikTok shows for the place, for disambiguation
+         */
+        address?: string;
+    }>;
+});
+
+export type SearchTikTokLocationsError = (ErrorResponse | unknown);
 
 export type GetTikTokCreatorInfoData = {
     path: {

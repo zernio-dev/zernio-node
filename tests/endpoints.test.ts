@@ -85,6 +85,11 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.listTikTokCommercialMusic).toBeTypeOf('function');
     });
 
+    it('should have searchTikTokLocations method', () => {
+      expect(client.accounts.searchTikTokLocations).toBeDefined();
+      expect(client.accounts.searchTikTokLocations).toBeTypeOf('function');
+    });
+
     it('should have getTikTokCreatorInfo method', () => {
       expect(client.accounts.getTikTokCreatorInfo).toBeDefined();
       expect(client.accounts.getTikTokCreatorInfo).toBeTypeOf('function');

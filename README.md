@@ -204,6 +204,7 @@ try {
 | `accounts.batchGetGoogleBusinessReviews()` | Batch get reviews |
 | `accounts.moveAccountToProfile()` | Move account to another profile |
 | `accounts.replyToGoogleBusinessReview()` | Reply to a review |
+| `accounts.searchTikTokLocations()` | Search TikTok location tags |
 
 ### Profiles
 | Method | Description |
