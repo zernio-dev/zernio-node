@@ -6059,6 +6059,10 @@ export type PhoneNumberStockWatch = {
      * The watched number type, or null when the watch covers every type in the country.
      */
     numberType: ('local' | 'mobile' | 'national' | 'toll_free') | null;
+    /**
+     * The watched area code (NDC), or null when the watch covers every area.
+     */
+    areaCode?: (string) | null;
     createdAt: string;
 };
 
@@ -10042,6 +10046,14 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
              */
             availableCount: number;
         }>;
+        /**
+         * Set when the watch named an area: the area code (NDC) that is back in stock.
+         */
+        areaCode?: string;
+        /**
+         * The name of that area, when known.
+         */
+        areaName?: string;
     };
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
@@ -27179,6 +27191,24 @@ export type CheckPhoneNumberAvailabilityResponse = ({
          */
         count?: number;
     }>;
+    /**
+     * Areas that had stock in the last 90 days and have none now. Pass one as `areaCode` with `preOrder: true` on the KYC submit when `preOrderable` is true, or watch it with POST /v1/phone-numbers/stock-watches.
+     *
+     */
+    soldOutAreas?: Array<{
+        /**
+         * Area code (national destination code).
+         */
+        ndc?: string;
+        /**
+         * Area name.
+         */
+        name?: string;
+        /**
+         * Whether this area can be pre-ordered: the carrier sources a number in it (usually 2 to 4 weeks, never guaranteed).
+         */
+        preOrderable?: boolean;
+    }>;
 });
 
 export type CheckPhoneNumberAvailabilityError = (unknown | {
@@ -27468,6 +27498,24 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
          */
         count?: number;
     }>;
+    /**
+     * Areas that had stock in the last 90 days and have none now. Pass one as `areaCode` with `preOrder: true` on the KYC submit when `preOrderable` is true, or watch it with POST /v1/phone-numbers/stock-watches.
+     *
+     */
+    soldOutAreas?: Array<{
+        /**
+         * Area code (national destination code).
+         */
+        ndc?: string;
+        /**
+         * Area name.
+         */
+        name?: string;
+        /**
+         * Whether this area can be pre-ordered: the carrier sources a number in it (usually 2 to 4 weeks, never guaranteed).
+         */
+        preOrderable?: boolean;
+    }>;
 });
 
 export type CheckWhatsAppNumberAvailabilityError = (unknown | {
@@ -27584,6 +27632,10 @@ export type SubmitPhoneNumberKycData = {
          * Area code (NDC) the number must be in. Hard constraint: an empty area pool fails with 409 code AREA_CODE_UNAVAILABLE instead of ordering from another area. Omit for any area. Options come from GET /v1/phone-numbers/availability (areaOptions); the purchase 202 kycUrl echoes the areaCode picked at purchase time so it can be passed here.
          */
         areaCode?: string;
+        /**
+         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area.
+         */
+        preOrder?: boolean;
         /**
          * End user's legal first name. Required when the country has an action/ID-verification (Onfido) requirement.
          */
@@ -28402,6 +28454,10 @@ export type SubmitWhatsAppNumberKycData = {
          */
         areaCode?: string;
         /**
+         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area.
+         */
+        preOrder?: boolean;
+        /**
          * End user's legal first name. Required when the country has an action/ID-verification (Onfido) requirement.
          */
         endUserFirstName?: string;
@@ -28814,6 +28870,10 @@ export type CreatePhoneNumberStockWatchData = {
          * Narrow the watch to one number type. Omit to be notified when any type in the country is back.
          */
         numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+        /**
+         * Narrow the watch to one area code (NDC). Requires numberType.
+         */
+        areaCode?: string;
     };
 };
 

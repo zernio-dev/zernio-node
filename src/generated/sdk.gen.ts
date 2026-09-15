@@ -6642,6 +6642,11 @@ export const disableVoiceOnNumber = <ThrowOnError extends boolean = false>(optio
  * `preOrderable: true` does not need a watch: submit KYC and the carrier
  * sources the number to order.
  *
+ * Pass `areaCode` (with `numberType`) to watch one sold-out area, for
+ * example an entry of `soldOutAreas` from
+ * GET /v1/phone-numbers/availability. Area stock is checked live on the
+ * same 6h cadence.
+ *
  */
 export const createPhoneNumberStockWatch = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreatePhoneNumberStockWatchData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreatePhoneNumberStockWatchResponse, CreatePhoneNumberStockWatchError, ThrowOnError>({
