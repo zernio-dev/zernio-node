@@ -27663,6 +27663,10 @@ export type SubmitPhoneNumberKycData = {
      * Id from POST /v1/phone-numbers/kyc/upload-document.
      */
     documentId: string;
+    /**
+     * Date printed on the document (YYYY-MM-DD), for slots the regulator windows such as proof of address. The pre-submit review trusts it over its own read of the PDF.
+     */
+    issuedAt?: string;
 })>;
         address?: {
             requirementId?: string;
@@ -28161,6 +28165,10 @@ export type ReviewPhoneNumberKycPacketData = {
              * Id from POST /v1/phone-numbers/kyc/upload-document.
              */
             documentId: string;
+            /**
+             * Date printed on the document (YYYY-MM-DD), for slots the regulator windows such as proof of address. The pre-submit review trusts it over its own read of the PDF.
+             */
+            issuedAt?: string;
         }>;
     };
 };
@@ -28295,6 +28303,10 @@ export type RespondToPhoneNumberReviewerData = {
              * Id of a document already uploaded out-of-band.
              */
             documentId?: string;
+            /**
+             * Date printed on the document (YYYY-MM-DD), for slots the regulator windows such as proof of address. The pre-submit review trusts it over its own read of the PDF.
+             */
+            issuedAt?: string;
         }>;
         /**
          * A corrected address record, keyed to its requirement.
