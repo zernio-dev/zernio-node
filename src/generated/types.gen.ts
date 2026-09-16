@@ -15373,6 +15373,10 @@ export type ConnectAdsData = {
          */
         pageId?: string;
         /**
+         * Business login only. Ad-account permission the connection's system user will hold. `full` asks the owner for Full control (MANAGE; required to create pixels and other account-level assets through Zernio). `advertise` asks for Manage campaigns (ADVERTISE), enough for campaigns, ad sets, creatives, ads, media and reporting, for owners who will not grant billing-level control to an integration. Either way Meta only lets a business admin complete the grant. 503 if the advertise configuration is not set up.
+         */
+        permissionLevel?: 'full' | 'advertise';
+        /**
          * Your Zernio profile ID
          */
         profileId: string;
