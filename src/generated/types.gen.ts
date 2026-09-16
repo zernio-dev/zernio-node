@@ -37885,7 +37885,7 @@ export type BoostPostData = {
          */
         goal: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'conversions' | 'app_promotion';
         /**
-         * Meta only. Attach the boosted post to this existing ad set instead of creating a campaign. The ad set then owns budget, schedule and targeting; sending those too is a 400.
+         * Meta, or TikTok with `smartPlus: true`. Attach the boosted post to this existing ad set instead of creating a campaign. On TikTok the id is an existing Smart+ ad group: the post is added as one more Spark ad in it (up to 30 per ad group), under the identity its `sparkAuthCode` creates; goal and budget are inherited from the Smart+ campaign; a regular ad group is rejected with a 400. Meta: The ad set then owns budget, schedule and targeting; sending those too is a 400.
          */
         adSetId?: string;
         /**
