@@ -27082,6 +27082,9 @@ export type PurchasePhoneNumberError = (unknown | {
 } | {
     error?: string;
     code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE';
+} | {
+    error?: string;
+    code?: 'CARRIER_UNAVAILABLE';
 });
 
 export type ListPhoneNumberCountriesResponse = ({
@@ -27464,6 +27467,9 @@ export type PurchaseWhatsAppPhoneNumberError = (unknown | {
 } | {
     error?: string;
     code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE';
+} | {
+    error?: string;
+    code?: 'CARRIER_UNAVAILABLE';
 });
 
 export type ListWhatsAppNumberCountriesResponse = ({
