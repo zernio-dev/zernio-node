@@ -319,6 +319,7 @@ import {
   getPost,
   getPostTimeline,
   getPostingFrequency,
+  getProduct,
   getProfile,
   getRedditFeed,
   getRedditFlairs,
@@ -477,6 +478,7 @@ import {
   listPhoneNumbers,
   listPinterestBoardsForSelection,
   listPosts,
+  listProducts,
   listProfiles,
   listQueueSlots,
   listSequenceEnrollments,
@@ -687,6 +689,7 @@ import {
   updatePinterestBoards,
   updatePost,
   updatePostMetadata,
+  updateProduct,
   updateProfile,
   updateQueueSlot,
   updateRedditSubreddits,
@@ -1985,6 +1988,15 @@ export class Zernio {
     getBlogArticle: this._bind(getBlogArticle),
     updateBlogArticle: this._bind(updateBlogArticle),
     deleteBlogArticle: this._bind(deleteBlogArticle),
+  };
+
+  /**
+   * products API
+   */
+  products = {
+    listProducts: this._bind(listProducts),
+    getProduct: this._bind(getProduct),
+    updateProduct: this._bind(updateProduct),
   };
 
   /**

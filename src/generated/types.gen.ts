@@ -6477,6 +6477,101 @@ export type PostUpdateResponse = {
     warnings?: Array<(string)>;
 };
 
+/**
+ * A product on the connected platform with its variants, options and images. All data lives on the platform; Zernio proxies it and stores nothing.
+ */
+export type Product = {
+    /**
+     * Platform-native product id (numeric string for Shopify).
+     */
+    id?: string;
+    platform?: 'shopify';
+    title?: string;
+    /**
+     * URL slug of the product.
+     */
+    handle?: string;
+    /**
+     * Product description as HTML.
+     */
+    descriptionHtml?: (string) | null;
+    vendor?: (string) | null;
+    /**
+     * Free-text product type as set on the store.
+     */
+    productType?: (string) | null;
+    tags?: Array<(string)>;
+    status?: 'active' | 'draft' | 'archived';
+    featuredImage?: (ProductImage | null);
+    /**
+     * First 20 images in the product media, in store order.
+     */
+    images?: Array<ProductImage>;
+    /**
+     * Option axes (e.g. Size, Color) and their values.
+     */
+    options?: Array<{
+        name?: string;
+        values?: Array<(string)>;
+    }>;
+    /**
+     * First 100 variants.
+     */
+    variants?: Array<ProductVariant>;
+    seo?: {
+        title?: (string) | null;
+        description?: (string) | null;
+    };
+    totalInventory?: (number) | null;
+    /**
+     * Public storefront URL; null while the product is not published to the online store.
+     */
+    onlineStoreUrl?: (string) | null;
+    createdAt?: (string) | null;
+    updatedAt?: (string) | null;
+    publishedAt?: (string) | null;
+};
+
+export type status13 = 'active' | 'draft' | 'archived';
+
+export type ProductImage = {
+    url?: string;
+    altText?: (string) | null;
+};
+
+/**
+ * A purchasable variant of a product (one per option combination).
+ */
+export type ProductVariant = {
+    /**
+     * Platform-native variant id (numeric string for Shopify).
+     */
+    id?: string;
+    /**
+     * Option combination label, e.g. "S / Blue".
+     */
+    title?: string;
+    sku?: (string) | null;
+    barcode?: (string) | null;
+    /**
+     * Decimal amount in the store currency, e.g. "19.90".
+     */
+    price?: string;
+    /**
+     * Strike-through price; null when the variant is not on sale.
+     */
+    compareAtPrice?: (string) | null;
+    /**
+     * Units on hand across locations; null when inventory is not tracked.
+     */
+    inventoryQuantity?: (number) | null;
+    availableForSale?: boolean;
+    selectedOptions?: Array<{
+        name?: string;
+        value?: string;
+    }>;
+};
+
 export type Profile = {
     _id?: string;
     userId?: string;
@@ -7681,7 +7776,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status13 = 'pending' | 'completed' | 'expired';
+export type status14 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -8156,7 +8251,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status14 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status15 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel3 = 'sms';
 
@@ -8275,7 +8370,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status15 = 'success' | 'failed';
+export type status16 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -8387,7 +8482,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status16 = 'success' | 'failure';
+export type status17 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -10257,7 +10352,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status17 = 'published' | 'failed' | 'deleted';
+export type status18 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
@@ -10522,7 +10617,7 @@ export type platform13 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status18 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status19 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -10671,7 +10766,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status19 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status20 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -10820,7 +10915,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status20 = 'pending' | 'active';
+export type status21 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -10978,7 +11073,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status21 = 'success' | 'failed' | 'pending';
+export type status22 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -43163,6 +43258,135 @@ export type DeleteBlogArticleData = {
 export type DeleteBlogArticleResponse = (void);
 
 export type DeleteBlogArticleError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListProductsData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Opaque cursor from a previous response. Omit for the first page.
+         */
+        cursor?: string;
+        /**
+         * Page size (1-50).
+         */
+        limit?: number;
+        /**
+         * Platform product search syntax, passed through verbatim (Shopify: title, vendor, product_type, tag, sku, handle, created_at, updated_at, ...).
+         */
+        query?: string;
+        /**
+         * Only products in this status.
+         */
+        status?: 'active' | 'draft' | 'archived';
+    };
+};
+
+export type ListProductsResponse = ({
+    platform?: 'shopify';
+    products?: Array<Product>;
+    /**
+     * Cursor for the next page; null when there are no more pages.
+     */
+    nextCursor?: (string) | null;
+});
+
+export type ListProductsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetProductData = {
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric product id. Non-numeric values return 400.
+         */
+        productId: string;
+    };
+};
+
+export type GetProductResponse = ({
+    platform?: 'shopify';
+    product?: Product;
+});
+
+export type GetProductError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateProductData = {
+    body: {
+        title?: string;
+        /**
+         * Product description as HTML.
+         */
+        descriptionHtml?: string;
+        /**
+         * URL slug of the product.
+         */
+        handle?: string;
+        vendor?: string;
+        productType?: string;
+        /**
+         * Replaces the full tag list.
+         */
+        tags?: Array<(string)>;
+        /**
+         * archived hides the product everywhere; draft keeps it editable but unpublished.
+         */
+        status?: 'active' | 'draft' | 'archived';
+        /**
+         * Search-engine title and description overrides.
+         */
+        seo?: {
+            title?: string;
+            description?: string;
+        };
+        /**
+         * Price changes per variant. Only the listed variants change.
+         */
+        variants?: Array<{
+            /**
+             * Variant id from the product response.
+             */
+            id: string;
+            /**
+             * Decimal amount in the store currency. Numbers are formatted to two decimals.
+             */
+            price?: (number | string);
+            /**
+             * Strike-through price. Send null to remove it.
+             */
+            compareAtPrice?: (number | string | null);
+        }>;
+    };
+    path: {
+        /**
+         * Connected Shopify SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform-native numeric product id. Non-numeric values return 400.
+         */
+        productId: string;
+    };
+};
+
+export type UpdateProductResponse = ({
+    platform?: 'shopify';
+    product?: Product;
+});
+
+export type UpdateProductError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

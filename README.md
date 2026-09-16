@@ -895,6 +895,13 @@ try {
 | `phoneNumbers.validatePhoneNumberKycAddress()` | Pre-validate KYC address |
 | `phoneNumbers.viewPhoneNumberKycDocument()` | View a KYC document on file |
 
+### Products
+| Method | Description |
+|--------|-------------|
+| `products.listProducts()` | List products |
+| `products.getProduct()` | Get a product |
+| `products.updateProduct()` | Update a product |
+
 ### Reach and Frequency
 | Method | Description |
 |--------|-------------|
