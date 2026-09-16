@@ -6168,6 +6168,13 @@ export const validatePhoneNumberKycAddress = <ThrowOnError extends boolean = fal
  * submit. Only regulated (KYC) countries are valid: a country that does not
  * require KYC returns 400.
  *
+ * Pass `numberType` (`local`, `mobile`, `national`, `toll_free`) to choose
+ * which of the country's offered types the shared form collects KYC for and
+ * eventually orders; omitted defaults to the country's default type (which
+ * may be `national` and therefore have no inventory in a geographic area
+ * code). Pass `areaCode` (NDC digits) to constrain the eventual order to a
+ * specific area; it is validated against the chosen `numberType`.
+ *
  * White-label the page with `branding` (your company name, logo, brand
  * color). Supply `redirect_url` to send the end customer back to your own
  * site after a successful submit (completion params are appended; see
