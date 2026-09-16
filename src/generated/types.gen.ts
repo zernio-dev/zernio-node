@@ -38040,6 +38040,10 @@ export type BoostPostData = {
          */
         sparkAuthCode?: string;
         /**
+         * TikTok only. Run the Spark post in a Smart+ campaign (goal `conversions` = Smart+ Web Conversions, `lead_generation` = Smart+ Lead Generation) instead of a regular campaign. Requires `sparkAuthCode` (the Smart+ ad runs the post under the identity that redeeming its Spark code creates; a Business Center-owned post is not accepted there) and `promotedObject.pixelId` + `customEventType`. `app_promotion` is not available on a Spark post. Rejected with a 400 on other platforms.
+         */
+        smartPlus?: boolean;
+        /**
          * TikTok-only on this endpoint. The pixel a Website Conversion ad group
          * optimizes toward, so a Spark Ad built from an existing organic post can
          * optimize for a conversion instead of only engagement or traffic.
