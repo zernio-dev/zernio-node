@@ -36494,6 +36494,10 @@ export type CreateAdCreativeData = {
          * Meta only. Multi-advertiser ads: whether Meta may show this ad alongside other advertisers' in one unit. Meta auto-enrols since Aug 2024, so send OPT_OUT to leave. It is a top-level creative field, NOT a `creativeFeatures` key, and Meta rejects it there.
          */
         multiAdvertiser?: 'OPT_IN' | 'OPT_OUT';
+        /**
+         * Meta only. Meta's "Ad includes media created or edited with AI" disclosure, the checkbox in Ads Manager, stored on the creative as `generative_asset_spec.transparency_metadata.self_disclosure`. OPT_IN checks it, OPT_OUT explicitly declares no AI media, omitted leaves Meta's default. Applied to each new creative, including standalone, creatives[] and attach shapes, and preserved when a creative is rebuilt. This sets the disclosure on the ad; whether and when the viewer-facing label renders is Meta's decision.
+         */
+        aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
     };
 };
 
@@ -38137,6 +38141,10 @@ export type CreateStandaloneAdData = {
          * Meta only. Multi-advertiser ads: whether Meta may show this ad alongside other advertisers' in one unit. Meta auto-enrols since Aug 2024, so send OPT_OUT to leave. It is a top-level creative field, NOT a `creativeFeatures` key, and Meta rejects it there.
          */
         multiAdvertiser?: 'OPT_IN' | 'OPT_OUT';
+        /**
+         * Meta only. Meta's "Ad includes media created or edited with AI" disclosure, the checkbox in Ads Manager, stored on the creative as `generative_asset_spec.transparency_metadata.self_disclosure`. OPT_IN checks it, OPT_OUT explicitly declares no AI media, omitted leaves Meta's default. Applied to each new creative, including standalone, creatives[] and attach shapes, and preserved when a creative is rebuilt. This sets the disclosure on the ad; whether and when the viewer-facing label renders is Meta's decision.
+         */
+        aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
         /**
          * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image, all-image placementAssets with per-rule copy, existing video.id or existingCreativeId; other media pools, new video uploads, creatives[], adSetId and RESERVED buying return 400. Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped. Success returns 200 with per-node results; Meta rejection returns an error.
          */
