@@ -1480,6 +1480,22 @@ export type AnalyticsDeltaEntry = {
          * TikTok business lane: profile views attributed to the post
          */
         profileViews: number;
+        /**
+         * TikTok business lane: website-link clicks attributed to the post (also inside clicks)
+         */
+        websiteClicks: number;
+        /**
+         * TikTok business lane: share of views by surface (forYou, follow, search, personalProfile, sound, directMessage, other), fractions 0 to 1. Empty object elsewhere.
+         */
+        impressionSources: {
+            [key: string]: (number);
+        };
+        /**
+         * TikTok business lane: follower / nonFollower and newViewer / returnViewer shares, fractions 0 to 1. Empty object elsewhere.
+         */
+        audienceTypes: {
+            [key: string]: (number);
+        };
     };
 };
 
@@ -6361,6 +6377,22 @@ export type PostAnalytics = {
      * TikTok accounts connected through the TikTok for Business app only: profile views from users who reached the profile through this post (T+24-48h). 0 for other platforms.
      */
     profileViews?: number;
+    /**
+     * TikTok accounts connected through the TikTok for Business app only: clicks on the profile website link attributed to this post (T+24-48h). Also counted inside `clicks`, which sums every profile-link type (website, phone, email, address, app download). 0 for other platforms.
+     */
+    websiteClicks?: number;
+    /**
+     * TikTok accounts connected through the TikTok for Business app only: share of views by surface, as fractions 0 to 1 (T+24-48h, only for posts active in the last 7 days). Keys: `forYou`, `follow`, `search`, `personalProfile`, `sound`, `directMessage`, `other`; a surface TikTok adds later appears under a camelCase key derived from its name. Empty object when TikTok reports nothing, and for other platforms. When a post is published to several accounts, each share is weighted by views.
+     */
+    impressionSources?: {
+        [key: string]: (number);
+    };
+    /**
+     * TikTok accounts connected through the TikTok for Business app only: two viewer splits as fractions 0 to 1 (T+24-48h). Each pair sums to 1 when present, `follower` + `nonFollower` and `newViewer` + `returnViewer`; TikTok can report one pair without the other. Empty object when TikTok reports nothing, and for other platforms. Views-weighted across accounts like impressionSources.
+     */
+    audienceTypes?: {
+        [key: string]: (number);
+    };
     /**
      * Instagram accounts connected with Facebook Login only: reposts of the media by other users, minus deleted reposts, on feed posts, reels and stories. Meta does not expose this metric for accounts connected with Instagram Login, so those always report 0. 0 for other platforms, including Threads, where reposts are counted in shares instead.
      */
@@ -11683,9 +11715,9 @@ export type GetAnalyticsData = {
          */
         profileId?: string;
         /**
-         * Sort by date, engagement, or a specific metric. Platform-specific metrics (follows, reposts, reels_skip_rate, ig_reels_*, completion_rate, profile_views) sort a null value as 0.
+         * Sort by date, engagement, or a specific metric. Platform-specific metrics (follows, reposts, reels_skip_rate, ig_reels_*, completion_rate, profile_views, website_clicks) sort a null value as 0.
          */
-        sortBy?: 'date' | 'engagement' | 'impressions' | 'reach' | 'likes' | 'comments' | 'shares' | 'saves' | 'clicks' | 'views' | 'follows' | 'ig_reels_avg_watch_time' | 'ig_reels_video_view_total_time' | 'reposts' | 'reels_skip_rate' | 'completion_rate' | 'profile_views';
+        sortBy?: 'date' | 'engagement' | 'impressions' | 'reach' | 'likes' | 'comments' | 'shares' | 'saves' | 'clicks' | 'views' | 'follows' | 'ig_reels_avg_watch_time' | 'ig_reels_video_view_total_time' | 'reposts' | 'reels_skip_rate' | 'completion_rate' | 'profile_views' | 'website_clicks';
         /**
          * Filter by post source: late (posted via Zernio API), external (synced from platform), all (default)
          */
@@ -12545,6 +12577,34 @@ export type GetPostTimelineResponse = ({
          * Total views on this date
          */
         views?: number;
+        /**
+         * Follows attributed to the post on this date (Instagram feed and stories, TikTok business lane); 0 elsewhere
+         */
+        follows?: number;
+        /**
+         * TikTok business lane: share of viewers who watched to the end on this date, 0 to 1; 0 elsewhere
+         */
+        completionRate?: number;
+        /**
+         * TikTok business lane: profile views attributed to the post on this date; 0 elsewhere
+         */
+        profileViews?: number;
+        /**
+         * TikTok business lane: website-link clicks attributed to the post on this date (also inside clicks); 0 elsewhere
+         */
+        websiteClicks?: number;
+        /**
+         * TikTok business lane: share of views by surface on this date (forYou, follow, search, personalProfile, sound, directMessage, other), fractions 0 to 1; empty object elsewhere
+         */
+        impressionSources?: {
+            [key: string]: (number);
+        };
+        /**
+         * TikTok business lane: follower / nonFollower and newViewer / returnViewer shares on this date, fractions 0 to 1; empty object elsewhere
+         */
+        audienceTypes?: {
+            [key: string]: (number);
+        };
     }>;
 });
 
