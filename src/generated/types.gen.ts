@@ -7144,6 +7144,9 @@ export type SocialAccount = {
      * - profileData.bio: The member's headline for personal accounts, or the organization description for organization accounts. null when the member has not set one.
      * - profileData.extraData.vanityName: The member's profile slug, i.e. the /in/{vanityName} segment of profileUrl. Personal accounts only; an organization's own slug is in metadata.organizationInfo.vanityName.
      *
+     * For X (Twitter) accounts:
+     * - profileData.extraData.isPremium: Whether X reports a paid subscription (Basic, Premium, Premium+, or a blue verified badge), which raises the post length limit from 280 to 25,000 characters. Read live at connect and reconnect and refreshed by the daily follower snapshot; because X intermittently reports no subscription for subscribed accounts, a cancellation is stored on the fourth consecutive daily snapshot that reports it (about four days). Accounts connected before the extraData layout carry the same flag at profileData.isPremium.
+     *
      */
     metadata?: {
         [key: string]: unknown;
