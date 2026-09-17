@@ -4854,7 +4854,7 @@ export type InboxWebhookConversationDetail = {
      * Internal conversation ID
      */
     id: string;
-    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack';
+    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok';
     platformConversationId: string;
     /**
      * Contact's platform identifier (IGSID, PSID, wa_id, etc.)
@@ -4879,7 +4879,7 @@ export type InboxWebhookConversationDetail = {
     contactId?: string;
 };
 
-export type platform4 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack';
+export type platform4 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -9161,7 +9161,7 @@ export type previousOwner = 'app' | 'ai_agent' | 'other';
  * Fired once when a new conversation begins, in either direction. A conversation
  * starts the first time an account and a contact exchange a message on any DM
  * platform (Instagram, Messenger/Facebook, Telegram, WhatsApp, X, Reddit,
- * Bluesky, SMS). Platform-agnostic: one subscription covers every DM platform.
+ * Bluesky, SMS, TikTok). Platform-agnostic: one subscription covers every DM platform.
  *
  */
 export type WebhookPayloadConversationStarted = {
@@ -9303,7 +9303,7 @@ export type WebhookPayloadMessage = {
          * Internal conversation ID
          */
         conversationId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'twitter' | 'bluesky' | 'reddit' | 'slack' | 'tiktok';
         /**
          * Platform's message ID
          */
@@ -9455,7 +9455,7 @@ export type WebhookPayloadMessage = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific message context (present when the message is a quick reply tap, postback button tap, inline keyboard callback, a quote-reply to an earlier message, or a WhatsApp inbound that Meta Business Agent is answering)
+     * Platform-specific message context (present when the message is a quick reply tap, postback button tap, inline keyboard callback, a quote-reply to an earlier message, a WhatsApp inbound that Meta Business Agent is answering, or a TikTok DM that is not plain text)
      */
     metadata?: {
         /**
@@ -9787,6 +9787,10 @@ export type WebhookPayloadMessage = {
          *
          */
         noRenderableContent?: boolean;
+        /**
+         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image and video, an attachment.
+         */
+        tiktokMessageType?: string;
     } | null;
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
@@ -9967,7 +9971,7 @@ export type WebhookPayloadMessageSent = {
         /**
          * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
          */
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok';
         /**
          * Platform's message ID
          */
@@ -10070,7 +10074,7 @@ export type WebhookPayloadMessageSent = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin or WhatsApp contact cards. The key is present only when the send carried some context, and absent otherwise: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
+     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards or the TikTok message type. The key is present only when the send carried some context, and absent otherwise: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
      */
     metadata?: {
         /**
@@ -10143,6 +10147,10 @@ export type WebhookPayloadMessageSent = {
          *
          */
         threadTs?: string;
+        /**
+         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image and video, an attachment. Absent on image sends made through the Zernio API, which carry the image in attachments.
+         */
+        tiktokMessageType?: string;
     };
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
@@ -10155,7 +10163,7 @@ export type event19 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform12 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack';
+export type platform12 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok';
 
 /**
  * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts); meta_business_agent when Meta Business Agent answered on the number. Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
