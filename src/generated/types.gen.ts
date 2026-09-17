@@ -38459,6 +38459,10 @@ export type BoostPostData = {
          */
         adSetId?: string;
         /**
+         * TikTok only. Create the ad group and the Spark ad under this existing TikTok campaign instead of creating a new campaign. The campaign keeps its own status and objective (the objective must fit `goal`). Cannot be combined with adSetId or smartPlus. On Meta use POST /v1/ads/create with existingCampaignId.
+         */
+        existingCampaignId?: string;
+        /**
          * Required unless adSetId is set.
          */
         budget?: {
