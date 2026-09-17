@@ -38084,7 +38084,7 @@ export type BoostPostData = {
          */
         platformPostId?: string;
         /**
-         * Account ID
+         * Zernio account id. Normally the connected posting account (facebook, instagram, tiktok, linkedin, pinterest, twitter) or a googleads account. TikTok: the TikTok Ads connection (platform tiktokads) is accepted too when the post brings its own authorization (sparkAuthCode or sparkPosts), so Spark ads need no organic TikTok account connected; such a call must use platformPostId, not postId.
          */
         accountId: string;
         /**
