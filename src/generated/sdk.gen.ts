@@ -8935,7 +8935,7 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  *
  * Per-platform support:
  * - **Meta** (Facebook + Instagram): all fields supported.
- * - **TikTok**: status, budget, targeting (via `/v2/adgroup/update/`), and creative
+ * - **TikTok**: status, budget, `name` (renames the ad), targeting (via `/v2/adgroup/update/`), and creative
  * (via `/v2/ad/update/` patch-style: `headline` is ignored, `body` becomes `ad_text`).
  * - **Google**: status, budget, KEYWORD edits via `targeting.keywords` /
  * `targeting.negativeKeywords`, DEVICE bid adjustments via `targeting.devices`,
