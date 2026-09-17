@@ -38382,6 +38382,33 @@ export type BoostPostData = {
             sparkAuthCode: string;
         }>;
         /**
+         * TikTok Smart+ Web Conversions only (requires `smartPlus: true`, goal `conversions`). Promo codes or offers TikTok highlights on the ad (Ads Manager's "Add promo code or offer"). A promo code needs shoppers to enter it at checkout; an entry without `promoCode` is an offer applied automatically. Rejected with a 400 on other platforms and on Lead Generation campaigns.
+         */
+        promoCodes?: Array<{
+            discountType: 'PERCENTAGE' | 'CASH';
+            /**
+             * PERCENTAGE: integer 1-100. CASH: amount greater than 0 in discountCurrency.
+             */
+            discountValue: number;
+            /**
+             * ISO 4217; required for CASH.
+             */
+            discountCurrency?: string;
+            /**
+             * Code entered at checkout; omit for an automatic offer.
+             */
+            promoCode?: string;
+            minimumPurchaseType?: 'QUANTITY' | 'SUBTOTAL';
+            /**
+             * Required with minimumPurchaseType; QUANTITY is an integer >= 0, SUBTOTAL an amount > 0.
+             */
+            minimumPurchaseValue?: number;
+            /**
+             * ISO 4217; required for SUBTOTAL.
+             */
+            minimumPurchaseCurrency?: string;
+        }>;
+        /**
          * TikTok-only on this endpoint. The pixel a Website Conversion ad group
          * optimizes toward, so a Spark Ad built from an existing organic post can
          * optimize for a conversion instead of only engagement or traffic.
