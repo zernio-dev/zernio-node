@@ -5819,7 +5819,7 @@ export type MediaContentType = 'image/jpeg' | 'image/jpg' | 'image/png' | 'image
 export type MediaItem = {
     type?: 'image' | 'video' | 'gif' | 'document';
     /**
-     * A media item with a null, missing or empty url is dropped from non-draft posts (drafts keep it as a pending-upload placeholder).
+     * A media item with a null, missing or empty url is dropped.
      */
     url?: string;
     /**
