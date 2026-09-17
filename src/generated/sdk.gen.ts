@@ -8704,11 +8704,17 @@ export const createAdSet = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Duplicate an ad set
- * Duplicates an ad set, including its ads and creatives by default (`deepCopy: true`),
- * via Meta's native `POST /{adset-id}/copies`. The copy is created paused so callers can
- * review before launching. `campaignId` retargets the copy into another campaign; omitted
- * = the source's own campaign. The new hierarchy materializes asynchronously, and sync
- * discovery is triggered automatically (`syncAfter: false` to skip).
+ * Duplicates an ad set. The copy is created paused so callers can review before launching.
+ * `campaignId` retargets the copy into another campaign; omitted = the source's own campaign.
+ *
+ * Meta: ads and creatives are included by default (`deepCopy: true`) via Meta's native
+ * `POST /{adset-id}/copies`; the new hierarchy materializes asynchronously and sync discovery
+ * is triggered automatically (`syncAfter: false` to skip).
+ *
+ * TikTok: the ad group is read and recreated under the campaign with its targeting, bidding,
+ * budget and schedule (start reset to now); `deepCopy: true` recreates its ads too (default
+ * false). `startTime`, `endTime` and `renameStrategy` are ignored and `statusOption` must be
+ * PAUSED or absent. The copy appears on the next discovery sync.
  */
 export const duplicateAdSet = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DuplicateAdSetData, ThrowOnError>) => {
     return (options?.client ?? client).post<DuplicateAdSetResponse, DuplicateAdSetError, ThrowOnError>({
