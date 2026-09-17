@@ -1823,32 +1823,32 @@ export type billingSystem = 'metronome' | 'stripe' | 'shopify';
  */
 export type Blog = {
     /**
-     * Platform-native blog id (numeric string for Shopify).
+     * Platform-native blog id. Shopify uses a numeric blog id. WordPress.com uses the numeric site id; self-hosted WordPress uses `1`, scoped to the connected account.
      */
     id?: string;
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     title?: string;
     /**
-     * URL slug of the blog.
+     * URL slug on Shopify; site hostname on WordPress.
      */
     handle?: string;
 };
 
-export type platform3 = 'shopify';
+export type platform3 = 'shopify' | 'wordpress';
 
 /**
  * An article inside a blog on the connected platform.
  */
 export type BlogArticle = {
     /**
-     * Platform-native article id (numeric string for Shopify).
+     * Platform-native numeric article/post id.
      */
     id?: string;
     /**
      * Platform-native id of the blog the article belongs to.
      */
     blogId?: string;
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     title?: string;
     /**
      * Article body as HTML.
@@ -1858,9 +1858,12 @@ export type BlogArticle = {
      * URL slug of the article.
      */
     handle?: string;
+    /**
+     * Tag names. On WordPress, missing tag names are created and matching is case-insensitive.
+     */
     tags?: Array<(string)>;
     /**
-     * Display name of the article author.
+     * Shopify author display name, or numeric WordPress user id serialized as a string.
      */
     author?: (string) | null;
     /**
@@ -1879,12 +1882,31 @@ export type BlogArticle = {
      */
     isPublished?: boolean;
     /**
-     * When the article was (or is scheduled to be) published; null for drafts.
+     * Publication time. On WordPress this is present only when status is `publish`; null for drafts, pending/private posts, and scheduled posts.
      */
     publishedAt?: (string) | null;
+    /**
+     * WordPress only. Native post status returned by WordPress; omitted for Shopify.
+     */
+    status?: 'publish' | 'future' | 'draft' | 'pending' | 'private';
+    /**
+     * WordPress only. Scheduled publication time in UTC when status is `future`; null for other WordPress statuses and omitted for Shopify.
+     */
+    publishDate?: (string) | null;
+    /**
+     * Creation time when the platform exposes one. WordPress returns null because its core date is the editable publication date.
+     */
     createdAt?: (string) | null;
+    /**
+     * Last modification time. WordPress returns modified_gmt as UTC.
+     */
     updatedAt?: (string) | null;
 };
+
+/**
+ * WordPress only. Native post status returned by WordPress; omitted for Shopify.
+ */
+export type status3 = 'publish' | 'future' | 'draft' | 'pending' | 'private';
 
 /**
  * Bluesky post settings. Supports text posts with up to 4 images or a single video. threadItems creates a reply chain (Bluesky thread). Images exceeding 1MB are automatically compressed. Alt text supported via mediaItem properties. Use langs to tag post language for feed-generator filtering.
@@ -2112,7 +2134,7 @@ export type BusinessAgentEventStatus = {
     updated_at: string;
 };
 
-export type status3 = 'request_received' | 'processing' | 'sent' | 'failed' | 'skipped' | 'success';
+export type status4 = 'request_received' | 'processing' | 'sent' | 'failed' | 'skipped' | 'success';
 
 export type BusinessAgentFaq = BusinessAgentFaqInput & {
     id: string;
@@ -2209,7 +2231,7 @@ export type BusinessAgentSkill = BusinessAgentSkillInput & {
 /**
  * pending_review right after a write; blocked means Meta content review rejected it and the agent never applies it.
  */
-export type status4 = 'active' | 'pending_review' | 'blocked';
+export type status5 = 'active' | 'pending_review' | 'blocked';
 
 export type BusinessAgentSkillInput = {
     /**
@@ -2311,7 +2333,7 @@ export type BusinessAgentUiSkillInput = {
 
 export type component_type = 'carousel_quick_reply' | 'carousel_url' | 'cta_url' | 'flow' | 'image' | 'interactive_list' | 'interactive_reply_buttons' | 'location' | 'location_request';
 
-export type status5 = 'enabled' | 'disabled';
+export type status6 = 'enabled' | 'disabled';
 
 export type BusinessAgentWebsite = BusinessAgentWebsiteInput & {
     id: string;
@@ -2502,7 +2524,7 @@ export type channel = 'whatsapp' | 'pstn';
 
 export type direction = 'inbound' | 'outbound';
 
-export type status6 = 'ringing' | 'answered' | 'ended' | 'failed';
+export type status7 = 'ringing' | 'answered' | 'ended' | 'failed';
 
 /**
  * Caller ID presented on the forwarded leg.
@@ -2860,7 +2882,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status7 = 'active' | 'inactive';
+export type status8 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -3498,7 +3520,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * newly created ad(s) after Meta accepts them.
  *
  */
-export type status8 = 'ACTIVE' | 'PAUSED';
+export type status9 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
@@ -3866,7 +3888,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status9 = 1 | 2 | 3 | 4;
+export type status10 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -4844,7 +4866,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status10 = 'active' | 'archived';
+export type status11 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -6155,7 +6177,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status11 = 'published' | 'failed';
+export type status12 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -6337,7 +6359,7 @@ export type Post = {
 /**
  * `cancelled` is set by DELETE /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts.
  */
-export type status12 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status13 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
 export type visibility = 'public' | 'private' | 'unlisted';
 
@@ -6532,7 +6554,9 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status13 = 'active' | 'draft' | 'archived';
+export type platform7 = 'shopify';
+
+export type status14 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -6952,7 +6976,7 @@ export type ReviewWebhookReview = {
 /**
  * Platform the review originated on. Currently Google Business Profile only.
  */
-export type platform7 = 'googlebusiness';
+export type platform8 = 'googlebusiness';
 
 /**
  * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
@@ -7050,7 +7074,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -7126,7 +7150,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform8 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
+export type platform9 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
@@ -7676,7 +7700,7 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform9 = 'metaads';
+export type platform10 = 'metaads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -7776,7 +7800,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status14 = 'pending' | 'completed' | 'expired';
+export type status15 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -8251,7 +8275,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status15 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status16 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel3 = 'sms';
 
@@ -8370,7 +8394,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status16 = 'success' | 'failed';
+export type status17 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -8482,7 +8506,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status17 = 'success' | 'failure';
+export type status18 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -9109,7 +9133,7 @@ export type WebhookPayloadComment = {
 
 export type event10 = 'comment.received';
 
-export type platform10 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform11 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 /**
  * WhatsApp only. Who answers a conversation changed: Meta Business Agent took it over,
@@ -9283,7 +9307,7 @@ export type WebhookPayloadLead = {
 
 export type event14 = 'lead.received';
 
-export type platform11 = 'facebook';
+export type platform12 = 'facebook';
 
 /**
  * Webhook payload for message received events
@@ -10163,7 +10187,7 @@ export type event19 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform12 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok';
+export type platform13 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok';
 
 /**
  * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts); meta_business_agent when Meta Business Agent answered on the number. Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
@@ -10360,7 +10384,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status18 = 'published' | 'failed' | 'deleted';
+export type status19 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
@@ -10620,12 +10644,12 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
 
 export type event28 = 'whatsapp.account.name_status_updated';
 
-export type platform13 = 'whatsapp';
+export type platform14 = 'whatsapp';
 
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status19 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status20 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -10774,7 +10798,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status20 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status21 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -10923,7 +10947,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status21 = 'pending' | 'active';
+export type status22 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -11081,7 +11105,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status22 = 'success' | 'failed' | 'pending';
+export type status23 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -15666,6 +15690,175 @@ export type ConnectShopifyWithTokenResponse = ({
 export type ConnectShopifyWithTokenError = (unknown | {
     error?: string;
 } | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+});
+
+export type GetWordPressAuthUrlData = {
+    query: {
+        /**
+         * Your Zernio profile ID (get from /v1/profiles).
+         */
+        profileId: string;
+        /**
+         * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type GetWordPressAuthUrlResponse = ({
+    /**
+     * WordPress.com URL to open in the user agent.
+     */
+    authUrl: string;
+    /**
+     * Authenticated, expiring OAuth state handled by the callback.
+     */
+    state: string;
+});
+
+export type GetWordPressAuthUrlError = (unknown | {
+    error?: string;
+} | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+});
+
+export type ConnectWordPressWithApplicationPasswordData = {
+    body: {
+        /**
+         * Your Zernio profile ID (get from /v1/profiles).
+         */
+        profileId: string;
+        /**
+         * HTTPS base URL of the WordPress installation, including a subdirectory path when applicable.
+         */
+        siteUrl: string;
+        /**
+         * WordPress login name. A colon is not allowed.
+         */
+        username: string;
+        /**
+         * Application password created for the WordPress user. Spaces in WordPress display formatting are accepted.
+         */
+        applicationPassword: string;
+    };
+};
+
+export type ConnectWordPressWithApplicationPasswordResponse = ({
+    account: {
+        _id: string;
+        platform: 'wordpress';
+        /**
+         * Hostname of the connected WordPress site.
+         */
+        username: string;
+        /**
+         * WordPress site title.
+         */
+        displayName: string;
+        profileId: string;
+    };
+});
+
+export type ConnectWordPressWithApplicationPasswordError = (unknown | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -42941,7 +43134,7 @@ export type GetTrackingTagStatsError = (unknown | {
 export type ListBlogsData = {
     path: {
         /**
-         * Connected Shopify SocialAccount id.
+         * Connected Shopify or WordPress account id.
          */
         accountId: string;
     };
@@ -42958,7 +43151,7 @@ export type ListBlogsData = {
 };
 
 export type ListBlogsResponse = ({
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     blogs?: Array<Blog>;
     /**
      * Cursor for the next page; null when there are no more pages.
@@ -42998,18 +43191,18 @@ export type CreateBlogError = (ErrorResponse | {
 export type GetBlogData = {
     path: {
         /**
-         * Connected Shopify SocialAccount id.
+         * Connected Shopify or WordPress account id.
          */
         accountId: string;
         /**
-         * Platform-native numeric blog id. Non-numeric values return 400.
+         * Platform-native numeric blog/site id returned by the list operation.
          */
         blogId: string;
     };
 };
 
 export type GetBlogResponse = ({
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     blog?: Blog;
 });
 
@@ -43068,11 +43261,11 @@ export type DeleteBlogError = (ErrorResponse | {
 export type ListBlogArticlesData = {
     path: {
         /**
-         * Connected Shopify SocialAccount id.
+         * Connected Shopify or WordPress account id.
          */
         accountId: string;
         /**
-         * Platform-native numeric blog id. Non-numeric values return 400.
+         * Platform-native numeric blog/site id returned by the list operation.
          */
         blogId: string;
     };
@@ -43089,7 +43282,7 @@ export type ListBlogArticlesData = {
 };
 
 export type ListBlogArticlesResponse = ({
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     articles?: Array<BlogArticle>;
     /**
      * Cursor for the next page; null when there are no more pages.
@@ -43112,9 +43305,12 @@ export type CreateBlogArticleData = {
          * URL slug. Generated from the title when omitted.
          */
         handle?: string;
+        /**
+         * Tag names. WordPress resolves existing names case-insensitively and creates missing tags.
+         */
         tags?: Array<(string)>;
         /**
-         * Display name of the article author.
+         * Shopify author display name, or numeric WordPress user id serialized as a string. Assigning another WordPress user may require elevated capability.
          */
         author?: string;
         /**
@@ -43122,21 +43318,21 @@ export type CreateBlogArticleData = {
          */
         excerpt?: string;
         /**
-         * Featured image. The platform downloads it, so the URL must be publicly reachable.
+         * Featured image from a public URL. WordPress downloads it into the media library; JPEG, PNG, GIF and WebP are accepted up to 10 MB.
          */
         image?: {
             url: string;
             altText?: string;
         };
         /**
-         * Search-engine overrides. Maps to Shopify global metafields (title_tag and description_tag).
+         * Shopify only. Search-engine overrides mapped to global title_tag and description_tag metafields. WordPress rejects this field.
          */
         seo?: {
             title?: string;
             description?: string;
         };
         /**
-         * Set false to create the article as a draft.
+         * Set false for a draft or true to publish. On WordPress false takes priority over a future publishDate; omission with no date defaults to draft.
          */
         isPublished?: boolean;
         /**
@@ -43146,18 +43342,18 @@ export type CreateBlogArticleData = {
     };
     path: {
         /**
-         * Connected Shopify SocialAccount id.
+         * Connected Shopify or WordPress account id.
          */
         accountId: string;
         /**
-         * Platform-native numeric blog id. Non-numeric values return 400.
+         * Platform-native numeric blog/site id returned by the list operation.
          */
         blogId: string;
     };
 };
 
 export type CreateBlogArticleResponse = ({
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     article?: BlogArticle;
 });
 
@@ -43168,7 +43364,7 @@ export type CreateBlogArticleError = (ErrorResponse | {
 export type GetBlogArticleData = {
     path: {
         /**
-         * Connected Shopify SocialAccount id.
+         * Connected Shopify or WordPress account id.
          */
         accountId: string;
         /**
@@ -43176,14 +43372,14 @@ export type GetBlogArticleData = {
          */
         articleId: string;
         /**
-         * Platform-native numeric blog id. Non-numeric values return 400.
+         * Platform-native numeric blog/site id returned by the list operation.
          */
         blogId: string;
     };
 };
 
 export type GetBlogArticleResponse = ({
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     article?: BlogArticle;
 });
 
@@ -43203,11 +43399,11 @@ export type UpdateBlogArticleData = {
          */
         handle?: string;
         /**
-         * Replaces the full tag list.
+         * Replaces the full tag-name list. WordPress resolves existing names case-insensitively and creates missing tags.
          */
         tags?: Array<(string)>;
         /**
-         * Display name of the article author.
+         * Shopify author display name, or numeric WordPress user id serialized as a string. Assigning another WordPress user may require elevated capability.
          */
         author?: string;
         /**
@@ -43215,21 +43411,21 @@ export type UpdateBlogArticleData = {
          */
         excerpt?: string;
         /**
-         * Featured image. The platform downloads it, so the URL must be publicly reachable.
+         * Featured image from a public URL. WordPress downloads it into the media library; JPEG, PNG, GIF and WebP are accepted up to 10 MB. Omit to preserve it; null removal is not supported.
          */
         image?: {
             url: string;
             altText?: string;
         };
         /**
-         * Search-engine overrides. Maps to Shopify global metafields (title_tag and description_tag).
+         * Shopify only. Search-engine overrides mapped to global title_tag and description_tag metafields. WordPress rejects this field.
          */
         seo?: {
             title?: string;
             description?: string;
         };
         /**
-         * Set false to unpublish the article back to a draft.
+         * Set false to move to draft or true to publish. On WordPress false takes priority over a future publishDate; omission preserves status unless publishDate is sent.
          */
         isPublished?: boolean;
         /**
@@ -43239,7 +43435,7 @@ export type UpdateBlogArticleData = {
     };
     path: {
         /**
-         * Connected Shopify SocialAccount id.
+         * Connected Shopify or WordPress account id.
          */
         accountId: string;
         /**
@@ -43247,14 +43443,14 @@ export type UpdateBlogArticleData = {
          */
         articleId: string;
         /**
-         * Platform-native numeric blog id. Non-numeric values return 400.
+         * Platform-native numeric blog/site id returned by the list operation.
          */
         blogId: string;
     };
 };
 
 export type UpdateBlogArticleResponse = ({
-    platform?: 'shopify';
+    platform?: 'shopify' | 'wordpress';
     article?: BlogArticle;
 });
 
@@ -43265,7 +43461,7 @@ export type UpdateBlogArticleError = (ErrorResponse | {
 export type DeleteBlogArticleData = {
     path: {
         /**
-         * Connected Shopify SocialAccount id.
+         * Connected Shopify or WordPress account id.
          */
         accountId: string;
         /**
@@ -43273,7 +43469,7 @@ export type DeleteBlogArticleData = {
          */
         articleId: string;
         /**
-         * Platform-native numeric blog id. Non-numeric values return 400.
+         * Platform-native numeric blog/site id returned by the list operation.
          */
         blogId: string;
     };

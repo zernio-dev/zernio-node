@@ -338,6 +338,7 @@ try {
 | `connect.getSubredditRules()` | Get subreddit rules |
 | `connect.getTelegramConnectStatus()` | Generate Telegram code |
 | `connect.getWhatsAppSdkConfig()` | Get Embedded Signup SDK config |
+| `connect.getWordPressAuthUrl()` | Get WordPress.com OAuth connect URL |
 | `connect.getYoutubeCaptions()` | Get a YouTube video transcript |
 | `connect.getYoutubePlaylists()` | List YouTube playlists |
 | `connect.updateFacebookPage()` | Update Facebook page |
@@ -359,6 +360,7 @@ try {
 | `connect.connectSlackChannel()` | Connect a Slack channel |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
 | `connect.connectWhatsAppEmbeddedSignup()` | Connect WhatsApp from Embedded Signup |
+| `connect.connectWordPressWithApplicationPassword()` | Connect self-hosted WordPress with an application password |
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
 | `connect.resyncPageWebhookSubscription()` | Re-subscribe a Facebook Page to Zernio's webhooks |

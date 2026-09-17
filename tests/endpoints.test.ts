@@ -329,6 +329,16 @@ describe('Endpoint Methods', () => {
       expect(client.connect.connectShopifyWithToken).toBeTypeOf('function');
     });
 
+    it('should have getWordPressAuthUrl method', () => {
+      expect(client.connect.getWordPressAuthUrl).toBeDefined();
+      expect(client.connect.getWordPressAuthUrl).toBeTypeOf('function');
+    });
+
+    it('should have connectWordPressWithApplicationPassword method', () => {
+      expect(client.connect.connectWordPressWithApplicationPassword).toBeDefined();
+      expect(client.connect.connectWordPressWithApplicationPassword).toBeTypeOf('function');
+    });
+
     it('should have configureTikTokAdsBrandIdentity method', () => {
       expect(client.connect.configureTikTokAdsBrandIdentity).toBeDefined();
       expect(client.connect.configureTikTokAdsBrandIdentity).toBeTypeOf('function');
