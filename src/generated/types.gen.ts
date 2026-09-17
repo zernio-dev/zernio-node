@@ -39144,7 +39144,11 @@ export type CreateStandaloneAdData = {
          */
         adSetId?: string;
         /**
-         * Meta, Google Ads, and LinkedIn. On Meta: add the new ad
+         * Meta, Google Ads, LinkedIn and TikTok. On TikTok: creates
+         * the ad group and the ad under this existing campaign; the
+         * campaign is neither created nor activated and its
+         * objective must fit `goal`; not with `smartPlus`.
+         * On Meta: add the new ad
          * set under this EXISTING campaign instead of creating a new
          * one (multi-ad-set audience testing). The new ad set's
          * budget is matched to the campaign's mode automatically:
