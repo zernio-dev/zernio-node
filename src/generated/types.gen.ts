@@ -5802,6 +5802,60 @@ export type LinkedInPlatformData = {
      */
     disableLinkPreview?: boolean;
     /**
+     * Organization pages only. Audience targeting for the post (Ads Manager's "Targeted audience"), sent as LinkedIn's distribution.targetEntities: OR inside a facet, AND across facets. LinkedIn rejects the post when the targeted audience is under 300 members, and Zernio rejects it on a personal profile. URN facets accept a full urn:li:<type>:<id> or the bare numeric id; find ids with GET /v1/ads/targeting/search?platform=linkedin (types country, region, industry, jobFunction, seniority, companySize).
+     */
+    audience?: {
+        /**
+         * ISO 3166-1 alpha-2 codes with a built-in LinkedIn geo URN (same list as geoRestriction.countries, merged with it). Other countries and sub-country regions go in geoLocations.
+         */
+        countries?: Array<(string)>;
+        /**
+         * LinkedIn geo URNs or ids (urn:li:geo:103644278 or 103644278): countries, states, regions, cities.
+         */
+        geoLocations?: Array<(string)>;
+        /**
+         * Members' LinkedIn interface locale, e.g. { language: es, country: ES }.
+         */
+        interfaceLocales?: Array<{
+            /**
+             * ISO 639-1, lowercase
+             */
+            language: string;
+            /**
+             * ISO 3166-1 alpha-2, uppercase
+             */
+            country: string;
+        }>;
+        /**
+         * urn:li:industry:<id> or id.
+         */
+        industries?: Array<(string)>;
+        /**
+         * urn:li:function:<id> or id.
+         */
+        jobFunctions?: Array<(string)>;
+        /**
+         * urn:li:seniority:<id> or id.
+         */
+        seniorities?: Array<(string)>;
+        /**
+         * Company size of the member's current employer.
+         */
+        staffCountRanges?: Array<('SIZE_1' | 'SIZE_2_TO_10' | 'SIZE_11_TO_50' | 'SIZE_51_TO_200' | 'SIZE_201_TO_500' | 'SIZE_501_TO_1000' | 'SIZE_1001_TO_5000' | 'SIZE_5001_TO_10000' | 'SIZE_10001_OR_MORE')>;
+        /**
+         * urn:li:degree:<id> or id (LinkedIn standardized degrees).
+         */
+        degrees?: Array<(string)>;
+        /**
+         * urn:li:fieldOfStudy:<id> or id (LinkedIn standardized fields of study).
+         */
+        fieldsOfStudy?: Array<(string)>;
+        /**
+         * Schools, as urn:li:organization:<id> or id (LinkedIn's Organization Lookup).
+         */
+        organizations?: Array<(string)>;
+    };
+    /**
      * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. The published post is always a reshare authored by your account with the original embedded underneath: with content your text is the commentary (LinkedIn's "repost with your thoughts"), and with no content it publishes as a text-free reshare. A text-free reshare is NOT LinkedIn's one-click "Repost" (the feed treatment where the original author stays the author); LinkedIn's API exposes no way to create that, so the post still appears authored by you with the original embedded. Mutually exclusive with media. Works on personal profiles and organization pages.
      */
     reshareUrl?: string;
