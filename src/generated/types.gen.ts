@@ -21956,7 +21956,7 @@ export type GetInboxConversationMessagesResponse = ({
         createdAt?: string;
         attachments?: Array<{
             id?: string;
-            type?: 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'share';
+            type?: 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'share' | 'template';
             /**
              * Instagram and Facebook only, and present only when it differs from `type`. Meta's own type before normalization: `ig_reel` and `reel` become `video`, while `ig_post`, `post`, `ig_story` and `story_mention` become `share`. A story mention is `type: "share"` with `originalType: "story_mention"`; render on this field, since `share` alone is ambiguous.
              */
@@ -21971,6 +21971,12 @@ export type GetInboxConversationMessagesResponse = ({
             refreshUrl?: (string) | null;
             filename?: (string) | null;
             previewUrl?: (string) | null;
+            /**
+             * Template content (title, subtitle, image, buttons) when type is template
+             */
+            payload?: {
+                [key: string]: unknown;
+            };
         }>;
         /**
          * Reddit message subject
