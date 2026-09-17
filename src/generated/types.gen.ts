@@ -6150,7 +6150,7 @@ export type PlatformAnalytics = {
     syncStatus?: 'synced' | 'pending' | 'unavailable';
     platformPostUrl?: (string) | null;
     /**
-     * Error details when status is failed
+     * Error details when status is failed, or why analytics are unavailable for a published entry (e.g. Google Business Profile, a TikTok upload that never received a video id)
      */
     errorMessage?: (string) | null;
 };
@@ -6192,7 +6192,7 @@ export type PlatformTarget = {
      */
     platformPostId?: string;
     /**
-     * Public URL of the published post. Included in the response for immediate posts; for scheduled posts, fetch via GET /v1/posts/{postId} after publish time. Empty when the platform confirmed the publish without returning an id a permalink can be built from (TikTok returns a publish id for some uploads); the TikTok reconcile cron backfills it later.
+     * Public URL of the published post. Included in the response for immediate posts; for scheduled posts, fetch via GET /v1/posts/{postId} after publish time. Empty when the platform confirmed the publish without returning an id a permalink can be built from (TikTok returns a publish id for some uploads); the TikTok reconcile cron backfills it later. If TikTok never returns one, /v1/analytics reports that entry as syncStatus unavailable.
      */
     platformPostUrl?: (string) | null;
     /**
