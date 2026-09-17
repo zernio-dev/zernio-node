@@ -5981,7 +5981,6 @@ export type MetaCatalogProduct = {
     category?: (string) | null;
     productType?: (string) | null;
     gtin?: (string) | null;
-    mpn?: (string) | null;
     inventory?: (number) | null;
     visibility?: (string) | null;
     color?: (string) | null;
