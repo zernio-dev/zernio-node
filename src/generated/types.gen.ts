@@ -35698,7 +35698,7 @@ export type QueryAdInsightsData = {
          */
         actionAttributionWindows?: string;
         /**
-         * Comma-separated Graph action breakdowns. Segments the actions[] arrays in each row.
+         * Comma-separated Graph action breakdowns; segments the actions[] arrays in each row. Pass `none` to clear Meta's default action_type breakdown, required to combine some non-action breakdowns such as instagram_ads_follow_type (otherwise Meta returns a (#100) invalid-combination error).
          */
         actionBreakdowns?: string;
         /**
@@ -35820,7 +35820,7 @@ export type CreateAdInsightsReportData = {
          */
         breakdowns?: string;
         /**
-         * Comma-separated Graph action breakdowns (e.g. action_type,action_destination).
+         * Comma-separated Graph action breakdowns (e.g. action_type,action_destination). Pass `none` to clear Meta's default action_type breakdown, needed for some non-action breakdowns such as instagram_ads_follow_type.
          */
         actionBreakdowns?: string;
         /**
