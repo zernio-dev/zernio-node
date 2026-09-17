@@ -6150,7 +6150,7 @@ export type PlatformAnalytics = {
     syncStatus?: 'synced' | 'pending' | 'unavailable';
     platformPostUrl?: (string) | null;
     /**
-     * Error details when status is failed, or why analytics are unavailable for a published entry (e.g. Google Business Profile, a TikTok upload that never received a video id)
+     * Failure detail. On failed entries, why the post failed to publish. On unavailable entries, why analytics cannot be synced (e.g. Google Business Profile, a TikTok upload that never received a video id). On pending entries, the most recent analytics sync error for the account (null while no sync has failed), cleared after the next successful sync.
      */
     errorMessage?: (string) | null;
 };
