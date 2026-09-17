@@ -14135,9 +14135,10 @@ export type CreateProfileError = (unknown | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -15300,9 +15301,10 @@ export type GetConnectUrlError = (unknown | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -15372,9 +15374,10 @@ export type HandleOAuthCallbackError = (unknown | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -15596,9 +15599,10 @@ export type GetShopifyConnectUrlError = (unknown | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -15680,9 +15684,10 @@ export type ConnectShopifyWithTokenError = (unknown | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -15968,9 +15973,10 @@ export type SelectInstagramAccountError = (unknown | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -17882,9 +17888,10 @@ export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -18176,9 +18183,10 @@ export type ConnectWhatsAppEmbeddedSignupError = (ErrorResponse | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -18284,9 +18292,10 @@ export type ConnectDiscordChannelError = (ErrorResponse | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
@@ -18412,9 +18421,10 @@ export type ConnectSlackChannelError = (ErrorResponse | {
     documentation_url?: string;
     /**
      * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this is
-     * the Zernio billing tab. For `enterprise_required` this
-     * is the Zernio enterprise contact page.
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
      *
      */
     dashboard_url?: string;
