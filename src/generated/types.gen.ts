@@ -38369,6 +38369,19 @@ export type BoostPostData = {
          */
         smartPlus?: boolean;
         /**
+         * TikTok Smart+ only (requires `smartPlus: true`). Several Spark posts as creatives of ONE Smart+ ad, each with its own post code (TikTok allows 1-50 per ad; posts from different creators mix). Replaces `platformPostId` + `sparkAuthCode`. Without `adSetId` it creates campaign + ad group + one ad carrying all of them; with `adSetId` it creates one new ad with all of them in that ad group. Rejected with a 400 on other platforms.
+         */
+        sparkPosts?: Array<{
+            /**
+             * TikTok post (item) id.
+             */
+            platformPostId: string;
+            /**
+             * That post's Spark code.
+             */
+            sparkAuthCode: string;
+        }>;
+        /**
          * TikTok-only on this endpoint. The pixel a Website Conversion ad group
          * optimizes toward, so a Spark Ad built from an existing organic post can
          * optimize for a conversion instead of only engagement or traffic.
