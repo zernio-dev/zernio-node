@@ -510,8 +510,6 @@ try {
 ### Ad Creatives
 | Method | Description |
 |--------|-------------|
-| `adCreatives.listAdCatalogProductSets()` | List a catalog's product sets |
-| `adCreatives.listAdCatalogs()` | List Meta product catalogs |
 | `adCreatives.listAdCreatives()` | Creative library |
 | `adCreatives.listAdImages()` | Ad image library |
 | `adCreatives.listAdVideos()` | Ad video library |
@@ -897,6 +895,29 @@ try {
 | `phoneNumbers.validatePhoneNumberKycAddress()` | Pre-validate KYC address |
 | `phoneNumbers.viewPhoneNumberKycDocument()` | View a KYC document on file |
 
+### Product Catalogs
+| Method | Description |
+|--------|-------------|
+| `productCatalogs.listAdCatalogFeeds()` | List a catalog's product feeds |
+| `productCatalogs.listAdCatalogFeedUploads()` | List a feed's uploads |
+| `productCatalogs.listAdCatalogProducts()` | List a catalog's products |
+| `productCatalogs.listAdCatalogProductSets()` | List a catalog's product sets |
+| `productCatalogs.listAdCatalogs()` | List Meta product catalogs |
+| `productCatalogs.createAdCatalog()` | Create a Meta product catalog |
+| `productCatalogs.createAdCatalogFeed()` | Create a product feed |
+| `productCatalogs.createAdCatalogFeedUpload()` | Fetch a feed file now |
+| `productCatalogs.createAdCatalogProduct()` | Add a product to a catalog |
+| `productCatalogs.createAdCatalogProductSet()` | Create a product set |
+| `productCatalogs.getAdCatalog()` | Get a product catalog |
+| `productCatalogs.getAdCatalogBatch()` | Get a bulk request's status |
+| `productCatalogs.getAdCatalogProduct()` | Get a product |
+| `productCatalogs.updateAdCatalogProduct()` | Update a product |
+| `productCatalogs.updateAdCatalogProductSet()` | Update a product set |
+| `productCatalogs.deleteAdCatalog()` | Delete a product catalog |
+| `productCatalogs.deleteAdCatalogProduct()` | Delete a product |
+| `productCatalogs.deleteAdCatalogProductSet()` | Delete a product set |
+| `productCatalogs.batchAdCatalogProducts()` | Create, update or delete products in bulk |
+
 ### Products
 | Method | Description |
 |--------|-------------|
@@ -1031,6 +1052,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `whatsapp.listWhatsAppAccountEvents()` | List account notifications |
+| `whatsapp.listWhatsAppCatalogs()` | List the catalogs linked to a WhatsApp number |
 | `whatsapp.listWhatsAppConversions()` | List conversion events |
 | `whatsapp.listWhatsAppGroupChats()` | List active groups |
 | `whatsapp.listWhatsAppGroupJoinRequests()` | List join requests |
@@ -1043,6 +1065,7 @@ try {
 | `whatsapp.getWhatsAppBusinessProfile()` | Get business profile |
 | `whatsapp.getWhatsappBusinessUsername()` | Get business username |
 | `whatsapp.getWhatsappBusinessUsernameSuggestions()` | Get username suggestions |
+| `whatsapp.getWhatsAppCommerceSettings()` | Get a number's commerce settings |
 | `whatsapp.getWhatsAppDataset()` | Get CTWA conversions dataset |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name status |
 | `whatsapp.getWhatsAppGroupChat()` | Get group info |
@@ -1051,6 +1074,7 @@ try {
 | `whatsapp.getWhatsAppTemplateById()` | Get template by id |
 | `whatsapp.getWhatsAppTemplates()` | List templates |
 | `whatsapp.updateWhatsAppBusinessProfile()` | Update business profile |
+| `whatsapp.updateWhatsAppCommerceSettings()` | Update a number's commerce settings |
 | `whatsapp.updateWhatsAppDisplayName()` | Request display name change |
 | `whatsapp.updateWhatsAppGroupChat()` | Update group settings |
 | `whatsapp.updateWhatsAppTemplate()` | Update template |
@@ -1062,6 +1086,7 @@ try {
 | `whatsapp.addWhatsAppGroupParticipants()` | Add participants |
 | `whatsapp.approveWhatsAppGroupJoinRequests()` | Approve join requests |
 | `whatsapp.blockWhatsAppUsers()` | Block users |
+| `whatsapp.linkWhatsAppCatalog()` | Link a catalog to a WhatsApp number |
 | `whatsapp.registerWhatsAppNumber()` | Register a connected WhatsApp number on the Cloud API |
 | `whatsapp.rejectWhatsAppGroupJoinRequests()` | Reject join requests |
 | `whatsapp.removeWhatsAppGroupParticipants()` | Remove participants |
@@ -1069,6 +1094,7 @@ try {
 | `whatsapp.sendWhatsAppConversion()` | Send WhatsApp conversion event |
 | `whatsapp.setWhatsappBusinessUsername()` | Set business username |
 | `whatsapp.unblockWhatsAppUsers()` | Unblock users |
+| `whatsapp.unlinkWhatsAppCatalog()` | Unlink a catalog from a WhatsApp number |
 | `whatsapp.uploadWhatsAppProfilePhoto()` | Upload profile picture |
 | `whatsapp.verifyWhatsAppNumber()` | Verify the Meta re-verification code for a BYO WhatsApp number |
 

@@ -5958,11 +5958,127 @@ export type MetaAdsPlatformData = {
     lifetimeMinSpendTarget?: number;
 };
 
+export type MetaCatalogProduct = {
+    /**
+     * Meta product item ID (use in the product endpoints)
+     */
+    id?: string;
+    retailerId?: (string) | null;
+    name?: string;
+    description?: (string) | null;
+    url?: (string) | null;
+    imageUrl?: (string) | null;
+    additionalImageUrls?: Array<(string)>;
+    /**
+     * Formatted by Meta, e.g. "€49.90"
+     */
+    price?: (string) | null;
+    salePrice?: (string) | null;
+    currency?: (string) | null;
+    availability?: (string) | null;
+    condition?: (string) | null;
+    brand?: (string) | null;
+    category?: (string) | null;
+    productType?: (string) | null;
+    gtin?: (string) | null;
+    mpn?: (string) | null;
+    inventory?: (number) | null;
+    visibility?: (string) | null;
+    color?: (string) | null;
+    size?: (string) | null;
+    gender?: (string) | null;
+    material?: (string) | null;
+    pattern?: (string) | null;
+    /**
+     * custom_label_0 to custom_label_4
+     */
+    customLabels?: Array<((string) | null)>;
+    /**
+     * Meta's commerce review status (approved, rejected, pending, ...)
+     */
+    reviewStatus?: (string) | null;
+    reviewRejectionReasons?: Array<(string)>;
+};
+
+/**
+ * One product shape for single and bulk calls. Money is in major units (12.99); Zernio converts to what Meta wants.
+ */
+export type MetaCatalogProductInput = {
+    /**
+     * Your SKU; unique inside the catalog
+     */
+    retailerId?: string;
+    name?: string;
+    description?: string;
+    /**
+     * Product page
+     */
+    url?: string;
+    imageUrl?: string;
+    additionalImageUrls?: Array<(string)>;
+    /**
+     * Major units, e.g. 12.99
+     */
+    price?: number;
+    /**
+     * ISO 4217, e.g. EUR
+     */
+    currency?: string;
+    salePrice?: number;
+    /**
+     * ISO 8601
+     */
+    salePriceStartDate?: string;
+    /**
+     * ISO 8601
+     */
+    salePriceEndDate?: string;
+    availability?: 'in stock' | 'out of stock' | 'preorder' | 'available for order' | 'discontinued' | 'pending';
+    condition?: 'new' | 'refurbished' | 'used';
+    brand?: string;
+    category?: string;
+    googleProductCategory?: string;
+    productType?: string;
+    gtin?: string;
+    mpn?: string;
+    inventory?: number;
+    visibility?: 'published' | 'staging';
+    color?: string;
+    size?: string;
+    gender?: 'female' | 'male' | 'unisex';
+    material?: string;
+    pattern?: string;
+    customLabel0?: string;
+    customLabel1?: string;
+    customLabel2?: string;
+    customLabel3?: string;
+    customLabel4?: string;
+};
+
+export type availability = 'in stock' | 'out of stock' | 'preorder' | 'available for order' | 'discontinued' | 'pending';
+
+export type condition = 'new' | 'refurbished' | 'used';
+
+export type visibility = 'published' | 'staging';
+
+export type gender = 'female' | 'male' | 'unisex';
+
 /**
  * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys and unspecified features default to OPT_OUT. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. The deprecated standard_enhancements bundle is rejected by Meta.
  */
 export type MetaCreativeFeatures = {
     [key: string]: ('OPT_IN' | 'OPT_OUT');
+};
+
+export type MetaFeedUpload = {
+    id?: string;
+    url?: (string) | null;
+    startTime?: (string) | null;
+    endTime?: (string) | null;
+    errorCount?: number;
+    warningCount?: number;
+    itemsDetected?: number;
+    itemsDeleted?: number;
 };
 
 export type MetaInstagramIdentityRef = {
@@ -6097,6 +6213,40 @@ export type MetaLeadForm = {
 
 export type style = 'LIST_STYLE' | 'PARAGRAPH_STYLE';
 
+export type MetaProductCatalog = {
+    id?: string;
+    name?: string;
+    /**
+     * Catalog vertical (e.g. commerce, vehicles, hotels)
+     */
+    vertical?: (string) | null;
+    productCount?: number;
+    businessId?: (string) | null;
+};
+
+export type MetaProductFeed = {
+    id?: string;
+    name?: string;
+    productCount?: number;
+    schedule?: {
+        interval?: string;
+        url?: string;
+        hour?: (number) | null;
+        dayOfWeek?: (string) | null;
+    } | null;
+    createdTime?: (string) | null;
+    latestUpload?: (MetaFeedUpload | null);
+};
+
+export type MetaProductSet = {
+    id?: string;
+    name?: string;
+    productCount?: number;
+    filter?: {
+        [key: string]: unknown;
+    } | null;
+};
+
 /**
  * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
  */
@@ -6145,6 +6295,26 @@ export type ParameterBusinessAgentAccountId = string;
 export type ParameterBusinessAgentConnectorId = string;
 
 export type ParameterBusinessAgentToolId = string;
+
+/**
+ * A facebook, instagram, metaads or whatsapp account ID
+ */
+export type ParameterCatalogAccountId = string;
+
+/**
+ * Meta product catalog ID (from GET /v1/ads/catalogs)
+ */
+export type ParameterCatalogId = string;
+
+/**
+ * Meta product item ID (from the products list; not the retailer id)
+ */
+export type ParameterCatalogProductId = string;
+
+/**
+ * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+ */
+export type ParameterCatalogTokenAccountId = string;
 
 /**
  * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
@@ -6415,7 +6585,7 @@ export type Post = {
  */
 export type status13 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
-export type visibility = 'public' | 'private' | 'unlisted';
+export type visibility2 = 'public' | 'private' | 'unlisted';
 
 export type PostAnalytics = {
     impressions?: number;
@@ -7450,7 +7620,7 @@ export type TargetingSpec = {
 /**
  * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
  */
-export type gender = 'all' | 'male' | 'female';
+export type gender2 = 'all' | 'male' | 'female';
 
 /**
  * Normalized household-income tier (ZIP/percentile based). Meta and TikTok
@@ -10897,6 +11067,11 @@ export type WhatsAppCarouselComponent = {
          */
         components: Array<WhatsAppCarouselCardComponent>;
     }>;
+};
+
+export type WhatsAppCommerceSettings = {
+    isCartEnabled?: boolean;
+    isCatalogVisible?: boolean;
 };
 
 export type WhatsAppFooterComponent = {
@@ -26654,6 +26829,128 @@ export type GetWhatsAppLibraryTemplateError = (unknown | {
     error?: string;
 });
 
+export type ListWhatsAppCatalogsData = {
+    query: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type ListWhatsAppCatalogsResponse = ({
+    wabaId?: string;
+    catalogs?: Array<{
+        id?: string;
+        name?: string;
+    }>;
+});
+
+export type ListWhatsAppCatalogsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type LinkWhatsAppCatalogData = {
+    body: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+        /**
+         * Account whose Meta login token performs the call
+         */
+        catalogAccountId?: string;
+        /**
+         * Meta catalog ID
+         */
+        catalogId: string;
+    };
+};
+
+export type LinkWhatsAppCatalogResponse = ({
+    wabaId?: string;
+    catalogs?: Array<{
+        id?: string;
+        name?: string;
+    }>;
+});
+
+export type LinkWhatsAppCatalogError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UnlinkWhatsAppCatalogData = {
+    query: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+        /**
+         * Meta catalog ID
+         */
+        catalogId: string;
+    };
+};
+
+export type UnlinkWhatsAppCatalogResponse = ({
+    success?: boolean;
+    wabaId?: string;
+    catalogId?: string;
+});
+
+export type UnlinkWhatsAppCatalogError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetWhatsAppCommerceSettingsData = {
+    query: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type GetWhatsAppCommerceSettingsResponse = ({
+    settings?: WhatsAppCommerceSettings;
+});
+
+export type GetWhatsAppCommerceSettingsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateWhatsAppCommerceSettingsData = {
+    body: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+        catalogAccountId?: string;
+        isCartEnabled?: boolean;
+        isCatalogVisible?: boolean;
+    };
+};
+
+export type UpdateWhatsAppCommerceSettingsResponse = ({
+    settings?: WhatsAppCommerceSettings;
+});
+
+export type UpdateWhatsAppCommerceSettingsError = (ErrorResponse | {
+    error?: string;
+});
+
 export type GetWhatsAppBusinessProfileData = {
     query: {
         /**
@@ -40669,31 +40966,446 @@ export type GetLinkedInSupplyForecastError = (unknown | {
 export type ListAdCatalogsData = {
     query: {
         /**
-         * A facebook, instagram, or metaads account ID
+         * A facebook, instagram, metaads or whatsapp account ID
          */
         accountId: string;
         /**
-         * Meta ad account ID (act_...)
+         * Meta ad account ID (act_...) whose owner business to list
          */
-        adAccountId: string;
+        adAccountId?: string;
+        /**
+         * Meta business portfolio ID to list
+         */
+        businessId?: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token is used instead of the account's own (needed for WhatsApp connections, whose token cannot manage catalogs).
+         */
+        catalogAccountId?: string;
     };
 };
 
 export type ListAdCatalogsResponse = ({
-    catalogs?: Array<{
-        id?: string;
-        name?: string;
-        /**
-         * Catalog vertical (e.g. commerce, vehicles, hotels)
-         */
-        vertical?: (string) | null;
-        productCount?: number;
-    }>;
+    businessId?: string;
+    catalogs?: Array<MetaProductCatalog>;
 });
 
 export type ListAdCatalogsError = (ErrorResponse | {
     error?: string;
-} | unknown);
+});
+
+export type CreateAdCatalogData = {
+    body: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * Account whose Meta login token performs the call (see GET)
+         */
+        catalogAccountId?: string;
+        /**
+         * Ad account whose owner business creates the catalog
+         */
+        adAccountId?: string;
+        /**
+         * Business portfolio that owns the catalog
+         */
+        businessId?: string;
+        name: string;
+        vertical?: 'commerce' | 'vehicles' | 'hotels' | 'flights' | 'destinations' | 'home_listings' | 'local_service_business' | 'offline_commerce' | 'ticketed_experiences' | 'transactable_items';
+    };
+};
+
+export type CreateAdCatalogResponse = ({
+    catalog?: MetaProductCatalog;
+});
+
+export type CreateAdCatalogError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetAdCatalogData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type GetAdCatalogResponse = ({
+    catalog?: MetaProductCatalog;
+});
+
+export type GetAdCatalogError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteAdCatalogData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type DeleteAdCatalogResponse = ({
+    success?: boolean;
+    catalogId?: string;
+});
+
+export type DeleteAdCatalogError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListAdCatalogProductsData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * Cursor from the previous page's `nextCursor`
+         */
+        after?: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+        limit?: number;
+        /**
+         * Only the product with this retailer id (your SKU)
+         */
+        retailerId?: string;
+    };
+};
+
+export type ListAdCatalogProductsResponse = ({
+    products?: Array<MetaCatalogProduct>;
+    nextCursor?: (string) | null;
+});
+
+export type ListAdCatalogProductsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CreateAdCatalogProductData = {
+    body: {
+        accountId: string;
+        catalogAccountId?: string;
+        product: (MetaCatalogProductInput & {
+    [key: string]: unknown;
+});
+    };
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+};
+
+export type CreateAdCatalogProductResponse = ({
+    product?: MetaCatalogProduct;
+});
+
+export type CreateAdCatalogProductError = (ErrorResponse | {
+    error?: string;
+});
+
+export type BatchAdCatalogProductsData = {
+    body: {
+        accountId: string;
+        catalogAccountId?: string;
+        requests: Array<{
+            method: 'CREATE' | 'UPDATE' | 'DELETE';
+            product: (MetaCatalogProductInput & {
+    [key: string]: unknown;
+});
+        }>;
+    };
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+};
+
+export type BatchAdCatalogProductsResponse = ({
+    handles?: Array<(string)>;
+    statusUrl?: string;
+});
+
+export type BatchAdCatalogProductsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetAdCatalogBatchData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        /**
+         * Handle returned by the batch call
+         */
+        handle: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type GetAdCatalogBatchResponse = ({
+    batch?: {
+        handle?: string;
+        /**
+         * Meta's status, e.g. initial, in_progress, finished
+         */
+        status?: string;
+        errorsTotalCount?: number;
+        errors?: Array<{
+            retailerId?: (string) | null;
+            message?: string;
+        }>;
+    };
+});
+
+export type GetAdCatalogBatchError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetAdCatalogProductData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        /**
+         * Meta product item ID (from the products list; not the retailer id)
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type GetAdCatalogProductResponse = ({
+    product?: MetaCatalogProduct;
+});
+
+export type GetAdCatalogProductError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateAdCatalogProductData = {
+    body: {
+        accountId: string;
+        catalogAccountId?: string;
+        product: MetaCatalogProductInput;
+    };
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        /**
+         * Meta product item ID (from the products list; not the retailer id)
+         */
+        productId: string;
+    };
+};
+
+export type UpdateAdCatalogProductResponse = ({
+    product?: MetaCatalogProduct;
+});
+
+export type UpdateAdCatalogProductError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteAdCatalogProductData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        /**
+         * Meta product item ID (from the products list; not the retailer id)
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type DeleteAdCatalogProductResponse = ({
+    success?: boolean;
+    productId?: string;
+});
+
+export type DeleteAdCatalogProductError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListAdCatalogFeedsData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type ListAdCatalogFeedsResponse = ({
+    feeds?: Array<MetaProductFeed>;
+});
+
+export type ListAdCatalogFeedsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CreateAdCatalogFeedData = {
+    body: {
+        accountId: string;
+        catalogAccountId?: string;
+        name: string;
+        schedule?: {
+            interval: 'HOURLY' | 'DAILY' | 'WEEKLY';
+            url: string;
+            hour?: number;
+            dayOfWeek?: 'SUNDAY' | 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY';
+        };
+    };
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+};
+
+export type CreateAdCatalogFeedResponse = ({
+    feed?: MetaProductFeed;
+});
+
+export type CreateAdCatalogFeedError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListAdCatalogFeedUploadsData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        feedId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type ListAdCatalogFeedUploadsResponse = ({
+    uploads?: Array<MetaFeedUpload>;
+});
+
+export type ListAdCatalogFeedUploadsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CreateAdCatalogFeedUploadData = {
+    body: {
+        accountId: string;
+        catalogAccountId?: string;
+        url: string;
+    };
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        feedId: string;
+    };
+};
+
+export type CreateAdCatalogFeedUploadResponse = ({
+    upload?: {
+        id?: string;
+    };
+});
+
+export type CreateAdCatalogFeedUploadError = (ErrorResponse | {
+    error?: string;
+});
 
 export type ListAdCatalogProductSetsData = {
     path: {
@@ -40704,9 +41416,13 @@ export type ListAdCatalogProductSetsData = {
     };
     query: {
         /**
-         * A facebook, instagram, or metaads account ID
+         * A facebook, instagram, metaads or whatsapp account ID
          */
         accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
     };
 };
 
@@ -40720,7 +41436,90 @@ export type ListAdCatalogProductSetsResponse = ({
 
 export type ListAdCatalogProductSetsError = (ErrorResponse | {
     error?: string;
-} | unknown);
+});
+
+export type CreateAdCatalogProductSetData = {
+    body: {
+        accountId: string;
+        catalogAccountId?: string;
+        name: string;
+        /**
+         * Meta product set filter
+         */
+        filter: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+    };
+};
+
+export type CreateAdCatalogProductSetResponse = ({
+    productSet?: MetaProductSet;
+});
+
+export type CreateAdCatalogProductSetError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateAdCatalogProductSetData = {
+    body: {
+        accountId: string;
+        catalogAccountId?: string;
+        name?: string;
+        filter?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        productSetId: string;
+    };
+};
+
+export type UpdateAdCatalogProductSetResponse = ({
+    productSet?: MetaProductSet;
+});
+
+export type UpdateAdCatalogProductSetError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteAdCatalogProductSetData = {
+    path: {
+        /**
+         * Meta product catalog ID (from GET /v1/ads/catalogs)
+         */
+        catalogId: string;
+        productSetId: string;
+    };
+    query: {
+        /**
+         * A facebook, instagram, metaads or whatsapp account ID
+         */
+        accountId: string;
+        /**
+         * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
+         */
+        catalogAccountId?: string;
+    };
+};
+
+export type DeleteAdCatalogProductSetResponse = ({
+    success?: boolean;
+    productSetId?: string;
+});
+
+export type DeleteAdCatalogProductSetError = (ErrorResponse | {
+    error?: string;
+});
 
 export type ListAdAudiencesData = {
     query: {
