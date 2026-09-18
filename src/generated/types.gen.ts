@@ -14798,6 +14798,10 @@ export type GetAccountHealthData = {
 export type GetAccountHealthResponse = ({
     accountId?: string;
     platform?: string;
+    /**
+     * TikTok only. The TikTok integration the account is connected through: business (TikTok for Business, Accounts API) or developer (the original integration). Absent on other platforms.
+     */
+    integrationLane?: 'business' | 'developer';
     username?: string;
     displayName?: string;
     /**
