@@ -3178,9 +3178,28 @@ export type CtwaAdRequestBody = {
          */
         text: string;
         /**
-         * Message put into the user's text input, ready to send. Replaces Meta's default ("Hi! I want more info."). Lets one ad steer the opening message toward what it promotes (e.g. a specific product).
+         * Message put into the user's text input, ready to send. Replaces Meta's default ("Hi! I want more info."). Lets one ad steer the opening message toward what it promotes (e.g. a specific product). Exactly one of prefillText or quickReplies.
          */
-        prefillText: string;
+        prefillText?: string;
+        /**
+         * Tappable chips under the greeting instead of a prefilled
+         * message. Exactly one of prefillText or quickReplies. Put
+         * your own campaign or ad key in each payload: the tap arrives
+         * on the messages webhook with that payload even where Meta
+         * delivers no ad referral (Pages owned by an EU business under
+         * the Europe/Japan Messenger restrictions).
+         *
+         */
+        quickReplies?: Array<{
+            /**
+             * Chip label the person taps.
+             */
+            title: string;
+            /**
+             * Opaque string you choose; delivered on the message.received webhook as interactiveMetadata.quickReplyPayload when the chip is tapped.
+             */
+            payload: string;
+        }>;
     };
     /**
      * Multi-creative shape: N CTWA ads under one campaign + one
