@@ -4847,7 +4847,13 @@ export type InboxWebhookAccount = {
  * The conversation context included in inbox webhook payloads.
  */
 export type InboxWebhookConversation = {
+    /**
+     * Zernio's internal conversation id (also the message's conversationId). Accepted by every /v1/inbox/conversations/{conversationId} endpoint.
+     */
     id: string;
+    /**
+     * The platform's conversation id. This is the `id` GET /v1/inbox/conversations returns for the same conversation (on Instagram and Messenger it is the participant's IGSID / PSID), so key your records on it to match webhooks with list rows. Also accepted by the conversation endpoints.
+     */
     platformConversationId: string;
     participantId?: string;
     participantName?: string;
@@ -4873,10 +4879,13 @@ export type status11 = 'active' | 'archived';
  */
 export type InboxWebhookConversationDetail = {
     /**
-     * Internal conversation ID
+     * The platform's conversation id, equal to `conversation.platformConversationId` on inbox webhooks (whose `conversation.id` is Zernio's internal id). Both are accepted by the conversation endpoints.
      */
     id: string;
     platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok';
+    /**
+     * Same value as `id`.
+     */
     platformConversationId: string;
     /**
      * Contact's platform identifier (IGSID, PSID, wa_id, etc.)
