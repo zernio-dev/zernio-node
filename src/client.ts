@@ -435,6 +435,7 @@ import {
   listAds,
   listAdsBusinessCenters,
   listAdsInstagramAccounts,
+  listAdsTikTokIdentities,
   listAdvertisableApplications,
   listApiKeys,
   listBidStrategies,
@@ -1776,6 +1777,7 @@ export class Zernio {
     generateAdPreviews: this._bind(generateAdPreviews),
     getAdPreviews: this._bind(getAdPreviews),
     getAdMedia: this._bind(getAdMedia),
+    listAdsTikTokIdentities: this._bind(listAdsTikTokIdentities),
     listAdCreatives: this._bind(listAdCreatives),
     createAdCreative: this._bind(createAdCreative),
     getAdCreative: this._bind(getAdCreative),
@@ -2273,6 +2275,8 @@ export class Zernio {
     getAdPreviews: this._bind(getAdPreviews),
     /** @deprecated Use `zernio.adcreatives.getAdMedia` instead. */
     getAdMedia: this._bind(getAdMedia),
+    /** @deprecated Use `zernio.adcreatives.listAdsTikTokIdentities` instead. */
+    listAdsTikTokIdentities: this._bind(listAdsTikTokIdentities),
     /** @deprecated Use `zernio.adcreatives.listAdCreatives` instead. */
     listAdCreatives: this._bind(listAdCreatives),
     /** @deprecated Use `zernio.adcreatives.createAdCreative` instead. */

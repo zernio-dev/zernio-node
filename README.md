@@ -512,6 +512,7 @@ try {
 |--------|-------------|
 | `adCreatives.listAdCreatives()` | Creative library |
 | `adCreatives.listAdImages()` | Ad image library |
+| `adCreatives.listAdsTikTokIdentities()` | List TikTok ad identities |
 | `adCreatives.listAdVideos()` | Ad video library |
 | `adCreatives.listPartnershipAdContent()` | List partnership ad content |
 | `adCreatives.listPartnershipAdPermissions()` | List partnership permissions |

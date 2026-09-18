@@ -36832,6 +36832,38 @@ export type ListAdStudiesError = (unknown | {
     error?: string;
 } | ErrorResponse);
 
+export type ListAdsTikTokIdentitiesData = {
+    query: {
+        /**
+         * A tiktok or tiktokads account ID
+         */
+        accountId: string;
+        /**
+         * TikTok advertiser ID
+         */
+        adAccountId: string;
+    };
+};
+
+export type ListAdsTikTokIdentitiesResponse = ({
+    adAccountId?: string;
+    identities?: Array<{
+        identityId?: string;
+        identityType?: 'TT_USER' | 'BC_AUTH_TT' | 'CUSTOMIZED_USER';
+        displayName?: (string) | null;
+        username?: (string) | null;
+        profileImage?: (string) | null;
+        /**
+         * Business Center that authorized a BC_AUTH_TT identity
+         */
+        identityAuthorizedBcId?: (string) | null;
+    }>;
+});
+
+export type ListAdsTikTokIdentitiesError = (ErrorResponse | {
+    error?: string;
+});
+
 export type ListAdsInstagramAccountsData = {
     query: {
         /**
@@ -38463,6 +38495,14 @@ export type BoostPostData = {
          */
         existingCampaignId?: string;
         /**
+         * TikTok only. The identity the ad runs as (the profile shown on the ad), from GET /v1/ads/tiktok-identities. Default: the connected TikTok account's own identity. Must be authorized on the advertiser or the call fails naming the available ones.
+         */
+        identityId?: string;
+        /**
+         * TikTok only. Type of identityId; resolved from the advertiser's identity list when omitted.
+         */
+        identityType?: 'TT_USER' | 'CUSTOMIZED_USER' | 'BC_AUTH_TT';
+        /**
          * Required unless adSetId is set.
          */
         budget?: {
@@ -39899,6 +39939,10 @@ export type CreateStandaloneAdData = {
             imageUrl: string;
         };
         /**
+         * TikTok: the identity the ad runs as, from GET /v1/ads/tiktok-identities. Overrides the connected account's own identity; must be authorized on the advertiser.
+         */
+        identityId?: string;
+        /**
          * TikTok only. Forces the identity attribution on the ad:
          *
          * - `TT_USER`: the posting account's open_id (real @username
@@ -39917,7 +39961,7 @@ export type CreateStandaloneAdData = {
          * post's author identity for Spark.
          *
          */
-        identityType?: 'TT_USER' | 'CUSTOMIZED_USER';
+        identityType?: 'TT_USER' | 'CUSTOMIZED_USER' | 'BC_AUTH_TT';
         /**
          * TikTok only. Creates the ad as a TikTok Upgraded Smart+
          * campaign: TikTok automates targeting, bidding and delivery. Supports goals
