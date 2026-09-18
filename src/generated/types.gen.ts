@@ -40791,7 +40791,7 @@ export type SearchAdLibraryData = {
          */
         searchType?: 'KEYWORD_UNORDERED' | 'KEYWORD_EXACT_PHRASE';
         /**
-         * Earliest delivery date (YYYY-MM-DD).
+         * Meta only. Earliest delivery date (YYYY-MM-DD). LinkedIn's archive does not filter by date, so it is a 400 there: filter on details.adStatistics.firstImpressionAt / latestImpressionAt instead (EU-delivered ads only).
          */
         since?: string;
         /**
@@ -40799,7 +40799,7 @@ export type SearchAdLibraryData = {
          */
         status?: 'ACTIVE' | 'INACTIVE' | 'ALL';
         /**
-         * Latest delivery date (YYYY-MM-DD).
+         * Meta only. Latest delivery date (YYYY-MM-DD); a 400 on LinkedIn, see since.
          */
         until?: string;
     };

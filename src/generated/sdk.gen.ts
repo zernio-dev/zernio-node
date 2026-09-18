@@ -10659,8 +10659,8 @@ export const searchAdTargeting = <ThrowOnError extends boolean = false>(options:
  * last impression. EU-delivered ads carry impression ranges and the disclosed targeting facets.
  * Pages are capped at 25 ads (`limit` > 25 is a 400); `after` is the next offset.
  *
- * Which params apply: `q`, `countries`, `since`, `until`, `limit`, `after` on both; `pageIds`,
- * `adType`, `status`, `platforms`, `mediaType`, `languages`, `searchType`, `fields` are Meta-only;
+ * Which params apply: `q`, `countries`, `limit`, `after` on both; `pageIds`, `adType`, `status`,
+ * `platforms`, `mediaType`, `languages`, `searchType`, `fields`, `since`, `until` are Meta-only;
  * `advertiser` is LinkedIn-only. Passing a param the account's platform does not support is a 400
  * naming the param.
  */
