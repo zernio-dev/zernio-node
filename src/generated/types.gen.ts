@@ -38861,7 +38861,10 @@ export type BoostPostData = {
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Meta only. Explicit ad-set `optimization_goal` override. When omitted,
+         * Meta, or TikTok with `goal: video_views`. TikTok: ENGAGED_VIEW (6-second
+         * Focused View, the default) or ENGAGED_VIEW_FIFTEEN (15-second views), both
+         * billed per view (CPV); any other value is a 400. Meta: explicit ad-set
+         * `optimization_goal` override. When omitted,
          * defaults to the value derived from `goal`. Messaging boosts always
          * use CONVERSATIONS and reject another optimizationGoal. Otherwise the value must be compatible
          * with the objective Meta derives from `goal`, not with the objective used
@@ -38954,7 +38957,7 @@ export type CreateStandaloneAdData = {
          */
         goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'job_applicants';
         /**
-         * Meta only. Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
+         * Meta, or TikTok with goal video_views (ENGAGED_VIEW, the 6-second default, or ENGAGED_VIEW_FIFTEEN; both bill per view). Meta: Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
          */
         optimizationGoal?: string;
         /**
