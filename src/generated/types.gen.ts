@@ -27782,7 +27782,7 @@ export type PurchasePhoneNumberError = (unknown | {
     error?: string;
 } | {
     error?: string;
-    code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE';
+    code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE' | 'COUNTRY_OUT_OF_STOCK';
 } | {
     error?: string;
     code?: 'CARRIER_UNAVAILABLE';
@@ -28167,7 +28167,7 @@ export type PurchaseWhatsAppPhoneNumberError = (unknown | {
     error?: string;
 } | {
     error?: string;
-    code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE';
+    code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE' | 'COUNTRY_OUT_OF_STOCK';
 } | {
     error?: string;
     code?: 'CARRIER_UNAVAILABLE';
