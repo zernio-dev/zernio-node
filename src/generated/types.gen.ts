@@ -15498,7 +15498,7 @@ export type GetConnectUrlData = {
          *
          * WhatsApp:
          * whatsapp_error, one_whatsapp_per_profile, whatsapp_number_already_connected,
-         * whatsapp_number_pinned_to_profile, connection_cancelled
+         * whatsapp_number_pinned_to_profile, whatsapp_coexistence_not_registered, connection_cancelled
          *
          * Google Ads (platform=googleads):
          * google_ads_auth_failed, google_ads_invalid_state, google_ads_config_error,
@@ -15544,8 +15544,8 @@ export type GetConnectUrlData = {
          * side and no domain setup: send the user to `authUrl`, and they come back to `redirect_url` with the
          * same params as the redirect flow. Success: `connected=whatsapp`, `profileId`, `accountId`, `username`
          * (plus `connect_token` for API-key callers). Failure: `error` and `platform=whatsapp`, with the same
-         * values and extras as the redirect flow (`one_whatsapp_per_profile`, `whatsapp_number_already_connected`
-         * and `whatsapp_number_pinned_to_profile` with `is_user_fixable=true`; `payment_required` with `reason`
+         * values and extras as the redirect flow (`one_whatsapp_per_profile`, `whatsapp_number_already_connected`,
+         * `whatsapp_number_pinned_to_profile` and `whatsapp_coexistence_not_registered` with `is_user_fixable=true`; `payment_required` with `reason`
          * and `dashboard_url`; `whatsapp_error` with `error_message` when Meta reported one), plus two of its own:
          * `connection_cancelled` when the popup was closed before finishing (`error_message` carries Meta's last
          * reported step or error when there is one) and `session_expired` when the user took longer than the
