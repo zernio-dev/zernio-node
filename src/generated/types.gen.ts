@@ -15234,6 +15234,14 @@ export type GetTikTokCreatorInfoError = ({
 export type VerifyCredentialResponse = ({
     valid?: boolean;
     userId?: string;
+    /**
+     * Display name of the credential's owner.
+     */
+    name?: (string) | null;
+    /**
+     * Email of the credential's owner.
+     */
+    email?: (string) | null;
     authType?: 'api_key' | 'oauth' | 'session';
     /**
      * Granted OAuth scopes, space-separated. Null for API keys.
