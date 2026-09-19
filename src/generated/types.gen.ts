@@ -4955,7 +4955,7 @@ export type InboxWebhookMessage = {
     text: (string) | null;
     attachments: Array<{
         /**
-         * Attachment type (image, video, file, sticker, audio)
+         * Attachment type (image, video, file, sticker, audio, share)
          */
         type: string;
         /**
@@ -10066,7 +10066,7 @@ export type WebhookPayloadMessage = {
          */
         noRenderableContent?: boolean;
         /**
-         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image and video, an attachment.
+         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image, video, share_post, sticker and emoji, an attachment (share_post as type share with the embed url and payload.videoId; sticker/emoji as type sticker, url signed and expiring).
          */
         tiktokMessageType?: string;
     } | null;
@@ -10426,7 +10426,7 @@ export type WebhookPayloadMessageSent = {
          */
         threadTs?: string;
         /**
-         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image and video, an attachment. Absent on image sends made through the Zernio API, which carry the image in attachments.
+         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image, video, share_post, sticker and emoji, an attachment (share_post as type share with the embed url and payload.videoId; sticker/emoji as type sticker, url signed and expiring). Absent on image sends made through the Zernio API, which carry the image in attachments.
          */
         tiktokMessageType?: string;
     };
