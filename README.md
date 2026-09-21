@@ -403,6 +403,7 @@ try {
 | `adAccounts.listAdNegativeKeywordLists()` | List negative keyword lists |
 | `adAccounts.listAdsBusinessCenters()` | List TikTok Business Centers |
 | `adAccounts.listAdsInstagramAccounts()` | List Instagram ad identities |
+| `adAccounts.listAdsInstagramPosts()` | List Instagram posts to boost |
 | `adAccounts.listAdStudies()` | A/B tests and lift studies |
 | `adAccounts.listAdvertisableApplications()` | List advertisable apps |
 | `adAccounts.listCustomConversions()` | List custom conversions |

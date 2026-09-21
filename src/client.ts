@@ -441,6 +441,7 @@ import {
   listAds,
   listAdsBusinessCenters,
   listAdsInstagramAccounts,
+  listAdsInstagramPosts,
   listAdsTikTokIdentities,
   listAdvertisableApplications,
   listApiKeys,
@@ -1861,6 +1862,7 @@ export class Zernio {
     getAdsActivityLog: this._bind(getAdsActivityLog),
     listAdStudies: this._bind(listAdStudies),
     listAdsInstagramAccounts: this._bind(listAdsInstagramAccounts),
+    listAdsInstagramPosts: this._bind(listAdsInstagramPosts),
     listAdvertisableApplications: this._bind(listAdvertisableApplications),
     getIosFourteenCampaignLimits: this._bind(getIosFourteenCampaignLimits),
     listMetaBusinesses: this._bind(listMetaBusinesses),
@@ -2233,6 +2235,8 @@ export class Zernio {
     listAdStudies: this._bind(listAdStudies),
     /** @deprecated Use `zernio.adaccounts.listAdsInstagramAccounts` instead. */
     listAdsInstagramAccounts: this._bind(listAdsInstagramAccounts),
+    /** @deprecated Use `zernio.adaccounts.listAdsInstagramPosts` instead. */
+    listAdsInstagramPosts: this._bind(listAdsInstagramPosts),
     /** @deprecated Use `zernio.adaccounts.listAdvertisableApplications` instead. */
     listAdvertisableApplications: this._bind(listAdvertisableApplications),
     /** @deprecated Use `zernio.adaccounts.getIosFourteenCampaignLimits` instead. */

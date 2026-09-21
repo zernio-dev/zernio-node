@@ -37685,6 +37685,82 @@ export type ListAdsInstagramAccountsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type ListAdsInstagramPostsData = {
+    query: {
+        /**
+         * Zernio Meta Ads, Facebook or Instagram SocialAccount ID.
+         */
+        accountId: string;
+        /**
+         * Meta ad account ID including the act_ prefix. Narrows identity resolution to the Instagram accounts reachable from this ad account.
+         */
+        adAccountId?: string;
+        /**
+         * Opaque Meta cursor from a previous response's paging.after.
+         */
+        after?: string;
+        /**
+         * Instagram identity to list. Must be one this connection can reach, otherwise the request is rejected with a 400.
+         */
+        igUserId?: string;
+        /**
+         * Number of posts to return per page.
+         */
+        limit?: number;
+    };
+};
+
+export type ListAdsInstagramPostsResponse = ({
+    /**
+     * Instagram identity the posts belong to.
+     */
+    igUserId: string;
+    /**
+     * Instagram username; empty when Meta does not expose it.
+     */
+    username: string;
+    posts: Array<{
+        /**
+         * Instagram media ID. Pass this as the existing-post id when creating an ad.
+         */
+        id: string;
+        /**
+         * Caption, when the media has one.
+         */
+        caption?: string;
+        /**
+         * Meta media_type, e.g. IMAGE, VIDEO or CAROUSEL_ALBUM.
+         */
+        mediaType: string;
+        /**
+         * Media URL. Meta omits it for some media types.
+         */
+        mediaUrl?: string;
+        /**
+         * Thumbnail URL. Present for VIDEO, where mediaUrl may be absent.
+         */
+        thumbnailUrl?: string;
+        /**
+         * Public Instagram permalink.
+         */
+        permalink?: string;
+        /**
+         * Publish time as Meta reports it.
+         */
+        timestamp: string;
+    }>;
+    paging: {
+        /**
+         * Cursor for the next page, or null when this is the last one.
+         */
+        after: (string) | null;
+    };
+});
+
+export type ListAdsInstagramPostsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type ListAdvertisableApplicationsData = {
     query: {
         /**
