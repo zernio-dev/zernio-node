@@ -800,6 +800,27 @@ try {
 | `gmbVerifications.fetchGoogleBusinessVerificationOptions()` | Fetch verification options |
 | `gmbVerifications.startGoogleBusinessVerification()` | Start a verification |
 
+### iMessage
+| Method | Description |
+|--------|-------------|
+| `imessage.listImessageAudience()` | List iMessage audience |
+| `imessage.listImessageAvailableNumbers()` | List instantly available iMessage numbers |
+| `imessage.listImessageSenderOrders()` | List iMessage sender orders |
+| `imessage.listImessageSenders()` | List iMessage senders |
+| `imessage.createImessageGroup()` | Start an iMessage group chat |
+| `imessage.createImessageOptInLink()` | Create a tracked iMessage opt-in link |
+| `imessage.getImessageGroup()` | Get an iMessage group |
+| `imessage.getImessageSender()` | Get iMessage sender status |
+| `imessage.updateImessageGroup()` | Rename an iMessage group or change its photo |
+| `imessage.updateImessageSender()` | Update an iMessage sender |
+| `imessage.addImessageGroupParticipant()` | Add a participant to an iMessage group |
+| `imessage.cancelImessageSender()` | Cancel an iMessage sender |
+| `imessage.orderImessageSender()` | Order a new iMessage sender |
+| `imessage.registerImessageSender()` | Register an iMessage sender |
+| `imessage.removeImessageGroupParticipant()` | Remove a participant from an iMessage group |
+| `imessage.reserveImessageAvailableNumber()` | Reserve an available iMessage number |
+| `imessage.setImessageSubscription()` | Subscribe or opt out an iMessage contact |
+
 ### Inbox Analytics
 | Method | Description |
 |--------|-------------|

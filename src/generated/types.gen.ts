@@ -4907,6 +4907,98 @@ export type GoogleStructuredSnippet = {
 
 export type header = 'Amenities' | 'Brands' | 'Courses' | 'Degree programs' | 'Destinations' | 'Featured hotels' | 'Insurance coverage' | 'Models' | 'Neighborhoods' | 'Service catalog' | 'Shows' | 'Styles' | 'Types';
 
+export type ImessageAudienceContact = {
+    conversationId?: string;
+    accountId?: string;
+    /**
+     * The contact handle (E.164 phone or email)
+     */
+    contact?: string;
+    name?: (string) | null;
+    subscribed?: boolean;
+    lastMessage?: (string) | null;
+    lastMessageAt?: (string) | null;
+    firstSeenAt?: (string) | null;
+    /**
+     * Present when the thread was opened through a tracked opt-in link
+     */
+    optIn?: {
+        at?: string;
+        parameters?: {
+            [key: string]: unknown;
+        };
+    } | null;
+};
+
+/**
+ * An iMessage sender registered as an account on a profile.
+ */
+export type ImessageSender = {
+    /**
+     * Account id (use it with the inbox endpoints' accountId)
+     */
+    id?: string;
+    platform?: 'imessage';
+    /**
+     * The sender handle (E.164 phone or email)
+     */
+    sender?: string;
+    /**
+     * imessage:// deep link that opens Messages on this sender with a prefilled text. Share it so contacts message you first (Apple only lets a sender reach contacts who wrote to it first).
+     */
+    optInLink?: (string) | null;
+    displayName?: string;
+    profileId?: (string) | null;
+    /**
+     * Delivery provider backing this sender (e.g. loopmessage)
+     */
+    provider?: string;
+    /**
+     * Whether the provider confirmed the sender as active at registration time
+     */
+    senderVerified?: boolean;
+    isActive?: boolean;
+};
+
+export type platform4 = 'imessage';
+
+/**
+ * A provisioned iMessage sender order and its lifecycle. Activation is asynchronous: poll GET /v1/imessage/senders/{senderId} or subscribe to account.connected.
+ */
+export type ImessageSenderLifecycle = {
+    id?: string;
+    kind?: 'phone' | 'email';
+    region?: ('US' | 'GB') | null;
+    /**
+     * The sender handle once activation assigns it
+     */
+    handle?: (string) | null;
+    /**
+     * imessage:// deep link that opens Messages on this sender with a prefilled text. Share it so contacts message you first (Apple only lets a sender reach contacts who wrote to it first); null until the handle is assigned.
+     */
+    optInLink?: (string) | null;
+    status?: 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+    /**
+     * Monthly price billed while the sender is active
+     */
+    priceCents?: number;
+    provider?: string;
+    profileId?: string;
+    displayName?: (string) | null;
+    failureReason?: (string) | null;
+    /**
+     * The messaging account created at activation
+     */
+    accountId?: (string) | null;
+    createdAt?: string;
+};
+
+export type kind = 'phone' | 'email';
+
+export type region = 'US' | 'GB';
+
+export type status11 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+
 /**
  * Attachment snapshot inside an edit-history entry.
  */
@@ -4977,7 +5069,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status11 = 'active' | 'archived';
+export type status12 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -4987,7 +5079,7 @@ export type InboxWebhookConversationDetail = {
      * The platform's conversation id, equal to `conversation.platformConversationId` on inbox webhooks (whose `conversation.id` is Zernio's internal id). Both are accepted by the conversation endpoints.
      */
     id: string;
-    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok';
+    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok' | 'imessage';
     /**
      * Same value as `id`.
      */
@@ -5015,7 +5107,7 @@ export type InboxWebhookConversationDetail = {
     contactId?: string;
 };
 
-export type platform4 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok';
+export type platform5 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -5131,7 +5223,7 @@ export type InboxWebhookMessage = {
     isRead: boolean;
 };
 
-export type platform5 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
+export type platform6 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
 
 export type direction2 = 'incoming' | 'outgoing';
 
@@ -5259,7 +5351,7 @@ export type InstagramAccountInsightsResponse = {
 /**
  * Platform that served this response.
  */
-export type platform6 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
+export type platform7 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
 
 export type metricType = 'time_series' | 'total_value';
 
@@ -6514,7 +6606,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status12 = 'published' | 'failed';
+export type status13 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -6696,7 +6788,7 @@ export type Post = {
 /**
  * `cancelled` is set by DELETE /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts.
  */
-export type status13 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status14 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
 export type visibility2 = 'public' | 'private' | 'unlisted';
 
@@ -6891,9 +6983,9 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type platform7 = 'shopify';
+export type platform8 = 'shopify';
 
-export type status14 = 'active' | 'draft' | 'archived';
+export type status15 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -7313,7 +7405,7 @@ export type ReviewWebhookReview = {
 /**
  * Platform the review originated on. Currently Google Business Profile only.
  */
-export type platform8 = 'googlebusiness';
+export type platform9 = 'googlebusiness';
 
 /**
  * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
@@ -7490,7 +7582,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform9 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
+export type platform10 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
@@ -8040,12 +8132,12 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform10 = 'metaads';
+export type platform11 = 'metaads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
-export type kind = 'pixel' | 'tag' | 'insight_tag';
+export type kind2 = 'pixel' | 'tag' | 'insight_tag';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -8140,7 +8232,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status15 = 'pending' | 'completed' | 'expired';
+export type status16 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -8615,7 +8707,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status16 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status17 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel3 = 'sms';
 
@@ -8734,7 +8826,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status17 = 'success' | 'failed';
+export type status18 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -8846,7 +8938,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status18 = 'success' | 'failure';
+export type status19 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -9473,7 +9565,7 @@ export type WebhookPayloadComment = {
 
 export type event10 = 'comment.received';
 
-export type platform11 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform12 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 /**
  * WhatsApp only. Who answers a conversation changed: Meta Business Agent took it over,
@@ -9647,7 +9739,7 @@ export type WebhookPayloadLead = {
 
 export type event14 = 'lead.received';
 
-export type platform12 = 'facebook';
+export type platform13 = 'facebook';
 
 /**
  * Webhook payload for message received events
@@ -9667,7 +9759,7 @@ export type WebhookPayloadMessage = {
          * Internal conversation ID
          */
         conversationId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'twitter' | 'bluesky' | 'reddit' | 'slack' | 'tiktok';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'twitter' | 'bluesky' | 'reddit' | 'slack' | 'tiktok' | 'imessage';
         /**
          * Platform's message ID
          */
@@ -10335,7 +10427,7 @@ export type WebhookPayloadMessageSent = {
         /**
          * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
          */
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
         /**
          * Platform's message ID
          */
@@ -10527,7 +10619,7 @@ export type event19 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform13 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok';
+export type platform14 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts); meta_business_agent when Meta Business Agent answered on the number. Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
@@ -10724,7 +10816,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status19 = 'published' | 'failed' | 'deleted';
+export type status20 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
@@ -10984,12 +11076,12 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
 
 export type event28 = 'whatsapp.account.name_status_updated';
 
-export type platform14 = 'whatsapp';
+export type platform15 = 'whatsapp';
 
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status20 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status21 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -11138,7 +11230,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status21 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status22 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -11292,7 +11384,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status22 = 'pending' | 'active';
+export type status23 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -11450,7 +11542,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status23 = 'success' | 'failed' | 'pending';
+export type status24 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -21756,7 +21848,7 @@ export type ListInboxConversationsData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'twitter' | 'bluesky' | 'reddit' | 'telegram' | 'whatsapp';
+        platform?: 'facebook' | 'instagram' | 'twitter' | 'bluesky' | 'reddit' | 'telegram' | 'whatsapp' | 'imessage';
         /**
          * Filter by profile ID
          */
@@ -21799,6 +21891,10 @@ export type ListInboxConversationsResponse = ({
          * WhatsApp only, present once Meta Business Agent has touched the thread. ai_agent: the agent answers and new inbound arrive flagged metadata.standby; app: you hold control; other: another partner app does. Change it with POST /v1/inbox/conversations/{conversationId}/thread-control.
          */
         threadControl?: 'app' | 'ai_agent' | 'other';
+        /**
+         * iMessage only, true for a group thread. Manage it through the /v1/imessage/groups/{conversationId} endpoints.
+         */
+        isGroup?: boolean;
         /**
          * Direct link to open the conversation on the platform (if available)
          */
@@ -22185,7 +22281,7 @@ export type SearchInboxConversationsData = {
         /**
          * Filter by platform (searchable platforms only)
          */
-        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms' | 'slack';
+        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms' | 'slack' | 'imessage';
         /**
          * Filter by profile ID
          */
@@ -22656,7 +22752,7 @@ export type SendInboxMessageData = {
          */
         category?: 'utility';
         /**
-         * WhatsApp only. Set false to send the message without a link-preview thumbnail for the first URL in the text. Defaults to true, which is how every WhatsApp text has been sent to date. Ignored on other platforms. Accepted on the JSON body only, not on multipart requests.
+         * WhatsApp and iMessage. Set false to send the message without a link-preview thumbnail (WhatsApp: the first URL; iMessage: every link renders as plain text). Defaults to true, which is how every WhatsApp text has been sent to date. Ignored on other platforms. Accepted on the JSON body only, not on multipart requests.
          */
         linkPreview?: boolean;
         /**
@@ -22676,6 +22772,22 @@ export type SendInboxMessageData = {
          *
          */
         voiceNote?: boolean;
+        /**
+         * iMessage only (JSON body only). Bold title line rendered above the message text. Rejected with 400 on other platforms; ignored on voice-message sends.
+         */
+        subject?: string;
+        /**
+         * iMessage only (JSON body only). Apple screen/bubble animation played when the message arrives. Rejected with 400 on other platforms.
+         */
+        effect?: 'slam' | 'loud' | 'gentle' | 'invisibleInk' | 'echo' | 'spotlight' | 'balloons' | 'confetti' | 'love' | 'lasers' | 'fireworks' | 'shootingStar' | 'celebration';
+        /**
+         * iMessage only (JSON body only). When `true`, attaches the sender's contact card (vCard) so the recipient can save the sender. Counts as message content on its own, so `message` becomes optional.
+         */
+        contactCard?: boolean;
+        /**
+         * iMessage only (JSON body only). Overrides the delivery channel for this one send; the provider otherwise picks it automatically. The sender must carry the matching add-on (SMS, RCS or WhatsApp), or the send fails. Not a default to set on every request. Rejected with 400 on other platforms.
+         */
+        channel?: 'imessage' | 'sms' | 'rcs' | 'whatsapp';
         /**
          * Quick reply buttons. Mutually exclusive with buttons. Max 13 items.
          */
@@ -23168,7 +23280,7 @@ export type SendInboxMessageData = {
          */
         replyTo?: string;
         /**
-         * WhatsApp-only. Send a location pin.
+         * WhatsApp and iMessage. Send a location pin (on iMessage it renders as a native map bubble).
          */
         location?: {
             /**
@@ -23379,7 +23491,7 @@ export type EditInboxMessageData = {
          */
         conversationId: string;
         /**
-         * The Telegram message ID to edit
+         * The platform message ID to edit (iMessage also accepts the Zernio message id)
          */
         messageId: string;
     };
@@ -26237,6 +26349,437 @@ export type DialVoiceWebCallError = ({
     error?: string;
 } | unknown);
 
+export type ListImessageSendersResponse = ({
+    senders?: Array<ImessageSender>;
+});
+
+export type ListImessageSendersError = ({
+    error?: string;
+} | unknown);
+
+export type RegisterImessageSenderData = {
+    body: {
+        /**
+         * Profile to attach the sender to
+         */
+        profileId: string;
+        /**
+         * The provider-provisioned sender handle: a phone number in international format (e.g. +18305551234) or an email address
+         */
+        sender: string;
+        displayName?: string;
+        /**
+         * Delivery provider. Defaults to the platform default.
+         */
+        provider?: 'loopmessage';
+    };
+};
+
+export type RegisterImessageSenderResponse = ({
+    success?: boolean;
+    account?: ImessageSender;
+});
+
+export type RegisterImessageSenderError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListImessageSenderOrdersData = {
+    query?: {
+        includeCanceled?: boolean;
+    };
+};
+
+export type ListImessageSenderOrdersResponse = ({
+    senders?: Array<ImessageSenderLifecycle>;
+});
+
+export type ListImessageSenderOrdersError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type OrderImessageSenderData = {
+    body: {
+        profileId: string;
+        kind: 'phone' | 'email';
+        /**
+         * Required for phone senders. Without availableNumberId the number is carrier-assigned in this region and revealed once the sender activates.
+         */
+        region?: 'US' | 'GB';
+        /**
+         * A number from GET /v1/imessage/senders/available-numbers. It is assigned and activated on order instead of waiting for provisioning. Phone senders only.
+         */
+        availableNumberId?: string;
+        /**
+         * US phone senders only. Preferred area for a carrier-assigned number (ignored with availableNumberId).
+         */
+        zipCode?: string;
+        /**
+         * Local part for email senders (required for kind: email)
+         */
+        emailName?: string;
+        /**
+         * Domain for email senders (required for kind: email)
+         */
+        emailDomain?: string;
+        displayName?: string;
+        /**
+         * Idempotency key for safe retries
+         */
+        purchaseIntentId?: string;
+        /**
+         * Contact card (vCard) attached to the sender, shown when recipients save it. Required before sending with contactCard.
+         */
+        contact?: {
+            firstName: string;
+            lastName?: string;
+            photoUrl?: string;
+        };
+    };
+};
+
+export type OrderImessageSenderResponse = ({
+    success?: boolean;
+    sender?: ImessageSenderLifecycle;
+});
+
+export type OrderImessageSenderError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetImessageSenderData = {
+    path: {
+        senderId: string;
+    };
+};
+
+export type GetImessageSenderResponse = ({
+    success?: boolean;
+    sender?: ImessageSenderLifecycle;
+    /**
+     * Provider platform health for this sender; null when the provider cannot report it.
+     */
+    health?: {
+        imessage?: 'active' | 'degradation' | 'outage';
+        whatsapp?: 'active' | 'degradation' | 'outage';
+    } | null;
+    /**
+     * Provider-hosted opt-in page for this sender (opens Messages on any Apple device); null until the sender is active or when the provider cannot report it.
+     */
+    imessageLink?: (string) | null;
+});
+
+export type GetImessageSenderError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateImessageSenderData = {
+    body: {
+        displayName?: string;
+        contact?: {
+            firstName: string;
+            lastName?: string;
+            /**
+             * Square image
+             */
+            photoUrl?: string;
+        };
+    };
+    path: {
+        senderId: string;
+    };
+};
+
+export type UpdateImessageSenderResponse = ({
+    success?: boolean;
+    sender?: ImessageSenderLifecycle;
+});
+
+export type UpdateImessageSenderError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CancelImessageSenderData = {
+    path: {
+        senderId: string;
+    };
+};
+
+export type CancelImessageSenderResponse = ({
+    success?: boolean;
+    sender?: ImessageSenderLifecycle;
+});
+
+export type CancelImessageSenderError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListImessageAudienceData = {
+    query?: {
+        /**
+         * Limit to one sender account
+         */
+        accountId?: string;
+        limit?: number;
+        /**
+         * Matches the contact handle or name
+         */
+        search?: string;
+        skip?: number;
+        status?: 'subscribed' | 'unsubscribed';
+    };
+};
+
+export type ListImessageAudienceResponse = ({
+    contacts?: Array<ImessageAudienceContact>;
+    total?: number;
+    limit?: number;
+    skip?: number;
+});
+
+export type ListImessageAudienceError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type SetImessageSubscriptionData = {
+    body: {
+        accountId: string;
+        conversationId: string;
+        subscribed: boolean;
+    };
+};
+
+export type SetImessageSubscriptionResponse = ({
+    success?: boolean;
+    conversationId?: string;
+    subscribed?: boolean;
+});
+
+export type SetImessageSubscriptionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateImessageOptInLinkData = {
+    body: {
+        /**
+         * Prefilled message text. Must contain the literal `[opt-in-code]` placeholder, e.g. "Hi! My code is [opt-in-code]".
+         */
+        body: string;
+        /**
+         * Custom key/values (e.g. leadId, campaign) echoed back on the opt-in message.
+         */
+        parameters?: {
+            [key: string]: (string);
+        };
+        /**
+         * Your own code in place of the generated one (3-8 characters, no spaces or `#`, `!`, `-`). An unredeemed link lives 24 hours; re-issuing with the same code replaces it, and the earlier URL stops matching.
+         */
+        optInCode?: string;
+    };
+    path: {
+        senderId: string;
+    };
+};
+
+export type CreateImessageOptInLinkResponse = ({
+    success?: boolean;
+    link?: {
+        id?: string;
+        /**
+         * imessage:// deep link
+         */
+        imessage?: string;
+        /**
+         * sms: deep link for non-Apple devices
+         */
+        sms?: (string) | null;
+        whatsapp?: (string) | null;
+        /**
+         * Hosted landing URL that picks the right scheme for the device
+         */
+        url?: string;
+    };
+});
+
+export type CreateImessageOptInLinkError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListImessageAvailableNumbersData = {
+    query?: {
+        region?: 'US' | 'GB';
+    };
+};
+
+export type ListImessageAvailableNumbersResponse = ({
+    numbers?: Array<{
+        /**
+         * Pass as availableNumberId when ordering
+         */
+        id?: string;
+        /**
+         * E.164
+         */
+        phone?: string;
+        region?: string;
+    }>;
+    region?: (string) | null;
+});
+
+export type ListImessageAvailableNumbersError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ReserveImessageAvailableNumberData = {
+    path: {
+        numberId: string;
+    };
+};
+
+export type ReserveImessageAvailableNumberResponse = ({
+    success?: boolean;
+    numberId?: string;
+    expiresInSeconds?: number;
+});
+
+export type ReserveImessageAvailableNumberError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateImessageGroupData = {
+    body: {
+        /**
+         * The iMessage account (sender) that opens the group
+         */
+        accountId: string;
+        /**
+         * Participant handles (E.164 phones or iMessage emails)
+         */
+        contacts: Array<(string)>;
+        /**
+         * The first message
+         */
+        text: string;
+        /**
+         * Group name (required for WhatsApp groups)
+         */
+        name?: string;
+        channel?: 'imessage' | 'sms' | 'rcs' | 'whatsapp';
+    };
+};
+
+export type CreateImessageGroupResponse = ({
+    success?: boolean;
+    /**
+     * The provider's request id (not the group id)
+     */
+    requestId?: string;
+});
+
+export type CreateImessageGroupError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetImessageGroupData = {
+    path: {
+        /**
+         * The inbox conversation id (or the provider group id)
+         */
+        conversationId: string;
+    };
+    query: {
+        accountId: string;
+    };
+};
+
+export type GetImessageGroupResponse = ({
+    success?: boolean;
+    conversationId?: string;
+    group?: {
+        /**
+         * Provider group id
+         */
+        id?: string;
+        name?: (string) | null;
+        participants?: Array<(string)>;
+        channel?: (string) | null;
+        createdAt?: (string) | null;
+    };
+});
+
+export type GetImessageGroupError = (unknown | {
+    error?: string;
+});
+
+export type UpdateImessageGroupData = {
+    body: {
+        accountId: string;
+        name?: string;
+        /**
+         * Public HTTPS image URL; empty string removes the photo
+         */
+        photoUrl?: string;
+    };
+    path: {
+        conversationId: string;
+    };
+};
+
+export type UpdateImessageGroupResponse = ({
+    success?: boolean;
+    conversationId?: string;
+});
+
+export type UpdateImessageGroupError = (unknown | {
+    error?: string;
+});
+
+export type AddImessageGroupParticipantData = {
+    body: {
+        accountId: string;
+        /**
+         * E.164 phone or iMessage email
+         */
+        contact: string;
+    };
+    path: {
+        conversationId: string;
+    };
+};
+
+export type AddImessageGroupParticipantResponse = ({
+    success?: boolean;
+    conversationId?: string;
+    contact?: string;
+});
+
+export type AddImessageGroupParticipantError = (unknown | {
+    error?: string;
+});
+
+export type RemoveImessageGroupParticipantData = {
+    path: {
+        conversationId: string;
+    };
+    query: {
+        accountId: string;
+        /**
+         * E.164 phone or iMessage email
+         */
+        contact: string;
+    };
+};
+
+export type RemoveImessageGroupParticipantResponse = ({
+    success?: boolean;
+    conversationId?: string;
+    contact?: string;
+});
+
+export type RemoveImessageGroupParticipantError = (unknown | {
+    error?: string;
+});
+
 export type SendSmsData = {
     body: {
         /**
@@ -27695,6 +28238,16 @@ export type ListPhoneNumbersResponse = ({
         callingEnabled?: boolean;
     }>;
     /**
+     * iMessage phone senders (see /v1/imessage/senders/order). Hosted
+     * by the iMessage provider, not on your Telnyx numbers: SMS and
+     * Calls can never be enabled on them, and they bill as iMessage
+     * senders. `handle` is null until the carrier assigns the number
+     * at activation. Included only on the default and `status=active`
+     * views.
+     *
+     */
+    imessage?: Array<ImessageSenderLifecycle>;
+    /**
      * The shared WhatsApp sandbox (one Zernio-owned number, all users test
      * against it). Present when the sandbox is configured; null otherwise.
      * The `accountId` lets you address the sandbox in compose endpoints.
@@ -28178,6 +28731,16 @@ export type GetWhatsAppPhoneNumbersResponse = ({
          */
         callingEnabled?: boolean;
     }>;
+    /**
+     * iMessage phone senders (see /v1/imessage/senders/order). Hosted
+     * by the iMessage provider, not on your Telnyx numbers: SMS and
+     * Calls can never be enabled on them, and they bill as iMessage
+     * senders. `handle` is null until the carrier assigns the number
+     * at activation. Included only on the default and `status=active`
+     * views.
+     *
+     */
+    imessage?: Array<ImessageSenderLifecycle>;
     /**
      * The shared WhatsApp sandbox (one Zernio-owned number, all users test
      * against it). Present when the sandbox is configured; null otherwise.
@@ -31735,7 +32298,7 @@ export type CreateBroadcastData = {
     body: {
         profileId: string;
         accountId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'sms' | 'slack';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'sms' | 'slack' | 'imessage';
         name: string;
         description?: string;
         message?: {
