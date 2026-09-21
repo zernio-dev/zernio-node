@@ -8552,8 +8552,9 @@ export type UsageStats = {
         xSpendCents?: number;
         /**
          * Monthly X spend cap set by the account owner, or null if no cap.
-         * When current X spend hits this cap, analytics and inbox sync are
-         * auto-paused for X accounts. Publishing is never blocked by this cap.
+         * When current X spend hits this cap, all billable X API activity is
+         * paused until the billing period resets or the cap is raised, including
+         * publishing, analytics and inbox sync, and likes, reposts and follows.
          *
          */
         xSpendLimitCents?: (number) | null;
