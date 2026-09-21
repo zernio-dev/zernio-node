@@ -26373,7 +26373,7 @@ export type ListImessageSendersResponse = ({
 
 export type ListImessageSendersError = ({
     error?: string;
-} | unknown);
+});
 
 export type RegisterImessageSenderData = {
     body: {
@@ -26414,7 +26414,7 @@ export type ListImessageSenderOrdersResponse = ({
 
 export type ListImessageSenderOrdersError = (ErrorResponse | {
     error?: string;
-} | unknown);
+});
 
 export type OrderImessageSenderData = {
     body: {
@@ -26557,7 +26557,7 @@ export type ListImessageAudienceResponse = ({
 
 export type ListImessageAudienceError = (ErrorResponse | {
     error?: string;
-} | unknown);
+});
 
 export type SetImessageSubscriptionData = {
     body: {
