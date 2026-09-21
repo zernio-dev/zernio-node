@@ -5311,7 +5311,10 @@ export const listImessageSenderOrders = <ThrowOnError extends boolean = false>(o
  * account.connected webhook. Billing starts at activation (monthly per
  * sender, no proration). Requires usage-based billing and a valid
  * payment method. Pass purchaseIntentId to make retries idempotent —
- * the provider-side order is never retried automatically.
+ * the provider-side order is never retried automatically. Ordered phone
+ * senders include SMS/RCS fallback with call forwarding and the ability
+ * to message contacts who have not written first (sending intervals
+ * still apply).
  *
  */
 export const orderImessageSender = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<OrderImessageSenderData, ThrowOnError>) => {

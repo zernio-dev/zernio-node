@@ -26622,6 +26622,10 @@ export type ListImessageAvailableNumbersResponse = ({
          */
         phone?: string;
         region?: string;
+        /**
+         * Area the provider reports for the number (e.g. a US state), when known
+         */
+        location?: string;
     }>;
     region?: (string) | null;
 });
