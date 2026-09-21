@@ -39193,6 +39193,32 @@ export type ListAdAccountsResponse = ({
          */
         minimumDailyBudget?: number;
         /**
+         * Meta only. Meta's `funding_source` ID for the ad account, forwarded unchanged. ABSENT when this connection's token cannot see billing on the account, which is not the same as the account having no payment method: never read the missing key as `no payment method configured`.
+         */
+        fundingSource?: string;
+        /**
+         * Meta only. Meta's `funding_source_details` object, forwarded unchanged.
+         * ABSENT under exactly the same condition as `fundingSource`: this
+         * connection's token cannot see billing on the ad account. It is never
+         * sent as null or as an empty object, so treat the missing key as
+         * 'unknown', never as 'no payment method configured'.
+         *
+         */
+        fundingSourceDetails?: {
+            /**
+             * Meta's ID for the funding instrument. Matches `fundingSource`.
+             */
+            id?: string;
+            /**
+             * Meta's own human-readable label for the funding instrument, e.g. 'Available Balance (EUR)' or a masked card. Meta composes this string; do not parse it.
+             */
+            displayString?: string;
+            /**
+             * Meta's raw numeric funding-source type, forwarded unchanged. Meta publishes no mapping from these numbers to payment-method kinds, so none is documented here and none should be inferred.
+             */
+            type?: number;
+        };
+        /**
          * Meta and X only. Whether the account can create/run ads now. Absent (treat as true) on other platforms.
          */
         selectable?: boolean;
