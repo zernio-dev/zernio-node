@@ -115,6 +115,18 @@ export type Ad = {
     budget?: {
         amount?: number;
         type?: 'daily' | 'lifetime';
+        /**
+         * LinkedIn only. The parent campaign's `dailyBudget`. LinkedIn allows a daily AND a lifetime budget on the same campaign, which `amount`/`type` cannot express (daily wins there); read `daily` and `lifetime` to see both.
+         */
+        daily?: number;
+        /**
+         * LinkedIn only. The parent campaign's `totalBudget`, readable even when a daily budget is also set.
+         */
+        lifetime?: number;
+        /**
+         * LinkedIn only. The campaign's `pacingStrategy`: how fast LinkedIn may spend the budget. Typically LINEAR or ACCELERATED; the list is open.
+         */
+        pacing?: string;
     } | null;
     metrics?: (AdMetrics | null);
     platformAdId?: string;
@@ -124,7 +136,17 @@ export type Ad = {
     campaignName?: string;
     adSetName?: string;
     /**
-     * Raw Meta campaign objective (e.g. OUTCOME_SALES, OUTCOME_LEADS, OUTCOME_TRAFFIC). Only present for Meta ads.
+     * The platform's own campaign objective, verbatim, alongside the normalized `goal` it maps to.
+     * The mapping is many-to-one, so `goal` alone cannot be mapped back to it.
+     *
+     * - Meta: campaign `objective` (e.g. OUTCOME_SALES, OUTCOME_LEADS, OUTCOME_TRAFFIC).
+     * - LinkedIn: campaign `objectiveType` (e.g. WEBSITE_VISIT, LEAD_GENERATION, BRAND_AWARENESS,
+     * VIDEO_VIEW, ENGAGEMENT, JOB_APPLICANT, WEBSITE_CONVERSION). The list is open, so treat an
+     * unrecognized value as valid rather than an error.
+     * - TikTok and Pinterest: their raw objective_type.
+     *
+     * Null on platforms that report none, and on LinkedIn ads not yet re-synced.
+     *
      */
     platformObjective?: (string) | null;
     /**
@@ -332,6 +354,10 @@ export type Ad = {
          */
         isServing?: (boolean) | null;
         /**
+         * LinkedIn only. The LinkedIn ad format, in LinkedIn's own vocabulary: STANDARD_UPDATE, SINGLE_VIDEO, CAROUSEL, NATIVE_DOCUMENT, EVENT, TEXT_AD, SPOTLIGHT, FOLLOW_COMPANY, JOBS, SPONSORED_INMAILS and others. On an ad Zernio created this is the format it was created as; on an ad synced from Campaign Manager it is the parent campaign's raw `format`, which is what LinkedIn actually enforces on its creatives. The list is open, so treat an unrecognized value as valid. Absent on LinkedIn ads not yet re-synced, and on every other platform.
+         */
+        adFormat?: (string) | null;
+        /**
          * LinkedIn only. Why this specific creative is not being served. Empty when it is serving.
          * A superset of the ad-level `servingStatuses`: it repeats the inherited campaign, campaign
          * group and account holds AND adds creative-only causes such as UNDER_REVIEW, REJECTED,
@@ -423,6 +449,24 @@ export type AdAnalyticsResponse = {
         daily?: Array<(AdMetrics & {
     date?: string;
 })>;
+        /**
+         * Requested demographic breakdowns, keyed by dimension. Fetched live from the
+         * platform per request and never stored, so these rows can carry fields the
+         * stored `summary` and `daily` series do not.
+         *
+         * LinkedIn rows carry `value` (the pivot URN), `name` (resolved label where
+         * LinkedIn provides one), the usual spend/impressions/clicks/ctr/cpc/cpm/engagement
+         * figures, plus two reach fields:
+         *
+         * - `reach`: the segment's `approximateMemberReach`.
+         * - `audiencePenetration`: LinkedIn's own ratio of members reached to the size of
+         * the targeted audience, passed through verbatim.
+         *
+         * LinkedIn withholds both below its audience privacy threshold, in which case the
+         * keys are ABSENT rather than 0. `audiencePenetration` is available here only: it
+         * is not part of the stored metrics series.
+         *
+         */
         breakdowns?: {
             [key: string]: Array<{
                 [key: string]: unknown;
@@ -616,7 +660,7 @@ export type AdEngagementCounts = {
      */
     pageLikes?: number;
     /**
-     * 3-second video views (`video_view`). For completion-based counts use `videoThruplayWatchedActions`.
+     * Video views, from the `video_view` action. Meta counts a 3-second view; LinkedIn's own `videoViews` threshold (2 continuous seconds, or 25% of the video) lands under the same key, so compare across platforms with care. For completion-based counts use `videoThruplayWatchedActions`.
      */
     videoViews?: number;
     /**
@@ -802,7 +846,7 @@ export type AdMetrics = {
     spend?: number;
     impressions?: number;
     /**
-     * Unique people reached in the requested date range. Meta (facebook/instagram) and TikTok: the platform's own de-duplicated reach for the exact range, fetched live and cached up to ~1 hour (may lag recent delivery; on a transient platform error the value temporarily falls back to a sum of per-day reach, which overcounts people reached on multiple days or by multiple child ads). Because it is de-duplicated, reach is NOT additive on these platforms: neither daily values nor child nodes sum to the range total. Google, LinkedIn, X, Pinterest and OpenAI report 0 (reach not synced). Frequency (impressions / reach) is only meaningful for Meta and TikTok.
+     * Unique people reached in the requested date range. Meta (facebook/instagram) and TikTok: the platform's own de-duplicated reach for the exact range, fetched live and cached up to ~1 hour (may lag recent delivery; on a transient platform error the value temporarily falls back to a sum of per-day reach, which overcounts people reached on multiple days or by multiple child ads). Because it is de-duplicated, reach is NOT additive on these platforms: neither daily values nor child nodes sum to the range total. LinkedIn: the campaign's `approximateMemberReach`, de-duplicated by LinkedIn per day and then summed over the range here, so it overcounts members reached on more than one day; LinkedIn withholds it below its audience privacy threshold, where it reads 0. Google, X, Pinterest and OpenAI report 0 (reach not synced). Frequency (impressions / reach) is only meaningful for Meta and TikTok.
      */
     reach?: number;
     clicks?: number;
@@ -832,7 +876,7 @@ export type AdMetrics = {
      */
     costPerConversion?: number;
     /**
-     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...), covering both engagement and conversion events. TikTok: pixel conversions (purchase, add_to_cart, initiate_checkout, view_content, complete_payment, lead) plus the paid-engagement family (follow, post_reaction for paid likes, comment, share). Follow is how FOLLOWERS-goal campaigns report their result. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen). Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
+     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...), covering both engagement and conversion events. TikTok: pixel conversions (purchase, add_to_cart, initiate_checkout, view_content, complete_payment, lead) plus the paid-engagement family (follow, post_reaction for paid likes, comment, share). Follow is how FOLLOWERS-goal campaigns report their result. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen) plus `video_view`, which carries LinkedIn's `videoViews` under the same key every other platform uses, so it feeds `engagementBreakdown.videoViews` too; it is an engagement, NOT a conversion, and is excluded from `conversions`. Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
      */
     actions?: {
         [key: string]: (number);
@@ -1229,6 +1273,18 @@ export type AdTreeAdSet = {
     budget?: {
         amount?: number;
         type?: 'daily' | 'lifetime';
+        /**
+         * LinkedIn only. The campaign's `dailyBudget`. LinkedIn allows a daily AND a lifetime budget on the same campaign, which `amount`/`type` cannot express (daily wins there); read `daily` and `lifetime` to see both.
+         */
+        daily?: number;
+        /**
+         * LinkedIn only. The campaign's `totalBudget`, readable even when a daily budget is also set.
+         */
+        lifetime?: number;
+        /**
+         * LinkedIn only. The campaign's `pacingStrategy`: how fast LinkedIn may spend the budget. Typically LINEAR or ACCELERATED; the list is open.
+         */
+        pacing?: string;
     } | null;
     /**
      * Ad-set-level budget (ABO). Null for CBO campaigns where the budget is set on the campaign.
@@ -1236,6 +1292,18 @@ export type AdTreeAdSet = {
     adSetBudget?: {
         amount?: number;
         type?: 'daily' | 'lifetime';
+        /**
+         * LinkedIn only. See `budget.daily`.
+         */
+        daily?: number;
+        /**
+         * LinkedIn only. See `budget.lifetime`.
+         */
+        lifetime?: number;
+        /**
+         * LinkedIn only. See `budget.pacing`.
+         */
+        pacing?: string;
     } | null;
     metrics?: AdMetrics;
     /**
@@ -2590,6 +2658,24 @@ export type CampaignAnalyticsResponse = {
         daily?: Array<(AdMetrics & {
     date?: string;
 })>;
+        /**
+         * Requested demographic breakdowns, keyed by dimension. Fetched live from the
+         * platform per request and never stored, so these rows can carry fields the
+         * stored `summary` and `daily` series do not.
+         *
+         * LinkedIn rows carry `value` (the pivot URN), `name` (resolved label where
+         * LinkedIn provides one), the usual spend/impressions/clicks/ctr/cpc/cpm/engagement
+         * figures, plus two reach fields:
+         *
+         * - `reach`: the segment's `approximateMemberReach`.
+         * - `audiencePenetration`: LinkedIn's own ratio of members reached to the size of
+         * the targeted audience, passed through verbatim.
+         *
+         * LinkedIn withholds both below its audience privacy threshold, in which case the
+         * keys are ABSENT rather than 0. `audiencePenetration` is available here only: it
+         * is not part of the stored metrics series.
+         *
+         */
         breakdowns?: {
             [key: string]: Array<{
                 [key: string]: unknown;
@@ -34735,7 +34821,61 @@ export type ListAdSetsResponse = ({
         profileId?: string;
         currency?: (string) | null;
         budget?: {
-            [key: string]: unknown;
+            amount?: number;
+            type?: 'daily' | 'lifetime';
+            /**
+             * LinkedIn only. The campaign's `dailyBudget`. LinkedIn allows a daily AND a lifetime budget on the same campaign, which `amount`/`type` cannot express (daily wins there); read `daily` and `lifetime` to see both.
+             */
+            daily?: number;
+            /**
+             * LinkedIn only. The campaign's `totalBudget`, readable even when a daily budget is also set.
+             */
+            lifetime?: number;
+            /**
+             * LinkedIn only. The campaign's `pacingStrategy`: how fast LinkedIn may spend the budget. Typically LINEAR or ACCELERATED; the list is open.
+             */
+            pacing?: string;
+        } | null;
+        /**
+         * The ad set's own flight dates, as synced from the platform. On LinkedIn this is the campaign's `runSchedule`. Null when the platform reports none.
+         */
+        schedule?: {
+            startDate?: string;
+            /**
+             * Absent when the ad set runs until it is stopped.
+             */
+            endDate?: string;
+        } | null;
+        /**
+         * The audience this ad set delivers to, as the platform reports it. LinkedIn only
+         * today; null for every other platform and for LinkedIn ad sets not yet re-synced.
+         *
+         * `include` and `exclude` are the campaign's `targetingCriteria` verbatim, so they
+         * can be read, edited and sent back without reconstructing them from our normalized
+         * targeting spec. Exclusions were previously not readable at all.
+         *
+         */
+        targeting?: {
+            /**
+             * LinkedIn `targetingCriteria.include`, verbatim (an `and` of `or` facet clauses).
+             */
+            include?: {
+                [key: string]: unknown;
+            };
+            /**
+             * LinkedIn `targetingCriteria.exclude`, verbatim. Absent when the campaign excludes nothing.
+             */
+            exclude?: {
+                [key: string]: unknown;
+            };
+            /**
+             * LinkedIn audience expansion: whether LinkedIn may also serve to members similar to the criteria.
+             */
+            audienceExpansionEnabled?: boolean;
+            /**
+             * Whether the campaign may deliver on the LinkedIn Audience Network, off LinkedIn itself.
+             */
+            offsiteDeliveryEnabled?: boolean;
         } | null;
         isExternal?: (boolean) | null;
         platformCreatedAt?: (string) | null;
@@ -40898,6 +41038,10 @@ export type EstimateAdReachResponse = ({
      * Optional estimated daily reach/results at the given budget, when the platform returns it.
      */
     daily?: (number) | null;
+    /**
+     * LinkedIn only. LinkedIn's `audienceCounts.active`, verbatim: the active subset of the same audience `lower`/`upper` carry as its `total`. Absent when LinkedIn does not report it; `0` is a real answer, not a missing one.
+     */
+    active?: (number) | null;
     /**
      * Currency of any monetary fields in the estimate, when applicable.
      */
