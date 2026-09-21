@@ -222,19 +222,23 @@ export const getLinkedInOrgAggregateAnalytics = <ThrowOnError extends boolean = 
  * defaults to last 30 days. Requires the Analytics add-on and the user.info.stats
  * scope on the account (412 if missing).
  *
- * Scope intentionally narrow. TikTok's public API exposes only the four counter
- * metrics below. The deep metrics that live in TikTok Studio are NOT available on any
- * public TikTok API, even for Business accounts:
- * - profile_views
+ * Scope intentionally narrow: this ACCOUNT-level endpoint exposes only the four
+ * counter metrics below. These account-level figures are not on any public TikTok
+ * API, for any account type:
  * - account-level impressions / reach
  * - follower inflow / outflow breakdown
- * - video watch time, average watch time, full-watched rate
- * - impression_sources (FYP / Following / Hashtag / Search / Personal profile)
+ * - account-level watch time and audience demographics
  *
- * TikTok's Research API doesn't expose those fields either, and is restricted to
- * non-commercial academic use per TikTok's eligibility policy. There is no public
- * API workaround. Post-level metrics (views, likes, comments, shares per video) are
- * available via /v1/analytics?postId=... from TikTok's /v2/video/query/.
+ * TikTok's Research API doesn't expose them either, and is restricted to
+ * non-commercial academic use per TikTok's eligibility policy.
+ *
+ * PER-VIDEO is a different story on the Business lane. An account connected through
+ * the TikTok for Business app reports profile views, website clicks, follows,
+ * full-watched rate, watch time, impression sources, viewer types and viewer
+ * countries per video on GET /v1/analytics?postId=..., roughly 24-48h after
+ * publishing and only for posts active in the last 7 days. Accounts on the original
+ * TikTok integration get the basic counters there (views, likes, comments, shares)
+ * and zeros for the rest; they must reconnect through the Business app.
  *
  */
 export const getTikTokAccountInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTikTokAccountInsightsData, ThrowOnError>) => {

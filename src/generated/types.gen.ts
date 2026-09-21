@@ -1564,6 +1564,12 @@ export type AnalyticsDeltaEntry = {
         audienceTypes: {
             [key: string]: (number);
         };
+        /**
+         * TikTok business lane: viewer-country shares keyed by ISO-3166 alpha-2, fractions 0 to 1, top 20 with the tail in `other`. Empty object elsewhere.
+         */
+        audienceCountries: {
+            [key: string]: (number);
+        };
     };
 };
 
@@ -6842,6 +6848,12 @@ export type PostAnalytics = {
      * TikTok accounts connected through the TikTok for Business app only: two viewer splits as fractions 0 to 1 (T+24-48h). Each pair sums to 1 when present, `follower` + `nonFollower` and `newViewer` + `returnViewer`; TikTok can report one pair without the other. Empty object when TikTok reports nothing, and for other platforms. Views-weighted across accounts like impressionSources.
      */
     audienceTypes?: {
+        [key: string]: (number);
+    };
+    /**
+     * TikTok accounts connected through the TikTok for Business app only: share of views by viewer country as fractions 0 to 1, keyed by upper-case ISO-3166 alpha-2 code (T+24-48h, only for posts active in the last 7 days). At most 20 country keys plus `other`: the catch-all bucket TikTok sends, any country below 0.001 and anything past the twentieth all sum into `other`, so the values still add up to 1. Empty object when TikTok reports nothing, and for other platforms. Views-weighted across accounts like impressionSources.
+     */
+    audienceCountries?: {
         [key: string]: (number);
     };
     /**
@@ -13167,6 +13179,12 @@ export type GetPostTimelineResponse = ({
          * TikTok business lane: follower / nonFollower and newViewer / returnViewer shares on this date, fractions 0 to 1; empty object elsewhere
          */
         audienceTypes?: {
+            [key: string]: (number);
+        };
+        /**
+         * TikTok business lane: viewer-country shares on this date keyed by ISO-3166 alpha-2, fractions 0 to 1, top 20 with the tail in `other`; empty object elsewhere
+         */
+        audienceCountries?: {
             [key: string]: (number);
         };
     }>;
