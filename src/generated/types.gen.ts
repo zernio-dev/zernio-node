@@ -40329,6 +40329,16 @@ export type CreateStandaloneAdData = {
          */
         startDate?: string;
         /**
+         * Meta only. The Facebook Page the ad runs as (`object_story_spec.page_id`). Defaults to
+         * the Page bound to the connection. Pass another Page ID to run the ad as that Page: any
+         * Page granted to the connection is accepted (for a business-login connection, every Page
+         * granted in Meta's dialog; list them with GET /v1/ads/instagram-accounts). The Instagram
+         * identity is re-resolved for that Page unless `instagramAccountId` is set. A Page the
+         * connection cannot see is a 400 on `pageId` naming the granted Pages.
+         *
+         */
+        pageId?: string;
+        /**
          * Meta only. Override the Instagram account the ad is delivered as. Pass an Instagram
          * Business Account ID (e.g. 17841...), mapped to the creative's `instagram_user_id`.
          * When omitted we use the Instagram actor Meta already runs the Page's other ads as,
