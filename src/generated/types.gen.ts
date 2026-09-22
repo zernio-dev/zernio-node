@@ -15647,7 +15647,7 @@ export type GetConnectUrlData = {
         /**
          * Hosted signup page only (`signup=hosted`, WhatsApp): language of the page and its follow-along guide. Explainer videos stay in English. Default `en`. Rejected without `signup=hosted`.
          */
-        language?: 'en' | 'es';
+        language?: 'en' | 'es' | 'pt-BR';
         /**
          * Instagram only. Which of the two Instagram connection methods to use. Ignored for every other platform.
          *
@@ -18921,7 +18921,7 @@ export type GetWhatsAppSdkConfigResponse = ({
          * Hex colour, #RRGGBB
          */
         primaryColor?: (string) | null;
-        language?: ('en' | 'es') | null;
+        language?: ('en' | 'es' | 'pt-BR') | null;
     } | null;
 });
 
@@ -29296,6 +29296,10 @@ export type CreatePhoneNumberKycLinkData = {
          */
         areaCode?: string;
         /**
+         * Language of the hosted page: its copy, the carrier requirement texts (translated once per country and cached), the pre-submit review notes and the status emails to the end customer. Omitted: the browser language of the end customer, falling back to English. The end customer can also switch with `?lang=` on the page.
+         */
+        language?: 'en' | 'es' | 'pt-BR';
+        /**
          * Optional white-label of the hosted page the end customer sees.
          */
         branding?: {
@@ -30109,6 +30113,10 @@ export type CreateWhatsAppNumberKycLinkData = {
          * Area code (NDC) the eventual number must be in. Hard constraint carried by the link; the end customer filling the form makes no area choice. Options come from GET /v1/phone-numbers/availability (areaOptions).
          */
         areaCode?: string;
+        /**
+         * Language of the hosted page: its copy, the carrier requirement texts (translated once per country and cached), the pre-submit review notes and the status emails to the end customer. Omitted: the browser language of the end customer, falling back to English. The end customer can also switch with `?lang=` on the page.
+         */
+        language?: 'en' | 'es' | 'pt-BR';
         /**
          * Optional white-label of the hosted page the end customer sees.
          */
