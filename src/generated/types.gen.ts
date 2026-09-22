@@ -25164,6 +25164,10 @@ export type ListInboxReviewsResponse = ({
             profileImage?: (string) | null;
         };
         rating?: number;
+        /**
+         * Facebook recommendation: positive means recommends, negative means does not recommend. Null or absent when unavailable; absent for other platforms. Independent of the numeric rating.
+         */
+        recommendationType?: ('positive' | 'negative') | null;
         text?: string;
         created?: string;
         hasReply?: boolean;
