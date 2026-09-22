@@ -43874,9 +43874,13 @@ export type SendWhatsAppConversionError = (unknown | {
 export type CreateMessagingAdData = {
     body: (CtwaAdRequestBody & {
     /**
-     * Where the conversation opens when the ad is tapped.
+     * Where the conversation opens when the ad is tapped. Set this OR `destinations`, not both.
      */
-    destination: 'whatsapp' | 'messenger' | 'instagram_direct';
+    destination?: 'whatsapp' | 'messenger' | 'instagram_direct';
+    /**
+     * Two or three messaging apps on ONE ad set, like Ads Manager's "all messaging apps": the ad set gets Meta's combined destination_type (e.g. MESSAGING_INSTAGRAM_DIRECT_MESSENGER_WHATSAPP) and the creative one CTA per app, so Meta opens the app each viewer is likeliest to answer from. WhatsApp in the list still needs the Page paired with a WhatsApp Business number. With `adSetId`, the existing ad set must already use that combined destination_type. Set this OR `destination`, not both.
+     */
+    destinations?: Array<('whatsapp' | 'messenger' | 'instagram_direct')>;
 });
 };
 

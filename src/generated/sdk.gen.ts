@@ -11743,6 +11743,7 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
  * Create messaging ad
  * Creates a click-to-message ad; `destination` selects where the tapped ad opens a
  * conversation: WhatsApp, the Page's Messenger inbox or the linked Instagram account's Direct inbox.
+ * `destinations` puts two or three of them on one ad set and lets Meta pick the app per viewer.
  * The ad set is created with the matching destination_type and
  * CONVERSATIONS optimization; the campaign objective defaults to OUTCOME_ENGAGEMENT.
  * Supports single-creative and multi-creative shapes. Supersedes POST /v1/ads/ctwa
