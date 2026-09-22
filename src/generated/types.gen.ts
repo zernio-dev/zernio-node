@@ -39549,10 +39549,27 @@ export type BoostPostData = {
          * ISO 4217 currency code matching the ad account's currency. Meta only. Optional: Zernio resolves it from the ad account when omitted. The value selects the minor-unit exponent Zernio converts budget/bid amounts by before calling Meta (most currencies are cents; zero-decimal currencies like JPY/KRW are sent as-is).
          */
         currency?: string;
+        /**
+         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's `start_time`. When omitted the ad starts delivering immediately. Same field as on POST /v1/ads/create.
+         */
+        startDate?: string;
+        /**
+         * Ad-set end time (ISO 8601), mapped to the ad set's `end_time`. Required for lifetime budgets. Same field as on POST /v1/ads/create.
+         */
+        endDate?: string;
+        /**
+         * Alias of the top-level `startDate` / `endDate`, kept for existing callers. Sending both forms with differing values is a 400.
+         * @deprecated
+         */
         schedule?: {
+            /**
+             * Alias of startDate, kept for existing callers
+             * @deprecated
+             */
             startDate?: string;
             /**
-             * Required for lifetime budgets
+             * Alias of endDate, kept for existing callers
+             * @deprecated
              */
             endDate?: string;
         };
@@ -40476,8 +40493,7 @@ export type CreateStandaloneAdData = {
         /**
          * Meta only. Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the
          * ad set's `start_time`. When omitted the ad starts delivering immediately. For lifetime
-         * budgets Meta also requires `endDate`. (Same `schedule.startDate` semantics already
-         * available on `POST /v1/ads/boost`.)
+         * budgets Meta also requires `endDate`. Same field as on `POST /v1/ads/boost`.
          *
          */
         startDate?: string;
