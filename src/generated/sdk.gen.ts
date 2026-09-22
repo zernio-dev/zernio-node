@@ -11746,6 +11746,8 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
  * `objectStoryId`, either per creative or at the top level. Omit fresh
  * media and copy for that creative. Optional `whatsappPhoneNumber` selects
  * a number already paired with the Page (WhatsApp destination only).
+ * `accountId` is a Facebook, Instagram or Meta ads (business login) connection;
+ * `pageId` picks the Page when that connection was granted several.
  */
 export const createMessagingAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateMessagingAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateMessagingAdResponse, CreateMessagingAdError, ThrowOnError>({

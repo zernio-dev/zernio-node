@@ -3218,6 +3218,10 @@ export type CtwaAdRequestBody = {
      */
     objectStoryId?: string;
     /**
+     * Facebook Page the ad runs as, when the connection was granted several Pages. Defaults to the Page bound to the connection. Any Page granted to the connection is accepted; other ids answer 400 listing the granted Pages. Same semantics as `pageId` on POST /v1/ads/create.
+     */
+    pageId?: string;
+    /**
      * WhatsApp only. Optional E.164 number already paired with the Facebook Page. Omit to let Meta select the paired number. Sent to the creative CTA and, when creating a new ad set, its promoted_object. Attach requests do not change the existing ad set. Stored as creative.whatsappPhoneNumber on every created ad.
      */
     whatsappPhoneNumber?: string;
