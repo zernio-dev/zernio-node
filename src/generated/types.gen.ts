@@ -3174,7 +3174,7 @@ export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 's
  * EXACTLY ONE of the two shapes:
  *
  * - Single-creative: `headline`, `body`, and one of `imageUrl` / `video`,
- * OR `existingPostId` / `objectStoryId` to reuse an organic post.
+ * OR `platformPostId` / `objectStoryId` to reuse an organic post.
  * - Multi-creative: a non-empty `creatives[]` array. Top-level
  * creative fields must NOT be set on this shape.
  *
@@ -3218,11 +3218,16 @@ export type CtwaAdRequestBody = {
      */
     adSetName?: string;
     /**
-     * Messaging and CTWA only. Platform post or reel ID, resolved like boost platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id using the connected Instagram identity. Mutually exclusive with objectStoryId and fresh creative fields.
+     * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id using the connected Instagram identity. Mutually exclusive with objectStoryId and fresh creative fields.
+     */
+    platformPostId?: string;
+    /**
+     * Alias of platformPostId, kept for existing callers. Sending both with different values is a 400.
+     * @deprecated
      */
     existingPostId?: string;
     /**
-     * Messaging and CTWA only. Raw Facebook pageId_postId reference, used as object_story_id even with an Instagram account. Mutually exclusive with existingPostId and fresh creative fields.
+     * Messaging and CTWA only. Raw Facebook pageId_postId reference, used as object_story_id even with an Instagram account. Mutually exclusive with platformPostId and fresh creative fields.
      */
     objectStoryId?: string;
     /**
@@ -3319,17 +3324,22 @@ export type CtwaAdRequestBody = {
      * `body` / `imageUrl` / `video`): setting both is a 400,
      * unlike `POST /v1/ads/create` where the top-level fields
      * are silently ignored in multi-creative mode. Each entry
-     * supplies headline, body, and image/video, or an existingPostId or
+     * supplies headline, body, and image/video, or a platformPostId or
      * objectStoryId reference. Fresh and existing creatives can be mixed.
      *
      */
     creatives?: Array<{
         /**
-         * Messaging and CTWA only. Platform post or reel ID, resolved like boost platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id using the connected Instagram identity. Mutually exclusive with objectStoryId and fresh creative fields.
+         * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id using the connected Instagram identity. Mutually exclusive with objectStoryId and fresh creative fields.
+         */
+        platformPostId?: string;
+        /**
+         * Alias of platformPostId, kept for existing callers. Sending both with different values is a 400.
+         * @deprecated
          */
         existingPostId?: string;
         /**
-         * Messaging and CTWA only. Raw Facebook pageId_postId reference, used as object_story_id even with an Instagram account. Mutually exclusive with existingPostId and fresh creative fields.
+         * Messaging and CTWA only. Raw Facebook pageId_postId reference, used as object_story_id even with an Instagram account. Mutually exclusive with platformPostId and fresh creative fields.
          */
         objectStoryId?: string;
         /**
