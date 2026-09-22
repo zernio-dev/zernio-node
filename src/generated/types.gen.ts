@@ -21767,17 +21767,27 @@ export type TestWebhookError = (unknown | {
 export type ListLogsData = {
     query?: {
         /**
-         * Filter by connected account ID
+         * Alias of accountId, kept for existing callers
+         * @deprecated
          */
         account_id?: string;
+        /**
+         * Filter by connected account ID
+         */
+        accountId?: string;
         /**
          * Filter by action (e.g., post.published, message.sent, account.connected, webhook.delivered)
          */
         action?: string;
         /**
-         * Filter by the API key that made the request (api_request logs)
+         * Alias of apiKeyId, kept for existing callers
+         * @deprecated
          */
         api_key_id?: string;
+        /**
+         * Filter by the API key that made the request (api_request logs)
+         */
+        apiKeyId?: string;
         /**
          * Number of days to look back (max 90)
          */
@@ -21791,9 +21801,14 @@ export type ListLogsData = {
          */
         from?: string;
         /**
-         * Include message.read / message.delivered events (hidden by default for messaging logs)
+         * Alias of includeReadReceipts, kept for existing callers
+         * @deprecated
          */
         include_read_receipts?: boolean;
+        /**
+         * Include message.read / message.delivered events (hidden by default for messaging logs)
+         */
+        includeReadReceipts?: boolean;
         /**
          * Maximum number of logs to return (max 100)
          */
@@ -21803,9 +21818,14 @@ export type ListLogsData = {
          */
         platform?: 'tiktok' | 'instagram' | 'whatsapp' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'all';
         /**
-         * Correlation ID. Returns every log spawned by a single API request
+         * Alias of requestId, kept for existing callers
+         * @deprecated
          */
         request_id?: string;
+        /**
+         * Correlation ID. Returns every log spawned by a single API request
+         */
+        requestId?: string;
         /**
          * Free-text search across log fields
          */
@@ -21819,9 +21839,14 @@ export type ListLogsData = {
          */
         status?: 'success' | 'failed' | 'pending' | 'skipped' | 'all';
         /**
-         * Filter by exact HTTP status code (api_request logs)
+         * Alias of statusCode, kept for existing callers
+         * @deprecated
          */
         status_code?: number;
+        /**
+         * Filter by exact HTTP status code (api_request logs)
+         */
+        statusCode?: number;
         /**
          * Precise end instant (ISO 8601)
          */
@@ -21904,7 +21929,7 @@ export type ListLogsResponse = ({
     };
 });
 
-export type ListLogsError = ({
+export type ListLogsError = (unknown | {
     error?: string;
 });
 
