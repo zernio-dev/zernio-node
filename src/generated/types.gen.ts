@@ -28563,6 +28563,10 @@ export type ListPhoneNumberCountriesError = ({
 export type SearchAvailablePhoneNumbersData = {
     query?: {
         /**
+         * Area code or national dialing code the number must start with, e.g. 415 or 91
+         */
+        areaCode?: string;
+        /**
          * Pattern to match within the number
          */
         contains?: string;
@@ -28573,7 +28577,12 @@ export type SearchAvailablePhoneNumbersData = {
          */
         locality?: string;
         /**
-         * Area code
+         * Number type; defaults to the country's WhatsApp-safe type (the same name as on purchase, availability and kyc)
+         */
+        numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+        /**
+         * Alias of areaCode, kept for existing callers
+         * @deprecated
          */
         prefix?: string;
         /**
@@ -28581,7 +28590,8 @@ export type SearchAvailablePhoneNumbersData = {
          */
         sms?: boolean;
         /**
-         * Number type; defaults to the country's WhatsApp-safe type
+         * Alias of numberType, kept for existing callers
+         * @deprecated
          */
         type?: string;
     };
@@ -28904,6 +28914,10 @@ export type ListWhatsAppNumberCountriesError = ({
 export type SearchAvailableWhatsAppNumbersData = {
     query?: {
         /**
+         * Area code or national dialing code the number must start with, e.g. 415 or 91
+         */
+        areaCode?: string;
+        /**
          * Pattern to match within the number
          */
         contains?: string;
@@ -28914,11 +28928,17 @@ export type SearchAvailableWhatsAppNumbersData = {
          */
         locality?: string;
         /**
-         * Area code
+         * Number type; defaults to the country's WhatsApp-safe type (the same name as on purchase, availability and kyc)
+         */
+        numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
+        /**
+         * Alias of areaCode, kept for existing callers
+         * @deprecated
          */
         prefix?: string;
         /**
-         * Number type; defaults to the country's WhatsApp-safe type
+         * Alias of numberType, kept for existing callers
+         * @deprecated
          */
         type?: string;
     };
