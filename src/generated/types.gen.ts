@@ -18536,7 +18536,12 @@ export type ConnectBlueskyCredentialsData = {
          */
         state: string;
         /**
-         * Optional URL to redirect to after successful connection
+         * Optional URL to redirect to after successful connection. Used when the state carries no redirect (a state minted by GET /v1/connect/bluesky with redirect_url already carries one, and that one wins).
+         */
+        redirect_url?: string;
+        /**
+         * Alias of redirect_url, kept for existing callers
+         * @deprecated
          */
         redirectUri?: string;
     };
@@ -18566,7 +18571,12 @@ export type ConnectOpenAiAdsCredentialsData = {
          */
         state?: string;
         /**
-         * Optional URL to redirect to after successful connection
+         * Optional URL to redirect to after successful connection, echoed back as redirectUrl.
+         */
+        redirect_url?: string;
+        /**
+         * Alias of redirect_url, kept for existing callers
+         * @deprecated
          */
         redirectUri?: string;
     };
@@ -18841,6 +18851,11 @@ export type ConnectWhatsAppEmbeddedSignupData = {
         /**
          * Hosted signup page only. When present, the response also carries `redirectUrl`, the URL the user should land on, with the outcome mapped exactly like the redirect flow (success params, or `error` and `platform` with the same values). Must be an absolute http(s) URL or a custom app scheme.
          */
+        redirect_url?: string;
+        /**
+         * Alias of redirect_url, kept for existing callers
+         * @deprecated
+         */
         redirectUrl?: string;
         /**
          * Hosted signup page only. Append the connect token to the success redirect, as the redirect flow does for API-key callers.
@@ -18866,7 +18881,7 @@ export type ConnectWhatsAppEmbeddedSignupResponse = ({
         selectedPhoneNumber?: string;
     };
     /**
-     * Present only when `redirectUrl` was sent; also present on error responses.
+     * Present only when `redirect_url` was sent; also present on error responses.
      */
     redirectUrl?: string;
 });
