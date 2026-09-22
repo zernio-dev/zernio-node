@@ -9520,7 +9520,7 @@ export const generateKeywordHistoricalMetrics = <ThrowOnError extends boolean = 
  * **Google Ads (googleads)**: raw GAQL passthrough. Send any read-only GAQL SELECT via `query`
  * (campaign/keyword/search-term/geo/demographic/asset/shopping resources, `change_event`, any
  * `segments.*`) and rows come back verbatim (camelCase, counters as strings). Results are paged
- * at a fixed 10,000 rows; follow `paging.nextPageToken` with `pageToken`. `customerId` is only
+ * at a fixed 10,000 rows; follow `paging.nextPageToken` with `pageToken`. `adAccountId` (alias `customerId`) is only
  * needed when the connection has several Google Ads accounts. Semantic validation is Google's:
  * an invalid query returns a 400 carrying Google's message (note: selecting `segments.date`
  * requires a finite date filter).
@@ -11453,9 +11453,9 @@ export const adjustConversions = <ThrowOnError extends boolean = false>(options:
  * included when Google has them for that action's type, e.g. `WEBPAGE`.
  * Google-only; other platforms return `501`. Requires the Ads add-on.
  *
- * `customerId` is optional: when omitted, it is resolved from the connection's
+ * `adAccountId` (alias `customerId`) is optional: when omitted, it is resolved from the connection's
  * accessible Google Ads customers, and the call fails with `400` when more than
- * one is accessible (pass `customerId` to disambiguate).
+ * one is accessible (pass `adAccountId` to disambiguate).
  *
  * The list itself is cached for the quota window (1 hour fresh, up to 7 days
  * last-good; the cache key does not vary on `type`). The response carries

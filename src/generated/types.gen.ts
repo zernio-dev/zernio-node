@@ -34353,6 +34353,10 @@ export type GetAdsSearchTermsData = {
          */
         accountId: string;
         /**
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+        /**
          * Alias of adSetId, kept for existing callers.
          * @deprecated
          */
@@ -34366,7 +34370,8 @@ export type GetAdsSearchTermsData = {
          */
         campaignId?: string;
         /**
-         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -34436,7 +34441,12 @@ export type ListBidStrategiesData = {
          */
         accountId: string;
         /**
-         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -34478,7 +34488,12 @@ export type CreateBidStrategyData = {
          */
         accountId: string;
         /**
-         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         name: string;
@@ -34516,7 +34531,12 @@ export type UpdateBidStrategyData = {
          */
         accountId: string;
         /**
-         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         name?: string;
@@ -34549,11 +34569,16 @@ export type ListLocalServicesLeadsData = {
          */
         accountId: string;
         /**
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+        /**
          * true = only leads Google charged for.
          */
         chargedOnly?: boolean;
         /**
-         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -34632,7 +34657,12 @@ export type ListLocalServicesLeadConversationsData = {
          */
         accountId: string;
         /**
-         * Numeric Google Ads customer id (no dashes). Defaults to the account's connected customer.
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -35134,7 +35164,12 @@ export type GetCampaignBiddingData = {
          */
         accountId: string;
         /**
-         * Numeric Google Ads customer id (no dashes). Required when the connection has multiple Google Ads accounts; optional (and inferred) when it has only one.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple Google Ads accounts; optional (and inferred) when it has only one.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -35743,7 +35778,12 @@ export type CreateAdSetData = {
         name: string;
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Numeric Google Ads customer id. Only required when the connection has more than one.
+         * Platform ad account ID (Google customer ID, digits only). Only required when the connection has more than one.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
     };
@@ -36531,6 +36571,10 @@ export type ListCampaignAssetsData = {
     };
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
     };
 };
@@ -36577,7 +36621,12 @@ export type AttachCampaignAssetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         sitelinks?: Array<GoogleSitelink>;
@@ -36610,7 +36659,12 @@ export type UpdateCampaignAssetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         updates: Array<GoogleAssetUpdate>;
@@ -36638,7 +36692,12 @@ export type RemoveCampaignAssetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         assetResourceNames: Array<(string)>;
@@ -36669,6 +36728,10 @@ export type ListAdGroupAssetsData = {
     };
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
     };
 };
@@ -36715,7 +36778,12 @@ export type AttachAdGroupAssetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         sitelinks?: Array<GoogleSitelink>;
@@ -36748,7 +36816,12 @@ export type UpdateAdGroupAssetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         updates: Array<GoogleAssetUpdate>;
@@ -36776,7 +36849,12 @@ export type RemoveAdGroupAssetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         assetResourceNames: Array<(string)>;
@@ -36967,7 +37045,12 @@ export type GenerateKeywordIdeasData = {
          */
         accountId: string;
         /**
-         * Numeric Google Ads customer id (no dashes); only needed when the connection has several accounts.
+         * Platform ad account ID (Google customer ID, digits only).
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -37026,7 +37109,12 @@ export type GenerateKeywordHistoricalMetricsData = {
          */
         accountId: string;
         /**
-         * Numeric Google Ads customer id (no dashes); only needed when the connection has several accounts.
+         * Platform ad account ID (Google customer ID, digits only).
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         keywords: Array<(string)>;
@@ -37083,6 +37171,10 @@ export type QueryAdInsightsData = {
          */
         actionReportTime?: string;
         /**
+         * Google only: platform ad account ID (Google customer ID, digits only) when the connection has several Google Ads accounts.
+         */
+        adAccountId?: string;
+        /**
          * Cursor from paging.after of the previous page.
          */
         after?: string;
@@ -37091,7 +37183,8 @@ export type QueryAdInsightsData = {
          */
         breakdowns?: string;
         /**
-         * Google only: numeric customer id (no dashes) when the connection has several Google Ads accounts.
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -38612,6 +38705,10 @@ export type DeleteValueRuleSetError = (unknown | {
 export type ListAdNegativeKeywordListsData = {
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     };
@@ -38644,7 +38741,12 @@ export type CreateAdNegativeKeywordListData = {
          */
         accountId: string;
         /**
-         * Connected Google Ads customer id, without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -38691,6 +38793,10 @@ export type GetAdNegativeKeywordListData = {
     };
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     };
@@ -38725,7 +38831,12 @@ export type UpdateAdNegativeKeywordListData = {
          */
         accountId: string;
         /**
-         * Connected Google Ads customer id, without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -38760,6 +38871,10 @@ export type DeleteAdNegativeKeywordListData = {
     };
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     };
@@ -38784,7 +38899,12 @@ export type ReplaceAdNegativeKeywordListKeywordsData = {
          */
         accountId: string;
         /**
-         * Connected Google Ads customer id, without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -38884,6 +39004,10 @@ export type ReplaceCampaignNegativeKeywordListsError = (ErrorResponse | {
 export type ListAccountCalloutsData = {
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
     };
 };
@@ -38916,7 +39040,12 @@ export type AddAccountCalloutsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         callouts: Array<(string)>;
@@ -38942,7 +39071,12 @@ export type UpdateAccountCalloutsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         updates: Array<{
@@ -38973,7 +39107,12 @@ export type RemoveAccountCalloutData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         assetId: string;
@@ -38992,6 +39131,10 @@ export type RemoveAccountCalloutError = (ErrorResponse | {
 export type ListAccountSitelinksData = {
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
     };
 };
@@ -39029,7 +39172,12 @@ export type AddAccountSitelinksData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         sitelinks: Array<GoogleSitelink>;
@@ -39058,7 +39206,12 @@ export type UpdateAccountSitelinksData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         updates: Array<{
@@ -39096,7 +39249,12 @@ export type RemoveAccountSitelinkData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         assetId: string;
@@ -39115,6 +39273,10 @@ export type RemoveAccountSitelinkError = (ErrorResponse | {
 export type ListAccountStructuredSnippetsData = {
     query: {
         accountId: string;
+        adAccountId?: string;
+        /**
+         * @deprecated
+         */
         customerId?: string;
     };
 };
@@ -39150,7 +39312,12 @@ export type AddAccountStructuredSnippetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         structuredSnippets: Array<GoogleStructuredSnippet>;
@@ -39177,7 +39344,12 @@ export type UpdateAccountStructuredSnippetsData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         updates: Array<{
@@ -39206,7 +39378,12 @@ export type RemoveAccountStructuredSnippetData = {
          */
         accountId: string;
         /**
-         * Google customer id without dashes. Required when the connection has multiple customers.
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         assetId: string;
@@ -43276,7 +43453,12 @@ export type ListConversionActionsData = {
          */
         accountId: string;
         /**
-         * Google Ads customer id (digits only). Resolved automatically when the connection has exactly one accessible customer.
+         * Platform ad account ID (Google customer ID, digits only). Resolved automatically when the connection has exactly one accessible customer.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         /**
@@ -43313,7 +43495,12 @@ export type CreateConversionActionData = {
          */
         accountId: string;
         /**
-         * Google Ads customer id (digits only). Resolved automatically when the connection has exactly one accessible customer.
+         * Platform ad account ID (Google customer ID, digits only). Resolved automatically when the connection has exactly one accessible customer.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         customerId?: string;
         name: string;
@@ -45798,7 +45985,12 @@ export type ListTikTokAdPixelsData = {
          */
         accountId: string;
         /**
-         * Advertiser belonging to this connection.
+         * Platform ad account ID (TikTok advertiser id, digits only). Defaults to the first advertiser on the connection.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
          */
         advertiserId?: string;
         /**
