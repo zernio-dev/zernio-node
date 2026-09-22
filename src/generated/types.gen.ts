@@ -35590,6 +35590,10 @@ export type DuplicateAdData = {
         renamePrefix?: string;
         renameSuffix?: string;
         syncAfter?: boolean;
+        /**
+         * Point the copy at the source ad's creative object instead of copying it, so the copy keeps the same Facebook post, the same Instagram media, their existing likes, comments and shares, and the full creative setup (text variations included). This is what Ads Manager's "show existing reactions, comments and shares" does. Meta's native copy always publishes new posts. A creative belongs to one ad account, so `adSetId` must be in the source ad's account. 400 when the source ad has no creative yet.
+         */
+        reuseSourceCreative?: boolean;
     };
     headers?: {
         /**
