@@ -12392,6 +12392,10 @@ export type GetYouTubeChannelInsightsData = {
          */
         accountId: string;
         /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         */
+        fromDate?: string;
+        /**
          * Comma-separated list. Defaults to "views,estimatedMinutesWatched,subscribersGained,subscribersLost".
          *
          * Live YouTube Analytics v2 metrics:
@@ -12414,7 +12418,8 @@ export type GetYouTubeChannelInsightsData = {
          */
         metricType?: 'time_series' | 'total_value';
         /**
-         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         since?: string;
         /**
@@ -12423,6 +12428,11 @@ export type GetYouTubeChannelInsightsData = {
          * beyond that returns zero values for the tail days. The response's dateRange.until
          * field reflects your requested value.
          *
+         */
+        toDate?: string;
+        /**
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         until?: string;
     };
@@ -12440,6 +12450,10 @@ export type GetLinkedInOrgAggregateAnalyticsData = {
          * The Zernio SocialAccount ID for the LinkedIn organization account.
          */
         accountId: string;
+        /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         */
+        fromDate?: string;
         /**
          * Comma-separated list. Defaults to
          * "impressions,clicks,engagement_rate,organic_followers_gained,followers_gained,followers_lost".
@@ -12472,11 +12486,17 @@ export type GetLinkedInOrgAggregateAnalyticsData = {
         metrics?: string;
         metricType?: 'time_series' | 'total_value';
         /**
-         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         since?: string;
         /**
          * End date (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
+        /**
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         until?: string;
     };
@@ -12494,6 +12514,10 @@ export type GetTikTokAccountInsightsData = {
          * The Zernio SocialAccount ID for the TikTok account.
          */
         accountId: string;
+        /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         */
+        fromDate?: string;
         /**
          * Comma-separated list. Defaults to
          * "follower_count,likes_count,video_count,followers_gained,followers_lost".
@@ -12517,11 +12541,17 @@ export type GetTikTokAccountInsightsData = {
          */
         metricType?: 'time_series' | 'total_value';
         /**
-         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         since?: string;
         /**
          * End date (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
+        /**
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         until?: string;
     };
@@ -12540,18 +12570,28 @@ export type GetYouTubeDailyViewsData = {
          */
         accountId: string;
         /**
-         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
-         * (YouTube finalizes analytics with a ~3-day delay). An explicit endDate is honored
-         * up to today: days inside the delay window are provisional and may still be revised
-         * by YouTube (see provisionalSince in the response), and days YouTube has not
-         * processed yet are omitted from dailyViews.
-         *
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         endDate?: string;
         /**
          * Start date (YYYY-MM-DD). Defaults to 30 days ago.
          */
+        fromDate?: string;
+        /**
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
+         */
         startDate?: string;
+        /**
+         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
+         * (YouTube finalizes analytics with a ~3-day delay). An explicit toDate is honored
+         * up to today: days inside the delay window are provisional and may still be revised
+         * by YouTube (see provisionalSince in the response), and days YouTube has not
+         * processed yet are omitted from dailyViews.
+         *
+         */
+        toDate?: string;
         /**
          * The YouTube video ID (e.g., "dQw4w9WgXcQ")
          */
@@ -12578,17 +12618,27 @@ export type GetYouTubeVideoRetentionData = {
          */
         accountId: string;
         /**
-         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
-         * (YouTube finalizes analytics with a ~3-day delay). An explicit endDate is honored
-         * up to today: days inside the delay window are provisional and may still be revised
-         * by YouTube (see provisionalSince in the response).
-         *
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         endDate?: string;
         /**
          * Start date (YYYY-MM-DD). Defaults to the video's publish date (lifetime curve).
          */
+        fromDate?: string;
+        /**
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
+         */
         startDate?: string;
+        /**
+         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
+         * (YouTube finalizes analytics with a ~3-day delay). An explicit toDate is honored
+         * up to today: days inside the delay window are provisional and may still be revised
+         * by YouTube (see provisionalSince in the response).
+         *
+         */
+        toDate?: string;
         /**
          * The YouTube video ID (e.g., "dQw4w9WgXcQ")
          */
@@ -12619,6 +12669,10 @@ export type GetFacebookPageInsightsData = {
          * The Zernio SocialAccount ID for the connected Facebook Page.
          */
         accountId: string;
+        /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         */
+        fromDate?: string;
         /**
          * Comma-separated list of metrics. Defaults to
          * "page_media_view,page_post_engagements,page_follows,followers_gained,followers_lost".
@@ -12670,11 +12724,17 @@ export type GetFacebookPageInsightsData = {
          */
         metricType?: 'time_series' | 'total_value';
         /**
-         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         since?: string;
         /**
          * End date (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
+        /**
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         until?: string;
     };
@@ -12732,6 +12792,10 @@ export type GetInstagramAccountInsightsData = {
          */
         breakdown?: string;
         /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         */
+        fromDate?: string;
+        /**
          * Comma-separated list of metrics. Defaults to "reach,views,accounts_engaged,total_interactions".
          * Valid metrics: reach, views, accounts_engaged, total_interactions, comments, likes, saves, shares,
          * replies, reposts, follows_and_unfollows, profile_links_taps.
@@ -12749,11 +12813,17 @@ export type GetInstagramAccountInsightsData = {
          */
         metricType?: 'time_series' | 'total_value';
         /**
-         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         since?: string;
         /**
          * End date (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
+        /**
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         until?: string;
     };
@@ -12775,6 +12845,10 @@ export type GetInstagramFollowerHistoryData = {
          */
         accountId: string;
         /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         */
+        fromDate?: string;
+        /**
          * Comma-separated list. Defaults to "follower_count,followers_gained,followers_lost".
          * - follower_count   : per-day raw follower count
          * - followers_gained : sum of positive daily deltas
@@ -12789,11 +12863,17 @@ export type GetInstagramFollowerHistoryData = {
          */
         metricType?: 'time_series' | 'total_value';
         /**
-         * Start date (YYYY-MM-DD). Defaults to 30 days ago.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         since?: string;
         /**
          * End date (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
+        /**
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         until?: string;
     };
@@ -12852,11 +12932,8 @@ export type GetYouTubeDemographicsData = {
          */
         breakdown?: string;
         /**
-         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
-         * (YouTube finalizes analytics with a ~3-day delay). An explicit endDate is honored
-         * up to today: days inside the delay window are provisional and may still be revised
-         * by YouTube (see provisionalSince in the response).
-         *
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         endDate?: string;
         /**
@@ -12864,7 +12941,20 @@ export type GetYouTubeDemographicsData = {
          * publish date (lifetime) when videoId is provided.
          *
          */
+        fromDate?: string;
+        /**
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
+         */
         startDate?: string;
+        /**
+         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
+         * (YouTube finalizes analytics with a ~3-day delay). An explicit toDate is honored
+         * up to today: days inside the delay window are provisional and may still be revised
+         * by YouTube (see provisionalSince in the response).
+         *
+         */
+        toDate?: string;
         /**
          * YouTube video ID. When provided, demographics are scoped to this single video
          * (must belong to the connected channel; otherwise 404 video_not_found).
@@ -13234,9 +13324,14 @@ export type GetGoogleBusinessPerformanceData = {
          */
         accountId: string;
         /**
-         * End date (YYYY-MM-DD). Defaults to today.
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         endDate?: string;
+        /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago. Max 18 months back.
+         */
+        fromDate?: string;
         /**
          * Comma-separated metric names. Defaults to all available metrics.
          * Valid values: BUSINESS_IMPRESSIONS_DESKTOP_MAPS, BUSINESS_IMPRESSIONS_DESKTOP_SEARCH,
@@ -13247,9 +13342,14 @@ export type GetGoogleBusinessPerformanceData = {
          */
         metrics?: string;
         /**
-         * Start date (YYYY-MM-DD). Defaults to 30 days ago. Max 18 months back.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         startDate?: string;
+        /**
+         * End date (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
     };
 };
 
@@ -19408,17 +19508,27 @@ export type GetLinkedInAggregateAnalyticsData = {
          */
         aggregation?: 'TOTAL' | 'DAILY';
         /**
-         * End date (YYYY-MM-DD, exclusive). Defaults to today if omitted.
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         endDate?: string;
+        /**
+         * Start date (YYYY-MM-DD). If omitted, returns lifetime analytics.
+         */
+        fromDate?: string;
         /**
          * Comma-separated metrics: IMPRESSION, MEMBERS_REACHED, REACTION, COMMENT, RESHARE, POST_SAVE, POST_SEND. Omit for all.
          */
         metrics?: string;
         /**
-         * Start date (YYYY-MM-DD). If omitted, returns lifetime analytics.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         startDate?: string;
+        /**
+         * End date (YYYY-MM-DD, exclusive). Defaults to today if omitted.
+         */
+        toDate?: string;
     };
 };
 
@@ -19427,7 +19537,11 @@ export type GetLinkedInAggregateAnalyticsResponse = ((LinkedInAggregateAnalytics
 export type GetLinkedInAggregateAnalyticsError = ({
     error?: string;
     code?: string;
-    validOptions?: Array<(string)>;
+    /**
+     * The query parameter at fault on a validation failure
+     */
+    param?: string;
+    type?: string;
 } | {
     error?: string;
 } | {
