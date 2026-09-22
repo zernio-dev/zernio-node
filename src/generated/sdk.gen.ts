@@ -10531,6 +10531,11 @@ export const getDsaRecommendations = <ThrowOnError extends boolean = false>(opti
  * `instagramAccountId`, `destinationType`, `whatsappPhoneNumber` and `adSetId`
  * are Meta-only and return 400 on other platforms.
  *
+ * `accountId` may be a Facebook, Instagram or Meta ads (business login)
+ * connection. A business-login connection has no posting account, so pass
+ * the post as `platformPostId` (Facebook `pageId_postId` or an Instagram
+ * media id); a Zernio `postId` is a 400 there.
+ *
  * **Messaging boosts (Meta).** Use `goal: engagement` with
  * `callToAction: WHATSAPP_MESSAGE`, `MESSAGE_PAGE`, or `INSTAGRAM_MESSAGE`.
  * The CTA implies WHATSAPP, MESSENGER, or INSTAGRAM_DIRECT respectively;
