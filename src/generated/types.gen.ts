@@ -15937,10 +15937,15 @@ export type ConnectAdsData = {
          * numeric sponsored-account id), `googleads` (bare customer id digits)
          * and `twitter` (X Ads, base36 account id). `tiktok` scopes advertisers
          * at OAuth and `pinterest` has no ads discovery, so both ignore it.
-         * Meta ids are additionally validated against the connected token;
-         * unreachable IDs return 400. Setting a scope also removes already
-         * synced ads from de-scoped ad accounts. For multiple accounts use
-         * `adAccountIds` instead.
+         * Meta ids are additionally validated against the connected token:
+         * an id the token cannot see returns 400 `invalid_field_value`, and an
+         * id it can see but that Meta marks unusable for ads (disabled, closed,
+         * under risk review, settlement pending) returns 400 `ad_account_unusable`
+         * with `details.accountStatus` (Meta's `account_status`) and, when Meta
+         * gives one, `details.disableReason`. Unsettled and in-grace accounts
+         * are accepted, matching the `selectable` flag of `GET /v1/ads/accounts`.
+         * Setting a scope also removes already synced ads from de-scoped ad
+         * accounts. For multiple accounts use `adAccountIds` instead.
          *
          */
         adAccountId?: string;
