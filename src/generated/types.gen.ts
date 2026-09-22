@@ -39515,7 +39515,16 @@ export type BoostPostData = {
          */
         identityType?: 'TT_USER' | 'CUSTOMIZED_USER' | 'BC_AUTH_TT';
         /**
-         * Required unless adSetId is set.
+         * Budget in whole currency units, the same flat field as POST /v1/ads/create. Required unless adSetId is set. Minimum varies: TikTok=$20, Pinterest=$5, others=$1
+         */
+        budgetAmount?: number;
+        /**
+         * Goes together with budgetAmount. lifetime requires schedule.endDate.
+         */
+        budgetType?: 'daily' | 'lifetime';
+        /**
+         * Alias of budgetAmount + budgetType, kept for existing callers
+         * @deprecated
          */
         budget?: {
             /**
