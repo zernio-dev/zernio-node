@@ -2800,7 +2800,7 @@ export type CommentAutomationFollowGate = {
      */
     buttonLabel?: string;
     /**
-     * Sent to a commenter we know does not follow (followerStatus=follower). Omit to stay silent on a keyword comment; a confirm tap always gets an answer.
+     * Sent to a commenter we know does not follow (followerStatus=follower), and after a confirm tap that does not unlock the DM. When following is what would unlock it, the message carries the confirm button so they can re-check once they follow; above 640 characters it goes out as plain text without the button. Omit to stay silent on a keyword comment; a confirm tap always gets an answer (a default message is used).
      */
     notFollowingMessage?: string;
 };
