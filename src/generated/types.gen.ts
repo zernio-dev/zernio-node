@@ -21538,9 +21538,14 @@ export type CreateWebhookSettingsError = (unknown | {
 export type UpdateWebhookSettingsData = {
     body: {
         /**
-         * Webhook ID to update (required)
+         * Webhook ID to update. Required unless the deprecated `_id` is sent instead.
          */
-        _id: string;
+        webhookId?: string;
+        /**
+         * Alias of webhookId, kept for existing callers
+         * @deprecated
+         */
+        _id?: string;
         /**
          * Webhook name (1-50 characters). Must be non-empty if provided.
          */
@@ -21591,11 +21596,16 @@ export type UpdateWebhookSettingsError = (unknown | {
 });
 
 export type DeleteWebhookSettingsData = {
-    query: {
+    query?: {
         /**
-         * Webhook ID to delete
+         * Alias of webhookId, kept for existing callers
+         * @deprecated
          */
-        id: string;
+        id?: string;
+        /**
+         * Webhook ID to delete, the same name the other /v1/webhooks operations use (logs, redeliver, test). Required unless the deprecated `id` is sent instead.
+         */
+        webhookId?: string;
     };
 };
 

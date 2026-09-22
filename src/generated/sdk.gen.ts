@@ -3557,7 +3557,7 @@ export const createWebhookSettings = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Update webhook
- * Update an existing webhook configuration. All fields except `_id` are optional; only provided fields will be updated.
+ * Update an existing webhook configuration. All fields except `webhookId` are optional; only provided fields will be updated. `webhookId` is the same name the other /v1/webhooks operations use (logs, redeliver, test); the deprecated `_id` is still accepted in its place.
  *
  * When provided, `name` must be 1-50 characters, `url` must be a valid URL, and `events` must contain at least one event. Whitespace is trimmed from `url` before validation.
  *
@@ -3593,7 +3593,7 @@ export const updateWebhookSettings = <ThrowOnError extends boolean = false>(opti
  * Delete webhook
  * Permanently delete a webhook configuration.
  */
-export const deleteWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteWebhookSettingsData, ThrowOnError>) => {
+export const deleteWebhookSettings = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<DeleteWebhookSettingsData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteWebhookSettingsResponse, DeleteWebhookSettingsError, ThrowOnError>({
         ...options,
         url: '/v1/webhooks/settings'
