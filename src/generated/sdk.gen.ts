@@ -3668,6 +3668,8 @@ export const testWebhook = <ThrowOnError extends boolean = false>(options: Optio
  * List activity logs
  * Unified logs endpoint. Returns logs for publishing, connections, webhooks, and messaging.
  * Filter by type, platform, status, and time range. Logs are retained for 90 days.
+ * Legacy query aliases remain accepted: `account_id` for `accountId`, `request_id` for `requestId`,
+ * `status_code` for `statusCode`, `api_key_id` for `apiKeyId`, and `include_read_receipts` for `includeReadReceipts`.
  *
  */
 export const listLogs = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListLogsData, ThrowOnError>) => {

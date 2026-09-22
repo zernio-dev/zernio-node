@@ -21891,11 +21891,6 @@ export type TestWebhookError = (unknown | {
 export type ListLogsData = {
     query?: {
         /**
-         * Alias of accountId, kept for existing callers
-         * @deprecated
-         */
-        account_id?: string;
-        /**
          * Filter by connected account ID
          */
         accountId?: string;
@@ -21903,11 +21898,6 @@ export type ListLogsData = {
          * Filter by action (e.g., post.published, message.sent, account.connected, webhook.delivered)
          */
         action?: string;
-        /**
-         * Alias of apiKeyId, kept for existing callers
-         * @deprecated
-         */
-        api_key_id?: string;
         /**
          * Filter by the API key that made the request (api_request logs)
          */
@@ -21925,11 +21915,6 @@ export type ListLogsData = {
          */
         from?: string;
         /**
-         * Alias of includeReadReceipts, kept for existing callers
-         * @deprecated
-         */
-        include_read_receipts?: boolean;
-        /**
          * Include message.read / message.delivered events (hidden by default for messaging logs)
          */
         includeReadReceipts?: boolean;
@@ -21941,11 +21926,6 @@ export type ListLogsData = {
          * Filter by platform
          */
         platform?: 'tiktok' | 'instagram' | 'whatsapp' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'all';
-        /**
-         * Alias of requestId, kept for existing callers
-         * @deprecated
-         */
-        request_id?: string;
         /**
          * Correlation ID. Returns every log spawned by a single API request
          */
@@ -21962,11 +21942,6 @@ export type ListLogsData = {
          * Filter by status
          */
         status?: 'success' | 'failed' | 'pending' | 'skipped' | 'all';
-        /**
-         * Alias of statusCode, kept for existing callers
-         * @deprecated
-         */
-        status_code?: number;
         /**
          * Filter by exact HTTP status code (api_request logs)
          */
