@@ -41594,6 +41594,10 @@ export type SearchAdTargetingResponse = ({
          * Optional estimated reachable users for this option, when the platform returns it.
          */
         audienceSize?: (number) | null;
+        /**
+         * ISO-3166 alpha-2 of the country a sub-country geo result (city, region, zip, metro) belongs to, when the platform reports it (Meta does). Useful to know whether a location falls under the EU DSA disclosure rules before creating the ad.
+         */
+        countryCode?: string;
     }>;
 });
 
