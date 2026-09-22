@@ -34199,9 +34199,14 @@ export type GetAdsSearchTermsData = {
          */
         accountId: string;
         /**
-         * Numeric Google ad group id filter.
+         * Alias of adSetId, kept for existing callers.
+         * @deprecated
          */
         adGroupId?: string;
+        /**
+         * Platform ad set ID (Google ad group). Same value as adSetId on listAdKeywords and /ad-sets/{adSetId}/assets.
+         */
+        adSetId?: string;
         /**
          * Numeric Google campaign id filter.
          */
