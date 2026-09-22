@@ -24985,9 +24985,14 @@ export type GetTweetData = {
          */
         accountId: string;
         /**
-         * Numeric tweet ID or a tweet URL (e.g. https://x.com/user/status/123...)
+         * Alias of tweetId, kept for existing callers
+         * @deprecated
          */
-        id: string;
+        id?: string;
+        /**
+         * Numeric tweet ID or a tweet URL (e.g. https://x.com/user/status/123...). The same name the other /v1/twitter operations use (retweet, bookmark).
+         */
+        tweetId: string;
     };
 };
 
@@ -25018,9 +25023,9 @@ export type GetTweetResponse = ({
     };
 });
 
-export type GetTweetError = (ErrorResponse | {
+export type GetTweetError = (unknown | {
     error?: string;
-} | unknown);
+});
 
 export type ListInboxMentionsData = {
     query?: {
