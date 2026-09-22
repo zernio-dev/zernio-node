@@ -3210,6 +3210,14 @@ export type CtwaAdRequestBody = {
      */
     name: string;
     /**
+     * Exact name for the campaign this request provisions. Omitted keeps `<name> - Campaign`. Ignored with `adSetId` (the ad set already has a campaign).
+     */
+    campaignName?: string;
+    /**
+     * Exact name for the ad set this request provisions. Omitted keeps `<name> - Ad Set`. Ignored with `adSetId`.
+     */
+    adSetName?: string;
+    /**
      * Messaging and CTWA only. Platform post or reel ID, resolved like boost platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id using the connected Instagram identity. Mutually exclusive with objectStoryId and fresh creative fields.
      */
     existingPostId?: string;
