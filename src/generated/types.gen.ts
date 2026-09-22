@@ -18949,14 +18949,9 @@ export type ConnectWhatsAppEmbeddedSignupData = {
          */
         expectedPhoneNumber?: string;
         /**
-         * Hosted signup page only. When present, the response also carries `redirectUrl`, the URL the user should land on, with the outcome mapped exactly like the redirect flow (success params, or `error` and `platform` with the same values). Must be an absolute http(s) URL or a custom app scheme.
+         * Hosted signup page only. When present, the response also carries `redirectUrl`, the URL the user should land on, with the outcome mapped exactly like the redirect flow (success params, or `error` and `platform` with the same values). Must be an absolute http(s) URL or a custom app scheme. The legacy spelling `redirectUrl` remains accepted as an alias.
          */
         redirect_url?: string;
-        /**
-         * Alias of redirect_url, kept for existing callers
-         * @deprecated
-         */
-        redirectUrl?: string;
         /**
          * Hosted signup page only. Append the connect token to the success redirect, as the redirect flow does for API-key callers.
          */
