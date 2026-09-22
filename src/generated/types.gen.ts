@@ -14038,18 +14038,28 @@ export type ListPostsData = {
          */
         createdBy?: string;
         /**
-         * Zero-padded YYYY-MM-DD, or a full ISO 8601 datetime. An empty value means no date filter; any other malformed value returns 400.
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
          */
         dateFrom?: string;
         /**
-         * Zero-padded YYYY-MM-DD, or a full ISO 8601 datetime. An empty value means no date filter; any other malformed value returns 400.
+         * Alias of toDate, kept for existing callers
+         * @deprecated
          */
         dateTo?: string;
+        /**
+         * Zero-padded YYYY-MM-DD, or a full ISO 8601 datetime. An empty value means no date filter; any other malformed value returns 400. The same name the other date-window filters use (ads, analytics).
+         */
+        fromDate?: string;
         includeHidden?: boolean;
         /**
          * Page size. Values above the maximum return 400 rather than being clamped.
          */
         limit?: number;
+        /**
+         * Row offset. Takes precedence over page when both are sent; the response pagination.page is derived from it.
+         */
+        offset?: number;
         /**
          * Page number (1-based)
          */
@@ -14072,6 +14082,10 @@ export type ListPostsData = {
          */
         source?: 'zernio' | 'external';
         status?: 'draft' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+        /**
+         * Zero-padded YYYY-MM-DD, or a full ISO 8601 datetime. An empty value means no date filter; any other malformed value returns 400. The same name the other date-window filters use (ads, analytics).
+         */
+        toDate?: string;
     };
 };
 

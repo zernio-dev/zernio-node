@@ -870,7 +870,7 @@ export const getSmsUsage = <ThrowOnError extends boolean = false>(options?: Opti
 
 /**
  * List posts
- * Returns a paginated list of posts. Published posts include platformPostUrl with the public URL on each platform.
+ * Returns a paginated list of posts. Published posts include platformPostUrl with the public URL on each platform. A query parameter that is not listed here returns 400 naming it and the accepted parameters, so a misspelled filter never silently returns the unfiltered list.
  */
 export const listPosts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListPostsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListPostsResponse, ListPostsError, ThrowOnError>({
