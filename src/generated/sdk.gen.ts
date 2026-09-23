@@ -10609,7 +10609,7 @@ export const listGoogleAssetGroups = <ThrowOnError extends boolean = false>(opti
  *
  * - Legacy single-creative shape (all platforms, the default).
  * - Meta-only multi-creative shape via the creatives array: one ad set with N ads sharing budget and targeting.
- * - Attach shape via adSetId: adds one new ad to an existing ad set, inheriting its budget, targeting, and schedule (Meta, Google Ads, TikTok, and LinkedIn). On LinkedIn adSetId is the existing Campaign id, and the budget, schedule, targeting and bidding fields must be omitted.
+ * - Attach shape via adSetId: adds one new ad to an existing ad set, inheriting its budget, targeting, and schedule (Meta, Google Ads, TikTok, and LinkedIn). On LinkedIn adSetId is the existing Campaign id, and the budget, schedule, targeting and bidding fields must be omitted. On LinkedIn `goal` may be omitted too (taken from the Campaign's objective), and the created ad's `targeting` echoes the Campaign's audience.
  *
  * Meta accepts `creativeFeatures` on the single and attach shapes and as defaults for
  * `creatives[]`; an item replaces the whole feature map. `promotion` is not supported on any
