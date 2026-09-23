@@ -176,6 +176,7 @@ import {
   deleteSipTrunk,
   deleteSmsSenderId,
   deleteTelegramCommands,
+  deleteTestLead,
   deleteValueRuleSet,
   deleteWebhookSettings,
   deleteWhatsAppFlow,
@@ -1924,6 +1925,7 @@ export class Zernio {
     archiveLeadForm: this._bind(archiveLeadForm),
     listFormLeads: this._bind(listFormLeads),
     createTestLead: this._bind(createTestLead),
+    deleteTestLead: this._bind(deleteTestLead),
   };
 
   /**
@@ -2447,6 +2449,8 @@ export class Zernio {
     listFormLeads: this._bind(listFormLeads),
     /** @deprecated Use `zernio.leadgen.createTestLead` instead. */
     createTestLead: this._bind(createTestLead),
+    /** @deprecated Use `zernio.leadgen.deleteTestLead` instead. */
+    deleteTestLead: this._bind(deleteTestLead),
     /** @deprecated Use `zernio.trackingtags.getAdTrackingTags` instead. */
     getAdTrackingTags: this._bind(getAdTrackingTags),
     /** @deprecated Use `zernio.trackingtags.updateAdTrackingTags` instead. */

@@ -851,6 +851,7 @@ try {
 | `leadGen.createLeadForm()` | Create a lead form |
 | `leadGen.createTestLead()` | Create a test lead |
 | `leadGen.getLeadForm()` | Get a lead form |
+| `leadGen.deleteTestLead()` | Delete a test lead |
 | `leadGen.archiveLeadForm()` | Archive a lead form |
 
 ### Mentions

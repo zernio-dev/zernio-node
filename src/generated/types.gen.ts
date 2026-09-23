@@ -41782,6 +41782,34 @@ export type CreateTestLeadError = (ErrorResponse | {
     error?: string;
 });
 
+export type DeleteTestLeadData = {
+    path: {
+        formId: string;
+    };
+    query: {
+        /**
+         * The facebook or metaads account whose Page owns the form.
+         */
+        accountId: string;
+        /**
+         * The test lead id returned by createTestLead (or shown in the Testing Tool). Omitted = the test lead currently on the form.
+         */
+        leadId?: string;
+    };
+};
+
+export type DeleteTestLeadResponse = ({
+    status?: string;
+    /**
+     * Ids of the test leads removed.
+     */
+    deleted?: Array<(string)>;
+});
+
+export type DeleteTestLeadError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type UploadAdImageData = {
     body: {
         /**
