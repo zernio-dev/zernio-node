@@ -40102,29 +40102,43 @@ export type BoostPostData = {
             minimumPurchaseCurrency?: string;
         }>;
         /**
-         * TikTok-only on this endpoint. The pixel a Website Conversion ad group
-         * optimizes toward, so a Spark Ad built from an existing organic post can
-         * optimize for a conversion instead of only engagement or traffic.
+         * Meta and TikTok. What the conversion ad set optimizes toward, so a boost
+         * of an existing organic post can run for a conversion instead of only
+         * engagement or traffic. Required when `goal` is `conversions` (Meta also
+         * `lead_conversion`); ignored on goals that do not optimize for a conversion.
          *
-         * Required when `goal` is `conversions`, and BOTH fields are required:
-         * TikTok refuses a conversion ad group with no pixel ("Please select a
-         * pixel") and equally one that has a pixel but no event ("Select a pixel
-         * event."), because the event is what the ad group optimizes toward. Ignored
-         * on every other goal, since only a WEB_CONVERSIONS ad group accepts them.
+         * Meta: `pixelId` + `customEventType` (a commerce event such as PURCHASE
+         * under `conversions`, a leads-class event such as LEAD under
+         * `lead_conversion`), or `customConversionId` to optimize against a Custom
+         * Conversion, or `customEventType: OTHER` + `customEventStr` for a pixel
+         * custom event. Becomes the ad set `promoted_object`; without it Meta
+         * rejects the ad set ("Please select a promoted object", subcode 1815430).
+         * With `adSetId` the existing ad set already carries it.
          *
-         * Combine freely with `platformPostId` + `sparkAuthCode`: the pixel lives on
-         * the ad group and the Spark item on the creative, so they never conflict.
+         * TikTok: BOTH `pixelId` and `customEventType` are required. TikTok refuses
+         * a conversion ad group with no pixel ("Please select a pixel") and one
+         * with a pixel but no event ("Select a pixel event."). Combine freely with
+         * `platformPostId` + `sparkAuthCode`: the pixel lives on the ad group and
+         * the Spark item on the creative.
          *
          */
         promotedObject?: {
             /**
-             * TikTok Pixel. Either the numeric pixel id or the alphanumeric pixel code from Events Manager, which is resolved for you.
+             * Meta Pixel id, or TikTok Pixel (numeric id or the alphanumeric pixel code from Events Manager, resolved for you).
              */
-            pixelId: string;
+            pixelId?: string;
             /**
-             * Optimization event, as a TikTok optimization_event code (e.g. ON_WEB_ORDER, SHOPPING, FORM) or the exact event name shown in Events Manager, which is resolved to its code. The event must already exist on that pixel, or TikTok rejects the ad group.
+             * Meta: standard pixel event (PURCHASE, LEAD, ...) or OTHER with customEventStr. TikTok: optimization_event code (e.g. ON_WEB_ORDER, SHOPPING, FORM) or the exact event name shown in Events Manager, resolved to its code; the event must already exist on that pixel.
              */
-            customEventType: string;
+            customEventType?: string;
+            /**
+             * Meta only. Pixel custom event name as it appears in Events Manager; requires customEventType OTHER.
+             */
+            customEventStr?: string;
+            /**
+             * Meta only. Custom Conversion to optimize against, instead of pixelId + customEventType.
+             */
+            customConversionId?: string;
         };
         /**
          * Legal entity that benefits from the ad. Required when targeting EU users
