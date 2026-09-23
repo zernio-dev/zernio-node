@@ -6894,7 +6894,7 @@ export type PostAnalytics = {
      */
     videoDurationSeconds?: (number) | null;
     /**
-     * Percentage, rounded to 2 decimals: (likes + comments + shares + saves) / (impressions or reach or views) * 100. Clicks and follows are never counted. The denominator is the FIRST of impressions, reach, views that is non-zero, so it is not the same basis on every post: a post with impressions divides by impressions, one without falls back to reach, then to views. If you need a single consistent basis (e.g. interactions / reach), compute it from the raw fields above. The engagementRate on the LinkedIn account endpoints is a different formula.
+     * Percentage, rounded to 2 decimals: (likes + comments + shares + saves) / (impressions or reach or views) * 100. Clicks and follows are never counted. The denominator is the FIRST of impressions, reach, views that is non-zero, so it is not the same basis on every post: a post with impressions divides by impressions, one without falls back to reach, then to views. If you need a single consistent basis (e.g. interactions / reach), compute it from the raw fields above. When this object is the post-level roll-up of a cross-posted post, the denominator is the SUM of the denominators resolved per platform entry: an entry reporting none of impressions, reach or views is excluded from both sides of the ratio. Each platformAnalytics entry below keeps its own single denominator. The engagementRate on the LinkedIn account endpoints is a different formula.
      */
     engagementRate?: number;
     lastUpdated?: string;
