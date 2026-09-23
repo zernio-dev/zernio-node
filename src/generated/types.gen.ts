@@ -34049,7 +34049,7 @@ export type GetCommentAutomationResponse = ({
             subcode?: number;
         };
         /**
-         * True when the failed send spent the comment's single Instagram private reply (subcode 1545133 or 2534023), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs, on Facebook, and on rows written before this field existed.
+         * True when the failed send spent the comment's single private reply (Instagram subcode 1545133 or 2534023, or Meta code 10900 on Instagram and Facebook), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs and on rows written before this field existed.
          */
         privateReplyConsumed?: boolean;
         /**
@@ -34250,7 +34250,7 @@ export type ListCommentAutomationLogsResponse = ({
             subcode?: number;
         };
         /**
-         * True when the failed send spent the comment's single Instagram private reply (subcode 1545133 or 2534023), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs, on Facebook, and on rows written before this field existed.
+         * True when the failed send spent the comment's single private reply (Instagram subcode 1545133 or 2534023, or Meta code 10900 on Instagram and Facebook), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs and on rows written before this field existed.
          */
         privateReplyConsumed?: boolean;
         /**
