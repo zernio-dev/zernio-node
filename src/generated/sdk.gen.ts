@@ -3705,7 +3705,9 @@ export const listInboxConversations = <ThrowOnError extends boolean = false>(opt
  * Create conversation
  * Start a direct message conversation with a user. If a conversation with that recipient already exists, the message is added to the existing thread.
  *
- * Supported platforms: X, Bluesky, Reddit, WhatsApp, SMS, and Slack. Other platforms return PLATFORM_NOT_SUPPORTED.
+ * Supported platforms: X, Bluesky, Reddit, WhatsApp, SMS, Slack, and iMessage. Other platforms return PLATFORM_NOT_SUPPORTED.
+ *
+ * **iMessage.** Pass the recipient as participantId: a phone number in international format (+15551234567) or an iMessage email. Senders ordered through Zernio can message contacts who never wrote to them. The first message to such a contact must be a personal, plain-text note: no links, email addresses, phone numbers, prices, attachments or marketing. It is checked against those rules and reviewed for spam before sending; one that fails returns 400 with code `invalid_content` and nothing is sent. Each sender may open at most one new conversation every 15 minutes, and a new sender warms up: 2 new conversations per 24 hours on days 1-2 after activation, 5 on days 3-4, 10 on days 5-7, 20 on days 8-14, 30 on days 15-21 and 50 after that. Beyond that the request returns 429 with code `new_contact_limit` and a time to retry. The warm-up counts from when a sender ordered through Zernio went live; senders registered from your own provider account are not warmed up by Zernio. Until the contact replies, the opening is the only message the thread accepts: further sends return 409 `recipient_must_message_first`. Once the contact has written, the thread behaves like any other and is not limited. Recipients can report a first message as junk, and reports can get a sender blocked permanently, so keep the reply rate high (above roughly 30%). A sender registered with your own provider account may lack the add-on for new contacts; its sends to them return 409 `recipient_must_message_first`, and an opt-in link is the way in. A contact who opted out returns 409 `recipient_opted_out`.
  *
  * **Slack.** Pass a workspace member id as participantId (list them with GET /v1/accounts/{accountId}/slack-members). Zernio opens the DM channel with that member and sends the message; the thread then behaves like any other Slack conversation in the inbox. The member must belong to the connected workspace.
  *
@@ -3834,6 +3836,15 @@ export const getInboxConversationMessages = <ThrowOnError extends boolean = fals
  * sends to a single recipient at roughly 10 per minute; bursts above that
  * return a `400` with code `131056`. Sends to other recipients are
  * unaffected, so parallelise across recipients rather than flooding one.
+ *
+ * iMessage pacing: messages to contacts who have not written to the
+ * sender in the last 24 hours must be at least 2 minutes apart per
+ * sender; a send inside that window returns `429` with code
+ * `new_contact_limit` and the time to retry. Replies to contacts who
+ * wrote within the last day are not paced. A thread opened with
+ * `POST /v1/inbox/conversations` accepts no message after the opening
+ * until the contact replies (`409 recipient_must_message_first`). Text
+ * must be shorter than 10,000 characters.
  *
  * WhatsApp template messages: to send an approved template into this
  * conversation (required when the 24-hour customer-service window is
@@ -5397,10 +5408,11 @@ export const setImessageSubscription = <ThrowOnError extends boolean = false>(op
 /**
  * Create a tracked iMessage opt-in link
  * Generates a per-campaign link that opens Messages on this sender with
- * `body` prefilled. iMessage is send-first: a sender can only message a
- * contact who has written to it (a send to anyone else fails with
- * `recipient_must_message_first`), and the contact's tap-and-send is
- * what opens that door.
+ * `body` prefilled. A thread the contact opens skips the pacing and the
+ * first-message content rule that apply when the sender writes first,
+ * and it is the only way in for senders without the add-on for new
+ * contacts (their sends to anyone else fail with
+ * `recipient_must_message_first`).
  *
  * Each link carries a unique code in place of the `[opt-in-code]`
  * placeholder; when the contact sends it, the resulting `message.received`

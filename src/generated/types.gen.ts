@@ -22332,7 +22332,7 @@ export type CreateInboxConversationData = {
          */
         accountId: string;
         /**
-         * Recipient identifier. For X this is the numeric user ID; for WhatsApp and SMS, the recipient phone number in international format (digits, country code included); for Slack, the workspace member id (e.g. U01ABCDEF). Provide either this or participantUsername.
+         * Recipient identifier. For X this is the numeric user ID; for WhatsApp and SMS, the recipient phone number in international format (digits, country code included); for Slack, the workspace member id (e.g. U01ABCDEF); for iMessage, a phone number in international format with the leading + or an iMessage email. Provide either this or participantUsername.
          */
         participantId?: string;
         /**
@@ -22504,18 +22504,21 @@ export type CreateInboxConversationResponse = ({
 
 export type CreateInboxConversationError = (({
     error?: string;
-    code?: 'PLATFORM_NOT_SUPPORTED' | 'PLATFORM_LIMITATION' | 'TEMPLATE_REQUIRED' | 'INVALID_TEMPLATE_PARAMS' | 'INVALID_TEMPLATE_BUTTON_PARAM' | 'INVALID_TEMPLATE_HEADER' | 'INVALID_TEMPLATE_CARD_PARAM' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED';
+    code?: 'PLATFORM_NOT_SUPPORTED' | 'PLATFORM_LIMITATION' | 'TEMPLATE_REQUIRED' | 'INVALID_TEMPLATE_PARAMS' | 'INVALID_TEMPLATE_BUTTON_PARAM' | 'INVALID_TEMPLATE_HEADER' | 'INVALID_TEMPLATE_CARD_PARAM' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED' | 'invalid_content';
 } | WhatsAppTemplateLookupError) | {
     error?: string;
 } | unknown | ({
     error?: string;
     code?: 'account_not_found' | 'PARTICIPANT_NOT_FOUND';
-} | WhatsAppTemplateLookupError) | ({
+} | WhatsAppTemplateLookupError) | {
+    error?: string;
+    code?: 'recipient_opted_out' | 'recipient_must_message_first';
+} | ({
     error?: string;
     code?: 'DM_NOT_ALLOWED';
 } | WhatsAppTemplateLookupError) | ({
     error?: string;
-    code?: 'rate_limited';
+    code?: 'rate_limited' | 'new_contact_limit';
 } | WhatsAppTemplateLookupError) | WhatsAppTemplateLookupError);
 
 export type SearchInboxConversationsData = {
