@@ -7614,6 +7614,9 @@ export type SocialAccount = {
      * - profileData.bio: The member's headline for personal accounts, or the organization description for organization accounts. null when the member has not set one.
      * - profileData.extraData.vanityName: The member's profile slug, i.e. the /in/{vanityName} segment of profileUrl. Personal accounts only; an organization's own slug is in metadata.organizationInfo.vanityName.
      *
+     * For Instagram accounts:
+     * - loginMethod: "facebook_login" when the account was connected through Facebook Login. Absent on accounts connected with Instagram Login. On facebook_login accounts, comment reads leave hidden comments out entirely instead of returning them with isHidden true.
+     *
      * For X (Twitter) accounts:
      * - profileData.extraData.isPremium: Whether X reports a paid subscription (Basic, Premium, Premium+, or a blue verified badge), which raises the post length limit from 280 to 25,000 characters. Read live at connect and reconnect and refreshed by the daily follower snapshot; because X intermittently reports no subscription for subscribed accounts, a cancellation is stored on the fourth consecutive daily snapshot that reports it (about four days). Accounts connected before the extraData layout carry the same flag at profileData.isPremium.
      *
@@ -24248,7 +24251,7 @@ export type ListInboxCommentsError = ({
 export type GetInboxPostCommentsData = {
     path: {
         /**
-         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved. LinkedIn third-party posts accept full activity URN or numeric ID. On Facebook and Instagram, a comment ID is also accepted here and returns that comment's replies.
+         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved. LinkedIn third-party posts accept full activity URN or numeric ID. On Facebook, a comment ID is also accepted here and returns that comment's replies (not supported on Instagram).
          */
         postId: string;
     };
@@ -24321,7 +24324,7 @@ export type GetInboxPostCommentsResponse = ({
          */
         canLike?: boolean;
         /**
-         * Whether the comment is currently hidden
+         * Whether the comment is currently hidden. On Instagram accounts connected through Facebook Login, Meta leaves hidden comments (and their replies) out of the list entirely, so they never appear with isHidden true; Instagram Login accounts and Facebook Pages return them with isHidden true.
          */
         isHidden?: boolean;
         /**

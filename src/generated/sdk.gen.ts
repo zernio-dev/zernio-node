@@ -4246,9 +4246,10 @@ export const listInboxComments = <ThrowOnError extends boolean = false>(options?
  * Get post comments
  * Fetch comments for a specific post. Requires accountId query parameter.
  *
- * On Facebook and Instagram, passing a COMMENT id as `postId` is also supported and
- * returns that comment's replies instead of the post's top-level comments. This is not
- * available on YouTube, where `postId` must be a video id.
+ * On Facebook, passing a COMMENT id as `postId` is also supported and returns that
+ * comment's replies instead of the post's top-level comments. Instagram does not support
+ * this and returns 400: its replies come nested in each comment's `replies` array, with no
+ * separate paging. YouTube does not support it either, `postId` must be a video id.
  *
  * Responses are cached for up to 10 minutes, so a page may lag new comments by that
  * window. Do not poll this endpoint for real-time updates: subscribe to the
@@ -4259,6 +4260,11 @@ export const listInboxComments = <ThrowOnError extends boolean = false>(options?
  * is the TikTok video id, each top-level comment carries up to three inline replies, and
  * `commentId` pages the full reply list of one comment. Developer-app TikTok accounts
  * return 400 with code `PLATFORM_LIMITATION`.
+ *
+ * Hidden comments: Facebook Pages and Instagram accounts connected through Instagram Login
+ * return them with `isHidden: true`. Instagram accounts connected through Facebook Login do
+ * not return them at all (Meta omits them, together with their replies), so a hidden comment
+ * and a deleted one look the same on this read.
  *
  */
 export const getInboxPostComments = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInboxPostCommentsData, ThrowOnError>) => {
