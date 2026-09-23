@@ -40165,6 +40165,21 @@ export type BoostPostData = {
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
+         * Meta only, same semantics as POST /v1/ads/create: campaign = Advantage campaign budget (CBO), the budget and bid strategy sit on the campaign and the ad set inherits them. Default adset. Not allowed with adSetId.
+         */
+        budgetLevel?: 'adset' | 'campaign';
+        /**
+         * Meta only. Ad-set attribution windows, same shape as POST /v1/ads/create. Applied on OUTCOME_SALES, OUTCOME_LEADS and OUTCOME_APP_PROMOTION campaigns (conversions, lead_conversion, lead_generation, app_promotion); other objectives keep Meta's default. Not allowed with adSetId.
+         */
+        attributionSpec?: Array<{
+            eventType: 'CLICK_THROUGH' | 'VIEW_THROUGH' | 'ENGAGED_VIDEO_VIEW';
+            windowDays: 1 | 7 | 28;
+        }>;
+        /**
+         * Meta only. Extra primary-text options Meta rotates on the boosted post (asset_feed_spec.bodies with DEGREES_OF_FREEDOM); the post keeps its own text as one of the options. Works for Facebook posts and Instagram media. Under a conversions or traffic goal Meta also wants a website URL on the options, taken from `linkUrl` (send it with a `callToAction`); engagement boosts need none.
+         */
+        bodies?: Array<(string)>;
+        /**
          * Meta, or TikTok with `goal: video_views`. TikTok: ENGAGED_VIEW (6-second
          * Focused View, the default) or ENGAGED_VIEW_FIFTEEN (15-second views), both
          * billed per view (CPV); any other value is a 400. Meta: explicit ad-set
