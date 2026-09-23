@@ -40372,7 +40372,12 @@ export type CreateStandaloneAdData = {
          * `body` field is used as the `object_story_spec.link_data.message` (the preview text) and
          * `headlines` must also be present. On a video creative the copy lands in
          * `video_data.message` / `video_data.title` instead of `link_data`. Mutually exclusive
-         * with `dynamicCreative`, `placementAssets`, `carouselCards`, and `creatives[]`. For placement-specific copy, use the singular `placementAssets.rules[].body` and `headline` fields instead.
+         * with `dynamicCreative`, `carouselCards`, and `creatives[]`. With `placementAssets` the pool
+         * is applied to the placement-customized creative instead (`optimization_type: PLACEMENT`,
+         * every body carries the label of each rule that does not pin its own `body`, and the same for
+         * `headlines`), so Meta rotates the options per placement while media stays pinned; a rule's
+         * own `body` / `headline` stays pinned for that placement. `descriptions[]` cannot join a
+         * placement-customized creative (Meta refuses a second description per rule, subcode 1885878).
          *
          */
         bodies?: Array<(string)>;
