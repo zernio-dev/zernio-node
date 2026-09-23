@@ -42406,7 +42406,7 @@ export type ListAdCatalogsData = {
          */
         adAccountId?: string;
         /**
-         * Meta business portfolio ID to list
+         * Meta business portfolio ID to list. When it is omitted and the Meta login can see several portfolios, the 400 carries `details.businesses` (id + name) so a client can offer the choice.
          */
         businessId?: string;
         /**
