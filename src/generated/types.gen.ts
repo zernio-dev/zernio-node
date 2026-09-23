@@ -39735,7 +39735,7 @@ export type BoostPostData = {
          */
         postId?: string;
         /**
-         * Platform post ID (alternative to postId)
+         * Platform post ID (alternative to postId). Meta: a Page post id (`<pageId>_<postId>` or the bare post id) or an Instagram media id. On a Meta Ads business-login connection (platform metaads) the id is resolved live: an Instagram media id is boosted as that media, running as the Instagram account that owns it.
          */
         platformPostId?: string;
         /**
