@@ -10572,9 +10572,15 @@ export type WebhookPayloadMessageSent = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards or the TikTok message type. The key is present only when the send carried some context, and absent otherwise: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
+     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template. The key is present only when the send carried some context, and absent otherwise: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
      */
     metadata?: {
+        /**
+         * Instagram/Facebook only. The buttons, quickReplies and/or template this outgoing message carried, as sent (tracked urls included when link tracking wrapped a button). Absent when the send carried none.
+         */
+        metaInteractive?: {
+            [key: string]: unknown;
+        };
         /**
          * WhatsApp only. The location pin this message carries, in the same
          * shape the inbox send API accepts. Present on API sends that passed
@@ -22901,11 +22907,13 @@ export type GetInboxConversationMessagesResponse = ({
          * delivered as `message.platformMessageId` on webhooks),
          * `waInteractive` (a compact descriptor of WhatsApp interactive
          * content sent: buttons / list / cta_url / flow / location_request),
-         * and for inbound interactive taps `interactiveType` / `interactiveId`.
-         * It can also carry `source` (`whatsapp_business_app` /
-         * `coexistence_history` on a WhatsApp Coexistence number, `bulk-api` on
-         * a POST /v1/whatsapp/bulk send), which is where the message reached us
-         * from rather than who produced it: read `sentVia` for that.
+         * `metaInteractive` (outgoing Instagram/Facebook buttons, quickReplies
+         * and template, as sent), and for inbound interactive taps
+         * `interactiveType` / `interactiveId`. It can also carry `source`
+         * (`whatsapp_business_app` / `coexistence_history` on a WhatsApp
+         * Coexistence number, `bulk-api` on a POST /v1/whatsapp/bulk send),
+         * which is where the message reached us from rather than who produced
+         * it: read `sentVia` for that.
          *
          */
         metadata?: {
