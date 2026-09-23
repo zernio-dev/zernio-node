@@ -14760,7 +14760,7 @@ export type CreateProfileError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -14790,6 +14790,10 @@ export type CreateProfileError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -15938,7 +15942,7 @@ export type GetConnectUrlError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -15968,6 +15972,10 @@ export type GetConnectUrlError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -16011,7 +16019,7 @@ export type HandleOAuthCallbackError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -16041,6 +16049,10 @@ export type HandleOAuthCallbackError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -16241,7 +16253,7 @@ export type GetShopifyConnectUrlError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -16271,6 +16283,10 @@ export type GetShopifyConnectUrlError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -16326,7 +16342,7 @@ export type ConnectShopifyWithTokenError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -16356,6 +16372,10 @@ export type ConnectShopifyWithTokenError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -16405,7 +16425,7 @@ export type GetWordPressAuthUrlError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -16435,6 +16455,10 @@ export type GetWordPressAuthUrlError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -16495,7 +16519,7 @@ export type ConnectWordPressWithApplicationPasswordError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -16525,6 +16549,10 @@ export type ConnectWordPressWithApplicationPasswordError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -16784,7 +16812,7 @@ export type SelectInstagramAccountError = (unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -16814,6 +16842,10 @@ export type SelectInstagramAccountError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -18709,7 +18741,7 @@ export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -18739,6 +18771,10 @@ export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -19004,7 +19040,7 @@ export type ConnectWhatsAppEmbeddedSignupError = (ErrorResponse | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -19034,6 +19070,10 @@ export type ConnectWhatsAppEmbeddedSignupError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -19113,7 +19153,7 @@ export type ConnectDiscordChannelError = (ErrorResponse | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -19143,6 +19183,10 @@ export type ConnectDiscordChannelError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
@@ -19242,7 +19286,7 @@ export type ConnectSlackChannelError = (ErrorResponse | {
     /**
      * Discriminator for which gate fired.
      */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required';
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
     /**
      * Link to the relevant documentation page.
      */
@@ -19272,6 +19316,10 @@ export type ConnectSlackChannelError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
         /**
          * The negotiated connected-account cap from the
          * team's enterprise contract. Self-service teams
