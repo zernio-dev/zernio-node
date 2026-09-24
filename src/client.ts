@@ -356,6 +356,7 @@ import {
   getTelegramConnectStatus,
   getTikTokAccountInsights,
   getTikTokCreatorInfo,
+  getTikTokSmartPlusMaterialReport,
   getTrackingTag,
   getTrackingTagStats,
   getTweet,
@@ -1810,6 +1811,7 @@ export class Zernio {
     createAdInsightsReport: this._bind(createAdInsightsReport),
     getAdInsightsReport: this._bind(getAdInsightsReport),
     getAdAnalytics: this._bind(getAdAnalytics),
+    getTikTokSmartPlusMaterialReport: this._bind(getTikTokSmartPlusMaterialReport),
   };
 
   /**
@@ -2393,6 +2395,8 @@ export class Zernio {
     getAdInsightsReport: this._bind(getAdInsightsReport),
     /** @deprecated Use `zernio.adinsights.getAdAnalytics` instead. */
     getAdAnalytics: this._bind(getAdAnalytics),
+    /** @deprecated Use `zernio.adinsights.getTikTokSmartPlusMaterialReport` instead. */
+    getTikTokSmartPlusMaterialReport: this._bind(getTikTokSmartPlusMaterialReport),
     /** @deprecated Use `zernio.conversions.getConversionsQuality` instead. */
     getConversionsQuality: this._bind(getConversionsQuality),
     /** @deprecated Use `zernio.conversions.sendConversions` instead. */

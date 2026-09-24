@@ -539,6 +539,7 @@ try {
 | `adInsights.getAdInsightsReport()` | Poll an async insights report run |
 | `adInsights.getAdsSearchTerms()` | Google Ads search terms report |
 | `adInsights.getCampaignAnalytics()` | Get campaign analytics |
+| `adInsights.getTikTokSmartPlusMaterialReport()` | Per-creative performance inside TikTok Smart+ ads |
 | `adInsights.generateKeywordHistoricalMetrics()` | Get historical keyword metrics |
 | `adInsights.generateKeywordIdeas()` | Generate keyword ideas |
 | `adInsights.queryAdInsights()` | Flexible live insights query |

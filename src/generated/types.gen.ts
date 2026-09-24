@@ -38013,6 +38013,94 @@ export type ListAdsTikTokIdentitiesError = (ErrorResponse | {
     error?: string;
 });
 
+export type GetTikTokSmartPlusMaterialReportData = {
+    query: {
+        /**
+         * A tiktok or tiktokads account ID
+         */
+        accountId: string;
+        /**
+         * TikTok advertiser ID
+         */
+        adAccountId: string;
+        /**
+         * Comma-separated ad group ids to filter by (up to 100)
+         */
+        adGroupIds?: string;
+        /**
+         * YYYY-MM-DD, on or after startDate
+         */
+        endDate: string;
+        /**
+         * Key each row by Smart+ ad or by ad group
+         */
+        level?: 'ad' | 'adGroup';
+        page?: number;
+        pageSize?: number;
+        /**
+         * Comma-separated Smart+ ad ids to filter by (up to 100)
+         */
+        smartPlusAdIds?: string;
+        /**
+         * YYYY-MM-DD, in the advertiser's time zone
+         */
+        startDate: string;
+    };
+};
+
+export type GetTikTokSmartPlusMaterialReportResponse = ({
+    adAccountId?: string;
+    level?: 'ad' | 'adGroup';
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    pageSize?: number;
+    totalRows?: number;
+    totalPages?: number;
+    rows?: Array<{
+        /**
+         * TikTok main material id
+         */
+        materialId?: string;
+        /**
+         * e.g. VIDEO_SPARK_ADS, VIDEO, IMAGE
+         */
+        materialType?: (string) | null;
+        /**
+         * The TikTok post id when the material is a Spark post
+         */
+        tiktokItemId?: (string) | null;
+        /**
+         * Material name or post caption
+         */
+        name?: (string) | null;
+        /**
+         * Set when level=ad
+         */
+        smartPlusAdId?: (string) | null;
+        /**
+         * Set when level=adGroup
+         */
+        adGroupId?: (string) | null;
+        metrics?: {
+            spend?: (number) | null;
+            impressions?: (number) | null;
+            clicks?: (number) | null;
+            cpc?: (number) | null;
+            addToCart?: (number) | null;
+            initiateCheckout?: (number) | null;
+            addPaymentInfo?: (number) | null;
+            purchases?: (number) | null;
+            purchaseValue?: (number) | null;
+            roas?: (number) | null;
+        };
+    }>;
+});
+
+export type GetTikTokSmartPlusMaterialReportError = (ErrorResponse | {
+    error?: string;
+});
+
 export type ListAdsInstagramAccountsData = {
     query: {
         /**
