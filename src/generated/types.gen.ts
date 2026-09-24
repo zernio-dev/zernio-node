@@ -22926,13 +22926,26 @@ export type GetInboxConversationMessagesResponse = ({
          */
         subject?: (string) | null;
         /**
-         * Instagram story reply
+         * Instagram only. Present when the message replies to one of the account's stories. Also set on history imported after connecting, read off Meta's `story.reply_to`.
          */
-        storyReply?: (boolean) | null;
+        storyReply?: {
+            /**
+             * The Instagram story ID the user replied to.
+             */
+            storyId?: string;
+            /**
+             * Meta CDN URL for the story media. Expires roughly 24 hours after the story posted; fetch promptly or treat 404s as expected.
+             */
+            storyUrl?: string;
+        };
         /**
-         * Instagram story mention
+         * Instagram only. True when the message is the user mentioning the account in their own story. The story itself is the `share` attachment with `originalType: "story_mention"`. Also set on imported history, read off Meta's `story.mention`.
          */
-        isStoryMention?: (boolean) | null;
+        isStoryMention?: boolean;
+        /**
+         * Instagram and Facebook Messenger only. True when Meta withholds the content of this message from the API (its `is_unsupported` flag): `message` is empty, `attachments` is empty, and there is nothing to fetch, now or later. Distinguishes such a message from an ordinary empty one such as a story reply with no text. Absent on other platforms.
+         */
+        noRenderableContent?: boolean;
         /**
          * True if the sender has edited this message at least once.
          */
