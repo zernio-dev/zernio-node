@@ -3547,10 +3547,12 @@ export const getWebhookSettings = <ThrowOnError extends boolean = false>(options
  * subscriptions behave. A restricted key's own disabled groups are always
  * unioned in.
  *
- * `profileIds` pins the subscription to a set of profiles: only events
- * attributable to one of them are delivered. Use it to send the profile
- * holding your test accounts to a staging endpoint. Ids outside your team
- * are rejected with 404 `profile_not_found`.
+ * `profileIds` pins the subscription to a set of profiles and `accountIds`
+ * to a set of connected accounts: only events attributable to one of the
+ * listed ids are delivered, and a subscription with both lists must match
+ * on both. Use them to send test accounts to a staging endpoint. Ids
+ * outside your team are rejected with 404 (`profile_not_found`,
+ * `account_not_found`).
  *
  */
 export const createWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateWebhookSettingsData, ThrowOnError>) => {
@@ -3586,8 +3588,9 @@ export const createWebhookSettings = <ThrowOnError extends boolean = false>(opti
  * subscription. Retries beyond that window, dead-letter replays, test fires,
  * and redeliveries are all checked against the current denylist.
  *
- * `profileIds` replaces the subscription's profile allowlist; an empty array
- * clears it. Ids outside your team are rejected with 404 `profile_not_found`.
+ * `profileIds` and `accountIds` replace the subscription's allowlists; an
+ * empty array clears one. Ids outside your team are rejected with 404
+ * (`profile_not_found`, `account_not_found`).
  *
  */
 export const updateWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWebhookSettingsData, ThrowOnError>) => {

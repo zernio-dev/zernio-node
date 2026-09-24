@@ -8803,9 +8803,13 @@ export type Webhook = {
      */
     disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
     /**
-     * Profiles this subscription receives events for (allowlist). Absent or empty means every profile, which is how every subscription created before this field existed behaves. A scoped subscription is only sent events attributable to a listed profile; events with no profile behind them (`verification.*`, `phone_number.*`) are not delivered to it. Applied when the event is emitted: a redelivery replays a delivery already made to this endpoint, and a test fire ignores the list.
+     * Profiles this subscription receives events for (allowlist). Absent or empty means every profile, which is how every subscription created before this field existed behaves. A scoped subscription is only sent events attributable to a listed profile. An aggregate `post.*` event is attributed to the profile of every account the post targets, so a post spanning two scoped endpoints' profiles reaches both. Events with no profile behind them (`verification.*`, `phone_number.*`, a legacy post whose accounts were deleted) are not delivered to it. Applied when the event is emitted: a redelivery replays a delivery already made to this endpoint, and a test fire ignores the list.
      */
     profileIds?: Array<(string)>;
+    /**
+     * Connected accounts this subscription receives events for (allowlist). Absent or empty means every account. Same semantics as `profileIds`, keyed on the account: an aggregate `post.*` event is attributed to every account the post targets. A subscription with both lists must be satisfied on both. Applied when the event is emitted; a redelivery replays a delivery already made to this endpoint and a test fire ignores the list.
+     */
+    accountIds?: Array<(string)>;
 };
 
 /**
@@ -21726,6 +21730,10 @@ export type CreateWebhookSettingsData = {
          * Profiles this subscription receives events for. Omit or send an empty array to receive every profile. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing is created. Typical use is routing the profile that holds test accounts to a staging endpoint.
          */
         profileIds?: Array<(string)>;
+        /**
+         * Connected accounts this subscription receives events for. Omit or send an empty array to receive every account. Every id must be an account in your team, otherwise the request fails with 404 `account_not_found` and nothing is created. Combine with `profileIds` to narrow further; both must match.
+         */
+        accountIds?: Array<(string)>;
     };
 };
 
@@ -21787,9 +21795,13 @@ export type UpdateWebhookSettingsData = {
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
         /**
-         * Replaces the subscription's profile allowlist. Send an empty array to receive every profile again. Omitting the field leaves the current list untouched. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing changes. Applies to events emitted after the update.
+         * Replaces the subscription's profile allowlist. Send an empty array to receive every profile again. Omitting the field leaves the current list untouched. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing changes. Applies to events emitted after the update. Sending the stored list back unchanged is accepted without re-validation, so an endpoint stays editable after a listed profile is deleted.
          */
         profileIds?: Array<(string)>;
+        /**
+         * Replaces the subscription's account allowlist. Send an empty array to receive every account again. Omitting the field leaves the current list untouched. Every id must be an account in your team, otherwise the request fails with 404 `account_not_found` and nothing changes. Sending the stored list back unchanged is accepted without re-validation.
+         */
+        accountIds?: Array<(string)>;
     };
 };
 
