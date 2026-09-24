@@ -8318,6 +8318,15 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
  * When someone comments a matching keyword (or, with `trigger: story_reply`, replies
  * to your Instagram story with one), they automatically receive a DM.
  *
+ * To continue into a specific workflow after the recipient taps a button, use
+ * `{"type":"postback","title":"Send it","payload":"zernio:workflow:<workflowId>"}`.
+ * The target must be active and belong to the same account and profile. This also
+ * works for product-card buttons. The tap starts that workflow directly, without
+ * matching its keyword or first-message condition. A different live workflow in
+ * the conversation is exited; tapping the same live workflow does not restart it
+ * or consume a pending reply. Stale or invalid targets do nothing. The initial
+ * comment DM alone does not start the workflow: the recipient must tap.
+ *
  * Triggers (`trigger`):
  * * `comment` (default): fires on keyword comments on a post or reel.
  * * `story_reply`: fires when someone replies to your Instagram story with a keyword,
