@@ -3547,6 +3547,11 @@ export const getWebhookSettings = <ThrowOnError extends boolean = false>(options
  * subscriptions behave. A restricted key's own disabled groups are always
  * unioned in.
  *
+ * `profileIds` pins the subscription to a set of profiles: only events
+ * attributable to one of them are delivered. Use it to send the profile
+ * holding your test accounts to a staging endpoint. Ids outside your team
+ * are rejected with 404 `profile_not_found`.
+ *
  */
 export const createWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateWebhookSettingsData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateWebhookSettingsResponse, CreateWebhookSettingsError, ThrowOnError>({
@@ -3580,6 +3585,9 @@ export const createWebhookSettings = <ThrowOnError extends boolean = false>(opti
  * trusts a five-minute enqueue-time snapshot before re-checking the
  * subscription. Retries beyond that window, dead-letter replays, test fires,
  * and redeliveries are all checked against the current denylist.
+ *
+ * `profileIds` replaces the subscription's profile allowlist; an empty array
+ * clears it. Ids outside your team are rejected with 404 `profile_not_found`.
  *
  */
 export const updateWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWebhookSettingsData, ThrowOnError>) => {

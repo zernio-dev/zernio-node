@@ -8802,6 +8802,10 @@ export type Webhook = {
      * Resource groups this subscription does not receive (opt-out denylist, same vocabulary and same semantics as the field on API keys). Absent or empty means the subscription receives every event listed in `events`, which is how every subscription created before this field existed behaves. An event whose group is listed here is dropped before delivery even when it is still present in `events`, and the same check runs on every replay path (test fire, redelivery, dead-letter requeue). Editing the denylist applies to every event emitted afterwards; events already queued when the edit landed can still be delivered for up to five minutes after they were enqueued.
      */
     disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+    /**
+     * Profiles this subscription receives events for (allowlist). Absent or empty means every profile, which is how every subscription created before this field existed behaves. A scoped subscription is only sent events attributable to a listed profile; events with no profile behind them (`verification.*`, `phone_number.*`) are not delivered to it. Applied when the event is emitted: a redelivery replays a delivery already made to this endpoint, and a test fire ignores the list.
+     */
+    profileIds?: Array<(string)>;
 };
 
 /**
@@ -21718,6 +21722,10 @@ export type CreateWebhookSettingsData = {
          * Resource groups this subscription does not receive (opt-out denylist). Omit or send an empty array to receive every event in `events`. Listing a group here drops its events before delivery and on every replay path. Set at creation it applies to everything this subscription ever receives; changed later via PUT it applies to events emitted after the change, with a five-minute tail for events already queued (see that operation). When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned into whatever you send here, so a restricted key can never create a subscription wider than itself.
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+        /**
+         * Profiles this subscription receives events for. Omit or send an empty array to receive every profile. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing is created. Typical use is routing the profile that holds test accounts to a staging endpoint.
+         */
+        profileIds?: Array<(string)>;
     };
 };
 
@@ -21778,6 +21786,10 @@ export type UpdateWebhookSettingsData = {
          * Replaces the subscription's denylist. Send an empty array to clear it and receive every event in `events` again. Omitting the field leaves the current denylist untouched. Applies to events emitted after the update; already-queued events can still deliver for up to five minutes after they were enqueued. When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned back in either way, so a restricted key can neither clear nor widen a subscription past its own groups.
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+        /**
+         * Replaces the subscription's profile allowlist. Send an empty array to receive every profile again. Omitting the field leaves the current list untouched. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing changes. Applies to events emitted after the update.
+         */
+        profileIds?: Array<(string)>;
     };
 };
 
