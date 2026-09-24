@@ -1386,7 +1386,9 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  * token can be perfectly valid while Meta refuses to serve the phone-number object (for
  * example after a phone-side coexistence disconnect), so `tokenStatus` alone is not a
  * liveness signal for WhatsApp. When the Meta link is dead, `platformConnection.status` is
- * `disconnected` and the overall `status` is `error`.
+ * `disconnected` and the overall `status` is `error`. When Meta reports that the number's
+ * inbound message webhook does not reach Zernio, `platformConnection.inboundWebhookSubscribed`
+ * is `false`, an entry is added to `issues`, and the overall `status` is at least `warning`.
  *
  */
 export const getAccountHealth = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAccountHealthData, ThrowOnError>) => {
