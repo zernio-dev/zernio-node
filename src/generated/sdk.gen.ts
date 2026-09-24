@@ -9623,7 +9623,6 @@ export const getAdAnalytics = <ThrowOnError extends boolean = false>(options: Op
  * Unified read of the platform's native click-URL tracking params.
  * - Meta (facebook/instagram): the creative's `url_tags` (and template_url_spec).
  * - Google (googleads): the campaign's `trackingUrlTemplate` + `finalUrlSuffix`.
- * Subject to the Google Ads API access-tier daily quota; bulk audits need Standard access.
  * - LinkedIn (linkedinads): the campaign's Dynamic UTM `dynamicValueParameters` + `customValueParameters`.
  * Returns 405 for platforms without a click-URL tracking surface (TikTok, X, Pinterest).
  *
