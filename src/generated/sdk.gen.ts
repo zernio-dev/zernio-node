@@ -5397,7 +5397,9 @@ export const updateImessageSender = <ThrowOnError extends boolean = false>(optio
  * Cancel an iMessage sender
  * Cancels the sender at the provider and deactivates its messaging
  * account. Billing stops with the current month (no proration or
- * refunds, matching phone numbers).
+ * refunds, matching phone numbers). A sender still being set up
+ * (status ordering or activating) cannot be canceled; contact support
+ * to change the order.
  *
  */
 export const cancelImessageSender = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CancelImessageSenderData, ThrowOnError>) => {
