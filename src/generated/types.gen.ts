@@ -16000,6 +16000,10 @@ export type GetConnectUrlData = {
          * After your framework decodes the query string once, run one more decodeURIComponent (or
          * equivalent) and then JSON.parse it. `tempToken` and `connect_token` are plain values.
          *
+         * `code_already_redeemed` means the same authorization code arrived more than once and an earlier
+         * request already processed it (the code is never sent to the platform twice). It is not a
+         * failure: check GET /v1/accounts or wait for the `account.connected` webhook.
+         *
          * `missing_google_permissions` (YouTube, Google Business and Google Ads) means the user unchecked one or more
          * permissions on Google's consent screen. It always comes with `is_user_fixable=true`. When Google
          * reported the granted scopes, `missing_scopes` is also present: a comma-separated list of the
@@ -16020,7 +16024,8 @@ export type GetConnectUrlData = {
          * oauth_denied, invalid_callback, invalid_state, unsupported_platform, connection_failed,
          * internal_error, token_exchange_failed, byok_config_error, personal_account_not_supported,
          * missing_google_permissions, missing_tiktok_permissions, platform_requires_destination,
-         * reconnect_account_mismatch, instagram_login_method_mismatch, invalid_request
+         * reconnect_account_mismatch, instagram_login_method_mismatch, invalid_request,
+         * code_already_redeemed
          *
          * Access and limits:
          * profile_not_found, invalid_profile_id, access_denied, account_limit_exceeded,
