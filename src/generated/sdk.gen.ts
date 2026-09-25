@@ -1651,9 +1651,20 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
  * return 400 with available Page IDs for API integrations; restart with pageId.
  * Dashboard session logins use the sole current grant automatically or open the existing
  * Facebook Page picker for several grants, including reconnects. Selection completes
- * the Meta Ads connection. With no Pages granted the callback returns
- * 400 with instructions to connect again and grant a Page.
+ * the Meta Ads connection.
  * Success redirects with connected=metaads, profileId and accountId.
+ * Every failure after Meta's dialog redirects to redirect_url (or the dashboard) with
+ * `error`, `platform=metaads`, `error_message`, `request_id` and `stage`, plus
+ * `is_user_fixable` and `error_reason` when known. `error` is the API error code:
+ * `invalid_field_value` with `error_reason` `no_pages_granted` (no Page ticked),
+ * `page_not_granted` (pageId not in the grant), `ad_accounts_not_granted` or
+ * `reconnect_mismatch` (the grant shares no ad account with the existing connection);
+ * `reconnect_required`, `ads_addon_required`, `payment_required` and the profile gates of
+ * GET /v1/connect/{platform}; `invalid_state` with `error_reason=state_expired` after the
+ * 30-minute window; `connection_failed` when Meta refuses the code (e.g. a replayed callback).
+ * A denial in the dialog is `meta_ads_authorization_denied` with the `platform_error*` params.
+ * Only a state that cannot be decrypted at all still answers 400 JSON, since it names no
+ * redirect_url.
  * Business login reports metadata.tokenType=system-user in GET /v1/accounts. An absent
  * Meta expires_in leaves tokenExpiresAt absent; no personal-token re-exchange occurs.
  * Subsequent classic requests can change the ad-account scope using the business token;
