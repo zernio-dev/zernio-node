@@ -15887,11 +15887,13 @@ export type GetConnectUrlData = {
          * redirect, but ours overwrite a param of yours with the same name. On an error redirect the
          * internal `headless`, `adsConnect` and `adsScope` markers we add during the flow are removed.
          *
-         * Correlation (every redirect from an OAuth callback, success and failure):
-         * - `request_id`: the id we log the callback request under. Quote it when reporting a problem.
+         * Correlation (every redirect from an OAuth callback, success and failure, and the
+         * `redirect_url` returned by the selection endpoints such as POST /v1/connect/facebook/select-page):
+         * - `request_id`: the id we log that request under. Quote it when reporting a problem.
          * - `stage`: where the flow ended. `authorize` = the platform's consent dialog returned an
          * error or denial instead of a code. `callback` = we processed the returned code (success,
-         * a selection step, or a failure). `select_page` is reserved for the destination-selection step.
+         * a selection step, or a failure). `select_page` = the destination-selection endpoint
+         * (page, account, organization, board, location, profile or phone number) completed it.
          *
          * `oauth_denied` carries `error_message` and, when the platform sent them, its own values as
          * `platform_error` (e.g. `access_denied`), `platform_error_reason` (e.g. `user_denied`) and
