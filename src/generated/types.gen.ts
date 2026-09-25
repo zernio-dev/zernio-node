@@ -36483,16 +36483,18 @@ export type UpdateAdData = {
         };
         /**
          * Meta + TikTok (demographics/interests), Google (keyword and device
-         * bid adjustment edits only), and LinkedIn (countries or regions required).
+         * bid adjustment edits only), and LinkedIn (locations, B2B facets, audiences).
          * Pinterest / X return 501.
          *
-         * On Meta this is a partial update merged over the ad set's live targeting:
-         * every targeting setting you do not send is preserved (Advantage+ audience,
-         * placements, custom audiences, exclusions, interests, languages, and so on).
-         * A field you send replaces its Meta counterpart, and an empty or null value
-         * (for example `audienceInclude: []` or `gender: "all"`) clears only that field.
-         * Any location field (countries, regions, cities, zips, ...) replaces the whole
-         * included location set, since Meta ORs locations together.
+         * On Meta, TikTok and LinkedIn this is a partial update: every targeting setting
+         * you do not send is preserved (on Meta: Advantage+ audience, placements, custom
+         * audiences, exclusions, interests, languages; on TikTok: languages, interest
+         * keywords, devices, behaviours; on LinkedIn: skills, member traits, interface
+         * locales, and any facet set in Campaign Manager). A field you send replaces its
+         * platform counterpart, and an empty or null value (for example `audienceInclude: []`,
+         * `industries: []` or `gender: "all"`) clears only that field. Any location field
+         * (countries, regions, cities, zips, ...) replaces the whole included location set;
+         * an update with no location keeps the current locations.
          *
          */
         targeting?: {
