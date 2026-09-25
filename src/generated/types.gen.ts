@@ -6709,6 +6709,7 @@ export type PlatformTarget = {
      * Who caused the error: user (fix content/reconnect), platform (outage/API change), system (Zernio issue, rare)
      */
     errorSource?: 'user' | 'platform' | 'system';
+    platformError?: PostPlatformError;
 };
 
 /**
@@ -6910,6 +6911,24 @@ export type PostDeleteResponse = {
 
 export type PostGetResponse = {
     post?: Post;
+};
+
+/**
+ * The platform's own error for this target, so you can see what the platform said (access tokens are redacted). Set when the last attempt failed with an error the platform described (currently Instagram and Facebook), and kept while an automatic retry of that failure is pending or running; cleared when the target publishes or is retried manually. errorMessage stays the human-readable summary; this block is for diagnostics and support tickets. Instagram media processing failures carry no code or subcode, only Meta's status text in message.
+ */
+export type PostPlatformError = {
+    /**
+     * Meta error code, when Meta sent one.
+     */
+    code?: number;
+    /**
+     * Meta error_subcode, when Meta sent one.
+     */
+    subcode?: number;
+    /**
+     * The platform's raw error message or media processing status text.
+     */
+    message: string;
 };
 
 /**
@@ -10770,6 +10789,7 @@ export type WebhookPayloadPost = {
             platformPostId?: string;
             publishedUrl?: string;
             error?: string;
+            platformError?: PostPlatformError;
         }>;
         /**
          * The free-form `metadata` object supplied when the post was created, echoed back so you can map events onto your own records. Omitted when the post was created without it.
@@ -10834,6 +10854,7 @@ export type WebhookPayloadPostPlatform = {
             platformPostId?: string;
             publishedUrl?: string;
             error?: string;
+            platformError?: PostPlatformError;
         }>;
         /**
          * The free-form `metadata` object supplied when the post was created, echoed back so you can map events onto your own records. Omitted when the post was created without it.
