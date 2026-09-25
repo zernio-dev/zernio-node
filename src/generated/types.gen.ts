@@ -28829,6 +28829,11 @@ export type PurchasePhoneNumberData = {
          */
         areaCode?: string;
         /**
+         * Keyless calls only: a `claimId` from a keyless GET /v1/phone-numbers/available. The 401 then carries a `claimUrl` for that exact number. Ignored when an API key is sent.
+         *
+         */
+        claimId?: string;
+        /**
          * One exact number to buy, in E.164, taken from GET /v1/phone-numbers/available. Hard constraint: when it is no longer available (bought by someone else, or WhatsApp's buy-time check rejects it) the purchase fails with 409 code PHONE_NUMBER_UNAVAILABLE instead of assigning another number; search again and pick another. Only for countries and types that activate instantly: a regulated one (202 kyc_required) returns 400 when phoneNumber is set.
          *
          */
@@ -28899,6 +28904,11 @@ export type PurchasePhoneNumberResponse = (({
 
 export type PurchasePhoneNumberError = (unknown | {
     error?: string;
+    code?: string;
+    details?: {
+        claimId?: string;
+        claimUrl?: string;
+    };
 } | {
     error?: string;
     code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE' | 'COUNTRY_OUT_OF_STOCK' | 'NO_WHATSAPP_ELIGIBLE_NUMBER';
@@ -28906,6 +28916,42 @@ export type PurchasePhoneNumberError = (unknown | {
     error?: string;
     code?: 'CARRIER_UNAVAILABLE';
 });
+
+export type GetPhoneNumberClaimData = {
+    path: {
+        claimId: string;
+    };
+};
+
+export type GetPhoneNumberClaimResponse = ({
+    country?: {
+        code?: string;
+        needsKyc?: boolean;
+        monthlyCents?: number;
+        types?: Array<{
+            [key: string]: unknown;
+        }>;
+    };
+    /**
+     * The claimed number type, in the shape of `types[]` on GET /v1/phone-numbers/countries.
+     */
+    type?: {
+        [key: string]: unknown;
+    };
+    area?: {
+        ndc?: string;
+        name?: string;
+        count?: number;
+    } | null;
+    /**
+     * E.164, or null for an any-number claim.
+     */
+    phoneNumber?: (string) | null;
+});
+
+export type GetPhoneNumberClaimError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type ListPhoneNumberCountriesResponse = ({
     countries?: Array<{
@@ -28977,9 +29023,7 @@ export type ListPhoneNumberCountriesResponse = ({
     }>;
 });
 
-export type ListPhoneNumberCountriesError = ({
-    error?: string;
-});
+export type ListPhoneNumberCountriesError = unknown;
 
 export type SearchAvailablePhoneNumbersData = {
     query?: {
@@ -28991,12 +29035,19 @@ export type SearchAvailablePhoneNumbersData = {
          * Pattern to match within the number
          */
         contains?: string;
+        /**
+         * ISO code, or `auto` on the keyless shape to search the caller's own country (from their IP) near their city, falling back to US.
+         */
         country?: string;
         limit?: number;
         /**
          * City
          */
         locality?: string;
+        /**
+         * true returns the keyless shape (masked numbers with claimId and claimUrl) even when you send an API key, e.g. to hand a user a signup link for a number.
+         */
+        masked?: boolean;
         /**
          * Number type; defaults to the country's WhatsApp-safe type (the same name as on purchase, availability and kyc)
          */
@@ -29042,7 +29093,39 @@ export type SearchAvailablePhoneNumbersResponse = ({
          * true when the carrier added this number because too few matched your filters, so it may be outside the requested prefix or locality.
          */
         bestEffort?: boolean;
+        /**
+         * Keyless calls only, in place of `phoneNumber`: the number with its middle digits masked, e.g. +44 20 •••• 0123.
+         */
+        maskedNumber?: string;
+        /**
+         * Keyless calls only. Without a `numberType` filter a keyless search mixes every type the country sells, so each result names its own.
+         */
+        numberType?: string;
+        /**
+         * Keyless calls only. Opaque, expires after 7 days. Pass it as `claimId` on a keyless POST /v1/phone-numbers/purchase.
+         */
+        claimId?: string;
+        /**
+         * Keyless calls only. Signup link that opens the dashboard's confirm step for this number. The number is not held: if it is gone by then, the buyer picks another in the same area.
+         */
+        claimUrl?: string;
     }>;
+    /**
+     * true on keyless calls.
+     */
+    masked?: boolean;
+    /**
+     * With `country=auto`: the caller's city the results were narrowed to, or null when there was no stock there.
+     */
+    near?: (string) | null;
+    /**
+     * Keyless calls only: a claim for any number matching this search's country, type and area.
+     */
+    claimId?: string;
+    /**
+     * Keyless calls only: signup link for any number matching this search.
+     */
+    claimUrl?: string;
 });
 
 export type SearchAvailablePhoneNumbersError = (unknown | {

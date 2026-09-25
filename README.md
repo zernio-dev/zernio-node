@@ -899,6 +899,7 @@ try {
 | `phoneNumbers.createPhoneNumberPortIn()` | Port numbers in |
 | `phoneNumbers.createPhoneNumberStockWatch()` | Watch an out-of-stock country |
 | `phoneNumbers.getPhoneNumber()` | Get phone number |
+| `phoneNumbers.getPhoneNumberClaim()` | Resolve a number claim |
 | `phoneNumbers.getPhoneNumberKycForm()` | Get KYC form spec |
 | `phoneNumbers.getPhoneNumberPortInOrderRequirements()` | A port-in order's pending requirements |
 | `phoneNumbers.getPhoneNumberPortInRequirements()` | Country porting requirements |
