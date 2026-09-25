@@ -29089,7 +29089,7 @@ export type ListPhoneNumberCountriesResponse = ({
          */
         callsAvailable?: boolean;
         /**
-         * WhatsApp can be enabled on numbers from this country.
+         * WhatsApp can be enabled on at least one number type from this country; types[].whatsappAvailable says which.
          */
         whatsappAvailable?: boolean;
         /**
@@ -29124,7 +29124,7 @@ export type ListPhoneNumberCountriesResponse = ({
              */
             monthlyCents?: number;
             /**
-             * Always false for toll_free (WhatsApp does not reliably register toll-free numbers).
+             * False for toll_free (WhatsApp does not reliably register toll-free numbers) and for pairs Meta refuses, such as Chilean local (+56 2).
              */
             whatsappAvailable?: boolean;
             smsAvailable?: boolean;
