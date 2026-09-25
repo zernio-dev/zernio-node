@@ -998,7 +998,10 @@ export const updatePost = <ThrowOnError extends boolean = false>(options: Option
 
 /**
  * Delete post
- * Delete a draft or scheduled post from Zernio. Published posts cannot be deleted; use the Unpublish endpoint instead. Upload quota is automatically refunded.
+ * Delete a post from Zernio. Any status except `published` can be deleted: `draft`, `scheduled`, `publishing`, `failed`, `partial` and `cancelled`. Published posts cannot be deleted; use the Unpublish endpoint instead. Upload quota is automatically refunded for draft and scheduled posts.
+ *
+ * Deleting a `publishing` or `partial` post is how you stop entries that are still pending, for example entries held on a disconnected account. It removes the whole post record from Zernio, including the entries that were already published, but it does not remove anything already live on a platform (use Unpublish for that first if needed). An entry that a worker has already started sending when you delete may still go out, or may fail because media uploaded to Zernio and not used by another post is deleted with the post. Analytics for entries already published are removed too. Deleting also frees the content for re-creation, so the same caption and media are no longer reported as a duplicate.
+ *
  */
 export const deletePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeletePostData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeletePostResponse, DeletePostError, ThrowOnError>({
