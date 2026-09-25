@@ -4121,8 +4121,49 @@ export type ErrorResponse = {
      * every other customer, so only waiting for the reset clears it. The two
      * scopes are separate axes from `quotaScope`, not the same pool named twice.
      *
+     * A failed Meta ad create (`POST /v1/ads/create`, `POST /v1/ads/boost`,
+     * `POST /v1/ads/ctwa`) carries `stage`, `adAccountId` and `createdObjects`: where
+     * it failed, on which ad account, and every object this request had already
+     * created with what cleanup did to it. `left_behind` objects still exist on the
+     * ad account (Meta refused the delete, typically on a held account), so delete
+     * them yourself or reuse them. `unconfirmedWrite` is set when Meta answered a
+     * create with a 5xx or dropped the connection and Zernio could not confirm
+     * whether the object exists: check that parent before creating it again.
+     *
      */
     details?: {
+        /**
+         * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on), or `other` (a read or check before any write).
+         */
+        stage?: 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activation' | 'other';
+        /**
+         * Meta ad create failures only. The ad account the request wrote to (`act_...`).
+         */
+        adAccountId?: string;
+        /**
+         * Meta ad create failures only. Every object this request created before failing, in creation order. Objects you referenced (an existing campaign, ad set, creative or video) are never listed and never deleted.
+         */
+        createdObjects?: Array<{
+            type?: 'campaign' | 'adset' | 'creative' | 'ad' | 'video' | 'image';
+            /**
+             * Meta object id; for `image` the image hash.
+             */
+            id?: string;
+            /**
+             * `deleted`: Zernio deleted it. `left_behind`: Meta refused the delete, so it still exists. `kept`: deliberately not deleted (image hashes are shared by every upload of the same file).
+             */
+            cleanup?: 'deleted' | 'left_behind' | 'kept';
+        }>;
+        /**
+         * Meta ad create failures only, when Meta answered a create with a 5xx or dropped the connection and the object could not be looked up. Zernio did not retry it.
+         */
+        unconfirmedWrite?: {
+            type?: 'campaign' | 'adset' | 'creative' | 'ad';
+            /**
+             * Where to look for it: the ad set for an ad, the campaign for an ad set, the ad account otherwise.
+             */
+            parentId?: string;
+        };
         /**
          * Google Ads 429 only. True when the upstream Google Ads quota is spent rather than a Zernio limit.
          */
@@ -4135,7 +4176,7 @@ export type ErrorResponse = {
          * Zernio Google Ads operations-budget 429 only (never set alongside `quotaExhausted`). `user` is your own burst/daily allowance; `platform` is the fleet-wide daily budget shared across customers.
          */
         budgetScope?: 'user' | 'platform';
-        [key: string]: unknown | boolean | string;
+        [key: string]: unknown | string | boolean;
     };
 };
 
@@ -4143,6 +4184,11 @@ export type ErrorResponse = {
  * Error class for programmatic handling.
  */
 export type type4 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+
+/**
+ * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on), or `other` (a read or check before any write).
+ */
+export type stage = 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activation' | 'other';
 
 /**
  * Google Ads 429 only, when Google names the scope. DEVELOPER is the shared developer-token budget; ACCOUNT is your ad account.
@@ -39906,15 +39952,14 @@ export type ListAdAccountsResponse = ({
          */
         minimumDailyBudget?: number;
         /**
-         * Meta only. Meta's `funding_source` ID for the ad account, forwarded unchanged. ABSENT when this connection's token cannot see billing on the account, which is not the same as the account having no payment method: never read the missing key as `no payment method configured`.
+         * Meta only. Meta's `funding_source` ID for the ad account, forwarded unchanged. ABSENT both when this connection's token cannot see billing and when the account has no payment method; read `billingStatus` to tell the two apart.
          */
         fundingSource?: string;
         /**
          * Meta only. Meta's `funding_source_details` object, forwarded unchanged.
-         * ABSENT under exactly the same condition as `fundingSource`: this
-         * connection's token cannot see billing on the ad account. It is never
-         * sent as null or as an empty object, so treat the missing key as
-         * 'unknown', never as 'no payment method configured'.
+         * ABSENT under exactly the same conditions as `fundingSource`, never sent
+         * as null or as an empty object. Read `billingStatus` for what the
+         * absence means.
          *
          */
         fundingSourceDetails?: {
@@ -39931,6 +39976,21 @@ export type ListAdAccountsResponse = ({
              */
             type?: number;
         };
+        /**
+         * Meta only. Whether the ad account has a payment method, derived as follows:
+         * - `missing` when `accountStatus` is `3` (UNSETTLED) or `9` (IN_GRACE_PERIOD),
+         * when `disableReason` is `3` (RISK_PAYMENT), or when the connected person
+         * has the MANAGE task on the account (admin, who always sees billing) and
+         * Meta returns no funding source. Ad creation on such an account fails at
+         * the ad step with Meta code 100 / subcode 1359188: add a payment method in
+         * Meta's Billing & payments center.
+         * - `ok` when Meta returns a funding source. This is presence, not validity:
+         * Meta can still refuse the card or balance at ad creation.
+         * - `unknown` when the connected person is not an admin of the account, or
+         * the token cannot read the billing fields.
+         *
+         */
+        billingStatus?: 'ok' | 'missing' | 'unknown';
         /**
          * Meta and X only. Whether the account can create/run ads now. Absent (treat as true) on other platforms.
          */
