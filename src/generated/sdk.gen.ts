@@ -1715,7 +1715,11 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
  * `error=google_ads_no_ad_accounts`, `platform=googleads` and an `error_message` naming each
  * customer the Google user can reach and why it was left out (for example
  * CUSTOMER_NOT_ENABLED). Sign in with a Google user that has access to the ad account or to
- * its manager account.
+ * its manager account. When the user unticks the Google Ads permission on Google's consent
+ * screen, the callback saves nothing and redirects with `error=missing_google_permissions`,
+ * `platform=googleads`, `is_user_fixable=true` and `missing_scopes`. An existing connection
+ * whose token lacks that permission is flagged needsReconnection, and the health endpoints
+ * report "Google Ads permission not granted"; this endpoint then returns an authUrl for it.
  *
  * Ads accounts appear as regular SocialAccount documents with ads platform values (e.g., metaads, tiktokads) in GET /v1/accounts.
  *
