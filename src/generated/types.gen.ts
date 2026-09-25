@@ -30132,9 +30132,13 @@ export type ListPhoneNumberPortInsError = ({
 export type CheckPhoneNumberPortabilityData = {
     body: {
         /**
-         * E.164 numbers to check, e.g. +13035550000.
+         * E.164 numbers to check, e.g. +13035550000. At most one without an API key.
          */
         phoneNumbers: Array<(string)>;
+        /**
+         * true adds `claimId` and `claimUrl` to portable results even when you send an API key, e.g. to hand a user a signup link that opens the port form with their number.
+         */
+        claimLinks?: boolean;
     };
 };
 
@@ -30147,27 +30151,64 @@ export type CheckPhoneNumberPortabilityResponse = ({
          */
         fastPortable?: boolean;
         /**
-         * Line type when known (mobile, landline, voip…). A US/CA mobile number requires the transfer PIN at submit.
+         * Whether texting can be enabled on the number once ported; null when the carrier does not say.
+         */
+        messagingCapable?: (boolean) | null;
+        /**
+         * Line type when known (mobile, landline, voip, toll-free, unknown). US/CA portable numbers only. A US/CA mobile number requires the transfer PIN at submit.
          */
         lineType?: (string) | null;
+        /**
+         * The number's current carrier, when the lookup knows it. US/CA portable numbers only.
+         */
+        carrierName?: (string) | null;
         /**
          * ISO country of the number. Pass it to GET /v1/phone-numbers/port-in/requirements for international numbers.
          */
         countryCode?: (string) | null;
         /**
-         * Carrier number-type classification (local, mobile, national, toll_free…), the numberType for the requirements endpoint.
+         * Carrier number-type classification (local, mobile, national, toll_free...), the numberType for the requirements endpoint.
          */
         phoneNumberType?: (string) | null;
         /**
          * Carrier reason when not portable; null when portable.
          */
         notPortableReason?: (string) | null;
+        /**
+         * Keyless calls and claimLinks=true only, on portable results. Resolve it with GET /v1/phone-numbers/port-in/claims/{claimId}. Expires after 7 days.
+         */
+        claimId?: string;
+        /**
+         * Keyless calls and claimLinks=true only, on portable results. A signup link that lands on the dashboard's port form with this number filled in.
+         */
+        claimUrl?: string;
     }>;
 });
 
-export type CheckPhoneNumberPortabilityError = ({
+export type CheckPhoneNumberPortabilityError = (ErrorResponse | {
     error?: string;
+} | unknown);
+
+export type GetPhoneNumberPortClaimData = {
+    path: {
+        claimId: string;
+    };
+};
+
+export type GetPhoneNumberPortClaimResponse = ({
+    /**
+     * E.164.
+     */
+    phoneNumber?: string;
+    /**
+     * ISO country of the number.
+     */
+    countryCode?: (string) | null;
 });
+
+export type GetPhoneNumberPortClaimError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type UploadPhoneNumberPortInDocumentData = {
     body: {
