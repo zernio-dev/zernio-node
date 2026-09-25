@@ -906,24 +906,27 @@ export const listPosts = <ThrowOnError extends boolean = false>(options?: Option
  *
  * ## Idempotency
  *
- * Two layers of duplicate-protection apply, so safe-to-retry callers (network blips, n8n / Zapier retries, etc.) don't accidentally double-post.
+ * Three layers of duplicate-protection apply, so safe-to-retry callers (network blips, n8n / Zapier retries, etc.) don't accidentally double-post.
  *
- * **1. Same-request idempotency (5-minute window).**
- * Pass an `x-request-id` header to mark a logical request. If a second request arrives with the same `x-request-id` while the first is in-flight (or within ~5 minutes of completion), we return **HTTP 200** with the original post in the `existingPost` field, and no new post is created.
+ * **1. `Idempotency-Key` (recommended for retries, 24-hour window).**
+ * Send an `Idempotency-Key` header (a UUID per logical post, up to 255 characters) and reuse it when you retry after a 5xx, a timeout or a dropped connection. A retry with the same key within 24 hours returns **HTTP 200** with the original post in the `post` field, and no new post is created. The match is on the key alone, not on the body: a retry returns the original post even if its body differs (for example a re-uploaded media URL). It covers drafts, and a post that was saved even though the original response was a 5xx or timed out.
+ *
+ * If the first request is still being processed, the retry gets **HTTP 409** with `code: idempotency_conflict` and a `Retry-After` header; retry after that delay. If the first request failed without creating a post, the retry is processed as a new request. Keys are scoped to your user. Never reuse a key for a different post: that post would not be created, and the earlier one would be returned instead.
+ *
+ * **2. `x-request-id` retry detection (24-hour window).**
+ * If a request carries the same `x-request-id` as an earlier one AND collides with it on the content fingerprint below (same account, content and media URLs), we return **HTTP 200** with the original post in the `post` field (or **HTTP 202** with `postId` if the original is still being saved) instead of a 409. A request with the same `x-request-id` but different content is a new post. When both headers are sent, `Idempotency-Key` wins and `x-request-id` is ignored for matching.
  *
  * The official Zernio SDKs auto-generate a unique `x-request-id` per call. On a generic HTTP client (curl, n8n's HTTP node, Zapier, custom code), either:
  *
- * - Set a unique `x-request-id` per logical call (recommended, UUIDv4 is fine)
+ * - Set a unique `x-request-id` per logical call (UUIDv4 is fine)
  * - Or omit the header, and we'll treat each request as new
  *
- * **Common pitfall**: if your workflow tool uses a single execution-level request ID and reuses it across multiple HTTP nodes (e.g. one ID for the whole run, shared across 6 different platform calls), every call after the first will look like a retry of the first and return its post. Generate a fresh ID per node.
- *
- * **2. Content-hash dedup (24-hour window).**
+ * **3. Content-hash dedup (24-hour window).**
  * Independently, we hash `(platform, accountId, content + media URLs)` and reject duplicates within 24 hours with **HTTP 409**. This catches genuine "same content posted twice to the same account" cases regardless of `x-request-id`. The response carries `error`, `accountId`, `platform`, and `existingPostId` so you can find the original.
  *
  * To intentionally re-post identical content within 24h, change something (the caption, the media, the account), because the dedup is keyed on the full content fingerprint.
  *
- * Order: same-`x-request-id` retries (200) are checked first; if no idempotency match, the content-hash dedup (409) runs.
+ * Order: an `Idempotency-Key` match (200) is checked first, then same-`x-request-id` retries (200), then the content-hash dedup (409).
  *
  */
 export const createPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreatePostData, ThrowOnError>) => {
@@ -3720,7 +3723,7 @@ export const listInboxConversations = <ThrowOnError extends boolean = false>(opt
  *
  * Supported platforms: X, Bluesky, Reddit, WhatsApp, SMS, Slack, and iMessage. Other platforms return PLATFORM_NOT_SUPPORTED.
  *
- * **iMessage.** Pass the recipient as participantId: a phone number in international format (+15551234567) or an iMessage email. Senders ordered through Zernio can message contacts who never wrote to them. The first message to such a contact must be a personal, plain-text note: no links, email addresses, phone numbers, prices, attachments or marketing. It is checked against those rules and reviewed for spam before sending; one that fails returns 400 with code `invalid_content` and nothing is sent. Each sender may open at most one new conversation every 15 minutes, and a new sender warms up: 2 new conversations per 24 hours on days 1-2 after activation, 5 on days 3-4, 10 on days 5-7, 20 on days 8-14, 30 on days 15-21 and 50 after that. Beyond that the request returns 429 with code `new_contact_limit` and a time to retry. The warm-up counts from when a sender ordered through Zernio went live; senders registered from your own provider account are not warmed up by Zernio. Until the contact replies, the opening is the only message the thread accepts: further sends return 409 `recipient_must_message_first`. Once the contact has written, the thread behaves like any other and is not limited. Recipients can report a first message as junk, and reports can get a sender blocked permanently, so keep the reply rate high (above roughly 30%). A sender registered with your own provider account may lack the add-on for new contacts; its sends to them return 409 `recipient_must_message_first`, and an opt-in link is the way in. A contact who opted out returns 409 `recipient_opted_out`.
+ * **iMessage.** Pass the recipient as participantId: a phone number in international format (+15551234567) or an iMessage email. Senders ordered through Zernio can message contacts who never wrote to them. The first message to such a contact must be plain text from an identifiable person or business opening a conversation; a cold introduction, including a sales one, is fine ("Hi Mark, this is John from Pratt Media. I help local roofers get more leads. Would you be open to a quick chat?"). It may not contain links, email addresses, phone numbers, prices or attachments (the provider's own rule for opening messages). One that does returns 400 with code `invalid_content`, a message saying what was flagged, and nothing is sent. Each sender may open at most one new conversation every 15 minutes, and a new sender warms up: 2 new conversations per 24 hours on days 1-2 after activation, 5 on days 3-4, 10 on days 5-7, 20 on days 8-14, 30 on days 15-21 and 50 after that. Beyond that the request returns 429 with code `new_contact_limit` and a time to retry. The warm-up counts from when a sender ordered through Zernio went live; senders registered from your own provider account are not warmed up by Zernio. Until the contact replies, the thread accepts the opening and at most two follow-ups, at least 24 hours apart: a follow-up sooner returns 429 `new_contact_limit` with the time to retry, and a fourth message returns 409 `recipient_must_message_first`. The provider treats every message to a contact who has not replied as a new conversation, so follow-ups follow the same content rule and count toward the 15-minute spacing and the daily warm-up like an opening. Once the contact has written, the thread behaves like any other and is not limited. Recipients can report a first message as junk, and reports can get a sender blocked permanently, so keep the reply rate high (above roughly 30%). A sender registered with your own provider account may lack the add-on for new contacts; its sends to them return 409 `recipient_must_message_first`, and an opt-in link is the way in. A contact who opted out returns 409 `recipient_opted_out`.
  *
  * **Slack.** Pass a workspace member id as participantId (list them with GET /v1/accounts/{accountId}/slack-members). Zernio opens the DM channel with that member and sends the message; the thread then behaves like any other Slack conversation in the inbox. The member must belong to the connected workspace.
  *
@@ -3855,9 +3858,14 @@ export const getInboxConversationMessages = <ThrowOnError extends boolean = fals
  * sender; a send inside that window returns `429` with code
  * `new_contact_limit` and the time to retry. Replies to contacts who
  * wrote within the last day are not paced. A thread opened with
- * `POST /v1/inbox/conversations` accepts no message after the opening
- * until the contact replies (`409 recipient_must_message_first`). Text
- * must be shorter than 10,000 characters.
+ * `POST /v1/inbox/conversations` takes at most two follow-ups before
+ * the contact replies, at least 24 hours apart (`429
+ * new_contact_limit` sooner, `409 recipient_must_message_first` for a
+ * fourth message). Each such follow-up counts as a new conversation:
+ * no links, emails, phone numbers, prices or attachments (`400
+ * invalid_content`), and it uses the sender's 15-minute spacing and
+ * daily warm-up (`429 new_contact_limit`). Text must be shorter than
+ * 10,000 characters.
  *
  * WhatsApp template messages: to send an approved template into this
  * conversation (required when the 24-hour customer-service window is

@@ -14329,7 +14329,12 @@ export type CreatePostData = {
     };
     headers?: {
         /**
-         * Optional client-generated request identifier for safe retry (idempotency). When two requests carry the same value, the second is treated as a retry of the first and returns the original post (HTTP 200) instead of creating a duplicate. Window is ~5 minutes from the first request. Generate a UUID per logical call. SDKs do this automatically; HTTP clients should set it themselves or omit it. See the operation description for the full idempotency contract.
+         * Optional client-generated key (a UUID per logical post) that makes retries safe. Reuse it on every retry of the same post, especially after a 5xx or a timeout. A retry with the same key within 24 hours returns the original post (HTTP 200) whatever its body; while the original is still being processed it returns 409 `idempotency_conflict` with `Retry-After`. Longer than 255 characters returns 400. Takes precedence over `x-request-id`. See the operation description for the full contract.
+         *
+         */
+        'Idempotency-Key'?: string;
+        /**
+         * Optional client-generated request identifier. A request with the same value as an earlier one within 24 hours that also matches its content fingerprint (same account, content and media URLs) returns the original post (HTTP 200) instead of a duplicate-content 409. It does not protect a retry whose body differs; use `Idempotency-Key` for that. SDKs set it automatically. See the operation description for the full idempotency contract.
          *
          */
         'x-request-id'?: string;
