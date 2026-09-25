@@ -23896,7 +23896,7 @@ export type SendInboxMessageError = ({
     };
 } | {
     error?: string;
-} | ErrorResponse | unknown | WhatsAppTemplateLookupError | (ErrorResponse | WhatsAppTemplateLookupError));
+} | ErrorResponse | unknown | (ErrorResponse | WhatsAppTemplateLookupError) | WhatsAppTemplateLookupError);
 
 export type GetWhatsAppMediaData = {
     path: {
