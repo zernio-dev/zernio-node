@@ -15980,6 +15980,12 @@ export type GetConnectUrlData = {
          * requested Google scopes that were not granted. Ask the user to connect again and keep every
          * permission checked.
          *
+         * `no_youtube_channel` means Google authorized the account but it has no YouTube channel we can
+         * connect. It always comes with `is_user_fixable=true` and an `error_message`. The usual causes: the
+         * user picked their personal Google identity instead of the Brand Account in Google's account
+         * chooser, they only have YouTube Studio access (not Brand Account owner or manager), or the
+         * account has no channel yet.
+         *
          * This list is NOT exhaustive and new values may be added at any time. Treat an unrecognized
          * value as a generic failure rather than matching it exhaustively. Existing values are not
          * renamed or removed without notice.
@@ -15997,7 +16003,7 @@ export type GetConnectUrlData = {
          * Destination selection:
          * no_facebook_pages, facebook_pages_error, no_google_locations, google_locations_error,
          * google_permission_denied, no_snapchat_public_profiles, snapchat_profiles_error,
-         * discord_no_guild, slack_no_team
+         * no_youtube_channel, discord_no_guild, slack_no_team
          *
          * WhatsApp:
          * whatsapp_error, one_whatsapp_per_profile, whatsapp_number_already_connected,
