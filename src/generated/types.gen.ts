@@ -36486,6 +36486,14 @@ export type UpdateAdData = {
          * bid adjustment edits only), and LinkedIn (countries or regions required).
          * Pinterest / X return 501.
          *
+         * On Meta this is a partial update merged over the ad set's live targeting:
+         * every targeting setting you do not send is preserved (Advantage+ audience,
+         * placements, custom audiences, exclusions, interests, languages, and so on).
+         * A field you send replaces its Meta counterpart, and an empty or null value
+         * (for example `audienceInclude: []` or `gender: "all"`) clears only that field.
+         * Any location field (countries, regions, cities, zips, ...) replaces the whole
+         * included location set, since Meta ORs locations together.
+         *
          */
         targeting?: {
             /**
