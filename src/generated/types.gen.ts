@@ -24498,14 +24498,14 @@ export type ListInboxCommentsError = ({
 export type GetInboxPostCommentsData = {
     path: {
         /**
-         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved. LinkedIn third-party posts accept full activity URN or numeric ID. On Facebook, a comment ID is also accepted here and returns that comment's replies (not supported on Instagram).
+         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved. LinkedIn third-party posts accept full activity URN or numeric ID. On Facebook, a comment ID is also accepted here and returns that comment's replies, kept for backwards compatibility; prefer the `commentId` query parameter, which also works on Instagram.
          */
         postId: string;
     };
     query: {
         accountId: string;
         /**
-         * (Reddit and TikTok only) Get replies to a specific comment
+         * (Facebook, Instagram, Reddit and TikTok) Get replies to a specific comment. On Facebook and Instagram, the requested comment is returned in the top-level `comment` field and comments[] holds its replies.
          */
         commentId?: string;
         /**
@@ -24557,7 +24557,7 @@ export type GetInboxPostCommentsResponse = ({
             [key: string]: unknown;
         }>;
         /**
-         * Facebook only. True when replies[] (capped at 10) does not hold the comment's full reply thread; fetch the rest by passing the comment id as postId to GET /v1/inbox/comments/{postId}. Absent (not false) on every other platform, including Instagram, which has no equivalent signal.
+         * Facebook only. True when replies[] (capped at 10) does not hold the comment's full reply thread; fetch the rest by passing the comment id as the `commentId` query parameter to GET /v1/inbox/comments/{postId} (or, for backwards compatibility, as `postId`). Absent (not false) on every other platform, including Instagram, which has no equivalent signal.
          */
         repliesHasMore?: boolean;
         canReply?: boolean;
@@ -24656,6 +24656,15 @@ export type GetInboxPostCommentsResponse = ({
          */
         isGallery?: boolean;
     } | null;
+    /**
+     * (Facebook and Instagram only) Present when `commentId` was passed: the requested
+     * comment itself, in the same shape as an entry in comments[]. comments[] then holds
+     * that comment's replies instead of the post's top-level comments.
+     *
+     */
+    comment?: {
+        [key: string]: unknown;
+    };
     pagination?: {
         hasMore?: boolean;
         /**

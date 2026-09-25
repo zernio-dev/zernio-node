@@ -4315,10 +4315,17 @@ export const listInboxComments = <ThrowOnError extends boolean = false>(options?
  * Get post comments
  * Fetch comments for a specific post. Requires accountId query parameter.
  *
- * On Facebook, passing a COMMENT id as `postId` is also supported and returns that
- * comment's replies instead of the post's top-level comments. Instagram does not support
- * this and returns 400: its replies come nested in each comment's `replies` array, with no
- * separate paging. YouTube does not support it either, `postId` must be a video id.
+ * Pass `commentId` (Facebook, Instagram, Reddit, TikTok) to fetch replies to a specific
+ * comment instead of the post's top-level comments. Facebook, Instagram and TikTok return
+ * the comment's replies, paged by `limit`/`cursor`; Reddit returns the focused comment
+ * thread instead. On Facebook and Instagram the requested comment itself comes back in the
+ * top-level `comment` field.
+ *
+ * On Facebook, passing a COMMENT id as `postId` (instead of using `commentId`) is also
+ * supported for backwards compatibility and returns that comment's replies the same way.
+ * Prefer `commentId` for new integrations; it also works on Instagram, which rejects a
+ * comment id passed as `postId`. YouTube does not support either form, `postId` must be a
+ * video id.
  *
  * Responses are cached for up to 10 minutes, so a page may lag new comments by that
  * window. Do not poll this endpoint for real-time updates: subscribe to the
