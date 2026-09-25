@@ -14058,7 +14058,7 @@ export type GetUsageResponse = ((UsageStats | UsageMetering));
 
 export type GetUsageError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type GetUsageStatsData = {
     query?: {
@@ -14078,7 +14078,7 @@ export type GetUsageStatsResponse = (UsageStats);
 
 export type GetUsageStatsError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type GetCallsUsageData = {
     query?: {
@@ -16885,9 +16885,13 @@ export type SelectInstagramAccountData = {
 export type SelectInstagramAccountResponse = ({
     message?: string;
     /**
-     * Redirect URL if a custom redirect_url was provided
+     * Redirect URL if a custom redirect_url was provided. On an ads connect it also carries `adsAccountId`.
      */
     redirect_url?: string;
+    /**
+     * Ads connect only (the redirect_url carries adsConnect=true, as it does after GET /v1/connect/{platform}/ads). The metaads SocialAccount ID to use with the /v1/ads endpoints. `account.accountId` is the Instagram posting account. Absent when the ads account could not be created.
+     */
+    adsAccountId?: string;
     account?: {
         /**
          * ID of the created SocialAccount
