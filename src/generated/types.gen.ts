@@ -1692,9 +1692,9 @@ export type AnalyticsSinglePostResponse = {
      */
     latePostId?: (string) | null;
     /**
-     * Overall post status. "partial" when some platforms published and others failed.
+     * Overall post status. "partial" when some platforms published and others failed. While any platform is still pending or processing, the post's own status is returned instead (usually scheduled or publishing), even if another platform already published.
      */
-    status?: 'published' | 'failed' | 'partial';
+    status?: 'published' | 'failed' | 'partial' | 'scheduled' | 'publishing' | 'draft' | 'cancelled';
     content?: string;
     scheduledFor?: string;
     publishedAt?: (string) | null;
@@ -1758,9 +1758,9 @@ export type AnalyticsSinglePostResponse = {
 };
 
 /**
- * Overall post status. "partial" when some platforms published and others failed.
+ * Overall post status. "partial" when some platforms published and others failed. While any platform is still pending or processing, the post's own status is returned instead (usually scheduled or publishing), even if another platform already published.
  */
-export type status2 = 'published' | 'failed' | 'partial';
+export type status2 = 'published' | 'failed' | 'partial' | 'scheduled' | 'publishing' | 'draft' | 'cancelled';
 
 /**
  * Overall sync state across all platforms
@@ -6682,7 +6682,7 @@ export type PlatformTarget = {
      */
     platformPostUrl?: (string) | null;
     /**
-     * Timestamp when the post was published to this platform
+     * Timestamp when the post was published to this platform. YouTube uploads a scheduled public video up to 15 minutes early as private with YouTube's own release time, so its entry is published with this set to scheduledFor, the moment the video goes public.
      */
     publishedAt?: string;
     /**
@@ -6819,11 +6819,6 @@ export type Post = {
     createdAt?: string;
     updatedAt?: string;
 };
-
-/**
- * `cancelled` is set by DELETE /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts.
- */
-export type status14 = 'draft' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
 export type visibility2 = 'public' | 'private' | 'unlisted';
 
@@ -7026,7 +7021,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status15 = 'active' | 'draft' | 'archived';
+export type status14 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8276,7 +8271,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status16 = 'pending' | 'completed' | 'expired';
+export type status15 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -8752,7 +8747,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status17 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status16 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel3 = 'sms';
 
@@ -8879,7 +8874,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status18 = 'success' | 'failed';
+export type status17 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -8991,7 +8986,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status19 = 'success' | 'failure';
+export type status18 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -10896,7 +10891,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status20 = 'published' | 'failed' | 'deleted';
+export type status19 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
@@ -11161,7 +11156,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status21 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status20 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -11310,7 +11305,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status22 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status21 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -11464,7 +11459,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status23 = 'pending' | 'active';
+export type status22 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -11622,7 +11617,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status24 = 'success' | 'failed' | 'pending';
+export type status23 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
