@@ -6879,6 +6879,9 @@ export type PostAnalytics = {
      * Number of saves/bookmarks (Instagram, Pinterest, X)
      */
     saves?: number;
+    /**
+     * Link clicks where the platform reports them. Always 0 on Facebook Page stories: Meta exposes no link-click metric for stories.
+     */
     clicks?: number;
     views?: number;
     /**

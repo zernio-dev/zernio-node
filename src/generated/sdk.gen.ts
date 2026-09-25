@@ -79,6 +79,8 @@ export const validateSubreddit = <ThrowOnError extends boolean = false>(options:
  *
  * LinkedIn personal accounts: Analytics are only available for posts published through Zernio. LinkedIn's API only returns metrics for posts authored by the authenticated user. Organization/company page analytics work for all posts.
  *
+ * Facebook Page stories: stories on a connected Page, published through Zernio or natively, are collected while they are live and returned like any other post (platformPostUrl points to the story). Their lifetime metrics refresh about hourly, with a final reading shortly before the story expires at 24 hours; after that the values stay at that last reading. Mapping: impressions = story impressions, reach = story reach, views = story media views, likes = story reactions, comments = story replies, shares = story shares. Meta exposes no link-click metric for stories, so clicks is always 0. Metrics for a story published through Zernio are available on its Zernio post ID.
+ *
  */
 export const getAnalytics = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetAnalyticsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAnalyticsResponse, GetAnalyticsError, ThrowOnError>({
