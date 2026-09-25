@@ -5854,7 +5854,8 @@ export const appealSmsRegistration = <ThrowOnError extends boolean = false>(opti
  * was written as points (`reviewRequest` on the registration), send one
  * entry in `answers` per point. The registration
  * returns to `requested` (back in review), and you do not need to resubmit the
- * whole registration. To change the submitted brand/campaign fields
+ * whole registration. A `rejected` registration can also be answered when
+ * we asked for changes to fix it (`reviewRequest` set); it stays `rejected`. To change the submitted brand/campaign fields
  * themselves, resubmit via `POST /v1/sms/registrations` with
  * `resubmitRequestId` instead.
  *
