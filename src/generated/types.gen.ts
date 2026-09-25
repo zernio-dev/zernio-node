@@ -15865,8 +15865,14 @@ export type GetConnectUrlData = {
          * Your custom redirect URL after connection completes. MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is rejected with 400 INVALID_REDIRECT_URL. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
          *
          * On failure, the browser is sent to the same redirect_url with `error` and `platform` appended.
-         * `error` and `platform` are always present. `error_message`, `is_user_fixable`, `reason` and
-         * `dashboard_url` are conditional and must be treated as optional.
+         * `error` and `platform` are always present. `error_message`, `is_user_fixable`, `reason`,
+         * `dashboard_url` and `missing_scopes` are conditional and must be treated as optional.
+         *
+         * `missing_google_permissions` (YouTube and Google Business) means the user unchecked one or more
+         * permissions on Google's consent screen. It always comes with `is_user_fixable=true`. When Google
+         * reported the granted scopes, `missing_scopes` is also present: a comma-separated list of the
+         * requested Google scopes that were not granted. Ask the user to connect again and keep every
+         * permission checked.
          *
          * This list is NOT exhaustive and new values may be added at any time. Treat an unrecognized
          * value as a generic failure rather than matching it exhaustively. Existing values are not
