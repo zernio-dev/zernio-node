@@ -5850,7 +5850,9 @@ export const appealSmsRegistration = <ThrowOnError extends boolean = false>(opti
  * Reply to a change request
  * Replies to a reviewer change request on a registration in
  * `changes_requested` state: a note, hosted document URLs (from
- * `POST /v1/sms/opt-in-proof`), or both, sent together. The registration
+ * `POST /v1/sms/opt-in-proof`), or both, sent together. When the request
+ * was written as points (`reviewRequest` on the registration), send one
+ * entry in `answers` per point. The registration
  * returns to `requested` (back in review), and you do not need to resubmit the
  * whole registration. To change the submitted brand/campaign fields
  * themselves, resubmit via `POST /v1/sms/registrations` with
