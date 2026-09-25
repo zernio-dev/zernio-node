@@ -9009,7 +9009,7 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  * Edit a Google campaign's device, location, or language targeting
  * Google Ads compliance row M.10: geo and language targeting set at
  * creation must stay editable afterwards. Send at least one of `devices`,
- * `locations`, `languages`; each provided field REPLACES that field's
+ * `locations`, `languages`, `locationTargetingType`; each provided field REPLACES that field's
  * existing criteria on the campaign (a full set, not a delta). Fields left
  * out of the body are untouched. Google only; every other platform returns
  * 501.
@@ -9031,6 +9031,11 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  *
  * `languages` is an array of Google's language codes (ISO 639-1, plus variants
  * such as `zh_CN`); an unknown code returns 400.
+ *
+ * `locationTargetingType` switches who the location targeting reaches:
+ * `presence` (people in or regularly in the locations) or `presence_or_interest`
+ * (also people searching for or interested in them). Example:
+ * `{ "platform": "google", "targeting": { "locationTargetingType": "presence" } }`.
  *
  * The response includes the refreshed `devices`/`locations`/`languages` state
  * read back from Google after the edit, and invalidates the cached copy

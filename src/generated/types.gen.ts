@@ -4830,6 +4830,18 @@ export type GoogleBusinessReview = {
  */
 export type starRating = 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
 
+/**
+ * Google only. Who a campaign's location targeting reaches (Google's
+ * `campaign.geo_target_type_setting.positive_geo_target_type`).
+ * `presence`: people in, or regularly in, the targeted locations.
+ * `presence_or_interest`: also people searching for or showing interest in them.
+ * Omitted leaves Google's default, `presence_or_interest`. Accepted on Search,
+ * Display and Performance Max campaigns. Excluded locations always use presence
+ * (Google refuses presence_or_interest for exclusions on these campaign types).
+ *
+ */
+export type GoogleLocationTargetingType = 'presence' | 'presence_or_interest';
+
 export type GooglePmaxAssetGroup = {
     id: string;
     resourceName: string;
@@ -7721,27 +7733,27 @@ export type TargetingSpec = {
      */
     countries?: Array<(string)>;
     /**
-     * Region/state targeting. `key` is the platform location ID from /v1/ads/targeting/search?dimension=geo&geoType=region.
+     * Region/state targeting. `key` is the platform location ID from /v1/ads/targeting/search?dimension=geo&geoType=region. An entry may also be that id as a plain string (`"20321"` is `{ key: "20321" }`).
      */
-    regions?: Array<{
-        key: string;
-        name?: string;
-    }>;
+    regions?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
     /**
-     * City targeting. Optional `radius` + `distanceUnit` extend beyond the city limits; both must be set together or both omitted. `radius` is only honoured on platforms whose capability map allows city radius (Meta).
+     * City targeting. Optional `radius` + `distanceUnit` extend beyond the city limits; both must be set together or both omitted. `radius` is only honoured on platforms whose capability map allows city radius (Meta). An entry may also be the city id as a plain string (`"1006410"` is `{ key: "1006410" }`).
      */
-    cities?: Array<{
-        key: string;
-        name?: string;
-        /**
-         * Radius around the city. Requires distanceUnit. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng), which allows a smaller radius.
-         */
-        radius?: number;
-        /**
-         * Required if radius is set.
-         */
-        distanceUnit?: 'mile' | 'kilometer';
-    }>;
+    cities?: Array<(string | {
+    key: string;
+    name?: string;
+    /**
+     * Radius around the city. Requires distanceUnit. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng), which allows a smaller radius.
+     */
+    radius?: number;
+    /**
+     * Required if radius is set.
+     */
+    distanceUnit?: 'mile' | 'kilometer';
+})>;
     /**
      * Postal/ZIP targeting. `key` is the platform's postal location ID (e.g. Meta `US:94304`). Supported on Meta, Google, TikTok, Pinterest, X.
      */
@@ -35254,6 +35266,10 @@ export type CreateAdCampaignData = {
         budgetType?: 'daily' | 'lifetime';
         status?: 'ACTIVE' | 'PAUSED';
         /**
+         * Google only (400 elsewhere). Written on the new campaign.
+         */
+        locationTargetingType?: (GoogleLocationTargetingType);
+        /**
          * Campaign bid strategy. Meta stores `bid_strategy` alongside the budget, so this REQUIRES `budgetAmount` + `budgetType` on the same request; sending it without a campaign budget is a 400. A campaign carrying a strategy without its `bid_amount` makes every ad set created under it fail with an error that names the ad set (code 100, subcode 1815857), so the bad state is rejected up front rather than accepted. To bid at ad-set level on Meta, set the strategy there instead. On Google: LOWEST_COST_WITHOUT_CAP = Maximize Conversions, COST_CAP + bidAmount = Target CPA, LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS, LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling; portfolioBidStrategyId attaches a portfolio strategy instead.
          */
         bidStrategy?: 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
@@ -35875,6 +35891,10 @@ export type GetCampaignTargetingResponse = ({
         name?: string;
     }>;
     /**
+     * Who the location targeting reaches, see GoogleLocationTargetingType. Null when Google reports a legacy value (SEARCH_INTEREST) this API does not set.
+     */
+    locationTargetingType?: ('presence' | 'presence_or_interest') | null;
+    /**
      * When this targeting was fetched from Google. Null when it was never served from cache.
      */
     cachedAt?: (string) | null;
@@ -35907,27 +35927,28 @@ export type UpdateCampaignTargetingData = {
              */
             locations?: (Array<(string)> | {
     countries?: Array<(string)>;
-    regions?: Array<{
-        key: string;
-        name?: string;
-    }>;
-    cities?: Array<{
-        key: string;
-        name?: string;
-    }>;
-    zips?: Array<{
-        key: string;
-        name?: string;
-    }>;
-    metros?: Array<{
-        key: string;
-        name?: string;
-    }>;
+    regions?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
+    cities?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
+    zips?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
+    metros?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
 });
             /**
              * Google's language codes (ISO 639-1, plus variants such as `zh_CN`), e.g. ["en", "de"].
              */
             languages?: Array<(string)>;
+            locationTargetingType?: GoogleLocationTargetingType;
         };
     };
     path: {
@@ -35943,7 +35964,11 @@ export type UpdateCampaignTargetingResponse = ({
     /**
      * Which targeting fields were applied.
      */
-    updated?: Array<('devices' | 'locations' | 'languages')>;
+    updated?: Array<('devices' | 'locations' | 'languages' | 'locationTargetingType')>;
+    /**
+     * The value read back from Google after the edit.
+     */
+    locationTargetingType?: ('presence' | 'presence_or_interest') | null;
     devices?: Array<{
         device?: 'MOBILE' | 'DESKTOP' | 'TABLET' | 'CONNECTED_TV';
         included?: boolean;
@@ -40379,6 +40404,10 @@ export type BoostPostData = {
             advantage_audience?: 0 | 1;
         };
         /**
+         * Google only (400 elsewhere). Written on the campaign the boost creates.
+         */
+        locationTargetingType?: (GoogleLocationTargetingType);
+        /**
          * Meta only. A Meta-native targeting spec (e.g.
          * `{ "geo_locations": { "cities": [{ "key": "...", "radius": 15, "distance_unit": "kilometer" }] } }`).
          * Sent alone it is forwarded unchanged. Use for advanced fields the structured
@@ -41050,35 +41079,35 @@ export type CreateStandaloneAdData = {
          */
         countryGroups?: Array<('africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'central_america' | 'caribbean' | 'eea' | 'euro_area' | 'nafta' | 'mercosur' | 'afta' | 'apec' | 'gcc' | 'cisfta' | 'emerging_markets' | 'itunes_app_store' | 'android_free_store' | 'android_paid_store')>;
         /**
-         * City-level geo targeting (Meta and TikTok). Each city is targeted by the platform's opaque `key` (the city ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`. Optional `radius` + `distance_unit` (Meta only) extend the targeting beyond the city limits (e.g. radius 25 km around the city center). Both must be set together, or both omitted (Meta defaults to ~16 km when omitted).
+         * City-level geo targeting (Meta, Google and TikTok). An entry is either `{ key }` or the key alone as a plain string (`["1006410"]`). Each city is targeted by the platform's opaque `key` (the city ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`. Optional `radius` + `distance_unit` (Meta only) extend the targeting beyond the city limits (e.g. radius 25 km around the city center). Both must be set together, or both omitted (Meta defaults to ~16 km when omitted).
          *
          * On Meta, cannot overlap with the same country in `countries` (Meta returns a "locations overlap" error). Either drop the country or scope it to a different country. On TikTok, keys are numeric location ids and can be sent without `countries`.
          *
          */
-        cities?: Array<{
-            /**
-             * Meta city ID, from /v1/ads/targeting/search results.
-             */
-            key: string;
-            /**
-             * Optional radius around the city. Must be set together with distance_unit. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng).
-             */
-            radius?: number;
-            /**
-             * Unit for radius. Required if radius is set.
-             */
-            distance_unit?: 'mile' | 'kilometer';
-        }>;
+        cities?: Array<(string | {
+    /**
+     * City id from /v1/ads/targeting/search results (Meta city key, Google geo target constant id, TikTok location id).
+     */
+    key: string;
+    /**
+     * Optional radius around the city. Must be set together with distance_unit. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng).
+     */
+    radius?: number;
+    /**
+     * Unit for radius. Required if radius is set.
+     */
+    distance_unit?: 'mile' | 'kilometer';
+})>;
         /**
-         * Region-level (state/province) geo targeting (Meta and TikTok). Each region is targeted by the platform's opaque `key` (the region ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`.
+         * Region-level (state/province) geo targeting (Meta, Google and TikTok). Each region is targeted by the platform's opaque `key` (the region ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`. An entry may also be the key alone as a plain string.
          *
          */
-        regions?: Array<{
-            /**
-             * Platform region ID, from /v1/ads/targeting/search results.
-             */
-            key: string;
-        }>;
+        regions?: Array<(string | {
+    /**
+     * Platform region ID, from /v1/ads/targeting/search results.
+     */
+    key: string;
+})>;
         ageMin?: number;
         ageMax?: number;
         /**
@@ -41091,17 +41120,17 @@ export type CreateStandaloneAdData = {
         /**
          * Postal/ZIP geo targeting. `key` is the platform's postal location ID from /v1/ads/targeting/search?dimension=geo&geoType=zip. Supported on Meta, Google, TikTok, Pinterest, X.
          */
-        zips?: Array<{
-            key: string;
-            name?: string;
-        }>;
+        zips?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
         /**
          * DMA / metro-area geo targeting (Meta and TikTok). `key` is the platform's metro ID from /v1/ads/targeting/search?dimension=geo&geoType=metro (TikTok metros appear as type `metro`, e.g. the New York DMA).
          */
-        metros?: Array<{
-            key: string;
-            name?: string;
-        }>;
+        metros?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
         /**
          * Point-radius (lat/lng) geo targeting. Meta only (custom_locations). Rejected on platforms without radius support.
          */
@@ -41523,6 +41552,10 @@ export type CreateStandaloneAdData = {
          * Google only. Performance Max requires assetGroup and is always created PAUSED.
          */
         campaignType?: 'display' | 'search' | 'pmax';
+        /**
+         * Google only (400 elsewhere). Set on the new campaign; a request that joins an existing campaign (`existingCampaignId` or `adSetId`) returns 400, change that campaign with PUT /v1/ads/campaigns/{campaignId}/targeting instead. `presence` reaches only people in or regularly in the targeted locations.
+         */
+        locationTargetingType?: (GoogleLocationTargetingType);
         assetGroup?: GooglePmaxAssetGroupInput;
         /**
          * Google Search only. Keywords on the new ad group; entries are strings (BROAD) or { text, matchType }. Editable later via PUT /v1/ads/{adId} targeting.keywords.
