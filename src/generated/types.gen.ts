@@ -6578,6 +6578,181 @@ export type MoneyAmount = {
     currencyCode: string;
 };
 
+/**
+ * A number you bought or ported. Null fields are omitted, except `socialAccountId` and `ownerAccountId`. Credentials stored for the number (such as the SIP digest password) are never returned; `sipAuthUsername` is the only SIP credential field exposed.
+ */
+export type OwnedPhoneNumber = {
+    _id?: string;
+    phoneNumber?: string;
+    country?: string;
+    /**
+     * For example local, mobile, national or toll_free.
+     */
+    numberType?: string;
+    status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+    /**
+     * The profile the number belongs to: `{ _id, name }` when the profile exists, otherwise its id.
+     */
+    profileId?: ({
+    _id?: string;
+    name?: (string) | null;
+} | string);
+    createdAt?: string;
+    updatedAt?: string;
+    /**
+     * Present once the number order has been placed (i.e. the requirement group was approved). Absent while still in identity review.
+     */
+    telnyxOrderId?: (string) | null;
+    /**
+     * Present on a pre-order: the carrier request placed for a number with no stock yet.
+     */
+    telnyxAdvancedOrderId?: string;
+    /**
+     * For regulated numbers, who it's registered for (company or person), set from the submitted KYC.
+     */
+    registrantName?: (string) | null;
+    endUserFirstName?: (string) | null;
+    endUserLastName?: (string) | null;
+    /**
+     * Reviewer rejection reason when status is regulatory_declined.
+     */
+    regulatoryDeclineReason?: (string) | null;
+    /**
+     * The latest reviewer comment on a regulated number still in review.
+     */
+    regulatoryReviewComment?: string;
+    /**
+     * `action_required` when the reviewer is waiting on you.
+     */
+    regulatoryInfoStatus?: string;
+    /**
+     * For regulated (Tier 3/4) numbers with an Onfido ID-verification step: the link to forward to the end user. Set once the order is placed; null otherwise. Poll this field after submitting KYC.
+     */
+    onfidoVerificationUrl?: (string) | null;
+    /**
+     * Stable redirect to the live Onfido session. Prefer it over `onfidoVerificationUrl`, since it always resolves to a fresh session.
+     */
+    verifyUrl?: (string) | null;
+    /**
+     * True once the verify link has been opened at least once.
+     */
+    onfidoOpened?: boolean;
+    metaPreverifiedId?: string;
+    metaVerificationStatus?: 'pending' | 'code_requested' | 'verified' | 'expired';
+    metaVerifiedAt?: string;
+    metaVerificationExpiresAt?: string;
+    /**
+     * The WhatsApp account the number is linked to; null when WhatsApp is not connected.
+     */
+    socialAccountId?: (string) | null;
+    /**
+     * The telephony account that owns Calls and SMS on the number.
+     */
+    ownerAccountId?: (string) | null;
+    /**
+     * SIP trunk the number is attached to; null when not trunked. While attached, enabling Calls or WhatsApp calling, requesting WhatsApp verification, and releasing the number all return 409.
+     */
+    sipTrunkId?: (string) | null;
+    /**
+     * False for a standalone phone bought for Calls or SMS only.
+     */
+    whatsAppRequested?: boolean;
+    smsRequested?: boolean;
+    provisionedAt?: string;
+    activatedAt?: string;
+    connectedAt?: string;
+    suspendedAt?: string;
+    releasedAt?: string;
+    /**
+     * Meta's Embedded Signup error from the last failed connect attempt (raw text, often localized).
+     */
+    signupError?: string;
+    signupErrorAt?: string;
+    signupErrorStep?: string;
+    /**
+     * What this number bills each month, in cents. Stamped when the number was bought, so an existing number keeps its price when the rate card changes.
+     */
+    monthlyCents?: number;
+    /**
+     * False for numbers you brought yourself (connected via Meta embedded signup). They live on your own carrier, so SMS/Calls can't be enabled on them.
+     */
+    hostedByZernio?: boolean;
+    /**
+     * Whether the number can send SMS. Absent while unknown.
+     */
+    smsCapable?: boolean;
+    /**
+     * Whether the number can send MMS. Absent while unknown.
+     */
+    mmsCapable?: boolean;
+    /**
+     * True when the number can only text numbers in its own country. Absent while unknown.
+     */
+    domesticOnly?: boolean;
+    /**
+     * True while a 10DLC registration covering this number is in review.
+     */
+    smsRegistrationPending?: boolean;
+    /**
+     * True when outbound SMS is unlocked: an approved 10DLC covers the number, or the number is outside the US.
+     */
+    smsSendApproved?: boolean;
+    /**
+     * Brand of the 10DLC registration covering the number.
+     */
+    smsBrandName?: (string) | null;
+    features?: {
+        calls?: boolean;
+        whatsapp?: boolean;
+        smsPending?: boolean;
+    };
+    /**
+     * Whether WhatsApp Business Calling is enabled on this number (manage via /v1/whatsapp/phone-numbers/{id}/calling).
+     */
+    callingEnabled?: boolean;
+    /**
+     * WhatsApp calling forward destination.
+     */
+    forwardTo?: string;
+    /**
+     * SIP digest username for a sip: forward destination. The password is never returned.
+     */
+    sipAuthUsername?: string;
+    callerIdVerifiedAt?: string;
+    maxCallDurationSeconds?: number;
+    recordingEnabled?: boolean;
+    transcriptionEnabled?: boolean;
+    transcriptionLanguage?: 'auto' | 'en' | 'es';
+    callIconCountries?: Array<(string)>;
+    forwardCallerId?: 'business' | 'caller';
+    /**
+     * Whether Calls (PSTN voice) is on.
+     */
+    pstnVoiceEnabled?: boolean;
+    pstnForwardTo?: string;
+    voicemailEnabled?: boolean;
+    voicemailGreeting?: string;
+    businessHoursEnabled?: boolean;
+    businessHoursTimezone?: string;
+    businessHours?: Array<{
+        day?: number;
+        open?: string;
+        close?: string;
+    }>;
+    blockedCallers?: Array<(string)>;
+    ivrEnabled?: boolean;
+    ivrPrompt?: string;
+    ivrOptions?: Array<{
+        digit?: string;
+        forwardTo?: string;
+        label?: string;
+    }>;
+};
+
+export type status13 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+
+export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
+
 export type Pagination = {
     page?: number;
     limit?: number;
@@ -6699,7 +6874,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status13 = 'published' | 'failed';
+export type status14 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7101,7 +7276,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status14 = 'active' | 'draft' | 'archived';
+export type status15 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8377,7 +8552,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status15 = 'pending' | 'completed' | 'expired';
+export type status16 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -8853,7 +9028,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status16 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status17 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel3 = 'sms';
 
@@ -8980,7 +9155,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status17 = 'success' | 'failed';
+export type status18 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -9092,7 +9267,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status18 = 'success' | 'failure';
+export type status19 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -10999,7 +11174,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status19 = 'published' | 'failed' | 'deleted';
+export type status20 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
@@ -11264,7 +11439,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status20 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status21 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -11413,7 +11588,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status21 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status22 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -11567,7 +11742,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status22 = 'pending' | 'active';
+export type status23 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -11725,7 +11900,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status23 = 'success' | 'failed' | 'pending';
+export type status24 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -28762,53 +28937,7 @@ export type ListPhoneNumbersData = {
 };
 
 export type ListPhoneNumbersResponse = ({
-    numbers?: Array<{
-        _id?: string;
-        phoneNumber?: string;
-        country?: string;
-        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
-        /**
-         * For regulated numbers, who it's registered for (company or person), set from the submitted KYC.
-         */
-        registrantName?: (string) | null;
-        /**
-         * Present once the number order has been placed (i.e. the requirement group was approved). Absent while still in identity review.
-         */
-        telnyxOrderId?: (string) | null;
-        /**
-         * What this number bills each month, in cents. Stamped when the number was bought, so an existing number keeps its price when the rate card changes.
-         */
-        monthlyCents?: number;
-        /**
-         * False for numbers you brought yourself (connected via Meta embedded signup). They live on your own carrier, so SMS/Calls can't be enabled on them.
-         */
-        hostedByZernio?: boolean;
-        /**
-         * SIP trunk the number is attached to; null when not trunked. While attached, enabling Calls or WhatsApp calling, requesting WhatsApp verification, and releasing the number all return 409.
-         */
-        sipTrunkId?: (string) | null;
-        profileId?: {
-            [key: string]: unknown;
-        };
-        provisionedAt?: string;
-        metaPreverifiedId?: string;
-        metaVerificationStatus?: string;
-        /**
-         * For regulated (Tier 3/4) numbers with an Onfido ID-verification step: the link to forward to the end user. Set once the order is placed; null otherwise. Poll this field after submitting KYC.
-         */
-        onfidoVerificationUrl?: (string) | null;
-        endUserFirstName?: (string) | null;
-        endUserLastName?: (string) | null;
-        /**
-         * Reviewer rejection reason when status is regulatory_declined.
-         */
-        regulatoryDeclineReason?: (string) | null;
-        /**
-         * Whether WhatsApp Business Calling is enabled on this number (manage via /v1/whatsapp/phone-numbers/{id}/calling).
-         */
-        callingEnabled?: boolean;
-        createdAt?: string;
-    }>;
+    numbers?: Array<OwnedPhoneNumber>;
     /**
      * Connected (bring-your-own) WhatsApp numbers: your own WABA
      * numbers linked via Embedded Signup. Not provisioned or billed
@@ -29349,53 +29478,7 @@ export type GetWhatsAppPhoneNumbersData = {
 };
 
 export type GetWhatsAppPhoneNumbersResponse = ({
-    numbers?: Array<{
-        _id?: string;
-        phoneNumber?: string;
-        country?: string;
-        status?: 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
-        /**
-         * For regulated numbers, who it's registered for (company or person), set from the submitted KYC.
-         */
-        registrantName?: (string) | null;
-        /**
-         * Present once the number order has been placed (i.e. the requirement group was approved). Absent while still in identity review.
-         */
-        telnyxOrderId?: (string) | null;
-        /**
-         * What this number bills each month, in cents. Stamped when the number was bought, so an existing number keeps its price when the rate card changes.
-         */
-        monthlyCents?: number;
-        /**
-         * False for numbers you brought yourself (connected via Meta embedded signup). They live on your own carrier, so SMS/Calls can't be enabled on them.
-         */
-        hostedByZernio?: boolean;
-        /**
-         * SIP trunk the number is attached to; null when not trunked. While attached, enabling Calls or WhatsApp calling, requesting WhatsApp verification, and releasing the number all return 409.
-         */
-        sipTrunkId?: (string) | null;
-        profileId?: {
-            [key: string]: unknown;
-        };
-        provisionedAt?: string;
-        metaPreverifiedId?: string;
-        metaVerificationStatus?: string;
-        /**
-         * For regulated (Tier 3/4) numbers with an Onfido ID-verification step: the link to forward to the end user. Set once the order is placed; null otherwise. Poll this field after submitting KYC.
-         */
-        onfidoVerificationUrl?: (string) | null;
-        endUserFirstName?: (string) | null;
-        endUserLastName?: (string) | null;
-        /**
-         * Reviewer rejection reason when status is regulatory_declined.
-         */
-        regulatoryDeclineReason?: (string) | null;
-        /**
-         * Whether WhatsApp Business Calling is enabled on this number (manage via /v1/whatsapp/phone-numbers/{id}/calling).
-         */
-        callingEnabled?: boolean;
-        createdAt?: string;
-    }>;
+    numbers?: Array<OwnedPhoneNumber>;
     /**
      * Connected (bring-your-own) WhatsApp numbers: your own WABA
      * numbers linked via Embedded Signup. Not provisioned or billed
