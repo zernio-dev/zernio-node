@@ -35210,6 +35210,9 @@ export type ListLocalServicesLeadsResponse = ({
          */
         contact?: {
             consumerName?: (string) | null;
+            /**
+             * Always null: Google Ads API v25 stopped returning the consumer email on Local Services leads.
+             */
             email?: (string) | null;
             phoneNumber?: (string) | null;
         } | null;
