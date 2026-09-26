@@ -8866,7 +8866,7 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  * | `bidStrategy` | Yes | Yes | 501 |
  * | `bidAmount`, `roasAverageFloor` | 400 (ad-set level) | Yes | 400 |
  * | `portfolioBidStrategyId` | 400 | Yes | 400 |
- * | `budget` (CBO; ABO returns 409) | Yes | Daily only | 501 |
+ * | `budget` (CBO; ABO returns 409) | Yes | Daily only | OpenAI: daily or lifetime; others 501 |
  * | `name` | Yes | 501 | 501 |
  * | `platformSpecificData.spendCap` | Yes | 400 | 400 |
  * | `accountId` (empty campaigns) | Yes | - | - |
@@ -8886,6 +8886,10 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  * Google budget updates read the current budget before mutation. Shared budgets return
  * 409 unless allowSharedBudgetUpdate=true is explicitly supplied, because the change
  * affects every campaign using that budget. Unknown sharing state also returns 409.
+ *
+ * OpenAI Ads campaigns carry exactly one spend cap: `budget.type` daily or lifetime
+ * replaces whichever cap the campaign had, with a minimum of 1 in the ad account's
+ * currency (422 below it).
  *
  * `accountId` forwards the update straight to Meta for a campaign with zero ads,
  * which would otherwise 404; the response then carries `updated: 0`.
@@ -9392,7 +9396,7 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * campaign, pauses the old one).
  * - **Pinterest / X / OpenAI Ads**: status + budget only. Sending
  * `targeting` or `creative` returns 501 with code `unsupported_platform_operation`.
- * OpenAI Ads budget is lifetime-only (see `budget.type` below).
+ * OpenAI Ads budget is the campaign's spend cap, daily or lifetime (see `budget.type` below).
  *
  * **Google location and language replacement:** locations, languages and devices are
  * campaign-level criteria on Google, so these edits apply to every ad group and ad in

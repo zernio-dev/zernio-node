@@ -35814,7 +35814,7 @@ export type UpdateAdCampaignData = {
          */
         allowSharedBudgetUpdate?: boolean;
         /**
-         * Meta CBO or Google daily campaign budget, in whole currency units.
+         * Meta CBO, Google daily, or OpenAI Ads daily or lifetime campaign budget, in whole currency units.
          */
         budget?: {
             /**
@@ -36910,7 +36910,7 @@ export type UpdateAdData = {
              */
             amount?: number;
             /**
-             * OpenAI Ads accepts lifetime only; sending daily returns 422.
+             * OpenAI Ads accepts both and sets the campaign's single spend cap, replacing the previous daily or lifetime cap.
              */
             type?: 'daily' | 'lifetime';
         };
@@ -41035,7 +41035,7 @@ export type CreateStandaloneAdData = {
          */
         budgetAmount?: number;
         /**
-         * Required on legacy, multi-creative and Performance Max shapes. Inherited on attach. OpenAI Ads accepts lifetime only (no daily-budget concept on the platform); sending daily returns 422. OpenAI Ads lifetime budgets require `endDate` to give the lifetime cap a spend window.
+         * Required on legacy, multi-creative and Performance Max shapes. Inherited on attach. OpenAI Ads creation accepts lifetime only; sending daily returns 422 (daily caps can be set afterwards with PUT /v1/ads/campaigns/{campaignId}). OpenAI Ads lifetime budgets require `endDate` to give the lifetime cap a spend window.
          */
         budgetType?: 'daily' | 'lifetime';
         /**
