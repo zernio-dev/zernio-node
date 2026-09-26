@@ -4296,6 +4296,9 @@ export const getMessageAttachment = <ThrowOnError extends boolean = false>(optio
  * (`sortBy=date`, `sortOrder=desc`): with `sortOrder=asc`, or with `sortBy=comments`,
  * the cursor filter does not match the sort order and the second page is unreliable.
  *
+ * `minComments` is applied to each page after pagination: a page can hold fewer than
+ * `limit` posts, even none, while `hasMore` is true; keep following `nextCursor`.
+ *
  * `nextCursor` is opaque: pass it back verbatim, never construct or parse it, its
  * composition may change without notice. Because each page re-queries a live window,
  * results can still shift between requests, so dedupe by `id` on the client.

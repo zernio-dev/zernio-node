@@ -24618,7 +24618,7 @@ export type ListInboxCommentsData = {
         cursor?: string;
         limit?: number;
         /**
-         * Minimum comment count
+         * Minimum comment count, applied to each page after pagination
          */
         minComments?: number;
         /**
