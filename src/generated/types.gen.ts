@@ -1620,10 +1620,13 @@ export type AnalyticsListResponse = {
          */
         isAd?: boolean;
         profileId?: (string) | null;
+        /**
+         * Cover image URL. Facebook and Instagram covers whose Meta CDN link expired are re-read from Meta and served from Zernio storage, so that URL does not expire and can be cached.
+         */
         thumbnailUrl?: string;
         mediaType?: 'image' | 'video' | 'gif' | 'document' | 'carousel' | 'text';
         /**
-         * All media items for this post. Carousel posts contain one entry per slide.
+         * All media items for this post. Carousel posts contain one entry per slide. Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring). Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
          */
         mediaItems?: Array<{
             type?: 'image' | 'video';
@@ -1711,10 +1714,13 @@ export type AnalyticsSinglePostResponse = {
      * Human-readable status message for pending, partial, or failed states
      */
     message?: (string) | null;
+    /**
+     * Cover image URL. Facebook and Instagram covers whose Meta CDN link expired are re-read from Meta and served from Zernio storage, so that URL does not expire and can be cached.
+     */
     thumbnailUrl?: (string) | null;
     mediaType?: ('image' | 'video' | 'carousel' | 'text') | null;
     /**
-     * All media items for this post. Carousel posts contain one entry per slide.
+     * All media items for this post. Carousel posts contain one entry per slide. Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring). Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
      */
     mediaItems?: Array<{
         type?: 'image' | 'video';
