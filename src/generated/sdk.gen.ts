@@ -8722,8 +8722,9 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
  * for ABO (each ad set carries its own budget), and `specialAdCategories` is Meta-only
  * (400 elsewhere); `bidStrategy` is Meta and Google (400 elsewhere), and Google also
  * accepts `portfolioBidStrategyId` instead. Google, X and OpenAI require a budget
- * (422 without one; OpenAI accepts only `budgetType: lifetime`, Google only
- * `budgetType: daily`). LinkedIn creates the
+ * (422 without one; OpenAI accepts daily or lifetime, Google only
+ * `budgetType: daily`). On OpenAI `goal` sets the campaign objective, and
+ * `conversions` needs an active standard conversion event on the account. LinkedIn creates the
  * campaign GROUP (our campaign level) and rejects a budget, which lives on the
  * campaign (ad set) level there; it comes back `status: DRAFT`. TikTok campaigns are
  * created without a status and report `ENABLE`. Created `PAUSED` unless
@@ -8896,7 +8897,8 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  *
  * OpenAI Ads campaigns carry exactly one spend cap: `budget.type` daily or lifetime
  * replaces whichever cap the campaign had, with a minimum of 1 in the ad account's
- * currency (422 below it).
+ * currency (422 below it). Lifetime can switch to daily, but OpenAI never switches a
+ * daily cap back to lifetime (422).
  *
  * `accountId` forwards the update straight to Meta for a campaign with zero ads,
  * which would otherwise 404; the response then carries `updated: 0`.
