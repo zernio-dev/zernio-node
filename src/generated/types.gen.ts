@@ -1017,7 +1017,7 @@ export type matchType2 = 'broad' | 'phrase' | 'exact';
  * For `goal: app_promotion`, it is also sent on the campaign only when
  * `isSkadnetworkAttribution: true`. Plain Android app installs keep the
  * existing campaign payload, with the promoted object only on the ad set.
- * POST /v1/ads/campaigns forwards this object only for that explicit SKAN flag.
+ * POST /v1/ads/campaigns forwards this object on Meta only for that explicit SKAN flag.
  * Required for goals whose ad-set optimization_goal points at a specific
  * event/page/app (without it Meta rejects the ad-set create with
  * `error_subcode: 1815430` "Please select a promoted object for your ad set"):
@@ -1037,8 +1037,13 @@ export type matchType2 = 'broad' | 'phrase' | 'exact';
  * the App ID of an app registered on the TikTok Ads account (Assets → Events →
  * App Events). Install optimization needs the app's MMP tracking configured.
  *
+ * **OpenAI (ChatGPT) Ads**: `goal: conversions` only, on POST /v1/ads/create and
+ * POST /v1/ads/campaigns. `customEventType` picks the conversion event the campaign
+ * optimizes for (sent as the campaign's `conversion_event_setting_ids`); every other
+ * `promotedObject` field is rejected with a 400. See `customEventType` below.
+ *
  * The remaining `promotedObject.*` fields are Meta-only. Platforms other than
- * Meta and TikTok ignore `promotedObject` entirely.
+ * Meta, TikTok and OpenAI ignore `promotedObject` entirely.
  *
  */
 export type AdPromotedObject = {
@@ -1073,6 +1078,17 @@ export type AdPromotedObject = {
      * Registration), `ON_WEB_DETAIL` (View Content). `ON_WEB_ORDER` is
      * deprecated. On rejection the error lists the event types your pixel
      * actually tracks. Optional for `goal: conversions`.
+     *
+     * **OpenAI (ChatGPT) Ads:** a conversion event from
+     * `GET /v1/accounts/{accountId}/conversion-destinations` (`conversionEvents[]`),
+     * given as its `id` (exact), its `eventType` (e.g. `order_created`) or its `name`
+     * (e.g. `Purchase`), both case-insensitive. It must be `optimizable` (active and
+     * not custom). An unknown, archived or custom event returns a 400 listing the
+     * account's optimizable events; a type or name shared by several optimizable
+     * events returns a 400 asking for the id. `validateOnly: true` runs the same
+     * check and names the resolved event in its `message`. Optional: when omitted,
+     * the campaign optimizes for the first optimizable event in OpenAI's own list
+     * order, which is the most recently created one.
      *
      */
     customEventType?: string;
@@ -41024,7 +41040,7 @@ export type CreateStandaloneAdData = {
          * - For `conversions` on LinkedIn, or to promote an existing post, use POST /v1/ads/boost.
          *
          * **OpenAI Ads**
-         * - Only `traffic`, `awareness`, and `conversions` are supported (other goals return 400). Maps to OpenAI's `bidding_type` (clicks, impressions, conversions respectively). `conversions` requires an active conversion event setting on the account; create a tracking tag with `defaultEventType` via the tracking-tags API (`POST /v1/accounts/{accountId}/tracking-tags`), or configure a conversion event in OpenAI Ads Manager, or the request returns 422.
+         * - Only `traffic`, `awareness`, and `conversions` are supported (other goals return 400). Maps to OpenAI's `bidding_type` (clicks, impressions, conversions respectively). `conversions` requires an active conversion event setting on the account; create a tracking tag with `defaultEventType` via the tracking-tags API (`POST /v1/accounts/{accountId}/tracking-tags`), or configure a conversion event in OpenAI Ads Manager, or the request returns 400. Pick the event with `promotedObject.customEventType` (see AdPromotedObject); without it the most recently created optimizable event is used.
          *
          */
         goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'job_applicants';
@@ -44354,9 +44370,12 @@ export type ListConversionDestinationsResponse = ({
         adAccountId?: string;
         /**
          * OpenAI Ads only: the conversion event settings wired
-         * to this pixel. A `goal: conversions` create on
-         * POST /v1/ads/create optimizes for the first
-         * `optimizable` one; when none is, it returns 400.
+         * to this pixel. Pass one's `id`, `eventType` or `name`
+         * as `promotedObject.customEventType` on a
+         * `goal: conversions` create (POST /v1/ads/create or
+         * POST /v1/ads/campaigns) to optimize for it. Without
+         * it, the account's most recently created `optimizable`
+         * event is used; when none is, the create returns 400.
          *
          */
         conversionEvents?: Array<{
