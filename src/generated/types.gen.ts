@@ -11210,7 +11210,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 export type status20 = 'published' | 'failed' | 'deleted';
 
 /**
- * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger)
+ * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
  */
 export type WebhookPayloadReaction = {
     /**
@@ -11221,7 +11221,8 @@ export type WebhookPayloadReaction = {
     reaction: {
         /**
          * The emoji reacted with. May be an empty string when `action` is
-         * `removed` on WhatsApp (Meta does not report which emoji was removed).
+         * `removed` on WhatsApp (Meta does not report which emoji was removed),
+         * and on TikTok for an AI emoji reaction (TikTok sends no unicode for it).
          *
          */
         emoji: string;
@@ -11235,7 +11236,7 @@ export type WebhookPayloadReaction = {
          */
         platformMessageId: string;
         /**
-         * Whoever added or removed the reaction. Usually the participant, but on WhatsApp, Slack, Instagram and Facebook Messenger it is the business own platform id when the business reacted from the native app or via the reactions API: compare it with conversation.participantId.
+         * Whoever added or removed the reaction. Usually the participant, but on WhatsApp, Slack, Instagram, Facebook Messenger and TikTok it is the business own platform id when the business reacted from the native app or via the reactions API: compare it with conversation.participantId.
          */
         sender: {
             id: string;
