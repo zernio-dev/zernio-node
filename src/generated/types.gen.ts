@@ -44824,6 +44824,12 @@ export type CreateMessagingAdData = {
      */
     destinations?: Array<('whatsapp' | 'messenger' | 'instagram_direct')>;
 });
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type CreateMessagingAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));
@@ -44843,6 +44849,12 @@ export type CreateCallAdData = {
      */
     linkUrl: string;
 });
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type CreateCallAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));
@@ -44853,6 +44865,12 @@ export type CreateCallAdError = (unknown | {
 
 export type CreateCtwaAdData = {
     body: CtwaAdRequestBody;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type CreateCtwaAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));

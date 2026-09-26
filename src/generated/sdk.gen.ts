@@ -11944,6 +11944,8 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
  * a number already paired with the Page (WhatsApp destination only).
  * `accountId` is a Facebook, Instagram or Meta ads (business login) connection;
  * `pageId` picks the Page when that connection was granted several.
+ *
+ * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). Keys are scoped to your credential and expire after 24h.
  */
 export const createMessagingAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateMessagingAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateMessagingAdResponse, CreateMessagingAdError, ThrowOnError>({
@@ -11958,6 +11960,8 @@ export const createMessagingAd = <ThrowOnError extends boolean = false>(options:
  * via a tel: link. The ad set is destination_type PHONE_CALL optimizing QUALITY_CALL
  * and the campaign objective defaults to OUTCOME_LEADS.
  * Supports the same single-creative and multi-creative shapes as CTWA.
+ *
+ * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). Keys are scoped to your credential and expire after 24h.
  */
 export const createCallAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCallAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateCallAdResponse, CreateCallAdError, ThrowOnError>({
@@ -11986,6 +11990,8 @@ export const createCallAd = <ThrowOnError extends boolean = false>(options: Opti
  * `existingPostId`) or `objectStoryId`, either per creative or at the top level. Omit fresh
  * media and copy for that creative. Optional `whatsappPhoneNumber` selects
  * a number already paired with the Page (WhatsApp destination only).
+ *
+ * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). Keys are scoped to your credential and expire after 24h.
  */
 export const createCtwaAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCtwaAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateCtwaAdResponse, CreateCtwaAdError, ThrowOnError>({
