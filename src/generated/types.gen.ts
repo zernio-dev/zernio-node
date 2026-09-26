@@ -8583,11 +8583,14 @@ export type UsageAttributionSlice = {
     byProduct?: {
         accounts?: number;
         numbers?: number;
+        imessage?: number;
         calls?: number;
         sms?: number;
+        messages?: number;
         verify?: number;
         dlc?: number;
         xApi?: number;
+        ads?: number;
         credits?: number;
         other?: number;
     };
@@ -8612,13 +8615,29 @@ export type UsageMetering = {
         date?: string;
         accounts?: number;
         numbers?: number;
+        /**
+         * iMessage sender fees.
+         */
+        imessage?: number;
         calls?: number;
         sms?: number;
+        /**
+         * Managed outbound message fees.
+         */
+        messages?: number;
+        /**
+         * Verify (per verification) fees.
+         */
+        verify?: number;
         /**
          * 10DLC registration (brand + campaign) fees.
          */
         dlc?: number;
         xApi?: number;
+        /**
+         * Managed ads fees.
+         */
+        ads?: number;
         /**
          * Applied credits/discounts (negative).
          */
@@ -8631,10 +8650,14 @@ export type UsageMetering = {
     totals?: {
         accounts?: number;
         numbers?: number;
+        imessage?: number;
         calls?: number;
         sms?: number;
+        messages?: number;
+        verify?: number;
         dlc?: number;
         xApi?: number;
+        ads?: number;
         credits?: number;
         other?: number;
         total?: number;
@@ -8644,7 +8667,7 @@ export type UsageMetering = {
      */
     lineItems?: Array<{
         name?: string;
-        product?: 'accounts' | 'numbers' | 'calls' | 'sms' | 'dlc' | 'xApi' | 'credits' | 'other';
+        product?: 'accounts' | 'numbers' | 'imessage' | 'calls' | 'sms' | 'messages' | 'verify' | 'dlc' | 'xApi' | 'ads' | 'credits' | 'other';
         totalUsd?: number;
         quantity?: number;
     }>;
@@ -10065,6 +10088,10 @@ export type WebhookPayloadLead = {
          */
         accountId?: string;
         platform: 'facebook';
+        /**
+         * Profile ID of the account that received the lead. Null when the lead has no profile on record.
+         */
+        profileId: (string) | null;
     };
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.

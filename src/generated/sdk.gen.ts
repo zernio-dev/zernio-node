@@ -767,8 +767,9 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  * working unchanged.
  *
  * **With `range`, `granularity`, `from`, or `to`:** usage METERING:
- * billed spend (USD) by product family (`accounts`, `numbers`, `calls`,
- * `sms`, `dlc`, `xApi`, `credits`, `other`) over the window, at
+ * billed spend (USD) by product family (`accounts`, `numbers`,
+ * `imessage`, `calls`, `sms`, `messages`, `verify`, `dlc`, `xApi`, `ads`,
+ * `credits`, `other`) over the window, at
  * `day` / `month` / `total` granularity, from the usage-based invoice
  * breakdown (the CHARGE view, which always reconciles with what gets billed).
  * Also served at `GET /v1/usage/daily`. Usage-based accounts only:
