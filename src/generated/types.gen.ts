@@ -35483,7 +35483,7 @@ export type CreateAdCampaignData = {
          */
         buyingType?: 'AUCTION' | 'RESERVED';
         /**
-         * Meta only. Runs campaign validation without creating or persisting a campaign; Idempotency-Key storage is bypassed. Returns HTTP 200 with validateOnly true and status VALIDATED.
+         * Meta only. Runs campaign validation without creating or persisting a campaign; Idempotency-Key storage is bypassed. Returns HTTP 200 with validateOnly true and status VALIDATED. `true` on any other platform returns 501 `feature_not_available` (same as POST /v1/ads/create); `false` is ignored.
          */
         validateOnly?: boolean;
         specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ONLINE_GAMBLING_AND_GAMING')>;
@@ -41027,7 +41027,7 @@ export type CreateStandaloneAdData = {
          */
         aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
         /**
-         * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image, all-image placementAssets with per-rule copy, existing video.id or existingCreativeId; other media pools, new video uploads, creatives[], adSetId and RESERVED buying return 400. Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped. Success returns 200 with per-node results; Meta rejection returns an error.
+         * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image, all-image placementAssets with per-rule copy, existing video.id or existingCreativeId; other media pools, new video uploads, creatives[], adSetId and RESERVED buying return 400. Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped. Success returns 200 with per-node results; Meta rejection returns an error. Any other platform, or a Google campaignType other than pmax, returns 501 `feature_not_available`.
          */
         validateOnly?: boolean;
         /**
