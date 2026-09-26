@@ -9697,6 +9697,14 @@ export const generateKeywordHistoricalMetrics = <ThrowOnError extends boolean = 
  * an invalid query returns a 400 carrying Google's message (note: selecting `segments.date`
  * requires a finite date filter).
  *
+ * Queries run against Google Ads API **v25**, so write GAQL against the v25 field reference.
+ * One exception is translated for backward compatibility: the legacy `campaign.start_date` /
+ * `campaign.end_date` (removed by Google in v23) are rewritten to `campaign.start_date_time` /
+ * `campaign.end_date_time`, and rows still carry `campaign.startDate` / `campaign.endDate` as
+ * `YYYY-MM-DD`. In WHERE, `=`, `<`, `<=`, `>`, `>=`, `BETWEEN` and `IS [NOT] NULL` against a
+ * `'YYYY-MM-DD'` literal are translated; any other form returns Google's 400. New code should
+ * select the `_date_time` fields directly.
+ *
  */
 export const queryAdInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<QueryAdInsightsData, ThrowOnError>) => {
     return (options?.client ?? client).get<QueryAdInsightsResponse, QueryAdInsightsError, ThrowOnError>({
