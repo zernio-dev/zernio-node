@@ -4341,6 +4341,9 @@ export const listInboxComments = <ThrowOnError extends boolean = false>(options?
  * `commentId` pages the full reply list of one comment. Developer-app TikTok accounts
  * return 400 with code `PLATFORM_LIMITATION`.
  *
+ * On X (Twitter), when `postId` is itself a reply rather than the thread's root post,
+ * only replies to that specific post are returned, not the whole conversation thread.
+ *
  * Hidden comments: Facebook Pages and Instagram accounts connected through Instagram Login
  * return them with `isHidden: true`. Instagram accounts connected through Facebook Login do
  * not return them at all (Meta omits them, together with their replies), so a hidden comment
