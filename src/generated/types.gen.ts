@@ -4738,6 +4738,69 @@ export type GoogleAdLabelAssignments = {
 };
 
 /**
+ * A Google Ads account inside a manager tree.
+ */
+export type GoogleAdsHierarchyClient = {
+    /**
+     * Native Google Ads customer id, digits only.
+     */
+    customerId?: string;
+    /**
+     * Null for a pending invitation.
+     */
+    name?: (string) | null;
+    currency?: (string) | null;
+    timeZone?: (string) | null;
+    /**
+     * True for a sub-manager account.
+     */
+    manager?: boolean;
+    testAccount?: boolean;
+    /**
+     * Hidden in the manager's Google Ads UI.
+     */
+    hidden?: boolean;
+    /**
+     * Distance from the root (1 = direct client of the root).
+     */
+    level?: number;
+    /**
+     * Google customer status: ENABLED, CANCELED, SUSPENDED or CLOSED. Null for a pending invitation.
+     */
+    status?: (string) | null;
+    /**
+     * Direct manager of this account. Null only when more than 50 managers under the root were skipped.
+     */
+    parentCustomerId?: (string) | null;
+    /**
+     * Id of the link to the parent, used by PATCH /v1/ads/accounts/manager-links.
+     */
+    managerLinkId?: (string) | null;
+    linkStatus?: ('ACTIVE' | 'PENDING') | null;
+};
+
+export type linkStatus = 'ACTIVE' | 'PENDING';
+
+export type GoogleAdsManagerLink = {
+    managerCustomerId?: string;
+    clientCustomerId?: string;
+    /**
+     * Null on a validateOnly invitation, where Google creates nothing.
+     */
+    managerLinkId?: (string) | null;
+    /**
+     * Status the link has after this call.
+     */
+    status?: 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+    validateOnly?: boolean;
+};
+
+/**
+ * Status the link has after this call.
+ */
+export type status12 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+
+/**
  * Link one asset to the asset group. Send exactly one of asset (an existing asset), text, imageUrl or youtubeVideoId (new content, created in the same request).
  */
 export type GoogleAssetGroupAssetLink = {
@@ -5244,7 +5307,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status12 = 'applied' | 'dismissed' | 'failed';
+export type status13 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -5376,7 +5439,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status13 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status14 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -5448,7 +5511,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status14 = 'active' | 'archived';
+export type status15 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -7035,7 +7098,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status15 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status16 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -7160,7 +7223,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status16 = 'published' | 'failed';
+export type status17 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7562,7 +7625,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status17 = 'active' | 'draft' | 'archived';
+export type status18 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8838,7 +8901,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status18 = 'pending' | 'completed' | 'expired';
+export type status19 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -9337,7 +9400,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status19 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status20 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -9464,7 +9527,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status20 = 'success' | 'failed';
+export type status21 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -9576,7 +9639,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status21 = 'success' | 'failure';
+export type status22 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11529,7 +11592,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status22 = 'published' | 'failed' | 'deleted';
+export type status23 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -11795,7 +11858,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status23 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status24 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -11944,7 +12007,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status24 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status25 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -12098,7 +12161,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status25 = 'pending' | 'active';
+export type status26 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -12256,7 +12319,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status26 = 'success' | 'failed' | 'pending';
+export type status27 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -40728,6 +40791,137 @@ export type RemoveAccountStructuredSnippetResponse = ({
 });
 
 export type RemoveAccountStructuredSnippetError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetAdAccountHierarchyData = {
+    query: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Only return the tree rooted at this customer id (digits only). It must be an account the Google user accesses directly. Omit to list every tree.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId, kept for consistency with the other Google Ads account endpoints.
+         * @deprecated
+         */
+        customerId?: string;
+    };
+};
+
+export type GetAdAccountHierarchyResponse = ({
+    accountId?: string;
+    roots?: Array<{
+        /**
+         * Native Google Ads customer id, digits only.
+         */
+        customerId?: string;
+        name?: (string) | null;
+        /**
+         * ISO 4217 code.
+         */
+        currency?: (string) | null;
+        /**
+         * IANA time zone, e.g. Europe/Madrid.
+         */
+        timeZone?: (string) | null;
+        /**
+         * True for a manager (MCC) account.
+         */
+        manager?: boolean;
+        testAccount?: boolean;
+        /**
+         * Google customer status: ENABLED, CANCELED, SUSPENDED or CLOSED.
+         */
+        status?: (string) | null;
+        /**
+         * Managers linked to this account, ACTIVE or PENDING.
+         */
+        managerLinks?: Array<{
+            managerCustomerId?: string;
+            managerLinkId?: string;
+            status?: 'ACTIVE' | 'PENDING';
+        }>;
+        /**
+         * Every account under this root at any depth, in Google's order, followed by pending invitations.
+         */
+        clients?: Array<GoogleAdsHierarchyClient>;
+    }>;
+    unavailable?: Array<{
+        customerId?: string;
+        /**
+         * Google's error message and code.
+         */
+        reason?: string;
+    }>;
+    truncated?: boolean;
+    /**
+     * When this data was fetched from Google. Null on a live read.
+     */
+    cachedAt?: (string) | null;
+    /**
+     * True when Google's quota was exhausted and this is the last successful fetch.
+     */
+    stale?: boolean;
+});
+
+export type GetAdAccountHierarchyError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type InviteAdAccountToManagerData = {
+    body: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Manager customer id, digits only.
+         */
+        managerCustomerId: string;
+        /**
+         * Client customer id to invite, digits only.
+         */
+        clientCustomerId: string;
+        validateOnly?: boolean;
+    };
+};
+
+export type InviteAdAccountToManagerResponse = (GoogleAdsManagerLink);
+
+export type InviteAdAccountToManagerError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateAdAccountManagerLinkData = {
+    body: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Manager customer id, digits only.
+         */
+        managerCustomerId: string;
+        /**
+         * Client customer id, digits only.
+         */
+        clientCustomerId: string;
+        /**
+         * Numeric link id from GET /v1/ads/accounts/hierarchy.
+         */
+        managerLinkId: string;
+        action: 'accept' | 'decline' | 'cancel' | 'unlink';
+        validateOnly?: boolean;
+    };
+};
+
+export type UpdateAdAccountManagerLinkResponse = (GoogleAdsManagerLink);
+
+export type UpdateAdAccountManagerLinkError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

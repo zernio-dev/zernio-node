@@ -225,6 +225,7 @@ import {
   getAccountPosts,
   getAd,
   getAdAccountFinance,
+  getAdAccountHierarchy,
   getAdAnalytics,
   getAdAudience,
   getAdCampaignDetails,
@@ -425,6 +426,7 @@ import {
   hideInboxComment,
   initiateTelegramConnect,
   initiateWhatsAppCall,
+  inviteAdAccountToManager,
   likeInboxComment,
   likePost,
   linkWhatsAppCatalog,
@@ -699,6 +701,7 @@ import {
   updateAccountStructuredSnippets,
   updateAd,
   updateAdAccount,
+  updateAdAccountManagerLink,
   updateAdAudience,
   updateAdCampaign,
   updateAdCampaignStatus,
@@ -1927,6 +1930,9 @@ export class Zernio {
     addAccountStructuredSnippets: this._bind(addAccountStructuredSnippets),
     updateAccountStructuredSnippets: this._bind(updateAccountStructuredSnippets),
     removeAccountStructuredSnippet: this._bind(removeAccountStructuredSnippet),
+    getAdAccountHierarchy: this._bind(getAdAccountHierarchy),
+    inviteAdAccountToManager: this._bind(inviteAdAccountToManager),
+    updateAdAccountManagerLink: this._bind(updateAdAccountManagerLink),
     getAdAccountFinance: this._bind(getAdAccountFinance),
     createAdAccount: this._bind(createAdAccount),
     listAdAccounts: this._bind(listAdAccounts),
@@ -2359,6 +2365,12 @@ export class Zernio {
     updateAccountStructuredSnippets: this._bind(updateAccountStructuredSnippets),
     /** @deprecated Use `zernio.adaccounts.removeAccountStructuredSnippet` instead. */
     removeAccountStructuredSnippet: this._bind(removeAccountStructuredSnippet),
+    /** @deprecated Use `zernio.adaccounts.getAdAccountHierarchy` instead. */
+    getAdAccountHierarchy: this._bind(getAdAccountHierarchy),
+    /** @deprecated Use `zernio.adaccounts.inviteAdAccountToManager` instead. */
+    inviteAdAccountToManager: this._bind(inviteAdAccountToManager),
+    /** @deprecated Use `zernio.adaccounts.updateAdAccountManagerLink` instead. */
+    updateAdAccountManagerLink: this._bind(updateAdAccountManagerLink),
     /** @deprecated Use `zernio.adaccounts.getAdAccountFinance` instead. */
     getAdAccountFinance: this._bind(getAdAccountFinance),
     /** @deprecated Use `zernio.adaccounts.createAdAccount` instead. */

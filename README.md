@@ -418,6 +418,7 @@ try {
 | `adAccounts.createHighDemandPeriod()` | Schedule a budget increase |
 | `adAccounts.createValueRuleSet()` | Create a value rule set |
 | `adAccounts.getAdAccountFinance()` | Ad account finances |
+| `adAccounts.getAdAccountHierarchy()` | Get manager account hierarchy |
 | `adAccounts.getAdComments()` | List comments on an ad |
 | `adAccounts.getAdNegativeKeywordList()` | Get a negative keyword list |
 | `adAccounts.getAdsActivityLog()` | Ad account change / audit log |
@@ -429,6 +430,7 @@ try {
 | `adAccounts.updateAccountSitelinks()` | Update account sitelinks |
 | `adAccounts.updateAccountStructuredSnippets()` | Update account snippets |
 | `adAccounts.updateAdAccount()` | Update ad account settings |
+| `adAccounts.updateAdAccountManagerLink()` | Accept, decline, cancel or end a manager link |
 | `adAccounts.updateAdLabel()` | Update a Google Ads label |
 | `adAccounts.updateAdNegativeKeywordList()` | Rename a negative keyword list |
 | `adAccounts.updateValueRuleSet()` | Replace a value rule set |
@@ -441,6 +443,7 @@ try {
 | `adAccounts.attachAdLabel()` | Attach a Google Ads label |
 | `adAccounts.detachAdLabel()` | Detach a Google Ads label |
 | `adAccounts.hideAdComment()` | Hide or unhide an ad comment |
+| `adAccounts.inviteAdAccountToManager()` | Invite a client account to a manager |
 | `adAccounts.removeAccountCallout()` | Remove account callout |
 | `adAccounts.removeAccountSitelink()` | Remove account sitelink |
 | `adAccounts.removeAccountStructuredSnippet()` | Remove account snippet |
