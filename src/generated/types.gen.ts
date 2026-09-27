@@ -5080,6 +5080,23 @@ export type GoogleCustomerConversionGoal = {
 };
 
 /**
+ * Created as a Google Audience and attached to the ad group. Send at least one dimension. Ids are numeric Google ids (user lists, interest categories, custom audiences) from the same customer.
+ */
+export type GoogleDemandGenAudience = {
+    userLists?: Array<(string)>;
+    userInterests?: Array<(string)>;
+    customAudiences?: Array<(string)>;
+    ageRanges?: Array<{
+        min: 18 | 25 | 35 | 45 | 55 | 65;
+        /**
+         * Omit for no upper bound.
+         */
+        max?: 24 | 34 | 44 | 54 | 64;
+    }>;
+    genders?: Array<('male' | 'female' | 'undetermined')>;
+};
+
+/**
  * Creative, channel and audience settings for a Google Demand Gen campaign (campaignType demand_gen). Creates one ad group with one ad: a multi-asset image ad, a video responsive ad when youtubeVideoIds is sent, or a carousel ad when carouselCards is sent.
  */
 export type GoogleDemandGenInput = {
@@ -5159,22 +5176,59 @@ export type GoogleDemandGenInput = {
      * Channel controls on the ad group. Only the listed channels serve; omit to serve on all of them.
      */
     channels?: Array<('youtube_in_stream' | 'youtube_in_feed' | 'youtube_shorts' | 'discover' | 'gmail' | 'display')>;
+    audience?: GoogleDemandGenAudience;
     /**
-     * Created as a Google Audience and attached to the ad group. Send at least one dimension. Ids are numeric Google ids (user lists, interest categories, custom audiences) from the same customer.
+     * Attach an existing Google Audience by numeric id instead of audience.
      */
-    audience?: {
-        userLists?: Array<(string)>;
-        userInterests?: Array<(string)>;
-        customAudiences?: Array<(string)>;
-        ageRanges?: Array<{
-            min: 18 | 25 | 35 | 45 | 55 | 65;
-            /**
-             * Omit for no upper bound.
-             */
-            max?: 24 | 34 | 44 | 54 | 64;
-        }>;
-        genders?: Array<('male' | 'female' | 'undetermined')>;
+    audienceId?: string;
+};
+
+/**
+ * Partial edit of a Google Demand Gen ad, sent in one atomic Google request. Every field
+ * you send replaces that whole field; fields you omit are kept. Which creative fields
+ * apply depends on the ad (read from Google): image ads take headlines, descriptions,
+ * businessName, callToAction and images (landscape, square, portrait, logo); video ads
+ * take headlines, longHeadlines, descriptions, businessName, youtubeVideoIds and exactly
+ * one images.logo; carousel ads take exactly one headline, one description, one logo,
+ * businessName and callToAction (their cards cannot be edited: create a new carousel ad).
+ * A field the ad does not take returns 422. New images are uploaded as new Google assets;
+ * the previous ones stay in the account's asset library.
+ *
+ * `channels`, `audience` and `audienceId` change the ad's ad group, so they apply to every
+ * ad in it. `audience` builds a new Google Audience and attaches it in place of the current
+ * one (the previous audience is detached, not deleted); `audienceId` attaches an existing
+ * one. Ad groups of campaigns migrated from Discovery use ungrouped audience segments,
+ * and Google refuses an Audience on them.
+ *
+ */
+export type GoogleDemandGenUpdate = {
+    finalUrl?: string;
+    businessName?: string;
+    headlines?: Array<(string)>;
+    /**
+     * Video ads only.
+     */
+    longHeadlines?: Array<(string)>;
+    descriptions?: Array<(string)>;
+    /**
+     * Image and carousel ads only.
+     */
+    callToAction?: string;
+    images?: {
+        landscape?: Array<(string)>;
+        square?: Array<(string)>;
+        portrait?: Array<(string)>;
+        logo?: Array<(string)>;
     };
+    /**
+     * Video ads only.
+     */
+    youtubeVideoIds?: Array<(string)>;
+    /**
+     * Replaces the ad group's channel controls; only the listed channels serve.
+     */
+    channels?: Array<('youtube_in_stream' | 'youtube_in_feed' | 'youtube_shorts' | 'discover' | 'gmail' | 'display')>;
+    audience?: GoogleDemandGenAudience;
     /**
      * Attach an existing Google Audience by numeric id instead of audience.
      */
@@ -37451,6 +37505,10 @@ export type UpdateAdData = {
          * Google Performance Max only. Replaces whole asset roles on the ad's asset group. Returns 422 on any other platform or channel.
          */
         assetGroup?: (GooglePmaxAssetGroupUpdate);
+        /**
+         * Google Demand Gen only. Returns 422 on any other platform or channel.
+         */
+        demandGen?: (GoogleDemandGenUpdate);
         status?: 'active' | 'paused';
         budget?: {
             /**
