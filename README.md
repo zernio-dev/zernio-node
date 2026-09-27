@@ -471,6 +471,7 @@ try {
 | `adCampaigns.createAdCampaign()` | Create a standalone campaign |
 | `adCampaigns.createAdSet()` | Create a standalone ad group |
 | `adCampaigns.createBidStrategy()` | Create portfolio bid strategy |
+| `adCampaigns.createGoogleAssetGroup()` | Create a Performance Max asset group |
 | `adCampaigns.createStandaloneAd()` | Create standalone ad |
 | `adCampaigns.getAd()` | Get ad details |
 | `adCampaigns.getAdCampaignDetails()` | Get live campaign details |
@@ -480,6 +481,7 @@ try {
 | `adCampaigns.getCampaignAdSchedule()` | Read a campaign's ad schedule (dayparting) |
 | `adCampaigns.getCampaignBidding()` | Read a campaign's current bidding |
 | `adCampaigns.getCampaignTargeting()` | Read a Google campaign's device, location, and language targeting |
+| `adCampaigns.getGoogleAssetGroup()` | Get a Performance Max asset group |
 | `adCampaigns.updateAd()` | Update ad |
 | `adCampaigns.updateAdCampaign()` | Update a campaign |
 | `adCampaigns.updateAdCampaignStatus()` | Pause or resume a campaign |
@@ -492,6 +494,7 @@ try {
 | `adCampaigns.updateCampaignAdSchedule()` | Replace a campaign's ad schedule (dayparting) |
 | `adCampaigns.updateCampaignAssets()` | Update campaign assets |
 | `adCampaigns.updateCampaignTargeting()` | Edit a Google campaign's device, location, or language targeting |
+| `adCampaigns.updateGoogleAssetGroup()` | Update a Performance Max asset group |
 | `adCampaigns.deleteAd()` | Cancel an ad |
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
 | `adCampaigns.deleteAdSet()` | Delete an ad set |
@@ -502,11 +505,14 @@ try {
 | `adCampaigns.duplicateAd()` | Duplicate an ad |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
 | `adCampaigns.duplicateAdSet()` | Duplicate an ad set |
+| `adCampaigns.editGoogleAssetGroupAssets()` | Link or unlink asset group assets |
 | `adCampaigns.removeAdGroupAssets()` | Remove ad-group assets |
 | `adCampaigns.removeAdKeyword()` | Remove a Search keyword |
 | `adCampaigns.removeCampaignAssets()` | Remove campaign assets |
+| `adCampaigns.removeGoogleAssetGroup()` | Remove a Performance Max asset group |
 | `adCampaigns.replaceCampaignNegativeKeywordLists()` | Replace campaign negative lists |
 | `adCampaigns.replaceCampaignNegativeKeywords()` | Replace campaign-level negative keywords |
+| `adCampaigns.replaceGoogleListingGroupFilters()` | Replace an asset group's listing-group tree |
 
 ### Ad Creatives
 | Method | Description |

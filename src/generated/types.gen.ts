@@ -4683,6 +4683,40 @@ export type GeoRestriction = {
 };
 
 /**
+ * Link one asset to the asset group. Send exactly one of asset (an existing asset), text, imageUrl or youtubeVideoId (new content, created in the same request).
+ */
+export type GoogleAssetGroupAssetLink = {
+    /**
+     * Google AssetFieldType, such as HEADLINE, LONG_HEADLINE, DESCRIPTION, BUSINESS_NAME, MARKETING_IMAGE, SQUARE_MARKETING_IMAGE, PORTRAIT_MARKETING_IMAGE, LOGO, LANDSCAPE_LOGO or YOUTUBE_VIDEO.
+     */
+    fieldType: string;
+    /**
+     * Existing asset id or resource name customers/{customerId}/assets/{assetId}. Must belong to the campaign's ad account.
+     */
+    asset?: string;
+    /**
+     * Text assets link as HEADLINE, LONG_HEADLINE, DESCRIPTION or BUSINESS_NAME.
+     */
+    text?: string;
+    /**
+     * Public http(s) image. Links as an image role or LOGO / LANDSCAPE_LOGO.
+     */
+    imageUrl?: string;
+    /**
+     * Links as YOUTUBE_VIDEO.
+     */
+    youtubeVideoId?: string;
+};
+
+export type GoogleAssetGroupAssetUnlink = {
+    fieldType: string;
+    /**
+     * Asset id or resource name, as returned in the asset group's assets.
+     */
+    asset: string;
+};
+
+/**
  * Supply fields for exactly one asset type per update. finalUrls may accompany sitelinkAsset. Shared asset edits affect every attachment using the asset.
  */
 export type GoogleAssetUpdate = {
@@ -4864,6 +4898,88 @@ export type GoogleBusinessReview = {
 export type starRating = 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
 
 /**
+ * Exactly one key. Omit the value (for example { productBrand: {} }) for the everything-else node of that level.
+ */
+export type GoogleListingGroupDimension = {
+    productBrand?: {
+        value?: string;
+    };
+    productCategory?: {
+        /**
+         * Google product category id.
+         */
+        categoryId?: string;
+        level: 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
+    };
+    productType?: {
+        value?: string;
+        level: 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
+    };
+    productItemId?: {
+        value?: string;
+    };
+    productCondition?: {
+        condition?: 'NEW' | 'REFURBISHED' | 'USED';
+    };
+    productChannel?: {
+        channel?: 'ONLINE' | 'LOCAL';
+    };
+    productCustomAttribute?: {
+        value?: string;
+        index: 'INDEX0' | 'INDEX1' | 'INDEX2' | 'INDEX3' | 'INDEX4';
+    };
+};
+
+export type level = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
+
+export type condition = 'NEW' | 'REFURBISHED' | 'USED';
+
+export type channel3 = 'ONLINE' | 'LOCAL';
+
+export type index = 'INDEX0' | 'INDEX1' | 'INDEX2' | 'INDEX3' | 'INDEX4';
+
+export type GoogleListingGroupFilterNode = {
+    id: string;
+    /**
+     * customers/{customerId}/assetGroupListingGroupFilters/{assetGroupId}~{filterId}
+     */
+    resourceName: string;
+    /**
+     * Null for the root node.
+     */
+    parentResourceName: (string) | null;
+    type: 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
+    listingSource: string;
+    /**
+     * Google's case value for the node, such as { productBrand: { value: 'Acme' } }. A dimension with no value is the everything-else node. Null for the root.
+     */
+    dimension: {
+        [key: string]: unknown;
+    } | null;
+};
+
+export type type7 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
+
+export type GoogleListingGroupNode = {
+    dimension: GoogleListingGroupDimension;
+    /**
+     * Leaf only. true excludes these products.
+     */
+    excluded?: boolean;
+    /**
+     * Makes the node a subdivision. Children share one dimension (and level or index) and include exactly one everything-else node.
+     */
+    children?: Array<GoogleListingGroupNode>;
+};
+
+/**
+ * The root of a Performance Max retail listing-group tree (listing source SHOPPING). No children targets all products. Requires a campaign linked to Merchant Center.
+ */
+export type GoogleListingGroupTree = {
+    children?: Array<GoogleListingGroupNode>;
+};
+
+/**
  * Google only. Who a campaign's location targeting reaches (Google's
  * `campaign.geo_target_type_setting.positive_geo_target_type`).
  * `presence`: people in, or regularly in, the targeted locations.
@@ -4876,14 +4992,33 @@ export type starRating = 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
 export type GoogleLocationTargetingType = 'presence' | 'presence_or_interest';
 
 export type GooglePmaxAssetGroup = {
+    /**
+     * Stable Google asset group id. Use it in the asset-group endpoints below.
+     */
     id: string;
+    /**
+     * customers/{customerId}/assetGroups/{assetGroupId}
+     */
     resourceName: string;
+    campaignId: string;
     name: string;
     /**
      * Asset-group status on Google. Campaign status independently controls delivery.
      */
     status: string;
     finalUrls: Array<(string)>;
+    finalMobileUrls: Array<(string)>;
+    path1: (string) | null;
+    path2: (string) | null;
+    /**
+     * Google ad strength, such as POOR, AVERAGE, GOOD or EXCELLENT.
+     */
+    adStrength: (string) | null;
+    /**
+     * Why the group is or is not serving, such as ELIGIBLE, PAUSED or NOT_ELIGIBLE.
+     */
+    primaryStatus: (string) | null;
+    primaryStatusReasons: Array<(string)>;
     assets: Array<{
         resourceName: string;
         /**
@@ -4895,6 +5030,13 @@ export type GooglePmaxAssetGroup = {
         imageUrl?: string;
         youtubeVideoId?: string;
     }>;
+};
+
+export type GooglePmaxAssetGroupDetail = GooglePmaxAssetGroup & {
+    /**
+     * The asset group's listing-group tree as flat nodes (retail campaigns). Empty when the group has none.
+     */
+    listingGroupFilters: Array<GoogleListingGroupFilterNode>;
 };
 
 /**
@@ -6261,7 +6403,7 @@ export type MediaItem = {
     tiktokProcessed?: boolean;
 };
 
-export type type7 = 'image' | 'video' | 'gif' | 'document';
+export type type8 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
@@ -6388,7 +6530,7 @@ export type MetaCatalogProductInput = {
 
 export type availability = 'in stock' | 'out of stock' | 'preorder' | 'available for order' | 'discontinued' | 'pending';
 
-export type condition = 'new' | 'refurbished' | 'used';
+export type condition2 = 'new' | 'refurbished' | 'used';
 
 export type visibility = 'published' | 'staging';
 
@@ -7036,7 +7178,7 @@ export type PortfolioBidStrategy = {
     targetRoas?: (number) | null;
 };
 
-export type type8 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+export type type9 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
 
 export type Post = {
     _id?: string;
@@ -8576,7 +8718,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type9 = 'image' | 'video' | 'document';
+export type type10 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -9086,7 +9228,7 @@ export type Verification = {
 
 export type status17 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
-export type channel3 = 'sms';
+export type channel4 = 'sms';
 
 /**
  * Individual webhook configuration for receiving real-time notifications
@@ -9533,7 +9675,7 @@ export type event4 = 'ad.status_changed';
 /**
  * Hierarchy level the status applies to. Mirrors Meta's `level`. Creative-level events are not forwarded.
  */
-export type level = 'CAMPAIGN' | 'AD_SET' | 'AD';
+export type level2 = 'CAMPAIGN' | 'AD_SET' | 'AD';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each
@@ -11879,7 +12021,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type10 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type11 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -11921,7 +12063,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type11 = 'platform_error';
+export type type12 = 'platform_error';
 
 export type code = 'platform_api_error';
 
@@ -12080,7 +12222,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type12 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type13 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -12216,7 +12358,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type13 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type14 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -12295,7 +12437,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type14 = 'divider' | 'latex';
+export type type15 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -41070,6 +41212,185 @@ export type ListGoogleAssetGroupsResponse = ({
 });
 
 export type ListGoogleAssetGroupsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateGoogleAssetGroupData = {
+    body: {
+        /**
+         * Unique within the campaign.
+         */
+        name: string;
+        finalUrls: Array<(string)>;
+        finalMobileUrls?: Array<(string)>;
+        path1?: string;
+        /**
+         * Requires path1.
+         */
+        path2?: string;
+        status?: 'ENABLED' | 'PAUSED';
+        assets?: Array<GoogleAssetGroupAssetLink>;
+        listingGroupFilter?: GoogleListingGroupTree;
+        validateOnly?: boolean;
+    };
+    path: {
+        /**
+         * Google Ads campaign id.
+         */
+        campaignId: string;
+    };
+};
+
+export type CreateGoogleAssetGroupResponse = ({
+    validateOnly?: boolean;
+    message?: string;
+} | {
+    assetGroup: {
+        id: string;
+        resourceName: string;
+        campaignId: string;
+    };
+});
+
+export type CreateGoogleAssetGroupError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetGoogleAssetGroupData = {
+    path: {
+        /**
+         * Google asset group id.
+         */
+        assetGroupId: string;
+        /**
+         * Google Ads campaign id.
+         */
+        campaignId: string;
+    };
+};
+
+export type GetGoogleAssetGroupResponse = ({
+    assetGroup: GooglePmaxAssetGroupDetail;
+    cachedAt: (string) | null;
+    stale: boolean;
+});
+
+export type GetGoogleAssetGroupError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateGoogleAssetGroupData = {
+    body: {
+        name?: string;
+        status?: 'ENABLED' | 'PAUSED';
+        finalUrls?: Array<(string)>;
+        finalMobileUrls?: Array<(string)>;
+        path1?: (string) | null;
+        path2?: (string) | null;
+        validateOnly?: boolean;
+    };
+    path: {
+        /**
+         * Google asset group id.
+         */
+        assetGroupId: string;
+        /**
+         * Google Ads campaign id.
+         */
+        campaignId: string;
+    };
+};
+
+export type UpdateGoogleAssetGroupResponse = ({
+    assetGroupId?: string;
+    updated?: Array<(string)>;
+    validateOnly?: boolean;
+});
+
+export type UpdateGoogleAssetGroupError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RemoveGoogleAssetGroupData = {
+    path: {
+        assetGroupId: string;
+        campaignId: string;
+    };
+    query?: {
+        validateOnly?: boolean;
+    };
+};
+
+export type RemoveGoogleAssetGroupResponse = ({
+    assetGroupId?: string;
+    removed?: boolean;
+    validateOnly?: boolean;
+});
+
+export type RemoveGoogleAssetGroupError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type EditGoogleAssetGroupAssetsData = {
+    body: {
+        link?: Array<GoogleAssetGroupAssetLink>;
+        unlink?: Array<GoogleAssetGroupAssetUnlink>;
+        validateOnly?: boolean;
+    };
+    path: {
+        /**
+         * Google asset group id.
+         */
+        assetGroupId: string;
+        /**
+         * Google Ads campaign id.
+         */
+        campaignId: string;
+    };
+};
+
+export type EditGoogleAssetGroupAssetsResponse = ({
+    assetGroupId?: string;
+    linked?: number;
+    unlinked?: number;
+    validateOnly?: boolean;
+});
+
+export type EditGoogleAssetGroupAssetsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ReplaceGoogleListingGroupFiltersData = {
+    body: {
+        tree: GoogleListingGroupTree;
+        validateOnly?: boolean;
+    };
+    path: {
+        /**
+         * Google asset group id.
+         */
+        assetGroupId: string;
+        /**
+         * Google Ads campaign id.
+         */
+        campaignId: string;
+    };
+};
+
+export type ReplaceGoogleListingGroupFiltersResponse = ({
+    assetGroupId?: string;
+    /**
+     * Nodes removed from the previous tree.
+     */
+    removed?: number;
+    /**
+     * Nodes in the new tree.
+     */
+    created?: number;
+    validateOnly?: boolean;
+});
+
+export type ReplaceGoogleListingGroupFiltersError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

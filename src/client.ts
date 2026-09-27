@@ -90,6 +90,7 @@ import {
   createDiscordGuildRole,
   createDiscordScheduledEvent,
   createDiscordThread,
+  createGoogleAssetGroup,
   createGoogleBusinessMedia,
   createGoogleBusinessPlaceAction,
   createHighDemandPeriod,
@@ -199,6 +200,7 @@ import {
   duplicateAdSet,
   duplicateWorkflow,
   editDiscordGuildRole,
+  editGoogleAssetGroupAssets,
   editInboxComment,
   editInboxMessage,
   editPost,
@@ -286,6 +288,7 @@ import {
   getFollowerStats,
   getGmbAttributeMetadata,
   getGmbLocations,
+  getGoogleAssetGroup,
   getGoogleBusinessAttributes,
   getGoogleBusinessFoodMenus,
   getGoogleBusinessLocationDetails,
@@ -584,6 +587,7 @@ import {
   removeCampaignAssets,
   removeConversionAssociations,
   removeDiscordMemberRole,
+  removeGoogleAssetGroup,
   removeImessageGroupParticipant,
   removeMessageReaction,
   removeTrackingTagSharedAccount,
@@ -594,6 +598,7 @@ import {
   replaceBusinessAgentBusinessInformation,
   replaceCampaignNegativeKeywordLists,
   replaceCampaignNegativeKeywords,
+  replaceGoogleListingGroupFilters,
   replyToAdComment,
   replyToGoogleBusinessReview,
   replyToInboxPost,
@@ -723,6 +728,7 @@ import {
   updateDiscordSettings,
   updateFacebookPage,
   updateGmbLocation,
+  updateGoogleAssetGroup,
   updateGoogleBusinessAttributes,
   updateGoogleBusinessFoodMenus,
   updateGoogleBusinessLocationDetails,
@@ -1798,6 +1804,12 @@ export class Zernio {
     replaceCampaignNegativeKeywordLists: this._bind(replaceCampaignNegativeKeywordLists),
     boostPost: this._bind(boostPost),
     listGoogleAssetGroups: this._bind(listGoogleAssetGroups),
+    createGoogleAssetGroup: this._bind(createGoogleAssetGroup),
+    getGoogleAssetGroup: this._bind(getGoogleAssetGroup),
+    updateGoogleAssetGroup: this._bind(updateGoogleAssetGroup),
+    removeGoogleAssetGroup: this._bind(removeGoogleAssetGroup),
+    editGoogleAssetGroupAssets: this._bind(editGoogleAssetGroupAssets),
+    replaceGoogleListingGroupFilters: this._bind(replaceGoogleListingGroupFilters),
     createStandaloneAd: this._bind(createStandaloneAd),
   };
 
@@ -2225,6 +2237,18 @@ export class Zernio {
     boostPost: this._bind(boostPost),
     /** @deprecated Use `zernio.adcampaigns.listGoogleAssetGroups` instead. */
     listGoogleAssetGroups: this._bind(listGoogleAssetGroups),
+    /** @deprecated Use `zernio.adcampaigns.createGoogleAssetGroup` instead. */
+    createGoogleAssetGroup: this._bind(createGoogleAssetGroup),
+    /** @deprecated Use `zernio.adcampaigns.getGoogleAssetGroup` instead. */
+    getGoogleAssetGroup: this._bind(getGoogleAssetGroup),
+    /** @deprecated Use `zernio.adcampaigns.updateGoogleAssetGroup` instead. */
+    updateGoogleAssetGroup: this._bind(updateGoogleAssetGroup),
+    /** @deprecated Use `zernio.adcampaigns.removeGoogleAssetGroup` instead. */
+    removeGoogleAssetGroup: this._bind(removeGoogleAssetGroup),
+    /** @deprecated Use `zernio.adcampaigns.editGoogleAssetGroupAssets` instead. */
+    editGoogleAssetGroupAssets: this._bind(editGoogleAssetGroupAssets),
+    /** @deprecated Use `zernio.adcampaigns.replaceGoogleListingGroupFilters` instead. */
+    replaceGoogleListingGroupFilters: this._bind(replaceGoogleListingGroupFilters),
     /** @deprecated Use `zernio.adcampaigns.createStandaloneAd` instead. */
     createStandaloneAd: this._bind(createStandaloneAd),
     /** @deprecated Use `zernio.adaccounts.getAdComments` instead. */
