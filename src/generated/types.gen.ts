@@ -40835,6 +40835,17 @@ export type GetAdAccountHierarchyResponse = ({
          */
         clients?: Array<GoogleAdsHierarchyClient>;
     }>;
+    directCustomers?: Array<{
+        customerId?: string;
+        manager?: boolean;
+        /**
+         * Manager invitations this account has not answered yet.
+         */
+        pendingInvitations?: Array<{
+            managerCustomerId?: string;
+            managerLinkId?: string;
+        }>;
+    }>;
     unavailable?: Array<{
         customerId?: string;
         /**
