@@ -399,7 +399,7 @@ try {
 | `adAccounts.listAccountSitelinks()` | List account sitelinks |
 | `adAccounts.listAccountStructuredSnippets()` | List account snippets |
 | `adAccounts.listAdAccounts()` | List ad accounts |
-| `adAccounts.listAdLabels()` | Ad labels |
+| `adAccounts.listAdLabels()` | List ad labels |
 | `adAccounts.listAdNegativeKeywordLists()` | List negative keyword lists |
 | `adAccounts.listAdsBusinessCenters()` | List TikTok Business Centers |
 | `adAccounts.listAdsInstagramAccounts()` | List Instagram ad identities |
@@ -412,6 +412,7 @@ try {
 | `adAccounts.listTikTokAdPixels()` | List TikTok ad pixels |
 | `adAccounts.listValueRuleSets()` | List value rule sets |
 | `adAccounts.createAdAccount()` | Create Meta ad account |
+| `adAccounts.createAdLabel()` | Create a Google Ads label |
 | `adAccounts.createAdNegativeKeywordList()` | Create a negative keyword list |
 | `adAccounts.createCustomConversion()` | Create custom conversion |
 | `adAccounts.createHighDemandPeriod()` | Schedule a budget increase |
@@ -428,6 +429,7 @@ try {
 | `adAccounts.updateAccountSitelinks()` | Update account sitelinks |
 | `adAccounts.updateAccountStructuredSnippets()` | Update account snippets |
 | `adAccounts.updateAdAccount()` | Update ad account settings |
+| `adAccounts.updateAdLabel()` | Update a Google Ads label |
 | `adAccounts.updateAdNegativeKeywordList()` | Rename a negative keyword list |
 | `adAccounts.updateValueRuleSet()` | Replace a value rule set |
 | `adAccounts.deleteAdComment()` | Delete an ad comment |
@@ -436,10 +438,13 @@ try {
 | `adAccounts.addAccountCallouts()` | Add account callouts |
 | `adAccounts.addAccountSitelinks()` | Add account sitelinks |
 | `adAccounts.addAccountStructuredSnippets()` | Add account snippets |
+| `adAccounts.attachAdLabel()` | Attach a Google Ads label |
+| `adAccounts.detachAdLabel()` | Detach a Google Ads label |
 | `adAccounts.hideAdComment()` | Hide or unhide an ad comment |
 | `adAccounts.removeAccountCallout()` | Remove account callout |
 | `adAccounts.removeAccountSitelink()` | Remove account sitelink |
 | `adAccounts.removeAccountStructuredSnippet()` | Remove account snippet |
+| `adAccounts.removeAdLabel()` | Remove a Google Ads label |
 | `adAccounts.replaceAdNegativeKeywordListKeywords()` | Replace negative list keywords |
 | `adAccounts.replyToAdComment()` | Reply to an ad comment |
 

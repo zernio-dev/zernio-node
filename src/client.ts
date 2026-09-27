@@ -23,6 +23,7 @@ import {
   archiveLeadForm,
   assignGoogleBusinessLocation,
   attachAdGroupAssets,
+  attachAdLabel,
   attachCampaignAssets,
   attachNumberToSipTrunk,
   batchAdCatalogProducts,
@@ -67,6 +68,7 @@ import {
   createAdCatalogProductSet,
   createAdCreative,
   createAdInsightsReport,
+  createAdLabel,
   createAdNegativeKeywordList,
   createAdSet,
   createApiKey,
@@ -188,6 +190,7 @@ import {
   deleteWhatsappBusinessUsername,
   deleteWorkflow,
   deprecateWhatsAppFlow,
+  detachAdLabel,
   detachNumberFromSipTrunk,
   dialVoiceWebCall,
   disableSmsOnNumber,
@@ -582,6 +585,7 @@ import {
   removeAccountStructuredSnippet,
   removeAdGroupAssets,
   removeAdKeyword,
+  removeAdLabel,
   removeBookmark,
   removeBusinessAgentAllowlistEntry,
   removeCampaignAssets,
@@ -700,6 +704,7 @@ import {
   updateAdCreative,
   updateAdGroupAssets,
   updateAdKeyword,
+  updateAdLabel,
   updateAdNegativeKeywordList,
   updateAdSet,
   updateAdSetStatus,
@@ -1886,6 +1891,11 @@ export class Zernio {
     getIosFourteenCampaignLimits: this._bind(getIosFourteenCampaignLimits),
     listMetaBusinesses: this._bind(listMetaBusinesses),
     listAdLabels: this._bind(listAdLabels),
+    createAdLabel: this._bind(createAdLabel),
+    updateAdLabel: this._bind(updateAdLabel),
+    removeAdLabel: this._bind(removeAdLabel),
+    attachAdLabel: this._bind(attachAdLabel),
+    detachAdLabel: this._bind(detachAdLabel),
     listHighDemandPeriods: this._bind(listHighDemandPeriods),
     createHighDemandPeriod: this._bind(createHighDemandPeriod),
     listValueRuleSets: this._bind(listValueRuleSets),
@@ -2277,6 +2287,16 @@ export class Zernio {
     listMetaBusinesses: this._bind(listMetaBusinesses),
     /** @deprecated Use `zernio.adaccounts.listAdLabels` instead. */
     listAdLabels: this._bind(listAdLabels),
+    /** @deprecated Use `zernio.adaccounts.createAdLabel` instead. */
+    createAdLabel: this._bind(createAdLabel),
+    /** @deprecated Use `zernio.adaccounts.updateAdLabel` instead. */
+    updateAdLabel: this._bind(updateAdLabel),
+    /** @deprecated Use `zernio.adaccounts.removeAdLabel` instead. */
+    removeAdLabel: this._bind(removeAdLabel),
+    /** @deprecated Use `zernio.adaccounts.attachAdLabel` instead. */
+    attachAdLabel: this._bind(attachAdLabel),
+    /** @deprecated Use `zernio.adaccounts.detachAdLabel` instead. */
+    detachAdLabel: this._bind(detachAdLabel),
     /** @deprecated Use `zernio.adaccounts.listHighDemandPeriods` instead. */
     listHighDemandPeriods: this._bind(listHighDemandPeriods),
     /** @deprecated Use `zernio.adaccounts.createHighDemandPeriod` instead. */

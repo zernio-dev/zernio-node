@@ -4682,6 +4682,61 @@ export type GeoRestriction = {
     countries: Array<(string)>;
 };
 
+export type GoogleAdLabel = {
+    /**
+     * Google label id
+     */
+    id?: string;
+    resourceName?: string;
+    name?: string;
+    status?: 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+    /**
+     * #RRGGBB
+     */
+    backgroundColor?: (string) | null;
+    /**
+     * Null when empty.
+     */
+    description?: (string) | null;
+};
+
+export type status11 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+
+/**
+ * At least one id across the four target lists. Up to 1000 ids per list.
+ */
+export type GoogleAdLabelAssignments = {
+    /**
+     * Zernio SocialAccount id (Google Ads)
+     */
+    accountId: string;
+    /**
+     * Google customer id. Required when the connection has multiple customers.
+     */
+    adAccountId?: string;
+    /**
+     * Alias of adAccountId
+     * @deprecated
+     */
+    customerId?: string;
+    /**
+     * Google campaign ids
+     */
+    campaignIds?: Array<(string)>;
+    /**
+     * Google ad group ids
+     */
+    adSetIds?: Array<(string)>;
+    /**
+     * Google ad group ad ids, {adGroupId}~{adId}
+     */
+    adIds?: Array<(string)>;
+    /**
+     * Google keyword criterion ids, {adGroupId}~{criterionId}
+     */
+    keywordIds?: Array<(string)>;
+};
+
 /**
  * Link one asset to the asset group. Send exactly one of asset (an existing asset), text, imageUrl or youtubeVideoId (new content, created in the same request).
  */
@@ -5265,7 +5320,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status11 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status12 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -5337,7 +5392,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status12 = 'active' | 'archived';
+export type status13 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -6924,7 +6979,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status13 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status14 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -7049,7 +7104,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status14 = 'published' | 'failed';
+export type status15 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7451,7 +7506,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status15 = 'active' | 'draft' | 'archived';
+export type status16 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8727,7 +8782,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status16 = 'pending' | 'completed' | 'expired';
+export type status17 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -9226,7 +9281,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status17 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status18 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -9353,7 +9408,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status18 = 'success' | 'failed';
+export type status19 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -9465,7 +9520,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status19 = 'success' | 'failure';
+export type status20 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11418,7 +11473,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status20 = 'published' | 'failed' | 'deleted';
+export type status21 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -11684,7 +11739,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status21 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status22 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -11833,7 +11888,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status22 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status23 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -11987,7 +12042,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status23 = 'pending' | 'active';
+export type status24 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -12145,7 +12200,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status24 = 'success' | 'failed' | 'pending';
+export type status25 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -39162,40 +39217,229 @@ export type ListMetaBusinessesError = (unknown | {
 export type ListAdLabelsData = {
     query: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id. For Meta, the posting or ads variant used to resolve the token.
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Meta ad account id (act_<n>), or the Google Ads customer id (digits only).
          */
-        adAccountId: string;
+        adAccountId?: string;
         /**
-         * Cursor from paging.after of the previous page.
+         * Meta only. Cursor from paging.after of the previous page.
          */
         after?: string;
         /**
-         * Rows per page
+         * Google only. Alias of adAccountId, kept for existing callers.
+         * @deprecated
+         */
+        customerId?: string;
+        /**
+         * Meta only. Rows per page.
          */
         limit?: number;
     };
 };
 
 export type ListAdLabelsResponse = ({
+    /**
+     * Meta act_<n>, or the resolved Google customer id
+     */
     adAccountId?: string;
-    data?: Array<{
-        [key: string]: unknown;
-    }>;
+    data?: Array<(GoogleAdLabel | {
+    [key: string]: unknown;
+})>;
     paging?: {
         /**
-         * Cursor for the next page; null when exhausted.
+         * Cursor for the next page; null when exhausted (always null on Google).
          */
         after?: (string) | null;
     };
+    /**
+     * Google only. When the served list was fetched from Google.
+     */
+    cachedAt?: (string) | null;
+    /**
+     * Google only. True when Google quota was exhausted and the last cached list was served.
+     */
+    stale?: boolean;
 });
 
-export type ListAdLabelsError = (unknown | {
+export type ListAdLabelsError = (ErrorResponse | {
     error?: string;
-} | ErrorResponse);
+} | unknown);
+
+export type CreateAdLabelData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+        /**
+         * Trimmed before sending.
+         */
+        name: string;
+        /**
+         * #RRGGBB. Google picks a color when omitted.
+         */
+        backgroundColor?: string;
+        description?: string;
+    };
+};
+
+export type CreateAdLabelResponse = ({
+    customerId?: string;
+    /**
+     * Google label id
+     */
+    id?: string;
+    /**
+     * customers/{customerId}/labels/{id}
+     */
+    resourceName?: string;
+});
+
+export type CreateAdLabelError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateAdLabelData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+        name?: string;
+        backgroundColor?: string;
+        /**
+         * Send "" to clear it.
+         */
+        description?: string;
+    };
+    path: {
+        /**
+         * Google label id
+         */
+        labelId: string;
+    };
+};
+
+export type UpdateAdLabelResponse = ({
+    customerId?: string;
+    label?: GoogleAdLabel;
+});
+
+export type UpdateAdLabelError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RemoveAdLabelData = {
+    path: {
+        /**
+         * Google label id
+         */
+        labelId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+    };
+};
+
+export type RemoveAdLabelResponse = ({
+    customerId?: string;
+    labelId?: string;
+    /**
+     * Always true on success
+     */
+    removed?: boolean;
+});
+
+export type RemoveAdLabelError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AttachAdLabelData = {
+    body: GoogleAdLabelAssignments;
+    path: {
+        /**
+         * Google label id
+         */
+        labelId: string;
+    };
+};
+
+export type AttachAdLabelResponse = ({
+    customerId?: string;
+    labelId?: string;
+    /**
+     * Links created by this call
+     */
+    attached?: number;
+    /**
+     * Targets that already carried the label
+     */
+    unchanged?: number;
+});
+
+export type AttachAdLabelError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DetachAdLabelData = {
+    body: GoogleAdLabelAssignments;
+    path: {
+        /**
+         * Google label id
+         */
+        labelId: string;
+    };
+};
+
+export type DetachAdLabelResponse = ({
+    customerId?: string;
+    labelId?: string;
+    /**
+     * Links removed by this call
+     */
+    detached?: number;
+    /**
+     * Targets that did not carry the label
+     */
+    unchanged?: number;
+});
+
+export type DetachAdLabelError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type ListHighDemandPeriodsData = {
     query: {
