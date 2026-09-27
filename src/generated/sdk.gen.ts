@@ -10956,6 +10956,22 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * COST_CAP plus bidAmount for target CPA, LOWEST_COST_WITH_MIN_ROAS plus
  * roasAverageFloor for Maximize Conversion Value with target ROAS.
  *
+ * Google Demand Gen: set `campaignType: "demand_gen"` and supply `demandGen`. Creates a
+ * daily budget, PAUSED campaign, one ad group and one ad in a single atomic request: a
+ * multi-asset image ad, or a video responsive ad when `demandGen.youtubeVideoIds` is sent.
+ * Geo (countries, regions, cities, zips, metros) and languages go on the ad group, as
+ * Demand Gen requires. `demandGen.channels` sets the ad group's channel controls and
+ * `demandGen.audience` builds a Google Audience (user lists, interests, custom audiences,
+ * age ranges, genders) attached to the ad group, or `demandGen.audienceId` attaches an
+ * existing one. `validateOnly: true` validates everything with Google without creating
+ * resources. Supported bidding: omitted or LOWEST_COST_WITHOUT_CAP for Maximize
+ * Conversions, COST_CAP plus bidAmount for target CPA, LOWEST_COST_WITH_MIN_ROAS plus
+ * roasAverageFloor for target ROAS, LOWEST_COST_WITH_BID_CAP plus bidAmount for target
+ * CPC. The created ad carries the native `platformCampaignId`, `platformAdSetId` (ad
+ * group) and `platformAdId`. Activate with PUT /v1/ads/campaigns/{campaignId}/status;
+ * budget, bidding and name are edited with the regular campaign endpoints. Creative and
+ * targeting edits on an existing Demand Gen ad return 501 for now.
+ *
  * Other mutually-exclusive request shapes are selected by the body:
  *
  * - Legacy single-creative shape (all platforms, the default).

@@ -5080,6 +5080,80 @@ export type GoogleCustomerConversionGoal = {
 };
 
 /**
+ * Creative, channel and audience settings for a Google Demand Gen campaign (campaignType demand_gen). Creates one ad group with one ad: a multi-asset image ad, or a video responsive ad when youtubeVideoIds is sent.
+ */
+export type GoogleDemandGenInput = {
+    /**
+     * Defaults to the ad name.
+     */
+    adGroupName?: string;
+    finalUrl: string;
+    businessName: string;
+    /**
+     * Distinct texts.
+     */
+    headlines: Array<(string)>;
+    /**
+     * Video ads only, and required there.
+     */
+    longHeadlines?: Array<(string)>;
+    descriptions: Array<(string)>;
+    /**
+     * Image ads only. Call to action text such as 'Learn more'; Google picks one when omitted.
+     */
+    callToAction?: string;
+    /**
+     * Public image URLs. An image ad needs landscape or square; a video ad takes only one logo.
+     */
+    images: {
+        /**
+         * 1.91:1, at least 600x314.
+         */
+        landscape?: Array<(string)>;
+        /**
+         * 1:1, at least 300x300.
+         */
+        square?: Array<(string)>;
+        /**
+         * 4:5, at least 480x600.
+         */
+        portrait?: Array<(string)>;
+        /**
+         * 1:1, at least 128x128.
+         */
+        logo: Array<(string)>;
+    };
+    /**
+     * Makes the ad a video responsive ad.
+     */
+    youtubeVideoIds?: Array<(string)>;
+    /**
+     * Channel controls on the ad group. Only the listed channels serve; omit to serve on all of them.
+     */
+    channels?: Array<('youtube_in_stream' | 'youtube_in_feed' | 'youtube_shorts' | 'discover' | 'gmail' | 'display')>;
+    /**
+     * Created as a Google Audience and attached to the ad group. Send at least one dimension. Ids are numeric Google ids (user lists, interest categories, custom audiences) from the same customer.
+     */
+    audience?: {
+        userLists?: Array<(string)>;
+        userInterests?: Array<(string)>;
+        customAudiences?: Array<(string)>;
+        ageRanges?: Array<{
+            min: 18 | 25 | 35 | 45 | 55 | 65;
+            /**
+             * Omit for no upper bound.
+             */
+            max?: 24 | 34 | 44 | 54 | 64;
+        }>;
+        genders?: Array<('male' | 'female' | 'undetermined')>;
+    };
+    /**
+     * Attach an existing Google Audience by numeric id instead of audience.
+     */
+    audienceId?: string;
+};
+
+/**
  * Exactly one key. Omit the value (for example { productBrand: {} }) for the everything-else node of that level.
  */
 export type GoogleListingGroupDimension = {
@@ -41972,7 +42046,7 @@ export type CreateStandaloneAdData = {
          */
         aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
         /**
-         * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image, all-image placementAssets with per-rule copy, existing video.id or existingCreativeId; other media pools, new video uploads, creatives[], adSetId and RESERVED buying return 400. Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped. Success returns 200 with per-node results; Meta rejection returns an error. ChatGPT (OpenAI) has no platform dry-run: Zernio runs every check it knows (creative lengths, budget, bid strategy, targeting) plus live lookups of the conversion event and target countries, and uploads or creates nothing. OpenAI's own write-time checks (image fetch, currency-specific minimums, ad review) still run only on a real create. Any other platform, or a Google campaignType other than pmax, returns 501 `feature_not_available`.
+         * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image, all-image placementAssets with per-rule copy, existing video.id or existingCreativeId; other media pools, new video uploads, creatives[], adSetId and RESERVED buying return 400. Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped. Success returns 200 with per-node results; Meta rejection returns an error. ChatGPT (OpenAI) has no platform dry-run: Zernio runs every check it knows (creative lengths, budget, bid strategy, targeting) plus live lookups of the conversion event and target countries, and uploads or creates nothing. OpenAI's own write-time checks (image fetch, currency-specific minimums, ad review) still run only on a real create. Any other platform, or a Google campaignType other than pmax or demand_gen, returns 501 `feature_not_available`.
          */
         validateOnly?: boolean;
         /**
@@ -42722,14 +42796,15 @@ export type CreateStandaloneAdData = {
          */
         audienceId?: string;
         /**
-         * Google only. Performance Max requires assetGroup and is always created PAUSED.
+         * Google only. Performance Max requires assetGroup and Demand Gen requires demandGen; both are always created PAUSED.
          */
-        campaignType?: 'display' | 'search' | 'pmax';
+        campaignType?: 'display' | 'search' | 'pmax' | 'demand_gen';
         /**
          * Google only (400 elsewhere). Set on the new campaign; a request that joins an existing campaign (`existingCampaignId` or `adSetId`) returns 400, change that campaign with PUT /v1/ads/campaigns/{campaignId}/targeting instead. `presence` reaches only people in or regularly in the targeted locations.
          */
         locationTargetingType?: (GoogleLocationTargetingType);
         assetGroup?: GooglePmaxAssetGroupInput;
+        demandGen?: GoogleDemandGenInput;
         /**
          * Google Search only. Keywords on the new ad group; entries are strings (BROAD) or { text, matchType }. Editable later via PUT /v1/ads/{adId} targeting.keywords.
          */
