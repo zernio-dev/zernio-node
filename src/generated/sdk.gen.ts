@@ -10986,6 +10986,10 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * group) and `platformAdId`. Activate with PUT /v1/ads/campaigns/{campaignId}/status;
  * budget, bidding and name are edited with the regular campaign endpoints; creative,
  * channels, audience and ad group targeting with PUT /v1/ads/{adId} (`demandGen`, `targeting`).
+ * To grow an existing Demand Gen campaign, send `existingCampaignId` (adds a PAUSED ad group,
+ * with its own geo, languages, channels and audience, plus its ad) or `adSetId` (adds a
+ * PAUSED ad to that ad group); neither takes budget, bidding or schedule fields, and both
+ * support `validateOnly`.
  *
  * Other mutually-exclusive request shapes are selected by the body:
  *

@@ -42355,6 +42355,11 @@ export type CreateStandaloneAdData = {
          * `budgetAmount`/`budgetType` and bidding fields
          * (`bidStrategy`, `bidAmount`, `portfolioBidStrategyId`)
          * return 400 on this shape; the ad group already owns them.
+         * With `campaignType: "demand_gen"` the ad group must belong to a
+         * Demand Gen campaign (otherwise 400); `demandGen` carries only the
+         * ad's creative, the new ad is created PAUSED, and ad group settings
+         * (geo, languages, `demandGen.channels`/`audience`/`audienceId`/
+         * `adGroupName`) return 400. `validateOnly` is supported.
          *
          */
         adSetId?: string;
@@ -42375,7 +42380,12 @@ export type CreateStandaloneAdData = {
          * Ads: create a new ad group under this EXISTING campaign;
          * the new ad group inherits the campaign's budget, so omit
          * `budgetAmount`/`budgetType` (and any bidding field), or
-         * the request returns 400. On failure only the entities we
+         * the request returns 400. With `campaignType: "demand_gen"` the
+         * campaign must be a Demand Gen campaign (otherwise 400): the new ad
+         * group (with its geo, languages, channels and audience from the
+         * request) and its ad are created in one atomic request, the ad
+         * group PAUSED; schedule and `locationTargetingType` belong to the
+         * campaign and return 400. On failure only the entities we
          * authored are cleaned up; the pre-existing parent is left
          * untouched and is never (re)activated. Mutually exclusive
          * with `adSetId` and `creatives[]`.
