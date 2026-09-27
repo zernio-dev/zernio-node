@@ -11100,6 +11100,14 @@ export type WebhookPayloadPost = {
             platformPostId?: string;
             publishedUrl?: string;
             error?: string;
+            /**
+             * Present when this target failed. Same taxonomy as `platforms[].errorCategory` on GET /v1/posts.
+             */
+            errorCategory?: 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'platform_rate_limit' | 'quota_exhausted' | 'system_error' | 'unknown';
+            /**
+             * Present when this target failed. Who must act: user, platform or system (Zernio).
+             */
+            errorSource?: 'user' | 'platform' | 'system';
             platformError?: PostPlatformError;
         }>;
         /**
@@ -11165,6 +11173,14 @@ export type WebhookPayloadPostPlatform = {
             platformPostId?: string;
             publishedUrl?: string;
             error?: string;
+            /**
+             * Present when this target failed. Same taxonomy as `platforms[].errorCategory` on GET /v1/posts.
+             */
+            errorCategory?: 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'platform_rate_limit' | 'quota_exhausted' | 'system_error' | 'unknown';
+            /**
+             * Present when this target failed. Who must act: user, platform or system (Zernio).
+             */
+            errorSource?: 'user' | 'platform' | 'system';
             platformError?: PostPlatformError;
         }>;
         /**
@@ -11198,6 +11214,14 @@ export type WebhookPayloadPostPlatform = {
          * Error message from the platform. Present on `failed` only.
          */
         error?: string;
+        /**
+         * Error category for programmatic handling. Present on `failed` only. Same taxonomy as `platforms[].errorCategory` on GET /v1/posts.
+         */
+        errorCategory?: 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'platform_rate_limit' | 'quota_exhausted' | 'system_error' | 'unknown';
+        /**
+         * Who must act on the failure: user (fix content or reconnect), platform (outage or policy), system (Zernio). Present on `failed` only.
+         */
+        errorSource?: 'user' | 'platform' | 'system';
         /**
          * When the platform-side deletion was detected by Zernio sync (ISO 8601). Present only on `post.platform.deleted`.
          */
