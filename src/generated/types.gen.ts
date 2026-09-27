@@ -9210,7 +9210,7 @@ export type status18 = 'success' | 'failed';
  */
 export type WebhookPayloadAccountAdsInitialSyncCompleted = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'account.ads.initial_sync_completed';
@@ -9335,7 +9335,7 @@ export type errorCategory2 = 'token_invalid' | 'permission_denied' | 'no_ad_acco
  */
 export type WebhookPayloadAccountConnected = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'account.connected';
@@ -9365,7 +9365,7 @@ export type event2 = 'account.connected';
  */
 export type WebhookPayloadAccountDisconnected = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'account.disconnected';
@@ -9417,7 +9417,7 @@ export type disconnectionType = 'intentional' | 'unintentional';
  */
 export type WebhookPayloadAdStatusChanged = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'ad.status_changed';
@@ -9553,7 +9553,7 @@ export type level = 'CAMPAIGN' | 'AD_SET' | 'AD';
  */
 export type WebhookPayloadAnalyticsSynced = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'analytics.synced';
@@ -9603,6 +9603,9 @@ export type event5 = 'analytics.synced';
  *
  */
 export type WebhookPayloadCallEnded = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
     id: string;
     event: 'call.ended';
     call: {
@@ -9670,6 +9673,9 @@ export type event6 = 'call.ended';
  *
  */
 export type WebhookPayloadCallFailed = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
     id: string;
     event: 'call.failed';
     call: {
@@ -9702,6 +9708,9 @@ export type event7 = 'call.failed';
  *
  */
 export type WebhookPayloadCallPermissionRequest = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
     id: string;
     event: 'call.permission_request';
     permission: {
@@ -9739,7 +9748,7 @@ export type response = 'accept' | 'reject';
  */
 export type WebhookPayloadCallReceived = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'call.received';
@@ -9788,7 +9797,7 @@ export type event9 = 'call.received';
  */
 export type WebhookPayloadComment = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'comment.received';
@@ -9948,7 +9957,7 @@ export type platform12 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'lin
  */
 export type WebhookPayloadConversationControlChanged = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'conversation.control_changed';
@@ -9996,7 +10005,7 @@ export type previousOwner = 'app' | 'ai_agent' | 'other';
  */
 export type WebhookPayloadConversationStarted = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'conversation.started';
@@ -10024,7 +10033,7 @@ export type event12 = 'conversation.started';
  */
 export type WebhookPayloadExternalPost = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
@@ -10051,7 +10060,7 @@ export type event13 = 'post.external.created' | 'post.external.updated' | 'post.
  */
 export type WebhookPayloadLead = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'lead.received';
@@ -10124,7 +10133,7 @@ export type platform13 = 'facebook';
  */
 export type WebhookPayloadMessage = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'message.received';
@@ -10699,6 +10708,9 @@ export type contactsOrigin = 'contact_request' | 'other';
  *
  */
 export type WebhookPayloadMessageDeleted = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
     id: string;
     event: 'message.deleted';
     message: InboxWebhookMessage;
@@ -10728,6 +10740,9 @@ export type event16 = 'message.deleted';
  *
  */
 export type WebhookPayloadMessageDeliveryStatus = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
     id: string;
     event: 'message.delivered' | 'message.read' | 'message.failed';
     message: InboxWebhookMessage;
@@ -10780,6 +10795,9 @@ export type event17 = 'message.delivered' | 'message.read' | 'message.failed';
  *
  */
 export type WebhookPayloadMessageEdited = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
     id: string;
     event: 'message.edited';
     message: InboxWebhookMessage;
@@ -10810,7 +10828,7 @@ export type event18 = 'message.edited';
  */
 export type WebhookPayloadMessageSent = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'message.sent';
@@ -11036,7 +11054,7 @@ export type source3 = 'whatsapp_business_app' | 'cloud_api' | 'meta_business_age
  */
 export type WebhookPayloadPhoneNumberStockAvailable = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'phone_number.stock_available';
@@ -11080,7 +11098,7 @@ export type event20 = 'phone_number.stock_available';
  */
 export type WebhookPayloadPost = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
@@ -11147,7 +11165,7 @@ export type event21 = 'post.scheduled' | 'post.published' | 'post.failed' | 'pos
  */
 export type WebhookPayloadPostPlatform = {
     /**
-     * Stable webhook event ID.
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
@@ -11254,7 +11272,7 @@ export type status20 = 'published' | 'failed' | 'deleted';
  */
 export type WebhookPayloadReaction = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'reaction.received';
@@ -11311,7 +11329,7 @@ export type action = 'added' | 'removed';
  */
 export type WebhookPayloadReferral = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'referral.received';
@@ -11383,7 +11401,7 @@ export type event24 = 'referral.received';
  */
 export type WebhookPayloadReviewNew = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'review.new';
@@ -11416,7 +11434,7 @@ export type event25 = 'review.new';
  */
 export type WebhookPayloadReviewUpdated = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'review.updated';
@@ -11443,7 +11461,7 @@ export type event26 = 'review.updated';
  */
 export type WebhookPayloadTest = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'webhook.test';
@@ -11471,7 +11489,7 @@ export type event27 = 'webhook.test';
  */
 export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'whatsapp.account.name_status_updated';
@@ -11524,7 +11542,7 @@ export type status21 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
  */
 export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'whatsapp.template.category_updated';
@@ -11610,7 +11628,7 @@ export type scheduledCategory = 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
  */
 export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     /**
-     * Stable webhook event ID
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
     event: 'whatsapp.template.status_updated';
