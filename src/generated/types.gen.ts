@@ -5190,6 +5190,62 @@ export type GooglePmaxAssetGroupUpdate = {
     youtubeVideoIds?: Array<(string)>;
 };
 
+export type GoogleRecommendation = {
+    /**
+     * customers/{customerId}/recommendations/{id}. Pass it to apply or dismiss.
+     */
+    resourceName: string;
+    id: string;
+    /**
+     * Google RecommendationType, such as CAMPAIGN_BUDGET, KEYWORD or SET_TARGET_CPA.
+     */
+    type: string;
+    dismissed: boolean;
+    campaignId: (string) | null;
+    /**
+     * Every campaign the recommendation targets (several for account-level types).
+     */
+    campaignIds: Array<(string)>;
+    adGroupId: (string) | null;
+    campaignBudgetId: (string) | null;
+    /**
+     * Google's estimate over its own window. Null when Google gives none for the type.
+     */
+    impact: {
+        base?: GoogleRecommendationMetrics;
+        potential?: GoogleRecommendationMetrics;
+    } | null;
+    /**
+     * The type-specific recommendation payload exactly as Google returns it (camelCase, amounts in micros), for example recommendedTargetCpaMicros or budgetOptions.
+     */
+    details: {
+        [key: string]: unknown;
+    } | null;
+};
+
+export type GoogleRecommendationMetrics = {
+    impressions?: number;
+    clicks?: number;
+    /**
+     * Account currency units.
+     */
+    cost?: number;
+    conversions?: number;
+    conversionsValue?: number;
+    videoViews?: number;
+};
+
+export type GoogleRecommendationResult = {
+    resourceName: string;
+    status: 'applied' | 'dismissed' | 'failed';
+    /**
+     * Google's message when status is failed.
+     */
+    error?: string;
+};
+
+export type status12 = 'applied' | 'dismissed' | 'failed';
+
 export type GoogleRsaDescription = {
     text: string;
     /**
@@ -5320,7 +5376,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status12 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status13 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -5392,7 +5448,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status13 = 'active' | 'archived';
+export type status14 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -6979,7 +7035,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status14 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status15 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -7104,7 +7160,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status15 = 'published' | 'failed';
+export type status16 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7506,7 +7562,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status16 = 'active' | 'draft' | 'archived';
+export type status17 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8782,7 +8838,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status17 = 'pending' | 'completed' | 'expired';
+export type status18 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -9281,7 +9337,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status18 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status19 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -9408,7 +9464,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status19 = 'success' | 'failed';
+export type status20 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -9520,7 +9576,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status20 = 'success' | 'failure';
+export type status21 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11473,7 +11529,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status21 = 'published' | 'failed' | 'deleted';
+export type status22 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -11739,7 +11795,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status22 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status23 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -11888,7 +11944,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status23 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status24 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -12042,7 +12098,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status24 = 'pending' | 'active';
+export type status25 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -12200,7 +12256,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status25 = 'success' | 'failed' | 'pending';
+export type status26 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -35288,6 +35344,103 @@ export type GetAdsSearchTermsResponse = ({
 });
 
 export type GetAdsSearchTermsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListGoogleRecommendationsData = {
+    query: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Google customer id, digits only. Defaults to the connection's only customer.
+         */
+        adAccountId?: string;
+        /**
+         * Only recommendations targeting this campaign.
+         */
+        campaignId?: string;
+        /**
+         * Alias of adAccountId, kept for consistency with other Google endpoints.
+         * @deprecated
+         */
+        customerId?: string;
+        /**
+         * Comma-separated Google RecommendationType values, for example CAMPAIGN_BUDGET,KEYWORD,SET_TARGET_CPA.
+         */
+        types?: string;
+    };
+};
+
+export type ListGoogleRecommendationsResponse = ({
+    adAccountId: string;
+    recommendations: Array<GoogleRecommendation>;
+    cachedAt: (string) | null;
+    stale: boolean;
+});
+
+export type ListGoogleRecommendationsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ApplyGoogleRecommendationsData = {
+    body: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Google customer id, digits only. Required when the connection has several customers.
+         */
+        adAccountId?: string;
+        recommendations: Array<{
+            /**
+             * Recommendation resource name from the list, or its id.
+             */
+            resourceName: string;
+            /**
+             * One key, such as campaignBudget, keyword, textAd, targetCpaOptIn, targetRoasOptIn, callAsset, calloutAsset, sitelinkAsset, moveUnusedBudget, responsiveSearchAd, responsiveSearchAdAsset, responsiveSearchAdImproveAdStrength, useBroadMatchKeyword, raiseTargetCpa, lowerTargetRoas, setTargetCpa, setTargetRoas, forecastingSetTargetCpa, forecastingSetTargetRoas, leadFormAsset, raiseTargetCpaBidTooLow, raiseTargetCpaPerformanceBidTooLow, lowerTargetRoasPerformanceBidTooLow, calloutExtension, callExtension or sitelinkExtension.
+             */
+            parameters?: {
+                [key: string]: unknown;
+            };
+        }>;
+    };
+};
+
+export type ApplyGoogleRecommendationsResponse = ({
+    adAccountId: string;
+    results: Array<GoogleRecommendationResult>;
+});
+
+export type ApplyGoogleRecommendationsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DismissGoogleRecommendationsData = {
+    body: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Google customer id, digits only. Required when the connection has several customers.
+         */
+        adAccountId?: string;
+        /**
+         * Recommendation resource names from the list, or their ids.
+         */
+        resourceNames: Array<(string)>;
+    };
+};
+
+export type DismissGoogleRecommendationsResponse = ({
+    adAccountId: string;
+    results: Array<GoogleRecommendationResult>;
+});
+
+export type DismissGoogleRecommendationsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
