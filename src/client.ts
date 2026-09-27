@@ -19,7 +19,6 @@ import {
   addWhatsAppGroupParticipants,
   adjustConversions,
   appealSmsRegistration,
-  applyGoogleRecommendations,
   approveWhatsAppGroupJoinRequests,
   archiveLeadForm,
   assignGoogleBusinessLocation,
@@ -89,6 +88,7 @@ import {
   createConversionDestination,
   createCtwaAd,
   createCustomConversion,
+  createCustomConversionGoal,
   createCustomField,
   createDiscordGuildRole,
   createDiscordScheduledEvent,
@@ -198,7 +198,6 @@ import {
   disableVoiceOnNumber,
   disableWhatsAppCalling,
   disableWhatsAppCallingLegacy,
-  dismissGoogleRecommendations,
   downloadTikTokVideo,
   duplicateAd,
   duplicateAdCampaign,
@@ -271,6 +270,7 @@ import {
   getCampaignAdSchedule,
   getCampaignAnalytics,
   getCampaignBidding,
+  getCampaignConversionGoals,
   getCampaignTargeting,
   getCommentAutomation,
   getConnectUrl,
@@ -443,6 +443,7 @@ import {
   listAdCatalogProductSets,
   listAdCatalogProducts,
   listAdCatalogs,
+  listAdConversionGoals,
   listAdCreatives,
   listAdGroupAssets,
   listAdImages,
@@ -484,6 +485,7 @@ import {
   listConversionActions,
   listConversionAssociations,
   listConversionDestinations,
+  listCustomConversionGoals,
   listCustomConversions,
   listCustomFields,
   listDiscordGuildMembers,
@@ -496,7 +498,6 @@ import {
   listGoogleBusinessLocations,
   listGoogleBusinessMedia,
   listGoogleBusinessPlaceActions,
-  listGoogleRecommendations,
   listHighDemandPeriods,
   listImessageAudience,
   listImessageAvailableNumbers,
@@ -595,6 +596,7 @@ import {
   removeBusinessAgentAllowlistEntry,
   removeCampaignAssets,
   removeConversionAssociations,
+  removeCustomConversionGoal,
   removeDiscordMemberRole,
   removeGoogleAssetGroup,
   removeImessageGroupParticipant,
@@ -707,6 +709,7 @@ import {
   updateAdCampaignStatus,
   updateAdCatalogProduct,
   updateAdCatalogProductSet,
+  updateAdConversionGoals,
   updateAdCreative,
   updateAdGroupAssets,
   updateAdKeyword,
@@ -730,10 +733,13 @@ import {
   updateBusinessAgentWebsite,
   updateCampaignAdSchedule,
   updateCampaignAssets,
+  updateCampaignConversionGoals,
   updateCampaignTargeting,
   updateCommentAutomation,
   updateContact,
+  updateConversionAction,
   updateConversionDestination,
+  updateCustomConversionGoal,
   updateCustomField,
   updateDiscordScheduledEvent,
   updateDiscordSettings,
@@ -1767,9 +1773,6 @@ export class Zernio {
    */
   adcampaigns = {
     listAds: this._bind(listAds),
-    listGoogleRecommendations: this._bind(listGoogleRecommendations),
-    applyGoogleRecommendations: this._bind(applyGoogleRecommendations),
-    dismissGoogleRecommendations: this._bind(dismissGoogleRecommendations),
     listBidStrategies: this._bind(listBidStrategies),
     createBidStrategy: this._bind(createBidStrategy),
     updateBidStrategy: this._bind(updateBidStrategy),
@@ -1825,6 +1828,8 @@ export class Zernio {
     editGoogleAssetGroupAssets: this._bind(editGoogleAssetGroupAssets),
     replaceGoogleListingGroupFilters: this._bind(replaceGoogleListingGroupFilters),
     createStandaloneAd: this._bind(createStandaloneAd),
+    getCampaignConversionGoals: this._bind(getCampaignConversionGoals),
+    updateCampaignConversionGoals: this._bind(updateCampaignConversionGoals),
   };
 
   /**
@@ -2033,6 +2038,13 @@ export class Zernio {
     adjustConversions: this._bind(adjustConversions),
     listConversionActions: this._bind(listConversionActions),
     createConversionAction: this._bind(createConversionAction),
+    listAdConversionGoals: this._bind(listAdConversionGoals),
+    updateAdConversionGoals: this._bind(updateAdConversionGoals),
+    updateConversionAction: this._bind(updateConversionAction),
+    listCustomConversionGoals: this._bind(listCustomConversionGoals),
+    createCustomConversionGoal: this._bind(createCustomConversionGoal),
+    updateCustomConversionGoal: this._bind(updateCustomConversionGoal),
+    removeCustomConversionGoal: this._bind(removeCustomConversionGoal),
     listConversionDestinations: this._bind(listConversionDestinations),
     createConversionDestination: this._bind(createConversionDestination),
     getConversionDestination: this._bind(getConversionDestination),
@@ -2163,12 +2175,6 @@ export class Zernio {
   ads = {
     /** @deprecated Use `zernio.adcampaigns.listAds` instead. */
     listAds: this._bind(listAds),
-    /** @deprecated Use `zernio.adcampaigns.listGoogleRecommendations` instead. */
-    listGoogleRecommendations: this._bind(listGoogleRecommendations),
-    /** @deprecated Use `zernio.adcampaigns.applyGoogleRecommendations` instead. */
-    applyGoogleRecommendations: this._bind(applyGoogleRecommendations),
-    /** @deprecated Use `zernio.adcampaigns.dismissGoogleRecommendations` instead. */
-    dismissGoogleRecommendations: this._bind(dismissGoogleRecommendations),
     /** @deprecated Use `zernio.adcampaigns.listBidStrategies` instead. */
     listBidStrategies: this._bind(listBidStrategies),
     /** @deprecated Use `zernio.adcampaigns.createBidStrategy` instead. */
@@ -2279,6 +2285,10 @@ export class Zernio {
     replaceGoogleListingGroupFilters: this._bind(replaceGoogleListingGroupFilters),
     /** @deprecated Use `zernio.adcampaigns.createStandaloneAd` instead. */
     createStandaloneAd: this._bind(createStandaloneAd),
+    /** @deprecated Use `zernio.adcampaigns.getCampaignConversionGoals` instead. */
+    getCampaignConversionGoals: this._bind(getCampaignConversionGoals),
+    /** @deprecated Use `zernio.adcampaigns.updateCampaignConversionGoals` instead. */
+    updateCampaignConversionGoals: this._bind(updateCampaignConversionGoals),
     /** @deprecated Use `zernio.adaccounts.getAdComments` instead. */
     getAdComments: this._bind(getAdComments),
     /** @deprecated Use `zernio.adaccounts.replyToAdComment` instead. */
@@ -2479,6 +2489,20 @@ export class Zernio {
     listConversionActions: this._bind(listConversionActions),
     /** @deprecated Use `zernio.conversions.createConversionAction` instead. */
     createConversionAction: this._bind(createConversionAction),
+    /** @deprecated Use `zernio.conversions.listAdConversionGoals` instead. */
+    listAdConversionGoals: this._bind(listAdConversionGoals),
+    /** @deprecated Use `zernio.conversions.updateAdConversionGoals` instead. */
+    updateAdConversionGoals: this._bind(updateAdConversionGoals),
+    /** @deprecated Use `zernio.conversions.updateConversionAction` instead. */
+    updateConversionAction: this._bind(updateConversionAction),
+    /** @deprecated Use `zernio.conversions.listCustomConversionGoals` instead. */
+    listCustomConversionGoals: this._bind(listCustomConversionGoals),
+    /** @deprecated Use `zernio.conversions.createCustomConversionGoal` instead. */
+    createCustomConversionGoal: this._bind(createCustomConversionGoal),
+    /** @deprecated Use `zernio.conversions.updateCustomConversionGoal` instead. */
+    updateCustomConversionGoal: this._bind(updateCustomConversionGoal),
+    /** @deprecated Use `zernio.conversions.removeCustomConversionGoal` instead. */
+    removeCustomConversionGoal: this._bind(removeCustomConversionGoal),
     /** @deprecated Use `zernio.conversions.listConversionDestinations` instead. */
     listConversionDestinations: this._bind(listConversionDestinations),
     /** @deprecated Use `zernio.conversions.createConversionDestination` instead. */

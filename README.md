@@ -475,7 +475,6 @@ try {
 | `adCampaigns.listCampaignNegativeKeywordLists()` | List campaign negative lists |
 | `adCampaigns.listCampaignNegativeKeywords()` | List campaign-level negative keywords |
 | `adCampaigns.listGoogleAssetGroups()` | List Performance Max asset groups |
-| `adCampaigns.listGoogleRecommendations()` | List Google Ads recommendations |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
 | `adCampaigns.createAdCampaign()` | Create a standalone campaign |
 | `adCampaigns.createAdSet()` | Create a standalone ad group |
@@ -489,6 +488,7 @@ try {
 | `adCampaigns.getAdTree()` | Get campaign tree |
 | `adCampaigns.getCampaignAdSchedule()` | Read a campaign's ad schedule (dayparting) |
 | `adCampaigns.getCampaignBidding()` | Read a campaign's current bidding |
+| `adCampaigns.getCampaignConversionGoals()` | Get campaign conversion goals |
 | `adCampaigns.getCampaignTargeting()` | Read a Google campaign's device, location, and language targeting |
 | `adCampaigns.getGoogleAssetGroup()` | Get a Performance Max asset group |
 | `adCampaigns.updateAd()` | Update ad |
@@ -502,17 +502,16 @@ try {
 | `adCampaigns.updateBidStrategy()` | Update portfolio bid strategy |
 | `adCampaigns.updateCampaignAdSchedule()` | Replace a campaign's ad schedule (dayparting) |
 | `adCampaigns.updateCampaignAssets()` | Update campaign assets |
+| `adCampaigns.updateCampaignConversionGoals()` | Update campaign conversion goals |
 | `adCampaigns.updateCampaignTargeting()` | Edit a Google campaign's device, location, or language targeting |
 | `adCampaigns.updateGoogleAssetGroup()` | Update a Performance Max asset group |
 | `adCampaigns.deleteAd()` | Cancel an ad |
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
 | `adCampaigns.deleteAdSet()` | Delete an ad set |
 | `adCampaigns.addAdKeywords()` | Add Search ad-group keywords |
-| `adCampaigns.applyGoogleRecommendations()` | Apply Google Ads recommendations |
 | `adCampaigns.attachAdGroupAssets()` | Attach ad-group assets |
 | `adCampaigns.attachCampaignAssets()` | Attach campaign assets |
 | `adCampaigns.boostPost()` | Boost post as ad |
-| `adCampaigns.dismissGoogleRecommendations()` | Dismiss Google Ads recommendations |
 | `adCampaigns.duplicateAd()` | Duplicate an ad |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
 | `adCampaigns.duplicateAdSet()` | Duplicate an ad set |
@@ -718,19 +717,26 @@ try {
 ### Conversions
 | Method | Description |
 |--------|-------------|
+| `conversions.listAdConversionGoals()` | List account conversion goals |
 | `conversions.listConversionActions()` | List conversion actions |
 | `conversions.listConversionAssociations()` | List associated campaigns |
 | `conversions.listConversionDestinations()` | List conversion destinations |
+| `conversions.listCustomConversionGoals()` | List custom conversion goals |
 | `conversions.createConversionAction()` | Create website conversion action |
 | `conversions.createConversionDestination()` | Create a conversion destination |
+| `conversions.createCustomConversionGoal()` | Create a custom conversion goal |
 | `conversions.getConversionDestination()` | Get a conversion destination |
 | `conversions.getConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
+| `conversions.updateAdConversionGoals()` | Update account conversion goals |
+| `conversions.updateConversionAction()` | Set a conversion action primary or secondary |
 | `conversions.updateConversionDestination()` | Update a conversion destination |
+| `conversions.updateCustomConversionGoal()` | Update a custom conversion goal |
 | `conversions.deleteConversionDestination()` | Delete a conversion destination |
 | `conversions.addConversionAssociations()` | Associate campaigns |
 | `conversions.adjustConversions()` | Adjust uploaded conversions |
 | `conversions.removeConversionAssociations()` | Remove associated campaigns |
+| `conversions.removeCustomConversionGoal()` | Remove a custom conversion goal |
 | `conversions.sendConversions()` | Send conversion events |
 
 ### Custom Fields

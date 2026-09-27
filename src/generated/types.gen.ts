@@ -2950,6 +2950,14 @@ export type ConversionAction = {
      */
     category: string;
     /**
+     * Google's ConversionOrigin, e.g. WEBSITE, APP. Together with category it names the goal the action belongs to (see GET /v1/ads/conversions/goals).
+     */
+    origin?: string;
+    /**
+     * true = primary (counts toward bidding when its goal is biddable), false = secondary. Change it with PATCH /v1/ads/conversions/actions/{actionId}.
+     */
+    primaryForGoal?: boolean;
+    /**
      * The code a customer pastes onto their site. Present for types
      * Google generates a snippet for (e.g. WEBPAGE); empty otherwise.
      *
@@ -4858,6 +4866,18 @@ export type GoogleAssetUpdate = {
     structuredSnippetAsset?: GoogleStructuredSnippet;
 };
 
+export type GoogleBiddableGoalInput = {
+    /**
+     * Google ConversionActionCategory, e.g. PURCHASE, SIGNUP, SUBMIT_LEAD_FORM
+     */
+    category: string;
+    /**
+     * Google ConversionOrigin, e.g. WEBSITE, APP, CALL_FROM_ADS, STORE, GOOGLE_HOSTED
+     */
+    origin: string;
+    biddable: boolean;
+};
+
 /**
  * Text and single image only (no videos). Supports STANDARD, EVENT, OFFER, and ALERT post types. Posts appear on Google Business Profile, Google Search, and Maps. Use locationId for multi-location posting. Schedule dates accept both ISO 8601 strings (e.g. '2026-04-15T09:00:00Z') and Google's native {year, month, day} objects.
  */
@@ -5014,6 +5034,50 @@ export type GoogleBusinessReview = {
  * Google's string rating
  */
 export type starRating = 'ONE' | 'TWO' | 'THREE' | 'FOUR' | 'FIVE';
+
+export type GoogleCampaignConversionGoals = {
+    campaignId?: string;
+    goalConfigLevel?: 'CUSTOMER' | 'CAMPAIGN' | 'UNSPECIFIED' | 'UNKNOWN';
+    customConversionGoalId?: (string) | null;
+    goals?: Array<{
+        category?: string;
+        origin?: string;
+        biddable?: boolean;
+        resourceName?: string;
+    }>;
+};
+
+export type goalConfigLevel = 'CUSTOMER' | 'CAMPAIGN' | 'UNSPECIFIED' | 'UNKNOWN';
+
+export type GoogleCustomConversionGoal = {
+    id?: string;
+    resourceName?: string;
+    name?: string;
+    status?: string;
+    conversionActionIds?: Array<(string)>;
+};
+
+export type GoogleCustomerConversionGoal = {
+    category?: string;
+    origin?: string;
+    /**
+     * Used for bidding and counted in the Conversions column.
+     */
+    biddable?: boolean;
+    resourceName?: string;
+    /**
+     * Non-removed conversion actions in this category and origin.
+     */
+    conversionActions?: Array<{
+        id?: string;
+        name?: string;
+        status?: string;
+        /**
+         * true = primary, false = secondary
+         */
+        primaryForGoal?: boolean;
+    }>;
+};
 
 /**
  * Exactly one key. Omit the value (for example { productBrand: {} }) for the everything-else node of that level.
@@ -5253,62 +5317,6 @@ export type GooglePmaxAssetGroupUpdate = {
     youtubeVideoIds?: Array<(string)>;
 };
 
-export type GoogleRecommendation = {
-    /**
-     * customers/{customerId}/recommendations/{id}. Pass it to apply or dismiss.
-     */
-    resourceName: string;
-    id: string;
-    /**
-     * Google RecommendationType, such as CAMPAIGN_BUDGET, KEYWORD or SET_TARGET_CPA.
-     */
-    type: string;
-    dismissed: boolean;
-    campaignId: (string) | null;
-    /**
-     * Every campaign the recommendation targets (several for account-level types).
-     */
-    campaignIds: Array<(string)>;
-    adGroupId: (string) | null;
-    campaignBudgetId: (string) | null;
-    /**
-     * Google's estimate over its own window. Null when Google gives none for the type.
-     */
-    impact: {
-        base?: GoogleRecommendationMetrics;
-        potential?: GoogleRecommendationMetrics;
-    } | null;
-    /**
-     * The type-specific recommendation payload exactly as Google returns it (camelCase, amounts in micros), for example recommendedTargetCpaMicros or budgetOptions.
-     */
-    details: {
-        [key: string]: unknown;
-    } | null;
-};
-
-export type GoogleRecommendationMetrics = {
-    impressions?: number;
-    clicks?: number;
-    /**
-     * Account currency units.
-     */
-    cost?: number;
-    conversions?: number;
-    conversionsValue?: number;
-    videoViews?: number;
-};
-
-export type GoogleRecommendationResult = {
-    resourceName: string;
-    status: 'applied' | 'dismissed' | 'failed';
-    /**
-     * Google's message when status is failed.
-     */
-    error?: string;
-};
-
-export type status13 = 'applied' | 'dismissed' | 'failed';
-
 export type GoogleRsaDescription = {
     text: string;
     /**
@@ -5439,7 +5447,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status14 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status13 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -5511,7 +5519,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status15 = 'active' | 'archived';
+export type status14 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -7098,7 +7106,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status16 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status15 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -7223,7 +7231,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status17 = 'published' | 'failed';
+export type status16 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7625,7 +7633,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status18 = 'active' | 'draft' | 'archived';
+export type status17 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8901,7 +8909,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status19 = 'pending' | 'completed' | 'expired';
+export type status18 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -9400,7 +9408,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status20 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status19 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -9527,7 +9535,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status21 = 'success' | 'failed';
+export type status20 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -9639,7 +9647,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status22 = 'success' | 'failure';
+export type status21 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11592,7 +11600,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status23 = 'published' | 'failed' | 'deleted';
+export type status22 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -11858,7 +11866,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status24 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status23 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -12007,7 +12015,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status25 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status24 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -12161,7 +12169,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status26 = 'pending' | 'active';
+export type status25 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -12319,7 +12327,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status27 = 'success' | 'failed' | 'pending';
+export type status26 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -35410,103 +35418,6 @@ export type GetAdsSearchTermsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type ListGoogleRecommendationsData = {
-    query: {
-        /**
-         * Google ads SocialAccount id.
-         */
-        accountId: string;
-        /**
-         * Google customer id, digits only. Defaults to the connection's only customer.
-         */
-        adAccountId?: string;
-        /**
-         * Only recommendations targeting this campaign.
-         */
-        campaignId?: string;
-        /**
-         * Alias of adAccountId, kept for consistency with other Google endpoints.
-         * @deprecated
-         */
-        customerId?: string;
-        /**
-         * Comma-separated Google RecommendationType values, for example CAMPAIGN_BUDGET,KEYWORD,SET_TARGET_CPA.
-         */
-        types?: string;
-    };
-};
-
-export type ListGoogleRecommendationsResponse = ({
-    adAccountId: string;
-    recommendations: Array<GoogleRecommendation>;
-    cachedAt: (string) | null;
-    stale: boolean;
-});
-
-export type ListGoogleRecommendationsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
-
-export type ApplyGoogleRecommendationsData = {
-    body: {
-        /**
-         * Google ads SocialAccount id.
-         */
-        accountId: string;
-        /**
-         * Google customer id, digits only. Required when the connection has several customers.
-         */
-        adAccountId?: string;
-        recommendations: Array<{
-            /**
-             * Recommendation resource name from the list, or its id.
-             */
-            resourceName: string;
-            /**
-             * One key, such as campaignBudget, keyword, textAd, targetCpaOptIn, targetRoasOptIn, callAsset, calloutAsset, sitelinkAsset, moveUnusedBudget, responsiveSearchAd, responsiveSearchAdAsset, responsiveSearchAdImproveAdStrength, useBroadMatchKeyword, raiseTargetCpa, lowerTargetRoas, setTargetCpa, setTargetRoas, forecastingSetTargetCpa, forecastingSetTargetRoas, leadFormAsset, raiseTargetCpaBidTooLow, raiseTargetCpaPerformanceBidTooLow, lowerTargetRoasPerformanceBidTooLow, calloutExtension, callExtension or sitelinkExtension.
-             */
-            parameters?: {
-                [key: string]: unknown;
-            };
-        }>;
-    };
-};
-
-export type ApplyGoogleRecommendationsResponse = ({
-    adAccountId: string;
-    results: Array<GoogleRecommendationResult>;
-});
-
-export type ApplyGoogleRecommendationsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
-
-export type DismissGoogleRecommendationsData = {
-    body: {
-        /**
-         * Google ads SocialAccount id.
-         */
-        accountId: string;
-        /**
-         * Google customer id, digits only. Required when the connection has several customers.
-         */
-        adAccountId?: string;
-        /**
-         * Recommendation resource names from the list, or their ids.
-         */
-        resourceNames: Array<(string)>;
-    };
-};
-
-export type DismissGoogleRecommendationsResponse = ({
-    adAccountId: string;
-    results: Array<GoogleRecommendationResult>;
-});
-
-export type DismissGoogleRecommendationsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
-
 export type ListBidStrategiesData = {
     query: {
         /**
@@ -45313,6 +45224,281 @@ export type CreateConversionActionResponse = ({
 });
 
 export type CreateConversionActionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListAdConversionGoalsData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+    };
+};
+
+export type ListAdConversionGoalsResponse = ({
+    customerId?: string;
+    goals?: Array<GoogleCustomerConversionGoal>;
+    cachedAt?: (string) | null;
+    stale?: boolean;
+});
+
+export type ListAdConversionGoalsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateAdConversionGoalsData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+        goals: Array<GoogleBiddableGoalInput>;
+    };
+};
+
+export type UpdateAdConversionGoalsResponse = ({
+    customerId?: string;
+    goals?: Array<GoogleCustomerConversionGoal>;
+});
+
+export type UpdateAdConversionGoalsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateConversionActionData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+        /**
+         * true = primary, false = secondary
+         */
+        primaryForGoal: boolean;
+    };
+    path: {
+        /**
+         * Google conversion action id
+         */
+        actionId: string;
+    };
+};
+
+export type UpdateConversionActionResponse = ({
+    customerId?: string;
+    action?: {
+        id?: string;
+        primaryForGoal?: boolean;
+    };
+});
+
+export type UpdateConversionActionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCustomConversionGoalsData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+    };
+};
+
+export type ListCustomConversionGoalsResponse = ({
+    customerId?: string;
+    goals?: Array<GoogleCustomConversionGoal>;
+    cachedAt?: (string) | null;
+    stale?: boolean;
+});
+
+export type ListCustomConversionGoalsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCustomConversionGoalData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+        name: string;
+        conversionActionIds: Array<(string)>;
+    };
+};
+
+export type CreateCustomConversionGoalResponse = ({
+    customerId?: string;
+    id?: string;
+    resourceName?: string;
+});
+
+export type CreateCustomConversionGoalError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCustomConversionGoalData = {
+    body: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+        name?: string;
+        /**
+         * Replaces the whole set.
+         */
+        conversionActionIds?: Array<(string)>;
+    };
+    path: {
+        /**
+         * Google custom conversion goal id
+         */
+        goalId: string;
+    };
+};
+
+export type UpdateCustomConversionGoalResponse = ({
+    customerId?: string;
+    goal?: GoogleCustomConversionGoal;
+});
+
+export type UpdateCustomConversionGoalError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RemoveCustomConversionGoalData = {
+    path: {
+        /**
+         * Google custom conversion goal id
+         */
+        goalId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (Google Ads)
+         */
+        accountId: string;
+        /**
+         * Google customer id. Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Alias of adAccountId
+         * @deprecated
+         */
+        customerId?: string;
+    };
+};
+
+export type RemoveCustomConversionGoalResponse = ({
+    customerId?: string;
+    goalId?: string;
+    /**
+     * Always true on success
+     */
+    removed?: boolean;
+});
+
+export type RemoveCustomConversionGoalError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCampaignConversionGoalsData = {
+    path: {
+        /**
+         * Google campaign id
+         */
+        campaignId: string;
+    };
+};
+
+export type GetCampaignConversionGoalsResponse = ((GoogleCampaignConversionGoals & {
+    customerId?: string;
+    cachedAt?: (string) | null;
+    stale?: boolean;
+}));
+
+export type GetCampaignConversionGoalsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCampaignConversionGoalsData = {
+    body: {
+        goals?: Array<GoogleBiddableGoalInput>;
+        goalConfigLevel?: 'CUSTOMER' | 'CAMPAIGN';
+        /**
+         * Custom goal to bid on, or null to clear
+         */
+        customConversionGoalId?: (string) | null;
+    };
+    path: {
+        /**
+         * Google campaign id
+         */
+        campaignId: string;
+    };
+};
+
+export type UpdateCampaignConversionGoalsResponse = ((GoogleCampaignConversionGoals & {
+    customerId?: string;
+}));
+
+export type UpdateCampaignConversionGoalsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
