@@ -10958,7 +10958,8 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  *
  * Google Demand Gen: set `campaignType: "demand_gen"` and supply `demandGen`. Creates a
  * daily budget, PAUSED campaign, one ad group and one ad in a single atomic request: a
- * multi-asset image ad, or a video responsive ad when `demandGen.youtubeVideoIds` is sent.
+ * multi-asset image ad, a video responsive ad when `demandGen.youtubeVideoIds` is sent, or
+ * a carousel ad (2 to 10 cards) when `demandGen.carouselCards` is sent.
  * Geo (countries, regions, cities, zips, metros) and languages go on the ad group, as
  * Demand Gen requires. `demandGen.channels` sets the ad group's channel controls and
  * `demandGen.audience` builds a Google Audience (user lists, interests, custom audiences,

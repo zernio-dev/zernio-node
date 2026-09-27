@@ -5080,7 +5080,7 @@ export type GoogleCustomerConversionGoal = {
 };
 
 /**
- * Creative, channel and audience settings for a Google Demand Gen campaign (campaignType demand_gen). Creates one ad group with one ad: a multi-asset image ad, or a video responsive ad when youtubeVideoIds is sent.
+ * Creative, channel and audience settings for a Google Demand Gen campaign (campaignType demand_gen). Creates one ad group with one ad: a multi-asset image ad, a video responsive ad when youtubeVideoIds is sent, or a carousel ad when carouselCards is sent.
  */
 export type GoogleDemandGenInput = {
     /**
@@ -5090,20 +5090,23 @@ export type GoogleDemandGenInput = {
     finalUrl: string;
     businessName: string;
     /**
-     * Distinct texts.
+     * Distinct texts. A carousel ad takes exactly one.
      */
     headlines: Array<(string)>;
     /**
      * Video ads only, and required there.
      */
     longHeadlines?: Array<(string)>;
+    /**
+     * A carousel ad takes exactly one.
+     */
     descriptions: Array<(string)>;
     /**
-     * Image ads only. Call to action text such as 'Learn more'; Google picks one when omitted.
+     * Image and carousel ads only. Call to action text such as 'Learn more'; Google picks one when omitted.
      */
     callToAction?: string;
     /**
-     * Public image URLs. An image ad needs landscape or square; a video ad takes only one logo.
+     * Public image URLs. An image ad needs landscape or square; video and carousel ads take only one logo (carousel images go on each card).
      */
     images: {
         /**
@@ -5127,6 +5130,31 @@ export type GoogleDemandGenInput = {
      * Makes the ad a video responsive ad.
      */
     youtubeVideoIds?: Array<(string)>;
+    /**
+     * Makes the ad a carousel ad. Each card needs its own image (no two cards may share one); use the same image shape on every card. Card images are uploaded to the account's asset library before the campaign is created, validateOnly included (Google checks cards against existing images; identical images are reused, not duplicated).
+     */
+    carouselCards?: Array<{
+        headline: string;
+        /**
+         * Defaults to demandGen.finalUrl.
+         */
+        finalUrl?: string;
+        callToAction?: string;
+        images: {
+            /**
+             * 1.91:1.
+             */
+            landscape?: string;
+            /**
+             * 1:1.
+             */
+            square?: string;
+            /**
+             * 4:5.
+             */
+            portrait?: string;
+        };
+    }>;
     /**
      * Channel controls on the ad group. Only the listed channels serve; omit to serve on all of them.
      */
