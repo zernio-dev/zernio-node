@@ -743,7 +743,18 @@ export type AdFunnelCounts = {
 };
 
 export type AdKeyword = {
+    /**
+     * Zernio keyword ID. Accepted as `keywordId` by PATCH/DELETE /v1/ads/keywords/{keywordId}.
+     */
     id?: string;
+    /**
+     * Google ad_group_criterion.criterion_id. Unique only within its ad group (`adSetId`), not across the account.
+     */
+    platformCriterionId?: string;
+    /**
+     * Google resource name, customers/{adAccountId}/adGroupCriteria/{adSetId}~{platformCriterionId}.
+     */
+    resourceName?: string;
     /**
      * Account ID owning the sync
      */
@@ -35451,7 +35462,7 @@ export type UpdateAdKeywordData = {
     };
     path: {
         /**
-         * Zernio keyword ID (not the Google criterion ID)
+         * Zernio keyword ID (`id`), or Google's native `{adSetId}~{platformCriterionId}` (the tail of `resourceName`, e.g. 1234567890~987654321). A bare criterion id is rejected because it is only unique within its ad group.
          */
         keywordId: string;
     };
@@ -35468,7 +35479,7 @@ export type UpdateAdKeywordError = (ErrorResponse | {
 export type RemoveAdKeywordData = {
     path: {
         /**
-         * Zernio keyword ID (not the Google criterion ID)
+         * Zernio keyword ID (`id`), or Google's native `{adSetId}~{platformCriterionId}` (the tail of `resourceName`, e.g. 1234567890~987654321). A bare criterion id is rejected because it is only unique within its ad group.
          */
         keywordId: string;
     };
@@ -35479,7 +35490,26 @@ export type RemoveAdKeywordResponse = ({
      * Always true on success
      */
     removed?: boolean;
+    /**
+     * Zernio keyword ID
+     */
     keywordId?: string;
+    /**
+     * Google ad_group_criterion.criterion_id
+     */
+    platformCriterionId?: string;
+    /**
+     * Google resource name of the removed criterion
+     */
+    resourceName?: string;
+    /**
+     * Google campaign ID
+     */
+    campaignId?: string;
+    /**
+     * Google ad group ID
+     */
+    adSetId?: string;
 });
 
 export type RemoveAdKeywordError = (ErrorResponse | {
