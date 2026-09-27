@@ -36792,6 +36792,10 @@ export type UpdateCampaignTargetingData = {
 export type UpdateCampaignTargetingResponse = ({
     campaignId?: string;
     /**
+     * Demand Gen only: the ad group that received the locations and languages.
+     */
+    adGroupId?: string;
+    /**
      * Which targeting fields were applied.
      */
     updated?: Array<('devices' | 'locations' | 'languages' | 'locationTargetingType')>;

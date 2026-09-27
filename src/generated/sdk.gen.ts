@@ -9083,6 +9083,14 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  * read back from Google after the edit, and invalidates the cached copy
  * `GET` on this campaign would otherwise keep serving.
  *
+ * **Demand Gen:** Google keeps a Demand Gen campaign's locations and languages on its
+ * ad groups and refuses them on the campaign. When the campaign has one ad group they are
+ * written there and the response carries its `adGroupId` (the campaign-level
+ * `locations`/`languages` read back then stay empty). With several ad groups the call
+ * returns 400 naming them: edit each one with PUT /v1/ads/{adId} `targeting` on an ad of
+ * that ad group. Campaigns migrated from Discovery that still target on the campaign keep
+ * being written there. `devices` and `locationTargetingType` stay campaign-level.
+ *
  */
 export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateCampaignTargetingData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdateCampaignTargetingResponse, UpdateCampaignTargetingError, ThrowOnError>({
