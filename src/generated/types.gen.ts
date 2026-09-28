@@ -37396,6 +37396,10 @@ export type GetAdTreeData = {
          */
         profileId?: string;
         /**
+         * Case-insensitive substring match on campaign, ad set and ad names (`_`, `%` and spaces match literally), or an exact platform campaign, ad set or ad id. A campaign whose name matches returns with all its ad sets and ads; a match on an ad set or ad name returns only the matching branch. Filters the campaign set itself, so `pagination.total` counts only matching campaigns.
+         */
+        search?: string;
+        /**
          * Campaign-level sort order. `newest` (default) / `oldest` order by the campaign's newest-ad createdAt. `spend_desc` / `spend_asc` order by aggregated spend in the requested date range; campaigns with no spend land at the end.
          */
         sort?: 'newest' | 'oldest' | 'spend_desc' | 'spend_asc';
