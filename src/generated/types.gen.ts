@@ -3390,6 +3390,7 @@ export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 's
  *
  * - Single-creative: `headline`, `body`, and one of `imageUrl` / `video`,
  * OR `platformPostId` / `objectStoryId` to reuse an organic post.
+ * On POST /v1/ads/messaging, `placementAssets` can replace `imageUrl` / `video`.
  * - Multi-creative: a non-empty `creatives[]` array. Top-level
  * creative fields must NOT be set on this shape.
  *
@@ -7267,6 +7268,83 @@ export type MetaLeadForm = {
 };
 
 export type style = 'LIST_STYLE' | 'PARAGRAPH_STYLE';
+
+/**
+ * Meta placement asset customization: pin a SPECIFIC asset (image OR video) to each
+ * placement group on a SINGLE ad (e.g. a 4:5 image on Feed and a 9:16 image on
+ * Stories/Reels), the same thing Meta Ads Manager produces with "different creative per
+ * placement". Mapped to the creative's `asset_feed_spec` (`optimization_type: PLACEMENT`)
+ * + `asset_customization_rules`. Each rule can pin one `headline`, `body` and `description`;
+ * omitted fields and unmatched placements use the request's top-level copy. Each rule's
+ * `placements` accepts the same fields as the top-level `placements` object; Meta enforces
+ * co-selection rules and returns an actionable error.
+ *
+ * A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad
+ * format). Image mode: `defaultImageUrl` + `rules[].imageUrl`. Video mode:
+ * `defaultVideoUrl` + `rules[].videoUrl` (optional `thumbnailUrl`/`defaultThumbnailUrl`
+ * posters; Meta auto-generates when omitted). Exactly one catch-all default is required.
+ *
+ * Meta controls text rendering by placement and format. Validation accepts these fields
+ * but does not prove that every field appears in delivery. Preview the ad; put copy that
+ * must always be visible into the image or video itself.
+ *
+ */
+export type MetaPlacementAssets = {
+    /**
+     * Image mode. Catch-all image for any placement no rule matches. Required in image mode (Meta mandates a default rule).
+     */
+    defaultImageUrl?: string;
+    /**
+     * Video mode. Catch-all video for any placement no rule matches. Required in video mode.
+     */
+    defaultVideoUrl?: string;
+    /**
+     * Video mode (optional). Poster image for the default video; Meta auto-generates one when omitted.
+     */
+    defaultThumbnailUrl?: string;
+    /**
+     * One entry per placement group you want to pin a specific asset to.
+     */
+    rules: Array<{
+        /**
+         * Image mode. The image to deliver for this rule's placements.
+         */
+        imageUrl?: string;
+        /**
+         * Video mode. The video to deliver for this rule's placements.
+         */
+        videoUrl?: string;
+        /**
+         * Video mode (optional). Poster image for this rule's video; auto-generated when omitted.
+         */
+        thumbnailUrl?: string;
+        /**
+         * One headline pinned to this rule. Omit to inherit the top-level headline.
+         */
+        headline?: string;
+        /**
+         * One primary text pinned to this rule. Omit to inherit the top-level body.
+         */
+        body?: string;
+        /**
+         * One link description pinned to this rule. Omit to inherit the top-level description.
+         */
+        description?: string;
+        /**
+         * Placements this asset is pinned to. At least one field must be set (an empty rule is invalid; that role is served by the default asset). Same enums as the top-level `placements` object.
+         */
+        placements: {
+            publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
+            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+            instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
+            messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
+            audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
+            threadsPositions?: Array<('threads_stream')>;
+            whatsappPositions?: Array<('status')>;
+            devicePlatforms?: Array<('mobile' | 'desktop')>;
+        };
+    }>;
+};
 
 export type MetaProductCatalog = {
     id?: string;
@@ -43649,62 +43727,7 @@ export type CreateStandaloneAdData = {
          * posters; Meta auto-generates when omitted). Exactly one catch-all default is required.
          *
          */
-        placementAssets?: {
-            /**
-             * Image mode. Catch-all image for any placement no rule matches. Required in image mode (Meta mandates a default rule).
-             */
-            defaultImageUrl?: string;
-            /**
-             * Video mode. Catch-all video for any placement no rule matches. Required in video mode.
-             */
-            defaultVideoUrl?: string;
-            /**
-             * Video mode (optional). Poster image for the default video; Meta auto-generates one when omitted.
-             */
-            defaultThumbnailUrl?: string;
-            /**
-             * One entry per placement group you want to pin a specific asset to.
-             */
-            rules: Array<{
-                /**
-                 * Image mode. The image to deliver for this rule's placements.
-                 */
-                imageUrl?: string;
-                /**
-                 * Video mode. The video to deliver for this rule's placements.
-                 */
-                videoUrl?: string;
-                /**
-                 * Video mode (optional). Poster image for this rule's video; auto-generated when omitted.
-                 */
-                thumbnailUrl?: string;
-                /**
-                 * One headline pinned to this rule. Omit to inherit the top-level headline.
-                 */
-                headline?: string;
-                /**
-                 * One primary text pinned to this rule. Omit to inherit the top-level body.
-                 */
-                body?: string;
-                /**
-                 * One link description pinned to this rule. Omit to inherit the top-level description.
-                 */
-                description?: string;
-                /**
-                 * Placements this asset is pinned to. At least one field must be set (an empty rule is invalid; that role is served by the default asset). Same enums as the top-level `placements` object.
-                 */
-                placements: {
-                    publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
-                    facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
-                    instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
-                    messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
-                    audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
-                    threadsPositions?: Array<('threads_stream')>;
-                    whatsappPositions?: Array<('status')>;
-                    devicePlatforms?: Array<('mobile' | 'desktop')>;
-                };
-            }>;
-        };
+        placementAssets?: (MetaPlacementAssets);
         /**
          * Custom audience ID for targeting
          */
@@ -47056,6 +47079,25 @@ export type CreateMessagingAdData = {
      * Two or three messaging apps on ONE ad set, like Ads Manager's "all messaging apps": the ad set gets Meta's combined destination_type (e.g. MESSAGING_INSTAGRAM_DIRECT_MESSENGER_WHATSAPP) and the creative one CTA per app, so Meta opens the app each viewer is likeliest to answer from. WhatsApp in the list still needs the Page paired with a WhatsApp Business number. With `adSetId`, the existing ad set must already use that combined destination_type. Set this OR `destination`, not both.
      */
     destinations?: Array<('whatsapp' | 'messenger' | 'instagram_direct')>;
+    /**
+     * A different image or video per placement on one messaging ad, e.g. a 4:5 image on
+     * Feed and a 9:16 image on Stories/Reels. Replaces top-level `imageUrl` / `video`
+     * (sending either alongside is a 400); `headline` and `body` stay required as the
+     * default copy. The CTA, `welcomeMessage` and `whatsappPhoneNumber` apply to every
+     * placement. Works on the single-creative shape and on attach (`adSetId`).
+     *
+     * Single `destination` only: Meta cannot combine per-placement media with
+     * `destinations` (it drops the placement rules from a multi-destination creative, or
+     * refuses more than one call to action per placement rule with error 1885878), so
+     * that combination is a 400. Also a 400 with `creatives[]`, `platformPostId`,
+     * `existingPostId` or `objectStoryId`, and on POST /v1/ads/call.
+     *
+     */
+    placementAssets?: (MetaPlacementAssets);
+    /**
+     * Dry-runs the ad on Meta with execution_options validate_only as ONE inline campaign + ad set + creative + ad (or creative + ad on the existing ad set with `adSetId`). Nothing is uploaded or created and nothing is stored; media is checked by URL. Supports one creative with `imageUrl`, image `placementAssets`, an existing `video.id`, or an existing post. Several creatives, a new `video.url` and video `placementAssets` need uploads first and return 400. Success returns 200 with per-node results; a Meta rejection returns the Meta error.
+     */
+    validateOnly?: boolean;
 });
     headers?: {
         /**
@@ -47065,7 +47107,18 @@ export type CreateMessagingAdData = {
     };
 };
 
-export type CreateMessagingAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));
+export type CreateMessagingAdResponse = ({
+    /**
+     * Always true.
+     */
+    validateOnly: boolean;
+    results: Array<{
+        node: 'campaign' | 'adSet' | 'creative' | 'ad';
+        status: 'validated' | 'skipped';
+        reason?: string;
+    }>;
+    message: string;
+} | (CtwaSingleResponse | CtwaMultiResponse));
 
 export type CreateMessagingAdError = (unknown | {
     error?: string;
