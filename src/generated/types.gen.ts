@@ -43372,16 +43372,16 @@ export type ListAdAccountsResponse = ({
          */
         billingStatus?: 'ok' | 'missing' | 'unknown';
         /**
-         * Meta and X only. Whether the account can create/run ads now. Absent (treat as true) on other platforms.
+         * Meta and X only. Whether the account can create/run ads now. Always present on every Meta and X account. Absent (treat as true) on other platforms.
          */
         selectable?: boolean;
         /**
-         * Meta and X only. Human-readable reason when selectable is false; null when selectable.
+         * Meta and X only. Always present on every Meta and X account. Human-readable reason when selectable is false; null when selectable.
          */
         unusableReason?: (string) | null;
     }>;
     /**
-     * Google only. When this list was fetched from Google. Null when it was never served from cache, or on other platforms.
+     * Google only. When this list was fetched from Google. Null when it was never served from cache. Absent on other platforms.
      */
     cachedAt?: (string) | null;
     /**
