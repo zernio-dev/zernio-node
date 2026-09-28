@@ -2632,8 +2632,10 @@ export const listBusinessPartners = <ThrowOnError extends boolean = false>(optio
  *
  * Meta only lets a user token share a Page that a business portfolio owns. A Page
  * outside any portfolio must first be claimed into one at business.facebook.com; this
- * endpoint answers `422` until that is done. Granting to a portfolio that already has
- * access replaces its task set, so the call is safe to repeat.
+ * endpoint answers `422` until that is done. Meta refuses a second grant to a portfolio
+ * that already has access instead of replacing its tasks, so that case answers `200`
+ * with `alreadyShared: true` and the tasks the partner currently holds. To change a
+ * partner's tasks, revoke and grant again.
  *
  * After the grant, the partner assigns its own people to the Page with
  * `POST /v1/ads/page-users`; Meta does not assign partner admins automatically.
