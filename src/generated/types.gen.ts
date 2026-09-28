@@ -28861,6 +28861,28 @@ export type DeleteBrandedCallingEnterpriseError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type ShareBrandedCallingIdentityFormData = {
+    body?: {
+        /**
+         * A registered business the identity belongs to.
+         */
+        enterpriseId?: string;
+        /**
+         * An identity in review to complete. Not with enterpriseId.
+         */
+        identityId?: string;
+    };
+};
+
+export type ShareBrandedCallingIdentityFormResponse = ({
+    url?: string;
+    expiresAt?: string;
+});
+
+export type ShareBrandedCallingIdentityFormError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type ListBrandedCallingCallReasonsResponse = ({
     callReasons?: Array<(string)>;
 });

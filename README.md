@@ -610,6 +610,7 @@ try {
 | `brandedCalling.detachBrandedCallingNumbers()` | Detach numbers from an identity |
 | `brandedCalling.preflightBrandedCallingIdentity()` | Dry-run a caller identity before creating it |
 | `brandedCalling.resendBrandedCallingAuthorizerCode()` | Resend the authorizer's code |
+| `brandedCalling.shareBrandedCallingIdentityForm()` | Create a caller identity share link |
 
 ### Broadcasts
 | Method | Description |
