@@ -38556,9 +38556,12 @@ export type DuplicateAdCampaignData = {
          */
         statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
         /**
-         * Reschedule the copied hierarchy's start time
+         * Reschedule the copied hierarchy's start (ISO 8601). On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone; LinkedIn ad accounts carry no timezone, so there it is read as UTC. TikTok defaults to a start a few minutes after the copy.
          */
         startTime?: string;
+        /**
+         * Reschedule the copied hierarchy's end, read like `startTime`; a date-only end runs to 23:59:59 local. Defaults to the source's end.
+         */
         endTime?: string;
         renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
         renamePrefix?: string;
@@ -38943,9 +38946,12 @@ export type DuplicateAdSetData = {
         deepCopy?: boolean;
         statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
         /**
-         * Reschedule the copy's start time
+         * Reschedule the copy's start (ISO 8601). A value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone.
          */
         startTime?: string;
+        /**
+         * Reschedule the copy's end, read like `startTime`; a date-only end runs to 23:59:59 local.
+         */
         endTime?: string;
         renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
         renamePrefix?: string;
@@ -43684,11 +43690,11 @@ export type BoostPostData = {
          */
         currency?: string;
         /**
-         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's `start_time`. When omitted the ad starts delivering immediately. On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone. Same field as on POST /v1/ads/create.
+         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's `start_time`. When omitted the ad starts delivering immediately. On Meta, TikTok, X and Pinterest a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone. Same field as on POST /v1/ads/create.
          */
         startDate?: string;
         /**
-         * Ad-set end time (ISO 8601), mapped to the ad set's `end_time`. Required for lifetime budgets. On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local. Same field as on POST /v1/ads/create.
+         * Ad-set end time (ISO 8601), mapped to the ad set's `end_time`. Required for lifetime budgets. On Meta, TikTok, X and Pinterest a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local. Same field as on POST /v1/ads/create.
          */
         endDate?: string;
         /**
@@ -44851,16 +44857,18 @@ export type CreateStandaloneAdData = {
             [key: string]: (number);
         };
         /**
-         * Required for lifetime budgets. On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local.
+         * Required for lifetime budgets. Read like `startDate` (account timezone on Meta, TikTok, X, Pinterest and OpenAI; whole account-local days on Google; UTC on LinkedIn), and a date-only end runs to 23:59:59 local.
          */
         endDate?: string;
         /**
          * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's
          * start (Meta `start_time`, TikTok ad group `schedule_start_time`, LinkedIn / Pinterest / X
          * / Google campaign start). When omitted the ad starts delivering immediately. For lifetime
-         * budgets Meta also requires `endDate`. On Meta and TikTok a value without an offset
-         * (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account
-         * timezone (Meta itself would read it as UTC). The created ad's `schedule` echoes the start
+         * budgets Meta also requires `endDate`. On Meta, TikTok, X, Pinterest and OpenAI a value
+         * without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read
+         * in the ad account timezone (Meta itself would read it as UTC). Google runs whole days in
+         * the customer account timezone and takes the value's calendar date as written. LinkedIn
+         * ad accounts carry no timezone, so there a value without an offset is read as UTC. The created ad's `schedule` echoes the start
          * and end the platform stored, as UTC instants; when attaching to an existing ad set
          * (`adSetId`) it is that ad set's start and end. Same field as on `POST /v1/ads/boost`.
          *
