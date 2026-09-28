@@ -13442,7 +13442,7 @@ export const startBusinessAgentEvalRun = <ThrowOnError extends boolean = false>(
  * only; OpenAI Ads has no get-by-id endpoint).
  *
  * Meta (platform `metaads`) and OpenAI Ads (platform `openaiads`); other
- * platforms return 405. The `accountId` must be the ads SocialAccount
+ * platforms return 501. The `accountId` must be the ads SocialAccount
  * created by the Ads add-on connect flow (Meta) or the OpenAI Ads
  * connect flow, not a Facebook/Instagram posting account. Get your Meta
  * `act_...` ids from `GET /v1/ads/accounts`; `adAccountId` is ignored for
@@ -13485,7 +13485,7 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
  * for OpenAI, a new Conversions API key plus, with `defaultEventType`, a
  * new conversion event setting). Do not retry blindly on
  * timeout. Meta (platform `metaads`) and OpenAI Ads (platform
- * `openaiads`); other platforms return 405.
+ * `openaiads`); other platforms return 501.
  *
  */
 export const createTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagData, ThrowOnError>) => {
@@ -13499,8 +13499,8 @@ export const createTrackingTag = <ThrowOnError extends boolean = false>(options:
  * Get a tracking tag
  * Returns the full tag record including the base-code `code` snippet,
  * `lastFiredTime`, `ownerBusinessId`, `isUnavailable`, etc. Meta only
- * (platform `metaads`); other platforms return 405. OpenAI Ads has no
- * get-by-id endpoint, so it 405s here too. Use
+ * (platform `metaads`); other platforms return 501. OpenAI Ads has no
+ * get-by-id endpoint, so it answers 501 here too. Use
  * `GET /v1/accounts/{accountId}/tracking-tags` (list) instead.
  *
  */
@@ -13517,7 +13517,7 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * `enableAutomaticMatching`, `automaticMatchingFields`,
  * `firstPartyCookieStatus`, `dataUseSetting`. At least one is required.
  * Returns the re-fetched canonical tag. Meta only (platform `metaads`);
- * other platforms return 405.
+ * other platforms return 501.
  *
  * There is no DELETE: Meta has no API to delete a pixel. To stop using
  * one, unshare it from your ad accounts (`DELETE
@@ -13534,7 +13534,7 @@ export const updateTrackingTag = <ThrowOnError extends boolean = false>(options:
 
 /**
  * List accounts it is shared with
- * Meta only (platform `metaads`); other platforms return 405.
+ * Meta only (platform `metaads`); other platforms return 501.
  */
 export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagSharedAccountsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagSharedAccountsResponse, ListTrackingTagSharedAccountsError, ThrowOnError>({
@@ -13549,7 +13549,7 @@ export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = fal
  * account can use it. Requires that you administer both the pixel's owning
  * Business Manager and the target ad account; a pixel on a personal
  * (non-BM) ad account can't be shared (Meta will reject the call). Meta
- * only (platform `metaads`); other platforms return 405.
+ * only (platform `metaads`); other platforms return 501.
  *
  */
 export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddTrackingTagSharedAccountData, ThrowOnError>) => {
@@ -13563,7 +13563,7 @@ export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false
  * Stop sharing with an account
  * `adAccountId` may be passed as a query parameter (recommended) or as a
  * JSON body field for clients that can send DELETE bodies. Meta only
- * (platform `metaads`); other platforms return 405.
+ * (platform `metaads`); other platforms return 501.
  *
  */
 export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveTrackingTagSharedAccountData, ThrowOnError>) => {
@@ -13582,15 +13582,16 @@ export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = fa
  * Purchase uses `shopify_order_{orderId}` as its event id, so a Conversions API Purchase
  * you send for the same order with that `eventId` is deduplicated by Meta.
  *
- * Idempotent: a store runs one Zernio pixel, so calling it again updates the install and
- * installing a different tag replaces the previous one (reported in `replacedTagId`).
+ * Idempotent: a store runs one Zernio web pixel holding one tag per platform, so calling
+ * it again updates the install, installing a different tag of the same platform replaces
+ * the previous one (reported in `replacedTagId`), and other platforms' tags are kept.
  * Events respect the store's customer privacy settings (marketing consent).
  *
  * `accountId` is the Meta ads account that owns the pixel (`tagId`); `storeAccountId` is the
  * Shopify account. Stores connected before pixel support must re-approve the Zernio app:
  * the call then answers 409 `reconnect_required` with `details.authUrl` to send the
  * merchant to (the Shopify account id stays the same). Meta only (platform `metaads`);
- * other platforms return 405.
+ * other platforms return 501.
  *
  * **WordPress** (`storeAccountId` is a connected WordPress.com or self-hosted site): Zernio
  * adds a Custom HTML widget with the Meta pixel base code (fbevents.js, `init`, `PageView`)
@@ -13621,14 +13622,16 @@ export const installTrackingTagOnStore = <ThrowOnError extends boolean = false>(
 
 /**
  * Get store install status
- * Whether this pixel is the one the Shopify store fires. `installedTagId` names the pixel
- * the store currently fires, which can be a different tag. Meta only (platform `metaads`).
+ * Whether this tag is the one the Shopify store fires for its platform. `installedTagId`
+ * names the tag of that platform the store currently fires, which can be a different tag,
+ * and `tags` lists every Zernio tag on the store (all platforms).
  *
  * WordPress: whether the Zernio widget for this pixel is live (in an active widget area,
  * script intact), plus a read-only `preflight` with the theme's widget areas and, when an
  * install would be blocked, the `reason` POST would return. The preflight reads
  * capabilities only, so `ready: true` is not a guarantee: `DISALLOW_UNFILTERED_HTML` or a
  * multisite admin who is not a Super Admin still strips the script, which POST detects.
+ * `tags` lists every Zernio widget on the site (all platforms, with `active`).
  *
  */
 export const getTrackingTagStoreInstall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStoreInstallData, ThrowOnError>) => {
@@ -13640,9 +13643,10 @@ export const getTrackingTagStoreInstall = <ThrowOnError extends boolean = false>
 
 /**
  * Remove from a Shopify store or WordPress site
- * Removes the pixel from the store. Idempotent: nothing installed returns 200 with
- * `installed: false`. If the store fires a different pixel, nothing is removed and the
- * call answers 409 `invalid_resource_state`. Meta only (platform `metaads`).
+ * Removes the tag from the store. Idempotent: nothing installed returns 200 with
+ * `installed: false`. If the store fires a different tag of the same platform, nothing is
+ * removed and the call answers 409 `invalid_resource_state`. Shopify: other platforms'
+ * tags stay; the web pixel itself is deleted once no tag remains.
  *
  * WordPress: deletes every widget Zernio created for this pixel and reports how many in
  * `removed` (0 when nothing was installed). Pixel code added by hand is left alone.
@@ -13657,10 +13661,10 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
 
 /**
  * Get aggregated event stats
- * Returns aggregated event counts for the pixel (`GET /{pixel_id}/stats`).
- * Rows are passed through from Meta as-is; their shape depends on the
- * `aggregation` requested. Meta only (platform `metaads`); other platforms
- * return 405.
+ * Returns event counts / health for the tag, where the platform exposes
+ * them. Meta: aggregated counts (`GET /{pixel_id}/stats`), rows passed
+ * through as-is; their shape depends on the `aggregation` requested.
+ * Platforms without a stats API answer 501.
  *
  */
 export const getTrackingTagStats = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStatsData, ThrowOnError>) => {

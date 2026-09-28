@@ -8797,9 +8797,20 @@ export type platform10 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'link
  */
 export type StorePixelInstall = {
     storeAccountId?: string;
+    /**
+     * The store platform.
+     */
     platform?: 'shopify' | 'wordpress';
     /**
-     * Shopify: this tag is the pixel the store fires. WordPress: the Zernio widget for this tag is in an active widget area with its script intact.
+     * Platform of the tag this install is about (e.g. `metaads`).
+     */
+    tagPlatform?: string;
+    /**
+     * The id the tag carries on the site (see `TrackingTag.siteTagId`).
+     */
+    siteTagId?: string;
+    /**
+     * Shopify: this tag is the one the store fires for its platform. WordPress: the Zernio widget for this tag is in an active widget area with its script intact.
      */
     installed?: boolean;
     /**
@@ -8807,9 +8818,28 @@ export type StorePixelInstall = {
      */
     shopDomain?: string;
     /**
-     * Shopify only: the Meta pixel the store fires now (may be a different tag), or null.
+     * Shopify only: the tag of the same platform the store fires now (may be a different tag), or null.
      */
     installedTagId?: (string) | null;
+    /**
+     * GET only on WordPress, always on Shopify: every Zernio tag on the store, all platforms.
+     */
+    tags?: Array<{
+        platform?: string;
+        siteTagId?: string;
+        /**
+         * WordPress only.
+         */
+        widgetId?: string;
+        /**
+         * WordPress only.
+         */
+        sidebarId?: string;
+        /**
+         * WordPress only: false when the widget sits outside an active widget area.
+         */
+        active?: boolean;
+    }>;
     /**
      * Shopify only: web pixel id, or null when nothing is installed.
      */
@@ -9335,11 +9365,31 @@ export type mediaType2 = 'video' | 'photo';
  */
 export type TrackingTag = {
     /**
-     * Platform-native tag id. Meta: numeric pixel id, as a string.
+     * Platform-native tag id, the `{tagId}` of the per-tag routes. Meta: numeric pixel id, as a string. OpenAI: the pixel resource id.
      */
     id: string;
+    /**
+     * The id the on-site code carries. Equals `id` on Meta; differs on platforms with separate API and site ids (OpenAI `pixel_id`).
+     */
+    siteTagId?: string;
+    /**
+     * Platforms where each conversion is its own object: the tag's conversion events, with the id a site sends for each.
+     */
+    events?: Array<{
+        id: string;
+        name: string;
+        /**
+         * Platform category of the event.
+         */
+        type?: string;
+        /**
+         * The value the site sends to fire this event.
+         */
+        siteEvent?: string;
+        status?: string;
+    }>;
     name: string;
-    platform: 'metaads';
+    platform: 'metaads' | 'openaiads';
     /**
      * Platform-native flavor of the tag (Meta: `pixel`).
      */
@@ -9349,8 +9399,9 @@ export type TrackingTag = {
      */
     status: 'active' | 'inactive';
     /**
-     * The base-code `<script>` snippet to install on the site. Meta only;
-     * populated by `getTrackingTag`, omitted from the list view.
+     * The base-code `<script>` snippet to install on the site, including
+     * the page-view call. Populated by `getTrackingTag`, omitted from the
+     * list view.
      *
      */
     code?: string;
@@ -9385,7 +9436,7 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform11 = 'metaads';
+export type platform11 = 'metaads' | 'openaiads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -48883,9 +48934,15 @@ export type GetTrackingTagData = {
     path: {
         accountId: string;
         /**
-         * Pixel id.
+         * Tag id (`TrackingTag.id`).
          */
         tagId: string;
+    };
+    query?: {
+        /**
+         * Scopes the lookup on platforms whose tag ids live inside an ad account. Ignored elsewhere.
+         */
+        adAccountId?: string;
     };
 };
 
@@ -48900,6 +48957,10 @@ export type GetTrackingTagError = (ErrorResponse | {
 
 export type UpdateTrackingTagData = {
     body: {
+        /**
+         * Scopes the lookup on platforms whose tag ids live inside an ad account. Ignored elsewhere.
+         */
+        adAccountId?: string;
         name?: string;
         /**
          * Meta Advanced Matching toggle (`enable_automatic_matching`).
@@ -49007,6 +49068,10 @@ export type InstallTrackingTagOnStoreData = {
          */
         storeAccountId: string;
         /**
+         * Scopes the tag lookup on platforms whose tag ids live inside an ad account. Ignored elsewhere.
+         */
+        adAccountId?: string;
+        /**
          * WordPress only: widget area to use (see `install.preflight.sidebars` from GET). Defaults to a footer area.
          */
         sidebarId?: string;
@@ -49018,7 +49083,7 @@ export type InstallTrackingTagOnStoreData = {
     path: {
         accountId: string;
         /**
-         * Meta pixel id.
+         * Tag id (`TrackingTag.id`).
          */
         tagId: string;
     };
@@ -49063,11 +49128,15 @@ export type GetTrackingTagStoreInstallData = {
     path: {
         accountId: string;
         /**
-         * Meta pixel id.
+         * Tag id (`TrackingTag.id`).
          */
         tagId: string;
     };
     query: {
+        /**
+         * Scopes the tag lookup on platforms whose tag ids live inside an ad account.
+         */
+        adAccountId?: string;
         /**
          * The connected Shopify or WordPress account id.
          */
@@ -49109,11 +49178,15 @@ export type RemoveTrackingTagFromStoreData = {
     path: {
         accountId: string;
         /**
-         * Meta pixel id.
+         * Tag id (`TrackingTag.id`).
          */
         tagId: string;
     };
     query: {
+        /**
+         * Scopes the tag lookup on platforms whose tag ids live inside an ad account.
+         */
+        adAccountId?: string;
         /**
          * The connected Shopify or WordPress account id.
          */
@@ -49139,13 +49212,17 @@ export type GetTrackingTagStatsData = {
     path: {
         accountId: string;
         /**
-         * Pixel id.
+         * Tag id (`TrackingTag.id`).
          */
         tagId: string;
     };
     query?: {
         /**
-         * Aggregation dimension. Defaults to `event`.
+         * Scopes the lookup on platforms whose tag ids live inside an ad account. Ignored elsewhere.
+         */
+        adAccountId?: string;
+        /**
+         * Meta only (400 on other platforms): aggregation dimension. Defaults to `event`.
          */
         aggregation?: 'event' | 'host' | 'url' | 'url_by_rule' | 'pixel_fire' | 'device_type' | 'device_os' | 'browser_type' | 'had_pii' | 'custom_data_field' | 'match_keys' | 'event_source' | 'event_detection_method' | 'event_processing_results' | 'event_total_counts' | 'event_value_count';
         /**
