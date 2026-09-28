@@ -7015,6 +7015,28 @@ export type MetaAdsPlatformData = {
     lifetimeMinSpendTarget?: number;
 };
 
+export type MetaAssignedUser = {
+    /**
+     * Business-scoped user id.
+     */
+    id?: string;
+    name?: string;
+    tasks?: Array<(string)>;
+};
+
+export type MetaBusinessUser = {
+    /**
+     * Business-scoped user id.
+     */
+    id?: string;
+    name?: string;
+    email?: string;
+    /**
+     * Meta role in the portfolio, e.g. ADMIN or EMPLOYEE.
+     */
+    role?: string;
+};
+
 export type MetaCatalogProduct = {
     /**
      * Meta product item ID (use in the product endpoints)
@@ -7268,6 +7290,34 @@ export type MetaLeadForm = {
 };
 
 export type style = 'LIST_STYLE' | 'PARAGRAPH_STYLE';
+
+export type MetaPageOwnership = {
+    /**
+     * Facebook Page id.
+     */
+    id?: string;
+    name?: string;
+    /**
+     * Business portfolio that owns the Page; null when the Page is outside any portfolio.
+     */
+    business?: {
+        id?: string;
+        name?: string;
+    } | null;
+    /**
+     * Instagram professional account linked to the Page; null when none is linked.
+     */
+    instagramBusinessAccount?: {
+        id?: string;
+        username?: string;
+    } | null;
+};
+
+export type MetaPagePartner = {
+    businessId?: string;
+    name?: string;
+    permittedTasks?: Array<(string)>;
+};
 
 /**
  * Meta placement asset customization: pin a SPECIFIC asset (image OR video) to each
@@ -20980,6 +21030,80 @@ export type ResyncPageWebhookSubscriptionResponse = ({
 });
 
 export type ResyncPageWebhookSubscriptionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListBusinessPartnersData = {
+    path: {
+        /**
+         * Zernio SocialAccount id of the Facebook or Instagram account.
+         */
+        accountId: string;
+    };
+};
+
+export type ListBusinessPartnersResponse = ({
+    page?: MetaPageOwnership;
+    partners?: Array<MetaPagePartner>;
+});
+
+export type ListBusinessPartnersError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GrantBusinessPartnerData = {
+    body: {
+        /**
+         * Meta business portfolio id of the partner (numeric string).
+         */
+        businessId: string;
+        /**
+         * Tasks granted on the Page. Defaults to ADVERTISE and ANALYZE.
+         */
+        permittedTasks?: Array<('MANAGE' | 'CREATE_CONTENT' | 'MODERATE' | 'MESSAGING' | 'ADVERTISE' | 'ANALYZE')>;
+    };
+    path: {
+        /**
+         * Zernio SocialAccount id of the Facebook or Instagram account.
+         */
+        accountId: string;
+    };
+};
+
+export type GrantBusinessPartnerResponse = ({
+    page?: MetaPageOwnership;
+    partner?: {
+        businessId?: string;
+        permittedTasks?: Array<(string)>;
+    };
+});
+
+export type GrantBusinessPartnerError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RevokeBusinessPartnerData = {
+    path: {
+        /**
+         * Zernio SocialAccount id of the Facebook or Instagram account.
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * Meta business portfolio id of the partner (numeric string).
+         */
+        businessId: string;
+    };
+};
+
+export type RevokeBusinessPartnerResponse = ({
+    pageId?: string;
+    businessId?: string;
+    revoked?: boolean;
+});
+
+export type RevokeBusinessPartnerError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -40558,6 +40682,118 @@ export type ListMetaBusinessesError = (unknown | {
     error?: string;
 } | ErrorResponse);
 
+export type ListMetaBusinessUsersData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta business portfolio id.
+         */
+        businessId: string;
+    };
+};
+
+export type ListMetaBusinessUsersResponse = ({
+    businessId?: string;
+    users?: Array<MetaBusinessUser>;
+    systemUsers?: Array<MetaBusinessUser>;
+});
+
+export type ListMetaBusinessUsersError = (unknown | {
+    error?: string;
+} | ErrorResponse);
+
+export type ListPageUsersData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Business portfolio whose people to list.
+         */
+        businessId: string;
+        /**
+         * Facebook Page id.
+         */
+        pageId: string;
+    };
+};
+
+export type ListPageUsersResponse = ({
+    pageId?: string;
+    businessId?: string;
+    users?: Array<MetaAssignedUser>;
+});
+
+export type ListPageUsersError = (unknown | {
+    error?: string;
+} | ErrorResponse);
+
+export type AssignPageUserData = {
+    body: {
+        /**
+         * Zernio SocialAccount id used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Facebook Page id.
+         */
+        pageId: string;
+        /**
+         * Business portfolio the user belongs to.
+         */
+        businessId: string;
+        /**
+         * Business-scoped user id from GET /v1/ads/businesses/users.
+         */
+        userId: string;
+        tasks: Array<('MANAGE' | 'CREATE_CONTENT' | 'MODERATE' | 'MESSAGING' | 'ADVERTISE' | 'ANALYZE')>;
+    };
+};
+
+export type AssignPageUserResponse = ({
+    pageId?: string;
+    businessId?: string;
+    user?: {
+        id?: string;
+        tasks?: Array<(string)>;
+    };
+});
+
+export type AssignPageUserError = (unknown | {
+    error?: string;
+} | ErrorResponse);
+
+export type RemovePageUserData = {
+    query: {
+        /**
+         * Zernio SocialAccount id used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Facebook Page id.
+         */
+        pageId: string;
+        /**
+         * Business-scoped user id.
+         */
+        userId: string;
+    };
+};
+
+export type RemovePageUserResponse = ({
+    pageId?: string;
+    userId?: string;
+    removed?: boolean;
+});
+
+export type RemovePageUserError = (unknown | {
+    error?: string;
+} | ErrorResponse);
+
 export type ListAdLabelsData = {
     query: {
         /**
@@ -42064,6 +42300,90 @@ export type UpdateAdAccountManagerLinkError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type ListAdAccountUsersData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Business portfolio whose people to list.
+         */
+        businessId: string;
+    };
+};
+
+export type ListAdAccountUsersResponse = ({
+    adAccountId?: string;
+    businessId?: string;
+    users?: Array<MetaAssignedUser>;
+});
+
+export type ListAdAccountUsersError = (unknown | {
+    error?: string;
+} | ErrorResponse);
+
+export type AssignAdAccountUserData = {
+    body: {
+        /**
+         * Zernio SocialAccount id used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Business-scoped user id from GET /v1/ads/businesses/users.
+         */
+        userId: string;
+        tasks: Array<('MANAGE' | 'ADVERTISE' | 'ANALYZE' | 'DRAFT')>;
+    };
+};
+
+export type AssignAdAccountUserResponse = ({
+    adAccountId?: string;
+    user?: {
+        id?: string;
+        tasks?: Array<(string)>;
+    };
+});
+
+export type AssignAdAccountUserError = (unknown | {
+    error?: string;
+} | ErrorResponse);
+
+export type RemoveAdAccountUserData = {
+    query: {
+        /**
+         * Zernio SocialAccount id used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Business-scoped user id.
+         */
+        userId: string;
+    };
+};
+
+export type RemoveAdAccountUserResponse = ({
+    adAccountId?: string;
+    userId?: string;
+    removed?: boolean;
+});
+
+export type RemoveAdAccountUserError = (unknown | {
+    error?: string;
+} | ErrorResponse);
+
 export type GetAdAccountFinanceData = {
     query: {
         /**
@@ -42367,11 +42687,23 @@ export type UpdateAdAccountData = {
          */
         adAccountId: string;
         /**
+         * New ad account name.
+         */
+        name?: string;
+        /**
+         * Account spend cap in whole currency units; null removes it.
+         */
+        spendCap?: (number) | null;
+        /**
+         * Restart the amount counted against the cap from zero. Cannot be combined with spendCap null.
+         */
+        resetAmountSpent?: boolean;
+        /**
          * Legal entity benefiting from ads on this ad account
          */
-        defaultDsaBeneficiary: string;
+        defaultDsaBeneficiary?: string;
         /**
-         * Legal entity paying for ads on this ad account. Defaults to defaultDsaBeneficiary when omitted.
+         * Legal entity paying for ads on this ad account. Defaults to defaultDsaBeneficiary when omitted. Requires defaultDsaBeneficiary.
          */
         defaultDsaPayor?: string;
     };
@@ -42379,9 +42711,26 @@ export type UpdateAdAccountData = {
 
 export type UpdateAdAccountResponse = ({
     adAccountId?: string;
+    /**
+     * Present when defaultDsaBeneficiary was passed.
+     */
     dsaDefaults?: {
         beneficiary?: string;
         payor?: string;
+    };
+    /**
+     * Present when name, spendCap or resetAmountSpent was passed.
+     */
+    settings?: {
+        name?: string;
+        currency?: string;
+        balance?: number;
+        amountSpent?: number;
+        spendCap?: (number) | null;
+        fundingSource?: {
+            displayString?: string;
+            type?: number;
+        } | null;
     };
 });
 

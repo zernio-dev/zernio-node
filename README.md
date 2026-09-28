@@ -185,6 +185,7 @@ try {
 |--------|-------------|
 | `accounts.getAllAccountsHealth()` | Check accounts health |
 | `accounts.listAccounts()` | List accounts |
+| `accounts.listBusinessPartners()` | List partner businesses of the Page |
 | `accounts.listTikTokCommercialMusic()` | List trending commercial music |
 | `accounts.getAccountHealth()` | Check account health |
 | `accounts.getAccountPosts()` | List posts published on the platform |
@@ -202,8 +203,10 @@ try {
 | `accounts.deleteAccount()` | Disconnect account |
 | `accounts.deleteGoogleBusinessReviewReply()` | Delete a review reply |
 | `accounts.batchGetGoogleBusinessReviews()` | Batch get reviews |
+| `accounts.grantBusinessPartner()` | Share the Page with a partner business |
 | `accounts.moveAccountToProfile()` | Move account to another profile |
 | `accounts.replyToGoogleBusinessReview()` | Reply to a review |
+| `accounts.revokeBusinessPartner()` | Revoke a partner business from the Page |
 | `accounts.searchTikTokLocations()` | Search TikTok location tags |
 
 ### Profiles
@@ -399,6 +402,7 @@ try {
 | `adAccounts.listAccountSitelinks()` | List account sitelinks |
 | `adAccounts.listAccountStructuredSnippets()` | List account snippets |
 | `adAccounts.listAdAccounts()` | List ad accounts |
+| `adAccounts.listAdAccountUsers()` | Ad account users |
 | `adAccounts.listAdLabels()` | List ad labels |
 | `adAccounts.listAdNegativeKeywordLists()` | List negative keyword lists |
 | `adAccounts.listAdsBusinessCenters()` | List TikTok Business Centers |
@@ -409,6 +413,8 @@ try {
 | `adAccounts.listCustomConversions()` | List custom conversions |
 | `adAccounts.listHighDemandPeriods()` | List high-demand periods |
 | `adAccounts.listMetaBusinesses()` | Businesses list |
+| `adAccounts.listMetaBusinessUsers()` | Business users |
+| `adAccounts.listPageUsers()` | Page users of a business |
 | `adAccounts.listTikTokAdPixels()` | List TikTok ad pixels |
 | `adAccounts.listValueRuleSets()` | List value rule sets |
 | `adAccounts.createAdAccount()` | Create Meta ad account |
@@ -440,6 +446,8 @@ try {
 | `adAccounts.addAccountCallouts()` | Add account callouts |
 | `adAccounts.addAccountSitelinks()` | Add account sitelinks |
 | `adAccounts.addAccountStructuredSnippets()` | Add account snippets |
+| `adAccounts.assignAdAccountUser()` | Assign a user to an ad account |
+| `adAccounts.assignPageUser()` | Assign a user to a Page |
 | `adAccounts.attachAdLabel()` | Attach a Google Ads label |
 | `adAccounts.detachAdLabel()` | Detach a Google Ads label |
 | `adAccounts.hideAdComment()` | Hide or unhide an ad comment |
@@ -447,7 +455,9 @@ try {
 | `adAccounts.removeAccountCallout()` | Remove account callout |
 | `adAccounts.removeAccountSitelink()` | Remove account sitelink |
 | `adAccounts.removeAccountStructuredSnippet()` | Remove account snippet |
+| `adAccounts.removeAdAccountUser()` | Remove a user from an ad account |
 | `adAccounts.removeAdLabel()` | Remove a Google Ads label |
+| `adAccounts.removePageUser()` | Remove a user from a Page |
 | `adAccounts.replaceAdNegativeKeywordListKeywords()` | Replace negative list keywords |
 | `adAccounts.replyToAdComment()` | Reply to an ad comment |
 

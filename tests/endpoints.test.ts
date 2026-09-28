@@ -120,6 +120,21 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.deleteGoogleBusinessReviewReply).toBeTypeOf('function');
     });
 
+    it('should have listBusinessPartners method', () => {
+      expect(client.accounts.listBusinessPartners).toBeDefined();
+      expect(client.accounts.listBusinessPartners).toBeTypeOf('function');
+    });
+
+    it('should have grantBusinessPartner method', () => {
+      expect(client.accounts.grantBusinessPartner).toBeDefined();
+      expect(client.accounts.grantBusinessPartner).toBeTypeOf('function');
+    });
+
+    it('should have revokeBusinessPartner method', () => {
+      expect(client.accounts.revokeBusinessPartner).toBeDefined();
+      expect(client.accounts.revokeBusinessPartner).toBeTypeOf('function');
+    });
+
     it('should have getLinkedInMentions method', () => {
       expect(client.accounts.getLinkedInMentions).toBeDefined();
       expect(client.accounts.getLinkedInMentions).toBeTypeOf('function');

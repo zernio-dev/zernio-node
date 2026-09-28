@@ -22,7 +22,9 @@ import {
   applyGoogleRecommendations,
   approveWhatsAppGroupJoinRequests,
   archiveLeadForm,
+  assignAdAccountUser,
   assignGoogleBusinessLocation,
+  assignPageUser,
   attachAdGroupAssets,
   attachAdLabel,
   attachBrandedCallingNumbers,
@@ -433,6 +435,7 @@ import {
   getYouTubeVideoRetention,
   getYoutubeCaptions,
   getYoutubePlaylists,
+  grantBusinessPartner,
   handleOAuthCallback,
   hideAdComment,
   hideInboxComment,
@@ -448,6 +451,7 @@ import {
   listAccountSitelinks,
   listAccountStructuredSnippets,
   listAccounts,
+  listAdAccountUsers,
   listAdAccounts,
   listAdAudiences,
   listAdCampaigns,
@@ -491,6 +495,7 @@ import {
   listBusinessAgentSkills,
   listBusinessAgentUiSkills,
   listBusinessAgentWebsites,
+  listBusinessPartners,
   listCalls,
   listCampaignAssets,
   listCampaignNegativeKeywordLists,
@@ -534,7 +539,9 @@ import {
   listLocalServicesLeadConversations,
   listLocalServicesLeads,
   listLogs,
+  listMetaBusinessUsers,
   listMetaBusinesses,
+  listPageUsers,
   listPartnershipAdContent,
   listPartnershipAdPermissions,
   listPhoneNumberCountries,
@@ -608,6 +615,7 @@ import {
   removeAccountCallout,
   removeAccountSitelink,
   removeAccountStructuredSnippet,
+  removeAdAccountUser,
   removeAdGroupAssets,
   removeAdKeyword,
   removeAdLabel,
@@ -620,6 +628,7 @@ import {
   removeGoogleAssetGroup,
   removeImessageGroupParticipant,
   removeMessageReaction,
+  removePageUser,
   removeTrackingTagFromStore,
   removeTrackingTagSharedAccount,
   removeWhatsAppGroupParticipants,
@@ -651,6 +660,7 @@ import {
   retweetPost,
   reuseSmsRegistrationForNumber,
   reviewPhoneNumberKycPacket,
+  revokeBusinessPartner,
   revokeConnectedApp,
   rotateSipTrunkCredentials,
   runBusinessAgentConnectorTool,
@@ -1110,6 +1120,9 @@ export class Zernio {
     getGoogleBusinessReview: this._bind(getGoogleBusinessReview),
     replyToGoogleBusinessReview: this._bind(replyToGoogleBusinessReview),
     deleteGoogleBusinessReviewReply: this._bind(deleteGoogleBusinessReviewReply),
+    listBusinessPartners: this._bind(listBusinessPartners),
+    grantBusinessPartner: this._bind(grantBusinessPartner),
+    revokeBusinessPartner: this._bind(revokeBusinessPartner),
     getLinkedInMentions: this._bind(getLinkedInMentions),
     getSlackSettings: this._bind(getSlackSettings),
     updateSlackSettings: this._bind(updateSlackSettings),
@@ -1964,6 +1977,10 @@ export class Zernio {
     listAdvertisableApplications: this._bind(listAdvertisableApplications),
     getIosFourteenCampaignLimits: this._bind(getIosFourteenCampaignLimits),
     listMetaBusinesses: this._bind(listMetaBusinesses),
+    listMetaBusinessUsers: this._bind(listMetaBusinessUsers),
+    listPageUsers: this._bind(listPageUsers),
+    assignPageUser: this._bind(assignPageUser),
+    removePageUser: this._bind(removePageUser),
     listAdLabels: this._bind(listAdLabels),
     createAdLabel: this._bind(createAdLabel),
     updateAdLabel: this._bind(updateAdLabel),
@@ -1998,6 +2015,9 @@ export class Zernio {
     getAdAccountHierarchy: this._bind(getAdAccountHierarchy),
     inviteAdAccountToManager: this._bind(inviteAdAccountToManager),
     updateAdAccountManagerLink: this._bind(updateAdAccountManagerLink),
+    listAdAccountUsers: this._bind(listAdAccountUsers),
+    assignAdAccountUser: this._bind(assignAdAccountUser),
+    removeAdAccountUser: this._bind(removeAdAccountUser),
     getAdAccountFinance: this._bind(getAdAccountFinance),
     createAdAccount: this._bind(createAdAccount),
     listAdAccounts: this._bind(listAdAccounts),
@@ -2379,6 +2399,14 @@ export class Zernio {
     getIosFourteenCampaignLimits: this._bind(getIosFourteenCampaignLimits),
     /** @deprecated Use `zernio.adaccounts.listMetaBusinesses` instead. */
     listMetaBusinesses: this._bind(listMetaBusinesses),
+    /** @deprecated Use `zernio.adaccounts.listMetaBusinessUsers` instead. */
+    listMetaBusinessUsers: this._bind(listMetaBusinessUsers),
+    /** @deprecated Use `zernio.adaccounts.listPageUsers` instead. */
+    listPageUsers: this._bind(listPageUsers),
+    /** @deprecated Use `zernio.adaccounts.assignPageUser` instead. */
+    assignPageUser: this._bind(assignPageUser),
+    /** @deprecated Use `zernio.adaccounts.removePageUser` instead. */
+    removePageUser: this._bind(removePageUser),
     /** @deprecated Use `zernio.adaccounts.listAdLabels` instead. */
     listAdLabels: this._bind(listAdLabels),
     /** @deprecated Use `zernio.adaccounts.createAdLabel` instead. */
@@ -2447,6 +2475,12 @@ export class Zernio {
     inviteAdAccountToManager: this._bind(inviteAdAccountToManager),
     /** @deprecated Use `zernio.adaccounts.updateAdAccountManagerLink` instead. */
     updateAdAccountManagerLink: this._bind(updateAdAccountManagerLink),
+    /** @deprecated Use `zernio.adaccounts.listAdAccountUsers` instead. */
+    listAdAccountUsers: this._bind(listAdAccountUsers),
+    /** @deprecated Use `zernio.adaccounts.assignAdAccountUser` instead. */
+    assignAdAccountUser: this._bind(assignAdAccountUser),
+    /** @deprecated Use `zernio.adaccounts.removeAdAccountUser` instead. */
+    removeAdAccountUser: this._bind(removeAdAccountUser),
     /** @deprecated Use `zernio.adaccounts.getAdAccountFinance` instead. */
     getAdAccountFinance: this._bind(getAdAccountFinance),
     /** @deprecated Use `zernio.adaccounts.createAdAccount` instead. */
