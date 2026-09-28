@@ -3369,6 +3369,10 @@ export type ConversionEvent = {
              *
              */
             li_fat_id?: string;
+            /**
+             * Pinterest click ID (the `epik` URL param or `_epik` cookie). Sent to Pinterest as `click_id`, not hashed.
+             */
+            epik?: string;
         };
     };
     /**
@@ -9768,6 +9772,10 @@ export type TrackingTag = {
      * Unix seconds the tag was created.
      */
     creationTime?: number;
+    /**
+     * Customer data the tag matches automatically, where the platform reports it (Pinterest automatic enhanced match).
+     */
+    automaticMatchingFields?: Array<('em' | 'ph' | 'fn' | 'ln' | 'ge' | 'db' | 'ct' | 'st' | 'zp' | 'country' | 'external_id')>;
     /**
      * Business Manager id that owns the tag, or `null` when the tag lives
      * on a personal (non-BM) ad account. Such tags can't be shared with
@@ -47301,11 +47309,11 @@ export type ReplaceAdAudienceCompaniesError = (unknown | {
 export type GetConversionsQualityData = {
     query: {
         /**
-         * SocialAccount _id (must be a metaads account).
+         * SocialAccount _id (a metaads or pinterestads account).
          */
         accountId: string;
         /**
-         * Meta pixel/dataset ID.
+         * Meta pixel/dataset ID, or the numeric Pinterest ad account id.
          */
         destinationId: string;
     };
@@ -47337,7 +47345,7 @@ export type GetConversionsQualityError = (ErrorResponse | {
 export type SendConversionsData = {
     body: {
         /**
-         * SocialAccount ID (metaads, googleads, linkedinads, tiktokads, or openaiads).
+         * SocialAccount ID (metaads, googleads, linkedinads, tiktokads, openaiads, or pinterestads).
          */
         accountId: string;
         /**
@@ -47345,13 +47353,13 @@ export type SendConversionsData = {
          * ID. For Google, the conversion action resource name. For
          * LinkedIn, the conversion rule ID or full
          * `urn:lla:llaPartnerConversion:{id}` URN. For OpenAI Ads, the
-         * pixel wire id.
+         * pixel wire id. For Pinterest, the numeric ad account id.
          *
          */
         destinationId: string;
         events: Array<ConversionEvent>;
         /**
-         * Meta `test_event_code` passthrough. Ignored by Google, LinkedIn, and OpenAI Ads.
+         * Meta `test_event_code` passthrough. On Pinterest any value sends the batch with `test=true` (validated, not recorded). Ignored by Google, LinkedIn, and OpenAI Ads.
          */
         testCode?: string;
         /**
@@ -47372,7 +47380,7 @@ export type SendConversionsData = {
 };
 
 export type SendConversionsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads';
     /**
      * Events accepted by the platform.
      */
@@ -47842,14 +47850,14 @@ export type UpdateCampaignConversionGoalsError = (ErrorResponse | {
 export type ListConversionDestinationsData = {
     path: {
         /**
-         * SocialAccount ID (metaads, googleads, linkedinads, tiktokads, or openaiads).
+         * SocialAccount ID (metaads, googleads, linkedinads, tiktokads, openaiads, or pinterestads).
          */
         accountId: string;
     };
 };
 
 export type ListConversionDestinationsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads';
     destinations?: Array<{
         /**
          * Destination identifier. Meta: pixel ID. Google:
@@ -49646,6 +49654,10 @@ export type CreateTrackingTagData = {
          * OpenAI Ads only (ignored by Meta). When set, also provisions a standard conversion event setting wired to the new pixel, so `goal: conversions` ad creates on `POST /v1/ads/create` have an event to reference immediately.
          */
         defaultEventType?: 'order_created' | 'lead_created' | 'items_added' | 'contents_viewed' | 'checkout_started' | 'registration_completed' | 'subscription_created' | 'trial_started' | 'appointment_scheduled' | 'page_viewed' | 'app_installed' | 'app_opened';
+        /**
+         * Pinterest only (400 elsewhere). Customer data the new tag matches automatically (automatic enhanced match): `em` email, `ph` phone, `fn`/`ln` name, `ge` gender, `db` date of birth, `ct`/`st`/`zp`/`country` location, `external_id`. Pinterest has one switch for the name and one for the location, so `fn` turns on `ln` too and any location code turns on all four.
+         */
+        automaticMatchingFields?: Array<('em' | 'ph' | 'fn' | 'ln' | 'ge' | 'db' | 'ct' | 'st' | 'zp' | 'country' | 'external_id')>;
     };
     path: {
         /**

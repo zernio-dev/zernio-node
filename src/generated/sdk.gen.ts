@@ -12372,7 +12372,12 @@ export const replaceAdAudienceCompanies = <ThrowOnError extends boolean = false>
  * Get Event Match Quality
  * Reads Meta Event Match Quality (EMQ) and pixel↔CAPI event coverage for a
  * pixel/dataset, live from Meta's Dataset Quality API. Web events only (a
- * Meta limitation). Meta-only; other platforms return 405. Requires the Ads add-on.
+ * Meta limitation). Other platforms return 405, except Pinterest. Requires the Ads add-on.
+ *
+ * Pinterest (`pinterestads`): `destinationId` is the numeric ad account id. Rows come from
+ * Pinterest's Event Quality Score for Conversions API web events over the last 14 days,
+ * one per event name, with each identifier's coverage in `matchKeys` and
+ * `eventCoveragePercentage` set to the tag/API `event_id` overlap. No `compositeScore`.
  *
  */
 export const getConversionsQuality = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetConversionsQualityData, ThrowOnError>) => {
@@ -12394,6 +12399,7 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * - LinkedIn (`linkedinads`) via `/rest/conversionEvents`
  * - TikTok (`tiktokads`) via the Offline Events API `/offline/batch/` (OFFLINE conversions only)
  * - OpenAI Ads (`openaiads`) via its Conversions API (a separate host, `bzr.openai.com`)
+ * - Pinterest (`pinterestads`) via `POST /v5/ad_accounts/{id}/events`
  *
  * `destinationId` semantics differ per platform:
  *
@@ -12402,6 +12408,15 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * - LinkedIn: conversion rule ID or URN, e.g. `104012` or `urn:lla:llaPartnerConversion:104012`
  * - TikTok: Offline Event Set ID, e.g. `7057103914977558530`
  * - OpenAI Ads: pixel wire id (numeric `pixel_id`, distinct from the internal pixel id), as returned by `GET /v1/accounts/{accountId}/conversion-destinations`
+ * - Pinterest: numeric ad account id, e.g. `549755885175` (Pinterest attributes to the ad account, not to a tag)
+ *
+ * Pinterest notes: each event needs an `email`, or `ipAddress` plus `userAgent`; others are
+ * listed in `failures` with code `INVALID_EVENT` and the rest are still sent. `clickIds.epik`
+ * (the `_epik` cookie) is sent as `click_id`. `actionSource` `web` stays `web`, offline
+ * sources become `offline`, and app events need `platformData.action_source` `app_android`
+ * or `app_ios`. Pinterest answers per event, so one bad event does not fail its chunk
+ * (failures carry code `PINTEREST_EVENT_FAILED`). `consent.adUserData: DENIED` sets `opt_out`.
+ * The connected user needs a Business Access role on the ad account (403 otherwise).
  *
  * TikTok notes: this path sends OFFLINE conversions (in-store / CRM / call-center), not web-pixel
  * events. Each event must carry an email or phone (TikTok requires at least one). The connected
@@ -12436,6 +12451,7 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * - Google: ignored. The conversion action's category determines the event type. Send the standard name closest to your action for documentation, but the platform will not branch on it.
  * - LinkedIn: ignored. The conversion rule's `type` (LEAD, PURCHASE, etc.) is locked to the destination at rule-creation time. Send the standard name for documentation; LinkedIn does not branch on it.
  * - OpenAI Ads: a fixed subset of standard names (Purchase, Lead, AddToCart, ViewContent, InitiateCheckout, CompleteRegistration, Subscribe, StartTrial, Schedule) maps 1:1 onto OpenAI's own event-type enum; any other standard name or custom string is sent as `type: custom` with the name preserved.
+ * - Pinterest: standard names map onto Pinterest's (Purchase = `checkout`, AddToCart = `add_to_cart`, InitiateCheckout = `initiate_checkout`, AddPaymentInfo = `add_payment_info`, Lead = `lead`, CompleteRegistration = `signup`, Subscribe = `subscribe`, ViewContent = `view_content`, Search = `search`, PageView = `page_visit`); any other string is sent as is, so it matches an advertiser defined event of that name.
  *
  */
 export const sendConversions = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendConversionsData, ThrowOnError>) => {
@@ -12642,8 +12658,8 @@ export const updateCampaignConversionGoals = <ThrowOnError extends boolean = fal
 /**
  * List conversion destinations
  * Returns the list of pixels (Meta), conversion actions (Google),
- * conversion rules (LinkedIn), or pixels (OpenAI Ads) accessible to the
- * connected ads account. Use the returned `id` as `destinationId` when
+ * conversion rules (LinkedIn), pixels (OpenAI Ads) or ad accounts
+ * (Pinterest) accessible to the connected ads account. Use the returned `id` as `destinationId` when
  * posting to `POST /v1/ads/conversions`.
  *
  * For Google and LinkedIn, each destination's `type` reflects the
@@ -13675,8 +13691,9 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
  *
  * Pinterest (platform `pinterestads`): creates a Pinterest tag on the numeric ad account
  * `adAccountId` (`POST /v5/ad_accounts/{id}/conversion_tags`). Returns the tag with
- * Pinterest's `code` snippet. NOT idempotent and Pinterest has no dry-run and no delete for
- * tags, so never retry blindly: list first.
+ * Pinterest's `code` snippet. `automaticMatchingFields` switches on automatic enhanced match
+ * for those fields. NOT idempotent and Pinterest has no dry-run and no delete for tags (DELETE
+ * on `conversion_tags/{id}` answers 405), so never retry blindly: list first.
  *
  * Google Ads (`googleads`): every Google Ads account has exactly one
  * Google tag (`AW-...`), so this is idempotent. `adAccountId` is the
@@ -13755,9 +13772,10 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * `first_party_cookie_disabled`), which sets the tag's first-party tracking. It applies to
  * every ad account using the tag. `empty` answers 400: LinkedIn has no unset state.
  *
- * Pinterest (platform `pinterestads`): 501. Pinterest API v5 only creates, lists and reads
- * tags (no update endpoint); rename a tag or change its enhanced match settings in Pinterest
- * Ads Manager.
+ * Pinterest (platform `pinterestads`): 501. Pinterest API v5 has no endpoint to edit a tag:
+ * its spec lists only POST/GET on `conversion_tags` and GET on `conversion_tags/{id}`, and
+ * PATCH or PUT on `conversion_tags/{id}` answer 405 "Method not allowed". Set enhanced match
+ * at creation (`automaticMatchingFields`) or change it and the name in Pinterest Ads Manager.
  *
  */
 export const updateTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagData, ThrowOnError>) => {
@@ -13943,8 +13961,8 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * List conversion events
  * The tag's conversion events, on platforms where each conversion is its own object:
  * Google conversion actions, LinkedIn conversion rules, X web event tags, OpenAI event
- * settings, TikTok pixel events, Meta custom conversions. Platforms where events are just
- * names the site sends (Pinterest) answer 501.
+ * settings, TikTok pixel events, Meta custom conversions, Pinterest advertiser defined
+ * events.
  *
  * OpenAI Ads: the account's conversion event settings whose source is this pixel.
  * `siteEventId` is the event name the site sends (a standard event such as
@@ -13967,6 +13985,13 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * value settings, lookback windows, `primary` and `countingType` are returned.
  * Archived (removed) actions are listed with status `REMOVED`; imported (GA4, upload,
  * app) actions are not events of the tag.
+ *
+ * Pinterest (platform `pinterestads`): the ad account's advertiser defined events, custom
+ * event names mapped to a standard type (`type`, e.g. `SIGNUP`). They belong to the ad
+ * account, so every tag on it shares them. `id`, `name` and `siteEventId` are all the event
+ * name, which the site sends as `pintrk('track', '<name>')` or the Conversions API sends as
+ * `event_name`. Standard events (`pagevisit`, `checkout`...) need no object and are not
+ * listed.
  *
  */
 export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagEventsData, ThrowOnError>) => {
@@ -14025,6 +14050,14 @@ export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(opti
  * are unique per account, so a replay answers 400 (DUPLICATE_NAME) instead of creating a
  * second one.
  *
+ * Pinterest (platform `pinterestads`): creates an advertiser defined event on the tag's ad
+ * account. Fields: `name` (1-100 letters, digits, `_` or `-`, case-insensitive, max 15 per
+ * ad account) and `type` (one of Pinterest's optimizable types: SIGNUP, ADD_TO_CART, LEAD,
+ * CHECKOUT, SUBSCRIBE, ADD_TO_WISHLIST, ADD_PAYMENT_INFO, INITIATE_CHECKOUT, CONTACT,
+ * CUSTOMIZE_PRODUCT, FIND_LOCATION, SCHEDULE, SUBMIT_APPLICATION, START_TRIAL, PAGE_VISIT,
+ * VIEW_CATEGORY, VIEW_CONTENT, SEARCH, WATCH_VIDEO) or `siteEvent`. A duplicate name answers
+ * 400.
+ *
  */
 export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagEventResponse, CreateTrackingTagEventError, ThrowOnError>({
@@ -14051,6 +14084,10 @@ export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * Google Ads (`googleads`): same fields as create, on the account's WEBPAGE actions (others
  * answer 404). `enabled: false` archives the action (same as DELETE) and `enabled: true`
  * restores an archived one.
+ *
+ * Pinterest (platform `pinterestads`): remaps the event to another `type` or `siteEvent`.
+ * Pinterest identifies the event by its name, so `name` cannot change (400): create the new
+ * name and delete the old one.
  *
  */
 export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagEventData, ThrowOnError>) => {
@@ -14079,6 +14116,9 @@ export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * Google Ads (`googleads`): removes the conversion action (state `archived`). Google keeps
  * it with status REMOVED and its history; PATCH with `enabled: true` restores it. Deleting
  * an already archived action succeeds without a call to Google.
+ *
+ * Pinterest (platform `pinterestads`): stops Pinterest tracking the event name (`state:
+ * disabled`); Pinterest keeps the event's history.
  *
  */
 export const deleteTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteTrackingTagEventData, ThrowOnError>) => {
