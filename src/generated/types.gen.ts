@@ -9383,13 +9383,17 @@ export type TrackingTag = {
          */
         type?: string;
         /**
-         * The value the site sends to fire this event.
+         * The neutral site event this conversion is fired for, when it maps to one.
          */
-        siteEvent?: string;
+        siteEvent?: 'page_view' | 'view_content' | 'add_to_cart' | 'search' | 'initiate_checkout' | 'add_payment_info' | 'purchase';
+        /**
+         * What the site sends to fire this event (Google conversion label, LinkedIn conversion rule id, X `tw-` event id).
+         */
+        siteEventId?: string;
         status?: string;
     }>;
     name: string;
-    platform: 'metaads' | 'openaiads' | 'tiktokads';
+    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
     /**
      * Platform-native flavor of the tag (Meta: `pixel`).
      */
@@ -9436,7 +9440,7 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform11 = 'metaads' | 'openaiads' | 'tiktokads';
+export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -48893,7 +48897,7 @@ export type ListTrackingTagsData = {
 };
 
 export type ListTrackingTagsResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
     tags?: Array<TrackingTag>;
 });
 
@@ -48922,7 +48926,7 @@ export type CreateTrackingTagData = {
 };
 
 export type CreateTrackingTagResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
     tag?: TrackingTag;
 });
 
@@ -48947,7 +48951,7 @@ export type GetTrackingTagData = {
 };
 
 export type GetTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads';
     tag?: TrackingTag;
 });
 
@@ -48987,7 +48991,7 @@ export type UpdateTrackingTagData = {
 };
 
 export type UpdateTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads';
     tag?: TrackingTag;
 });
 
@@ -49090,7 +49094,7 @@ export type InstallTrackingTagOnStoreData = {
 };
 
 export type InstallTrackingTagOnStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads';
     install?: (StorePixelInstall & {
     /**
      * Shopify only: the pixel this install replaced on the store, if any.
@@ -49145,7 +49149,7 @@ export type GetTrackingTagStoreInstallData = {
 };
 
 export type GetTrackingTagStoreInstallResponse = ({
-    platform?: 'metaads' | 'tiktokads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only.
@@ -49195,7 +49199,7 @@ export type RemoveTrackingTagFromStoreData = {
 };
 
 export type RemoveTrackingTagFromStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only: number of Zernio widgets deleted.
@@ -49237,7 +49241,7 @@ export type GetTrackingTagStatsData = {
 };
 
 export type GetTrackingTagStatsResponse = ({
-    platform?: 'metaads' | 'tiktokads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads';
     stats?: {
         aggregation?: string;
         startTime?: number;
