@@ -13624,6 +13624,11 @@ export const startBusinessAgentEvalRun = <ThrowOnError extends boolean = false>(
  * account the connection can see. The tag `id` IS the partner id the site embeds, so
  * `siteTagId` equals `id`. LinkedIn tags have no name; it is shown as `Insight Tag {id}`.
  *
+ * Pinterest (platform `pinterestads`): lists Pinterest tags (conversion tags). `adAccountId`
+ * is the numeric Pinterest ad account id (no prefix); omit it to walk every ad account the
+ * connection can read (an ad account the user has no Business Access role on is skipped).
+ * `id` equals `siteTagId`, the id the site loads with `pintrk('load', id)`.
+ *
  */
 export const listTrackingTags = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagsResponse, ListTrackingTagsError, ThrowOnError>({
@@ -13668,6 +13673,11 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
  * tag is returned and nothing is created. `name` is ignored (LinkedIn tags have no name) and
  * there is no API to delete an Insight Tag.
  *
+ * Pinterest (platform `pinterestads`): creates a Pinterest tag on the numeric ad account
+ * `adAccountId` (`POST /v5/ad_accounts/{id}/conversion_tags`). Returns the tag with
+ * Pinterest's `code` snippet. NOT idempotent and Pinterest has no dry-run and no delete for
+ * tags, so never retry blindly: list first.
+ *
  */
 export const createTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagResponse, CreateTrackingTagError, ThrowOnError>({
@@ -13697,6 +13707,10 @@ export const createTrackingTag = <ThrowOnError extends boolean = false>(options:
  * rules, no URL match rules). `adAccountId` picks which ad account's rules to read; it
  * defaults to the account that created the tag.
  *
+ * Pinterest (platform `pinterestads`): returns the tag with Pinterest's own `code` snippet
+ * and `lastFiredTime`. Without `adAccountId` Zernio finds the ad account that owns the tag
+ * (404 when no readable ad account holds it).
+ *
  */
 export const getTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetTrackingTagResponse, GetTrackingTagError, ThrowOnError>({
@@ -13725,6 +13739,10 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * LinkedIn (`linkedinads`): only `firstPartyCookieStatus` (`first_party_cookie_enabled` or
  * `first_party_cookie_disabled`), which sets the tag's first-party tracking. It applies to
  * every ad account using the tag. `empty` answers 400: LinkedIn has no unset state.
+ *
+ * Pinterest (platform `pinterestads`): 501. Pinterest API v5 only creates, lists and reads
+ * tags (no update endpoint); rename a tag or change its enhanced match settings in Pinterest
+ * Ads Manager.
  *
  */
 export const updateTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagData, ThrowOnError>) => {
@@ -13850,6 +13868,14 @@ export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = fa
  * is created for you. The `li_fat_id` click id is read from the landing URL and kept in a
  * first-party cookie for 30 days. WordPress gets LinkedIn's base code, which records page
  * views.
+ *
+ * **Pinterest (platform `pinterestads`)**: Shopify sends `pagevisit`, `viewcontent`,
+ * `addtocart`, `search`, `initiatecheckout`, `addpaymentinfo` and `checkout` to the tag,
+ * each with `event_id` (Purchase: `shopify_order_{orderId}`, for dedup with the Pinterest
+ * Conversions API), value, currency, order quantity and line items, plus the `epik` click id
+ * kept in the `_epik` cookie. WordPress gets Pinterest's base code (core.js, `load`, `page`)
+ * with a `pagevisit` event; the manual fallback is the official Pinterest for WooCommerce
+ * plugin (WooCommerce stores).
  *
  */
 export const installTrackingTagOnStore = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<InstallTrackingTagOnStoreData, ThrowOnError>) => {
@@ -14058,6 +14084,14 @@ export const getTrackingTagDiagnostics = <ThrowOnError extends boolean = false>(
  * `lastFiredTime`, `creationTime`, `blocked`) and one per conversion rule (`kind:
  * conversion_rule`, `id`, `name`, `type`, `conversionMethod`, `status`, `lastFiredTime`).
  * Times are unix seconds; `startTime`/`endTime` are ignored.
+ *
+ * Pinterest (platform `pinterestads`): rows typed by `type`: one `tag` row (`lastFiredTime`,
+ * `status`, `enhancedMatchStatus`), `event` rows for the conversion events Pinterest has
+ * seen on the tag (`source` is `page_visit` or `ocpm_eligible`, the latter meaning the event
+ * can be optimized for, with the neutral `siteEvent` where one maps), and `event_quality`
+ * rows with the ad account's Event Quality Score for tag events over the last `1d` and `14d`
+ * (ad-account level, not per tag; an account Pinterest cannot score yet carries `error`
+ * instead). Pinterest has no time-bounded counts, so `startTime`/`endTime` answer 400.
  *
  */
 export const getTrackingTagStats = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStatsData, ThrowOnError>) => {
