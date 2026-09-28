@@ -5811,7 +5811,11 @@ export const listBrandedCallingCallReasons = <ThrowOnError extends boolean = fal
  *
  * Billing: $100 per identity per month, the first month charged when the
  * identity is filed with the carrier and not refunded if the carrier rejects it,
- * then monthly while the identity exists. Branded calls add $0.10 each.
+ * then monthly while the identity exists. Branded calls add $0.10 each, counted
+ * on every outbound call from a verified branded number to a US destination
+ * (whether or not the callee's carrier displayed the branding); the surcharge
+ * shows as `brandedCallUSD` on the call's billing and in
+ * `GET /v1/voice/calls/estimate` when you pass `from`.
  *
  */
 export const createBrandedCallingIdentity = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateBrandedCallingIdentityData, ThrowOnError>) => {

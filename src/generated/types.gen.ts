@@ -27946,6 +27946,10 @@ export type TransferVoiceCallError = ({
 
 export type GetVoiceCallEstimateData = {
     query: {
+        /**
+         * The number the call would dial from, E.164. When it is verified on a Branded Calling identity and `to` is a US number, the estimate includes the per-call Branded Calling surcharge.
+         */
+        from?: string;
         minutes?: number;
         recording?: boolean;
         /**
@@ -27967,6 +27971,10 @@ export type GetVoiceCallEstimateResponse = ({
         telnyxCostUSD?: number;
         recordingCostUSD?: number;
         transcriptionCostUSD?: number;
+        /**
+         * Branded Calling surcharge, 0 unless `from` is a verified branded number calling a US destination.
+         */
+        brandedCallUSD?: number;
         /**
          * What Zernio bills for the call.
          */
