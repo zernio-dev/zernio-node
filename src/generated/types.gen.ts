@@ -9185,7 +9185,7 @@ export type TikTokPlatformData = {
         musicSoundEnd?: number;
     };
     /**
-     * Volume of the video's own sound when a commercial track is attached (0 to 100). Requires musicSoundInfo. Video posts only.
+     * Volume of the video's own sound when a commercial track is attached (0 to 100). Requires musicSoundInfo. Video posts only. Omitted, TikTok keeps its API default of 0 and the video's own audio is muted under the track (the TikTok app uses 50).
      */
     videoOriginalSoundVolume?: number;
     /**
