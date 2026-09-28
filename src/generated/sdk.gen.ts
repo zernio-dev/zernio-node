@@ -13618,6 +13618,12 @@ export const startBusinessAgentEvalRun = <ThrowOnError extends boolean = false>(
  * `act_...` ids from `GET /v1/ads/accounts`; `adAccountId` is ignored for
  * OpenAI Ads (one API key maps to exactly one ad account).
  *
+ * LinkedIn (`linkedinads`): lists the Insight Tag of each ad account (LinkedIn allows one
+ * per ad account; a tag shared with several accounts appears once). `adAccountId` is the
+ * numeric ad account id or `urn:li:sponsoredAccount:{id}`; omit it to scan every active ad
+ * account the connection can see. The tag `id` IS the partner id the site embeds, so
+ * `siteTagId` equals `id`. LinkedIn tags have no name; it is shown as `Insight Tag {id}`.
+ *
  */
 export const listTrackingTags = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagsResponse, ListTrackingTagsError, ThrowOnError>({
@@ -13657,6 +13663,11 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
  * timeout. Meta (platform `metaads`) and OpenAI Ads (platform
  * `openaiads`); other platforms return 501.
  *
+ * LinkedIn (`linkedinads`): creates the ad account's Insight Tag (`POST /rest/insightTags`).
+ * Idempotent: an ad account holds at most one Insight Tag, so when it already has one that
+ * tag is returned and nothing is created. `name` is ignored (LinkedIn tags have no name) and
+ * there is no API to delete an Insight Tag.
+ *
  */
 export const createTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagResponse, CreateTrackingTagError, ThrowOnError>({
@@ -13678,6 +13689,13 @@ export const createTrackingTag = <ThrowOnError extends boolean = false>(options:
  * event settings whose source is this pixel). `siteTagId` is the
  * `pixel_id` the site and the Conversions API send; `id` is what event
  * settings reference.
+ *
+ * LinkedIn (`linkedinads`): `code` is LinkedIn's base code, `lastFiredTime` is the most
+ * recent callback across the tag's domains (unix seconds, null when it never fired) and
+ * `events` lists the ad account's conversion rules. `siteEvent` and `siteEventId` are set
+ * only on rules a page can fire (event-specific Insight Tag rules: not Conversions API
+ * rules, no URL match rules). `adAccountId` picks which ad account's rules to read; it
+ * defaults to the account that created the tag.
  *
  */
 export const getTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagData, ThrowOnError>) => {
@@ -13704,6 +13722,10 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * .../tracking-tags/{tagId}/shared-accounts`) or disable it in Events
  * Manager.
  *
+ * LinkedIn (`linkedinads`): only `firstPartyCookieStatus` (`first_party_cookie_enabled` or
+ * `first_party_cookie_disabled`), which sets the tag's first-party tracking. It applies to
+ * every ad account using the tag. `empty` answers 400: LinkedIn has no unset state.
+ *
  */
 export const updateTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateTrackingTagResponse, UpdateTrackingTagError, ThrowOnError>({
@@ -13714,7 +13736,12 @@ export const updateTrackingTag = <ThrowOnError extends boolean = false>(options:
 
 /**
  * List accounts it is shared with
- * Meta only (platform `metaads`); other platforms return 501.
+ * Meta (`metaads`) and LinkedIn (`linkedinads`); other platforms return 501.
+ *
+ * LinkedIn (`linkedinads`): the ad accounts this connection can see that hold access to the
+ * Insight Tag; the role (`FULL` or `USE_ONLY`) is appended to `name`. LinkedIn exposes
+ * permissions per ad account only, so accounts the connection cannot see are not listed.
+ *
  */
 export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagSharedAccountsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagSharedAccountsResponse, ListTrackingTagSharedAccountsError, ThrowOnError>({
@@ -13729,7 +13756,12 @@ export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = fal
  * account can use it. Requires that you administer both the pixel's owning
  * Business Manager and the target ad account; a pixel on a personal
  * (non-BM) ad account can't be shared (Meta will reject the call). Meta
- * only (platform `metaads`); other platforms return 501.
+ * and LinkedIn; other platforms return 501.
+ *
+ * LinkedIn (`linkedinads`): grants `USE_ONLY` access from the ad account that created the
+ * tag, so the target can use the tag and its conversions but cannot edit or reshare it.
+ * `adAccountId` is the numeric LinkedIn ad account id. An ad account uses one Insight Tag at
+ * a time, so a target that already has one answers 400.
  *
  */
 export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddTrackingTagSharedAccountData, ThrowOnError>) => {
@@ -13742,8 +13774,12 @@ export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false
 /**
  * Stop sharing with an account
  * `adAccountId` may be passed as a query parameter (recommended) or as a
- * JSON body field for clients that can send DELETE bodies. Meta only
- * (platform `metaads`); other platforms return 501.
+ * JSON body field for clients that can send DELETE bodies. Meta and
+ * LinkedIn; other platforms return 501.
+ *
+ * LinkedIn (`linkedinads`): revokes the ad account's access. Zernio answers 400 instead of
+ * revoking the last ad account that holds the tag: LinkedIn accepts that call and the tag
+ * is orphaned (verified live).
  *
  */
 export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveTrackingTagSharedAccountData, ThrowOnError>) => {
@@ -13804,6 +13840,17 @@ export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = fa
  * `homepageCheck` says whether the pixel is visible; `not_found` can be a stale page cache,
  * the widget read-back is authoritative.
  *
+ * **LinkedIn** (`linkedinads`): Shopify sends every page view to the Insight Tag, plus each
+ * store event that has an enabled event-specific Insight Tag conversion rule of the matching
+ * type (view_content = VIEW_CONTENT, add_to_cart = ADD_TO_CART, search = SEARCH,
+ * initiate_checkout = START_CHECKOUT, add_payment_info = ADD_BILLING_INFO, purchase =
+ * PURCHASE). Each conversion carries the event id; Purchase uses `shopify_order_{orderId}`,
+ * so a Conversions API event sent to a separate CONVERSIONS_API rule with that `eventId` is
+ * deduplicated by LinkedIn. Conversions API rules cannot be fired from a page, and no rule
+ * is created for you. The `li_fat_id` click id is read from the landing URL and kept in a
+ * first-party cookie for 30 days. WordPress gets LinkedIn's base code, which records page
+ * views.
+ *
  */
 export const installTrackingTagOnStore = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<InstallTrackingTagOnStoreData, ThrowOnError>) => {
     return (options?.client ?? client).post<InstallTrackingTagOnStoreResponse, InstallTrackingTagOnStoreError, ThrowOnError>({
@@ -13863,6 +13910,12 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * `order_created`, or the lowercase custom event name); `clickWindowDays` is the
  * attribution window.
  *
+ * LinkedIn (`linkedinads`): the conversion rules of the ad account (`adAccountId`, default
+ * the account that created the tag), including Conversions API and URL-match rules.
+ * `siteEventId` (the rule id a page fires) is set only on event-specific Insight Tag rules;
+ * `defaultValue`/`currency` come from the rule value, `clickWindowDays`/`viewWindowDays`
+ * from its post-click and view-through windows.
+ *
  */
 export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagEventsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagEventsResponse, ListTrackingTagEventsError, ThrowOnError>({
@@ -13891,6 +13944,16 @@ export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(opti
  * only value OpenAI documents. Only standard events can be a conversions campaign's
  * optimization goal.
  *
+ * LinkedIn (`linkedinads`): creates an event-specific Insight Tag conversion rule (no URL
+ * match rules), the kind a page or the Shopify pixel fires by id. `type` is a LinkedIn
+ * conversion type (e.g. `PURCHASE`, `ADD_TO_CART`, `START_CHECKOUT`, `LEAD`); `siteEvent`
+ * maps to `KEY_PAGE_VIEW`, `VIEW_CONTENT`, `ADD_TO_CART`, `SEARCH`, `START_CHECKOUT`,
+ * `ADD_BILLING_INFO` or `PURCHASE`. `defaultValue` needs `currency` (the ad account
+ * currency) and is a fallback: a value sent with the event wins. Click and view windows are
+ * in days (LinkedIn validates them: the docs list 1, 7 and 30, and rules with 90 exist).
+ * Stores name, type, siteEvent, enabled, defaultValue, currency, clickWindowDays,
+ * viewWindowDays. Not idempotent.
+ *
  */
 export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagEventResponse, CreateTrackingTagEventError, ThrowOnError>({
@@ -13906,6 +13969,10 @@ export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * OpenAI Ads answers 501: OpenAI documents only list and create for event settings, and
  * `POST`/`PATCH`/`PUT /v1/conversions/event_settings/{id}` answer 404 "Invalid URL".
  * Create a new event instead.
+ *
+ * LinkedIn (`linkedinads`): partial update of the conversion rule; same fields as create.
+ * Pass `adAccountId` when the rule lives in another ad account than the one that created the
+ * tag.
  *
  */
 export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagEventData, ThrowOnError>) => {
@@ -13923,6 +13990,10 @@ export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * OpenAI Ads answers 501: there is no delete or archive route for event settings
  * (`DELETE /v1/conversions/event_settings/{id}` and `POST .../{id}/archive` answer 404
  * "Invalid URL"). Archive the event in OpenAI Ads Manager.
+ *
+ * LinkedIn (`linkedinads`): LinkedIn has no delete for conversion rules (not in the
+ * conversion-tracking API, and `DELETE /rest/conversions/{id}` has no route), so the rule is
+ * disabled (`enabled: false`) and `state` is `disabled`. Re-enable it with `enabled: true`.
  *
  */
 export const deleteTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteTrackingTagEventData, ThrowOnError>) => {
@@ -13946,6 +14017,12 @@ export const deleteTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * a fixed window: `startTime`/`endTime` answer 400. Use it to confirm an
  * install fires; attributed totals come from ads analytics. Accounts not
  * enabled for the stream answer 422 `feature_not_available`.
+ *
+ * LinkedIn (`linkedinads`): health rows rather than counts, since LinkedIn exposes no per-
+ * event fire counts: one row per site domain the tag has seen (`kind: domain`, `domainName`,
+ * `lastFiredTime`, `creationTime`, `blocked`) and one per conversion rule (`kind:
+ * conversion_rule`, `id`, `name`, `type`, `conversionMethod`, `status`, `lastFiredTime`).
+ * Times are unix seconds; `startTime`/`endTime` are ignored.
  *
  */
 export const getTrackingTagStats = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStatsData, ThrowOnError>) => {

@@ -9706,7 +9706,7 @@ export type TrackingTag = {
      */
     events?: Array<TrackingTagEvent>;
     name: string;
-    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
+    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads';
     /**
      * Platform-native flavor of the tag (Meta: `pixel`).
      */
@@ -9753,7 +9753,7 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
+export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -49512,7 +49512,7 @@ export type ListTrackingTagsData = {
 };
 
 export type ListTrackingTagsResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads';
     tags?: Array<TrackingTag>;
 });
 
@@ -49541,7 +49541,7 @@ export type CreateTrackingTagData = {
 };
 
 export type CreateTrackingTagResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads';
     tag?: TrackingTag;
 });
 
@@ -49566,7 +49566,7 @@ export type GetTrackingTagData = {
 };
 
 export type GetTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads';
     tag?: TrackingTag;
 });
 
@@ -49606,7 +49606,7 @@ export type UpdateTrackingTagData = {
 };
 
 export type UpdateTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads';
     tag?: TrackingTag;
 });
 
@@ -49625,7 +49625,7 @@ export type ListTrackingTagSharedAccountsData = {
 };
 
 export type ListTrackingTagSharedAccountsResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'linkedinads';
     sharedAccounts?: Array<SharedAdAccount>;
 });
 
@@ -49650,7 +49650,7 @@ export type AddTrackingTagSharedAccountData = {
 };
 
 export type AddTrackingTagSharedAccountResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'linkedinads';
     ok?: boolean;
 });
 
@@ -49709,7 +49709,7 @@ export type InstallTrackingTagOnStoreData = {
 };
 
 export type InstallTrackingTagOnStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads';
     install?: (StorePixelInstall & {
     /**
      * Shopify only: the pixel this install replaced on the store, if any.
@@ -49764,7 +49764,7 @@ export type GetTrackingTagStoreInstallData = {
 };
 
 export type GetTrackingTagStoreInstallResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only.
@@ -49814,7 +49814,7 @@ export type RemoveTrackingTagFromStoreData = {
 };
 
 export type RemoveTrackingTagFromStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only: number of Zernio widgets deleted.
@@ -49951,7 +49951,7 @@ export type GetTrackingTagStatsData = {
 };
 
 export type GetTrackingTagStatsResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads';
     stats?: {
         aggregation?: string;
         startTime?: number;
