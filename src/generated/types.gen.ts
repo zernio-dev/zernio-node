@@ -5930,7 +5930,7 @@ export type InboxWebhookConversationDetail = {
      * The platform's conversation id, equal to `conversation.platformConversationId` on inbox webhooks (whose `conversation.id` is Zernio's internal id). Both are accepted by the conversation endpoints.
      */
     id: string;
-    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok' | 'imessage';
+    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
     /**
      * Same value as `id`.
      */
@@ -5958,7 +5958,7 @@ export type InboxWebhookConversationDetail = {
     contactId?: string;
 };
 
-export type platform5 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'slack' | 'tiktok' | 'imessage';
+export type platform5 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -8340,6 +8340,335 @@ export type QueueUpdateResponse = {
     isNewQueue?: boolean;
 };
 
+export type RcsAgent = {
+    id?: string;
+    profileId?: string;
+    /**
+     * The rcs inbox account, created once the agent exists with the carriers.
+     */
+    accountId?: (string) | null;
+    /**
+     * Launch market (ISO 3166-1 alpha-2). US agents run through the carriers automatically; other markets are filed by our team and skip the testing and launch_review steps (send the launch request while the agent is still in review).
+     */
+    country?: string;
+    status?: 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+    displayName?: string;
+    useCase?: 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
+    profile?: RcsAgentProfile;
+    brand?: (RcsBrand | null);
+    launchRequest?: (RcsLaunchRequest | null);
+    carrierApprovals?: Array<RcsCarrierApproval>;
+    testDevices?: Array<RcsTestDevice>;
+    smsFallbackFrom?: (string) | null;
+    /**
+     * Our note while status is changes_requested.
+     */
+    reviewNote?: (string) | null;
+    declineReason?: (string) | null;
+    requestedAt?: (string) | null;
+    submittedAt?: (string) | null;
+    liveAt?: (string) | null;
+    createdAt?: string;
+};
+
+export type status22 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+
+export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
+
+/**
+ * The agent's public profile. At least one of phone, website or email is required.
+ */
+export type RcsAgentProfile = {
+    description: string;
+    /**
+     * 224x224, max 50 KB. Upload any image through POST /v1/rcs/assets to get a compliant URL.
+     */
+    logoUrl: string;
+    /**
+     * Banner, 1440x448, max 200 KB. Upload through POST /v1/rcs/assets.
+     */
+    heroUrl: string;
+    /**
+     * Hex colour, e.g. #1A73E8. Needs 4.5:1 contrast against white.
+     */
+    brandColor: string;
+    privacyPolicyUrl: string;
+    termsUrl: string;
+    phone?: {
+        /**
+         * E.164
+         */
+        number: string;
+        label: string;
+    };
+    website?: {
+        url: string;
+        label: string;
+    };
+    email?: {
+        address: string;
+        label: string;
+    };
+};
+
+export type RcsBrand = RcsBrandInput & {
+    id?: string;
+    /**
+     * draft = not filed yet (still editable).
+     */
+    status?: 'draft' | 'vetting' | 'verified' | 'rejected';
+    createdAt?: string;
+};
+
+/**
+ * draft = not filed yet (still editable).
+ */
+export type status23 = 'draft' | 'vetting' | 'verified' | 'rejected';
+
+export type RcsBrandInput = {
+    displayName: string;
+    /**
+     * Exactly as on IRS records.
+     */
+    legalName: string;
+    legalEntityType: 'LIMITED_LIABILITY_COMPANY' | 'SOLE_PROPRIETORSHIP' | 'PARTNERSHIP' | 'CORPORATION' | 'S_CORPORATION';
+    organizationType: 'PRIVATE_PROFIT' | 'PUBLIC_PROFIT' | 'NON_PROFIT' | 'GOVERNMENT';
+    websiteUrl: string;
+    /**
+     * US: the EIN, 9 digits, optionally NN-NNNNNNN. Elsewhere: the national tax or company registration id.
+     */
+    taxId: string;
+    /**
+     * EXCHANGE:SYMBOL. Required for PUBLIC_PROFIT.
+     */
+    stockSymbol?: string;
+    address: {
+        line1: string;
+        line2?: string;
+        city: string;
+        /**
+         * Required in the US.
+         */
+        state?: string;
+        postalCode: string;
+        /**
+         * ISO 3166-1 alpha-2. Sets the launch market of agents under this brand. Spain (ES) is accepted but launches are paused at the carriers.
+         */
+        country: 'US' | 'GB' | 'AT' | 'BD' | 'BR' | 'CD' | 'DE' | 'ES' | 'FR' | 'IN' | 'IT' | 'MX' | 'NG' | 'NL' | 'NO' | 'PT' | 'SE' | 'SG' | 'ZA';
+    };
+    contact: {
+        firstName: string;
+        lastName: string;
+        title?: string;
+        /**
+         * A personal address on the company domain; free-mail and group addresses (info@, support@) are rejected by the carriers.
+         */
+        email: string;
+        /**
+         * E.164
+         */
+        phone: string;
+    };
+};
+
+export type legalEntityType = 'LIMITED_LIABILITY_COMPANY' | 'SOLE_PROPRIETORSHIP' | 'PARTNERSHIP' | 'CORPORATION' | 'S_CORPORATION';
+
+export type organizationType2 = 'PRIVATE_PROFIT' | 'PUBLIC_PROFIT' | 'NON_PROFIT' | 'GOVERNMENT';
+
+/**
+ * ISO 3166-1 alpha-2. Sets the launch market of agents under this brand. Spain (ES) is accepted but launches are paused at the carriers.
+ */
+export type country = 'US' | 'GB' | 'AT' | 'BD' | 'BR' | 'CD' | 'DE' | 'ES' | 'FR' | 'IN' | 'IT' | 'MX' | 'NG' | 'NL' | 'NO' | 'PT' | 'SE' | 'SG' | 'ZA';
+
+export type RcsCapability = {
+    phoneNumber?: string;
+    rcsCapable?: boolean;
+    /**
+     * e.g. RICHCARD_STANDALONE, RICHCARD_CAROUSEL, ACTION_OPEN_URL, ACTION_DIAL. Absent when not capable.
+     */
+    features?: Array<(string)>;
+};
+
+/**
+ * Needs a title, description or media.
+ */
+export type RcsCard = {
+    title?: string;
+    description?: string;
+    media?: RcsMedia;
+    suggestions?: Array<RcsSuggestion>;
+};
+
+export type RcsCarrierApproval = {
+    approvalId?: string;
+    scope?: 'carrier' | 'hub' | 'bot';
+    status?: 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+    carrier?: (string) | null;
+    approvedAt?: (string) | null;
+    rejectedReason?: (string) | null;
+};
+
+export type scope2 = 'carrier' | 'hub' | 'bot';
+
+export type status24 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+
+/**
+ * Message content. `suggestions` (max 11) render as chips under the message.
+ */
+export type RcsContent = {
+    type: 'text';
+    text: string;
+    suggestions?: Array<RcsSuggestion>;
+} | {
+    type: 'media';
+    media: RcsMedia;
+    suggestions?: Array<RcsSuggestion>;
+} | {
+    type: 'card';
+    card: RcsCard;
+    orientation?: 'VERTICAL' | 'HORIZONTAL';
+    thumbnailAlignment?: 'LEFT' | 'RIGHT';
+    suggestions?: Array<RcsSuggestion>;
+} | {
+    type: 'carousel';
+    cards: Array<RcsCard>;
+    cardWidth?: 'SMALL' | 'MEDIUM';
+    suggestions?: Array<RcsSuggestion>;
+};
+
+export type type10 = 'text';
+
+export type orientation = 'VERTICAL' | 'HORIZONTAL';
+
+export type thumbnailAlignment = 'LEFT' | 'RIGHT';
+
+export type cardWidth = 'SMALL' | 'MEDIUM';
+
+export type RcsLaunchRequest = {
+    companyOverview: string;
+    agentOverview: string;
+    interactions: Array<{
+        type: 'TRANSACTIONAL_UPDATES' | 'CUSTOMER_SUPPORT' | 'LOYALTY_OR_REWARD' | 'MARKETING_OR_PROMOTIONAL' | 'ACCOUNT_ALERTS' | 'TWO_WAY_CONVERSATION' | 'OTHER';
+        /**
+         * Required when type is OTHER.
+         */
+        description?: string;
+    }>;
+    messageExamples: Array<(string)>;
+    consent: {
+        optInMethods: Array<{
+            type: 'SMS' | 'WEBSITE' | 'MOBILE_APP' | 'QR_CODE' | 'SALE_POINT' | 'OTHER';
+            /**
+             * Required when type is OTHER.
+             */
+            description?: string;
+        }>;
+        /**
+         * The opt-in wording people agree to.
+         */
+        callToAction: string;
+        /**
+         * Required for WEBSITE opt-in.
+         */
+        callToActionUrl?: string;
+        /**
+         * Screenshot of the opt-in. Required for WEBSITE and MOBILE_APP opt-in.
+         */
+        callToActionMediaUrl?: string;
+        doubleOptIn: boolean;
+        /**
+         * Required when doubleOptIn is true.
+         */
+        doubleOptInMessage?: string;
+        optInMessage: string;
+        helpResponse: string;
+        optOutResponse: string;
+    };
+    /**
+     * Public video of a test phone sending START, STOP and HELP plus one example conversation.
+     */
+    testVideoUrl: string;
+    additionalInformation?: string;
+};
+
+export type RcsMedia = {
+    /**
+     * Public image or video URL.
+     */
+    url: string;
+    /**
+     * Max 100 KB.
+     */
+    thumbnailUrl?: string;
+    height?: 'SHORT' | 'MEDIUM' | 'TALL';
+};
+
+export type height = 'SHORT' | 'MEDIUM' | 'TALL';
+
+/**
+ * A tappable chip. Labels are max 25 characters. postbackData (max 2048) comes back unchanged in message.received metadata as postbackPayload when tapped; defaults to the label. Any string works, JSON included: values outside A-Z a-z 0-9 - _ . are encoded on the wire and decoded for you.
+ */
+export type RcsSuggestion = {
+    type: 'reply';
+    text: string;
+    postbackData?: string;
+} | {
+    type: 'dial';
+    text: string;
+    /**
+     * E.164
+     */
+    phoneNumber: string;
+    postbackData?: string;
+} | {
+    type: 'openUrl';
+    text: string;
+    url: string;
+    application?: 'BROWSER' | 'WEBVIEW';
+    webviewViewMode?: 'FULL' | 'HALF' | 'TALL';
+    postbackData?: string;
+} | {
+    type: 'viewLocation';
+    text: string;
+    latitude?: number;
+    longitude?: number;
+    query?: string;
+    label?: string;
+    postbackData?: string;
+} | {
+    type: 'shareLocation';
+    text: string;
+    postbackData?: string;
+} | {
+    type: 'calendarEvent';
+    text: string;
+    startTime: string;
+    endTime: string;
+    title: string;
+    description?: string;
+    postbackData?: string;
+};
+
+export type type11 = 'reply';
+
+export type application = 'BROWSER' | 'WEBVIEW';
+
+export type webviewViewMode = 'FULL' | 'HALF' | 'TALL';
+
+export type RcsTestDevice = {
+    testDeviceId?: string;
+    phoneNumber?: string;
+    /**
+     * The phone must accept the invite in its messaging app before it receives messages.
+     */
+    inviteStatus?: 'PENDING' | 'ACCEPTED' | 'DECLINED';
+};
+
+/**
+ * The phone must accept the invite in its messaging app before it receives messages.
+ */
+export type inviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
+
 /**
  * Configure automatic post recycling (reposting at regular intervals).
  * After the post is published, the system creates new scheduled copies at the
@@ -9375,25 +9704,9 @@ export type TrackingTag = {
     /**
      * Platforms where each conversion is its own object: the tag's conversion events, with the id a site sends for each.
      */
-    events?: Array<{
-        id: string;
-        name: string;
-        /**
-         * Platform category of the event.
-         */
-        type?: string;
-        /**
-         * The neutral site event this conversion is fired for, when it maps to one.
-         */
-        siteEvent?: 'page_view' | 'view_content' | 'add_to_cart' | 'search' | 'initiate_checkout' | 'add_payment_info' | 'purchase';
-        /**
-         * What the site sends to fire this event (Google conversion label, LinkedIn conversion rule id, X `tw-` event id).
-         */
-        siteEventId?: string;
-        status?: string;
-    }>;
+    events?: Array<TrackingTagEvent>;
     name: string;
-    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
+    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
     /**
      * Platform-native flavor of the tag (Meta: `pixel`).
      */
@@ -9440,12 +9753,72 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
+export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
 export type kind2 = 'pixel' | 'tag' | 'insight_tag';
+
+/**
+ * A conversion event tied to a tracking tag (Google conversion action, LinkedIn conversion rule, X web event tag, OpenAI event setting, TikTok pixel event, Meta custom conversion).
+ */
+export type TrackingTagEvent = {
+    /**
+     * Platform-native event id, the `{eventId}` of the per-event routes.
+     */
+    id: string;
+    name: string;
+    /**
+     * Platform event type or category.
+     */
+    type?: string;
+    /**
+     * The neutral site event this conversion is fired for, when it maps to one.
+     */
+    siteEvent?: 'page_view' | 'view_content' | 'add_to_cart' | 'search' | 'initiate_checkout' | 'add_payment_info' | 'purchase';
+    /**
+     * What the site sends to fire this event (Google conversion label, LinkedIn conversion rule id, X `tw-` event id).
+     */
+    siteEventId?: string;
+    status?: string;
+    defaultValue?: number;
+    currency?: string;
+    clickWindowDays?: number;
+    viewWindowDays?: number;
+};
+
+/**
+ * The neutral site event this conversion is fired for, when it maps to one.
+ */
+export type siteEvent = 'page_view' | 'view_content' | 'add_to_cart' | 'search' | 'initiate_checkout' | 'add_payment_info' | 'purchase';
+
+/**
+ * Conversion event fields. Each platform stores a subset; a field it does not store answers 400 naming the supported ones.
+ */
+export type TrackingTagEventInput = {
+    /**
+     * Scopes the lookup on platforms whose tag ids live inside an ad account.
+     */
+    adAccountId?: string;
+    name?: string;
+    /**
+     * The platform's own event type enum value (e.g. `PURCHASE`).
+     */
+    type?: string;
+    /**
+     * Neutral alternative to `type`, mapped to the platform's closest type.
+     */
+    siteEvent?: 'page_view' | 'view_content' | 'add_to_cart' | 'search' | 'initiate_checkout' | 'add_payment_info' | 'purchase';
+    enabled?: boolean;
+    defaultValue?: number;
+    /**
+     * ISO 4217 code.
+     */
+    currency?: string;
+    clickWindowDays?: number;
+    viewWindowDays?: number;
+};
 
 /**
  * Why a pixel cannot be installed on a WordPress site.
@@ -9536,7 +9909,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type10 = 'image' | 'video' | 'document';
+export type type12 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -9545,7 +9918,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status22 = 'pending' | 'completed' | 'expired';
+export type status25 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -10044,7 +10417,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status23 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status26 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -10071,7 +10444,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -10193,7 +10566,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status24 = 'success' | 'failed';
+export type status27 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -10305,7 +10678,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status25 = 'success' | 'failure';
+export type status28 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11218,7 +11591,7 @@ export type WebhookPayloadMessage = {
          * Internal conversation ID
          */
         conversationId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'twitter' | 'bluesky' | 'reddit' | 'slack' | 'tiktok' | 'imessage';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'rcs' | 'twitter' | 'bluesky' | 'reddit' | 'slack' | 'tiktok' | 'imessage';
         /**
          * Platform's message ID
          */
@@ -11803,10 +12176,10 @@ export type event18 = 'message.deleted';
  * delivery state for an outgoing message.
  *
  * Platform support:
- * * message.delivered: WhatsApp, Facebook Messenger, SMS.
- * * message.read: WhatsApp, Facebook Messenger, Instagram. Not SMS
+ * * message.delivered: WhatsApp, Facebook Messenger, SMS, RCS.
+ * * message.read: WhatsApp, Facebook Messenger, Instagram, RCS. Not SMS
  * (carriers report delivery, never read).
- * * message.failed: WhatsApp and SMS (other platforms don't expose
+ * * message.failed: WhatsApp, SMS and RCS (other platforms don't expose
  * per-message failure via webhook). On SMS, `error.code` is the
  * carrier's numeric code and `error.message` its reason.
  *
@@ -12337,7 +12710,7 @@ export type event24 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status26 = 'published' | 'failed' | 'deleted';
+export type status29 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -12603,7 +12976,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status27 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status30 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -12752,7 +13125,7 @@ export type event32 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status28 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status31 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -12906,7 +13279,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status29 = 'pending' | 'active';
+export type status32 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -12940,7 +13313,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type11 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type13 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -12982,7 +13355,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type12 = 'platform_error';
+export type type14 = 'platform_error';
 
 export type code = 'platform_api_error';
 
@@ -13064,7 +13437,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status30 = 'success' | 'failed' | 'pending';
+export type status33 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -13141,7 +13514,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type13 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type15 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -13277,7 +13650,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type14 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type16 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -13356,7 +13729,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type15 = 'divider' | 'latex';
+export type type17 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -23396,7 +23769,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -23464,7 +23837,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -24258,7 +24631,7 @@ export type SearchInboxConversationsData = {
         /**
          * Filter by platform (searchable platforms only)
          */
-        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms' | 'slack' | 'imessage';
+        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms' | 'rcs' | 'slack' | 'imessage';
         /**
          * Filter by profile ID
          */
@@ -28853,6 +29226,248 @@ export type SendSmsResponse = ({
 });
 
 export type SendSmsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListRcsBrandsResponse = ({
+    brands?: Array<RcsBrand>;
+});
+
+export type ListRcsBrandsError = ({
+    error?: string;
+} | unknown);
+
+export type ListRcsAgentsData = {
+    query?: {
+        /**
+         * Include rejected and deactivated agents.
+         */
+        includeClosed?: boolean;
+    };
+};
+
+export type ListRcsAgentsResponse = ({
+    agents?: Array<RcsAgent>;
+});
+
+export type ListRcsAgentsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateRcsAgentData = {
+    body: {
+        profileId: string;
+        brandId?: string;
+        brand?: RcsBrandInput;
+        /**
+         * Shown as the sender name.
+         */
+        displayName: string;
+        useCase: 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
+        profile: RcsAgentProfile;
+        /**
+         * One of your SMS-enabled numbers. Phones without RCS get the message as SMS from it.
+         */
+        smsFallbackFrom?: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type CreateRcsAgentResponse = ({
+    agent?: RcsAgent;
+});
+
+export type CreateRcsAgentError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetRcsAgentData = {
+    path: {
+        agentId: string;
+    };
+};
+
+export type GetRcsAgentResponse = ({
+    agent?: RcsAgent;
+});
+
+export type GetRcsAgentError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateRcsAgentData = {
+    body: {
+        displayName?: string;
+        useCase?: 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
+        profile?: RcsAgentProfile;
+        brand?: RcsBrandInput;
+        smsFallbackFrom?: (string) | null;
+    };
+    path: {
+        agentId: string;
+    };
+};
+
+export type UpdateRcsAgentResponse = ({
+    agent?: RcsAgent;
+});
+
+export type UpdateRcsAgentError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeactivateRcsAgentData = {
+    path: {
+        agentId: string;
+    };
+};
+
+export type DeactivateRcsAgentResponse = ({
+    agent?: RcsAgent;
+});
+
+export type DeactivateRcsAgentError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RequestRcsAgentLaunchData = {
+    body: RcsLaunchRequest;
+    path: {
+        agentId: string;
+    };
+};
+
+export type RequestRcsAgentLaunchResponse = ({
+    agent?: RcsAgent;
+});
+
+export type RequestRcsAgentLaunchError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListRcsTestDevicesData = {
+    path: {
+        agentId: string;
+    };
+};
+
+export type ListRcsTestDevicesResponse = ({
+    testDevices?: Array<RcsTestDevice>;
+});
+
+export type ListRcsTestDevicesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AddRcsTestDeviceData = {
+    body: {
+        /**
+         * E.164
+         */
+        phoneNumber: string;
+    };
+    path: {
+        agentId: string;
+    };
+};
+
+export type AddRcsTestDeviceResponse = ({
+    testDevice?: RcsTestDevice;
+});
+
+export type AddRcsTestDeviceError = (unknown | {
+    error?: string;
+});
+
+export type RemoveRcsTestDeviceData = {
+    path: {
+        agentId: string;
+        testDeviceId: string;
+    };
+};
+
+export type RemoveRcsTestDeviceResponse = ({
+    success?: boolean;
+});
+
+export type RemoveRcsTestDeviceError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UploadRcsAssetData = {
+    body: {
+        /**
+         * PNG, JPEG or WebP.
+         */
+        file: (Blob | File);
+        kind: 'logo' | 'banner';
+    };
+};
+
+export type UploadRcsAssetResponse = ({
+    url?: string;
+});
+
+export type UploadRcsAssetError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type SendRcsMessageData = {
+    body: {
+        agentId: string;
+        /**
+         * Recipient number (E.164; formatting is normalized).
+         */
+        to: string;
+        text?: string;
+        content?: RcsContent;
+        fallbackText?: string;
+        /**
+         * Seconds before an undelivered message expires.
+         */
+        ttlSeconds?: number;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type SendRcsMessageResponse = ({
+    /**
+     * Message ID
+     */
+    id?: string;
+    conversationId?: string;
+    status?: 'sent';
+});
+
+export type SendRcsMessageError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetRcsCapabilitiesData = {
+    query: {
+        agentId: string;
+        /**
+         * Comma-separated E.164 numbers, max 100.
+         */
+        numbers: string;
+    };
+};
+
+export type GetRcsCapabilitiesResponse = ({
+    capabilities?: Array<RcsCapability>;
+});
+
+export type GetRcsCapabilitiesError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -48897,7 +49512,7 @@ export type ListTrackingTagsData = {
 };
 
 export type ListTrackingTagsResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
     tags?: Array<TrackingTag>;
 });
 
@@ -48926,7 +49541,7 @@ export type CreateTrackingTagData = {
 };
 
 export type CreateTrackingTagResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads';
     tag?: TrackingTag;
 });
 
@@ -48951,7 +49566,7 @@ export type GetTrackingTagData = {
 };
 
 export type GetTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
     tag?: TrackingTag;
 });
 
@@ -48991,7 +49606,7 @@ export type UpdateTrackingTagData = {
 };
 
 export type UpdateTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
     tag?: TrackingTag;
 });
 
@@ -49094,7 +49709,7 @@ export type InstallTrackingTagOnStoreData = {
 };
 
 export type InstallTrackingTagOnStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
     install?: (StorePixelInstall & {
     /**
      * Shopify only: the pixel this install replaced on the store, if any.
@@ -49149,7 +49764,7 @@ export type GetTrackingTagStoreInstallData = {
 };
 
 export type GetTrackingTagStoreInstallResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only.
@@ -49199,7 +49814,7 @@ export type RemoveTrackingTagFromStoreData = {
 };
 
 export type RemoveTrackingTagFromStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only: number of Zernio widgets deleted.
@@ -49209,6 +49824,101 @@ export type RemoveTrackingTagFromStoreResponse = ({
 });
 
 export type RemoveTrackingTagFromStoreError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListTrackingTagEventsData = {
+    path: {
+        accountId: string;
+        /**
+         * Tag id (`TrackingTag.id`).
+         */
+        tagId: string;
+    };
+    query?: {
+        /**
+         * Scopes the lookup on platforms whose tag ids live inside an ad account.
+         */
+        adAccountId?: string;
+    };
+};
+
+export type ListTrackingTagEventsResponse = ({
+    platform?: string;
+    events?: Array<TrackingTagEvent>;
+});
+
+export type ListTrackingTagEventsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateTrackingTagEventData = {
+    body: (TrackingTagEventInput & {
+    [key: string]: unknown;
+});
+    path: {
+        accountId: string;
+        /**
+         * Tag id (`TrackingTag.id`).
+         */
+        tagId: string;
+    };
+};
+
+export type CreateTrackingTagEventResponse = ({
+    platform?: string;
+    event?: TrackingTagEvent;
+});
+
+export type CreateTrackingTagEventError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateTrackingTagEventData = {
+    body: TrackingTagEventInput;
+    path: {
+        accountId: string;
+        /**
+         * Event id (`TrackingTagEvent.id`).
+         */
+        eventId: string;
+        tagId: string;
+    };
+};
+
+export type UpdateTrackingTagEventResponse = ({
+    platform?: string;
+    event?: TrackingTagEvent;
+});
+
+export type UpdateTrackingTagEventError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteTrackingTagEventData = {
+    path: {
+        accountId: string;
+        /**
+         * Event id (`TrackingTagEvent.id`).
+         */
+        eventId: string;
+        tagId: string;
+    };
+    query?: {
+        /**
+         * Scopes the lookup on platforms whose tag ids live inside an ad account.
+         */
+        adAccountId?: string;
+    };
+};
+
+export type DeleteTrackingTagEventResponse = ({
+    platform?: string;
+    eventId?: string;
+    state?: 'deleted' | 'archived' | 'disabled';
+});
+
+export type DeleteTrackingTagEventError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
@@ -49241,7 +49951,7 @@ export type GetTrackingTagStatsData = {
 };
 
 export type GetTrackingTagStatsResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
     stats?: {
         aggregation?: string;
         startTime?: number;

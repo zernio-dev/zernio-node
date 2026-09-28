@@ -1,6 +1,6 @@
 {
   "name": "@zernio/node",
-  "version": "0.2.972",
+  "version": "0.2.973",
   "description": "The official Node.js library for the Zernio API",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

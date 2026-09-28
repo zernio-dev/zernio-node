@@ -1014,6 +1014,23 @@ try {
 | `products.getProduct()` | Get a product |
 | `products.updateProduct()` | Update a product |
 
+### RCS
+| Method | Description |
+|--------|-------------|
+| `rcs.listRcsAgents()` | List RCS agents |
+| `rcs.listRcsBrands()` | List RCS brands |
+| `rcs.listRcsTestDevices()` | List RCS test phones |
+| `rcs.createRcsAgent()` | Request an RCS agent |
+| `rcs.getRcsAgent()` | Get an RCS agent |
+| `rcs.getRcsCapabilities()` | Check RCS capability |
+| `rcs.updateRcsAgent()` | Update an RCS agent |
+| `rcs.addRcsTestDevice()` | Invite an RCS test phone |
+| `rcs.deactivateRcsAgent()` | Deactivate an RCS agent |
+| `rcs.removeRcsTestDevice()` | Remove an RCS test phone |
+| `rcs.requestRcsAgentLaunch()` | Send the launch filing |
+| `rcs.sendRcsMessage()` | Send an RCS message |
+| `rcs.uploadRcsAsset()` | Upload an RCS logo or banner |
+
 ### Reach and Frequency
 | Method | Description |
 |--------|-------------|
@@ -1077,15 +1094,19 @@ try {
 ### Tracking Tags
 | Method | Description |
 |--------|-------------|
+| `trackingTags.listTrackingTagEvents()` | List conversion events |
 | `trackingTags.listTrackingTags()` | List tracking tags |
 | `trackingTags.listTrackingTagSharedAccounts()` | List accounts it is shared with |
 | `trackingTags.createTrackingTag()` | Create a tracking tag |
+| `trackingTags.createTrackingTagEvent()` | Create a conversion event |
 | `trackingTags.getAdTrackingTags()` | Get ad tracking tags |
 | `trackingTags.getTrackingTag()` | Get a tracking tag |
 | `trackingTags.getTrackingTagStats()` | Get aggregated event stats |
 | `trackingTags.getTrackingTagStoreInstall()` | Get store install status |
 | `trackingTags.updateAdTrackingTags()` | Set ad tracking tags |
 | `trackingTags.updateTrackingTag()` | Update a tracking tag |
+| `trackingTags.updateTrackingTagEvent()` | Update a conversion event |
+| `trackingTags.deleteTrackingTagEvent()` | Delete a conversion event |
 | `trackingTags.addTrackingTagSharedAccount()` | Share with an ad account |
 | `trackingTags.installTrackingTagOnStore()` | Install on a Shopify store or WordPress site |
 | `trackingTags.removeTrackingTagFromStore()` | Remove from a Shopify store or WordPress site |

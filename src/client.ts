@@ -14,6 +14,7 @@ import {
   addDiscordMemberRole,
   addImessageGroupParticipant,
   addMessageReaction,
+  addRcsTestDevice,
   addTrackingTagSharedAccount,
   addUsersToAdAudience,
   addWhatsAppGroupParticipants,
@@ -117,6 +118,7 @@ import {
   createPost,
   createProfile,
   createQueueSlot,
+  createRcsAgent,
   createRfPrediction,
   createSequence,
   createSipTrunk,
@@ -124,6 +126,7 @@ import {
   createStandaloneAd,
   createTestLead,
   createTrackingTag,
+  createTrackingTagEvent,
   createValueRuleSet,
   createVerification,
   createVoiceCall,
@@ -139,6 +142,7 @@ import {
   createWorkflow,
   createYoutubePlaylist,
   crosspostDiscordMessage,
+  deactivateRcsAgent,
   deactivateSmsRegistration,
   deleteAccount,
   deleteAccountGroup,
@@ -190,6 +194,7 @@ import {
   deleteSmsSenderId,
   deleteTelegramCommands,
   deleteTestLead,
+  deleteTrackingTagEvent,
   deleteValueRuleSet,
   deleteWebhookSettings,
   deleteWhatsAppFlow,
@@ -365,6 +370,8 @@ import {
   getPostingFrequency,
   getProduct,
   getProfile,
+  getRcsAgent,
+  getRcsCapabilities,
   getRedditFeed,
   getRedditFlairs,
   getRedditSubreddits,
@@ -553,6 +560,9 @@ import {
   listProducts,
   listProfiles,
   listQueueSlots,
+  listRcsAgents,
+  listRcsBrands,
+  listRcsTestDevices,
   listSequenceEnrollments,
   listSequences,
   listSipTrunks,
@@ -564,6 +574,7 @@ import {
   listSnapchatProfiles,
   listTikTokAdPixels,
   listTikTokCommercialMusic,
+  listTrackingTagEvents,
   listTrackingTagSharedAccounts,
   listTrackingTags,
   listUsers,
@@ -629,6 +640,7 @@ import {
   removeImessageGroupParticipant,
   removeMessageReaction,
   removePageUser,
+  removeRcsTestDevice,
   removeTrackingTagFromStore,
   removeTrackingTagSharedAccount,
   removeWhatsAppGroupParticipants,
@@ -645,6 +657,7 @@ import {
   replyToInboxReview,
   replyToMention,
   replyToPhoneNumberReviewer,
+  requestRcsAgentLaunch,
   requestSmsSenderIdLimitIncrease,
   requestWhatsAppVerificationCode,
   resendBrandedCallingAuthorizerCode,
@@ -689,6 +702,7 @@ import {
   sendDiscordDirectMessage,
   sendInboxMessage,
   sendPrivateReplyToComment,
+  sendRcsMessage,
   sendSms,
   sendTypingIndicator,
   sendWhatsAppConversion,
@@ -795,10 +809,12 @@ import {
   updateProduct,
   updateProfile,
   updateQueueSlot,
+  updateRcsAgent,
   updateRedditSubreddits,
   updateSequence,
   updateSlackSettings,
   updateTrackingTag,
+  updateTrackingTagEvent,
   updateValueRuleSet,
   updateWebhookSettings,
   updateWhatsAppBusinessProfile,
@@ -818,6 +834,7 @@ import {
   uploadMediaDirect,
   uploadPhoneNumberKycDocument,
   uploadPhoneNumberPortInDocument,
+  uploadRcsAsset,
   uploadSmsOptInProof,
   uploadSmsOptInProofFile,
   uploadWhatsAppFlowJson,
@@ -1629,6 +1646,25 @@ export class Zernio {
   };
 
   /**
+   * rcs API
+   */
+  rcs = {
+    listRcsBrands: this._bind(listRcsBrands),
+    listRcsAgents: this._bind(listRcsAgents),
+    createRcsAgent: this._bind(createRcsAgent),
+    getRcsAgent: this._bind(getRcsAgent),
+    updateRcsAgent: this._bind(updateRcsAgent),
+    deactivateRcsAgent: this._bind(deactivateRcsAgent),
+    requestRcsAgentLaunch: this._bind(requestRcsAgentLaunch),
+    listRcsTestDevices: this._bind(listRcsTestDevices),
+    addRcsTestDevice: this._bind(addRcsTestDevice),
+    removeRcsTestDevice: this._bind(removeRcsTestDevice),
+    uploadRcsAsset: this._bind(uploadRcsAsset),
+    sendRcsMessage: this._bind(sendRcsMessage),
+    getRcsCapabilities: this._bind(getRcsCapabilities),
+  };
+
+  /**
    * brandedcalling API
    */
   brandedcalling = {
@@ -1958,6 +1994,10 @@ export class Zernio {
     installTrackingTagOnStore: this._bind(installTrackingTagOnStore),
     getTrackingTagStoreInstall: this._bind(getTrackingTagStoreInstall),
     removeTrackingTagFromStore: this._bind(removeTrackingTagFromStore),
+    listTrackingTagEvents: this._bind(listTrackingTagEvents),
+    createTrackingTagEvent: this._bind(createTrackingTagEvent),
+    updateTrackingTagEvent: this._bind(updateTrackingTagEvent),
+    deleteTrackingTagEvent: this._bind(deleteTrackingTagEvent),
     getTrackingTagStats: this._bind(getTrackingTagStats),
   };
 
@@ -2675,6 +2715,14 @@ export class Zernio {
     getTrackingTagStoreInstall: this._bind(getTrackingTagStoreInstall),
     /** @deprecated Use `zernio.trackingtags.removeTrackingTagFromStore` instead. */
     removeTrackingTagFromStore: this._bind(removeTrackingTagFromStore),
+    /** @deprecated Use `zernio.trackingtags.listTrackingTagEvents` instead. */
+    listTrackingTagEvents: this._bind(listTrackingTagEvents),
+    /** @deprecated Use `zernio.trackingtags.createTrackingTagEvent` instead. */
+    createTrackingTagEvent: this._bind(createTrackingTagEvent),
+    /** @deprecated Use `zernio.trackingtags.updateTrackingTagEvent` instead. */
+    updateTrackingTagEvent: this._bind(updateTrackingTagEvent),
+    /** @deprecated Use `zernio.trackingtags.deleteTrackingTagEvent` instead. */
+    deleteTrackingTagEvent: this._bind(deleteTrackingTagEvent),
     /** @deprecated Use `zernio.trackingtags.getTrackingTagStats` instead. */
     getTrackingTagStats: this._bind(getTrackingTagStats),
   };
