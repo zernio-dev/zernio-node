@@ -3132,6 +3132,30 @@ export type ConversionAction = {
      */
     primaryForGoal?: boolean;
     /**
+     * Value recorded when the conversion carries none.
+     */
+    defaultValue?: number;
+    /**
+     * ISO 4217 currency of defaultValue.
+     */
+    defaultCurrency?: string;
+    /**
+     * true = defaultValue is used even when the conversion sends its own value.
+     */
+    alwaysUseDefaultValue?: boolean;
+    /**
+     * Google's ConversionActionCountingType: ONE_PER_CLICK or MANY_PER_CLICK.
+     */
+    countingType?: string;
+    /**
+     * Days after an ad click a conversion is still credited (1 to 90).
+     */
+    clickThroughLookbackWindowDays?: number;
+    /**
+     * Days after an ad view a conversion is still credited (1 to 30).
+     */
+    viewThroughLookbackWindowDays?: number;
+    /**
      * The code a customer pastes onto their site. Present for types
      * Google generates a snippet for (e.g. WEBPAGE); empty otherwise.
      *
@@ -9698,11 +9722,11 @@ export type mediaType2 = 'video' | 'photo';
  */
 export type TrackingTag = {
     /**
-     * Platform-native tag id, the `{tagId}` of the per-tag routes. Meta: numeric pixel id, as a string. OpenAI: the pixel resource id.
+     * Platform-native tag id, the `{tagId}` of the per-tag routes. Meta: numeric pixel id, as a string. OpenAI: the pixel resource id. Google Ads: the 10-digit customer id (one Google tag per account).
      */
     id: string;
     /**
-     * The id the on-site code carries. Equals `id` on Meta; differs on platforms with separate API and site ids (OpenAI `pixel_id`).
+     * The id the on-site code carries. Equals `id` on Meta; differs on platforms with separate API and site ids (OpenAI `pixel_id`, Google `AW-...` conversion id, the manager's under cross-account conversion tracking).
      */
     siteTagId?: string;
     /**
@@ -9755,6 +9779,10 @@ export type TrackingTag = {
      * Ad account id (`act_...`) that owns the tag, when reported.
      */
     ownerAdAccountId?: string;
+    /**
+     * Google Ads: whether gclid auto-tagging is on for the ad account (needed to attribute conversions to clicks).
+     */
+    autoTagging?: boolean;
 };
 
 export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads';
@@ -9782,7 +9810,24 @@ export type TrackingTagDiagnostic = {
      * Where to fix it in the platform UI (Meta: Events Manager).
      */
     actionUrl?: string;
+    /**
+     * Record `defaultValue` even when the conversion sends its own value.
+     */
+    alwaysUseDefaultValue?: boolean;
+    /**
+     * Primary (counts toward bidding) or secondary (observation only).
+     */
+    primary?: boolean;
+    /**
+     * `one` = one conversion per ad interaction, `every` = each conversion.
+     */
+    countingType?: 'one' | 'every';
 };
+
+/**
+ * `one` = one conversion per ad interaction, `every` = each conversion.
+ */
+export type countingType = 'one' | 'every';
 
 /**
  * A conversion event tied to a tracking tag (Google conversion action, LinkedIn conversion rule, X web event tag, OpenAI event setting, TikTok pixel event, Meta custom conversion).
@@ -9814,6 +9859,18 @@ export type TrackingTagEvent = {
      * Fires only on pages whose URL contains this text (case-insensitive).
      */
     urlContains?: string;
+    /**
+     * `defaultValue` is recorded even when the conversion sends its own value.
+     */
+    alwaysUseDefaultValue?: boolean;
+    /**
+     * Primary conversions count toward bidding and the Conversions column; secondary ones are observation only (Google `primary_for_goal`).
+     */
+    primary?: boolean;
+    /**
+     * `one` counts at most one conversion per ad interaction (leads), `every` counts each (purchases).
+     */
+    countingType?: 'one' | 'every';
 };
 
 /**
@@ -49627,6 +49684,10 @@ export type UpdateTrackingTagData = {
         automaticMatchingFields?: Array<('em' | 'ph' | 'fn' | 'ln' | 'ge' | 'db' | 'ct' | 'st' | 'zp' | 'country' | 'external_id')>;
         firstPartyCookieStatus?: 'empty' | 'first_party_cookie_disabled' | 'first_party_cookie_enabled';
         dataUseSetting?: 'advertising_and_analytics' | 'analytics_only' | 'empty';
+        /**
+         * Google Ads: turn gclid auto-tagging on or off for the ad account.
+         */
+        autoTagging?: boolean;
     };
     path: {
         accountId: string;

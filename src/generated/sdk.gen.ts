@@ -13678,6 +13678,14 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
  * Pinterest's `code` snippet. NOT idempotent and Pinterest has no dry-run and no delete for
  * tags, so never retry blindly: list first.
  *
+ * Google Ads (`googleads`): every Google Ads account has exactly one
+ * Google tag (`AW-...`), so this is idempotent. `adAccountId` is the
+ * 10-digit customer id. When the account already tracks conversions
+ * the existing tag is returned (201) and nothing is created. Otherwise
+ * a first WEBPAGE conversion action named `name` (category DEFAULT) is
+ * created, which is what switches Google's conversion tracking on, and
+ * the tag is returned with it as its first event.
+ *
  */
 export const createTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagResponse, CreateTrackingTagError, ThrowOnError>({
@@ -13730,6 +13738,13 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * OpenAI Ads answers 501: its API has no pixel update or delete route
  * (`POST`/`PATCH`/`PUT`/`DELETE /v1/conversions/pixels/{id}` answer 405
  * "Invalid method"); rename a pixel in OpenAI Ads Manager.
+ *
+ * Google Ads (`googleads`): the only writable tag setting is
+ * `autoTagging` (the account's gclid auto-tagging, without which the
+ * tag cannot attribute conversions to ad clicks). Google rejects every
+ * write to `conversion_tracking_setting` for our developer token
+ * (`SERVICE_ACCESS_DENIED`), so the tag id and cross-account ownership
+ * stay managed in the Google Ads UI.
  *
  * There is no DELETE: Meta has no API to delete a pixel. To stop using
  * one, unshare it from your ad accounts (`DELETE
@@ -13947,6 +13962,12 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * account) and keeps the conversions whose pixel is this one. Archived conversions are
  * included with `status: archived`. `urlContains` and `siteEvent` are parsed from Meta's rule.
  *
+ * Google Ads (`googleads`): the enabled WEBPAGE conversion actions of the account;
+ * `siteEventId` is the conversion label (the part after `AW-.../` in `send_to`), and
+ * value settings, lookback windows, `primary` and `countingType` are returned.
+ * Archived (removed) actions are listed with status `REMOVED`; imported (GA4, upload,
+ * app) actions are not events of the tag.
+ *
  */
 export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagEventsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagEventsResponse, ListTrackingTagEventsError, ThrowOnError>({
@@ -13994,6 +14015,16 @@ export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(opti
  * name: an active conversion with the same name on this pixel is returned instead of a
  * duplicate. Meta caps custom conversions per ad account; the cap answers 400.
  *
+ * Google Ads (`googleads`): creates a WEBPAGE conversion action. `type` is a
+ * ConversionActionCategory (e.g. `PURCHASE`, `SIGNUP`, `DEFAULT`); `siteEvent` maps
+ * page_view, add_to_cart, initiate_checkout and purchase, while view_content, search and
+ * add_payment_info answer 400 (Google has no category for them). Stored fields: name,
+ * type, defaultValue, currency, alwaysUseDefaultValue, clickWindowDays (1 to 90),
+ * viewWindowDays (1 to 30), primary, countingType, enabled. Actions are created enabled
+ * (`enabled: false` answers 400); Google blocks the HIDDEN status on WEBPAGE actions. Names
+ * are unique per account, so a replay answers 400 (DUPLICATE_NAME) instead of creating a
+ * second one.
+ *
  */
 export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagEventResponse, CreateTrackingTagEventError, ThrowOnError>({
@@ -14016,6 +14047,10 @@ export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  *
  * Meta: only `name` and `defaultValue` can change (Meta's custom conversion update takes
  * nothing else); `type`, `siteEvent` and `urlContains` answer 400, create a new event instead.
+ *
+ * Google Ads (`googleads`): same fields as create, on the account's WEBPAGE actions (others
+ * answer 404). `enabled: false` archives the action (same as DELETE) and `enabled: true`
+ * restores an archived one.
  *
  */
 export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagEventData, ThrowOnError>) => {
@@ -14040,6 +14075,10 @@ export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  *
  * Meta: `archived`. Meta's delete archives the custom conversion (it stays readable with
  * `status: archived`) and there is no hard delete; deleting an archived one is a no-op.
+ *
+ * Google Ads (`googleads`): removes the conversion action (state `archived`). Google keeps
+ * it with status REMOVED and its history; PATCH with `enabled: true` restores it. Deleting
+ * an already archived action succeeds without a call to Google.
  *
  */
 export const deleteTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteTrackingTagEventData, ThrowOnError>) => {
