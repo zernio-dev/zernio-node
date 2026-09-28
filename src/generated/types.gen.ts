@@ -39139,11 +39139,11 @@ export type UpdateAdSetData = {
              */
             billingEvent?: string;
             /**
-             * Ad set start_time (ISO 8601).
+             * Ad set start_time (ISO 8601). A value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone.
              */
             startDate?: string;
             /**
-             * Ad set end_time (ISO 8601).
+             * Ad set end_time (ISO 8601). A value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone.
              */
             endDate?: string;
             /**
@@ -43684,11 +43684,11 @@ export type BoostPostData = {
          */
         currency?: string;
         /**
-         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's `start_time`. When omitted the ad starts delivering immediately. Same field as on POST /v1/ads/create.
+         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's `start_time`. When omitted the ad starts delivering immediately. On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone. Same field as on POST /v1/ads/create.
          */
         startDate?: string;
         /**
-         * Ad-set end time (ISO 8601), mapped to the ad set's `end_time`. Required for lifetime budgets. Same field as on POST /v1/ads/create.
+         * Ad-set end time (ISO 8601), mapped to the ad set's `end_time`. Required for lifetime budgets. On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local. Same field as on POST /v1/ads/create.
          */
         endDate?: string;
         /**
@@ -44851,17 +44851,18 @@ export type CreateStandaloneAdData = {
             [key: string]: (number);
         };
         /**
-         * Required for lifetime budgets. On TikTok a value without an offset (`YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DD`) is read in the ad account timezone.
+         * Required for lifetime budgets. On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local.
          */
         endDate?: string;
         /**
          * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's
          * start (Meta `start_time`, TikTok ad group `schedule_start_time`, LinkedIn / Pinterest / X
          * / Google campaign start). When omitted the ad starts delivering immediately. For lifetime
-         * budgets Meta also requires `endDate`. On TikTok a value without an offset
-         * (`YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DD`) is read in the ad account timezone. The created
-         * ad's `schedule` echoes the start and end the platform stored, as UTC instants. Same field
-         * as on `POST /v1/ads/boost`.
+         * budgets Meta also requires `endDate`. On Meta and TikTok a value without an offset
+         * (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account
+         * timezone (Meta itself would read it as UTC). The created ad's `schedule` echoes the start
+         * and end the platform stored, as UTC instants; when attaching to an existing ad set
+         * (`adSetId`) it is that ad set's start and end. Same field as on `POST /v1/ads/boost`.
          *
          */
         startDate?: string;
