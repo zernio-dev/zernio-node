@@ -475,6 +475,7 @@ try {
 | `adCampaigns.listCampaignNegativeKeywordLists()` | List campaign negative lists |
 | `adCampaigns.listCampaignNegativeKeywords()` | List campaign-level negative keywords |
 | `adCampaigns.listGoogleAssetGroups()` | List Performance Max asset groups |
+| `adCampaigns.listGoogleRecommendations()` | List Google Ads recommendations |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
 | `adCampaigns.createAdCampaign()` | Create a standalone campaign |
 | `adCampaigns.createAdSet()` | Create a standalone ad group |
@@ -509,9 +510,11 @@ try {
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
 | `adCampaigns.deleteAdSet()` | Delete an ad set |
 | `adCampaigns.addAdKeywords()` | Add Search ad-group keywords |
+| `adCampaigns.applyGoogleRecommendations()` | Apply Google Ads recommendations |
 | `adCampaigns.attachAdGroupAssets()` | Attach ad-group assets |
 | `adCampaigns.attachCampaignAssets()` | Attach campaign assets |
 | `adCampaigns.boostPost()` | Boost post as ad |
+| `adCampaigns.dismissGoogleRecommendations()` | Dismiss Google Ads recommendations |
 | `adCampaigns.duplicateAd()` | Duplicate an ad |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
 | `adCampaigns.duplicateAdSet()` | Duplicate an ad set |

@@ -19,6 +19,7 @@ import {
   addWhatsAppGroupParticipants,
   adjustConversions,
   appealSmsRegistration,
+  applyGoogleRecommendations,
   approveWhatsAppGroupJoinRequests,
   archiveLeadForm,
   assignGoogleBusinessLocation,
@@ -198,6 +199,7 @@ import {
   disableVoiceOnNumber,
   disableWhatsAppCalling,
   disableWhatsAppCallingLegacy,
+  dismissGoogleRecommendations,
   downloadTikTokVideo,
   duplicateAd,
   duplicateAdCampaign,
@@ -498,6 +500,7 @@ import {
   listGoogleBusinessLocations,
   listGoogleBusinessMedia,
   listGoogleBusinessPlaceActions,
+  listGoogleRecommendations,
   listHighDemandPeriods,
   listImessageAudience,
   listImessageAvailableNumbers,
@@ -1781,6 +1784,9 @@ export class Zernio {
    */
   adcampaigns = {
     listAds: this._bind(listAds),
+    listGoogleRecommendations: this._bind(listGoogleRecommendations),
+    applyGoogleRecommendations: this._bind(applyGoogleRecommendations),
+    dismissGoogleRecommendations: this._bind(dismissGoogleRecommendations),
     listBidStrategies: this._bind(listBidStrategies),
     createBidStrategy: this._bind(createBidStrategy),
     updateBidStrategy: this._bind(updateBidStrategy),
@@ -2183,6 +2189,12 @@ export class Zernio {
   ads = {
     /** @deprecated Use `zernio.adcampaigns.listAds` instead. */
     listAds: this._bind(listAds),
+    /** @deprecated Use `zernio.adcampaigns.listGoogleRecommendations` instead. */
+    listGoogleRecommendations: this._bind(listGoogleRecommendations),
+    /** @deprecated Use `zernio.adcampaigns.applyGoogleRecommendations` instead. */
+    applyGoogleRecommendations: this._bind(applyGoogleRecommendations),
+    /** @deprecated Use `zernio.adcampaigns.dismissGoogleRecommendations` instead. */
+    dismissGoogleRecommendations: this._bind(dismissGoogleRecommendations),
     /** @deprecated Use `zernio.adcampaigns.listBidStrategies` instead. */
     listBidStrategies: this._bind(listBidStrategies),
     /** @deprecated Use `zernio.adcampaigns.createBidStrategy` instead. */
