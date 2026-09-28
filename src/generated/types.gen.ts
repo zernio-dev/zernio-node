@@ -4585,6 +4585,20 @@ export type FacebookSettings = {
     textFormatPresetId?: string;
 };
 
+export type FeedbackReceipt = {
+    /**
+     * Feedback id. Quote it if you follow up with support.
+     */
+    id?: string;
+    status?: 'received';
+    /**
+     * True when this matched a submission with the same summary from the last 24 hours.
+     */
+    duplicate?: boolean;
+};
+
+export type status11 = 'received';
+
 export type FollowerStatsResponse = {
     accounts?: Array<AccountWithFollowerStats>;
     stats?: {
@@ -4708,7 +4722,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status11 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status12 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -4806,7 +4820,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status12 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status13 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 /**
  * Link one asset to the asset group. Send exactly one of asset (an existing asset), text, imageUrl or youtubeVideoId (new content, created in the same request).
@@ -5603,7 +5617,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status13 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status14 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -5675,7 +5689,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status14 = 'active' | 'archived';
+export type status15 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -7262,7 +7276,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status15 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status16 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -7387,7 +7401,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status16 = 'published' | 'failed';
+export type status17 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7789,7 +7803,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status17 = 'active' | 'draft' | 'archived';
+export type status18 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -9065,7 +9079,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status18 = 'pending' | 'completed' | 'expired';
+export type status19 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -9564,7 +9578,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status19 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status20 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -9691,7 +9705,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status20 = 'success' | 'failed';
+export type status21 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -9803,7 +9817,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status21 = 'success' | 'failure';
+export type status22 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11756,7 +11770,7 @@ export type event22 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status22 = 'published' | 'failed' | 'deleted';
+export type status23 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -12022,7 +12036,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status23 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status24 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -12171,7 +12185,7 @@ export type event30 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status24 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status25 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -12325,7 +12339,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status25 = 'pending' | 'active';
+export type status26 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -12483,7 +12497,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status26 = 'success' | 'failed' | 'pending';
+export type status27 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -16505,6 +16519,58 @@ export type VerifyCredentialResponse = ({
 });
 
 export type VerifyCredentialError = ({
+    error?: string;
+});
+
+export type SubmitFeedbackData = {
+    body: {
+        /**
+         * What kind of feedback this is.
+         */
+        type: 'bug' | 'missing_feature' | 'docs' | 'other';
+        /**
+         * One line describing the problem or the missing capability. Also the dedup key.
+         */
+        summary: string;
+        /**
+         * Longer explanation: what you were trying to do, steps to reproduce, the use case.
+         */
+        details?: string;
+        /**
+         * The endpoint involved, e.g. `POST /v1/posts`.
+         */
+        endpoint?: string;
+        /**
+         * The `x-request-id` header of the failing response, if any.
+         */
+        requestId?: string;
+        /**
+         * What you expected to happen.
+         */
+        expected?: string;
+        /**
+         * What actually happened, e.g. the error message.
+         */
+        actual?: string;
+        /**
+         * Optional identification of the agent submitting the feedback.
+         */
+        agent?: {
+            /**
+             * Agent or tool name, e.g. `claude-code`.
+             */
+            name?: string;
+            /**
+             * Model powering the agent.
+             */
+            model?: string;
+        };
+    };
+};
+
+export type SubmitFeedbackResponse = (FeedbackReceipt);
+
+export type SubmitFeedbackError = (ErrorResponse | {
     error?: string;
 });
 

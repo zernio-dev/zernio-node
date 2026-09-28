@@ -777,6 +777,11 @@ try {
 | `discord.sendDiscordDirectMessage()` | Send a Discord Direct Message |
 | `discord.unpinDiscordMessage()` | Unpin a Discord message |
 
+### Feedback
+| Method | Description |
+|--------|-------------|
+| `feedback.submitFeedback()` | Submit feedback |
+
 ### GMB Attributes
 | Method | Description |
 |--------|-------------|

@@ -679,6 +679,7 @@ import {
   startGoogleBusinessVerification,
   startSmsRegistration,
   startWhatsAppCallerIdVerification,
+  submitFeedback,
   submitPhoneNumberKyc,
   submitWhatsAppNumberKyc,
   syncExternalPosts,
@@ -1153,6 +1154,13 @@ export class Zernio {
     listApiKeys: this._bind(listApiKeys),
     createApiKey: this._bind(createApiKey),
     deleteApiKey: this._bind(deleteApiKey),
+  };
+
+  /**
+   * feedback API
+   */
+  feedback = {
+    submitFeedback: this._bind(submitFeedback),
   };
 
   /**
