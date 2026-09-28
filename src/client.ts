@@ -389,6 +389,7 @@ import {
   getTikTokCreatorInfo,
   getTikTokSmartPlusMaterialReport,
   getTrackingTag,
+  getTrackingTagDiagnostics,
   getTrackingTagStats,
   getTrackingTagStoreInstall,
   getTweet,
@@ -1998,6 +1999,7 @@ export class Zernio {
     createTrackingTagEvent: this._bind(createTrackingTagEvent),
     updateTrackingTagEvent: this._bind(updateTrackingTagEvent),
     deleteTrackingTagEvent: this._bind(deleteTrackingTagEvent),
+    getTrackingTagDiagnostics: this._bind(getTrackingTagDiagnostics),
     getTrackingTagStats: this._bind(getTrackingTagStats),
   };
 
@@ -2723,6 +2725,8 @@ export class Zernio {
     updateTrackingTagEvent: this._bind(updateTrackingTagEvent),
     /** @deprecated Use `zernio.trackingtags.deleteTrackingTagEvent` instead. */
     deleteTrackingTagEvent: this._bind(deleteTrackingTagEvent),
+    /** @deprecated Use `zernio.trackingtags.getTrackingTagDiagnostics` instead. */
+    getTrackingTagDiagnostics: this._bind(getTrackingTagDiagnostics),
     /** @deprecated Use `zernio.trackingtags.getTrackingTagStats` instead. */
     getTrackingTagStats: this._bind(getTrackingTagStats),
   };

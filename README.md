@@ -1101,6 +1101,7 @@ try {
 | `trackingTags.createTrackingTagEvent()` | Create a conversion event |
 | `trackingTags.getAdTrackingTags()` | Get ad tracking tags |
 | `trackingTags.getTrackingTag()` | Get a tracking tag |
+| `trackingTags.getTrackingTagDiagnostics()` | Get tag diagnostics |
 | `trackingTags.getTrackingTagStats()` | Get aggregated event stats |
 | `trackingTags.getTrackingTagStoreInstall()` | Get store install status |
 | `trackingTags.updateAdTrackingTags()` | Set ad tracking tags |

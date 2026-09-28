@@ -3958,6 +3958,10 @@ export type CustomConversion = {
      */
     pixelId?: (string) | null;
     isArchived?: boolean;
+    /**
+     * Value Meta assigns a conversion that carries none, in the ad account's currency.
+     */
+    defaultConversionValue?: (number) | null;
 };
 
 export type CustomConversionResult = {
@@ -9761,6 +9765,26 @@ export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | '
 export type kind2 = 'pixel' | 'tag' | 'insight_tag';
 
 /**
+ * One health check the platform runs on a tracking tag.
+ */
+export type TrackingTagDiagnostic = {
+    /**
+     * Platform check id (Meta: e.g. `pixel_missing_param_in_events`).
+     */
+    key: string;
+    title: string;
+    description?: string;
+    /**
+     * The platform verdict (Meta: `passed`, `failed`, `warning`).
+     */
+    result: string;
+    /**
+     * Where to fix it in the platform UI (Meta: Events Manager).
+     */
+    actionUrl?: string;
+};
+
+/**
  * A conversion event tied to a tracking tag (Google conversion action, LinkedIn conversion rule, X web event tag, OpenAI event setting, TikTok pixel event, Meta custom conversion).
  */
 export type TrackingTagEvent = {
@@ -9786,6 +9810,10 @@ export type TrackingTagEvent = {
     currency?: string;
     clickWindowDays?: number;
     viewWindowDays?: number;
+    /**
+     * Fires only on pages whose URL contains this text (case-insensitive).
+     */
+    urlContains?: string;
 };
 
 /**
@@ -9818,6 +9846,10 @@ export type TrackingTagEventInput = {
     currency?: string;
     clickWindowDays?: number;
     viewWindowDays?: number;
+    /**
+     * Fire only on pages whose URL contains this text (case-insensitive).
+     */
+    urlContains?: string;
 };
 
 /**
@@ -49919,6 +49951,25 @@ export type DeleteTrackingTagEventResponse = ({
 });
 
 export type DeleteTrackingTagEventError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetTrackingTagDiagnosticsData = {
+    path: {
+        accountId: string;
+        /**
+         * Tag id (`TrackingTag.id`).
+         */
+        tagId: string;
+    };
+};
+
+export type GetTrackingTagDiagnosticsResponse = ({
+    platform?: string;
+    checks?: Array<TrackingTagDiagnostic>;
+});
+
+export type GetTrackingTagDiagnosticsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
