@@ -608,6 +608,7 @@ try {
 | `brandedCalling.attachBrandedCallingNumbers()` | Attach numbers to a verified identity |
 | `brandedCalling.confirmBrandedCallingAuthorizerEmail()` | Confirm the authorizer's code |
 | `brandedCalling.detachBrandedCallingNumbers()` | Detach numbers from an identity |
+| `brandedCalling.preflightBrandedCallingIdentity()` | Dry-run a caller identity before creating it |
 | `brandedCalling.resendBrandedCallingAuthorizerCode()` | Resend the authorizer's code |
 
 ### Broadcasts

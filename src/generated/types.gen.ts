@@ -15383,6 +15383,14 @@ export type GetCallsUsageResponse = ({
          * WhatsApp only: Meta's per-minute charge, billed by Meta directly to your WABA. Display only.
          */
         metaUSD?: number;
+        /**
+         * Outbound calls that carried a Branded Calling surcharge.
+         */
+        brandedCalls?: number;
+        /**
+         * The Branded Calling surcharge on those calls, already inside billableUSD.
+         */
+        brandedCallUSD?: number;
     };
     /**
      * Present (possibly empty) when `groupBy` is set.
@@ -15397,6 +15405,8 @@ export type GetCallsUsageResponse = ({
         minutes?: number;
         billableUSD?: number;
         metaUSD?: number;
+        brandedCalls?: number;
+        brandedCallUSD?: number;
     }>;
 });
 
@@ -28782,6 +28792,12 @@ export type CreateBrandedCallingEnterpriseData = {
         physicalAddress: BrandedCallingAddress;
         billingAddress: BrandedCallingAddress;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type CreateBrandedCallingEnterpriseResponse = (BrandedCallingEnterprise);
@@ -28862,6 +28878,12 @@ export type CreateBrandedCallingIdentityData = {
         };
         references: BrandedCallingReferences;
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type CreateBrandedCallingIdentityResponse = (BrandedCallingIdentity);
@@ -28877,6 +28899,40 @@ export type ListBrandedCallingIdentitiesResponse = ({
 export type ListBrandedCallingIdentitiesError = ({
     error?: string;
 });
+
+export type PreflightBrandedCallingIdentityData = {
+    body: {
+        enterpriseId: string;
+        displayName: string;
+        callReasons: Array<(string)>;
+        logoUrl?: string;
+        authorizer: {
+            name: string;
+            email: string;
+        };
+        references: BrandedCallingReferences;
+    };
+};
+
+export type PreflightBrandedCallingIdentityResponse = ({
+    /**
+     * True when no finding is a block.
+     */
+    ok?: boolean;
+    findings?: Array<{
+        code?: 'display-name-mismatch' | 'call-reasons-manual' | 'authorizer-free-mail' | 'authorizer-domain-mismatch' | 'reference-phone-duplicate' | 'reference-internal' | 'reference-financial-free-mail' | 'reference-timezone-invalid' | 'logo-unreachable';
+        severity?: 'block' | 'warn';
+        /**
+         * The body field the finding is about, e.g. references.financial.email.
+         */
+        field?: string;
+        message?: string;
+    }>;
+});
+
+export type PreflightBrandedCallingIdentityError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type GetBrandedCallingIdentityData = {
     path: {
@@ -28916,11 +28972,14 @@ export type UpdateBrandedCallingIdentityData = {
         };
         references?: BrandedCallingReferences;
         /**
-         * One entry per point id of the open reviewRequest.
+         * One entry per point id of the open reviewRequest. A text point takes text; a link point takes url; file and link_or_file points take url set to the URL of a file you uploaded first (POST /v1/media/upload). A point id that is not on the open request is a 422.
          */
         reviewAnswers?: {
             [key: string]: {
                 text?: string;
+                /**
+                 * A live page, or the URL of an uploaded file for file points.
+                 */
                 url?: string;
             };
         };
