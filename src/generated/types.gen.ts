@@ -49566,7 +49566,7 @@ export type GetTrackingTagData = {
 };
 
 export type GetTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
     tag?: TrackingTag;
 });
 
@@ -49606,7 +49606,7 @@ export type UpdateTrackingTagData = {
 };
 
 export type UpdateTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
     tag?: TrackingTag;
 });
 
@@ -49709,7 +49709,7 @@ export type InstallTrackingTagOnStoreData = {
 };
 
 export type InstallTrackingTagOnStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
     install?: (StorePixelInstall & {
     /**
      * Shopify only: the pixel this install replaced on the store, if any.
@@ -49764,7 +49764,7 @@ export type GetTrackingTagStoreInstallData = {
 };
 
 export type GetTrackingTagStoreInstallResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only.
@@ -49814,7 +49814,7 @@ export type RemoveTrackingTagFromStoreData = {
 };
 
 export type RemoveTrackingTagFromStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only: number of Zernio widgets deleted.
@@ -49951,7 +49951,7 @@ export type GetTrackingTagStatsData = {
 };
 
 export type GetTrackingTagStatsResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads';
     stats?: {
         aggregation?: string;
         startTime?: number;

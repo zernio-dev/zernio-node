@@ -13609,8 +13609,7 @@ export const startBusinessAgentEvalRun = <ThrowOnError extends boolean = false>(
  * to scope the list to a single ad account; omit it to list every pixel
  * reachable by the token (the name is then suffixed with the ad account
  * it was discovered on, for disambiguation). The list view omits `code`.
- * Call `getTrackingTag` for the install snippet and full detail (Meta
- * only; OpenAI Ads has no get-by-id endpoint).
+ * Call `getTrackingTag` for the install snippet and full detail.
  *
  * Meta (platform `metaads`) and OpenAI Ads (platform `openaiads`); other
  * platforms return 501. The `accountId` must be the ads SocialAccount
@@ -13670,9 +13669,15 @@ export const createTrackingTag = <ThrowOnError extends boolean = false>(options:
  * Get a tracking tag
  * Returns the full tag record including the base-code `code` snippet,
  * `lastFiredTime`, `ownerBusinessId`, `isUnavailable`, etc. Meta only
- * (platform `metaads`); other platforms return 501. OpenAI Ads has no
- * get-by-id endpoint, so it answers 501 here too. Use
- * `GET /v1/accounts/{accountId}/tracking-tags` (list) instead.
+ * (platform `metaads`); other platforms return 501.
+ *
+ * OpenAI Ads (`openaiads`): `tagId` is the pixel's API id (`cds_...`) or
+ * its `pixel_id`. OpenAI documents no single-pixel read, so the tag is
+ * resolved from the pixel list; the response adds `code` (the official
+ * `oaiq` base code plus `page_viewed`) and `events` (the conversion
+ * event settings whose source is this pixel). `siteTagId` is the
+ * `pixel_id` the site and the Conversions API send; `id` is what event
+ * settings reference.
  *
  */
 export const getTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagData, ThrowOnError>) => {
@@ -13689,6 +13694,10 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * `firstPartyCookieStatus`, `dataUseSetting`. At least one is required.
  * Returns the re-fetched canonical tag. Meta only (platform `metaads`);
  * other platforms return 501.
+ *
+ * OpenAI Ads answers 501: its API has no pixel update or delete route
+ * (`POST`/`PATCH`/`PUT`/`DELETE /v1/conversions/pixels/{id}` answer 405
+ * "Invalid method"); rename a pixel in OpenAI Ads Manager.
  *
  * There is no DELETE: Meta has no API to delete a pixel. To stop using
  * one, unshare it from your ad accounts (`DELETE
@@ -13759,10 +13768,22 @@ export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = fa
  * Events respect the store's customer privacy settings (marketing consent).
  *
  * `accountId` is the Meta ads account that owns the pixel (`tagId`); `storeAccountId` is the
- * Shopify account. Stores connected before pixel support must re-approve the Zernio app:
+ * Shopify account.
+ *
+ * OpenAI Ads on Shopify: each event is sent through OpenAI's documented image tag
+ * (`GET https://bzr.openai.com/v1/sdk/events`) as `page_viewed`, `contents_viewed`,
+ * `items_added`, `checkout_started`, `order_created`, and custom events `search` and
+ * `addpaymentinfo` (lowercase, so a Conversions API Search/AddPaymentInfo with the same
+ * event id deduplicates). Amounts are sent in the currency's minor unit. The landing
+ * page's `oppref` click id is kept in the `__oppref` cookie for 30 days and sent with
+ * every event. The image tag cannot carry the `__obref` browser id (OpenAI rejects the
+ * parameter), and the search text is never sent. On WordPress the widget holds the
+ * official `oaiq` base code and a `page_viewed` call.
+ *
+ * Stores connected before pixel support must re-approve the Zernio app:
  * the call then answers 409 `reconnect_required` with `details.authUrl` to send the
- * merchant to (the Shopify account id stays the same). Meta only (platform `metaads`);
- * other platforms return 501.
+ * merchant to (the Shopify account id stays the same). Platforms without an install path
+ * return 501.
  *
  * **WordPress** (`storeAccountId` is a connected WordPress.com or self-hosted site): Zernio
  * adds a Custom HTML widget with the Meta pixel base code (fbevents.js, `init`, `PageView`)
@@ -13891,6 +13912,14 @@ export const deleteTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * them. Meta: aggregated counts (`GET /{pixel_id}/stats`), rows passed
  * through as-is; their shape depends on the `aggregation` requested.
  * Platforms without a stats API answer 501.
+ *
+ * OpenAI Ads: the recent-events stream (`GET /conversions/events`), the
+ * latest (at most 50) Pixel SDK events received in the last 15 minutes,
+ * one row per event (`event_type`, `api_channel`, `event_timestamp_ms`,
+ * `received_at_ms`, ...). Conversions API events are not included. It is
+ * a fixed window: `startTime`/`endTime` answer 400. Use it to confirm an
+ * install fires; attributed totals come from ads analytics. Accounts not
+ * enabled for the stream answer 422 `feature_not_available`.
  *
  */
 export const getTrackingTagStats = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStatsData, ThrowOnError>) => {
