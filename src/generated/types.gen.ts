@@ -39200,7 +39200,7 @@ export type UpdateAdSetResponse = ({
     budget?: AdBudget;
     budgetLevel?: 'adset';
     /**
-     * The status written to the ad set. Absent when nothing was written (see statusMessage).
+     * The status written to the ad set switch
      */
     status?: 'active' | 'paused';
     /**
@@ -39215,10 +39215,6 @@ export type UpdateAdSetResponse = ({
      * Why each group of ads was skipped
      */
     statusSkippedReasons?: Array<(string)>;
-    /**
-     * Present only where the platform has no ad-set switch and no child ad was actionable; `status` is then absent because nothing was written
-     */
-    statusMessage?: string;
     bidStrategy?: BidStrategy;
     bidAmount?: (number) | null;
     roasAverageFloor?: (number) | null;
@@ -39267,7 +39263,7 @@ export type UpdateAdSetStatusData = {
 
 export type UpdateAdSetStatusResponse = ({
     /**
-     * The status written to the ad set. Absent when nothing was written (see message).
+     * The status written to the ad set switch
      */
     status?: 'active' | 'paused';
     /**
@@ -39279,13 +39275,9 @@ export type UpdateAdSetStatusResponse = ({
      */
     skipped?: number;
     /**
-     * Why each group of ads was skipped
+     * Why each group of ads was skipped (for example "2 ads already switched off", read from each ad's own switch)
      */
     skippedReasons?: Array<(string)>;
-    /**
-     * Present only where the platform has no ad-set switch and no child ad was actionable
-     */
-    message?: string;
 });
 
 export type UpdateAdSetStatusError = (unknown | {
@@ -39686,15 +39678,23 @@ export type UpdateAdStatusData = {
 
 export type UpdateAdStatusResponse = ({
     /**
-     * 1 when the status changed, 0 when skipped
+     * 1 when the switch was written, 0 when skipped
      */
     updated?: number;
     /**
-     * 1 when skipped (terminal status or already in target state), else 0
+     * 1 when skipped (terminal status, or the ad's own switch already in the target state), else 0
      */
     skipped?: number;
     /**
-     * Human-readable summary (present only when skipped)
+     * The ad's delivery status after the call, as the platform reports it when it can be read back (e.g. `paused` for an ad switched on under a paused campaign)
+     */
+    status?: string;
+    /**
+     * The ad's own on/off switch (`ACTIVE` / `PAUSED`), re-read from the platform after the write. Null where the platform exposes no per-ad switch (X) or the read-back failed and the platform does not store one.
+     */
+    configuredStatus?: (string) | null;
+    /**
+     * Human-readable summary (present only when skipped), e.g. "No change: the ad's own switch is already off"
      */
     message?: string;
 });

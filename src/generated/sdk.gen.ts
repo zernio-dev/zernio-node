@@ -9786,13 +9786,13 @@ export const deleteAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * status toggle and prefer a symmetric URL to
  * /v1/ads/campaigns/{campaignId}/status.
  *
- * On Meta and LinkedIn this writes the ad set's own on/off switch
- * (Meta: `configured_status`), whatever delivery status its ads report:
- * an ad still in review does not block resuming its ad set. The echoed
- * `status` is the confirmation that it landed. Where the platform has no
- * ad-set switch (TikTok and others) the toggle is emulated by flipping the
- * child ads; a call with no actionable ad then writes nothing and returns a
- * `message` with no `status`.
+ * Writes the ad set's own on/off switch on every platform (Meta
+ * `configured_status`, TikTok ad group `operation_status`, Google ad group
+ * status, LinkedIn campaign, Pinterest ad group, X line item, OpenAI ad
+ * group), whatever delivery status its ads report: an ad still in review
+ * or paused by its campaign does not block it. The echoed `status` is the
+ * confirmation that it landed. On TikTok, Pinterest and OpenAI the ads
+ * whose own switch is not yet in the target state are flipped with it.
  *
  * `updated` / `skipped` describe only the ads whose own stored status
  * CHANGED alongside the switch, so `updated: 0` is a normal successful
@@ -10007,16 +10007,28 @@ export const deleteAd = <ThrowOnError extends boolean = false>(options: OptionsL
 
 /**
  * Pause or resume a single ad
- * Ad-scoped pause/resume: touches ONLY this ad, never its parent ad set or
- * campaign (so sibling ads keep running). Thin wrapper over the `status`
- * field of PUT /v1/ads/{adId}, for callers that want a URL symmetric to
+ * Ad-scoped pause/resume: flips ONLY this ad's own switch (Meta
+ * `configured_status`, TikTok `operation_status`, Google ad group ad
+ * status, LinkedIn creative, Pinterest ad), never its parent ad set or
+ * campaign, so sibling ads keep running. X is the exception: its smallest
+ * switch is the line item. Thin wrapper over the `status` field of
+ * PUT /v1/ads/{adId}, for callers that want a URL symmetric to
  * /v1/ads/campaigns/{campaignId}/status and /v1/ads/ad-sets/{adSetId}/status.
+ *
+ * The ad's own switch is independent of its delivery status. An ad paused
+ * only because its campaign or ad set is off (`status: paused`,
+ * `configuredStatus: ACTIVE`) can still be switched off here, and
+ * switching an ad on under a paused campaign leaves it `paused` until the
+ * campaign is resumed. After the write the switch is read back from the
+ * platform and returned as `configuredStatus`, together with the
+ * resulting delivery `status`.
  *
  * `{adId}` accepts the same identifier dialects as GET/PUT /v1/ads/{adId}
  * (Zernio hex `_id`, Meta numeric `platformAdId`, or the creative's
  * effective story/media IDs). `platform` is inferred from the ad, so it's
  * not required in the body. Ads in terminal statuses (rejected, completed,
- * cancelled) and no-op flips (already in the target state) are skipped.
+ * cancelled) are skipped, and so is a request whose target already matches
+ * the ad's own switch. The rolled-up `status` never decides a skip.
  *
  */
 export const updateAdStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdStatusData, ThrowOnError>) => {
