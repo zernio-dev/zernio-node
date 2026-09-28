@@ -26,6 +26,7 @@ import {
   assignAdAccountUser,
   assignGoogleBusinessLocation,
   assignPageUser,
+  assignTrackingTagUser,
   attachAdGroupAssets,
   attachAdLabel,
   attachBrandedCallingNumbers,
@@ -576,7 +577,9 @@ import {
   listTikTokAdPixels,
   listTikTokCommercialMusic,
   listTrackingTagEvents,
+  listTrackingTagPartners,
   listTrackingTagSharedAccounts,
+  listTrackingTagUsers,
   listTrackingTags,
   listUsers,
   listValueRuleSets,
@@ -644,6 +647,7 @@ import {
   removeRcsTestDevice,
   removeTrackingTagFromStore,
   removeTrackingTagSharedAccount,
+  removeTrackingTagUser,
   removeWhatsAppGroupParticipants,
   replaceAdAudienceCompanies,
   replaceAdNegativeKeywordListKeywords,
@@ -1999,6 +2003,10 @@ export class Zernio {
     createTrackingTagEvent: this._bind(createTrackingTagEvent),
     updateTrackingTagEvent: this._bind(updateTrackingTagEvent),
     deleteTrackingTagEvent: this._bind(deleteTrackingTagEvent),
+    listTrackingTagUsers: this._bind(listTrackingTagUsers),
+    assignTrackingTagUser: this._bind(assignTrackingTagUser),
+    removeTrackingTagUser: this._bind(removeTrackingTagUser),
+    listTrackingTagPartners: this._bind(listTrackingTagPartners),
     getTrackingTagDiagnostics: this._bind(getTrackingTagDiagnostics),
     getTrackingTagStats: this._bind(getTrackingTagStats),
   };
@@ -2725,6 +2733,14 @@ export class Zernio {
     updateTrackingTagEvent: this._bind(updateTrackingTagEvent),
     /** @deprecated Use `zernio.trackingtags.deleteTrackingTagEvent` instead. */
     deleteTrackingTagEvent: this._bind(deleteTrackingTagEvent),
+    /** @deprecated Use `zernio.trackingtags.listTrackingTagUsers` instead. */
+    listTrackingTagUsers: this._bind(listTrackingTagUsers),
+    /** @deprecated Use `zernio.trackingtags.assignTrackingTagUser` instead. */
+    assignTrackingTagUser: this._bind(assignTrackingTagUser),
+    /** @deprecated Use `zernio.trackingtags.removeTrackingTagUser` instead. */
+    removeTrackingTagUser: this._bind(removeTrackingTagUser),
+    /** @deprecated Use `zernio.trackingtags.listTrackingTagPartners` instead. */
+    listTrackingTagPartners: this._bind(listTrackingTagPartners),
     /** @deprecated Use `zernio.trackingtags.getTrackingTagDiagnostics` instead. */
     getTrackingTagDiagnostics: this._bind(getTrackingTagDiagnostics),
     /** @deprecated Use `zernio.trackingtags.getTrackingTagStats` instead. */

@@ -1095,8 +1095,10 @@ try {
 | Method | Description |
 |--------|-------------|
 | `trackingTags.listTrackingTagEvents()` | List conversion events |
+| `trackingTags.listTrackingTagPartners()` | List partner businesses of a tag |
 | `trackingTags.listTrackingTags()` | List tracking tags |
 | `trackingTags.listTrackingTagSharedAccounts()` | List accounts it is shared with |
+| `trackingTags.listTrackingTagUsers()` | List tag users |
 | `trackingTags.createTrackingTag()` | Create a tracking tag |
 | `trackingTags.createTrackingTagEvent()` | Create a conversion event |
 | `trackingTags.getAdTrackingTags()` | Get ad tracking tags |
@@ -1109,9 +1111,11 @@ try {
 | `trackingTags.updateTrackingTagEvent()` | Update a conversion event |
 | `trackingTags.deleteTrackingTagEvent()` | Delete a conversion event |
 | `trackingTags.addTrackingTagSharedAccount()` | Share with an ad account |
+| `trackingTags.assignTrackingTagUser()` | Assign a user to a tag |
 | `trackingTags.installTrackingTagOnStore()` | Install on a Shopify store or WordPress site |
 | `trackingTags.removeTrackingTagFromStore()` | Remove from a Shopify store or WordPress site |
 | `trackingTags.removeTrackingTagSharedAccount()` | Stop sharing with an account |
+| `trackingTags.removeTrackingTagUser()` | Remove a user from a tag |
 
 ### Twitter Engagement
 | Method | Description |

@@ -9915,6 +9915,32 @@ export type TrackingTagEventInput = {
 export type TrackingTagInstallBlockedReason = 'insufficient_permissions' | 'scripts_stripped' | 'wordpress_com_plan' | 'no_widget_areas' | 'widgets_api_unavailable';
 
 /**
+ * Another business a tracking tag is shared with.
+ */
+export type TrackingTagPartner = {
+    /**
+     * Partner business id.
+     */
+    id: string;
+    name?: string;
+};
+
+/**
+ * A person or system user of the owning business with access to a tracking tag.
+ */
+export type TrackingTagUser = {
+    /**
+     * Business-scoped user id (as listed by GET /v1/ads/businesses/users).
+     */
+    id: string;
+    name?: string;
+    /**
+     * Platform permission names (Meta: `AA_ANALYZE`, `ADVERTISE`, `ANALYZE`, `EDIT`, `UPLOAD`).
+     */
+    tasks: Array<(string)>;
+};
+
+/**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
  *
  */
@@ -50012,6 +50038,89 @@ export type DeleteTrackingTagEventResponse = ({
 });
 
 export type DeleteTrackingTagEventError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListTrackingTagUsersData = {
+    path: {
+        accountId: string;
+        /**
+         * Tag id (`TrackingTag.id`).
+         */
+        tagId: string;
+    };
+};
+
+export type ListTrackingTagUsersResponse = ({
+    platform?: string;
+    users?: Array<TrackingTagUser>;
+});
+
+export type ListTrackingTagUsersError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AssignTrackingTagUserData = {
+    body: {
+        userId: string;
+        tasks: Array<(string)>;
+    };
+    path: {
+        accountId: string;
+        /**
+         * Tag id (`TrackingTag.id`).
+         */
+        tagId: string;
+    };
+};
+
+export type AssignTrackingTagUserResponse = ({
+    platform?: string;
+    userId?: string;
+    tasks?: Array<(string)>;
+});
+
+export type AssignTrackingTagUserError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RemoveTrackingTagUserData = {
+    path: {
+        accountId: string;
+        tagId: string;
+        /**
+         * User id (`TrackingTagUser.id`).
+         */
+        userId: string;
+    };
+};
+
+export type RemoveTrackingTagUserResponse = ({
+    platform?: string;
+    userId?: string;
+    removed?: boolean;
+});
+
+export type RemoveTrackingTagUserError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListTrackingTagPartnersData = {
+    path: {
+        accountId: string;
+        /**
+         * Tag id (`TrackingTag.id`).
+         */
+        tagId: string;
+    };
+};
+
+export type ListTrackingTagPartnersResponse = ({
+    platform?: string;
+    partners?: Array<TrackingTagPartner>;
+});
+
+export type ListTrackingTagPartnersError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
