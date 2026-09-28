@@ -92,7 +92,7 @@ export type Ad = {
      */
     status?: (AdStatus);
     /**
-     * The ad's own on/off toggle as configured on the platform (Meta `configured_status`, ChatGPT (OpenAI) ad `status`: ACTIVE / PAUSED, plus ARCHIVED on OpenAI), unaffected by ancestor (ad set / campaign) pauses. Distinct from `status`, which is the ancestor-cascaded delivery status. Only present for Meta and OpenAI ads synced after this field was added.
+     * The ad's own on/off switch as configured on the platform, independent of its parents: an ACTIVE ad under a paused ad set or campaign still reads ACTIVE here while `status` reads `paused`. Sources: Meta `configured_status`, TikTok ad `operation_status` (ENABLE -> ACTIVE, DISABLE -> PAUSED), ChatGPT (OpenAI) ad `status` (ACTIVE / PAUSED, plus ARCHIVED on OpenAI). Distinct from `status`, which is the ancestor-cascaded delivery status. Only present for Meta, TikTok and OpenAI ads created or synced after the field was added for that platform; null otherwise.
      */
     configuredStatus?: (string) | null;
     /**
@@ -404,6 +404,9 @@ export type Ad = {
     targeting?: {
         [key: string]: unknown;
     };
+    /**
+     * Delivery window as UTC instants. For ads created through Zernio this is the start and end the platform stored (on TikTok, read back from the ad group and converted from the ad account timezone); `startDate` is the creation time only when no start was requested.
+     */
     schedule?: {
         startDate?: string;
         endDate?: string;
@@ -496,7 +499,7 @@ export type AdCampaign = {
      */
     reviewStatus?: (AdReviewStatus | null);
     /**
-     * Raw platform-level campaign status (Meta `effective_status`; ChatGPT (OpenAI): the campaign's own switch, active / paused / archived).
+     * Raw platform-level campaign status (Meta `effective_status`; ChatGPT (OpenAI): the campaign's own switch, active / paused / archived; TikTok: the campaign's own switch `operation_status`, ENABLE / DISABLE).
      */
     platformCampaignStatus?: (string) | null;
     /**
@@ -1401,7 +1404,7 @@ export type AdTreeCampaign = {
      */
     reviewStatus?: (AdReviewStatus | null);
     /**
-     * Raw platform-level campaign status (Meta `effective_status`: ACTIVE, PAUSED, DELETED, ARCHIVED, IN_PROCESS, WITH_ISSUES; ChatGPT (OpenAI): the campaign's own switch, active / paused / archived, independent of the delivery `status`). Distinct from per-ad `platformStatus`.
+     * Raw platform-level campaign status (Meta `effective_status`: ACTIVE, PAUSED, DELETED, ARCHIVED, IN_PROCESS, WITH_ISSUES; ChatGPT (OpenAI): the campaign's own switch, active / paused / archived, independent of the delivery `status`; TikTok: the campaign's own switch `operation_status`, ENABLE / DISABLE). Distinct from per-ad `platformStatus`.
      */
     platformCampaignStatus?: (string) | null;
     /**
@@ -38806,6 +38809,9 @@ export type ListAdSetsResponse = ({
         platform?: string;
         adSetName?: (string) | null;
         status?: (string) | null;
+        /**
+         * Raw platform ad set status. On TikTok the ad group's own switch `operation_status` (ENABLE / DISABLE), independent of its campaign.
+         */
         platformAdSetStatus?: (string) | null;
         platformCampaignId?: (string) | null;
         platformAdAccountId?: string;
@@ -44845,13 +44851,17 @@ export type CreateStandaloneAdData = {
             [key: string]: (number);
         };
         /**
-         * Required for lifetime budgets
+         * Required for lifetime budgets. On TikTok a value without an offset (`YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DD`) is read in the ad account timezone.
          */
         endDate?: string;
         /**
-         * Meta only. Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the
-         * ad set's `start_time`. When omitted the ad starts delivering immediately. For lifetime
-         * budgets Meta also requires `endDate`. Same field as on `POST /v1/ads/boost`.
+         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's
+         * start (Meta `start_time`, TikTok ad group `schedule_start_time`, LinkedIn / Pinterest / X
+         * / Google campaign start). When omitted the ad starts delivering immediately. For lifetime
+         * budgets Meta also requires `endDate`. On TikTok a value without an offset
+         * (`YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DD`) is read in the ad account timezone. The created
+         * ad's `schedule` echoes the start and end the platform stored, as UTC instants. Same field
+         * as on `POST /v1/ads/boost`.
          *
          */
         startDate?: string;
