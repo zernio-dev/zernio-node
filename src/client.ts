@@ -381,6 +381,7 @@ import {
   getTikTokSmartPlusMaterialReport,
   getTrackingTag,
   getTrackingTagStats,
+  getTrackingTagStoreInstall,
   getTweet,
   getUsage,
   getUsageStats,
@@ -437,6 +438,7 @@ import {
   hideInboxComment,
   initiateTelegramConnect,
   initiateWhatsAppCall,
+  installTrackingTagOnStore,
   inviteAdAccountToManager,
   likeInboxComment,
   likePost,
@@ -618,6 +620,7 @@ import {
   removeGoogleAssetGroup,
   removeImessageGroupParticipant,
   removeMessageReaction,
+  removeTrackingTagFromStore,
   removeTrackingTagSharedAccount,
   removeWhatsAppGroupParticipants,
   replaceAdAudienceCompanies,
@@ -1937,6 +1940,9 @@ export class Zernio {
     listTrackingTagSharedAccounts: this._bind(listTrackingTagSharedAccounts),
     addTrackingTagSharedAccount: this._bind(addTrackingTagSharedAccount),
     removeTrackingTagSharedAccount: this._bind(removeTrackingTagSharedAccount),
+    installTrackingTagOnStore: this._bind(installTrackingTagOnStore),
+    getTrackingTagStoreInstall: this._bind(getTrackingTagStoreInstall),
+    removeTrackingTagFromStore: this._bind(removeTrackingTagFromStore),
     getTrackingTagStats: this._bind(getTrackingTagStats),
   };
 
@@ -2627,6 +2633,12 @@ export class Zernio {
     addTrackingTagSharedAccount: this._bind(addTrackingTagSharedAccount),
     /** @deprecated Use `zernio.trackingtags.removeTrackingTagSharedAccount` instead. */
     removeTrackingTagSharedAccount: this._bind(removeTrackingTagSharedAccount),
+    /** @deprecated Use `zernio.trackingtags.installTrackingTagOnStore` instead. */
+    installTrackingTagOnStore: this._bind(installTrackingTagOnStore),
+    /** @deprecated Use `zernio.trackingtags.getTrackingTagStoreInstall` instead. */
+    getTrackingTagStoreInstall: this._bind(getTrackingTagStoreInstall),
+    /** @deprecated Use `zernio.trackingtags.removeTrackingTagFromStore` instead. */
+    removeTrackingTagFromStore: this._bind(removeTrackingTagFromStore),
     /** @deprecated Use `zernio.trackingtags.getTrackingTagStats` instead. */
     getTrackingTagStats: this._bind(getTrackingTagStats),
   };

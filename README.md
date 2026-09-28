@@ -1072,9 +1072,12 @@ try {
 | `trackingTags.getAdTrackingTags()` | Get ad tracking tags |
 | `trackingTags.getTrackingTag()` | Get a tracking tag |
 | `trackingTags.getTrackingTagStats()` | Get aggregated event stats |
+| `trackingTags.getTrackingTagStoreInstall()` | Get store install status |
 | `trackingTags.updateAdTrackingTags()` | Set ad tracking tags |
 | `trackingTags.updateTrackingTag()` | Update a tracking tag |
 | `trackingTags.addTrackingTagSharedAccount()` | Share with an ad account |
+| `trackingTags.installTrackingTagOnStore()` | Install on a Shopify store |
+| `trackingTags.removeTrackingTagFromStore()` | Remove from a Shopify store |
 | `trackingTags.removeTrackingTagSharedAccount()` | Stop sharing with an account |
 
 ### Twitter Engagement

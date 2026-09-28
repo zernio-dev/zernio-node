@@ -8740,6 +8740,27 @@ export type SocialAccount = {
 export type platform10 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
 
 /**
+ * A tracking tag's install on a connected store (Shopify web pixel).
+ */
+export type StorePixelInstall = {
+    storeAccountId?: string;
+    platform?: 'shopify';
+    shopDomain?: string;
+    /**
+     * True when this tag is the pixel the store fires.
+     */
+    installed?: boolean;
+    /**
+     * The Meta pixel the store fires now (may be a different tag), or null.
+     */
+    installedTagId?: (string) | null;
+    /**
+     * Shopify web pixel id, or null when nothing is installed.
+     */
+    webPixelId?: (string) | null;
+};
+
+/**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
  * empty object targets the platform's default broadest audience. Field names are
  * camelCase and identical across `POST /v1/ads/create` (the `targeting` object),
@@ -48518,6 +48539,86 @@ export type RemoveTrackingTagSharedAccountResponse = (void);
 export type RemoveTrackingTagSharedAccountError = (unknown | {
     error?: string;
 } | ErrorResponse);
+
+export type InstallTrackingTagOnStoreData = {
+    body: {
+        /**
+         * The connected Shopify account id (platform `shopify`).
+         */
+        storeAccountId: string;
+    };
+    path: {
+        accountId: string;
+        /**
+         * Meta pixel id.
+         */
+        tagId: string;
+    };
+};
+
+export type InstallTrackingTagOnStoreResponse = ({
+    platform?: 'metaads';
+    install?: (StorePixelInstall & {
+    /**
+     * The pixel this install replaced on the store, if any.
+     */
+    replacedTagId?: (string) | null;
+});
+});
+
+export type InstallTrackingTagOnStoreError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetTrackingTagStoreInstallData = {
+    path: {
+        accountId: string;
+        /**
+         * Meta pixel id.
+         */
+        tagId: string;
+    };
+    query: {
+        /**
+         * The connected Shopify account id.
+         */
+        storeAccountId: string;
+    };
+};
+
+export type GetTrackingTagStoreInstallResponse = ({
+    platform?: 'metaads';
+    install?: StorePixelInstall;
+});
+
+export type GetTrackingTagStoreInstallError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RemoveTrackingTagFromStoreData = {
+    path: {
+        accountId: string;
+        /**
+         * Meta pixel id.
+         */
+        tagId: string;
+    };
+    query: {
+        /**
+         * The connected Shopify account id.
+         */
+        storeAccountId: string;
+    };
+};
+
+export type RemoveTrackingTagFromStoreResponse = ({
+    platform?: 'metaads';
+    install?: StorePixelInstall;
+});
+
+export type RemoveTrackingTagFromStoreError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type GetTrackingTagStatsData = {
     path: {
