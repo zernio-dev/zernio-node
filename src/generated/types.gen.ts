@@ -9389,7 +9389,7 @@ export type TrackingTag = {
         status?: string;
     }>;
     name: string;
-    platform: 'metaads' | 'openaiads';
+    platform: 'metaads' | 'openaiads' | 'tiktokads';
     /**
      * Platform-native flavor of the tag (Meta: `pixel`).
      */
@@ -9436,7 +9436,7 @@ export type TrackingTag = {
     ownerAdAccountId?: string;
 };
 
-export type platform11 = 'metaads' | 'openaiads';
+export type platform11 = 'metaads' | 'openaiads' | 'tiktokads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -48893,7 +48893,7 @@ export type ListTrackingTagsData = {
 };
 
 export type ListTrackingTagsResponse = ({
-    platform?: 'metaads' | 'openaiads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads';
     tags?: Array<TrackingTag>;
 });
 
@@ -48922,7 +48922,7 @@ export type CreateTrackingTagData = {
 };
 
 export type CreateTrackingTagResponse = ({
-    platform?: 'metaads' | 'openaiads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads';
     tag?: TrackingTag;
 });
 
@@ -48947,7 +48947,7 @@ export type GetTrackingTagData = {
 };
 
 export type GetTrackingTagResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'tiktokads';
     tag?: TrackingTag;
 });
 
@@ -48987,7 +48987,7 @@ export type UpdateTrackingTagData = {
 };
 
 export type UpdateTrackingTagResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'tiktokads';
     tag?: TrackingTag;
 });
 
@@ -49090,7 +49090,7 @@ export type InstallTrackingTagOnStoreData = {
 };
 
 export type InstallTrackingTagOnStoreResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'tiktokads';
     install?: (StorePixelInstall & {
     /**
      * Shopify only: the pixel this install replaced on the store, if any.
@@ -49145,7 +49145,7 @@ export type GetTrackingTagStoreInstallData = {
 };
 
 export type GetTrackingTagStoreInstallResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'tiktokads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only.
@@ -49195,7 +49195,7 @@ export type RemoveTrackingTagFromStoreData = {
 };
 
 export type RemoveTrackingTagFromStoreResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'tiktokads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only: number of Zernio widgets deleted.
@@ -49237,7 +49237,7 @@ export type GetTrackingTagStatsData = {
 };
 
 export type GetTrackingTagStatsResponse = ({
-    platform?: 'metaads';
+    platform?: 'metaads' | 'tiktokads';
     stats?: {
         aggregation?: string;
         startTime?: number;
