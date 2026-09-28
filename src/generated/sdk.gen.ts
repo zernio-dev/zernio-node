@@ -13858,6 +13858,11 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * settings, TikTok pixel events, Meta custom conversions. Platforms where events are just
  * names the site sends (Pinterest) answer 501.
  *
+ * OpenAI Ads: the account's conversion event settings whose source is this pixel.
+ * `siteEventId` is the event name the site sends (a standard event such as
+ * `order_created`, or the lowercase custom event name); `clickWindowDays` is the
+ * attribution window.
+ *
  */
 export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagEventsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagEventsResponse, ListTrackingTagEventsError, ThrowOnError>({
@@ -13874,6 +13879,18 @@ export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(opti
  * optional fields; sending one it does not store answers 400 naming the supported fields.
  * NOT idempotent unless noted per platform: do not retry blindly.
  *
+ * OpenAI Ads: creates a conversion event setting on the pixel (`POST
+ * /conversions/event_settings`, source = the pixel). Accepts `name`, `type` and
+ * `siteEvent` only. `type` is a standard event (`order_created`, `lead_created`,
+ * `items_added`, `contents_viewed`, `checkout_started`, `registration_completed`,
+ * `subscription_created`, `trial_started`, `appointment_scheduled`, `page_viewed`,
+ * `app_installed`, `app_opened`) or, for anything else, the custom event name itself
+ * (1 to 64 letters, digits, underscores or dashes; stored lowercase). `siteEvent` maps
+ * `search` and `add_payment_info` to the custom events `search` and `addpaymentinfo`,
+ * the names Zernio's Shopify pixel sends. The click attribution window is 30 days, the
+ * only value OpenAI documents. Only standard events can be a conversions campaign's
+ * optimization goal.
+ *
  */
 export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagEventResponse, CreateTrackingTagEventError, ThrowOnError>({
@@ -13885,6 +13902,11 @@ export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
 /**
  * Update a conversion event
  * Partial update; at least one field. A field the platform does not store answers 400.
+ *
+ * OpenAI Ads answers 501: OpenAI documents only list and create for event settings, and
+ * `POST`/`PATCH`/`PUT /v1/conversions/event_settings/{id}` answer 404 "Invalid URL".
+ * Create a new event instead.
+ *
  */
 export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagEventData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateTrackingTagEventResponse, UpdateTrackingTagEventError, ThrowOnError>({
@@ -13897,6 +13919,10 @@ export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * Delete a conversion event
  * Removes the conversion event. Platforms without a hard delete archive or disable it
  * instead; `state` in the response says which (`deleted`, `archived`, `disabled`).
+ *
+ * OpenAI Ads answers 501: there is no delete or archive route for event settings
+ * (`DELETE /v1/conversions/event_settings/{id}` and `POST .../{id}/archive` answer 404
+ * "Invalid URL"). Archive the event in OpenAI Ads Manager.
  *
  */
 export const deleteTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteTrackingTagEventData, ThrowOnError>) => {
