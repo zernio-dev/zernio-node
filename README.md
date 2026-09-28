@@ -591,6 +591,25 @@ try {
 | `blogs.deleteBlog()` | Delete a blog |
 | `blogs.deleteBlogArticle()` | Delete a blog article |
 
+### Branded Calling
+| Method | Description |
+|--------|-------------|
+| `brandedCalling.listBrandedCallingCallReasons()` | List pre-approved call reasons |
+| `brandedCalling.listBrandedCallingEnterprises()` | List registered businesses |
+| `brandedCalling.listBrandedCallingIdentities()` | List caller identities |
+| `brandedCalling.listBrandedCallingIdentityNumbers()` | List the numbers on a caller identity |
+| `brandedCalling.createBrandedCallingEnterprise()` | Register a business for Branded Calling |
+| `brandedCalling.createBrandedCallingIdentity()` | Create a caller identity |
+| `brandedCalling.getBrandedCallingEnterprise()` | Get a registered business |
+| `brandedCalling.getBrandedCallingIdentity()` | Get a caller identity |
+| `brandedCalling.updateBrandedCallingIdentity()` | Edit or resubmit a caller identity |
+| `brandedCalling.deleteBrandedCallingEnterprise()` | Delete a registered business |
+| `brandedCalling.deleteBrandedCallingIdentity()` | Delete a caller identity |
+| `brandedCalling.attachBrandedCallingNumbers()` | Attach numbers to a verified identity |
+| `brandedCalling.confirmBrandedCallingAuthorizerEmail()` | Confirm the authorizer's code |
+| `brandedCalling.detachBrandedCallingNumbers()` | Detach numbers from an identity |
+| `brandedCalling.resendBrandedCallingAuthorizerCode()` | Resend the authorizer's code |
+
 ### Broadcasts
 | Method | Description |
 |--------|-------------|

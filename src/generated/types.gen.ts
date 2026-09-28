@@ -2042,6 +2042,180 @@ export type BlueskyPlatformData = {
     }>;
 };
 
+export type BrandedCallingAddress = {
+    streetAddress: string;
+    extendedAddress?: string;
+    city: string;
+    /**
+     * State or province code (IL, ON).
+     */
+    administrativeArea: string;
+    postalCode: string;
+    /**
+     * ISO 3166-1 alpha-2 (US or CA).
+     */
+    country: string;
+};
+
+export type BrandedCallingContact = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    /**
+     * Required on organizationContact.
+     */
+    jobTitle?: string;
+    /**
+     * E.164 with a leading +.
+     */
+    phoneNumber: string;
+};
+
+export type BrandedCallingEnterprise = {
+    id?: string;
+    legalName?: string;
+    doingBusinessAs?: string;
+    organizationType?: 'commercial' | 'government' | 'non_profit';
+    organizationLegalType?: 'corporation' | 'llc' | 'partnership' | 'nonprofit' | 'other';
+    countryCode?: 'US' | 'CA';
+    jurisdictionOfIncorporation?: string;
+    website?: string;
+    /**
+     * Last four digits of the tax id; the full id is never returned.
+     */
+    feinLast4?: string;
+    industry?: string;
+    numberOfEmployees?: '1-10' | '11-50' | '51-200' | '201-500' | '501-2000' | '2001-10000' | '10001+';
+    organizationContact?: BrandedCallingContact;
+    billingContact?: BrandedCallingContact;
+    physicalAddress?: BrandedCallingAddress;
+    billingAddress?: BrandedCallingAddress;
+    /**
+     * True once the business exists at the carrier (happens when its first identity passes review).
+     */
+    registered?: boolean;
+    createdAt?: (string) | null;
+};
+
+export type organizationType = 'commercial' | 'government' | 'non_profit';
+
+export type organizationLegalType = 'corporation' | 'llc' | 'partnership' | 'nonprofit' | 'other';
+
+export type countryCode = 'US' | 'CA';
+
+export type numberOfEmployees = '1-10' | '11-50' | '51-200' | '201-500' | '501-2000' | '2001-10000' | '10001+';
+
+export type BrandedCallingIdentity = {
+    id?: string;
+    enterpriseId?: string;
+    displayName?: string;
+    callReasons?: Array<(string)>;
+    /**
+     * Every call reason matches the carrier catalogue (GET /v1/branded-calling/call-reasons); anything else is vetted by hand and takes longer.
+     */
+    callReasonsPreApproved?: boolean;
+    /**
+     * The image you sent. Zernio hosts the 256x256 BMP the carriers require.
+     */
+    logoUrl?: (string) | null;
+    authorizer?: {
+        name?: string;
+        email?: string;
+    };
+    references?: BrandedCallingReferences;
+    /**
+     * requested = in Zernio review; changes_requested = answer the review (PATCH); pending_email_verification = confirm the code emailed to the authorizer; in_review = with the carrier vetting team; verified = attach numbers; rejected = fix and PATCH to resubmit; suspended = an infringement claim is open; expired = the yearly verification lapsed; permanently_rejected = terminal.
+     */
+    status?: 'requested' | 'changes_requested' | 'rejected' | 'pending_email_verification' | 'in_review' | 'verified' | 'suspended' | 'expired' | 'permanently_rejected';
+    rejectionReasons?: Array<{
+        code?: string;
+        title?: string;
+        detail?: string;
+        /**
+         * Free-text note from the vetting team, on the first entry only.
+         */
+        message?: (string) | null;
+    }>;
+    /**
+     * The open change request, as text.
+     */
+    reviewNote?: (string) | null;
+    /**
+     * The open change request as points; answer each by id in reviewAnswers on PATCH.
+     */
+    reviewRequest?: {
+        id?: string;
+        intro?: string;
+        points?: Array<{
+            id?: string;
+            title?: string;
+            detail?: string;
+            answer?: 'text' | 'link' | 'file' | 'link_or_file';
+        }>;
+    } | null;
+    emailVerifiedAt?: (string) | null;
+    submittedAt?: (string) | null;
+    verifiedAt?: (string) | null;
+    /**
+     * Verification lasts one year; Zernio resubmits 30 days before this date.
+     */
+    expiringAt?: (string) | null;
+    numbers?: Array<BrandedCallingIdentityNumber>;
+    createdAt?: (string) | null;
+    updatedAt?: (string) | null;
+};
+
+/**
+ * requested = in Zernio review; changes_requested = answer the review (PATCH); pending_email_verification = confirm the code emailed to the authorizer; in_review = with the carrier vetting team; verified = attach numbers; rejected = fix and PATCH to resubmit; suspended = an infringement claim is open; expired = the yearly verification lapsed; permanently_rejected = terminal.
+ */
+export type status4 = 'requested' | 'changes_requested' | 'rejected' | 'pending_email_verification' | 'in_review' | 'verified' | 'suspended' | 'expired' | 'permanently_rejected';
+
+export type BrandedCallingIdentityNumber = {
+    phoneNumberId?: string;
+    phoneNumber?: string;
+    /**
+     * verified = the identity shows on calls from this number. permanently_rejected cannot be attached again anywhere.
+     */
+    status?: 'submitted' | 'in_review' | 'verified' | 'unsuccessful' | 'suspended' | 'expired' | 'permanently_rejected';
+    rejectionReason?: {
+        code?: string;
+        title?: string;
+        detail?: string;
+        message?: (string) | null;
+    } | null;
+    verifiedAt?: (string) | null;
+    addedAt?: (string) | null;
+};
+
+/**
+ * verified = the identity shows on calls from this number. permanently_rejected cannot be attached again anywhere.
+ */
+export type status5 = 'submitted' | 'in_review' | 'verified' | 'unsuccessful' | 'suspended' | 'expired' | 'permanently_rejected';
+
+/**
+ * A person the carrier vetting team phones to confirm the business. Business references are senior contacts at a vendor, partner or client; the financial reference is a CPA or a bank contact. Calls are placed in the reference's local 8am-9pm window.
+ */
+export type BrandedCallingReference = {
+    fullName: string;
+    jobTitle?: string;
+    organization?: string;
+    relationshipToRegistrant?: string;
+    /**
+     * E.164 with a leading +.
+     */
+    phoneNumber: string;
+    email: string;
+    /**
+     * IANA timezone id, e.g. America/New_York.
+     */
+    timezone: string;
+};
+
+export type BrandedCallingReferences = {
+    business: Array<BrandedCallingReference>;
+    financial: BrandedCallingReference;
+};
+
 /**
  * Result of a CSV bulk upload. The same shape is returned for `200` (all rows
  * succeeded or all failed) and `207` (mixed). Per-row outcomes live in `results`;
@@ -2248,7 +2422,7 @@ export type BusinessAgentEventStatus = {
     updated_at: string;
 };
 
-export type status4 = 'request_received' | 'processing' | 'sent' | 'failed' | 'skipped' | 'success';
+export type status6 = 'request_received' | 'processing' | 'sent' | 'failed' | 'skipped' | 'success';
 
 export type BusinessAgentFaq = BusinessAgentFaqInput & {
     id: string;
@@ -2345,7 +2519,7 @@ export type BusinessAgentSkill = BusinessAgentSkillInput & {
 /**
  * pending_review right after a write; blocked means Meta content review rejected it and the agent never applies it.
  */
-export type status5 = 'active' | 'pending_review' | 'blocked';
+export type status7 = 'active' | 'pending_review' | 'blocked';
 
 export type BusinessAgentSkillInput = {
     /**
@@ -2447,7 +2621,7 @@ export type BusinessAgentUiSkillInput = {
 
 export type component_type = 'carousel_quick_reply' | 'carousel_url' | 'cta_url' | 'flow' | 'image' | 'interactive_list' | 'interactive_reply_buttons' | 'location' | 'location_request';
 
-export type status6 = 'enabled' | 'disabled';
+export type status8 = 'enabled' | 'disabled';
 
 export type BusinessAgentWebsite = BusinessAgentWebsiteInput & {
     id: string;
@@ -2638,7 +2812,7 @@ export type channel = 'whatsapp' | 'pstn';
 
 export type direction = 'inbound' | 'outbound';
 
-export type status7 = 'ringing' | 'answered' | 'ended' | 'failed';
+export type status9 = 'ringing' | 'answered' | 'ended' | 'failed';
 
 /**
  * Caller ID presented on the forwarded leg.
@@ -3022,7 +3196,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status8 = 'active' | 'inactive';
+export type status10 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -3701,7 +3875,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * newly created ad(s) after Meta accepts them.
  *
  */
-export type status9 = 'ACTIVE' | 'PAUSED';
+export type status11 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
@@ -4069,7 +4243,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status10 = 1 | 2 | 3 | 4;
+export type status12 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -4597,7 +4771,7 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status11 = 'received';
+export type status13 = 'received';
 
 export type FollowerStatsResponse = {
     accounts?: Array<AccountWithFollowerStats>;
@@ -4722,7 +4896,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status12 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status14 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -4820,7 +4994,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status13 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status15 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 /**
  * Link one asset to the asset group. Send exactly one of asset (an existing asset), text, imageUrl or youtubeVideoId (new content, created in the same request).
@@ -5541,7 +5715,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status14 = 'applied' | 'dismissed' | 'failed';
+export type status16 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -5673,7 +5847,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status15 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status17 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -5745,7 +5919,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status16 = 'active' | 'archived';
+export type status18 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -7332,7 +7506,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status17 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status19 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -7457,7 +7631,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status18 = 'published' | 'failed';
+export type status20 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7859,7 +8033,7 @@ export type Product = {
 
 export type platform8 = 'shopify';
 
-export type status19 = 'active' | 'draft' | 'archived';
+export type status21 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -9135,7 +9309,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status20 = 'pending' | 'completed' | 'expired';
+export type status22 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -9634,7 +9808,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status21 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status23 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -9783,7 +9957,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status22 = 'success' | 'failed';
+export type status24 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -9895,7 +10069,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status23 = 'success' | 'failure';
+export type status25 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11927,7 +12101,7 @@ export type event24 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status24 = 'published' | 'failed' | 'deleted';
+export type status26 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -12193,7 +12367,7 @@ export type platform15 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status25 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status27 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -12342,7 +12516,7 @@ export type event32 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status26 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status28 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -12496,7 +12670,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status27 = 'pending' | 'active';
+export type status29 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -12654,7 +12828,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status28 = 'success' | 'failed' | 'pending';
+export type status30 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -28487,6 +28661,300 @@ export type DeleteSmsSenderIdResponse = ({
 });
 
 export type DeleteSmsSenderIdError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateBrandedCallingEnterpriseData = {
+    body: {
+        /**
+         * Exactly as on the tax record.
+         */
+        legalName: string;
+        doingBusinessAs: string;
+        organizationType: 'commercial' | 'government' | 'non_profit';
+        organizationLegalType: 'corporation' | 'llc' | 'partnership' | 'nonprofit' | 'other';
+        /**
+         * ISO 3166-1 alpha-2. US or CA.
+         */
+        countryCode: string;
+        /**
+         * State, province or country of registration.
+         */
+        jurisdictionOfIncorporation: string;
+        website: string;
+        /**
+         * US Federal Employer Identification Number (NN-NNNNNNN) or the Canadian equivalent. Stored encrypted; only the last four digits are ever returned.
+         */
+        fein: string;
+        /**
+         * One of the carrier industry labels, e.g. technology, healthcare, retail, finance, legal, insurance, real estate, logistics, education.
+         */
+        industry: string;
+        numberOfEmployees: '1-10' | '11-50' | '51-200' | '201-500' | '501-2000' | '2001-10000' | '10001+';
+        organizationContact: BrandedCallingContact;
+        billingContact: BrandedCallingContact;
+        physicalAddress: BrandedCallingAddress;
+        billingAddress: BrandedCallingAddress;
+    };
+};
+
+export type CreateBrandedCallingEnterpriseResponse = (BrandedCallingEnterprise);
+
+export type CreateBrandedCallingEnterpriseError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListBrandedCallingEnterprisesResponse = ({
+    enterprises?: Array<BrandedCallingEnterprise>;
+});
+
+export type ListBrandedCallingEnterprisesError = ({
+    error?: string;
+});
+
+export type GetBrandedCallingEnterpriseData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetBrandedCallingEnterpriseResponse = (BrandedCallingEnterprise);
+
+export type GetBrandedCallingEnterpriseError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteBrandedCallingEnterpriseData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DeleteBrandedCallingEnterpriseResponse = ({
+    status?: 'deleted';
+});
+
+export type DeleteBrandedCallingEnterpriseError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListBrandedCallingCallReasonsResponse = ({
+    callReasons?: Array<(string)>;
+});
+
+export type ListBrandedCallingCallReasonsError = ({
+    error?: string;
+});
+
+export type CreateBrandedCallingIdentityData = {
+    body: {
+        /**
+         * A business from POST /v1/branded-calling/enterprises.
+         */
+        enterpriseId: string;
+        /**
+         * Shown on the callee's screen. No emoji.
+         */
+        displayName: string;
+        /**
+         * 1 to 10 reasons you call, each up to 64 characters. Pick from GET /v1/branded-calling/call-reasons to skip manual vetting.
+         */
+        callReasons: Array<(string)>;
+        /**
+         * HTTPS URL of a PNG, JPEG, WebP or SVG logo. Zernio converts it to the 256x256 BMP the carriers require and hosts it.
+         */
+        logoUrl?: string;
+        authorizer: {
+            /**
+             * A real person at the business who authorizes the registration.
+             */
+            name: string;
+            /**
+             * The carrier emails a 6-digit code here once the identity passes review.
+             */
+            email: string;
+        };
+        references: BrandedCallingReferences;
+    };
+};
+
+export type CreateBrandedCallingIdentityResponse = (BrandedCallingIdentity);
+
+export type CreateBrandedCallingIdentityError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListBrandedCallingIdentitiesResponse = ({
+    identities?: Array<BrandedCallingIdentity>;
+});
+
+export type ListBrandedCallingIdentitiesError = ({
+    error?: string;
+});
+
+export type GetBrandedCallingIdentityData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetBrandedCallingIdentityResponse = (BrandedCallingIdentity);
+
+export type GetBrandedCallingIdentityError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateBrandedCallingIdentityData = {
+    body: {
+        /**
+         * Shown on the callee's screen. No emoji.
+         */
+        displayName?: string;
+        /**
+         * 1 to 10 reasons you call, each up to 64 characters. Pick from GET /v1/branded-calling/call-reasons to skip manual vetting.
+         */
+        callReasons?: Array<(string)>;
+        /**
+         * HTTPS URL of a PNG, JPEG, WebP or SVG logo. Zernio converts it to the 256x256 BMP the carriers require and hosts it.
+         */
+        logoUrl?: string;
+        authorizer?: {
+            /**
+             * A real person at the business who authorizes the registration.
+             */
+            name: string;
+            /**
+             * The carrier emails a 6-digit code here once the identity passes review.
+             */
+            email: string;
+        };
+        references?: BrandedCallingReferences;
+        /**
+         * One entry per point id of the open reviewRequest.
+         */
+        reviewAnswers?: {
+            [key: string]: {
+                text?: string;
+                url?: string;
+            };
+        };
+        reviewNote?: string;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type UpdateBrandedCallingIdentityResponse = (BrandedCallingIdentity);
+
+export type UpdateBrandedCallingIdentityError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteBrandedCallingIdentityData = {
+    path: {
+        id: string;
+    };
+};
+
+export type DeleteBrandedCallingIdentityResponse = ({
+    status?: 'deleted';
+});
+
+export type DeleteBrandedCallingIdentityError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ResendBrandedCallingAuthorizerCodeData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ResendBrandedCallingAuthorizerCodeResponse = ({
+    status?: 'sent';
+});
+
+export type ResendBrandedCallingAuthorizerCodeError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ConfirmBrandedCallingAuthorizerEmailData = {
+    body: {
+        code: string;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type ConfirmBrandedCallingAuthorizerEmailResponse = (BrandedCallingIdentity);
+
+export type ConfirmBrandedCallingAuthorizerEmailError = (unknown | {
+    error?: string;
+});
+
+export type ListBrandedCallingIdentityNumbersData = {
+    path: {
+        id: string;
+    };
+};
+
+export type ListBrandedCallingIdentityNumbersResponse = ({
+    numbers?: Array<BrandedCallingIdentityNumber>;
+});
+
+export type ListBrandedCallingIdentityNumbersError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AttachBrandedCallingNumbersData = {
+    body: {
+        /**
+         * Phone number record ids (from GET /v1/phone-numbers). Active US numbers only.
+         */
+        phoneNumberIds: Array<(string)>;
+        signature: {
+            /**
+             * The signer's drawn signature as a PNG, base64 (a data:image/png;base64 prefix is accepted).
+             */
+            imageBase64: string;
+            /**
+             * Printed under the signature. Defaults to the business contact's name.
+             */
+            signerName?: string;
+        };
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type AttachBrandedCallingNumbersResponse = ({
+    numbers?: Array<BrandedCallingIdentityNumber>;
+});
+
+export type AttachBrandedCallingNumbersError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DetachBrandedCallingNumbersData = {
+    body: {
+        /**
+         * E.164 numbers currently on this identity.
+         */
+        phoneNumbers: Array<(string)>;
+    };
+    path: {
+        id: string;
+    };
+};
+
+export type DetachBrandedCallingNumbersResponse = ({
+    removed?: Array<(string)>;
+});
+
+export type DetachBrandedCallingNumbersError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
