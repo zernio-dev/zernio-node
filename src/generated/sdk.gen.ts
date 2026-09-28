@@ -13645,6 +13645,11 @@ export const startBusinessAgentEvalRun = <ThrowOnError extends boolean = false>(
  * connection can read (an ad account the user has no Business Access role on is skipped).
  * `id` equals `siteTagId`, the id the site loads with `pintrk('load', id)`.
  *
+ * TikTok (platform `tiktokads`): TikTok Pixels across the connection's advertisers, or one
+ * advertiser with `?adAccountId=<numeric advertiser_id>`. `id` is the numeric `pixel_id`,
+ * `siteTagId` the alphanumeric `pixel_code` from Events Manager. Connections authorized
+ * before the Pixel Management permission (about 2026-05-28) answer 403 until reconnected.
+ *
  */
 export const listTrackingTags = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagsResponse, ListTrackingTagsError, ThrowOnError>({
@@ -13703,6 +13708,10 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
  * created, which is what switches Google's conversion tracking on, and
  * the tag is returned with it as its first event.
  *
+ * TikTok: `POST /pixel/create/` on the advertiser in `adAccountId` (numeric). Names are at
+ * most 40 characters with no emoji and must be unique; TikTok refuses a duplicate name
+ * (400), which is its only retry guard. TikTok has no pixel delete API.
+ *
  */
 export const createTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagResponse, CreateTrackingTagError, ThrowOnError>({
@@ -13735,6 +13744,10 @@ export const createTrackingTag = <ThrowOnError extends boolean = false>(options:
  * Pinterest (platform `pinterestads`): returns the tag with Pinterest's own `code` snippet
  * and `lastFiredTime`. Without `adAccountId` Zernio finds the ad account that owns the tag
  * (404 when no readable ad account holds it).
+ *
+ * TikTok: read from `/pixel/list/?pixel_id=`; `code` is TikTok's `pixel_script`, `events`
+ * the pixel events. `lastFiredTime` is not available on TikTok. Without `adAccountId` the
+ * connection's advertisers are searched.
  *
  */
 export const getTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagData, ThrowOnError>) => {
@@ -13777,6 +13790,12 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * PATCH or PUT on `conversion_tags/{id}` answer 405 "Method not allowed". Set enhanced match
  * at creation (`automaticMatchingFields`) or change it and the name in Pinterest Ads Manager.
  *
+ * TikTok: `name`, `enableAutomaticMatching` + `automaticMatchingFields` (folded onto
+ * TikTok's five switches: em, ph, fn/ln, ct/st/zp/country, external_id; ge and db answer
+ * 400), and first-party cookies via `enableFirstPartyCookies` or `firstPartyCookieStatus`
+ * (enabled or disabled). TikTok has no pixel delete: the endpoint is absent from its API and
+ * `POST /pixel/delete/` answers 404.
+ *
  */
 export const updateTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateTrackingTagResponse, UpdateTrackingTagError, ThrowOnError>({
@@ -13792,6 +13811,9 @@ export const updateTrackingTag = <ThrowOnError extends boolean = false>(options:
  * LinkedIn (`linkedinads`): the ad accounts this connection can see that hold access to the
  * Insight Tag; the role (`FULL` or `USE_ONLY`) is appended to `name`. LinkedIn exposes
  * permissions per ad account only, so accounts the connection cannot see are not listed.
+ *
+ * TikTok (`tiktokads`): the advertisers linked to the pixel in its Business Center
+ * (`/bc/pixel/link/get/`); a pixel outside Business Center answers 400.
  *
  */
 export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagSharedAccountsData, ThrowOnError>) => {
@@ -13814,6 +13836,11 @@ export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = fal
  * `adAccountId` is the numeric LinkedIn ad account id. An ad account uses one Insight Tag at
  * a time, so a target that already has one answers 400.
  *
+ * TikTok: links the pixel to an advertiser through Business Center
+ * (`/bc/pixel/link/update/`, `adAccountId` = numeric advertiser_id). Only a pixel that is an
+ * asset of a Business Center this connection manages can be shared; otherwise the answer is
+ * 400 asking to transfer it to Business Center first.
+ *
  */
 export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddTrackingTagSharedAccountData, ThrowOnError>) => {
     return (options?.client ?? client).post<AddTrackingTagSharedAccountResponse, AddTrackingTagSharedAccountError, ThrowOnError>({
@@ -13831,6 +13858,8 @@ export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false
  * LinkedIn (`linkedinads`): revokes the ad account's access. Zernio answers 400 instead of
  * revoking the last ad account that holds the tag: LinkedIn accepts that call and the tag
  * is orphaned (verified live).
+ *
+ * TikTok: unlinks through Business Center (`/bc/pixel/link/update/` with `UNLINK`).
  *
  */
 export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveTrackingTagSharedAccountData, ThrowOnError>) => {
@@ -13993,6 +14022,10 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * `event_name`. Standard events (`pagevisit`, `checkout`...) need no object and are not
  * listed.
  *
+ * TikTok: the pixel's events from `/pixel/list/`. TikTok refreshes this list every 2 to 4
+ * hours, so a just-created event can be missing. `siteEventId` is the `ttq.track()` name the
+ * site fires.
+ *
  */
 export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagEventsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTrackingTagEventsResponse, ListTrackingTagEventsError, ThrowOnError>({
@@ -14058,6 +14091,13 @@ export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(opti
  * VIEW_CATEGORY, VIEW_CONTENT, SEARCH, WATCH_VIDEO) or `siteEvent`. A duplicate name answers
  * 400.
  *
+ * TikTok: `POST /pixel/event/create/`. `type` is a TikTok pixel event type (SHOPPING,
+ * ON_WEB_CART, ON_WEB_DETAIL, INITIATE_ORDER, ADD_BILLING, ON_WEB_SEARCH, PAGE_VIEW,
+ * ON_WEB_REGISTER, FORM, ...), or pass `siteEvent`. Stores `name` (at most 40 characters),
+ * `defaultValue` and `currency` (USD, JPY or INR only). TikTok returns no id: the new event
+ * is read back from the pixel, and while TikTok's listing has not refreshed the response
+ * carries an empty `id` and `status: pending`.
+ *
  */
 export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateTrackingTagEventResponse, CreateTrackingTagEventError, ThrowOnError>({
@@ -14089,6 +14129,9 @@ export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * Pinterest identifies the event by its name, so `name` cannot change (400): create the new
  * name and delete the old one.
  *
+ * TikTok: `name`, `defaultValue` and `currency` (USD, JPY or INR); the type cannot change
+ * (delete and recreate).
+ *
  */
 export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagEventData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateTrackingTagEventResponse, UpdateTrackingTagEventError, ThrowOnError>({
@@ -14119,6 +14162,9 @@ export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  *
  * Pinterest (platform `pinterestads`): stops Pinterest tracking the event name (`state:
  * disabled`); Pinterest keeps the event's history.
+ *
+ * TikTok: hard delete (`/pixel/event/delete/`); TikTok refuses events bound to an ad group
+ * (400).
  *
  */
 export const deleteTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteTrackingTagEventData, ThrowOnError>) => {
@@ -14239,6 +14285,11 @@ export const getTrackingTagDiagnostics = <ThrowOnError extends boolean = false>(
  * rows with the ad account's Event Quality Score for tag events over the last `1d` and `14d`
  * (ad-account level, not per tag; an account Pinterest cannot score yet carries `error`
  * instead). Pinterest has no time-bounded counts, so `startTime`/`endTime` answer 400.
+ *
+ * TikTok: per-event counts from `/pixel/event/stats/` (`total_count`,
+ * `browser_event_total_count`, `server_event_total_count`, `attributed_count`,
+ * `preview_count`), bucketed by UTC day. Defaults to the last 7 days; at most 30 days per
+ * request. `aggregation` is not accepted.
  *
  */
 export const getTrackingTagStats = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStatsData, ThrowOnError>) => {

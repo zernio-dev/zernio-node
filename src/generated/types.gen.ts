@@ -49723,6 +49723,10 @@ export type UpdateTrackingTagData = {
         firstPartyCookieStatus?: 'empty' | 'first_party_cookie_disabled' | 'first_party_cookie_enabled';
         dataUseSetting?: 'advertising_and_analytics' | 'analytics_only' | 'empty';
         /**
+         * First-party cookie on or off (TikTok, LinkedIn). Platform-neutral alternative to `firstPartyCookieStatus`.
+         */
+        enableFirstPartyCookies?: boolean;
+        /**
          * Google Ads: turn gclid auto-tagging on or off for the ad account.
          */
         autoTagging?: boolean;
