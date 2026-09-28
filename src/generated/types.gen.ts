@@ -8740,25 +8740,49 @@ export type SocialAccount = {
 export type platform10 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
 
 /**
- * A tracking tag's install on a connected store (Shopify web pixel).
+ * A tracking tag's install on a connected store: a Shopify web pixel, or a Custom HTML widget on a WordPress site. Fields marked Shopify or WordPress are present only for that platform.
  */
 export type StorePixelInstall = {
     storeAccountId?: string;
-    platform?: 'shopify';
-    shopDomain?: string;
+    platform?: 'shopify' | 'wordpress';
     /**
-     * True when this tag is the pixel the store fires.
+     * Shopify: this tag is the pixel the store fires. WordPress: the Zernio widget for this tag is in an active widget area with its script intact.
      */
     installed?: boolean;
     /**
-     * The Meta pixel the store fires now (may be a different tag), or null.
+     * Shopify only.
+     */
+    shopDomain?: string;
+    /**
+     * Shopify only: the Meta pixel the store fires now (may be a different tag), or null.
      */
     installedTagId?: (string) | null;
     /**
-     * Shopify web pixel id, or null when nothing is installed.
+     * Shopify only: web pixel id, or null when nothing is installed.
      */
     webPixelId?: (string) | null;
+    /**
+     * WordPress only.
+     */
+    siteUrl?: string;
+    /**
+     * WordPress only.
+     */
+    method?: 'wordpress_widget';
+    /**
+     * WordPress only: widget id, e.g. `custom_html-3`.
+     */
+    widgetId?: (string) | null;
+    /**
+     * WordPress only: widget area holding the widget.
+     */
+    sidebarId?: (string) | null;
 };
+
+/**
+ * WordPress only.
+ */
+export type method = 'wordpress_widget';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
@@ -9314,6 +9338,11 @@ export type platform11 = 'metaads';
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
 export type kind2 = 'pixel' | 'tag' | 'insight_tag';
+
+/**
+ * Why a pixel cannot be installed on a WordPress site.
+ */
+export type TrackingTagInstallBlockedReason = 'insufficient_permissions' | 'scripts_stripped' | 'wordpress_com_plan' | 'no_widget_areas' | 'widgets_api_unavailable';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -48609,9 +48638,17 @@ export type RemoveTrackingTagSharedAccountError = (unknown | {
 export type InstallTrackingTagOnStoreData = {
     body: {
         /**
-         * The connected Shopify account id (platform `shopify`).
+         * The connected Shopify (`shopify`) or WordPress (`wordpress`) account id.
          */
         storeAccountId: string;
+        /**
+         * WordPress only: widget area to use (see `install.preflight.sidebars` from GET). Defaults to a footer area.
+         */
+        sidebarId?: string;
+        /**
+         * WordPress only: fetch the homepage afterwards and report `homepageCheck`.
+         */
+        verifyHomepage?: boolean;
     };
     path: {
         accountId: string;
@@ -48626,15 +48663,36 @@ export type InstallTrackingTagOnStoreResponse = ({
     platform?: 'metaads';
     install?: (StorePixelInstall & {
     /**
-     * The pixel this install replaced on the store, if any.
+     * Shopify only: the pixel this install replaced on the store, if any.
      */
     replacedTagId?: (string) | null;
+    /**
+     * WordPress only: name of the widget area used.
+     */
+    sidebarName?: string;
+    /**
+     * WordPress only: false when an existing Zernio widget was updated.
+     */
+    created?: boolean;
+    /**
+     * WordPress only: whether the pixel appeared in the homepage HTML. `not_found` can be a stale page cache.
+     */
+    homepageCheck?: 'found' | 'not_found' | 'unreachable' | 'skipped';
 });
 });
 
 export type InstallTrackingTagOnStoreError = (ErrorResponse | {
     error?: string;
-} | unknown);
+} | unknown | {
+    /**
+     * What blocked the install and the manual alternative.
+     */
+    error?: string;
+    code?: 'tracking_tag_install_blocked';
+    details?: {
+        reason?: TrackingTagInstallBlockedReason;
+    };
+});
 
 export type GetTrackingTagStoreInstallData = {
     path: {
@@ -48646,7 +48704,7 @@ export type GetTrackingTagStoreInstallData = {
     };
     query: {
         /**
-         * The connected Shopify account id.
+         * The connected Shopify or WordPress account id.
          */
         storeAccountId: string;
     };
@@ -48654,7 +48712,28 @@ export type GetTrackingTagStoreInstallData = {
 
 export type GetTrackingTagStoreInstallResponse = ({
     platform?: 'metaads';
-    install?: StorePixelInstall;
+    install?: (StorePixelInstall & {
+    /**
+     * WordPress only.
+     */
+    preflight?: {
+        /**
+         * True when POST should be able to install.
+         */
+        ready?: boolean;
+        /**
+         * A TrackingTagInstallBlockedReason when an install would be blocked, else null.
+         */
+        reason?: (string) | null;
+        /**
+         * Active widget areas of the theme.
+         */
+        sidebars?: Array<{
+            id?: string;
+            name?: string;
+        }>;
+    };
+});
 });
 
 export type GetTrackingTagStoreInstallError = (ErrorResponse | {
@@ -48671,7 +48750,7 @@ export type RemoveTrackingTagFromStoreData = {
     };
     query: {
         /**
-         * The connected Shopify account id.
+         * The connected Shopify or WordPress account id.
          */
         storeAccountId: string;
     };
@@ -48679,7 +48758,12 @@ export type RemoveTrackingTagFromStoreData = {
 
 export type RemoveTrackingTagFromStoreResponse = ({
     platform?: 'metaads';
-    install?: StorePixelInstall;
+    install?: (StorePixelInstall & {
+    /**
+     * WordPress only: number of Zernio widgets deleted.
+     */
+    removed?: number;
+});
 });
 
 export type RemoveTrackingTagFromStoreError = (ErrorResponse | {

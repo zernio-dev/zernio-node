@@ -1077,8 +1077,8 @@ try {
 | `trackingTags.updateAdTrackingTags()` | Set ad tracking tags |
 | `trackingTags.updateTrackingTag()` | Update a tracking tag |
 | `trackingTags.addTrackingTagSharedAccount()` | Share with an ad account |
-| `trackingTags.installTrackingTagOnStore()` | Install on a Shopify store |
-| `trackingTags.removeTrackingTagFromStore()` | Remove from a Shopify store |
+| `trackingTags.installTrackingTagOnStore()` | Install on a Shopify store or WordPress site |
+| `trackingTags.removeTrackingTagFromStore()` | Remove from a Shopify store or WordPress site |
 | `trackingTags.removeTrackingTagSharedAccount()` | Stop sharing with an account |
 
 ### Twitter Engagement
