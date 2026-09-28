@@ -9995,6 +9995,23 @@ export const generateKeywordHistoricalMetrics = <ThrowOnError extends boolean = 
  * `'YYYY-MM-DD'` literal are translated; any other form returns Google's 400. New code should
  * select the `_date_time` fields directly.
  *
+ * **TikTok (tiktok/tiktokads)**: passthrough of TikTok's synchronous report
+ * (`/report/integrated/get/`). Send `adAccountId`, `dataLevel`, `dimensions`, `metrics`,
+ * `fromDate`/`toDate` (TikTok caps the span at 365 days) and optionally `filtering` in the same
+ * `[{"field", "operator", "value"}]` shape as Meta (operator is TikTok's `filter_type`, e.g. `IN`;
+ * array values are JSON-encoded for TikTok). Rows come back verbatim as
+ * `{ dimensions, metrics }` with page-number paging.
+ *
+ * *De-duplicated reach across a set of campaigns, ad groups or ads*: filter the set and group by
+ * `country_code` instead of the entity id. TikTok then counts each person once across the whole
+ * set and range, per country. Example, two campaigns for a month:
+ * `dataLevel=AUCTION_CAMPAIGN&dimensions=country_code&metrics=reach,impressions,frequency&fromDate=2026-09-01&toDate=2026-09-30&filtering=[{"field":"campaign_ids","operator":"IN","value":["1876574798182050","1876575504573650"]}]`.
+ * For a set of ads use `dataLevel=AUCTION_AD` with `ad_ids`. A filter on a finer entity than
+ * `dataLevel` (e.g. `ad_ids` at `AUCTION_CAMPAIGN`) returns 400: TikTok would otherwise widen it to
+ * every parent entity containing those ids. When the set delivers in several countries, reach is
+ * per country; summing the rows counts a person reached in two countries twice.
+ * `AUCTION_ADVERTISER` rejects entity filters.
+ *
  */
 export const queryAdInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<QueryAdInsightsData, ThrowOnError>) => {
     return (options?.client ?? client).get<QueryAdInsightsResponse, QueryAdInsightsError, ThrowOnError>({

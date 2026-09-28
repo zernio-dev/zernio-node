@@ -39306,7 +39306,7 @@ export type GenerateKeywordHistoricalMetricsError = (unknown | {
 export type QueryAdInsightsData = {
     query: {
         /**
-         * Zernio SocialAccount id (posting or ads variant); its platform selects the Meta or Google contract.
+         * Zernio SocialAccount id (posting or ads variant); its platform selects the Meta, Google or TikTok contract.
          */
         accountId: string;
         /**
@@ -39322,7 +39322,7 @@ export type QueryAdInsightsData = {
          */
         actionReportTime?: string;
         /**
-         * Google only: platform ad account ID (Google customer ID, digits only) when the connection has several Google Ads accounts.
+         * Google: platform ad account ID (Google customer ID, digits only) when the connection has several Google Ads accounts. TikTok (required there): the advertiser id.
          */
         adAccountId?: string;
         /**
@@ -39339,19 +39339,27 @@ export type QueryAdInsightsData = {
          */
         customerId?: string;
         /**
+         * TikTok only (required there): data_level.
+         */
+        dataLevel?: 'AUCTION_ADVERTISER' | 'AUCTION_CAMPAIGN' | 'AUCTION_ADGROUP' | 'AUCTION_AD';
+        /**
          * Meta date_preset (e.g. last_7d, last_30d, this_month). Mutually exclusive with fromDate/toDate.
          */
         datePreset?: string;
+        /**
+         * TikTok only (required there): 1-4 comma-separated TikTok dimensions (e.g. country_code, campaign_id, stat_time_day).
+         */
+        dimensions?: string;
         /**
          * Comma-separated Graph insights fields (e.g. spend,impressions,frequency,website_purchase_roas). Omitted = Meta's default set.
          */
         fields?: string;
         /**
-         * JSON array of Meta filter objects: [{"field", "operator", "value"}]. Applied server-side by Meta.
+         * JSON array of filter objects: [{"field", "operator", "value"}]. Applied server-side by Meta or TikTok (TikTok fields e.g. campaign_ids, adgroup_ids, ad_ids).
          */
         filtering?: string;
         /**
-         * Start of range (YYYY-MM-DD); requires toDate.
+         * Start of range (YYYY-MM-DD); requires toDate. Required on TikTok.
          */
         fromDate?: string;
         /**
@@ -39363,9 +39371,21 @@ export type QueryAdInsightsData = {
          */
         limit?: number;
         /**
+         * TikTok only (required there): comma-separated TikTok metrics (e.g. reach,impressions,frequency,spend).
+         */
+        metrics?: string;
+        /**
          * Meta only (required there): insights node (act_<n>, campaign id, ad set id or ad id).
          */
         objectId?: string;
+        /**
+         * TikTok only: page number.
+         */
+        page?: number;
+        /**
+         * TikTok only: rows per page.
+         */
+        pageSize?: number;
         /**
          * Google only: cursor from paging.nextPageToken of the previous page.
          */
@@ -39374,6 +39394,10 @@ export type QueryAdInsightsData = {
          * Google only (required there): the GAQL SELECT statement to run.
          */
         query?: string;
+        /**
+         * TikTok only: report_type.
+         */
+        reportType?: 'BASIC' | 'AUDIENCE';
         /**
          * Days per row (1-90), monthly, or all_days.
          */
@@ -39395,6 +39419,10 @@ export type QueryAdInsightsResponse = ({
      */
     objectId?: string;
     /**
+     * TikTok responses only: the advertiser queried.
+     */
+    adAccountId?: string;
+    /**
      * Google responses only: the customer the query ran against.
      */
     customerId?: string;
@@ -39414,6 +39442,22 @@ export type QueryAdInsightsResponse = ({
          * Google cursor for the next page; null when exhausted.
          */
         nextPageToken?: (string) | null;
+        /**
+         * TikTok only: current page.
+         */
+        page?: number;
+        /**
+         * TikTok only.
+         */
+        pageSize?: number;
+        /**
+         * TikTok only.
+         */
+        totalRows?: number;
+        /**
+         * TikTok only.
+         */
+        totalPages?: number;
     };
 });
 
