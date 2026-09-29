@@ -21200,7 +21200,7 @@ export type SelectLinkedInOrganizationResponse = ({
 
 export type SelectLinkedInOrganizationError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type ListPinterestBoardsForSelectionData = {
     headers: {
@@ -32670,6 +32670,14 @@ export type CheckPhoneNumberAvailabilityResponse = ({
              * Numbers we can sell there: the carrier count minus the numbers we hold back (WhatsApp refused them or another order holds them).
              */
             count?: number;
+            /**
+             * Every area code of the city, deepest first (Madrid: 915, 911, 910, ...). `ndc` is the one an order is placed against.
+             */
+            ndcs?: Array<(string)>;
+            /**
+             * Other names the area answers to, present only when it has some (Milano for Milan, Sevilla for Seville).
+             */
+            aliases?: Array<(string)>;
         }>;
         /**
          * The carrier lists nothing there and the number type is a document tier: submit KYC with `areaCode` and `preOrder: true`, the carrier sources one (usually 2 to 4 weeks, never guaranteed), nothing is billed until it is active.
@@ -32677,6 +32685,14 @@ export type CheckPhoneNumberAvailabilityResponse = ({
         preOrder?: Array<{
             ndc?: string;
             name?: string;
+            /**
+             * Every area code of the city, deepest first (Madrid: 915, 911, 910, ...). `ndc` is the one an order is placed against.
+             */
+            ndcs?: Array<(string)>;
+            /**
+             * Other names the area answers to, present only when it has some (Milano for Milan, Sevilla for Seville).
+             */
+            aliases?: Array<(string)>;
         }>;
         /**
          * Nothing deliverable and no pre-order: `listed` > 0 is stock the carrier shows that WhatsApp refused recently (held back until it clears), 0 is a dry area of an instant tier. A stock watch (POST /v1/phone-numbers/stock-watches with `areaCode`) is the way to hear when it is back.
@@ -32685,6 +32701,14 @@ export type CheckPhoneNumberAvailabilityResponse = ({
             ndc?: string;
             name?: string;
             listed?: number;
+            /**
+             * Every area code of the city, deepest first (Madrid: 915, 911, 910, ...). `ndc` is the one an order is placed against.
+             */
+            ndcs?: Array<(string)>;
+            /**
+             * Other names the area answers to, present only when it has some (Milano for Milan, Sevilla for Seville).
+             */
+            aliases?: Array<(string)>;
         }>;
     };
 });
@@ -32986,6 +33010,14 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
              * Numbers we can sell there: the carrier count minus the numbers we hold back (WhatsApp refused them or another order holds them).
              */
             count?: number;
+            /**
+             * Every area code of the city, deepest first (Madrid: 915, 911, 910, ...). `ndc` is the one an order is placed against.
+             */
+            ndcs?: Array<(string)>;
+            /**
+             * Other names the area answers to, present only when it has some (Milano for Milan, Sevilla for Seville).
+             */
+            aliases?: Array<(string)>;
         }>;
         /**
          * The carrier lists nothing there and the number type is a document tier: submit KYC with `areaCode` and `preOrder: true`, the carrier sources one (usually 2 to 4 weeks, never guaranteed), nothing is billed until it is active.
@@ -32993,6 +33025,14 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
         preOrder?: Array<{
             ndc?: string;
             name?: string;
+            /**
+             * Every area code of the city, deepest first (Madrid: 915, 911, 910, ...). `ndc` is the one an order is placed against.
+             */
+            ndcs?: Array<(string)>;
+            /**
+             * Other names the area answers to, present only when it has some (Milano for Milan, Sevilla for Seville).
+             */
+            aliases?: Array<(string)>;
         }>;
         /**
          * Nothing deliverable and no pre-order: `listed` > 0 is stock the carrier shows that WhatsApp refused recently (held back until it clears), 0 is a dry area of an instant tier. A stock watch (POST /v1/phone-numbers/stock-watches with `areaCode`) is the way to hear when it is back.
@@ -33001,6 +33041,14 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
             ndc?: string;
             name?: string;
             listed?: number;
+            /**
+             * Every area code of the city, deepest first (Madrid: 915, 911, 910, ...). `ndc` is the one an order is placed against.
+             */
+            ndcs?: Array<(string)>;
+            /**
+             * Other names the area answers to, present only when it has some (Milano for Milan, Sevilla for Seville).
+             */
+            aliases?: Array<(string)>;
         }>;
     };
 });
