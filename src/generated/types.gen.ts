@@ -32590,7 +32590,7 @@ export type CheckPhoneNumberAvailabilityResponse = ({
      */
     areas?: Array<(string)>;
     /**
-     * Live inventory grouped by area code. For US and CA this is the full country inventory (every area code with stock, recognizable metros listed first, then alphabetical); other countries are ordered largest stock first; they list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
+     * Live inventory grouped by area code. For US and CA this is the full country inventory (every area code with stock, recognizable metros listed first, then alphabetical); other countries are ordered largest stock first; they list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area. Equal to `areaAvailability.inStock`.
      *
      */
     areaOptions?: Array<{
@@ -32608,7 +32608,7 @@ export type CheckPhoneNumberAvailabilityResponse = ({
         count?: number;
     }>;
     /**
-     * Areas that had stock in the last 90 days and have none now. Pass one as `areaCode` with `preOrder: true` on the KYC submit when `preOrderable` is true, or watch it with POST /v1/phone-numbers/stock-watches.
+     * Every area of the country's numbering plan with nothing deliverable now: `areaAvailability.preOrder` plus `areaAvailability.outOfStock`, kept for older clients. Pass one as `areaCode` with `preOrder: true` on the KYC submit when `preOrderable` is true, or watch it with POST /v1/phone-numbers/stock-watches.
      *
      */
     soldOutAreas?: Array<{
@@ -32625,6 +32625,38 @@ export type CheckPhoneNumberAvailabilityResponse = ({
          */
         preOrderable?: boolean;
     }>;
+    /**
+     * Every area of the country's numbering plan (Google libphonenumber geocoding, one row per city: Madrid covers 910 to 919), in one of three states, refreshed every 6 hours from the carrier's own inventory counts. The same answer the dashboard picker and the public country pages show. Empty lists mean the pair has no cached coverage yet, not that the country has no areas.
+     *
+     */
+    areaAvailability?: {
+        /**
+         * Deliverable numbers now, deepest first. Pass `ndc` as `areaCode` to hold the order to it.
+         */
+        inStock?: Array<{
+            ndc?: string;
+            name?: string;
+            /**
+             * Numbers we can sell there: the carrier count minus the numbers we hold back (WhatsApp refused them or another order holds them).
+             */
+            count?: number;
+        }>;
+        /**
+         * The carrier lists nothing there and the number type is a document tier: submit KYC with `areaCode` and `preOrder: true`, the carrier sources one (usually 2 to 4 weeks, never guaranteed), nothing is billed until it is active.
+         */
+        preOrder?: Array<{
+            ndc?: string;
+            name?: string;
+        }>;
+        /**
+         * Nothing deliverable and no pre-order: `listed` > 0 is stock the carrier shows that WhatsApp refused recently (held back until it clears), 0 is a dry area of an instant tier. A stock watch (POST /v1/phone-numbers/stock-watches with `areaCode`) is the way to hear when it is back.
+         */
+        outOfStock?: Array<{
+            ndc?: string;
+            name?: string;
+            listed?: number;
+        }>;
+    };
 });
 
 export type CheckPhoneNumberAvailabilityError = (unknown | {
@@ -32874,7 +32906,7 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
      */
     areas?: Array<(string)>;
     /**
-     * Live inventory grouped by area code. For US and CA this is the full country inventory (every area code with stock, recognizable metros listed first, then alphabetical); other countries are ordered largest stock first; they list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
+     * Live inventory grouped by area code. For US and CA this is the full country inventory (every area code with stock, recognizable metros listed first, then alphabetical); other countries are ordered largest stock first; they list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area. Equal to `areaAvailability.inStock`.
      *
      */
     areaOptions?: Array<{
@@ -32892,7 +32924,7 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
         count?: number;
     }>;
     /**
-     * Areas that had stock in the last 90 days and have none now. Pass one as `areaCode` with `preOrder: true` on the KYC submit when `preOrderable` is true, or watch it with POST /v1/phone-numbers/stock-watches.
+     * Every area of the country's numbering plan with nothing deliverable now: `areaAvailability.preOrder` plus `areaAvailability.outOfStock`, kept for older clients. Pass one as `areaCode` with `preOrder: true` on the KYC submit when `preOrderable` is true, or watch it with POST /v1/phone-numbers/stock-watches.
      *
      */
     soldOutAreas?: Array<{
@@ -32909,6 +32941,38 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
          */
         preOrderable?: boolean;
     }>;
+    /**
+     * Every area of the country's numbering plan (Google libphonenumber geocoding, one row per city: Madrid covers 910 to 919), in one of three states, refreshed every 6 hours from the carrier's own inventory counts. The same answer the dashboard picker and the public country pages show. Empty lists mean the pair has no cached coverage yet, not that the country has no areas.
+     *
+     */
+    areaAvailability?: {
+        /**
+         * Deliverable numbers now, deepest first. Pass `ndc` as `areaCode` to hold the order to it.
+         */
+        inStock?: Array<{
+            ndc?: string;
+            name?: string;
+            /**
+             * Numbers we can sell there: the carrier count minus the numbers we hold back (WhatsApp refused them or another order holds them).
+             */
+            count?: number;
+        }>;
+        /**
+         * The carrier lists nothing there and the number type is a document tier: submit KYC with `areaCode` and `preOrder: true`, the carrier sources one (usually 2 to 4 weeks, never guaranteed), nothing is billed until it is active.
+         */
+        preOrder?: Array<{
+            ndc?: string;
+            name?: string;
+        }>;
+        /**
+         * Nothing deliverable and no pre-order: `listed` > 0 is stock the carrier shows that WhatsApp refused recently (held back until it clears), 0 is a dry area of an instant tier. A stock watch (POST /v1/phone-numbers/stock-watches with `areaCode`) is the way to hear when it is back.
+         */
+        outOfStock?: Array<{
+            ndc?: string;
+            name?: string;
+            listed?: number;
+        }>;
+    };
 });
 
 export type CheckWhatsAppNumberAvailabilityError = (unknown | {
@@ -34331,7 +34395,17 @@ export type CreatePhoneNumberStockWatchData = {
     };
 };
 
-export type CreatePhoneNumberStockWatchResponse = (PhoneNumberStockWatch);
+export type CreatePhoneNumberStockWatchResponse = ((PhoneNumberStockWatch & {
+    /**
+     * See the 201 response.
+     */
+    preOrderable?: boolean;
+}) | (PhoneNumberStockWatch & {
+    /**
+     * True when the watched area can be bought today as a pre-order (the carrier lists nothing there and the type is a document tier): submit KYC with `areaCode` and `preOrder: true` instead of waiting, usually 2 to 4 weeks, nothing billed until active. The watch is armed either way.
+     */
+    preOrderable?: boolean;
+}));
 
 export type CreatePhoneNumberStockWatchError = (ErrorResponse | {
     error?: string;
