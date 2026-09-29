@@ -32881,7 +32881,7 @@ export type SubmitPhoneNumberKycData = {
          */
         areaCode?: string;
         /**
-         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area.
+         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area. Not needed without areaCode: a whole pair with no stock, or an address in a geographic-match country whose area has no stock, is pre-ordered on its own (see preOrder in the response).
          */
         preOrder?: boolean;
         /**
@@ -32937,7 +32937,7 @@ export type SubmitPhoneNumberKycData = {
 export type SubmitPhoneNumberKycResponse = ({
     status?: 'kyc_submitted' | 'kyc_reused' | 'kyc_already_submitted';
     /**
-     * True when nothing was in stock and this submission placed a pre-order. The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks), and is not billed until active. Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
+     * True when this submission placed a pre-order instead of an order from stock: the country and type had nothing deliverable, the picked areaCode was sold out (preOrder: true sent), or the country requires the number's area to cover the registered address and that area has no stock (the carrier is then asked for a number in exactly that area). The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks, never guaranteed), and is not billed until active. Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
      */
     preOrder?: boolean;
     /**
@@ -33759,7 +33759,7 @@ export type SubmitWhatsAppNumberKycData = {
          */
         areaCode?: string;
         /**
-         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area.
+         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area. Not needed without areaCode: a whole pair with no stock, or an address in a geographic-match country whose area has no stock, is pre-ordered on its own (see preOrder in the response).
          */
         preOrder?: boolean;
         /**
@@ -33811,7 +33811,7 @@ export type SubmitWhatsAppNumberKycData = {
 export type SubmitWhatsAppNumberKycResponse = ({
     status?: 'kyc_submitted' | 'kyc_reused' | 'kyc_already_submitted';
     /**
-     * True when nothing was in stock and this submission placed a pre-order. The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks), and is not billed until active. Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
+     * True when this submission placed a pre-order instead of an order from stock: the country and type had nothing deliverable, the picked areaCode was sold out (preOrder: true sent), or the country requires the number's area to cover the registered address and that area has no stock (the carrier is then asked for a number in exactly that area). The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks, never guaranteed), and is not billed until active. Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
      */
     preOrder?: boolean;
     /**
