@@ -3861,9 +3861,9 @@ export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 's
  * creative fields must NOT be set on this shape.
  *
  * Existing post references work on messaging and CTWA only (not call ads).
- * They cannot be combined with each other or with headline, body, imageUrl,
- * video, or welcomeMessage. No media is uploaded and the organic post is
- * retained. Fresh creatives still require headline, body, and image or video.
+ * They cannot be combined with each other or with headline, body, imageUrl
+ * or video. `welcomeMessage` works on them (it lives on the ad, not the post).
+ * No media is uploaded and the organic post is retained. Fresh creatives still require headline, body, and image or video.
  *
  * The route enforces this at the Zod boundary; OpenAPI's
  * `required` cannot express the OR cleanly.
@@ -3900,7 +3900,7 @@ export type CtwaAdRequestBody = {
      */
     adSetName?: string;
     /**
-     * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id using the connected Instagram identity. Mutually exclusive with objectStoryId and fresh creative fields.
+     * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id run as the media owner (resolved from the media on a Meta ads business-login connection, so no Instagram connection is needed). Mutually exclusive with objectStoryId and fresh creative fields.
      */
     platformPostId?: string;
     /**
@@ -4012,7 +4012,7 @@ export type CtwaAdRequestBody = {
      */
     creatives?: Array<{
         /**
-         * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id using the connected Instagram identity. Mutually exclusive with objectStoryId and fresh creative fields.
+         * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id run as the media owner (resolved from the media on a Meta ads business-login connection, so no Instagram connection is needed). Mutually exclusive with objectStoryId and fresh creative fields.
          */
         platformPostId?: string;
         /**
