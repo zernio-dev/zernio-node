@@ -8872,6 +8872,10 @@ export type Profile = {
     name?: string;
     description?: string;
     color?: string;
+    /**
+     * IANA timezone new posts on this profile use when the request names no `timezone`. Null means UTC.
+     */
+    timezone?: (string) | null;
     isDefault?: boolean;
     /**
      * Only present when includeOverLimit=true. Indicates if this profile exceeds the plan limit.
@@ -16875,7 +16879,7 @@ export type CreatePostData = {
          */
         dryRun?: boolean;
         /**
-         * IANA timezone (`Europe/Madrid`, `America/New_York`) used to interpret a `scheduledFor` (root or per-platform) that carries no `Z` or offset. Has no effect on values that already carry one. An unknown name returns 400 when `scheduledFor` is set.
+         * IANA timezone (`Europe/Madrid`, `America/New_York`) used to interpret a `scheduledFor` (root or per-platform) that carries no `Z` or offset, and stored on the post. Has no effect on values that already carry one. When omitted, the post takes its profile's `timezone` (the queue's profile for a queued post, else the profile its accounts share), and UTC when there is none or the accounts sit on profiles with different timezones. An unknown name returns 400 when `scheduledFor` is set.
          */
         timezone?: string;
         /**
@@ -17363,6 +17367,10 @@ export type CreateProfileData = {
         name: string;
         description?: string;
         color?: string;
+        /**
+         * IANA timezone new posts on this profile use when they name no `timezone`. Omit to keep UTC. An unknown name returns 400.
+         */
+        timezone?: string;
     };
     headers?: {
         /**
@@ -17453,6 +17461,10 @@ export type UpdateProfileData = {
          */
         description?: (string) | null;
         color?: string;
+        /**
+         * IANA timezone new posts on this profile use when they name no `timezone`. Set to null to go back to UTC. An unknown name returns 400.
+         */
+        timezone?: (string) | null;
         isDefault?: boolean;
     };
     path: {
