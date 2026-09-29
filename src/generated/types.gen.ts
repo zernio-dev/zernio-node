@@ -6251,6 +6251,31 @@ export type ImessageAudienceContact = {
     } | null;
 };
 
+export type ImessageSandboxContact = {
+    id?: string;
+    /**
+     * Phone (E.164) or lowercase Apple ID email
+     */
+    handle?: string;
+    status?: 'pending' | 'active';
+    /**
+     * Send this from the handle to the sandbox line to activate it
+     */
+    joinText?: string;
+    /**
+     * Opens Messages on the sandbox line with joinText prefilled
+     */
+    joinLink?: string;
+    activatedAt?: (string) | null;
+    /**
+     * Replies are allowed for 24 hours after this
+     */
+    lastInboundAt?: (string) | null;
+    createdAt?: string;
+};
+
+export type status19 = 'pending' | 'active';
+
 /**
  * An iMessage sender registered as an account on a profile.
  */
@@ -6318,7 +6343,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status19 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status20 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -6390,7 +6415,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status20 = 'active' | 'archived';
+export type status21 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -8107,7 +8132,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status21 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status22 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -8237,7 +8262,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status22 = 'published' | 'failed';
+export type status23 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -8637,7 +8662,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status23 = 'active' | 'draft' | 'archived';
+export type status24 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8844,7 +8869,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status24 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status25 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -8896,7 +8921,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status25 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status26 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -8983,7 +9008,7 @@ export type RcsCarrierApproval = {
 
 export type scope2 = 'carrier' | 'hub' | 'bot';
 
-export type status26 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status27 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -10482,7 +10507,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status27 = 'pending' | 'completed' | 'expired';
+export type status28 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -10981,7 +11006,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status28 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status29 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -11130,7 +11155,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status29 = 'success' | 'failed';
+export type status30 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -11242,7 +11267,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status30 = 'success' | 'failure';
+export type status31 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -13313,7 +13338,7 @@ export type event25 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status31 = 'published' | 'failed' | 'deleted';
+export type status32 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -13579,7 +13604,7 @@ export type platform16 = 'whatsapp';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status32 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status33 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -13728,7 +13753,7 @@ export type event33 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status33 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status34 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -13875,14 +13900,6 @@ export type WhatsAppSandboxSession = {
     activatedAt?: (string) | null;
     createdAt?: (string) | null;
 };
-
-/**
- * `pending` until the phone replies to the activation template, then
- * `active`. Expired sessions are pruned by TTL and never appear in
- * list responses.
- *
- */
-export type status34 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -29594,6 +29611,56 @@ export type ListImessageAudienceResponse = ({
 export type ListImessageAudienceError = (ErrorResponse | {
     error?: string;
 });
+
+export type ListImessageSandboxContactsResponse = ({
+    sandbox?: {
+        /**
+         * Use as accountId to reply from the sandbox line
+         */
+        accountId?: string;
+        /**
+         * The sandbox line to message
+         */
+        handle?: string;
+        contactLimit?: number;
+    };
+    contacts?: Array<ImessageSandboxContact>;
+});
+
+export type ListImessageSandboxContactsError = ({
+    error?: string;
+} | unknown);
+
+export type AddImessageSandboxContactData = {
+    body: {
+        /**
+         * Phone in international format (+15551234567) or an Apple ID email
+         */
+        handle: string;
+    };
+};
+
+export type AddImessageSandboxContactResponse = ({
+    contact?: ImessageSandboxContact;
+});
+
+export type AddImessageSandboxContactError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RemoveImessageSandboxContactData = {
+    path: {
+        contactId: string;
+    };
+};
+
+export type RemoveImessageSandboxContactResponse = ({
+    success?: boolean;
+});
+
+export type RemoveImessageSandboxContactError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type SetImessageSubscriptionData = {
     body: {
