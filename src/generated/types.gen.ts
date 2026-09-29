@@ -32228,7 +32228,7 @@ export type ReleasePhoneNumberResponse = ({
 
 export type ReleasePhoneNumberError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type PurchasePhoneNumberData = {
     body: {
@@ -34885,7 +34885,7 @@ export type ReleaseWhatsAppPhoneNumberResponse = ({
 
 export type ReleaseWhatsAppPhoneNumberError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type ListWhatsAppSandboxSessionsResponse = ({
     sessions?: Array<WhatsAppSandboxSession>;
