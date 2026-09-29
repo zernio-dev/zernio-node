@@ -1701,7 +1701,8 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
  * Business login reports metadata.tokenType=system-user in GET /v1/accounts. An absent
  * Meta expires_in leaves tokenExpiresAt absent; no personal-token re-exchange occurs.
  * Subsequent classic requests can change the ad-account scope using the business token;
- * force=true requires loginMode=business to reconnect that connection.
+ * force=true (or disconnecting the business connection first) switches the profile to the
+ * standard Facebook login; the ads account is then held by the user token.
  *
  * **Same-token platforms (facebook, instagram, linkedin, pinterest).** The ads SocialAccount
  * (metaads, linkedinads, pinterestads) reuses the OAuth token of the parent posting account,
