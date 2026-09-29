@@ -9324,9 +9324,8 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
  * `budgetType: daily`). On OpenAI `goal` sets the campaign objective, and
  * `conversions` needs an active standard conversion event on the account. LinkedIn creates the
  * campaign GROUP (our campaign level) and rejects a budget, which lives on the
- * campaign (ad set) level there; it comes back `status: DRAFT`. TikTok campaigns are
- * created without a status and report `ENABLE`. Created `PAUSED` unless
- * `status: ACTIVE` where the platform supports it.
+ * campaign (ad set) level there; it comes back `status: DRAFT`. Created `PAUSED`
+ * (TikTok `DISABLE`) unless `status: ACTIVE` where the platform supports it.
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
  */
