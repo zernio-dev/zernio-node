@@ -14107,7 +14107,7 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * OpenAI Ads: the account's conversion event settings whose source is this pixel.
  * `siteEventId` is the event name the site sends (a standard event such as
  * `order_created`, or the lowercase custom event name); `clickWindowDays` is the
- * attribution window.
+ * click attribution window and `viewWindowDays` the view-through window (0 = off).
  *
  * LinkedIn (`linkedinads`): the conversion rules of the ad account (`adAccountId`, default
  * the account that created the tag), including Conversions API and URL-match rules.
@@ -14395,9 +14395,11 @@ export const getTrackingTagDiagnostics = <ThrowOnError extends boolean = false>(
  * Platforms without a stats API answer 501.
  *
  * OpenAI Ads: the recent-events stream (`GET /conversions/events`), the
- * latest (at most 50) Pixel SDK events received in the last 15 minutes,
- * one row per event (`event_type`, `api_channel`, `event_timestamp_ms`,
- * `received_at_ms`, ...). Conversions API events are not included. It is
+ * latest (at most 50) events received in the last 15 minutes, one row per
+ * event (`event_type`, `api_channel`, `event_timestamp_ms`, `received_at_ms`,
+ * ...). Both sources appear: `api_channel` is `pixel_sdk` for the on-site
+ * Pixel (including its `openai::sdk_init` load event) and `server_to_server`
+ * for Conversions API events. It is
  * a fixed window: `startTime`/`endTime` answer 400. Use it to confirm an
  * install fires; attributed totals come from ads analytics. Accounts not
  * enabled for the stream answer 422 `feature_not_available`.
