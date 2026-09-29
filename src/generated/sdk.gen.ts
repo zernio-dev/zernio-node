@@ -10028,7 +10028,10 @@ export const deleteAd = <ThrowOnError extends boolean = false>(options: OptionsL
  * effective story/media IDs). `platform` is inferred from the ad, so it's
  * not required in the body. Ads in terminal statuses (rejected, completed,
  * cancelled) are skipped, and so is a request whose target already matches
- * the ad's own switch. The rolled-up `status` never decides a skip.
+ * the ad's own switch as read LIVE from the platform (a stored value is
+ * never trusted alone, since the switch may have been changed in the
+ * platform's own UI). A skip also returns that live read. The rolled-up
+ * `status` never decides a skip.
  *
  */
 export const updateAdStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdStatusData, ThrowOnError>) => {

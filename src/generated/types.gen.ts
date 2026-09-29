@@ -92,7 +92,7 @@ export type Ad = {
      */
     status?: (AdStatus);
     /**
-     * The ad's own on/off switch as configured on the platform, independent of its parents: an ACTIVE ad under a paused ad set or campaign still reads ACTIVE here while `status` reads `paused`. Sources: Meta `configured_status`, TikTok ad `operation_status` (ENABLE -> ACTIVE, DISABLE -> PAUSED), ChatGPT (OpenAI) ad `status` (ACTIVE / PAUSED, plus ARCHIVED on OpenAI). Distinct from `status`, which is the ancestor-cascaded delivery status. Only present for Meta, TikTok and OpenAI ads created or synced after the field was added for that platform; null otherwise.
+     * The ad's own on/off switch as configured on the platform, independent of its parents: an ACTIVE ad under a paused ad set or campaign still reads ACTIVE here while `status` reads `paused`. Sources: Meta `configured_status`, TikTok ad `operation_status` (ENABLE -> ACTIVE, DISABLE -> PAUSED), ChatGPT (OpenAI) ad `status` (ACTIVE / PAUSED, plus ARCHIVED on OpenAI). On create it is read back from the platform, not copied from the request, so it can read ACTIVE for a `PAUSED` create where the platform holds the pause at the campaign (some Meta create flows). A TikTok ad created `PAUSED` is switched off at the ad, ad group and campaign and reads PAUSED. Distinct from `status`, which is the ancestor-cascaded delivery status. Only present for Meta, TikTok and OpenAI ads created or synced after the field was added for that platform; null otherwise.
      */
     configuredStatus?: (string) | null;
     /**
