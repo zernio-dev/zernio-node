@@ -3868,6 +3868,13 @@ export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 's
  * The route enforces this at the Zod boundary; OpenAPI's
  * `required` cannot express the OR cleanly.
  *
+ * Campaign, ad set and targeting fields match POST /v1/ads/create on
+ * Meta and run through the same builders: the full targeting set
+ * (including `rawTargeting`, `languages`, `gender`, exclusions and
+ * `savedTargetingId`), `budgetLevel` (campaign budget), `startDate` /
+ * `endDate` in the ad account timezone, and `existingCampaignId` to add
+ * a new ad set to a campaign you already have.
+ *
  */
 export type CtwaAdRequestBody = {
     /**
@@ -3932,6 +3939,17 @@ export type CtwaAdRequestBody = {
      *
      */
     body?: string;
+    /**
+     * Link description, independent of `headline` and `body` (Meta's
+     * `link_data.description`, `video_data.link_description` on video,
+     * and the shared description of a `placementAssets` feed). Meta
+     * shows it mainly on Facebook Feed placements, under the headline,
+     * when there is room; Instagram, Stories, Reels and Messenger
+     * placements do not display it. Also accepted per entry in
+     * `creatives[]`. Not allowed with an existing post creative.
+     *
+     */
+    description?: string;
     /**
      * Image asset for single-creative shape. Mutually exclusive
      * with `video` and with `creatives[]`. Required on the
@@ -4080,21 +4098,47 @@ export type CtwaAdRequestBody = {
      * Attach the creatives to this EXISTING messaging ad set instead of
      * building a campaign, so the ad set keeps its learning phase. It then
      * owns budget, targeting and schedule, so `budgetAmount`, `budgetType`,
-     * `endDate`, `objective`, `countries`, `interests`, `audienceId` and
-     * `campaignStatus` are rejected with a 400 alongside it. Its
+     * `budgetLevel`, `startDate`, `endDate`, `objective`, `campaignStatus`,
+     * `existingCampaignId`, the special ad category fields and every
+     * targeting field except `ageMin`, `ageMax`, `placements` and
+     * `advantageAudience` are rejected with a 400 alongside it. Its
      * `destination_type` must match the ad's destination.
      *
      */
     adSetId?: string;
     /**
+     * Create the new messaging ad set (and its ads) under this EXISTING
+     * Meta campaign instead of a new one, e.g. several audience ad sets
+     * under one campaign. The campaign's objective must be
+     * OUTCOME_ENGAGEMENT, OUTCOME_SALES or OUTCOME_LEADS (400 otherwise).
+     * If the campaign has a campaign budget, omit `budgetAmount` and
+     * `budgetType` (400 if sent); otherwise they are required and land
+     * on the new ad set. `objective`, `campaignName`, `campaignStatus`,
+     * `budgetLevel`, `specialAdCategories`, `specialAdCategoryCountry`
+     * and `adSetId` are rejected alongside it. To add ads to an existing
+     * ad set instead, use `adSetId`.
+     *
+     */
+    existingCampaignId?: string;
+    /**
+     * Where the budget lives. `adset` (default) puts it on the new ad
+     * set. `campaign` creates an Advantage campaign budget (CBO): the
+     * budget and bid strategy sit on the campaign and the ad set
+     * inherits them, same as POST /v1/ads/create. Not allowed with
+     * `adSetId` or `existingCampaignId`.
+     *
+     */
+    budgetLevel?: 'adset' | 'campaign';
+    /**
      * Budget amount in the ad account's currency major units
      * (e.g. dollars for USD, not cents). Must be > 0.
-     * Required unless `adSetId` is set, where the ad set owns it.
+     * Required unless `adSetId` is set (the ad set owns it) or
+     * `existingCampaignId` names a campaign with a campaign budget.
      *
      */
     budgetAmount?: number;
     /**
-     * Required unless `adSetId` is set.
+     * Required unless `adSetId` is set or `existingCampaignId` names a campaign with a campaign budget. `lifetime` requires `endDate`.
      */
     budgetType?: 'daily' | 'lifetime';
     /**
@@ -4108,7 +4152,18 @@ export type CtwaAdRequestBody = {
      */
     currency?: string;
     /**
-     * ISO 8601 datetime. Required when `budgetType` is `lifetime`.
+     * When the ad set starts delivering. ISO 8601 date or date-time. A
+     * value with an offset (`2027-01-15T10:00:00+01:00`, `...Z`) is used
+     * as is; one without an offset (`2027-01-15T10:00:00`) is read in the
+     * ad account's timezone, and a date-only value starts at 00:00 local.
+     * Defaults to now.
+     *
+     */
+    startDate?: string;
+    /**
+     * ISO 8601 date or date-time, read like `startDate`; a date-only
+     * value ends at 23:59:59 local. Required when `budgetType` is
+     * `lifetime`.
      *
      */
     endDate?: string;
@@ -4221,6 +4276,101 @@ export type CtwaAdRequestBody = {
         devicePlatforms?: Array<('mobile' | 'desktop')>;
     };
     /**
+     * Restrict the audience by gender (Meta `genders`). Stored on the ad and read back in `targeting.gender`.
+     */
+    gender?: 'all' | 'male' | 'female';
+    /**
+     * Audience languages (Meta `locales`). A bare ISO 639-1 code targets all regional variants ("en" = all English), a region-qualified code a specific one ("en_GB", "pt_BR"); unknown codes are rejected.
+     */
+    languages?: Array<(string)>;
+    /**
+     * Meta place keys (from GET /v1/ads/targeting/search).
+     */
+    places?: Array<{
+        key: string;
+    }>;
+    /**
+     * Meta neighborhood keys (from GET /v1/ads/targeting/search).
+     */
+    neighborhoods?: Array<{
+        key: string;
+    }>;
+    /**
+     * Geo to exclude, same shape as POST /v1/ads/create (countries, countryGroups, regions, cities, zips, places, neighborhoods, customLocations).
+     */
+    excludedLocations?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Meta behavior ids. Each dimension is its own flexible_spec entry: OR within, AND across.
+     */
+    behaviors?: Array<{
+        id: string;
+        name?: string;
+    }>;
+    workPositions?: Array<{
+        id: string;
+        name?: string;
+    }>;
+    workEmployers?: Array<{
+        id: string;
+        name?: string;
+    }>;
+    workIndustries?: Array<{
+        id: string;
+        name?: string;
+    }>;
+    /**
+     * Normalized household-income tier, same as POST /v1/ads/create. Incompatible with housing, employment and credit specialAdCategories.
+     */
+    incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
+    /**
+     * Meta `user_os`, e.g. ["iOS_ver_14.0_and_above"].
+     */
+    userOs?: Array<(string)>;
+    /**
+     * Meta `user_device`.
+     */
+    userDevice?: Array<(string)>;
+    /**
+     * Custom or lookalike audience ids to include.
+     */
+    audienceInclude?: Array<(string)>;
+    /**
+     * Custom or lookalike audience ids to exclude.
+     */
+    audienceExclude?: Array<(string)>;
+    /**
+     * ID of a saved_targeting audience (POST /v1/ads/audiences), expanded as the base targeting. Precedence: savedTargetingId, then `targeting`, then the flat fields.
+     */
+    savedTargetingId?: string;
+    /**
+     * Nested targeting object, same contract as POST /v1/ads/create and boost. Flat fields win per key.
+     */
+    targeting?: TargetingSpec;
+    /**
+     * Meta targeting spec sent as the BASE layer of the ad set's
+     * `targeting`, exactly as POST /v1/ads/create does: use it for
+     * anything the flat fields cannot express, such as a layered
+     * `flexible_spec` (entries AND together, ids inside one entry OR).
+     * Flat fields you also send are layered on top and win per key.
+     * With rawTargeting present the US geo and `advantage_audience: 0`
+     * defaults are not injected, so include `targeting_automation` in
+     * it (or send `advantageAudience`), as Meta requires it on create.
+     *
+     */
+    rawTargeting?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Meta special ad categories on the new campaign.
+     */
+    specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ONLINE_GAMBLING_AND_GAMING')>;
+    /**
+     * Countries the special ad category applies to. Requires specialAdCategories.
+     */
+    specialAdCategoryCountry?: Array<(string)>;
+    /**
      * Meta's Advantage+ audience expansion. `0` (default) keeps
      * targeting strict; `1` lets Meta expand beyond the supplied
      * targeting when its delivery system finds better matches.
@@ -4318,9 +4468,19 @@ export type CtwaAdRequestBody = {
 };
 
 /**
- * Required unless `adSetId` is set.
+ * Required unless `adSetId` is set or `existingCampaignId` names a campaign with a campaign budget. `lifetime` requires `endDate`.
  */
 export type budgetType = 'daily' | 'lifetime';
+
+/**
+ * Restrict the audience by gender (Meta `genders`). Stored on the ad and read back in `targeting.gender`.
+ */
+export type gender = 'all' | 'male' | 'female';
+
+/**
+ * Normalized household-income tier, same as POST /v1/ads/create. Incompatible with housing, employment and credit specialAdCategories.
+ */
+export type incomeTier = 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
 
 /**
  * Meta's Advantage+ audience expansion. `0` (default) keeps
@@ -7638,7 +7798,7 @@ export type condition2 = 'new' | 'refurbished' | 'used';
 
 export type visibility = 'published' | 'staging';
 
-export type gender = 'female' | 'male' | 'unisex';
+export type gender2 = 'female' | 'male' | 'unisex';
 
 /**
  * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys and unspecified features default to OPT_OUT. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. The deprecated standard_enhancements bundle is rejected by Meta.
@@ -9935,21 +10095,6 @@ export type TargetingSpec = {
      */
     audienceExclude?: Array<(string)>;
 };
-
-/**
- * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
- */
-export type gender2 = 'all' | 'male' | 'female';
-
-/**
- * Normalized household-income tier (ZIP/percentile based). Meta and TikTok
- * express all four. Google maps only `top_10` (its INCOME_RANGE_90_UP); other
- * tiers on Google, and any income tier on LinkedIn / X / Pinterest, are rejected.
- * On Meta, income/zip targeting requires the relevant `specialAdCategories` to be
- * unset (housing/employment/credit ads cannot use it).
- *
- */
-export type incomeTier = 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
 
 /**
  * Text, images (up to 10), videos (up to 10), and mixed media albums. Captions up to 1024 chars for media, 4096 for text-only.
