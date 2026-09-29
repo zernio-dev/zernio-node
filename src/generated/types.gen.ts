@@ -3077,6 +3077,437 @@ export type CommentAutomationTemplateElement = {
 };
 
 /**
+ * An operation a store supports. Calling an operation outside this list answers 400 platform_not_supported.
+ */
+export type CommerceCapability = 'products.read' | 'products.create' | 'products.update' | 'products.status' | 'products.price' | 'products.variants' | 'products.images' | 'products.images_remove' | 'collections.read' | 'collections.write' | 'metafields.read' | 'metafields.write' | 'pages.read' | 'pages.write' | 'inventory.read' | 'inventory.write' | 'channels.read' | 'channels.write' | 'discounts.read' | 'discounts.write' | 'navigation.read' | 'navigation.write' | 'metaobjects.read' | 'metaobjects.write' | 'markets.read' | 'markets.write' | 'marketing.write';
+
+/**
+ * A store kept in sync with an ad-platform product catalog.
+ */
+export type CommerceCatalogSync = {
+    id?: string;
+    /**
+     * The store SocialAccount id.
+     */
+    accountId?: string;
+    catalogPlatform?: 'meta';
+    /**
+     * The Meta login account whose token writes to the catalog.
+     */
+    catalogAccountId?: string;
+    catalogId?: string;
+    runStatus?: 'pending' | 'running' | 'succeeded' | 'failed';
+    lastRunStartedAt?: (string) | null;
+    lastRunFinishedAt?: (string) | null;
+    /**
+     * Why the last run failed, or how many items Meta rejected in a run that otherwise succeeded. Null after a clean run.
+     */
+    lastError?: (string) | null;
+    /**
+     * Catalog items (one per variant) Meta accepted in the last full run.
+     */
+    itemsSent?: number;
+    /**
+     * Products the last full run could not list: not published to the online store or without an image.
+     */
+    itemsSkipped?: number;
+    /**
+     * Items the last full run removed because the store no longer has them.
+     */
+    itemsDeleted?: number;
+    createdAt?: string;
+};
+
+export type catalogPlatform = 'meta';
+
+export type runStatus = 'pending' | 'running' | 'succeeded' | 'failed';
+
+export type CommerceChannel = {
+    id?: string;
+    name?: string;
+};
+
+/**
+ * A product collection on a connected store.
+ */
+export type CommerceCollection = {
+    /**
+     * Platform-native collection id.
+     */
+    id?: string;
+    accountId?: string;
+    platform?: 'shopify' | 'woocommerce';
+    title?: string;
+    handle?: (string) | null;
+    descriptionHtml?: (string) | null;
+    image?: (CommerceImage | null);
+    sortOrder?: 'manual' | 'best_selling' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc' | 'created' | 'created_desc' | 'most_relevant';
+    /**
+     * Updates a few seconds after a membership change.
+     */
+    productCount?: (number) | null;
+    seo?: {
+        title?: (string) | null;
+        description?: (string) | null;
+    };
+    updatedAt?: (string) | null;
+    platformData?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+export type platform4 = 'shopify' | 'woocommerce';
+
+export type sortOrder = 'manual' | 'best_selling' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc' | 'created' | 'created_desc' | 'most_relevant';
+
+export type CommerceDiscount = {
+    id?: string;
+    accountId?: string;
+    platform?: 'shopify';
+    title?: string;
+    method?: 'code' | 'automatic';
+    type?: 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
+    /**
+     * The first 10 codes; codeCount has the total.
+     */
+    codes?: Array<(string)>;
+    codeCount?: (number) | null;
+    /**
+     * Null for free shipping, buy-X-get-Y and app discounts.
+     */
+    value?: ({
+    type?: 'percentage';
+    percentage?: number;
+} | {
+    type?: 'fixed_amount';
+    amount?: CommerceMoney;
+    appliesOnEachItem?: boolean;
+} | null);
+    appliesTo?: {
+        type?: 'all' | 'products' | 'collections';
+        productIds?: Array<(string)>;
+        variantIds?: Array<(string)>;
+        collectionIds?: Array<(string)>;
+    } | null;
+    minimum?: {
+        type?: 'subtotal' | 'quantity';
+        amount?: CommerceMoney;
+        quantity?: number;
+    } | null;
+    usageLimit?: (number) | null;
+    oncePerCustomer?: boolean;
+    usageCount?: number;
+    startsAt?: string;
+    endsAt?: (string) | null;
+    status?: 'active' | 'scheduled' | 'expired';
+    platformStatus?: string;
+    summary?: string;
+    platformData?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+export type platform5 = 'shopify';
+
+export type method = 'code' | 'automatic';
+
+export type type3 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
+
+export type status10 = 'active' | 'scheduled' | 'expired';
+
+export type CommerceImage = {
+    /**
+     * Media id, used to reorder or remove images. Null for collection images.
+     */
+    id?: (string) | null;
+    url?: string;
+    altText?: (string) | null;
+};
+
+export type CommerceInventoryItem = {
+    productId?: string;
+    variantId?: string;
+    sku?: (string) | null;
+    /**
+     * False when the platform does not count stock for the variant.
+     */
+    tracked?: boolean;
+    levels?: Array<{
+        locationId?: string;
+        available?: (number) | null;
+        onHand?: (number) | null;
+        /**
+         * Reserved for unfulfilled orders.
+         */
+        committed?: (number) | null;
+        incoming?: (number) | null;
+    }>;
+};
+
+export type CommerceLocation = {
+    id?: string;
+    name?: string;
+    isActive?: boolean;
+    fulfillsOnlineOrders?: boolean;
+    address?: {
+        line1?: (string) | null;
+        line2?: (string) | null;
+        city?: (string) | null;
+        region?: (string) | null;
+        postalCode?: (string) | null;
+        countryCode?: (string) | null;
+        phone?: (string) | null;
+    };
+};
+
+export type CommerceMarket = {
+    id?: string;
+    name?: string;
+    handle?: string;
+    status?: 'active' | 'draft';
+    type?: string;
+};
+
+export type status11 = 'active' | 'draft';
+
+export type CommerceMenu = {
+    id?: string;
+    handle?: string;
+    title?: string;
+    items?: Array<CommerceMenuItem>;
+};
+
+export type CommerceMenuItem = {
+    id?: (string) | null;
+    title?: string;
+    type?: 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
+    url?: (string) | null;
+    /**
+     * The linked product, collection, page, blog, article or metaobject id.
+     */
+    resourceId?: (string) | null;
+    items?: Array<CommerceMenuItem>;
+};
+
+export type type4 = 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
+
+export type CommerceMenuItemInput = {
+    title: string;
+    type: 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
+    /**
+     * For http items.
+     */
+    url?: string;
+    /**
+     * For product, collection, page, blog, article and metaobject items.
+     */
+    resourceId?: string;
+    items?: Array<CommerceMenuItemInput>;
+};
+
+export type CommerceMetafield = {
+    namespace: string;
+    key: string;
+    /**
+     * Platform value type, e.g. single_line_text_field, number_integer, json.
+     */
+    type: string;
+    /**
+     * The value serialized as a string, JSON for structured types.
+     */
+    value: string;
+};
+
+export type CommerceMetaobject = {
+    id?: string;
+    type?: string;
+    handle?: string;
+    displayName?: string;
+    fields?: Array<{
+        key?: string;
+        type?: string;
+        value?: (string) | null;
+    }>;
+};
+
+export type CommerceMetaobjectDefinition = {
+    id?: string;
+    type?: string;
+    name?: string;
+    fields?: Array<{
+        key?: string;
+        name?: string;
+        type?: string;
+        required?: boolean;
+    }>;
+};
+
+/**
+ * An exact amount of money. The amount is a decimal string so cents are never lost to floating point.
+ */
+export type CommerceMoney = {
+    amount: string;
+    /**
+     * ISO 4217 code. Never null: the store currency is filled in when the platform omits it.
+     */
+    currency: string;
+};
+
+export type CommercePage = {
+    id?: string;
+    accountId?: string;
+    platform?: 'shopify';
+    title?: string;
+    handle?: string;
+    bodyHtml?: string;
+    isPublished?: boolean;
+    publishedAt?: (string) | null;
+    createdAt?: (string) | null;
+    updatedAt?: (string) | null;
+};
+
+export type CommercePriceList = {
+    id?: string;
+    name?: string;
+    currency?: string;
+};
+
+/**
+ * A product on a connected store, in the platform-neutral shape.
+ */
+export type CommerceProduct = {
+    /**
+     * Platform-native product id.
+     */
+    id?: string;
+    accountId?: string;
+    platform?: 'shopify';
+    title?: string;
+    descriptionHtml?: (string) | null;
+    /**
+     * URL slug of the product.
+     */
+    handle?: (string) | null;
+    vendor?: (string) | null;
+    productType?: (string) | null;
+    tags?: Array<(string)>;
+    status?: CommerceProductStatus;
+    /**
+     * The raw status on the platform, e.g. ACTIVE on Shopify.
+     */
+    platformStatus?: string;
+    featuredImage?: (CommerceImage | null);
+    /**
+     * First 20 images, in store order.
+     */
+    images?: Array<CommerceImage>;
+    /**
+     * Option axes (e.g. Size, Color) and their values.
+     */
+    options?: Array<{
+        name?: string;
+        values?: Array<(string)>;
+    }>;
+    /**
+     * First 100 variants.
+     */
+    variants?: Array<CommerceVariant>;
+    totalInventory?: (number) | null;
+    /**
+     * Public storefront URL; null while the product is not published.
+     */
+    url?: (string) | null;
+    seo?: {
+        title?: (string) | null;
+        description?: (string) | null;
+    };
+    createdAt?: (string) | null;
+    updatedAt?: (string) | null;
+    publishedAt?: (string) | null;
+    /**
+     * Platform-only fields. Null when the platform has none.
+     */
+    platformData?: {
+        [key: string]: unknown;
+    } | null;
+};
+
+/**
+ * Zernio product status. The platform value is returned as platformStatus. Shopify: ACTIVE, DRAFT and ARCHIVED map to the same names; UNLISTED maps to inactive.
+ */
+export type CommerceProductStatus = 'active' | 'draft' | 'pending_review' | 'rejected' | 'inactive' | 'archived' | 'deleted';
+
+export type CommerceRedirect = {
+    id?: string;
+    path?: string;
+    target?: string;
+};
+
+export type CommerceStore = {
+    /**
+     * Zernio SocialAccount id of the store.
+     */
+    accountId: string;
+    platform: 'shopify' | 'woocommerce';
+    name: string;
+    /**
+     * The platform domain of the store, e.g. my-store.myshopify.com.
+     */
+    domain: string;
+    /**
+     * Public storefront URL.
+     */
+    url: (string) | null;
+    /**
+     * ISO 4217 code the store sells in.
+     */
+    currency: string;
+    /**
+     * ISO 3166-1 alpha-2 country of the store.
+     */
+    country: (string) | null;
+    capabilities: Array<CommerceCapability>;
+    /**
+     * Capabilities the platform supports that this store has not granted yet.
+     */
+    missingCapabilities: Array<CommerceCapability>;
+    /**
+     * Shopify: a page in the Shopify admin where the store owner approves the permissions missingCapabilities need, on the existing install (no reinstall; they can revoke them later). Null when nothing is missing or the store cannot grant them this way (a store connected with its own custom-app token).
+     */
+    grantPermissionsUrl: (string) | null;
+};
+
+/**
+ * A purchasable variant of a product (one per option combination).
+ */
+export type CommerceVariant = {
+    /**
+     * Platform-native variant id.
+     */
+    id?: string;
+    /**
+     * Option combination label, e.g. "S / Blue".
+     */
+    title?: string;
+    sku?: (string) | null;
+    barcode?: (string) | null;
+    price?: CommerceMoney;
+    /**
+     * Strike-through price; null when the variant is not on sale.
+     */
+    compareAtPrice?: (CommerceMoney | null);
+    /**
+     * Units on hand; null when inventory is not tracked.
+     */
+    inventoryQuantity?: (number) | null;
+    availableForSale?: (boolean) | null;
+    options?: Array<{
+        name?: string;
+        value?: string;
+    }>;
+};
+
+/**
  * An OAuth client (AI assistant / MCP connector) authorized by the user and still
  * holding at least one live token.
  *
@@ -3227,7 +3658,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status10 = 'active' | 'inactive';
+export type status12 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -3911,7 +4342,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * newly created ad(s) after Meta accepts them.
  *
  */
-export type status11 = 'ACTIVE' | 'PAUSED';
+export type status13 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
@@ -4283,7 +4714,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status12 = 1 | 2 | 3 | 4;
+export type status14 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -4317,7 +4748,7 @@ export type DmButton = {
     phone?: string;
 };
 
-export type type3 = 'url' | 'postback' | 'phone';
+export type type5 = 'url' | 'postback' | 'phone';
 
 /**
  * Canonical error envelope. `error` is the human-readable message; `type`,
@@ -4438,7 +4869,7 @@ export type ErrorResponse = {
 /**
  * Error class for programmatic handling.
  */
-export type type4 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+export type type6 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
  * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on), or `other` (a read or check before any write).
@@ -4479,7 +4910,7 @@ export type ExternalPostMediaItem = {
     unavailableReason?: 'platform_withheld';
 };
 
-export type type5 = 'image' | 'video';
+export type type7 = 'image' | 'video';
 
 /**
  * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
@@ -4811,7 +5242,7 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status13 = 'received';
+export type status15 = 'received';
 
 export type FollowerStatsResponse = {
     accounts?: Array<AccountWithFollowerStats>;
@@ -4936,7 +5367,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status14 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status16 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -5034,7 +5465,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status15 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status17 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 /**
  * Link one asset to the asset group. Send exactly one of asset (an existing asset), text, imageUrl or youtubeVideoId (new content, created in the same request).
@@ -5206,7 +5637,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type6 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type8 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * A Google Business Profile review, as returned by every gmb-reviews read endpoint.
@@ -5524,7 +5955,7 @@ export type GoogleListingGroupFilterNode = {
     } | null;
 };
 
-export type type7 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
+export type type9 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
 
 export type GoogleListingGroupNode = {
     dimension: GoogleListingGroupDimension;
@@ -5755,7 +6186,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status16 = 'applied' | 'dismissed' | 'failed';
+export type status18 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -5850,7 +6281,7 @@ export type ImessageSender = {
     isActive?: boolean;
 };
 
-export type platform4 = 'imessage';
+export type platform6 = 'imessage';
 
 /**
  * A provisioned iMessage sender order and its lifecycle. Activation is asynchronous: poll GET /v1/imessage/senders/{senderId} or subscribe to account.connected.
@@ -5887,7 +6318,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status17 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status19 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -5959,7 +6390,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status18 = 'active' | 'archived';
+export type status20 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -5997,7 +6428,7 @@ export type InboxWebhookConversationDetail = {
     contactId?: string;
 };
 
-export type platform5 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
+export type platform7 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -6113,7 +6544,7 @@ export type InboxWebhookMessage = {
     isRead: boolean;
 };
 
-export type platform6 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
+export type platform8 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
 
 export type direction2 = 'incoming' | 'outgoing';
 
@@ -6241,7 +6672,7 @@ export type InstagramAccountInsightsResponse = {
 /**
  * Platform that served this response.
  */
-export type platform7 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
+export type platform9 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
 
 export type metricType = 'time_series' | 'total_value';
 
@@ -7025,7 +7456,7 @@ export type MediaItem = {
     tiktokProcessed?: boolean;
 };
 
-export type type8 = 'image' | 'video' | 'gif' | 'document';
+export type type10 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
@@ -7676,7 +8107,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status19 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status21 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -7806,7 +8237,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status20 = 'published' | 'failed';
+export type status22 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -7935,7 +8366,7 @@ export type PortfolioBidStrategy = {
     targetRoas?: (number) | null;
 };
 
-export type type9 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+export type type11 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
 
 export type Post = {
     _id?: string;
@@ -8206,9 +8637,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type platform8 = 'shopify';
-
-export type status21 = 'active' | 'draft' | 'archived';
+export type status23 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -8415,7 +8844,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status22 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status24 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -8467,7 +8896,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status23 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status25 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -8554,7 +8983,7 @@ export type RcsCarrierApproval = {
 
 export type scope2 = 'carrier' | 'hub' | 'bot';
 
-export type status24 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status26 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -8580,7 +9009,7 @@ export type RcsContent = {
     suggestions?: Array<RcsSuggestion>;
 };
 
-export type type10 = 'text';
+export type type12 = 'text';
 
 export type orientation = 'VERTICAL' | 'HORIZONTAL';
 
@@ -8693,7 +9122,7 @@ export type RcsSuggestion = {
     postbackData?: string;
 };
 
-export type type11 = 'reply';
+export type type13 = 'reply';
 
 export type application = 'BROWSER' | 'WEBVIEW';
 
@@ -8957,7 +9386,7 @@ export type ReviewWebhookReview = {
 /**
  * Platform the review originated on. Currently Google Business Profile only.
  */
-export type platform9 = 'googlebusiness';
+export type platform10 = 'googlebusiness';
 
 /**
  * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
@@ -9163,7 +9592,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform10 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
+export type platform11 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
 
 /**
  * A tracking tag's install on a connected store: a Shopify web pixel, or a Custom HTML widget on a WordPress site. Fields marked Shopify or WordPress are present only for that platform.
@@ -9238,7 +9667,7 @@ export type StorePixelInstall = {
 /**
  * WordPress only.
  */
-export type method = 'wordpress_widget';
+export type method2 = 'wordpress_widget';
 
 /**
  * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
@@ -9805,7 +10234,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform11 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads';
+export type platform12 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -10044,7 +10473,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type12 = 'image' | 'video' | 'document';
+export type type14 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -10053,7 +10482,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status25 = 'pending' | 'completed' | 'expired';
+export type status27 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -10552,7 +10981,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status26 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status28 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms';
 
@@ -10579,7 +11008,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -10701,7 +11130,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status27 = 'success' | 'failed';
+export type status29 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -10813,7 +11242,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status28 = 'success' | 'failure';
+export type status30 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -11528,7 +11957,46 @@ export type WebhookPayloadComment = {
 
 export type event12 = 'comment.received';
 
-export type platform12 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform13 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+
+export type WebhookPayloadCommerceProduct = {
+    id?: string;
+    event?: 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
+    timestamp?: string;
+    store?: {
+        /**
+         * Zernio SocialAccount id of the store.
+         */
+        accountId?: string;
+        platform?: 'shopify' | 'woocommerce';
+        /**
+         * The platform id of the shop.
+         */
+        shopId?: (string) | null;
+    };
+    resource?: {
+        type?: 'product';
+        /**
+         * Platform-native product id.
+         */
+        id?: string;
+        /**
+         * Zernio product status; null on delete.
+         */
+        status?: (CommerceProductStatus | null);
+        /**
+         * Raw platform status, e.g. ACTIVE; null on delete.
+         */
+        platformStatus?: (string) | null;
+    };
+};
+
+export type event13 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
+
+export type type15 = 'product';
 
 /**
  * WhatsApp only. Who answers a conversation changed: Meta Business Agent took it over,
@@ -11564,7 +12032,7 @@ export type WebhookPayloadConversationControlChanged = {
     timestamp: string;
 };
 
-export type event13 = 'conversation.control_changed';
+export type event14 = 'conversation.control_changed';
 
 /**
  * Who answers now. ai_agent: Meta Business Agent; app: you; other: another partner app on the number.
@@ -11601,7 +12069,7 @@ export type WebhookPayloadConversationStarted = {
     timestamp: string;
 };
 
-export type event14 = 'conversation.started';
+export type event15 = 'conversation.started';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
@@ -11633,7 +12101,7 @@ export type WebhookPayloadExternalPost = {
     timestamp: string;
 };
 
-export type event15 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+export type event16 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
 
 /**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
@@ -11704,9 +12172,9 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event16 = 'lead.received';
+export type event17 = 'lead.received';
 
-export type platform13 = 'facebook';
+export type platform14 = 'facebook';
 
 /**
  * Webhook payload for message received events
@@ -12242,7 +12710,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event17 = 'message.received';
+export type event18 = 'message.received';
 
 /**
  * Which Zernio surface produced the message. Always present and
@@ -12303,7 +12771,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event18 = 'message.deleted';
+export type event19 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, and
@@ -12363,7 +12831,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event19 = 'message.delivered' | 'message.read' | 'message.failed';
+export type event20 = 'message.delivered' | 'message.read' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -12401,7 +12869,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event20 = 'message.edited';
+export type event21 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API, or from the WhatsApp Business app on Coexistence numbers)
@@ -12617,12 +13085,12 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event21 = 'message.sent';
+export type event22 = 'message.sent';
 
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform14 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
+export type platform15 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts); meta_business_agent when Meta Business Agent answered on the number. Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
@@ -12671,7 +13139,7 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
     timestamp: string;
 };
 
-export type event22 = 'phone_number.stock_available';
+export type event23 = 'phone_number.stock_available';
 
 /**
  * Webhook payload for post events
@@ -12721,7 +13189,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event23 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event24 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -12840,12 +13308,12 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event24 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
+export type event25 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
 
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status29 = 'published' | 'failed' | 'deleted';
+export type status31 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -12900,7 +13368,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event25 = 'reaction.received';
+export type event26 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -12974,7 +13442,7 @@ export type WebhookPayloadReferral = {
     timestamp: string;
 };
 
-export type event26 = 'referral.received';
+export type event27 = 'referral.received';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -13001,7 +13469,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event27 = 'review.new';
+export type event28 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits their
@@ -13034,7 +13502,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event28 = 'review.updated';
+export type event29 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -13055,7 +13523,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event29 = 'webhook.test';
+export type event30 = 'webhook.test';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event.
@@ -13104,14 +13572,14 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     timestamp: string;
 };
 
-export type event30 = 'whatsapp.account.name_status_updated';
+export type event31 = 'whatsapp.account.name_status_updated';
 
-export type platform15 = 'whatsapp';
+export type platform16 = 'whatsapp';
 
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status30 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status32 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -13175,7 +13643,7 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     timestamp: string;
 };
 
-export type event31 = 'whatsapp.template.category_updated';
+export type event32 = 'whatsapp.template.category_updated';
 
 /**
  * `scheduled` is Meta's 24h advance notice of an upcoming
@@ -13252,7 +13720,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event32 = 'whatsapp.template.status_updated';
+export type event33 = 'whatsapp.template.status_updated';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -13260,7 +13728,7 @@ export type event32 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status31 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status33 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WhatsAppBodyComponent = {
     type: 'body';
@@ -13414,7 +13882,7 @@ export type WhatsAppSandboxSession = {
  * list responses.
  *
  */
-export type status32 = 'pending' | 'active';
+export type status34 = 'pending' | 'active';
 
 export type WhatsAppTemplateButton = {
     type: 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
@@ -13448,7 +13916,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type13 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type16 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -13490,7 +13958,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type14 = 'platform_error';
+export type type17 = 'platform_error';
 
 export type code = 'platform_api_error';
 
@@ -13572,7 +14040,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status33 = 'success' | 'failed' | 'pending';
+export type status35 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -13649,7 +14117,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type15 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type18 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -13785,7 +14253,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type16 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type19 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -13864,7 +14332,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type17 = 'divider' | 'latex';
+export type type20 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -23904,7 +24372,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -23972,7 +24440,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -50813,6 +51281,1814 @@ export type UpdateProductResponse = ({
 });
 
 export type UpdateProductError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommerceStoreData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceStoreResponse = ({
+    store?: CommerceStore;
+});
+
+export type GetCommerceStoreError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceProductsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Only products in this collection.
+         */
+        collectionId?: string;
+        /**
+         * Opaque cursor from a previous response. Omit for the first page.
+         */
+        cursor?: string;
+        limit?: number;
+        /**
+         * Platform product search syntax (Shopify: title, vendor, product_type, tag, sku, handle, ...).
+         */
+        query?: string;
+        status?: CommerceProductStatus;
+    };
+};
+
+export type ListCommerceProductsResponse = ({
+    products?: Array<CommerceProduct>;
+    nextCursor?: (string) | null;
+});
+
+export type ListCommerceProductsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceProductData = {
+    body: {
+        accountId: string;
+        title: string;
+        descriptionHtml?: string;
+        handle?: string;
+        vendor?: string;
+        productType?: string;
+        tags?: Array<(string)>;
+        seo?: {
+            title?: string;
+            description?: string;
+        };
+        status?: 'draft' | 'active';
+        images?: Array<{
+            url: string;
+            altText?: string;
+        }>;
+        options?: Array<{
+            name: string;
+            values: Array<(string)>;
+        }>;
+        variants: Array<{
+            sku?: string;
+            /**
+             * Decimal amount in the store currency.
+             */
+            price: (number | string);
+            compareAtPrice?: (number | string | null);
+            /**
+             * One value per product option, e.g. [{ name: Size, value: M }].
+             */
+            options?: Array<{
+                name: string;
+                value: string;
+            }>;
+        }>;
+    };
+};
+
+export type CreateCommerceProductResponse = ({
+    product?: CommerceProduct;
+});
+
+export type CreateCommerceProductError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ChangeCommerceProductStateData = {
+    body: {
+        accountId: string;
+        productIds: Array<(string)>;
+        action: 'activate' | 'deactivate' | 'archive' | 'delete';
+    };
+};
+
+export type ChangeCommerceProductStateResponse = ({
+    action?: 'activate' | 'deactivate' | 'archive' | 'delete';
+    succeeded?: Array<(string)>;
+    failed?: Array<{
+        productId?: string;
+        message?: string;
+    }>;
+});
+
+export type ChangeCommerceProductStateError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommerceProductData = {
+    path: {
+        /**
+         * Platform-native product id.
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceProductResponse = ({
+    product?: CommerceProduct;
+});
+
+export type GetCommerceProductError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommerceProductData = {
+    body: {
+        accountId: string;
+        title?: string;
+        descriptionHtml?: string;
+        handle?: string;
+        vendor?: string;
+        productType?: string;
+        tags?: Array<(string)>;
+        seo?: {
+            title?: string;
+            description?: string;
+        };
+    };
+    path: {
+        /**
+         * Platform-native product id.
+         */
+        productId: string;
+    };
+};
+
+export type UpdateCommerceProductResponse = ({
+    product?: CommerceProduct;
+});
+
+export type UpdateCommerceProductError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommerceProductPricesData = {
+    body: {
+        accountId: string;
+        variants: Array<{
+            /**
+             * Variant id from the product response.
+             */
+            id: string;
+            price?: (number | string);
+            compareAtPrice?: (number | string | null);
+        }>;
+    };
+    path: {
+        /**
+         * Platform-native product id.
+         */
+        productId: string;
+    };
+};
+
+export type UpdateCommerceProductPricesResponse = ({
+    product?: CommerceProduct;
+});
+
+export type UpdateCommerceProductPricesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceCollectionsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+        /**
+         * Platform collection search syntax (Shopify: title, handle, collection_type, ...).
+         */
+        query?: string;
+    };
+};
+
+export type ListCommerceCollectionsResponse = ({
+    collections?: Array<CommerceCollection>;
+    nextCursor?: (string) | null;
+});
+
+export type ListCommerceCollectionsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceCollectionData = {
+    body: {
+        accountId: string;
+        title: string;
+        descriptionHtml?: string;
+        handle?: string;
+        sortOrder?: 'manual' | 'best_selling' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc' | 'created' | 'created_desc' | 'most_relevant';
+        seo?: {
+            title?: string;
+            description?: string;
+        };
+        image?: {
+            url: string;
+            altText?: string;
+        };
+        productIds?: Array<(string)>;
+    };
+};
+
+export type CreateCommerceCollectionResponse = ({
+    collection?: CommerceCollection;
+});
+
+export type CreateCommerceCollectionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommerceCollectionData = {
+    path: {
+        /**
+         * Platform-native collection id.
+         */
+        collectionId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceCollectionResponse = ({
+    collection?: CommerceCollection;
+});
+
+export type GetCommerceCollectionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommerceCollectionData = {
+    body: {
+        accountId: string;
+        title?: string;
+        descriptionHtml?: string;
+        handle?: string;
+        sortOrder?: 'manual' | 'best_selling' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc' | 'created' | 'created_desc' | 'most_relevant';
+        seo?: {
+            title?: string;
+            description?: string;
+        };
+        image?: {
+            url: string;
+            altText?: string;
+        };
+    };
+    path: {
+        /**
+         * Platform-native collection id.
+         */
+        collectionId: string;
+    };
+};
+
+export type UpdateCommerceCollectionResponse = ({
+    collection?: CommerceCollection;
+});
+
+export type UpdateCommerceCollectionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceCollectionData = {
+    path: {
+        /**
+         * Platform-native collection id.
+         */
+        collectionId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteCommerceCollectionResponse = ({
+    deleted?: boolean;
+    collectionId?: string;
+});
+
+export type DeleteCommerceCollectionError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ChangeCommerceCollectionProductsData = {
+    body: {
+        accountId: string;
+        add?: Array<(string)>;
+        remove?: Array<(string)>;
+    };
+    path: {
+        /**
+         * Platform-native collection id.
+         */
+        collectionId: string;
+    };
+};
+
+export type ChangeCommerceCollectionProductsResponse = ({
+    collection?: CommerceCollection;
+    pending?: boolean;
+});
+
+export type ChangeCommerceCollectionProductsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceProductVariantsData = {
+    body: {
+        accountId: string;
+        variants: Array<{
+            sku?: string;
+            price: (number | string);
+            compareAtPrice?: (number | string | null);
+            options?: Array<{
+                name?: string;
+                value?: string;
+            }>;
+        }>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type CreateCommerceProductVariantsResponse = ({
+    product?: CommerceProduct;
+});
+
+export type CreateCommerceProductVariantsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceProductVariantsData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Comma-separated ids.
+         */
+        variantIds: string;
+    };
+};
+
+export type DeleteCommerceProductVariantsResponse = ({
+    product?: CommerceProduct;
+});
+
+export type DeleteCommerceProductVariantsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceProductOptionsData = {
+    body: {
+        accountId: string;
+        options: Array<{
+            name: string;
+            values: Array<(string)>;
+        }>;
+        createVariants?: boolean;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type CreateCommerceProductOptionsResponse = ({
+    product?: CommerceProduct;
+});
+
+export type CreateCommerceProductOptionsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceProductOptionsData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Comma-separated option names.
+         */
+        names: string;
+    };
+};
+
+export type DeleteCommerceProductOptionsResponse = ({
+    product?: CommerceProduct;
+});
+
+export type DeleteCommerceProductOptionsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AddCommerceProductImagesData = {
+    body: {
+        accountId: string;
+        images: Array<{
+            url: string;
+            altText?: string;
+        }>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type AddCommerceProductImagesResponse = ({
+    product?: CommerceProduct;
+});
+
+export type AddCommerceProductImagesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RemoveCommerceProductImagesData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Comma-separated ids.
+         */
+        imageIds: string;
+    };
+};
+
+export type RemoveCommerceProductImagesResponse = ({
+    product?: CommerceProduct;
+});
+
+export type RemoveCommerceProductImagesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ReorderCommerceProductImagesData = {
+    body: {
+        accountId: string;
+        imageIds: Array<(string)>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type ReorderCommerceProductImagesResponse = ({
+    pending?: boolean;
+});
+
+export type ReorderCommerceProductImagesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DuplicateCommerceProductData = {
+    body: {
+        accountId: string;
+        title: string;
+        status?: 'draft' | 'active';
+        includeImages?: boolean;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type DuplicateCommerceProductResponse = ({
+    product?: CommerceProduct;
+});
+
+export type DuplicateCommerceProductError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListProductMetafieldsData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListProductMetafieldsResponse = ({
+    metafields?: Array<CommerceMetafield>;
+});
+
+export type ListProductMetafieldsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type SetProductMetafieldsData = {
+    body: {
+        accountId: string;
+        metafields: Array<CommerceMetafield>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type SetProductMetafieldsResponse = ({
+    metafields?: Array<CommerceMetafield>;
+});
+
+export type SetProductMetafieldsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteProductMetafieldsData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Comma-separated namespace.key pairs.
+         */
+        keys: string;
+    };
+};
+
+export type DeleteProductMetafieldsResponse = ({
+    deleted?: number;
+});
+
+export type DeleteProductMetafieldsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ChangeProductChannelsData = {
+    body: {
+        accountId: string;
+        /**
+         * Channel ids from GET /v1/commerce/channels.
+         */
+        publish?: Array<(string)>;
+        unpublish?: Array<(string)>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type ChangeProductChannelsResponse = ({
+    productId?: string;
+    published?: Array<(string)>;
+    unpublished?: Array<(string)>;
+});
+
+export type ChangeProductChannelsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCollectionMetafieldsData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        collectionId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCollectionMetafieldsResponse = ({
+    metafields?: Array<CommerceMetafield>;
+});
+
+export type ListCollectionMetafieldsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type SetCollectionMetafieldsData = {
+    body: {
+        accountId: string;
+        metafields: Array<CommerceMetafield>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        collectionId: string;
+    };
+};
+
+export type SetCollectionMetafieldsResponse = ({
+    metafields?: Array<CommerceMetafield>;
+});
+
+export type SetCollectionMetafieldsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCollectionMetafieldsData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        collectionId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Comma-separated namespace.key pairs.
+         */
+        keys: string;
+    };
+};
+
+export type DeleteCollectionMetafieldsResponse = ({
+    deleted?: number;
+});
+
+export type DeleteCollectionMetafieldsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ChangeCollectionChannelsData = {
+    body: {
+        accountId: string;
+        /**
+         * Channel ids from GET /v1/commerce/channels.
+         */
+        publish?: Array<(string)>;
+        unpublish?: Array<(string)>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        collectionId: string;
+    };
+};
+
+export type ChangeCollectionChannelsResponse = ({
+    collectionId?: string;
+    published?: Array<(string)>;
+    unpublished?: Array<(string)>;
+});
+
+export type ChangeCollectionChannelsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ChangeCommerceProductTagsData = {
+    body: {
+        accountId: string;
+        productIds: Array<(string)>;
+        add?: Array<(string)>;
+        remove?: Array<(string)>;
+    };
+};
+
+export type ChangeCommerceProductTagsResponse = ({
+    succeeded?: Array<(string)>;
+    failed?: Array<{
+        id?: string;
+        message?: string;
+    }>;
+});
+
+export type ChangeCommerceProductTagsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ReorderCommerceCollectionProductsData = {
+    body: {
+        accountId: string;
+        moves: Array<{
+            productId: string;
+            position: number;
+        }>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        collectionId: string;
+    };
+};
+
+export type ReorderCommerceCollectionProductsResponse = ({
+    pending?: boolean;
+});
+
+export type ReorderCommerceCollectionProductsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommercePagesData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+        /**
+         * Platform search syntax, passed through.
+         */
+        query?: string;
+    };
+};
+
+export type ListCommercePagesResponse = ({
+    pages?: Array<CommercePage>;
+    nextCursor?: (string) | null;
+});
+
+export type ListCommercePagesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommercePageData = {
+    body: {
+        accountId: string;
+        title: string;
+        handle?: string;
+        bodyHtml?: string;
+        isPublished?: boolean;
+    };
+};
+
+export type CreateCommercePageResponse = ({
+    page?: CommercePage;
+});
+
+export type CreateCommercePageError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommercePageData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        pageId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommercePageResponse = ({
+    page?: CommercePage;
+});
+
+export type GetCommercePageError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommercePageData = {
+    body: {
+        accountId: string;
+        title?: string;
+        handle?: string;
+        bodyHtml?: string;
+        isPublished?: boolean;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        pageId: string;
+    };
+};
+
+export type UpdateCommercePageResponse = ({
+    page?: CommercePage;
+});
+
+export type UpdateCommercePageError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommercePageData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        pageId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteCommercePageResponse = ({
+    deleted?: boolean;
+    pageId?: string;
+});
+
+export type DeleteCommercePageError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceLocationsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCommerceLocationsResponse = ({
+    locations?: Array<CommerceLocation>;
+});
+
+export type ListCommerceLocationsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceInventoryData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        productId: string;
+    };
+};
+
+export type ListCommerceInventoryResponse = ({
+    inventory?: Array<CommerceInventoryItem>;
+});
+
+export type ListCommerceInventoryError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ChangeCommerceInventoryData = {
+    body: {
+        accountId: string;
+        mode?: 'set' | 'adjust';
+        changes: Array<{
+            variantId: string;
+            locationId: string;
+            quantity: number;
+        }>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        productId: string;
+    };
+};
+
+export type ChangeCommerceInventoryResponse = ({
+    inventory?: Array<CommerceInventoryItem>;
+});
+
+export type ChangeCommerceInventoryError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceChannelsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCommerceChannelsResponse = ({
+    channels?: Array<CommerceChannel>;
+});
+
+export type ListCommerceChannelsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceDiscountsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+        /**
+         * Platform search syntax, passed through.
+         */
+        query?: string;
+    };
+};
+
+export type ListCommerceDiscountsResponse = ({
+    discounts?: Array<CommerceDiscount>;
+    nextCursor?: (string) | null;
+});
+
+export type ListCommerceDiscountsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceDiscountData = {
+    body: {
+        accountId: string;
+        title: string;
+        method: 'code' | 'automatic';
+        type: 'percentage' | 'fixed_amount' | 'free_shipping';
+        /**
+         * Required for method code.
+         */
+        code?: string;
+        /**
+         * For type percentage, e.g. 15 for 15%.
+         */
+        percentage?: number;
+        /**
+         * For type fixed_amount, a decimal in the store currency.
+         */
+        amount?: string;
+        /**
+         * fixed_amount only: take the amount off each item instead of once per order.
+         */
+        appliesOnEachItem?: boolean;
+        /**
+         * Minimum order subtotal, a decimal in the store currency.
+         */
+        minimumSubtotal?: (string) | null;
+        minimumQuantity?: (number) | null;
+        /**
+         * Code discounts only: total uses allowed.
+         */
+        usageLimit?: (number) | null;
+        /**
+         * Code discounts only.
+         */
+        oncePerCustomer?: boolean;
+        /**
+         * Defaults to now.
+         */
+        startsAt?: string;
+        endsAt?: (string) | null;
+        productIds?: Array<(string)>;
+        collectionIds?: Array<(string)>;
+    };
+};
+
+export type CreateCommerceDiscountResponse = ({
+    discount?: CommerceDiscount;
+});
+
+export type CreateCommerceDiscountError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommerceDiscountData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        discountId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceDiscountResponse = ({
+    discount?: CommerceDiscount;
+});
+
+export type GetCommerceDiscountError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommerceDiscountData = {
+    body: {
+        accountId: string;
+        title?: string;
+        /**
+         * Required for method code.
+         */
+        code?: string;
+        /**
+         * For type percentage, e.g. 15 for 15%.
+         */
+        percentage?: number;
+        /**
+         * For type fixed_amount, a decimal in the store currency.
+         */
+        amount?: string;
+        /**
+         * fixed_amount only: take the amount off each item instead of once per order.
+         */
+        appliesOnEachItem?: boolean;
+        /**
+         * Minimum order subtotal, a decimal in the store currency.
+         */
+        minimumSubtotal?: (string) | null;
+        minimumQuantity?: (number) | null;
+        /**
+         * Code discounts only: total uses allowed.
+         */
+        usageLimit?: (number) | null;
+        /**
+         * Code discounts only.
+         */
+        oncePerCustomer?: boolean;
+        /**
+         * Defaults to now.
+         */
+        startsAt?: string;
+        endsAt?: (string) | null;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        discountId: string;
+    };
+};
+
+export type UpdateCommerceDiscountResponse = ({
+    discount?: CommerceDiscount;
+});
+
+export type UpdateCommerceDiscountError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceDiscountData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        discountId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteCommerceDiscountResponse = ({
+    deleted?: boolean;
+    discountId?: string;
+});
+
+export type DeleteCommerceDiscountError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type SetCommerceDiscountActiveData = {
+    body: {
+        accountId: string;
+        active: boolean;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        discountId: string;
+    };
+};
+
+export type SetCommerceDiscountActiveResponse = ({
+    discount?: CommerceDiscount;
+});
+
+export type SetCommerceDiscountActiveError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AddCommerceDiscountCodesData = {
+    body: {
+        accountId: string;
+        codes: Array<(string)>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        discountId: string;
+    };
+};
+
+export type AddCommerceDiscountCodesResponse = ({
+    pending?: boolean;
+});
+
+export type AddCommerceDiscountCodesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceRedirectsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+        /**
+         * Platform search syntax, passed through.
+         */
+        query?: string;
+    };
+};
+
+export type ListCommerceRedirectsResponse = ({
+    redirects?: Array<CommerceRedirect>;
+    nextCursor?: (string) | null;
+});
+
+export type ListCommerceRedirectsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceRedirectData = {
+    body: {
+        accountId: string;
+        /**
+         * The old path, starting with /.
+         */
+        path: string;
+        /**
+         * Where to send visitors: a path or a full URL.
+         */
+        target: string;
+    };
+};
+
+export type CreateCommerceRedirectResponse = ({
+    redirect?: CommerceRedirect;
+});
+
+export type CreateCommerceRedirectError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommerceRedirectData = {
+    body: {
+        accountId: string;
+        path?: string;
+        target?: string;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        redirectId: string;
+    };
+};
+
+export type UpdateCommerceRedirectResponse = ({
+    redirect?: CommerceRedirect;
+});
+
+export type UpdateCommerceRedirectError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceRedirectData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        redirectId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteCommerceRedirectResponse = ({
+    deleted?: boolean;
+    redirectId?: string;
+});
+
+export type DeleteCommerceRedirectError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceMenusData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCommerceMenusResponse = ({
+    menus?: Array<CommerceMenu>;
+});
+
+export type ListCommerceMenusError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceMenuData = {
+    body: {
+        accountId: string;
+        title: string;
+        handle: string;
+        items: Array<CommerceMenuItemInput>;
+    };
+};
+
+export type CreateCommerceMenuResponse = ({
+    menu?: CommerceMenu;
+});
+
+export type CreateCommerceMenuError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommerceMenuData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        menuId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceMenuResponse = ({
+    menu?: CommerceMenu;
+});
+
+export type GetCommerceMenuError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommerceMenuData = {
+    body: {
+        accountId: string;
+        title: string;
+        handle?: string;
+        items: Array<CommerceMenuItemInput>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        menuId: string;
+    };
+};
+
+export type UpdateCommerceMenuResponse = ({
+    menu?: CommerceMenu;
+});
+
+export type UpdateCommerceMenuError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceMenuData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        menuId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteCommerceMenuResponse = ({
+    deleted?: boolean;
+    menuId?: string;
+});
+
+export type DeleteCommerceMenuError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceMetaobjectDefinitionsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCommerceMetaobjectDefinitionsResponse = ({
+    definitions?: Array<CommerceMetaobjectDefinition>;
+});
+
+export type ListCommerceMetaobjectDefinitionsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceMetaobjectsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+        /**
+         * Definition type from GET /v1/commerce/metaobject-definitions.
+         */
+        type: string;
+    };
+};
+
+export type ListCommerceMetaobjectsResponse = ({
+    metaobjects?: Array<CommerceMetaobject>;
+    nextCursor?: (string) | null;
+});
+
+export type ListCommerceMetaobjectsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceMetaobjectData = {
+    body: {
+        accountId: string;
+        type: string;
+        handle?: string;
+        fields: Array<{
+            key: string;
+            value: string;
+        }>;
+    };
+};
+
+export type CreateCommerceMetaobjectResponse = ({
+    metaobject?: CommerceMetaobject;
+});
+
+export type CreateCommerceMetaobjectError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommerceMetaobjectData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        metaobjectId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceMetaobjectResponse = ({
+    metaobject?: CommerceMetaobject;
+});
+
+export type GetCommerceMetaobjectError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpdateCommerceMetaobjectData = {
+    body: {
+        accountId: string;
+        handle?: string;
+        fields: Array<{
+            key: string;
+            value: string;
+        }>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        metaobjectId: string;
+    };
+};
+
+export type UpdateCommerceMetaobjectResponse = ({
+    metaobject?: CommerceMetaobject;
+});
+
+export type UpdateCommerceMetaobjectError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceMetaobjectData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        metaobjectId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteCommerceMetaobjectResponse = ({
+    deleted?: boolean;
+    metaobjectId?: string;
+});
+
+export type DeleteCommerceMetaobjectError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceMarketsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCommerceMarketsResponse = ({
+    markets?: Array<CommerceMarket>;
+});
+
+export type ListCommerceMarketsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommercePriceListsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCommercePriceListsResponse = ({
+    priceLists?: Array<CommercePriceList>;
+});
+
+export type ListCommercePriceListsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type SetCommercePriceListPricesData = {
+    body: {
+        accountId: string;
+        prices: Array<{
+            variantId: string;
+            /**
+             * Decimal in the price list currency.
+             */
+            price: string;
+            compareAtPrice?: (string) | null;
+        }>;
+    };
+    path: {
+        /**
+         * Platform-native id.
+         */
+        priceListId: string;
+    };
+};
+
+export type SetCommercePriceListPricesResponse = ({
+    priceListId?: string;
+    updated?: number;
+});
+
+export type SetCommercePriceListPricesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommercePriceListPricesData = {
+    path: {
+        /**
+         * Platform-native id.
+         */
+        priceListId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Comma-separated ids.
+         */
+        variantIds: string;
+    };
+};
+
+export type DeleteCommercePriceListPricesResponse = ({
+    priceListId?: string;
+    deleted?: number;
+});
+
+export type DeleteCommercePriceListPricesError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type UpsertCommerceMarketingActivityData = {
+    body: {
+        accountId: string;
+        remoteId: string;
+        title: string;
+        url: string;
+        previewImageUrl?: string;
+        utm?: {
+            campaign: string;
+            source: string;
+            medium: string;
+        };
+        tactic: 'ad' | 'post' | 'message' | 'newsletter' | 'link' | 'affiliate' | 'retargeting' | 'loyalty' | 'seo';
+        channel: 'social' | 'search' | 'display' | 'email' | 'referral';
+        status: 'active' | 'inactive' | 'paused' | 'scheduled';
+        budget?: {
+            type: 'daily' | 'lifetime';
+            /**
+             * Decimal in the store currency.
+             */
+            amount: string;
+        };
+        /**
+         * Decimal in the store currency.
+         */
+        adSpend?: string;
+        startedAt?: string;
+        endedAt?: string;
+    };
+};
+
+export type UpsertCommerceMarketingActivityResponse = ({
+    marketingActivity?: {
+        id?: string;
+        remoteId?: string;
+    };
+});
+
+export type UpsertCommerceMarketingActivityError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceMarketingActivityData = {
+    path: {
+        /**
+         * The remoteId given when recording it.
+         */
+        remoteId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteCommerceMarketingActivityResponse = ({
+    deleted?: boolean;
+    remoteId?: string;
+});
+
+export type DeleteCommerceMarketingActivityError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type AddCommerceMarketingEngagementData = {
+    body: {
+        accountId: string;
+        date: string;
+        impressions?: number;
+        views?: number;
+        clicks?: number;
+        shares?: number;
+        likes?: number;
+        comments?: number;
+        /**
+         * Decimal in the store currency.
+         */
+        adSpend?: string;
+    };
+    path: {
+        /**
+         * The remoteId given when recording it.
+         */
+        remoteId: string;
+    };
+};
+
+export type AddCommerceMarketingEngagementResponse = ({
+    remoteId?: string;
+    recorded?: boolean;
+});
+
+export type AddCommerceMarketingEngagementError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type ListCommerceCatalogSyncsData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCommerceCatalogSyncsResponse = ({
+    catalogSyncs?: Array<CommerceCatalogSync>;
+});
+
+export type ListCommerceCatalogSyncsError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type CreateCommerceCatalogSyncData = {
+    body: {
+        /**
+         * The store SocialAccount id.
+         */
+        accountId: string;
+        catalogAccountId: string;
+        /**
+         * Meta product catalog id.
+         */
+        catalogId: string;
+    };
+};
+
+export type CreateCommerceCatalogSyncResponse = ({
+    catalogSync?: CommerceCatalogSync;
+});
+
+export type CreateCommerceCatalogSyncError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type GetCommerceCatalogSyncData = {
+    path: {
+        syncId: string;
+    };
+};
+
+export type GetCommerceCatalogSyncResponse = ({
+    catalogSync?: CommerceCatalogSync;
+});
+
+export type GetCommerceCatalogSyncError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type DeleteCommerceCatalogSyncData = {
+    path: {
+        syncId: string;
+    };
+};
+
+export type DeleteCommerceCatalogSyncResponse = ({
+    deleted?: boolean;
+    syncId?: string;
+});
+
+export type DeleteCommerceCatalogSyncError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type RunCommerceCatalogSyncData = {
+    path: {
+        syncId: string;
+    };
+};
+
+export type RunCommerceCatalogSyncResponse = ({
+    catalogSync?: CommerceCatalogSync;
+});
+
+export type RunCommerceCatalogSyncError = (ErrorResponse | {
     error?: string;
 } | unknown);
 

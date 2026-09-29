@@ -734,6 +734,84 @@ try {
 | `comments.unlikePost()` | Unlike post |
 | `comments.unpinInboxComment()` | Unpin comment |
 
+### Commerce
+| Method | Description |
+|--------|-------------|
+| `commerce.listCollectionMetafields()` | List collection metafields |
+| `commerce.listCommerceCatalogSyncs()` | List catalog syncs |
+| `commerce.listCommerceChannels()` | List sales channels |
+| `commerce.listCommerceCollections()` | List collections |
+| `commerce.listCommerceDiscounts()` | List discounts |
+| `commerce.listCommerceInventory()` | Get a product's stock |
+| `commerce.listCommerceLocations()` | List locations |
+| `commerce.listCommerceMarkets()` | List markets |
+| `commerce.listCommerceMenus()` | List navigation menus |
+| `commerce.listCommerceMetaobjectDefinitions()` | List metaobject definitions |
+| `commerce.listCommerceMetaobjects()` | List metaobjects of a type |
+| `commerce.listCommercePages()` | List pages |
+| `commerce.listCommercePriceLists()` | List price lists |
+| `commerce.listCommerceProducts()` | List products |
+| `commerce.listCommerceRedirects()` | List URL redirects |
+| `commerce.listProductMetafields()` | List product metafields |
+| `commerce.createCommerceCatalogSync()` | Sync a store into a Meta catalog |
+| `commerce.createCommerceCollection()` | Create a collection |
+| `commerce.createCommerceDiscount()` | Create a discount |
+| `commerce.createCommerceMenu()` | Create a navigation menu |
+| `commerce.createCommerceMetaobject()` | Create a metaobject |
+| `commerce.createCommercePage()` | Create a page |
+| `commerce.createCommerceProduct()` | Create a product |
+| `commerce.createCommerceProductOptions()` | Add options |
+| `commerce.createCommerceProductVariants()` | Add variants |
+| `commerce.createCommerceRedirect()` | Create a URL redirect |
+| `commerce.getCommerceCatalogSync()` | Get a catalog sync |
+| `commerce.getCommerceCollection()` | Get a collection |
+| `commerce.getCommerceDiscount()` | Get a discount |
+| `commerce.getCommerceMenu()` | Get a navigation menu |
+| `commerce.getCommerceMetaobject()` | Get a metaobject |
+| `commerce.getCommercePage()` | Get a page |
+| `commerce.getCommerceProduct()` | Get a product |
+| `commerce.getCommerceStore()` | Get a store |
+| `commerce.updateCommerceCollection()` | Update a collection |
+| `commerce.updateCommerceDiscount()` | Update a discount |
+| `commerce.updateCommerceMenu()` | Replace a navigation menu |
+| `commerce.updateCommerceMetaobject()` | Update a metaobject |
+| `commerce.updateCommercePage()` | Update a page |
+| `commerce.updateCommerceProduct()` | Update a product |
+| `commerce.updateCommerceProductPrices()` | Update variant prices |
+| `commerce.updateCommerceRedirect()` | Update a URL redirect |
+| `commerce.deleteCollectionMetafields()` | Delete collection metafields |
+| `commerce.deleteCommerceCatalogSync()` | Stop a catalog sync |
+| `commerce.deleteCommerceCollection()` | Delete a collection |
+| `commerce.deleteCommerceDiscount()` | Delete a discount |
+| `commerce.deleteCommerceMarketingActivity()` | Delete a marketing activity |
+| `commerce.deleteCommerceMenu()` | Delete a navigation menu |
+| `commerce.deleteCommerceMetaobject()` | Delete a metaobject |
+| `commerce.deleteCommercePage()` | Delete a page |
+| `commerce.deleteCommercePriceListPrices()` | Remove fixed prices |
+| `commerce.deleteCommerceProductOptions()` | Delete options |
+| `commerce.deleteCommerceProductVariants()` | Delete variants |
+| `commerce.deleteCommerceRedirect()` | Delete a URL redirect |
+| `commerce.deleteProductMetafields()` | Delete product metafields |
+| `commerce.addCommerceDiscountCodes()` | Add codes to a discount |
+| `commerce.addCommerceMarketingEngagement()` | Report daily engagement |
+| `commerce.addCommerceProductImages()` | Add images |
+| `commerce.changeCollectionChannels()` | Publish or unpublish a collection |
+| `commerce.changeCommerceCollectionProducts()` | Add or remove products in a collection |
+| `commerce.changeCommerceInventory()` | Set or adjust stock |
+| `commerce.changeCommerceProductState()` | Activate, deactivate, archive or delete products |
+| `commerce.changeCommerceProductTags()` | Add or remove tags in bulk |
+| `commerce.changeProductChannels()` | Publish or unpublish a product |
+| `commerce.duplicateCommerceProduct()` | Duplicate a product |
+| `commerce.removeCommerceProductImages()` | Remove images |
+| `commerce.reorderCommerceCollectionProducts()` | Reorder products in a collection |
+| `commerce.reorderCommerceProductImages()` | Reorder images |
+| `commerce.runCommerceCatalogSync()` | Run a catalog sync now |
+| `commerce.setCollectionMetafields()` | Set collection metafields |
+| `commerce.setCommerceDiscountActive()` | Activate or deactivate a discount |
+| `commerce.setCommercePriceListPrices()` | Set fixed prices |
+| `commerce.setProductMetafields()` | Set product metafields |
+| `commerce.upsertCommerceMarketingActivity()` | Record a marketing activity |
+
 ### Connected Apps
 | Method | Description |
 |--------|-------------|
