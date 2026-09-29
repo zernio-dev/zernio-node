@@ -14334,8 +14334,8 @@ export const updateTrackingTagEvent = <ThrowOnError extends boolean = false>(opt
  * Pinterest (platform `pinterestads`): stops Pinterest tracking the event name (`state:
  * disabled`); Pinterest keeps the event's history.
  *
- * TikTok: hard delete (`/pixel/event/delete/`); TikTok refuses events bound to an ad group
- * (400).
+ * TikTok Ads answers 501: TikTok's `/pixel/event/delete/` answers OK but leaves the event on
+ * the pixel, so nothing is deleted. Delete the event in TikTok Events Manager.
  *
  * X Ads (platform `xads`): deletes the web event tag for good. Events X auto-created with
  * the pixel cannot be deleted (400). X keeps the event's own website tag id on the account
