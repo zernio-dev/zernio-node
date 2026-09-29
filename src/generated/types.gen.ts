@@ -503,6 +503,10 @@ export type AdCampaign = {
      */
     platformCampaignStatus?: (string) | null;
     /**
+     * Only on GET /v1/ads/campaigns with `live=true`. When `platformCampaignStatus` was read from the platform; null when this campaign could not be read live.
+     */
+    statusReadAt?: (string) | null;
+    /**
      * Platform-reported campaign issues (Meta `issues_info[]`).
      */
     campaignIssuesInfo?: Array<{
@@ -7716,6 +7720,11 @@ export type ParameterCatalogTokenAccountId = string;
  * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409.
  */
 export type ParameterIdempotencyKeyHeader = string;
+
+/**
+ * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description.
+ */
+export type ParameterLiveStatusRead = boolean;
 
 /**
  * Page number (1-based)
@@ -37961,6 +37970,10 @@ export type ListAdCampaignsData = {
         includeEmpty?: boolean;
         limit?: number;
         /**
+         * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description.
+         */
+        live?: boolean;
+        /**
          * Return only campaigns whose spend between `fromDate` and `toDate` reaches this amount, in each campaign's OWN currency (the `currency` field on the campaign). Implies `hasDelivery`; `minSpend=0` applies no filter. Mirrors the same filter on /v1/ads/tree.
          */
         minSpend?: number;
@@ -38799,9 +38812,17 @@ export type ListAdSetsData = {
          */
         accountId?: string;
         /**
+         * Platform ad set ID
+         */
+        adSetId?: string;
+        /**
          * Platform campaign ID
          */
         campaignId?: string;
+        /**
+         * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description.
+         */
+        live?: boolean;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
     };
 };
@@ -38880,6 +38901,10 @@ export type ListAdSetsResponse = ({
         } | null;
         isExternal?: (boolean) | null;
         platformCreatedAt?: (string) | null;
+        /**
+         * Only with `live=true`. When `platformAdSetStatus` was read from the platform; null when this row was not read live.
+         */
+        statusReadAt?: (string) | null;
     }>;
 });
 
@@ -39419,6 +39444,12 @@ export type GetAdData = {
          */
         adId: string;
     };
+    query?: {
+        /**
+         * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description.
+         */
+        live?: boolean;
+    };
 };
 
 export type GetAdResponse = ({
@@ -39431,6 +39462,10 @@ export type GetAdResponse = ({
      * Whether Google RSA details use the last successful cached response.
      */
     stale?: boolean;
+    /**
+     * Only with `live=true`. When the switches were read from the platform; null when the live read failed and the stored values were returned.
+     */
+    statusReadAt?: (string) | null;
 });
 
 export type GetAdError = (ErrorResponse | {
