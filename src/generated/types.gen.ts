@@ -22384,6 +22384,9 @@ export type GetFacebookPagesResponse = ({
         fan_count?: number;
     }>;
     selectedPageId?: string;
+    /**
+     * false when this response was just read from Meta (cold cache or a refresh that ran), true when served from the stored list (including a debounced refresh or an empty Meta answer)
+     */
     cached?: boolean;
 });
 
