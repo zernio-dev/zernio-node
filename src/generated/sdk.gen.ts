@@ -15638,10 +15638,22 @@ export const runCommerceCatalogSync = <ThrowOnError extends boolean = false>(opt
  * one per 60 seconds (429 with `retryAfterSeconds` inside the cooldown).
  * The stored brandName/codeLength/ttlMinutes win on a resend.
  *
- * Codes deliver by SMS from a phone number on your account (`from`
- * optional when you own exactly one SMS-enabled number) and the message
- * uses a fixed template. Each accepted send bills one verification fee
- * plus the standard message rate.
+ * Codes deliver from a number on your account (`from` optional when
+ * you own exactly one number on the channel), always with a fixed
+ * template:
+ *
+ * - `sms`: from an SMS-enabled number. Each accepted send bills one
+ * verification fee plus the standard message rate.
+ * - `whatsapp`: from a connected WhatsApp number, as a Meta
+ * AUTHENTICATION template with a copy-code button. The first
+ * WhatsApp verification on a WhatsApp Business Account creates the
+ * `zernio_verify_code` template there and answers 422
+ * `template_pending` until Meta approves it (usually minutes; retry
+ * after `retryAfterSeconds`). Meta fixes the message text, so
+ * `brandName` is not shown and the code's validity is not stated in
+ * the message (`ttlMinutes` is still enforced). Each accepted send
+ * bills one verification fee; Meta bills its authentication rate to
+ * your WhatsApp Business Account.
  *
  */
 export const createVerification = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateVerificationData, ThrowOnError>) => {

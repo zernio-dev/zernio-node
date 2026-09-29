@@ -10993,7 +10993,7 @@ export type ValueRuleSet = {
 export type Verification = {
     id?: string;
     status?: 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
-    channel?: 'sms';
+    channel?: 'sms' | 'whatsapp';
     to?: string;
     expiresAt?: string;
     attempts?: number;
@@ -11012,7 +11012,7 @@ export type Verification = {
 
 export type status29 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
-export type channel4 = 'sms';
+export type channel4 = 'sms' | 'whatsapp';
 
 /**
  * Individual webhook configuration for receiving real-time notifications
@@ -53165,20 +53165,17 @@ export type RunCommerceCatalogSyncError = (ErrorResponse | {
 
 export type CreateVerificationData = {
     body: {
+        channel: 'sms' | 'whatsapp';
         /**
-         * SMS-only for now.
-         */
-        channel: 'sms';
-        /**
-         * E.164 phone number.
+         * E.164 phone number. WhatsApp only delivers to a phone number, never to a username.
          */
         to: string;
         /**
-         * The SMS-enabled number on your account to send from. Defaults to your only SMS number.
+         * The number on your account to send from: an SMS-enabled number for `sms`, a connected WhatsApp number for `whatsapp`. Defaults to your only number on that channel.
          */
         from?: string;
         /**
-         * Your app or business name, rendered in the message. Defaults to your account name. Letters, numbers, and basic punctuation only.
+         * Your app or business name, rendered in the SMS message. Defaults to your account name. Not shown on WhatsApp, where Meta fixes the message and shows your WhatsApp display name. Letters, numbers, and basic punctuation only.
          */
         brandName?: string;
         codeLength?: number;
