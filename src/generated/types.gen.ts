@@ -1141,11 +1141,11 @@ export type AdPromotedObject = {
      */
     customConversionId?: string;
     /**
-     * Optional catalog ID. If supplied with productSetId, the set must belong to this catalog. A catalog ID cannot replace productSetId.
+     * Optional catalog ID. If supplied with productSetId, the set must belong to this catalog (checked by Zernio when the Meta login carries catalog_management, by Meta otherwise). A catalog ID cannot replace productSetId.
      */
     productCatalogId?: string;
     /**
-     * Meta product SET ID from GET /v1/ads/catalogs/{catalogId}/product-sets. Zernio checks that the token can read the set and its product_catalog before creation. A catalog ID or inaccessible set returns a precise 400 naming promotedObject.productSetId. A mismatch with productCatalogId names promotedObject.productCatalogId.
+     * Meta product SET ID, for example from GET /v1/ads/catalogs/{catalogId}/product-sets. Creating catalog ads needs only ads_management on the Meta login, not catalog_management. Zernio checks before creation that the set is visible to the token, and a set it cannot see returns a 400 naming promotedObject.productSetId (a catalog ID is caught the same way when the login carries catalog_management, and rejected by Meta otherwise). When the login can also read the set's catalog (catalog_management), a mismatch with productCatalogId returns a 400 naming promotedObject.productCatalogId; otherwise Meta judges the catalog match. With validateOnly and a new campaign, Meta cannot dry-run the set inside the ad set, so the adSet result carries a reason; pass existingCampaignId to dry-run it in full.
      */
     productSetId?: string;
     /**
