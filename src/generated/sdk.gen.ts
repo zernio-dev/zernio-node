@@ -14451,7 +14451,9 @@ export const getTrackingTagDiagnostics = <ThrowOnError extends boolean = false>(
  *
  * LinkedIn (`linkedinads`): health rows rather than counts, since LinkedIn exposes no per-
  * event fire counts: one row per site domain the tag has seen (`kind: domain`, `domainName`,
- * `lastFiredTime`, `creationTime`, `blocked`) and one per conversion rule (`kind:
+ * `lastFiredTime`, `creationTime`, `blocked`), capped at the 100 domains that fired most
+ * recently (newest first; a tag seen on more domains drops the least recent), and one per
+ * conversion rule (`kind:
  * conversion_rule`, `id`, `name`, `type`, `conversionMethod`, `status`, `lastFiredTime`).
  * Times are unix seconds; `startTime`/`endTime` are ignored.
  *
