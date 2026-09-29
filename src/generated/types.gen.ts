@@ -32495,7 +32495,7 @@ export type SearchAvailablePhoneNumbersData = {
         country?: string;
         limit?: number;
         /**
-         * City
+         * A city name, matched against the numbering plan (accents and common aliases allowed) and searched by that city's area codes; a name no city of the plan matches returns no numbers. `areaCode` takes a city name too.
          */
         locality?: string;
         /**
@@ -32892,7 +32892,7 @@ export type SearchAvailableWhatsAppNumbersData = {
         country?: string;
         limit?: number;
         /**
-         * City
+         * A city name, matched against the numbering plan (accents and common aliases allowed) and searched by that city's area codes; a name no city of the plan matches returns no numbers. `areaCode` takes a city name too.
          */
         locality?: string;
         /**
