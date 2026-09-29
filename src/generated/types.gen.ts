@@ -26285,6 +26285,59 @@ export type DeleteMessengerMenuError = (ErrorResponse | {
     error?: string;
 });
 
+export type GetMessengerGetStartedData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetMessengerGetStartedResponse = ({
+    data?: {
+        /**
+         * Postback payload sent when a person taps Get Started
+         */
+        payload?: string;
+    } | null;
+});
+
+export type GetMessengerGetStartedError = (ErrorResponse | {
+    error?: string;
+});
+
+export type SetMessengerGetStartedData = {
+    body: {
+        /**
+         * Postback payload sent when a person taps Get Started, e.g. `GET_STARTED` or `zernio:workflow:<workflowId>`.
+         */
+        payload: string;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type SetMessengerGetStartedResponse = ({
+    success?: boolean;
+});
+
+export type SetMessengerGetStartedError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteMessengerGetStartedData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type DeleteMessengerGetStartedResponse = ({
+    success?: boolean;
+});
+
+export type DeleteMessengerGetStartedError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetInstagramIceBreakersData = {
     path: {
         accountId: string;

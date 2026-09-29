@@ -386,12 +386,15 @@ try {
 | Method | Description |
 |--------|-------------|
 | `accountSettings.getInstagramIceBreakers()` | Get IG ice breakers |
+| `accountSettings.getMessengerGetStarted()` | Get FB Get Started button |
 | `accountSettings.getMessengerMenu()` | Get FB persistent menu |
 | `accountSettings.getTelegramCommands()` | Get TG bot commands |
 | `accountSettings.deleteInstagramIceBreakers()` | Delete IG ice breakers |
+| `accountSettings.deleteMessengerGetStarted()` | Delete FB Get Started button |
 | `accountSettings.deleteMessengerMenu()` | Delete FB persistent menu |
 | `accountSettings.deleteTelegramCommands()` | Delete TG bot commands |
 | `accountSettings.setInstagramIceBreakers()` | Set IG ice breakers |
+| `accountSettings.setMessengerGetStarted()` | Set FB Get Started button |
 | `accountSettings.setMessengerMenu()` | Set FB persistent menu |
 | `accountSettings.setTelegramCommands()` | Set TG bot commands |
 
