@@ -9425,7 +9425,7 @@ export type TargetingSpec = {
         name?: string;
     }>;
     /**
-     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta and TikTok.
+     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta only (TikTok behaviours are rejected with a 400).
      */
     behaviors?: Array<{
         id: string;
@@ -44815,7 +44815,7 @@ export type CreateStandaloneAdData = {
             address?: string;
         }>;
         /**
-         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta and TikTok. Each must include id.
+         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta only (TikTok behaviours are rejected with a 400). Each must include id.
          */
         behaviors?: Array<{
             id: string;
@@ -46166,7 +46166,7 @@ export type SearchAdTargetingData = {
          */
         countryCode?: string;
         /**
-         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities, `income` resolves income-tier options, `language` resolves Google's targetable language_constant table (Google only), `workPosition`/`workEmployer`/`workIndustry` resolve Meta work demographics, `industry`/`jobFunction`/`seniority`/`companySize` resolve LinkedIn B2B facets (LinkedIn only). Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
+         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities (`behavior` is Meta only), `income` resolves the normalized income tiers, `language` resolves Google's targetable language_constant table (Google only), `workPosition`/`workEmployer`/`workIndustry` resolve Meta work demographics, `industry`/`jobFunction`/`seniority`/`companySize` resolve LinkedIn B2B facets (LinkedIn only). Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
          */
         dimension?: 'geo' | 'interest' | 'behavior' | 'income' | 'language' | 'workPosition' | 'workEmployer' | 'workIndustry' | 'industry' | 'jobFunction' | 'seniority' | 'companySize';
         /**
@@ -46195,7 +46195,7 @@ export type SearchAdTargetingResponse = ({
          */
         name: string;
         /**
-         * What the result is (e.g. city, region, country, zip, metro, location, interest, behavior, income, industry, jobFunction, seniority, companySize).
+         * What the result is. Equals the requested dimension (interest, behavior, income, language, workPosition, workEmployer, workIndustry, industry, jobFunction, seniority, companySize), or the location level for geo (country, region, city, zip, metro, ...).
          */
         type: string;
         /**
