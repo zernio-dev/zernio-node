@@ -38175,19 +38175,27 @@ export type UpdateAdCampaignStatusData = {
 
 export type UpdateAdCampaignStatusResponse = ({
     /**
-     * The status written to the campaign
+     * The campaign's delivery status derived from its switch as read back (`paused` when the switch is off). Echoes the request when the platform could not be read.
      */
     status?: 'active' | 'paused';
     /**
-     * Number of ads whose own stored status changed too. 0 is normal on a resume whose ads are all awaiting the platform.
+     * The campaign's own switch as read back from the platform, in the raw platform vocabulary (Meta effective_status, TikTok ENABLE / DISABLE, Google ENABLED / PAUSED, ChatGPT (OpenAI) status). Null when the platform could not be read, which is always the case on Pinterest, LinkedIn and X (no single-campaign read).
      */
-    updated?: number;
+    platformCampaignStatus?: (string) | null;
     /**
-     * Number of ads whose own status was left as it was
+     * When the switch was read back. Null when it could not be read.
      */
-    skipped?: number;
+    statusReadAt?: (string) | null;
     /**
-     * Why each group of ads was skipped
+     * 1 when the campaign's switch was written.
+     */
+    updated?: 0 | 1;
+    /**
+     * 1 when a live read showed the campaign already in the requested state, so nothing was written.
+     */
+    skipped?: 0 | 1;
+    /**
+     * Why the write was skipped, for example "Campaign already switched off".
      */
     skippedReasons?: Array<(string)>;
 });
@@ -38599,8 +38607,12 @@ export type BulkUpdateAdCampaignStatusResponse = ({
     results?: Array<{
         platformCampaignId?: string;
         platform?: string;
-        updated?: number;
-        skipped?: number;
+        updated?: 0 | 1;
+        skipped?: 0 | 1;
+        /**
+         * The campaign's own switch read back from the platform; null when it could not be read.
+         */
+        platformCampaignStatus?: (string) | null;
         error?: string;
     }>;
 });
@@ -39284,20 +39296,23 @@ export type UpdateAdSetResponse = ({
     budget?: AdBudget;
     budgetLevel?: 'adset';
     /**
-     * The status written to the ad set switch
+     * As in PUT /v1/ads/ad-sets/{adSetId}/status: delivery derived from the switches read back.
      */
     status?: 'active' | 'paused';
     /**
-     * Number of ads whose own stored status changed alongside the ad set switch
+     * The ad set's own switch read back from the platform; null when it could not be read.
      */
-    statusUpdated?: number;
+    platformAdSetStatus?: (string) | null;
+    platformCampaignStatus?: (string) | null;
+    statusReadAt?: (string) | null;
     /**
-     * Number of ads whose own status was left as it was
+     * 1 when the ad set's switch was written.
      */
-    statusSkipped?: number;
+    statusUpdated?: 0 | 1;
     /**
-     * Why each group of ads was skipped
+     * 1 when a live read showed it already in the requested state.
      */
+    statusSkipped?: 0 | 1;
     statusSkippedReasons?: Array<(string)>;
     bidStrategy?: BidStrategy;
     bidAmount?: (number) | null;
@@ -39347,19 +39362,31 @@ export type UpdateAdSetStatusData = {
 
 export type UpdateAdSetStatusResponse = ({
     /**
-     * The status written to the ad set switch
+     * The ad set's delivery status derived from the switches read back: `paused` when its own switch or its campaign's switch is off. Echoes the request when the platform could not be read.
      */
     status?: 'active' | 'paused';
     /**
-     * Number of ads whose own stored status changed too. 0 is normal on a resume whose ads are all awaiting the platform.
+     * The ad set's own switch as read back from the platform, in the raw platform vocabulary (Meta effective_status, TikTok ENABLE / DISABLE, Google ENABLED / PAUSED, LinkedIn and Pinterest ACTIVE / PAUSED, ChatGPT (OpenAI) status). Null when the platform could not be read, which is always the case on X.
      */
-    updated?: number;
+    platformAdSetStatus?: (string) | null;
     /**
-     * Number of ads whose own status was left as it was
+     * The parent campaign's switch, read in the same call where the platform returns it, otherwise the stored value.
      */
-    skipped?: number;
+    platformCampaignStatus?: (string) | null;
     /**
-     * Why each group of ads was skipped (for example "2 ads already switched off", read from each ad's own switch)
+     * When the ad set switch was read back. Null when it could not be read.
+     */
+    statusReadAt?: (string) | null;
+    /**
+     * 1 when the ad set's switch was written.
+     */
+    updated?: 0 | 1;
+    /**
+     * 1 when a live read showed the ad set already in the requested state, so nothing was written.
+     */
+    skipped?: 0 | 1;
+    /**
+     * Why the write was skipped, for example "Ad set already switched off".
      */
     skippedReasons?: Array<(string)>;
 });
