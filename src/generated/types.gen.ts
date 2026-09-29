@@ -18624,6 +18624,32 @@ export type GetConnectUrlData = {
          */
         redirect_url?: string;
         /**
+         * Comma-separated permission areas to request instead of the platform's full permission set. Values: `posting`, `analytics`, `comments`, `messaging`, `ads`. Omit it (the default, and what the dashboard does) to request everything the platform supports.
+         *
+         * When present, the consent dialog asks only for the platform scopes behind those areas plus the scopes every connection needs (identity, token refresh, and listing the pages, organizations or channels the user picks from). Scopes the user was never asked for are absent from the account's `permissions`, and the health endpoints report them as not granted, so a `posting`-only account cannot read analytics or the inbox until it is connected again with more areas. First comments need `comments`: a `posting`-only account publishes the post and skips the first comment. Scopes the platform lists under none of the areas (X likes, bookmarks and follows, Pinterest ads-only extras) are requested only when the parameter is omitted.
+         *
+         * Supported on facebook, instagram (both login methods), linkedin, twitter, tiktok, youtube, threads, reddit, pinterest, googlebusiness and slack (via `GET /v1/connect/slack`). Rejected with 400 `INVALID_FIELD_VALUE` (`param: scopes`) on bluesky, telegram, discord, snapchat and whatsapp, whose dialog cannot be reduced, and for an empty list or an unknown area.
+         *
+         * What each area asks for, per platform (Google scopes shortened to their last path segment):
+         *
+         * | Platform | `posting` | `analytics` | `comments` | `messaging` | `ads` | Always requested |
+         * |---|---|---|---|---|---|---|
+         * | facebook | `pages_manage_posts` | `read_insights`, `pages_read_user_content` | `pages_manage_engagement`, `pages_read_user_content` | (in the always-requested set) | `ads_management`, `ads_read`, `leads_retrieval`, `pages_manage_ads`, `instagram_basic`, `business_management` | `pages_show_list`, `pages_read_engagement`, `pages_manage_metadata`, `pages_messaging` |
+         * | instagram (Instagram Login) | `instagram_business_content_publish` | `instagram_business_manage_insights` | `instagram_business_manage_comments` | `instagram_business_manage_messages` | none | `instagram_business_basic` |
+         * | instagram (`loginMethod=facebook_login`) | `instagram_content_publish` | `instagram_manage_insights` | `instagram_manage_comments` | `instagram_manage_messages` | `ads_management`, `ads_read`, `leads_retrieval`, `pages_manage_ads` | `instagram_basic`, `pages_show_list`, `pages_read_engagement`, `business_management`, `pages_messaging`, `pages_manage_metadata` |
+         * | linkedin | `w_member_social`, `w_organization_social`, `r_organization_social`, `r_organization_followers` | `r_member_postAnalytics`, `r_member_profileAnalytics`, `rw_organization_admin`, `r_organization_social`, `r_organization_followers` | `w_member_social`, `w_member_social_feed`, `w_organization_social`, `w_organization_social_feed`, `r_organization_social`, `r_organization_social_feed` | none | `r_ads`, `rw_ads`, `r_ads_reporting`, `r_marketing_leadgen_automation`, `rw_conversions` | `openid`, `profile`, `email`, `r_basicprofile`, `rw_organization_admin` |
+         * | twitter | `tweet.write`, `media.write` | (in the always-requested set) | `tweet.write`, `like.write`, `tweet.moderate.write` | `dm.read`, `dm.write`, `media.write` | none | `tweet.read`, `users.read`, `offline.access` |
+         * | tiktok | `video.publish` | `user.info.stats`, `user.insights`, `video.list`, `video.insights` | `comment.list`, `comment.list.manage`, `video.list` | `message.list.read`, `message.list.send`, `message.list.manage` | none | `user.info.basic`, `user.info.username`, `user.info.profile`, `user.account.type`, `video.publish`, `video.upload`, `video.list` |
+         * | youtube | `youtube.upload` | `yt-analytics.readonly` | `youtube.force-ssl` | none | none | `youtube` |
+         * | threads | `threads_content_publish`, `threads_manage_replies`, `threads_delete` | `threads_manage_insights` | `threads_content_publish`, `threads_read_replies`, `threads_manage_replies`, `threads_delete` | none | none | `threads_basic` |
+         * | reddit | `submit`, `read`, `mysubreddits`, `flair`, `history`, `edit` | `read`, `history` | `read`, `history`, `edit`, `vote` | `privatemessages` | none | `identity` |
+         * | pinterest | `boards:write`, `pins:read`, `pins:write` | `pins:read`, `user_accounts:read` | none | none | `ads:read`, `ads:write`, `boards:write`, `pins:read`, `pins:write` | `boards:read`, `user_accounts:read` |
+         * | googlebusiness | `business.manage` | `business.manage` | `business.manage` | none | none | `business.manage`, `userinfo.profile`, `userinfo.email` |
+         * | slack | `chat:write`, `chat:write.public`, `chat:write.customize`, `files:write`, `files:read` | none | none | `chat:write`, `chat:write.customize`, `files:write`, `files:read`, `channels:history`, `groups:history`, `im:history`, `mpim:history`, `im:read`, `im:write`, `mpim:read`, `users:read`, `reactions:read`, `reactions:write` | none | `channels:join`, `channels:read`, `groups:read`, `team:read` |
+         *
+         */
+        scopes?: string;
+        /**
          * WhatsApp only. Rejected with 400 `INVALID_FIELD_VALUE` on any other platform.
          *
          * `hosted`: `authUrl` points at a Zernio-hosted page on zernio.com instead of Meta's OAuth dialog, and
@@ -21971,6 +21997,10 @@ export type ListSlackChannelsData = {
          * Start-OAuth mode only: where to send the user after the connect completes. `redirectUrl` is accepted as an alias.
          */
         redirect_url?: string;
+        /**
+         * Start-OAuth mode only. Comma-separated permission areas to request instead of the full Slack scope set, with the same semantics as `scopes` on `GET /v1/connect/{platform}`: `posting` installs the bot with the channel scopes it needs to post, `messaging` adds the history, DM and reaction scopes the inbox reads; `analytics`, `comments` and `ads` add nothing on Slack. Omit it to request everything.
+         */
+        scopes?: string;
     };
 };
 
