@@ -737,9 +737,9 @@ try {
 ### Commerce
 | Method | Description |
 |--------|-------------|
-| `commerce.listCollectionMetafields()` | List collection metafields |
 | `commerce.listCommerceCatalogSyncs()` | List catalog syncs |
 | `commerce.listCommerceChannels()` | List sales channels |
+| `commerce.listCommerceCollectionMetafields()` | List collection metafields |
 | `commerce.listCommerceCollections()` | List collections |
 | `commerce.listCommerceDiscounts()` | List discounts |
 | `commerce.listCommerceInventory()` | Get a product's stock |
@@ -750,9 +750,9 @@ try {
 | `commerce.listCommerceMetaobjects()` | List metaobjects of a type |
 | `commerce.listCommercePages()` | List pages |
 | `commerce.listCommercePriceLists()` | List price lists |
+| `commerce.listCommerceProductMetafields()` | List product metafields |
 | `commerce.listCommerceProducts()` | List products |
 | `commerce.listCommerceRedirects()` | List URL redirects |
-| `commerce.listProductMetafields()` | List product metafields |
 | `commerce.createCommerceCatalogSync()` | Sync a store into a Meta catalog |
 | `commerce.createCommerceCollection()` | Create a collection |
 | `commerce.createCommerceDiscount()` | Create a discount |
@@ -779,37 +779,37 @@ try {
 | `commerce.updateCommerceProduct()` | Update a product |
 | `commerce.updateCommerceProductPrices()` | Update variant prices |
 | `commerce.updateCommerceRedirect()` | Update a URL redirect |
-| `commerce.deleteCollectionMetafields()` | Delete collection metafields |
 | `commerce.deleteCommerceCatalogSync()` | Stop a catalog sync |
 | `commerce.deleteCommerceCollection()` | Delete a collection |
+| `commerce.deleteCommerceCollectionMetafields()` | Delete collection metafields |
 | `commerce.deleteCommerceDiscount()` | Delete a discount |
 | `commerce.deleteCommerceMarketingActivity()` | Delete a marketing activity |
 | `commerce.deleteCommerceMenu()` | Delete a navigation menu |
 | `commerce.deleteCommerceMetaobject()` | Delete a metaobject |
 | `commerce.deleteCommercePage()` | Delete a page |
 | `commerce.deleteCommercePriceListPrices()` | Remove fixed prices |
+| `commerce.deleteCommerceProductMetafields()` | Delete product metafields |
 | `commerce.deleteCommerceProductOptions()` | Delete options |
 | `commerce.deleteCommerceProductVariants()` | Delete variants |
 | `commerce.deleteCommerceRedirect()` | Delete a URL redirect |
-| `commerce.deleteProductMetafields()` | Delete product metafields |
 | `commerce.addCommerceDiscountCodes()` | Add codes to a discount |
 | `commerce.addCommerceMarketingEngagement()` | Report daily engagement |
 | `commerce.addCommerceProductImages()` | Add images |
-| `commerce.changeCollectionChannels()` | Publish or unpublish a collection |
+| `commerce.changeCommerceCollectionChannels()` | Publish or unpublish a collection |
 | `commerce.changeCommerceCollectionProducts()` | Add or remove products in a collection |
 | `commerce.changeCommerceInventory()` | Set or adjust stock |
+| `commerce.changeCommerceProductChannels()` | Publish or unpublish a product |
 | `commerce.changeCommerceProductState()` | Activate, deactivate, archive or delete products |
 | `commerce.changeCommerceProductTags()` | Add or remove tags in bulk |
-| `commerce.changeProductChannels()` | Publish or unpublish a product |
 | `commerce.duplicateCommerceProduct()` | Duplicate a product |
 | `commerce.removeCommerceProductImages()` | Remove images |
 | `commerce.reorderCommerceCollectionProducts()` | Reorder products in a collection |
 | `commerce.reorderCommerceProductImages()` | Reorder images |
 | `commerce.runCommerceCatalogSync()` | Run a catalog sync now |
-| `commerce.setCollectionMetafields()` | Set collection metafields |
+| `commerce.setCommerceCollectionMetafields()` | Set collection metafields |
 | `commerce.setCommerceDiscountActive()` | Activate or deactivate a discount |
 | `commerce.setCommercePriceListPrices()` | Set fixed prices |
-| `commerce.setProductMetafields()` | Set product metafields |
+| `commerce.setCommerceProductMetafields()` | Set product metafields |
 | `commerce.upsertCommerceMarketingActivity()` | Record a marketing activity |
 
 ### Connected Apps

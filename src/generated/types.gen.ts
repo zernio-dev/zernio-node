@@ -3079,7 +3079,7 @@ export type CommentAutomationTemplateElement = {
 /**
  * An operation a store supports. Calling an operation outside this list answers 400 platform_not_supported.
  */
-export type CommerceCapability = 'products.read' | 'products.create' | 'products.update' | 'products.status' | 'products.price' | 'products.variants' | 'products.images' | 'products.images_remove' | 'collections.read' | 'collections.write' | 'metafields.read' | 'metafields.write' | 'pages.read' | 'pages.write' | 'inventory.read' | 'inventory.write' | 'channels.read' | 'channels.write' | 'discounts.read' | 'discounts.write' | 'navigation.read' | 'navigation.write' | 'metaobjects.read' | 'metaobjects.write' | 'markets.read' | 'markets.write' | 'marketing.write';
+export type CommerceCapability = 'products.read' | 'products.create' | 'products.update' | 'products.status' | 'products.price' | 'products.variants' | 'products.images' | 'products.images_remove' | 'collections.read' | 'collections.write' | 'collections.metafields' | 'metafields.read' | 'metafields.write' | 'pages.read' | 'pages.write' | 'inventory.read' | 'inventory.write' | 'channels.read' | 'channels.write' | 'discounts.read' | 'discounts.write' | 'discounts.codes' | 'navigation.read' | 'navigation.write' | 'metaobjects.read' | 'metaobjects.write' | 'markets.read' | 'markets.write' | 'marketing.write';
 
 /**
  * A store kept in sync with an ad-platform product catalog.
@@ -51910,7 +51910,7 @@ export type DuplicateCommerceProductError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type ListProductMetafieldsData = {
+export type ListCommerceProductMetafieldsData = {
     path: {
         /**
          * Platform-native id.
@@ -51925,15 +51925,15 @@ export type ListProductMetafieldsData = {
     };
 };
 
-export type ListProductMetafieldsResponse = ({
+export type ListCommerceProductMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type ListProductMetafieldsError = (ErrorResponse | {
+export type ListCommerceProductMetafieldsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type SetProductMetafieldsData = {
+export type SetCommerceProductMetafieldsData = {
     body: {
         accountId: string;
         metafields: Array<CommerceMetafield>;
@@ -51946,15 +51946,15 @@ export type SetProductMetafieldsData = {
     };
 };
 
-export type SetProductMetafieldsResponse = ({
+export type SetCommerceProductMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type SetProductMetafieldsError = (ErrorResponse | {
+export type SetCommerceProductMetafieldsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type DeleteProductMetafieldsData = {
+export type DeleteCommerceProductMetafieldsData = {
     path: {
         /**
          * Platform-native id.
@@ -51973,15 +51973,15 @@ export type DeleteProductMetafieldsData = {
     };
 };
 
-export type DeleteProductMetafieldsResponse = ({
+export type DeleteCommerceProductMetafieldsResponse = ({
     deleted?: number;
 });
 
-export type DeleteProductMetafieldsError = (ErrorResponse | {
+export type DeleteCommerceProductMetafieldsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type ChangeProductChannelsData = {
+export type ChangeCommerceProductChannelsData = {
     body: {
         accountId: string;
         /**
@@ -51998,17 +51998,17 @@ export type ChangeProductChannelsData = {
     };
 };
 
-export type ChangeProductChannelsResponse = ({
+export type ChangeCommerceProductChannelsResponse = ({
     productId?: string;
     published?: Array<(string)>;
     unpublished?: Array<(string)>;
 });
 
-export type ChangeProductChannelsError = (ErrorResponse | {
+export type ChangeCommerceProductChannelsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type ListCollectionMetafieldsData = {
+export type ListCommerceCollectionMetafieldsData = {
     path: {
         /**
          * Platform-native id.
@@ -52023,15 +52023,15 @@ export type ListCollectionMetafieldsData = {
     };
 };
 
-export type ListCollectionMetafieldsResponse = ({
+export type ListCommerceCollectionMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type ListCollectionMetafieldsError = (ErrorResponse | {
+export type ListCommerceCollectionMetafieldsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type SetCollectionMetafieldsData = {
+export type SetCommerceCollectionMetafieldsData = {
     body: {
         accountId: string;
         metafields: Array<CommerceMetafield>;
@@ -52044,15 +52044,15 @@ export type SetCollectionMetafieldsData = {
     };
 };
 
-export type SetCollectionMetafieldsResponse = ({
+export type SetCommerceCollectionMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type SetCollectionMetafieldsError = (ErrorResponse | {
+export type SetCommerceCollectionMetafieldsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type DeleteCollectionMetafieldsData = {
+export type DeleteCommerceCollectionMetafieldsData = {
     path: {
         /**
          * Platform-native id.
@@ -52071,15 +52071,15 @@ export type DeleteCollectionMetafieldsData = {
     };
 };
 
-export type DeleteCollectionMetafieldsResponse = ({
+export type DeleteCommerceCollectionMetafieldsResponse = ({
     deleted?: number;
 });
 
-export type DeleteCollectionMetafieldsError = (ErrorResponse | {
+export type DeleteCommerceCollectionMetafieldsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
-export type ChangeCollectionChannelsData = {
+export type ChangeCommerceCollectionChannelsData = {
     body: {
         accountId: string;
         /**
@@ -52096,13 +52096,13 @@ export type ChangeCollectionChannelsData = {
     };
 };
 
-export type ChangeCollectionChannelsResponse = ({
+export type ChangeCommerceCollectionChannelsResponse = ({
     collectionId?: string;
     published?: Array<(string)>;
     unpublished?: Array<(string)>;
 });
 
-export type ChangeCollectionChannelsError = (ErrorResponse | {
+export type ChangeCommerceCollectionChannelsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
