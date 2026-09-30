@@ -13058,6 +13058,8 @@ export type WebhookPayloadMessageDeliveryStatus = {
          */
         explanation?: (string) | null;
     } | null;
+    pricing?: WhatsAppMessagePricing;
+    billingConversation?: WhatsAppBillingConversation;
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
@@ -13227,6 +13229,8 @@ export type WebhookPayloadMessageSent = {
          */
         sentVia?: ('human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api') | null;
     };
+    pricing?: WhatsAppMessagePricing;
+    billingConversation?: WhatsAppBillingConversation;
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
@@ -13965,6 +13969,27 @@ export type event33 = 'whatsapp.template.status_updated';
  */
 export type status34 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
+/**
+ * WhatsApp only. Meta's `conversation` object from the status webhook (the billing
+ * window, not the Zernio inbox `conversation`). Same presence rules as `pricing`;
+ * from Graph API v24 Meta sends it only inside an open free entry point window.
+ *
+ */
+export type WhatsAppBillingConversation = {
+    /**
+     * Meta's conversation id.
+     */
+    id: (string) | null;
+    /**
+     * When the window expires. Meta sends it only on the `sent` status.
+     */
+    expiresAt: (string) | null;
+    /**
+     * Meta `origin.type`, for example `marketing`, `utility`, `service`, `referral_conversion`.
+     */
+    originType: (string) | null;
+} | null;
+
 export type WhatsAppBodyComponent = {
     type: 'body';
     /**
@@ -14064,6 +14089,33 @@ export type WhatsAppLimitedTimeOfferComponent = {
         has_expiration?: boolean;
     };
 };
+
+/**
+ * WhatsApp only. Meta's `pricing` object from the status webhook, camelCased.
+ * Present (possibly null) on every WhatsApp `message.sent`, `message.delivered`,
+ * `message.read` and `message.failed`; absent on other platforms. Meta includes it
+ * on `sent` and on one of `delivered` or `read`, so it is null on the others and
+ * usually on `failed`.
+ *
+ */
+export type WhatsAppMessagePricing = {
+    /**
+     * Whether Meta bills this message. Meta has announced it will deprecate this field.
+     */
+    billable: (boolean) | null;
+    /**
+     * `PMP` (per-message pricing) or `CBP` (conversation-based, messages before 2025-07-01).
+     */
+    pricingModel: (string) | null;
+    /**
+     * Pricing category as Meta sends it, for example `marketing`, `marketing_lite`, `utility`, `authentication`, `authentication-international`, `service`, `referral_conversion`.
+     */
+    category: (string) | null;
+    /**
+     * `regular` (billable), `free_customer_service` or `free_entry_point`.
+     */
+    type: (string) | null;
+} | null;
 
 export type WhatsAppNamedParamExample = {
     /**
