@@ -1078,8 +1078,8 @@ export const unpublishPost = <ThrowOnError extends boolean = false>(options: Opt
  * Edit the text of an already-published post. Supported on X, Discord,
  * Facebook, Reddit, LinkedIn, Telegram, Pinterest, Google Business Profile, YouTube,
  * and Slack. When a post was published to several accounts on the same platform,
- * pass `accountId` to pick which account's copy to edit (the first entry is edited
- * otherwise). Each platform enforces its own rules:
+ * pass `accountId` to pick which account's copy to edit (without it the request
+ * returns 409). Each platform enforces its own rules:
  *
  * **X**
  * - Connected X account must have an active X Premium subscription

@@ -17217,6 +17217,10 @@ export type UnpublishPostData = {
          * The platform to delete the post from
          */
         platform: 'threads' | 'facebook' | 'twitter' | 'linkedin' | 'youtube' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram';
+        /**
+         * Which account's copy to delete when the post was published to several accounts on this platform. Required in that case.
+         */
+        accountId?: string;
     };
     path: {
         postId: string;
@@ -17243,7 +17247,7 @@ export type EditPostData = {
          */
         content: string;
         /**
-         * Which account's copy of the post to edit when the post was published to several accounts on the same platform; defaults to the first.
+         * Which account's copy of the post to edit when the post was published to several accounts on the same platform. Required in that case.
          *
          */
         accountId?: string;
@@ -17269,7 +17273,7 @@ export type EditPostResponse = ({
 
 export type EditPostError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type UpdatePostMetadataData = {
     body: {
@@ -17282,7 +17286,7 @@ export type UpdatePostMetadataData = {
          */
         videoId?: string;
         /**
-         * Zernio account ID (required for direct mode, ignored for post-based mode)
+         * Zernio account ID. Required for direct mode. In post-based mode, picks which account's copy to update when the post was published to several accounts on this platform (required in that case).
          */
         accountId?: string;
         /**
