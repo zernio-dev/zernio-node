@@ -817,7 +817,7 @@ export type AdKeyword = {
     };
     syncedAt?: (string) | null;
     /**
-     * Trailing 30-day window. Null on rows synced before the metrics columns existed (re-synced on the keyword's next weekly sweep).
+     * Trailing 30-day window. Null on rows synced before the metrics columns existed (re-synced on the keyword's next daily sweep).
      */
     metrics?: {
         windowDays?: number;
@@ -5023,9 +5023,9 @@ export type ErrorResponse = {
          */
         quotaScope?: 'DEVELOPER' | 'ACCOUNT';
         /**
-         * Zernio Google Ads operations-budget 429 only (never set alongside `quotaExhausted`). `user` is your own burst/daily allowance; `platform` is the fleet-wide daily budget shared across customers.
+         * Zernio Google Ads burst-limit 429 only (never set alongside `quotaExhausted`). `user` is your own per-minute allowance on user-driven Google Ads calls; it clears within a minute.
          */
-        budgetScope?: 'user' | 'platform';
+        budgetScope?: 'user';
         [key: string]: unknown | string | boolean;
     };
 };
@@ -5046,9 +5046,9 @@ export type stage = 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activa
 export type quotaScope = 'DEVELOPER' | 'ACCOUNT';
 
 /**
- * Zernio Google Ads operations-budget 429 only (never set alongside `quotaExhausted`). `user` is your own burst/daily allowance; `platform` is the fleet-wide daily budget shared across customers.
+ * Zernio Google Ads burst-limit 429 only (never set alongside `quotaExhausted`). `user` is your own per-minute allowance on user-driven Google Ads calls; it clears within a minute.
  */
-export type budgetScope = 'user' | 'platform';
+export type budgetScope = 'user';
 
 /**
  * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
