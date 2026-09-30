@@ -472,6 +472,7 @@ import {
   getWhatsAppNumberRemediation,
   getWhatsAppPhoneNumber,
   getWhatsAppPhoneNumbers,
+  getWhatsAppPricingAnalytics,
   getWhatsAppSdkConfig,
   getWhatsAppTemplate,
   getWhatsAppTemplateById,
@@ -1790,6 +1791,7 @@ export class Zernio {
    */
   whatsappphonenumbers = {
     getWhatsAppNumberInfo: this._bind(getWhatsAppNumberInfo),
+    getWhatsAppPricingAnalytics: this._bind(getWhatsAppPricingAnalytics),
     getWhatsAppPhoneNumbers: this._bind(getWhatsAppPhoneNumbers),
     purchaseWhatsAppPhoneNumber: this._bind(purchaseWhatsAppPhoneNumber),
     listWhatsAppNumberCountries: this._bind(listWhatsAppNumberCountries),

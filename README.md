@@ -1349,6 +1349,7 @@ try {
 | `whatsappPhoneNumbers.getWhatsAppNumberRemediation()` | Get declined requirements |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumber()` | Get phone number |
 | `whatsappPhoneNumbers.getWhatsAppPhoneNumbers()` | List phone numbers |
+| `whatsappPhoneNumbers.getWhatsAppPricingAnalytics()` | Get pricing analytics |
 | `whatsappPhoneNumbers.checkWhatsAppNumberAvailability()` | Check country availability |
 | `whatsappPhoneNumbers.moveWhatsAppNumberToProfile()` | Move a number to another profile |
 | `whatsappPhoneNumbers.purchaseWhatsAppPhoneNumber()` | Purchase phone number |

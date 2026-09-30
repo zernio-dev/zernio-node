@@ -32293,6 +32293,91 @@ export type GetWhatsAppNumberInfoError = (unknown | {
     error?: string;
 });
 
+export type GetWhatsAppPricingAnalyticsData = {
+    query: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+        /**
+         * Comma-separated ISO 3166-1 alpha-2 country codes to filter on.
+         */
+        countryCodes?: string;
+        /**
+         * Comma-separated breakdowns: COUNTRY, PHONE, PRICING_CATEGORY, PRICING_TYPE, TIER. Without it each data point is a total for the interval.
+         */
+        dimensions?: string;
+        /**
+         * Range end, ISO 8601 date or date-time. Must be after start.
+         */
+        end: string;
+        granularity: 'HALF_HOUR' | 'DAILY' | 'MONTHLY';
+        /**
+         * Comma-separated: COST, VOLUME. Defaults to both.
+         */
+        metricTypes?: string;
+        /**
+         * Comma-separated filter of Meta pricing categories, for example MARKETING, MARKETING_LITE, UTILITY, AUTHENTICATION, AUTHENTICATION_INTERNATIONAL, SERVICE, REFERRAL_CONVERSION.
+         */
+        pricingCategories?: string;
+        /**
+         * Comma-separated filter: REGULAR, FREE_CUSTOMER_SERVICE, FREE_ENTRY_POINT.
+         */
+        pricingTypes?: string;
+        /**
+         * Range start, ISO 8601 date or date-time.
+         */
+        start: string;
+    };
+};
+
+export type GetWhatsAppPricingAnalyticsResponse = ({
+    accountId: string;
+    /**
+     * The number the data is scoped to, digits only.
+     */
+    phoneNumber: string;
+    granularity: 'HALF_HOUR' | 'DAILY' | 'MONTHLY';
+    start: string;
+    end: string;
+    dataPoints: Array<{
+        start: string;
+        end: string;
+        /**
+         * Set when dimensions includes PHONE.
+         */
+        phoneNumber: (string) | null;
+        /**
+         * Set when dimensions includes COUNTRY.
+         */
+        country: (string) | null;
+        /**
+         * Volume pricing tier. Set when dimensions includes TIER.
+         */
+        tier: (string) | null;
+        /**
+         * Set when dimensions includes PRICING_TYPE.
+         */
+        pricingType: (string) | null;
+        /**
+         * Set when dimensions includes PRICING_CATEGORY.
+         */
+        pricingCategory: (string) | null;
+        /**
+         * Messages delivered.
+         */
+        volume: (number) | null;
+        /**
+         * Approximate charge, in the currency of the WABA's payment method.
+         */
+        cost: (number) | null;
+    }>;
+});
+
+export type GetWhatsAppPricingAnalyticsError = (ErrorResponse | {
+    error?: string;
+});
+
 export type GetWhatsAppBlockStatusData = {
     query: {
         accountId: string;
