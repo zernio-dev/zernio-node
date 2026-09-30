@@ -25870,6 +25870,14 @@ export type SearchInboxConversationsResponse = ({
             participantName?: (string) | null;
             participantUsername?: (string) | null;
             participantPicture?: (string) | null;
+            /**
+             * WhatsApp only. Meta business-scoped user ID (BSUID), the stable identity anchor; present when Meta has sent it for this participant.
+             */
+            businessScopedUserId?: string;
+            /**
+             * WhatsApp only. The participant's WhatsApp username (e.g. `jane.shop`, no leading @). Not a stable identifier, because users can change it: useful for display, not recommended as an identity anchor. Captured from inbound messages, so older threads fill in on their next inbound.
+             */
+            whatsappUsername?: string;
             status?: 'active' | 'archived';
             /**
              * The conversation's most recent message preview
