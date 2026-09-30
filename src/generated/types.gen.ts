@@ -8223,6 +8223,10 @@ export type OwnedPhoneNumber = {
     metaVerifiedAt?: string;
     metaVerificationExpiresAt?: string;
     /**
+     * Set when WhatsApp reported the number as registered to another WhatsApp account while connecting it. The number keeps working for Calls and SMS; remove it from the other account and connect again, or replace it with POST /v1/whatsapp/phone-numbers/{id}/replace. Absent once WhatsApp accepts the number.
+     */
+    metaPoolAddRejectedAt?: string;
+    /**
      * The WhatsApp account the number is linked to; null when WhatsApp is not connected.
      */
     socialAccountId?: (string) | null;
@@ -11186,6 +11190,14 @@ export type Verification = {
      */
     sendCount?: number;
     lastSentAt?: (string) | null;
+    /**
+     * WhatsApp only, returned by GET /v1/verify/verifications/{verificationId} (null on create and check responses): what Meta reported for the latest send, null until it reports. A code that never reached the recipient (for example a number not on WhatsApp) reads failed, with the Meta error in deliveryErrorCode. failed does not settle the verification: Meta can report failed and later deliver the same message. Reported for at least an hour after the send, well past any code's expiry.
+     */
+    deliveryStatus?: ('delivered' | 'read' | 'failed') | null;
+    /**
+     * Meta error code when deliveryStatus is failed (e.g. 131026, message undeliverable).
+     */
+    deliveryErrorCode?: (number) | null;
     createdAt?: string;
     /**
      * Present on create responses: true when an active verification was resent instead of created.
@@ -11196,6 +11208,11 @@ export type Verification = {
 export type status29 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms' | 'whatsapp';
+
+/**
+ * WhatsApp only, returned by GET /v1/verify/verifications/{verificationId} (null on create and check responses): what Meta reported for the latest send, null until it reports. A code that never reached the recipient (for example a number not on WhatsApp) reads failed, with the Meta error in deliveryErrorCode. failed does not settle the verification: Meta can report failed and later deliver the same message. Reported for at least an hour after the send, well past any code's expiry.
+ */
+export type deliveryStatus = 'delivered' | 'read' | 'failed';
 
 /**
  * Individual webhook configuration for receiving real-time notifications
