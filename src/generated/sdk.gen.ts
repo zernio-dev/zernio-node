@@ -11999,8 +11999,11 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  *
  * - `geo`: locations, further scoped by `geoType`
  * - `interest`
- * - `behavior`: Meta-only, matched by name against Meta's fixed behaviors catalog
- * (e.g. `Small business owners`, `Frequent Travelers`); ids feed `TargetingSpec.behaviors`
+ * - `behavior`: Meta and TikTok, matched by name; ids feed `TargetingSpec.behaviors`.
+ * Meta: its fixed behaviors catalog (e.g. `Small business owners`, `Frequent Travelers`).
+ * TikTok: video and creator interaction categories (e.g. `Software & Apps`), with ids like
+ * `video:1913101` or `creator:24001` and `path` starting with `Video interactions` or
+ * `Creator interactions`
  * - `income`: the household-income tiers the platform can target (Meta, TikTok, Google).
  * The id is the normalized tier (`top_5`, `top_10`, `top_10_25`, `top_25_50`) to pass as
  * `TargetingSpec.incomeTier`, never a platform segment id. Meta's tiers are US-only

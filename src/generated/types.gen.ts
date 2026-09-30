@@ -4302,7 +4302,7 @@ export type CtwaAdRequestBody = {
         [key: string]: unknown;
     };
     /**
-     * Meta behavior ids. Each dimension is its own flexible_spec entry: OR within, AND across.
+     * Behavior ids from /v1/ads/targeting/search?dimension=behavior. Meta: each dimension is its own flexible_spec entry (OR within, AND across). TikTok: video/creator interaction categories, sent as the ad group's actions.
      */
     behaviors?: Array<{
         id: string;
@@ -10088,7 +10088,7 @@ export type TargetingSpec = {
         name?: string;
     }>;
     /**
-     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta only (TikTok behaviours are rejected with a 400).
+     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta and TikTok). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, and the ad group uses the TikTok placement only.
      */
     behaviors?: Array<{
         id: string;
@@ -46205,7 +46205,7 @@ export type CreateStandaloneAdData = {
             address?: string;
         }>;
         /**
-         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior. Supported on Meta only (TikTok behaviours are rejected with a 400). Each must include id.
+         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta and TikTok). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, and the ad group uses the TikTok placement only. Each must include id.
          */
         behaviors?: Array<{
             id: string;
