@@ -4276,7 +4276,7 @@ export type CtwaAdRequestBody = {
         devicePlatforms?: Array<('mobile' | 'desktop')>;
     };
     /**
-     * Restrict the audience by gender (Meta `genders`). Stored on the ad and read back in `targeting.gender`.
+     * Restrict the audience by gender (Meta `genders`). Omit or send all for everyone; all is ignored in adSetId attach mode. Stored on the ad and read back in `targeting.gender`.
      */
     gender?: 'all' | 'male' | 'female';
     /**
@@ -4473,7 +4473,7 @@ export type CtwaAdRequestBody = {
 export type budgetType = 'daily' | 'lifetime';
 
 /**
- * Restrict the audience by gender (Meta `genders`). Stored on the ad and read back in `targeting.gender`.
+ * Restrict the audience by gender (Meta `genders`). Omit or send all for everyone; all is ignored in adSetId attach mode. Stored on the ad and read back in `targeting.gender`.
  */
 export type gender = 'all' | 'male' | 'female';
 
