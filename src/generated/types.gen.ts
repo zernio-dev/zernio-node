@@ -6660,7 +6660,10 @@ export type InboxWebhookMessage = {
          * Additional attachment metadata
          */
         payload?: {
-            [key: string]: unknown;
+            /**
+             * WhatsApp audio only. True for a voice note recorded in the WhatsApp client, false for an audio file.
+             */
+            voice?: boolean;
         };
     }>;
     sender: {
@@ -12511,7 +12514,10 @@ export type WebhookPayloadMessage = {
              * Additional attachment metadata
              */
             payload?: {
-                [key: string]: unknown;
+                /**
+                 * WhatsApp audio only. True for a voice note recorded in the WhatsApp client, false for an audio file.
+                 */
+                voice?: boolean;
             };
         }>;
         sender: {
@@ -12748,6 +12754,14 @@ export type WebhookPayloadMessage = {
             product_retailer_id?: string;
         };
         /**
+         * WhatsApp only. True when the user forwarded this message (5 times or fewer). Absent when not forwarded.
+         */
+        forwarded?: boolean;
+        /**
+         * WhatsApp only. True when the message was forwarded more than 5 times; Meta then omits forwarded.
+         */
+        frequentlyForwarded?: boolean;
+        /**
          * WhatsApp only. The location pin the user shared, forwarded
          * verbatim from Meta. The message `text` is only the emoji preview
          * (`📍 <name>`); the coordinates live here.
@@ -12854,6 +12868,12 @@ export type WebhookPayloadMessage = {
             image_url?: string;
             video_url?: string;
             thumbnail_url?: string;
+            /**
+             * WhatsApp CTWA only. The greeting Meta showed the user in the ad.
+             */
+            welcome_message?: {
+                text?: string;
+            };
             /**
              * Facebook Messenger CTM / Instagram CTD only. The Meta ad ID the
              * user clicked to start the conversation.
