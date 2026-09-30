@@ -22468,7 +22468,7 @@ export type UpdateFacebookPageResponse = ({
 
 export type UpdateFacebookPageError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type GetLinkedInOrganizationsData = {
     path: {
@@ -22733,7 +22733,7 @@ export type UpdateLinkedInOrganizationResponse = ({
 
 export type UpdateLinkedInOrganizationError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type GetLinkedInMentionsData = {
     path: {
@@ -23267,7 +23267,7 @@ export type UpdateGmbLocationResponse = ({
 
 export type UpdateGmbLocationError = (unknown | {
     error?: string;
-});
+} | ErrorResponse);
 
 export type AssignGoogleBusinessLocationData = {
     body: {
