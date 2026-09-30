@@ -6710,7 +6710,7 @@ export type InboxWebhookMessage = {
          */
         parentBusinessScopedUserId?: string;
         /**
-         * WhatsApp only. User's WhatsApp username (e.g. `@jane`). Not a
+         * WhatsApp only. User's WhatsApp username (e.g. `jane.shop`). Not a
          * stable identifier, because users can change it. Useful for display, not
          * recommended as an identity anchor.
          *
@@ -12557,7 +12557,7 @@ export type WebhookPayloadMessage = {
              */
             parentBusinessScopedUserId?: string;
             /**
-             * WhatsApp only. User's WhatsApp username (e.g. `@jane`). Not a
+             * WhatsApp only. User's WhatsApp username (e.g. `jane.shop`). Not a
              * stable identifier, because users can change it. Useful for display,
              * not recommended as an identity anchor.
              *
@@ -25414,6 +25414,14 @@ export type ListInboxConversationsResponse = ({
          * X verified badge type. Only present for X conversations.
          */
         participantVerifiedType?: ('blue' | 'government' | 'business' | 'none') | null;
+        /**
+         * WhatsApp only. Meta business-scoped user ID (BSUID), the stable identity anchor; present when Meta has sent it for this participant.
+         */
+        businessScopedUserId?: string;
+        /**
+         * WhatsApp only. The participant's WhatsApp username (e.g. `jane.shop`, no leading @). Not a stable identifier, because users can change it: useful for display, not recommended as an identity anchor. Captured from inbound messages, so older threads fill in on their next inbound.
+         */
+        whatsappUsername?: string;
         lastMessage?: string;
         updatedTime?: string;
         status?: 'active' | 'archived';
@@ -25919,6 +25927,14 @@ export type GetInboxConversationResponse = ({
          * X verified badge type. Only present for X conversations.
          */
         participantVerifiedType?: ('blue' | 'government' | 'business' | 'none') | null;
+        /**
+         * WhatsApp only. Meta business-scoped user ID (BSUID), the stable identity anchor; present when Meta has sent it for this participant.
+         */
+        businessScopedUserId?: string;
+        /**
+         * WhatsApp only. The participant's WhatsApp username (e.g. `jane.shop`, no leading @). Not a stable identifier, because users can change it: useful for display, not recommended as an identity anchor. Captured from inbound messages, so older threads fill in on their next inbound.
+         */
+        whatsappUsername?: string;
         lastMessage?: string;
         lastMessageAt?: string;
         updatedTime?: string;
