@@ -12942,13 +12942,17 @@ export type WebhookPayloadMessage = {
              * Meta's human-readable error detail string.
              */
             details?: string;
+            /**
+             * Meta's name for the content WhatsApp could not deliver, e.g. view_once, poll_creation, group_invite, edit. Absent when Meta sends none.
+             */
+            type?: string;
         };
         /**
          * Instagram / Facebook Messenger only. Set when the message
          * carries nothing an integrator can render (a `template`
          * attachment with no text and no parseable content, or Meta's
          * own `is_unsupported` flag). Sibling of `unsupported` above
-         * (WhatsApp only, carries Meta's error code/title/details): this
+         * (WhatsApp only, carries Meta's error code/title/details and unsupported type): this
          * field has no error envelope, only the boolean. Absence means
          * "not flagged", never "checked and renderable".
          *
