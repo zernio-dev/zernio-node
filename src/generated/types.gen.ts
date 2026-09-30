@@ -7672,6 +7672,7 @@ export type MetaAdsPlatformData = {
      * Meta lifetime_min_spend_target: the lifetime-budget flavour of dailyMinSpendTarget, in whole currency units. Same rules and same rejections.
      */
     lifetimeMinSpendTarget?: number;
+    customerLifecycle?: MetaCustomerLifecycle;
 };
 
 export type MetaAssignedUser = {
@@ -7806,6 +7807,39 @@ export type gender2 = 'female' | 'male' | 'unisex';
 export type MetaCreativeFeatures = {
     [key: string]: ('OPT_IN' | 'OPT_OUT');
 };
+
+/**
+ * Meta's Customer Lifecycle Strategy on a Sales ad set (Meta `ad_set_goal`). Rejected with 400
+ * in adSetId attach mode: use PUT /v1/ads/ad-sets/{adSetId} for an ad set that already exists.
+ * Read it back with `GET /v1/ads/ad-sets/{adSetId}?fields=ad_set_goal` (type 0 all customers,
+ * 1 new excluding engaged, 2 new customers).
+ *
+ */
+export type MetaCustomerLifecycle = {
+    /**
+     * `all_customers` is "Maximize conversions from all customers". `new_customers` is "Acquire new
+     * customers" (excludes existing customers). `new_customers_excluding_engaged` also excludes
+     * people who engaged with you but have not bought yet.
+     *
+     */
+    strategy: 'all_customers' | 'new_customers' | 'new_customers_excluding_engaged';
+    /**
+     * Custom audience ids that define your existing customers. Omit to use the definition saved on the ad account. Only with a new_customers strategy.
+     */
+    existingCustomerAudienceIds?: Array<(string)>;
+    /**
+     * Custom audience ids that define engaged people. Only with new_customers_excluding_engaged.
+     */
+    engagedAudienceIds?: Array<(string)>;
+};
+
+/**
+ * `all_customers` is "Maximize conversions from all customers". `new_customers` is "Acquire new
+ * customers" (excludes existing customers). `new_customers_excluding_engaged` also excludes
+ * people who engaged with you but have not bought yet.
+ *
+ */
+export type strategy = 'all_customers' | 'new_customers' | 'new_customers_excluding_engaged';
 
 export type MetaFeedUpload = {
     id?: string;
@@ -40114,6 +40148,7 @@ export type UpdateAdSetData = {
              *
              */
             lifetimeMinSpendTarget?: number;
+            customerLifecycle?: MetaCustomerLifecycle;
             /**
              * Meta ad-set promoted_object, forwarded verbatim (same shape as /v1/ads/create). Unknown keys are rejected with 400.
              */
