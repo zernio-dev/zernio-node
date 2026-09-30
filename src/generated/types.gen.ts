@@ -11652,6 +11652,12 @@ export type disconnectionType = 'intentional' | 'unintentional';
  * `status.raw` is `WITH_ISSUES` and the `error` block is populated
  * from Meta's `error_code` / `error_summary` / `error_message`.
  *
+ * Review outcomes (an ad leaving `PENDING_REVIEW` for `ACTIVE`,
+ * `DISAPPROVED` and so on) are also emitted from Zernio's own ad sync,
+ * so they arrive even when Meta skips the webhook. `status.raw` is Meta's
+ * `effective_status`. An ad-level outcome is delivered once per status:
+ * whichever source sees it first sends it.
+ *
  */
 export type WebhookPayloadAdStatusChanged = {
     /**
