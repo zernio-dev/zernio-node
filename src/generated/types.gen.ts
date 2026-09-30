@@ -18065,11 +18065,18 @@ export type GetAllAccountsHealthResponse = ({
         needsReconnect?: boolean;
         issues?: Array<(string)>;
         /**
-         * Observed from Meta's own error subcodes on our own sends (2534122, 1893063, 2534029), not a live probe. Set on the first refused send and cleared when a later send succeeds, so it lags reality by one send in each direction.
+         * Observed from Meta's own errors on our own sends, not a live probe. Facebook/Instagram: error subcodes 2534122, 1893063, 2534029, set on the first refused send and cleared when a later send succeeds. WhatsApp: Cloud API error codes 131042 (payment or eligibility issue), 131031 (Business Account locked) and 368 (policy block), set when a send or a delivery status fails with one and cleared when a later message is delivered. It lags reality by one message in each direction.
          */
         messagingRestriction?: {
-            subcode?: number;
-            message?: string;
+            /**
+             * WhatsApp Cloud API error code. Null on Facebook and Instagram.
+             */
+            code?: (number) | null;
+            /**
+             * Meta error subcode (Facebook and Instagram). Null on WhatsApp.
+             */
+            subcode?: (number) | null;
+            message?: (string) | null;
             firstSeenAt?: string;
             lastSeenAt?: string;
         } | null;
@@ -18222,11 +18229,18 @@ export type GetAccountHealthResponse = ({
      */
     recommendations?: Array<(string)>;
     /**
-     * Observed from Meta's own error subcodes on our own sends (2534122, 1893063, 2534029), not a live probe. Set on the first refused send and cleared when a later send succeeds, so it lags reality by one send in each direction.
+     * Observed from Meta's own errors on our own sends, not a live probe. Facebook/Instagram: error subcodes 2534122, 1893063, 2534029, set on the first refused send and cleared when a later send succeeds. WhatsApp: Cloud API error codes 131042 (payment or eligibility issue), 131031 (Business Account locked) and 368 (policy block), set when a send or a delivery status fails with one and cleared when a later message is delivered. It lags reality by one message in each direction.
      */
     messagingRestriction?: {
-        subcode?: number;
-        message?: string;
+        /**
+         * WhatsApp Cloud API error code. Null on Facebook and Instagram.
+         */
+        code?: (number) | null;
+        /**
+         * Meta error subcode (Facebook and Instagram). Null on WhatsApp.
+         */
+        subcode?: (number) | null;
+        message?: (string) | null;
         firstSeenAt?: string;
         lastSeenAt?: string;
     } | null;
