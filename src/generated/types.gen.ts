@@ -7824,11 +7824,11 @@ export type MetaCustomerLifecycle = {
      */
     strategy: 'all_customers' | 'new_customers' | 'new_customers_excluding_engaged';
     /**
-     * Custom audience ids that define your existing customers. Omit to use the definition saved on the ad account. Only with a new_customers strategy.
+     * Custom audience ids that define your existing customers. Required with both new_customers strategies (Meta answers 400 subcode 1870251 without them); not allowed with all_customers.
      */
     existingCustomerAudienceIds?: Array<(string)>;
     /**
-     * Custom audience ids that define engaged people. Only with new_customers_excluding_engaged.
+     * Custom audience ids of people who engaged but have not bought. Required with new_customers_excluding_engaged, not allowed with the other strategies.
      */
     engagedAudienceIds?: Array<(string)>;
 };
