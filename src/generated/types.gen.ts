@@ -18892,6 +18892,10 @@ export type GetConnectUrlData = {
          */
         profileId: string;
         /**
+         * Refresh this existing account (a Zernio account id of the same platform on this profile; otherwise 400). The OAuth callback and the selection endpoints (select-page, select-organization, select-board, select-location, Instagram and Snapchat selection) refuse, with `reconnect_account_mismatch`, a login that would write to a different account of the platform on this profile instead of this one. While a profile holds one account per platform the login still replaces this account as before. In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged to the selection endpoint. On X it counts toward the OAuth state limit described under redirect_url.
+         */
+        reconnectAccountId?: string;
+        /**
          * Your custom redirect URL after connection completes. MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is rejected with 400 INVALID_REDIRECT_URL. X (twitter) caps the OAuth `state` at 500 characters and the redirect is carried inside it, so the URL-encoded `redirect_url` must be at most 258 characters for API callers (310 for dashboard sessions; in headless mode the appended `headless=true` counts toward it); a longer one is rejected with 400 INVALID_REDIRECT_URL. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
          *
          * On failure, the browser is sent to the same redirect_url with `error` and `platform` appended.
@@ -18899,7 +18903,7 @@ export type GetConnectUrlData = {
          * `dashboard_url`, `missing_scopes`, `error_reason` and the `platform_error*` params are
          * conditional and must be treated as optional. Your own query params are kept on every
          * redirect, but ours overwrite a param of yours with the same name. On an error redirect the
-         * internal `headless`, `adsConnect` and `adsScope` markers we add during the flow are removed.
+         * internal `headless`, `adsConnect`, `adsScope` and `reconnectAccountId` markers we add during the flow are removed.
          *
          * Correlation (every redirect from an OAuth callback, success and failure, and the
          * `redirect_url` returned by the selection endpoints such as POST /v1/connect/facebook/select-page):
