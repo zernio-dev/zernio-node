@@ -2986,6 +2986,14 @@ export type CommentAutomationAudience = {
      *
      */
     whenUnknown?: 'send' | 'skip' | 'verify';
+    /**
+     * Send `followGate.message` with its button to EVERY commenter and deliver the real
+     * DM when they tap it, with no follow check at any point. Cannot be combined with a
+     * `followerStatus` other than `any` or with `minFollowerCount` (400); `whenUnknown`
+     * is ignored. Instagram only. A PATCH that sends `audience` without this field clears it.
+     *
+     */
+    tapToUnlock?: boolean;
 };
 
 export type followerStatus = 'any' | 'follower' | 'non_follower';
@@ -3006,11 +3014,11 @@ export type whenUnknown = 'send' | 'skip' | 'verify';
  */
 export type CommentAutomationFollowGate = {
     /**
-     * Confirmation DM sent when whenUnknown=verify.
+     * Confirmation DM sent when whenUnknown=verify or tapToUnlock=true. The default copy asks for a follow under whenUnknown=verify and only for the tap under tapToUnlock.
      */
     message?: string;
     /**
-     * Confirm button label. Defaults to "I'm following".
+     * Confirm button label. Defaults to "I'm following" (whenUnknown=verify) or "Unlock" (tapToUnlock).
      */
     buttonLabel?: string;
     /**

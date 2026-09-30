@@ -9041,7 +9041,9 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
  * follow relationship for people who have messaged the account, so `audience.whenUnknown`
  * decides what happens for everyone else - including `verify`, which sends a one-tap
  * confirmation DM (`followGate`) and then delivers the real DM automatically. People we
- * already know follow you skip the tap entirely.
+ * already know follow you skip the tap entirely. Set `audience.tapToUnlock: true` instead
+ * to send that button DM to every commenter and deliver the real DM on the tap with no
+ * follow check.
  *
  * Set `alsoMatchInDms: true` on a `comment` automation to also answer people who send
  * a keyword as a direct message instead of commenting it. One automation then covers
