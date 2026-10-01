@@ -19176,7 +19176,8 @@ export type GetConnectUrlData = {
          * - `pages_permission_declined`: the user declined the pages_show_list permission.
          * - `no_pages_granted`: the permission was granted with no Page ticked. Meta reports a user who
          * manages no Page the same way, so this covers both.
-         * - `granted_pages_not_listed`: Pages were ticked but Meta listed none the user can manage.
+         * - `granted_pages_not_listed`: Pages were ticked but Meta listed none the user can manage, and a
+         * direct read of each ticked Page returned no access token.
          *
          * Headless Facebook success (`step=select_page`): `userProfile` is JSON that was
          * percent-encoded once before being set as a query param, so it is encoded twice on the wire.
