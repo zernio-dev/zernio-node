@@ -10,6 +10,12 @@ export type AccountsListResponse = {
      * Only present when page/limit params are provided
      */
     pagination?: Pagination;
+    /**
+     * Only with profileIds and perProfile. Accounts matching the filters per profile ID; a profile with none is absent.
+     */
+    profileTotals?: {
+        [key: string]: (number);
+    };
 };
 
 export type AccountWithFollowerStats = SocialAccount & {
@@ -9036,6 +9042,10 @@ export type Profile = {
      * Only present when includeOverLimit=true. Indicates if this profile exceeds the plan limit.
      */
     isOverLimit?: boolean;
+    /**
+     * In the profile list. Connected accounts on the profile, including ones that need reconnecting; phone and SMS number internals and posting accounts hidden by an ads connect are not counted.
+     */
+    accountCount?: number;
     createdAt?: string;
 };
 
@@ -18088,6 +18098,10 @@ export type ListAccountsData = {
          */
         page?: number;
         /**
+         * Return a preview of each profile in profileIds: the newest account of every platform it has, topped up to at least N. Requires profileIds; cannot be combined with page and limit.
+         */
+        perProfile?: number;
+        /**
          * Filter accounts by platform (e.g. "instagram", "twitter").
          */
         platform?: string;
@@ -18095,6 +18109,10 @@ export type ListAccountsData = {
          * Filter accounts by profile ID. Must be a valid ObjectId.
          */
         profileId?: string;
+        /**
+         * Comma-separated profile IDs (up to 50) to preview, together with perProfile. The response then also carries `profileTotals`.
+         */
+        profileIds?: string;
         /**
          * Filter accounts by connection status. `connected` returns healthy accounts; `disconnected` returns accounts that need reconnection (per the same reconnection check surfaced in the dashboard). Omit to return accounts in any status. When combined with page/limit, pagination totals reflect the filtered result set.
          *
