@@ -19271,8 +19271,11 @@ export type ConnectAdsData = {
         /**
          * Existing SocialAccount ID. Required for `twitter` (X Ads). Optional for `tiktok`:
          * omit to enter ads-only mode (no TikTok posting account linked; ad creation uses
-         * a Brand Identity instead of a TT_USER). Ignored for same-token (`facebook`,
-         * `instagram`, `linkedin`, `pinterest`) and standalone (`googleads`) platforms.
+         * a Brand Identity instead of a TT_USER). For same-token platforms (`facebook`,
+         * `instagram`, `linkedin`, `pinterest`) it picks which posting account the ads
+         * connection uses when the profile holds several of that platform; with one it can
+         * be omitted, and an id that names no active account of the platform on the profile
+         * is ignored. Ignored for standalone platforms (`googleads`).
          *
          */
         accountId?: string;
