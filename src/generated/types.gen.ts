@@ -1504,6 +1504,58 @@ export type AdTreeResponse = {
     backfillPending?: boolean;
 };
 
+export type AnalyticsDashboardFollowers = {
+    /**
+     * Live follower count when the window includes today, otherwise the count the window ended on.
+     */
+    current?: number;
+    /**
+     * Last minus first follower snapshot inside the window. Can be negative.
+     */
+    gained?: number;
+    byAccount?: Array<{
+        accountId?: string;
+        platform?: string;
+        current?: number;
+        gained?: number;
+    }>;
+};
+
+export type AnalyticsDashboardPost = {
+    postId?: string;
+    platform?: string;
+    publishedAt?: string;
+    /**
+     * Lifetime metrics of the post on this platform.
+     */
+    metrics?: {
+        impressions?: number;
+        reach?: number;
+        likes?: number;
+        comments?: number;
+        shares?: number;
+        saves?: number;
+        clicks?: number;
+        views?: number;
+        engagementRate?: number;
+    };
+};
+
+export type AnalyticsDashboardTotals = {
+    impressions?: number;
+    reach?: number;
+    likes?: number;
+    comments?: number;
+    shares?: number;
+    saves?: number;
+    clicks?: number;
+    views?: number;
+    /**
+     * Percentage. Likes, comments, shares and saves over impressions, pooled per platform (reach, then views, when a platform has no impressions).
+     */
+    engagementRate?: number;
+};
+
 /**
  * One changed analytics snapshot. Metrics are the absolute values recorded at
  * `syncedAt`, not the amount they moved by since the previous snapshot, so a later
@@ -16067,6 +16119,77 @@ export type GetDailyMetricsError = ({
     error?: string;
     code?: string;
 });
+
+export type GetAnalyticsDashboardData = {
+    query: {
+        /**
+         * Set to "previous_period" to also return previousTotals and previousFollowers for the window of the same length that ends the day before fromDate.
+         */
+        compare?: 'previous_period';
+        /**
+         * First day of the window (YYYY-MM-DD, inclusive).
+         */
+        fromDate: string;
+        /**
+         * Platform to cover (e.g. "instagram"), or "all".
+         */
+        platform?: string;
+        /**
+         * Profile ID, or "all" for every profile you can access.
+         */
+        profileId?: string;
+        /**
+         * How many of the most recently published posts to return.
+         */
+        recentPosts?: number;
+        /**
+         * Last day of the window (YYYY-MM-DD, inclusive). May equal fromDate. The window covers at most 366 days.
+         */
+        toDate: string;
+        /**
+         * How many top posts to return, ranked by engagement (likes, comments, shares and saves, the same sum as daily engagement).
+         */
+        topPosts?: number;
+    };
+};
+
+export type GetAnalyticsDashboardResponse = ({
+    dateRange: {
+        fromDate?: string;
+        toDate?: string;
+    };
+    totals: AnalyticsDashboardTotals;
+    previousTotals?: AnalyticsDashboardTotals;
+    followers: AnalyticsDashboardFollowers;
+    previousFollowers?: AnalyticsDashboardFollowers;
+    /**
+     * One entry per day of the window, days without data included as zeros.
+     */
+    daily: Array<{
+        date?: string;
+        impressions?: number;
+        reach?: number;
+        /**
+         * Likes, comments, shares and saves received that day.
+         */
+        engagement?: number;
+        views?: number;
+        /**
+         * Net follower change against the previous snapshot. Can be negative.
+         */
+        followersGained?: number;
+    }>;
+    topPosts: Array<AnalyticsDashboardPost>;
+    recentPosts: Array<AnalyticsDashboardPost>;
+    /**
+     * When the most recently synced account in scope was last synced. Null if none has synced yet.
+     */
+    dataAsOf: (string) | null;
+});
+
+export type GetAnalyticsDashboardError = (ErrorResponse | {
+    error?: string;
+} | unknown);
 
 export type GetBestTimeToPostData = {
     query?: {

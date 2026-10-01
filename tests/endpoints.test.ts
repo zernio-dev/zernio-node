@@ -233,6 +233,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getDailyMetrics).toBeTypeOf('function');
     });
 
+    it('should have getAnalyticsDashboard method', () => {
+      expect(client.analytics.getAnalyticsDashboard).toBeDefined();
+      expect(client.analytics.getAnalyticsDashboard).toBeTypeOf('function');
+    });
+
     it('should have getBestTimeToPost method', () => {
       expect(client.analytics.getBestTimeToPost).toBeDefined();
       expect(client.analytics.getBestTimeToPost).toBeTypeOf('function');

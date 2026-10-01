@@ -222,6 +222,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `analytics.getAnalytics()` | Get post analytics |
+| `analytics.getAnalyticsDashboard()` | Get an analytics dashboard |
 | `analytics.getAnalyticsDelta()` | Analytics changed since a cursor |
 | `analytics.getBestTimeToPost()` | Get best times to post |
 | `analytics.getContentDecay()` | Get content performance decay |
