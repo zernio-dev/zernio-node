@@ -10065,7 +10065,7 @@ export type TargetingSpec = {
         }>;
     };
     /**
-     * Minimum age. Applied on Meta, TikTok and Pinterest; rejected with 400 on Google, LinkedIn, X and OpenAI. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
+     * Minimum age. Applied on Meta, TikTok, Pinterest, LinkedIn and X; rejected with 400 on Google and OpenAI. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. LinkedIn rounds out to its buckets (18-24, 25-34, 35-54, 55+) and has no under-18 audience; X rounds out to the narrowest of its fixed ranges (e.g. 25-34 becomes 25-49, 18-65 becomes 18+). Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
      */
     ageMin?: number;
     /**
@@ -10073,7 +10073,7 @@ export type TargetingSpec = {
      */
     ageMax?: number;
     /**
-     * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest; rejected with 400 on Google, LinkedIn, X and OpenAI.
+     * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok, Pinterest, LinkedIn and X; rejected with 400 on Google and OpenAI.
      */
     gender?: 'all' | 'male' | 'female';
     /**
@@ -10086,7 +10086,7 @@ export type TargetingSpec = {
      */
     incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
     /**
-     * Language codes restricting the audience by language. Applied on Meta and Google; rejected with 400 on TikTok, LinkedIn, Pinterest, X and OpenAI. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
+     * Language codes restricting the audience by language. Applied on Meta, Google, TikTok, LinkedIn and X; rejected with 400 on Pinterest and OpenAI. A code the platform cannot target returns 400 listing the ones it can. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
      */
     languages?: Array<(string)>;
     /**
