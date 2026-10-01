@@ -10065,7 +10065,7 @@ export type TargetingSpec = {
         }>;
     };
     /**
-     * Minimum age. Applied on Meta, TikTok, Pinterest, LinkedIn and X; rejected with 400 on Google and OpenAI. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. LinkedIn rounds out to its buckets (18-24, 25-34, 35-54, 55+) and has no under-18 audience; X rounds out to the narrowest of its fixed ranges (e.g. 25-34 becomes 25-49, 18-65 becomes 18+). Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
+     * Minimum age. Applied on Meta, TikTok, Pinterest, LinkedIn, X and Google Search/Display (Google excludes the age ranges outside the request); rejected with 400 on OpenAI and on Google Performance Max / Demand Gen. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. LinkedIn rounds out to its buckets (18-24, 25-34, 35-54, 55+) and has no under-18 audience; X rounds out to the narrowest of its fixed ranges (e.g. 25-34 becomes 25-49, 18-65 becomes 18+). Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
      */
     ageMin?: number;
     /**
@@ -10073,7 +10073,7 @@ export type TargetingSpec = {
      */
     ageMax?: number;
     /**
-     * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok, Pinterest, LinkedIn and X; rejected with 400 on Google and OpenAI.
+     * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok, Pinterest, LinkedIn, X and Google Search/Display (Google excludes the other gender); rejected with 400 on OpenAI and on Google Performance Max / Demand Gen.
      */
     gender?: 'all' | 'male' | 'female';
     /**
