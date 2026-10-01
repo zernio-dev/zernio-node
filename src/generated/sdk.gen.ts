@@ -1642,12 +1642,12 @@ export const createInviteToken = <ThrowOnError extends boolean = false>(options:
  * Initiate an OAuth connection flow. Returns an authUrl to redirect the user to.
  * Standard flow: Zernio hosts the selection UI, then redirects to your redirect_url. Headless mode (headless=true): user is redirected to your redirect_url with OAuth data for custom UI. Use the platform-specific selection endpoints to complete.
  *
- * TikTok: every connection now goes through the TikTok for Business app. One TikTok account per
- * profile, so connecting on a profile that already holds one replaces it. Reconnecting the SAME
- * account keeps it and all of its history; authorizing a DIFFERENT TikTok account takes the slot
- * over and permanently deletes the previous account's analytics, inbox and DM history. The two
- * are told apart by the `@handle` stored at the last connect, so an account whose handle has
- * been renamed on TikTok since then reads as a different account. An authorization that leaves
+ * A profile can hold several accounts of the same platform: connecting a different account adds
+ * it as a new account, and reconnecting the SAME account keeps it and all of its history. Ads
+ * connections stay one per profile. On a legacy plan limited to N profiles, a new account is
+ * refused with 403 `platform_account_limit` once N accounts of its platform are connected.
+ *
+ * TikTok: every connection now goes through the TikTok for Business app. An authorization that leaves
  * out a permission the connected account needs changes nothing at all and comes back as
  * `missing_tiktok_permissions`; connect again and accept every permission on TikTok's screen.
  *
@@ -1944,7 +1944,7 @@ export const listInstagramPages = <ThrowOnError extends boolean = false>(options
  * Select the Page whose Instagram account to connect
  * Saves the selected Page as an Instagram account connected via Facebook Login. The Page access token becomes the account's access token, so every Instagram call for it runs against the Facebook Graph host.
  *
- * One Instagram account per profile: if the profile already has an Instagram account, this replaces it, and picking a different Instagram identity purges the previous account's conversations, external posts and stats.
+ * A different Instagram account is added next to any already connected on the profile; picking one already connected refreshes it.
  *
  */
 export const selectInstagramAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SelectInstagramAccountData, ThrowOnError>) => {
@@ -3009,7 +3009,7 @@ export const updateGmbLocation = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Assign Google Business Profile location to another profile
- * Connect a Google Business Profile location onto a DIFFERENT profile by reusing the OAuth grant from an already-connected Google Business Profile account, with no browser and no re-authorization. Built for agencies whose single Google account has manager access to many client locations and who run one profile per client: connect one location the normal way (browser OAuth), then bulk-assign the rest onto each client's profile via this endpoint. The path `accountId` is a SOURCE connected Google Business Profile account (the token holder); the body `profileId` is the TARGET profile. Returns 409 if the target profile already has a Google Business Profile connection (switch its location with PUT gmb-locations instead).
+ * Connect a Google Business Profile location onto a DIFFERENT profile by reusing the OAuth grant from an already-connected Google Business Profile account, with no browser and no re-authorization. Built for agencies whose single Google account has manager access to many client locations and who run one profile per client: connect one location the normal way (browser OAuth), then bulk-assign the rest onto each client's profile via this endpoint. The path `accountId` is a SOURCE connected Google Business Profile account (the token holder); the body `profileId` is the TARGET profile, which may already hold other locations; assigning a location it already holds refreshes that account.
  *
  */
 export const assignGoogleBusinessLocation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AssignGoogleBusinessLocationData, ThrowOnError>) => {
@@ -5504,9 +5504,9 @@ export const listImessageSenders = <ThrowOnError extends boolean = false>(option
  * conversation endpoints. To have Zernio order a new sender for you, use
  * POST /v1/imessage/senders/order instead. Registration attaches the
  * monthly sender fee (billed while active) and requires a payment method
- * (402 without one). One sender per profile: re-registering the SAME
- * handle refreshes it; a different handle returns 409 until the existing
- * sender is canceled.
+ * (402 without one). Re-registering the SAME handle refreshes its account;
+ * a different handle is added as another sender, and a profile can hold
+ * several.
  *
  */
 export const registerImessageSender = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RegisterImessageSenderData, ThrowOnError>) => {
@@ -5817,7 +5817,7 @@ export const listRcsAgents = <ThrowOnError extends boolean = false>(options?: Op
  * Request an RCS agent
  * Requests a new agent for a profile, with a new company (`brand`) or an existing one
  * (`brandId`, skips vetting when it is already verified). The request lands in our review:
- * nothing is filed with the carriers or billed until we submit it. One open agent per profile.
+ * nothing is filed with the carriers or billed until we submit it. A profile can hold several agents.
  * Requires usage-based billing and a card on file. Send an `Idempotency-Key` header to make
  * retries safe.
  *
@@ -7643,8 +7643,7 @@ export const createWhatsAppNumberKycLink = <ThrowOnError extends boolean = false
  *
  * `id` is the number record id from `GET /v1/phone-numbers`, not an account id.
  *
- * A profile holds at most one account per platform, so the destination must be
- * free of every platform this number occupies.
+ * The destination profile may already hold other numbers.
  *
  */
 export const moveWhatsAppNumberToProfile = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<MoveWhatsAppNumberToProfileData, ThrowOnError>) => {

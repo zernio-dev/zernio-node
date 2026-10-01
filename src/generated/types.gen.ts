@@ -19144,7 +19144,7 @@ export type GetConnectUrlData = {
          */
         profileId: string;
         /**
-         * Refresh this existing account (a Zernio account id of the same platform on this profile; otherwise 400). The OAuth callback and the selection endpoints (select-page, select-organization, select-board, select-location, Instagram and Snapchat selection) refuse, with `reconnect_account_mismatch`, a login that would write to a different account of the platform on this profile instead of this one. While a profile holds one account per platform the login still replaces this account as before. In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged to the selection endpoint. On X it counts toward the OAuth state limit described under redirect_url.
+         * Refresh this existing account (a Zernio account id of the same platform on this profile; otherwise 400). The OAuth callback and the selection endpoints (select-page, select-organization, select-board, select-location, Instagram and Snapchat selection) refuse, with `reconnect_account_mismatch`, a login that would write to a different account of the platform on this profile instead of this one. In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged to the selection endpoint. On X it counts toward the OAuth state limit described under redirect_url.
          */
         reconnectAccountId?: string;
         /**
@@ -20071,7 +20071,7 @@ export type SelectFacebookPageData = {
      */
     pageId?: string;
     /**
-     * Several Page IDs to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 while a profile holds one Facebook account and on a reconnect or an ads connect, which pick exactly one Page. A single distinct ID behaves exactly like pageId.
+     * Several Page IDs to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect or an ads connect, which pick exactly one Page. A single distinct ID behaves exactly like pageId.
      */
     pageIds?: Array<(string)>;
     /**
@@ -20203,7 +20203,7 @@ export type SelectInstagramAccountData = {
          */
         pageId?: string;
         /**
-         * Several Page IDs whose linked Instagram accounts to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 while a profile holds one Instagram account and on a reconnect or an ads connect. A single distinct ID behaves exactly like pageId.
+         * Several Page IDs whose linked Instagram accounts to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect or an ads connect. A single distinct ID behaves exactly like pageId.
          */
         pageIds?: Array<(string)>;
         /**
@@ -21849,7 +21849,7 @@ export type SelectLinkedInOrganizationData = {
          */
         accountType?: 'personal' | 'organization';
         /**
-         * Several accounts to connect from one sign-in (yourself and/or organizations), each as its own account. With two or more entries the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 while a profile holds one LinkedIn account and on a reconnect or an ads connect. A single entry behaves exactly like accountType.
+         * Several accounts to connect from one sign-in (yourself and/or organizations), each as its own account. With two or more entries the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect or an ads connect. A single entry behaves exactly like accountType.
          */
         selections?: Array<{
             accountType: 'personal' | 'organization';
@@ -33086,7 +33086,7 @@ export type ReleasePhoneNumberError = (unknown | {
 export type PurchasePhoneNumberData = {
     body: {
         /**
-         * Preferred profile for the number. One number = one profile, so when the requested profile already holds a number the API assigns the next free profile instead (or creates one) and returns the actual assignment in `profileId` on the response.
+         * Profile for the number, which may already hold other numbers. Without it the number goes to the default profile. The response's `profileId` carries the assignment.
          *
          */
         profileId: string;
