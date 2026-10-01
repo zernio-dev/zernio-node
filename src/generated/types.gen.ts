@@ -105,9 +105,9 @@ export type Ad = {
      */
     creativeType?: ('carousel' | 'video' | 'document' | 'image') | null;
     /**
-     * Available goals vary by platform. Meta (Facebook/Instagram) supports all 10 (incl. `lead_conversion` = website pixel lead optimization, `catalog_sales` = Advantage+ catalog ads and `page_likes` = Page Likes conversion location under Engagement). TikTok supports engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion. LinkedIn supports all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes. X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest supports only engagement, traffic, awareness, video_views. Google Ads supports only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
+     * Available goals vary by platform. Meta (Facebook/Instagram) supports all 11 (incl. `lead_conversion` = website pixel lead optimization, `catalog_sales` = Advantage+ catalog ads `page_likes` = Page Likes conversion location under Engagement and `page_visits` = Page visits and followers under Traffic). TikTok supports engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion. LinkedIn supports all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes / page_visits. X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest supports only engagement, traffic, awareness, video_views. Google Ads supports only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
      */
-    goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'job_applicants';
+    goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits' | 'job_applicants';
     /**
      * True for ads synced from platform ad managers
      */
@@ -426,9 +426,9 @@ export type adType = 'boost' | 'standalone';
 export type creativeType = 'carousel' | 'video' | 'document' | 'image';
 
 /**
- * Available goals vary by platform. Meta (Facebook/Instagram) supports all 10 (incl. `lead_conversion` = website pixel lead optimization, `catalog_sales` = Advantage+ catalog ads and `page_likes` = Page Likes conversion location under Engagement). TikTok supports engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion. LinkedIn supports all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes. X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest supports only engagement, traffic, awareness, video_views. Google Ads supports only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
+ * Available goals vary by platform. Meta (Facebook/Instagram) supports all 11 (incl. `lead_conversion` = website pixel lead optimization, `catalog_sales` = Advantage+ catalog ads `page_likes` = Page Likes conversion location under Engagement and `page_visits` = Page visits and followers under Traffic). TikTok supports engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion. LinkedIn supports all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes / page_visits. X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest supports only engagement, traffic, awareness, video_views. Google Ads supports only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
  */
-export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'job_applicants';
+export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits' | 'job_applicants';
 
 export type type = 'daily' | 'lifetime';
 
@@ -39455,7 +39455,7 @@ export type CreateAdCampaignData = {
         /**
          * Mapped to the ODAX objective (same mapping as POST /v1/ads/create).
          */
-        goal: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'job_applicants' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes';
+        goal: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'job_applicants' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits';
         /**
          * Meta app promotion only. Immutable campaign flag. Set true for iOS 14+ SKAdNetwork campaigns and supply promotedObject.applicationId plus promotedObject.objectStoreUrl. The campaign receives promotedObject only when this flag is true. Cannot be changed on an existing campaign.
          */
@@ -45828,6 +45828,7 @@ export type CreateStandaloneAdData = {
          * - `app_promotion`: requires `promotedObject.applicationId` and `promotedObject.objectStoreUrl`.
          * - `catalog_sales`: Advantage+ catalog ads, for example vehicle inventory. Requires `promotedObject.productSetId`, `promotedObject.pixelId` and `promotedObject.customEventType`. Builds a catalog TEMPLATE creative from the copy fields, which may carry template tags like {{product.name}} or {{vehicle.make}}. No imageUrl or video is sent; Meta renders the visuals per catalog item. Discover catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets. Single shape only, no creatives[], adSetId, dynamicCreative or placementAssets.
          * - `page_likes`: Page Likes conversion location under OUTCOME_ENGAGEMENT (destination_type ON_PAGE, optimization PAGE_LIKES). `promotedObject.pageId` is optional and auto-filled from the connected Page. The creative CTA is fixed to LIKE_PAGE targeting that Page; headline / body / linkUrl / callToAction / imageUrl / video are all optional (Meta derives the link and the Like button from the Page).
+         * - `page_visits`: Meta's "Page visits and followers" under OUTCOME_TRAFFIC (destination_type FACEBOOK_PAGE, optimization PROFILE_VISIT). `promotedObject.pageId` is optional and auto-filled from the connected Page, and `linkUrl` defaults to the Page. Meta enables Profile Visit ads per ad account: one it has not enabled is refused with Meta's "This account isn't eligible to use Profile Visit ads yet".
          *
          * **TikTok**
          * - `conversions`: website-conversion ad group. Requires `promotedObject.pixelId`, your TikTok Pixel ID. Accepts an optional `promotedObject.customEventType` with a TikTok optimization_event code your pixel tracks (newer pixels use e.g. SHOPPING for purchase events; legacy pixels use ON_WEB_ORDER, INITIATE_ORDER, ON_WEB_REGISTER or FORM). To inherit pixel and event from an existing ad group, pass `adSetId` instead.
@@ -45842,7 +45843,7 @@ export type CreateStandaloneAdData = {
          * - Only `traffic`, `awareness`, and `conversions` are supported (other goals return 400). Maps to OpenAI's `bidding_type` (clicks, impressions, conversions respectively). `conversions` requires an active conversion event setting on the account; create a tracking tag with `defaultEventType` via the tracking-tags API (`POST /v1/accounts/{accountId}/tracking-tags`), or configure a conversion event in OpenAI Ads Manager, or the request returns 400. Pick the event with `promotedObject.customEventType` (see AdPromotedObject); without it the most recently created optimizable event is used.
          *
          */
-        goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'job_applicants';
+        goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits' | 'job_applicants';
         /**
          * Meta, or TikTok with goal video_views (ENGAGED_VIEW, the 6-second default, or ENGAGED_VIEW_FIFTEEN; both bill per view). Meta: Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
          */
