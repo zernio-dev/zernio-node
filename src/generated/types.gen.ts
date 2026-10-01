@@ -21757,7 +21757,22 @@ export type SelectLinkedInOrganizationData = {
         userProfile: {
             [key: string]: unknown;
         };
-        accountType: 'personal' | 'organization';
+        /**
+         * Send this (with selectedOrganization for an organization) or selections, not both.
+         */
+        accountType?: 'personal' | 'organization';
+        /**
+         * Several accounts to connect from one sign-in (yourself and/or organizations), each as its own account. With two or more entries the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 while a profile holds one LinkedIn account and on a reconnect or an ads connect. A single entry behaves exactly like accountType.
+         */
+        selections?: Array<{
+            accountType: 'personal' | 'organization';
+            /**
+             * Same shape as selectedOrganization.
+             */
+            selectedOrganization?: {
+                [key: string]: unknown;
+            };
+        }>;
         selectedOrganization?: {
             id: string;
             urn: string;
@@ -21787,6 +21802,20 @@ export type SelectLinkedInOrganizationResponse = ({
         isActive?: boolean;
         accountType?: 'personal' | 'organization';
     };
+    /**
+     * selections only. The connected accounts, same shape as `account`. The redirect_url then carries `accountIds` (comma-separated) and `accountId` of the first.
+     */
+    accounts?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * selections only. The accounts that could not be connected while the others were. `id` is the organization URN or the member id, or `selections[i]` for an entry naming neither.
+     */
+    failed?: Array<{
+        id?: string;
+        code?: string;
+        message?: string;
+    }>;
     bulkRefresh?: {
         updatedCount?: number;
         errors?: number;
