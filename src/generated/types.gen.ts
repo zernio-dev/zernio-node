@@ -19980,9 +19980,13 @@ export type SelectFacebookPageData = {
      */
     profileId: string;
     /**
-     * The Facebook Page ID selected by the user.
+     * The Facebook Page ID selected by the user. Send this or pageIds, not both.
      */
-    pageId: string;
+    pageId?: string;
+    /**
+     * Several Page IDs to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 while a profile holds one Facebook account and on a reconnect or an ads connect, which pick exactly one Page. A single distinct ID behaves exactly like pageId.
+     */
+    pageIds?: Array<(string)>;
     /**
      * Temporary Facebook access token from OAuth.
      */
@@ -20033,6 +20037,23 @@ export type SelectFacebookPageResponse = ({
         isActive?: boolean;
         selectedPageName?: string;
     };
+    /**
+     * pageIds only. The connected accounts, same shape as `account`. The redirect_url then carries `accountIds` (comma-separated) and `accountId` of the first.
+     */
+    accounts?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * pageIds only. The Pages that could not be connected while the others were.
+     */
+    failed?: Array<{
+        /**
+         * The Page ID.
+         */
+        id?: string;
+        code?: string;
+        message?: string;
+    }>;
 });
 
 export type SelectFacebookPageError = (unknown | {
@@ -20091,9 +20112,13 @@ export type SelectInstagramAccountData = {
          */
         profileId: string;
         /**
-         * The Facebook Page ID selected by the user, from GET /v1/connect/instagram/select-account
+         * The Facebook Page ID selected by the user, from GET /v1/connect/instagram/select-account. Send this or pageIds, not both.
          */
-        pageId: string;
+        pageId?: string;
+        /**
+         * Several Page IDs whose linked Instagram accounts to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 while a profile holds one Instagram account and on a reconnect or an ads connect. A single distinct ID behaves exactly like pageId.
+         */
+        pageIds?: Array<(string)>;
         /**
          * Long-lived Facebook user access token from the OAuth callback redirect
          */
@@ -20130,6 +20155,23 @@ export type SelectInstagramAccountResponse = ({
         isActive?: boolean;
         loginMethod?: 'facebook_login';
     };
+    /**
+     * pageIds only. The connected accounts, same shape as `account`. The redirect_url then carries `accountIds` (comma-separated) and `accountId` of the first.
+     */
+    accounts?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * pageIds only. The Pages whose Instagram account could not be connected while the others were.
+     */
+    failed?: Array<{
+        /**
+         * The Page ID.
+         */
+        id?: string;
+        code?: string;
+        message?: string;
+    }>;
 });
 
 export type SelectInstagramAccountError = (unknown | {
@@ -20189,7 +20231,7 @@ export type SelectInstagramAccountError = (unknown | {
          */
         effective_account_limit?: number;
     };
-});
+} | ErrorResponse);
 
 export type ListGoogleBusinessLocationsData = {
     query?: {
