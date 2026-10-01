@@ -9923,8 +9923,9 @@ export type method2 = 'wordpress_widget';
  * resolved via `GET /v1/ads/targeting/search`. A spec is therefore meaningful only
  * for the platform it was built against, except the portable fields (`countries`,
  * `ageMin`/`ageMax`, `gender`, `incomeTier`, `languages`) which carry across
- * platforms. Fields a platform cannot honour are rejected at create time with
- * `INVALID_FIELD_VALUE` naming the offending field (not silently dropped).
+ * platforms. Fields a platform cannot honour are rejected on create, boost and
+ * targeting update with `INVALID_FIELD_VALUE` naming the offending field (never
+ * silently dropped).
  *
  */
 export type TargetingSpec = {
@@ -10064,7 +10065,7 @@ export type TargetingSpec = {
         }>;
     };
     /**
-     * Minimum age. Applied on Meta, TikTok and Pinterest; ignored on Google, LinkedIn and X. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
+     * Minimum age. Applied on Meta, TikTok and Pinterest; rejected with 400 on Google, LinkedIn, X and OpenAI. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
      */
     ageMin?: number;
     /**
@@ -10072,7 +10073,7 @@ export type TargetingSpec = {
      */
     ageMax?: number;
     /**
-     * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest. Ignored on Google, LinkedIn and X.
+     * Restrict by gender. 'all' (default) targets everyone. Applied on Meta, TikTok and Pinterest; rejected with 400 on Google, LinkedIn, X and OpenAI.
      */
     gender?: 'all' | 'male' | 'female';
     /**
@@ -10085,11 +10086,11 @@ export type TargetingSpec = {
      */
     incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
     /**
-     * Language codes restricting the audience by language. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
+     * Language codes restricting the audience by language. Applied on Meta and Google; rejected with 400 on TikTok, LinkedIn, Pinterest, X and OpenAI. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
      */
     languages?: Array<(string)>;
     /**
-     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id.
+     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id. Rejected with 400 on Google (use Demand Gen audience userInterests there) and OpenAI.
      */
     interests?: Array<{
         id: string;
