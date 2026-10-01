@@ -10086,7 +10086,7 @@ export type TargetingSpec = {
      */
     incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
     /**
-     * Language codes restricting the audience by language. Applied on Meta, Google, TikTok, LinkedIn and X; rejected with 400 on Pinterest and OpenAI. A code the platform cannot target returns 400 listing the ones it can. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
+     * Language codes restricting the audience by language. Applied on Meta, Google, TikTok, LinkedIn, X and Pinterest; rejected with 400 on OpenAI. A code the platform cannot target returns 400 listing the ones it can. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
      */
     languages?: Array<(string)>;
     /**
