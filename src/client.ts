@@ -555,6 +555,7 @@ import {
   listCampaignAssets,
   listCampaignNegativeKeywordLists,
   listCampaignNegativeKeywords,
+  listChangelog,
   listCommentAutomationLogs,
   listCommentAutomations,
   listCommerceCatalogSyncs,
@@ -2465,6 +2466,13 @@ export class Zernio {
    */
   tools = {
     downloadTikTokVideo: this._bind(downloadTikTokVideo),
+  };
+
+  /**
+   * changelog API
+   */
+  changelog = {
+    listChangelog: this._bind(listChangelog),
   };
 
   /**

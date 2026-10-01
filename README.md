@@ -706,6 +706,11 @@ try {
 | `calls.getCall()` | Get a call (any channel) |
 | `calls.getCallRecording()` | Get a call recording |
 
+### Changelog
+| Method | Description |
+|--------|-------------|
+| `changelog.listChangelog()` | List API changelog entries |
+
 ### Comment Automations
 | Method | Description |
 |--------|-------------|
