@@ -54543,6 +54543,4 @@ export type ListChangelogResponse = ({
     nextCursor: (string) | null;
 });
 
-export type ListChangelogError = (ErrorResponse | {
-    error?: string;
-});
+export type ListChangelogError = (ErrorResponse);
