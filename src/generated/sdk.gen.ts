@@ -6142,9 +6142,11 @@ export const listBrandedCallingCallReasons = <ThrowOnError extends boolean = fal
  * identity goes into carrier vetting on its own. Track it with `GET` or the
  * `branded_calling.identity.status_updated` webhook.
  *
- * Billing: $100 per identity per month, the first month charged when the
- * identity is filed with the carrier and not refunded if the carrier rejects it,
- * then monthly while the identity exists. Branded calls add $0.10 each, counted
+ * Billing: $100 per identity per month while it is verified. The first month is
+ * charged when the carrier verifies the identity, never when it is filed: nothing
+ * is charged while it is in our review or carrier vetting, or if it is rejected.
+ * An edit that sends a verified identity back to vetting pauses the fee until it
+ * is verified again. Branded calls add $0.10 each, counted
  * on every outbound call from a verified branded number to a US destination
  * (whether or not the callee's carrier displayed the branding); the surcharge
  * shows as `brandedCallUSD` on the call's billing and in
