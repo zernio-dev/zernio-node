@@ -44917,6 +44917,18 @@ export type ListAdAccountsResponse = ({
          */
         disableReason?: number;
         /**
+         * TikTok only. Total balance the advertiser can spend (cash plus grant), in whole units of `currency`. Read from the Business Center balance when the connection has a finance role there, which is the only TikTok source that counts cash held in a shared payment portfolio; otherwise TikTok's advertiser-level balance, which can read 0 for a cash-funded advertiser.
+         */
+        balance?: number;
+        /**
+         * TikTok only. Cash part of `balance`, in whole units of `currency`. Absent when the connection has no finance role in the advertiser's Business Center.
+         */
+        cashBalance?: number;
+        /**
+         * TikTok only. Grant (ad credit) part of `balance`, in whole units of `currency`. Absent when the connection has no finance role in the advertiser's Business Center.
+         */
+        grantBalance?: number;
+        /**
          * IANA timezone of the ad account (Meta only). Drives daily-budget reset and Insights day boundaries.
          */
         timezoneName?: string;
