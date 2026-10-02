@@ -2515,7 +2515,7 @@ export const getWhatsAppSdkConfig = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Connect a Discord channel
- * Finalize a Discord connect by binding one channel to a profile. Served by a dedicated route, so it is not reachable through POST /v1/connect/{platform}. One connected account per channel: repeat the call with a different channelId to add another.
+ * Finalize a Discord connect by binding channels to a profile. Served by a dedicated route, so it is not reachable through POST /v1/connect/{platform}. One connected account per channel: send channelIds to connect several channels of the server at once, or repeat the call with a different channelId.
  */
 export const connectDiscordChannel = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConnectDiscordChannelData, ThrowOnError>) => {
     return (options?.client ?? client).post<ConnectDiscordChannelResponse, ConnectDiscordChannelError, ThrowOnError>({

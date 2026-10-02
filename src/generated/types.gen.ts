@@ -20311,9 +20311,19 @@ export type SelectGoogleBusinessLocationData = {
          */
         profileId: string;
         /**
-         * The Google Business Profile location ID selected by the user
+         * The Google Business Profile location ID selected by the user. Send this or locations, not both.
          */
-        locationId: string;
+        locationId?: string;
+        /**
+         * Several locations to connect from one sign-in, each as its own account. The sign-in is used once for the whole batch and handed back only if none connected. With two or more distinct locations the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect. A single location behaves exactly like locationId.
+         */
+        locations?: Array<{
+            locationId: string;
+            /**
+             * The location's Google Business Profile Account resource name, as for the top-level accountId.
+             */
+            accountId?: string;
+        }>;
         /**
          * Optional but recommended. The Google Business Profile Account resource name ("accounts/123") that owns the selected location (returned per-location by GET /v1/connect/googlebusiness/locations). When provided, the location is resolved directly instead of by enumerating the account, which is required for accounts that own many locations. Omit only for small accounts.
          *
@@ -20354,6 +20364,23 @@ export type SelectGoogleBusinessLocationResponse = ({
          */
         selectedLocationId?: string;
     };
+    /**
+     * locations with two or more distinct entries only. The connected accounts, same shape as `account`. The redirect_url then carries `accountIds` (comma-separated) and `accountId` of the first.
+     */
+    accounts?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * locations only. The locations that could not be connected while the others were.
+     */
+    failed?: Array<{
+        /**
+         * The location ID.
+         */
+        id?: string;
+        code?: string;
+        message?: string;
+    }>;
 });
 
 export type SelectGoogleBusinessLocationError = (unknown | ErrorResponse);
@@ -22512,13 +22539,21 @@ export type ConnectDiscordChannelData = {
          */
         guildId: string;
         /**
-         * Text, announcement or forum channel to publish to
+         * Text, announcement or forum channel to publish to. Send this or channelIds, not both.
          */
-        channelId: string;
+        channelId?: string;
+        /**
+         * Several channels of the server to connect, each as its own account. With two or more distinct ids the response lists `accounts` and `failed` instead of `account`. A single id behaves exactly like channelId.
+         */
+        channelIds?: Array<(string)>;
         /**
          * Profile to connect the channel to
          */
         profileId: string;
+        /**
+         * channelIds only: a URL to return in `redirect_url`, with `connected`, `profileId`, `accountId` and `accountIds` appended.
+         */
+        redirect_url?: string;
     };
 };
 
@@ -22641,9 +22676,17 @@ export type ConnectSlackChannelData = {
     body: {
         profileId: string;
         /**
-         * Slack channel id, C... or G...
+         * Slack channel id, C... or G.... Send this or channelIds, not both.
          */
-        channelId: string;
+        channelId?: string;
+        /**
+         * Several channels of the workspace to connect, each as its own account. With two or more distinct ids the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect. A single id behaves exactly like channelId.
+         */
+        channelIds?: Array<(string)>;
+        /**
+         * channelIds only: a URL to return in `redirect_url`, with `connected`, `profileId`, `accountId` and `accountIds` appended.
+         */
+        redirect_url?: string;
         /**
          * Nonce from the OAuth redirect. Required unless accountId is sent.
          */
