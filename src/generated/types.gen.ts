@@ -5064,6 +5064,10 @@ export type ErrorResponse = {
      */
     param?: string;
     /**
+     * Documentation page for resolving the error, when one applies.
+     */
+    docUrl?: string;
+    /**
      * Upstream platform (e.g. meta, google, tiktok), present when type is platform_error.
      */
     platform?: string;
@@ -15301,9 +15305,7 @@ export type ValidatePostLengthResponse = ({
     };
 });
 
-export type ValidatePostLengthError = ({
-    error?: string;
-});
+export type ValidatePostLengthError = (ErrorResponse);
 
 export type ValidatePostData = {
     body: {
@@ -15352,9 +15354,7 @@ export type ValidatePostResponse = (({
     }>;
 }));
 
-export type ValidatePostError = ({
-    error?: string;
-});
+export type ValidatePostError = (ErrorResponse);
 
 export type ValidateMediaData = {
     body: {
@@ -15394,9 +15394,7 @@ export type ValidateMediaResponse = ({
     };
 });
 
-export type ValidateMediaError = ({
-    error?: string;
-});
+export type ValidateMediaError = (ErrorResponse);
 
 export type ValidateSubredditData = {
     query: {
@@ -15428,9 +15426,7 @@ export type ValidateSubredditResponse = (({
     error?: string;
 }));
 
-export type ValidateSubredditError = ({
-    error?: string;
-});
+export type ValidateSubredditError = (ErrorResponse);
 
 export type GetAnalyticsData = {
     query?: {
@@ -15491,12 +15487,12 @@ export type GetAnalyticsError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
-} | AnalyticsSinglePostResponse | ErrorResponse);
+} | {
+    error?: string;
+} | AnalyticsSinglePostResponse);
 
 export type GetAnalyticsDeltaData = {
     query?: {
@@ -15526,9 +15522,9 @@ export type GetAnalyticsDeltaResponse = (AnalyticsDeltaResponse);
 
 export type GetAnalyticsDeltaError = (ErrorResponse | {
     error?: string;
+    code?: string;
 } | {
     error?: string;
-    code?: string;
 });
 
 export type GetYouTubeChannelInsightsData = {
@@ -15586,9 +15582,7 @@ export type GetYouTubeChannelInsightsData = {
 
 export type GetYouTubeChannelInsightsResponse = (InstagramAccountInsightsResponse);
 
-export type GetYouTubeChannelInsightsError = (unknown | {
-    error?: string;
-} | YouTubeScopeMissingResponse | ErrorResponse);
+export type GetYouTubeChannelInsightsError = (unknown | ErrorResponse | YouTubeScopeMissingResponse);
 
 export type GetLinkedInOrgAggregateAnalyticsData = {
     query: {
@@ -15650,9 +15644,7 @@ export type GetLinkedInOrgAggregateAnalyticsData = {
 
 export type GetLinkedInOrgAggregateAnalyticsResponse = (InstagramAccountInsightsResponse);
 
-export type GetLinkedInOrgAggregateAnalyticsError = (unknown | {
-    error?: string;
-});
+export type GetLinkedInOrgAggregateAnalyticsError = (unknown | ErrorResponse);
 
 export type GetTikTokAccountInsightsData = {
     query: {
@@ -15705,9 +15697,7 @@ export type GetTikTokAccountInsightsData = {
 
 export type GetTikTokAccountInsightsResponse = (InstagramAccountInsightsResponse);
 
-export type GetTikTokAccountInsightsError = (unknown | {
-    error?: string;
-});
+export type GetTikTokAccountInsightsError = (unknown | ErrorResponse);
 
 export type GetYouTubeDailyViewsData = {
     query: {
@@ -15749,7 +15739,7 @@ export type GetYouTubeDailyViewsResponse = (YouTubeDailyViewsResponse);
 
 export type GetYouTubeDailyViewsError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
 } | YouTubeScopeMissingResponse | {
@@ -15796,7 +15786,7 @@ export type GetYouTubeVideoRetentionResponse = (YouTubeVideoRetentionResponse);
 
 export type GetYouTubeVideoRetentionError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
 } | {
@@ -15888,9 +15878,7 @@ export type GetFacebookPageInsightsData = {
 
 export type GetFacebookPageInsightsResponse = (InstagramAccountInsightsResponse);
 
-export type GetFacebookPageInsightsError = (unknown | {
-    error?: string;
-});
+export type GetFacebookPageInsightsError = (unknown | ErrorResponse);
 
 export type GetFacebookPostEarningsData = {
     query: {
@@ -15921,9 +15909,7 @@ export type GetFacebookPostEarningsData = {
 
 export type GetFacebookPostEarningsResponse = (FacebookPostEarningsResponse);
 
-export type GetFacebookPostEarningsError = (unknown | {
-    error?: string;
-});
+export type GetFacebookPostEarningsError = (unknown | ErrorResponse);
 
 export type GetInstagramAccountInsightsData = {
     query: {
@@ -15979,7 +15965,7 @@ export type GetInstagramAccountInsightsResponse = (InstagramAccountInsightsRespo
 
 export type GetInstagramAccountInsightsError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
 });
@@ -16027,9 +16013,7 @@ export type GetInstagramFollowerHistoryData = {
 
 export type GetInstagramFollowerHistoryResponse = (InstagramAccountInsightsResponse);
 
-export type GetInstagramFollowerHistoryError = (unknown | {
-    error?: string;
-});
+export type GetInstagramFollowerHistoryError = (unknown | ErrorResponse);
 
 export type GetInstagramDemographicsData = {
     query: {
@@ -16060,7 +16044,7 @@ export type GetInstagramDemographicsResponse = (InstagramDemographicsResponse);
 
 export type GetInstagramDemographicsError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
 });
@@ -16114,7 +16098,7 @@ export type GetYouTubeDemographicsResponse = (YouTubeDemographicsResponse);
 
 export type GetYouTubeDemographicsError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
 } | {
@@ -16126,7 +16110,7 @@ export type GetYouTubeDemographicsError = ({
         requiresReauthorization?: boolean;
         reauthorizeUrl?: string;
     };
-} | ErrorResponse);
+});
 
 export type GetDailyMetricsData = {
     query?: {
@@ -16196,9 +16180,7 @@ export type GetDailyMetricsResponse = ({
     }>;
 });
 
-export type GetDailyMetricsError = ({
-    error?: string;
-} | {
+export type GetDailyMetricsError = (ErrorResponse | {
     error?: string;
     code?: string;
 });
@@ -16270,9 +16252,7 @@ export type GetAnalyticsDashboardResponse = ({
     dataAsOf: (string) | null;
 });
 
-export type GetAnalyticsDashboardError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetAnalyticsDashboardError = (ErrorResponse | unknown);
 
 export type GetBestTimeToPostData = {
     query?: {
@@ -16316,9 +16296,7 @@ export type GetBestTimeToPostResponse = ({
     }>;
 });
 
-export type GetBestTimeToPostError = ({
-    error?: string;
-} | {
+export type GetBestTimeToPostError = (ErrorResponse | {
     error?: string;
     requiresAddon?: boolean;
 });
@@ -16365,9 +16343,7 @@ export type GetContentDecayResponse = ({
     }>;
 });
 
-export type GetContentDecayError = (unknown | {
-    error?: string;
-} | {
+export type GetContentDecayError = (unknown | ErrorResponse | {
     error?: string;
     requiresAddon?: boolean;
 });
@@ -16415,9 +16391,7 @@ export type GetPostingFrequencyResponse = ({
     }>;
 });
 
-export type GetPostingFrequencyError = ({
-    error?: string;
-} | {
+export type GetPostingFrequencyError = (ErrorResponse | {
     error?: string;
     requiresAddon?: boolean;
 });
@@ -16529,7 +16503,7 @@ export type GetPostTimelineResponse = ({
 
 export type GetPostTimelineError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
 });
@@ -16599,12 +16573,12 @@ export type GetGoogleBusinessPerformanceResponse = ({
 export type GetGoogleBusinessPerformanceError = ({
     error?: string;
     validMetrics?: Array<(string)>;
-} | {
-    error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
-} | ErrorResponse);
+} | {
+    error?: string;
+});
 
 export type GetGoogleBusinessSearchKeywordsData = {
     query: {
@@ -16640,10 +16614,10 @@ export type GetGoogleBusinessSearchKeywordsResponse = ({
 
 export type GetGoogleBusinessSearchKeywordsError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
-} | ErrorResponse);
+});
 
 export type GetInboxVolumeData = {
     query: {
@@ -16700,8 +16674,6 @@ export type GetInboxVolumeError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
 } | ErrorResponse);
 
 export type GetInboxHeatmapData = {
@@ -16740,8 +16712,6 @@ export type GetInboxHeatmapError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
 } | ErrorResponse);
 
 export type GetInboxSourceBreakdownData = {
@@ -16777,8 +16747,6 @@ export type GetInboxSourceBreakdownError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
 } | ErrorResponse);
 
 export type GetInboxResponseTimeData = {
@@ -16823,8 +16791,6 @@ export type GetInboxResponseTimeError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
 } | ErrorResponse);
 
 export type GetInboxTopAccountsData = {
@@ -16870,8 +16836,6 @@ export type GetInboxTopAccountsError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
 } | ErrorResponse);
 
 export type ListInboxConversationAnalyticsData = {
@@ -16933,8 +16897,6 @@ export type ListInboxConversationAnalyticsError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
 } | ErrorResponse);
 
 export type GetInboxConversationAnalyticsData = {
@@ -16990,12 +16952,10 @@ export type GetInboxConversationAnalyticsError = ({
     details?: {
         [key: string]: unknown;
     };
-} | {
-    error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
-} | ErrorResponse);
+});
 
 export type ListAccountGroupsResponse = ({
     groups?: Array<{
@@ -17012,9 +16972,7 @@ export type ListAccountGroupsResponse = ({
     }>;
 });
 
-export type ListAccountGroupsError = ({
-    error?: string;
-});
+export type ListAccountGroupsError = (ErrorResponse);
 
 export type CreateAccountGroupData = {
     body: {
@@ -17039,9 +16997,7 @@ export type CreateAccountGroupResponse = ({
     };
 });
 
-export type CreateAccountGroupError = (unknown | {
-    error?: string;
-});
+export type CreateAccountGroupError = (unknown | ErrorResponse);
 
 export type UpdateAccountGroupData = {
     body: {
@@ -17060,7 +17016,7 @@ export type UpdateAccountGroupResponse = ({
     };
 });
 
-export type UpdateAccountGroupError = (unknown | {
+export type UpdateAccountGroupError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -17074,7 +17030,7 @@ export type DeleteAccountGroupResponse = ({
     message?: string;
 });
 
-export type DeleteAccountGroupError = (unknown | {
+export type DeleteAccountGroupError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -17111,9 +17067,7 @@ export type GetMediaPresignedUrlResponse = ({
     expiresIn?: number;
 });
 
-export type GetMediaPresignedUrlError = (ErrorResponse | {
-    error?: string;
-});
+export type GetMediaPresignedUrlError = (ErrorResponse);
 
 export type SearchRedditData = {
     query: {
@@ -17133,9 +17087,7 @@ export type SearchRedditResponse = ({
     before?: (string) | null;
 });
 
-export type SearchRedditError = (ErrorResponse | {
-    error?: string;
-});
+export type SearchRedditError = (ErrorResponse);
 
 export type GetRedditFeedData = {
     query: {
@@ -17154,21 +17106,17 @@ export type GetRedditFeedResponse = ({
     before?: (string) | null;
 });
 
-export type GetRedditFeedError = (ErrorResponse | {
-    error?: string;
-});
+export type GetRedditFeedError = (ErrorResponse);
 
 export type GetBillingResponse = (BillingSnapshot);
 
-export type GetBillingError = ({
+export type GetBillingError = (ErrorResponse | {
     error?: string;
 });
 
 export type GetXApiPricingResponse = (XApiPricing);
 
-export type GetXApiPricingError = ({
-    error?: string;
-});
+export type GetXApiPricingError = (ErrorResponse);
 
 export type GetUsageData = {
     query?: {
@@ -17219,9 +17167,9 @@ export type GetUsageData = {
 
 export type GetUsageResponse = ((UsageStats | UsageMetering));
 
-export type GetUsageError = (unknown | {
+export type GetUsageError = (unknown | ErrorResponse | {
     error?: string;
-} | ErrorResponse);
+});
 
 export type GetUsageStatsData = {
     query?: {
@@ -17239,9 +17187,9 @@ export type GetUsageStatsData = {
 
 export type GetUsageStatsResponse = (UsageStats);
 
-export type GetUsageStatsError = (unknown | {
+export type GetUsageStatsError = (unknown | ErrorResponse | {
     error?: string;
-} | ErrorResponse);
+});
 
 export type GetCallsUsageData = {
     query?: {
@@ -17305,9 +17253,7 @@ export type GetCallsUsageResponse = ({
     }>;
 });
 
-export type GetCallsUsageError = (unknown | {
-    error?: string;
-});
+export type GetCallsUsageError = (unknown | ErrorResponse);
 
 export type GetSmsUsageData = {
     query?: {
@@ -17350,9 +17296,7 @@ export type GetSmsUsageResponse = ({
     }>;
 });
 
-export type GetSmsUsageError = (unknown | {
-    error?: string;
-});
+export type GetSmsUsageError = (unknown | ErrorResponse);
 
 export type ListPostsData = {
     query?: {
@@ -17418,9 +17362,7 @@ export type ListPostsData = {
 
 export type ListPostsResponse = (PostsListResponse);
 
-export type ListPostsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListPostsError = (ErrorResponse);
 
 export type CreatePostData = {
     body: {
@@ -17534,7 +17476,7 @@ export type CreatePostResponse = ((TikTokDryRunVerdict | PostCreateResponse) | P
 
 export type CreatePostError = ({
     error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     /**
      * Stable machine-readable cause. Absent for ownership failures.
@@ -17811,9 +17753,9 @@ export type EditPostResponse = ({
     message?: string;
 });
 
-export type EditPostError = (unknown | {
+export type EditPostError = (unknown | ErrorResponse | {
     error?: string;
-} | ErrorResponse);
+});
 
 export type UpdatePostMetadataData = {
     body: {
@@ -17905,9 +17847,7 @@ export type ListUsersResponse = ({
     }>;
 });
 
-export type ListUsersError = ({
-    error?: string;
-});
+export type ListUsersError = (ErrorResponse);
 
 export type GetUserData = {
     path: {
@@ -17926,9 +17866,9 @@ export type GetUserResponse = ({
     };
 });
 
-export type GetUserError = ({
+export type GetUserError = (ErrorResponse | unknown | {
     error?: string;
-} | unknown);
+});
 
 export type ListProfilesData = {
     query?: {
@@ -17953,9 +17893,7 @@ export type ListProfilesData = {
 
 export type ListProfilesResponse = (ProfilesListResponse);
 
-export type ListProfilesError = (ErrorResponse | {
-    error?: string;
-});
+export type ListProfilesError = (ErrorResponse);
 
 export type CreateProfileData = {
     body: {
@@ -17977,9 +17915,7 @@ export type CreateProfileData = {
 
 export type CreateProfileResponse = (ProfileCreateResponse);
 
-export type CreateProfileError = (unknown | {
-    error?: string;
-} | {
+export type CreateProfileError = (unknown | ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -18044,7 +17980,7 @@ export type GetProfileData = {
 
 export type GetProfileResponse = (ProfileGetResponse);
 
-export type GetProfileError = ({
+export type GetProfileError = (ErrorResponse | {
     error?: string;
 });
 
@@ -18069,7 +18005,7 @@ export type UpdateProfileData = {
 
 export type UpdateProfileResponse = (ProfileUpdateResponse);
 
-export type UpdateProfileError = (unknown | {
+export type UpdateProfileError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -18081,7 +18017,7 @@ export type DeleteProfileData = {
 
 export type DeleteProfileResponse = (ProfileDeleteResponse);
 
-export type DeleteProfileError = (unknown | {
+export type DeleteProfileError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -18127,9 +18063,7 @@ export type ListAccountsData = {
 
 export type ListAccountsResponse = (AccountsListResponse);
 
-export type ListAccountsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListAccountsError = (ErrorResponse);
 
 export type GetFollowerStatsData = {
     query?: {
@@ -18158,9 +18092,7 @@ export type GetFollowerStatsData = {
 
 export type GetFollowerStatsResponse = (FollowerStatsResponse);
 
-export type GetFollowerStatsError = ({
-    error?: string;
-} | {
+export type GetFollowerStatsError = (ErrorResponse | {
     error?: string;
     message?: string;
     requiresAddon?: boolean;
@@ -18217,7 +18149,7 @@ export type UpdateAccountResponse = ({
     };
 });
 
-export type UpdateAccountError = (unknown | {
+export type UpdateAccountError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -18238,9 +18170,7 @@ export type MoveAccountToProfileResponse = ({
     profileId?: string;
 });
 
-export type MoveAccountToProfileError = (unknown | {
-    error?: string;
-});
+export type MoveAccountToProfileError = (unknown | ErrorResponse);
 
 export type DeleteAccountData = {
     path: {
@@ -18252,7 +18182,7 @@ export type DeleteAccountResponse = ({
     message?: string;
 });
 
-export type DeleteAccountError = ({
+export type DeleteAccountError = (ErrorResponse | {
     error?: string;
 });
 
@@ -18335,9 +18265,7 @@ export type GetAllAccountsHealthResponse = ({
     }>;
 });
 
-export type GetAllAccountsHealthError = (ErrorResponse | {
-    error?: string;
-});
+export type GetAllAccountsHealthError = (ErrorResponse);
 
 export type RegisterWhatsAppNumberData = {
     body?: {
@@ -18411,7 +18339,7 @@ export type VerifyWhatsAppNumberResponse = ({
     phoneNumberId?: string;
 });
 
-export type VerifyWhatsAppNumberError = (unknown | {
+export type VerifyWhatsAppNumberError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -18588,9 +18516,9 @@ export type GetAccountPostsResponse = ({
     lastUpdated?: string;
 });
 
-export type GetAccountPostsError = (unknown | {
+export type GetAccountPostsError = (unknown | ErrorResponse | {
     error?: string;
-} | ErrorResponse);
+});
 
 export type GetInstagramFollowStatusData = {
     path: {
@@ -18854,7 +18782,7 @@ export type GetTikTokCreatorInfoResponse = ({
 
 export type GetTikTokCreatorInfoError = ({
     error?: string;
-});
+} | ErrorResponse);
 
 export type VerifyCredentialResponse = ({
     valid?: boolean;
@@ -18874,9 +18802,7 @@ export type VerifyCredentialResponse = ({
     scope?: (string) | null;
 });
 
-export type VerifyCredentialError = ({
-    error?: string;
-});
+export type VerifyCredentialError = (ErrorResponse);
 
 export type SubmitFeedbackData = {
     body: {
@@ -18926,17 +18852,13 @@ export type SubmitFeedbackData = {
 
 export type SubmitFeedbackResponse = (FeedbackReceipt);
 
-export type SubmitFeedbackError = (ErrorResponse | {
-    error?: string;
-});
+export type SubmitFeedbackError = (ErrorResponse);
 
 export type ListApiKeysResponse = ({
     apiKeys?: Array<ApiKey>;
 });
 
-export type ListApiKeysError = ({
-    error?: string;
-} | {
+export type ListApiKeysError = (ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -18976,9 +18898,7 @@ export type CreateApiKeyResponse = ({
     apiKey?: ApiKey;
 });
 
-export type CreateApiKeyError = (unknown | {
-    error?: string;
-} | {
+export type CreateApiKeyError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -18997,24 +18917,22 @@ export type DeleteApiKeyResponse = ({
     message?: string;
 });
 
-export type DeleteApiKeyError = ({
-    error?: string;
-} | {
+export type DeleteApiKeyError = (ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+} | {
+    error?: string;
 });
 
 export type ListConnectedAppsResponse = ({
     connectedApps?: Array<ConnectedApp>;
 });
 
-export type ListConnectedAppsError = ({
-    error?: string;
-} | {
+export type ListConnectedAppsError = (ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -19046,8 +18964,6 @@ export type RevokeConnectedAppResponse = ({
 });
 
 export type RevokeConnectedAppError = (ErrorResponse | {
-    error?: string;
-} | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -19086,9 +19002,7 @@ export type CreateInviteTokenResponse = ({
     inviteUrl?: string;
 });
 
-export type CreateInviteTokenError = (unknown | {
-    error?: string;
-} | {
+export type CreateInviteTokenError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -19334,9 +19248,7 @@ export type GetConnectUrlResponse = ({
     state?: string;
 });
 
-export type GetConnectUrlError = (unknown | {
-    error?: string;
-} | {
+export type GetConnectUrlError = (unknown | ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -19411,9 +19323,7 @@ export type HandleOAuthCallbackData = {
 
 export type HandleOAuthCallbackResponse = (unknown);
 
-export type HandleOAuthCallbackError = (unknown | {
-    error?: string;
-} | {
+export type HandleOAuthCallbackError = (unknown | ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -19611,9 +19521,7 @@ export type ConnectAdsResponse = (({
     state?: string;
 }));
 
-export type ConnectAdsError = (unknown | {
-    error?: string;
-});
+export type ConnectAdsError = (unknown | ErrorResponse);
 
 export type CompleteMetaAdsBusinessLoginData = {
     query: {
@@ -19660,9 +19568,7 @@ export type GetShopifyConnectUrlResponse = ({
     state?: string;
 });
 
-export type GetShopifyConnectUrlError = (unknown | {
-    error?: string;
-} | {
+export type GetShopifyConnectUrlError = (unknown | ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -19749,9 +19655,7 @@ export type ConnectShopifyWithTokenResponse = ({
     };
 });
 
-export type ConnectShopifyWithTokenError = (unknown | {
-    error?: string;
-} | {
+export type ConnectShopifyWithTokenError = (unknown | ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -19832,9 +19736,7 @@ export type GetWordPressAuthUrlResponse = ({
     state: string;
 });
 
-export type GetWordPressAuthUrlError = (unknown | {
-    error?: string;
-} | {
+export type GetWordPressAuthUrlError = (unknown | ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -20011,9 +19913,7 @@ export type ConfigureTikTokAdsBrandIdentityResponse = ({
     displayName?: string;
 });
 
-export type ConfigureTikTokAdsBrandIdentityError = (unknown | {
-    error?: string;
-});
+export type ConfigureTikTokAdsBrandIdentityError = (unknown | ErrorResponse);
 
 export type ListFacebookPagesData = {
     query?: {
@@ -20061,7 +19961,7 @@ export type ListFacebookPagesResponse = ({
     }>;
 });
 
-export type ListFacebookPagesError = (unknown | {
+export type ListFacebookPagesError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -20148,9 +20048,7 @@ export type SelectFacebookPageResponse = ({
     }>;
 });
 
-export type SelectFacebookPageError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type SelectFacebookPageError = (unknown | ErrorResponse);
 
 export type ListInstagramPagesData = {
     query: {
@@ -20193,9 +20091,7 @@ export type ListInstagramPagesResponse = ({
     }>;
 });
 
-export type ListInstagramPagesError = (unknown | {
-    error?: string;
-});
+export type ListInstagramPagesError = (unknown | ErrorResponse);
 
 export type SelectInstagramAccountData = {
     body: {
@@ -20266,9 +20162,7 @@ export type SelectInstagramAccountResponse = ({
     }>;
 });
 
-export type SelectInstagramAccountError = (unknown | {
-    error?: string;
-} | {
+export type SelectInstagramAccountError = (unknown | ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -20323,7 +20217,7 @@ export type SelectInstagramAccountError = (unknown | {
          */
         effective_account_limit?: number;
     };
-} | ErrorResponse);
+});
 
 export type ListGoogleBusinessLocationsData = {
     query?: {
@@ -20390,7 +20284,7 @@ export type ListGoogleBusinessLocationsResponse = ({
     hasMore?: boolean;
 });
 
-export type ListGoogleBusinessLocationsError = (unknown | {
+export type ListGoogleBusinessLocationsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -20446,9 +20340,7 @@ export type SelectGoogleBusinessLocationResponse = ({
     };
 });
 
-export type SelectGoogleBusinessLocationError = (unknown | {
-    error?: string;
-});
+export type SelectGoogleBusinessLocationError = (unknown | ErrorResponse);
 
 export type GetGoogleBusinessReviewsData = {
     path: {
@@ -21914,9 +21806,7 @@ export type SelectLinkedInOrganizationResponse = ({
     };
 });
 
-export type SelectLinkedInOrganizationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type SelectLinkedInOrganizationError = (unknown | ErrorResponse);
 
 export type ListPinterestBoardsForSelectionData = {
     headers: {
@@ -21958,9 +21848,7 @@ export type ListPinterestBoardsForSelectionResponse = ({
     }>;
 });
 
-export type ListPinterestBoardsForSelectionError = (unknown | {
-    error?: string;
-});
+export type ListPinterestBoardsForSelectionError = (unknown | ErrorResponse);
 
 export type SelectPinterestBoardData = {
     body: {
@@ -22021,9 +21909,7 @@ export type SelectPinterestBoardResponse = ({
     };
 });
 
-export type SelectPinterestBoardError = (unknown | {
-    error?: string;
-});
+export type SelectPinterestBoardError = (unknown | ErrorResponse);
 
 export type ListSnapchatProfilesData = {
     headers: {
@@ -22069,9 +21955,7 @@ export type ListSnapchatProfilesResponse = ({
     }>;
 });
 
-export type ListSnapchatProfilesError = (unknown | {
-    error?: string;
-});
+export type ListSnapchatProfilesError = (unknown | ErrorResponse);
 
 export type SelectSnapchatProfileData = {
     body: {
@@ -22155,9 +22039,7 @@ export type SelectSnapchatProfileResponse = ({
     };
 });
 
-export type SelectSnapchatProfileError = (unknown | {
-    error?: string;
-});
+export type SelectSnapchatProfileError = (unknown | ErrorResponse);
 
 export type ConnectBlueskyCredentialsData = {
     body: {
@@ -22190,9 +22072,7 @@ export type ConnectBlueskyCredentialsResponse = ({
     account?: SocialAccount;
 });
 
-export type ConnectBlueskyCredentialsError = (unknown | {
-    error?: string;
-});
+export type ConnectBlueskyCredentialsError = (unknown | ErrorResponse);
 
 export type ConnectOpenAiAdsCredentialsData = {
     body: {
@@ -22403,9 +22283,7 @@ export type ListWhatsAppPhoneNumbersResponse = ({
     }>;
 });
 
-export type ListWhatsAppPhoneNumbersError = (ErrorResponse | {
-    error?: string;
-});
+export type ListWhatsAppPhoneNumbersError = (ErrorResponse);
 
 export type CompleteWhatsAppPhoneSelectionData = {
     body: {
@@ -22466,9 +22344,7 @@ export type CompleteWhatsAppPhoneSelectionResponse = ({
     };
 });
 
-export type CompleteWhatsAppPhoneSelectionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CompleteWhatsAppPhoneSelectionError = (ErrorResponse | unknown);
 
 export type ConnectWhatsAppEmbeddedSignupData = {
     body: {
@@ -22524,8 +22400,6 @@ export type ConnectWhatsAppEmbeddedSignupResponse = ({
 });
 
 export type ConnectWhatsAppEmbeddedSignupError = (ErrorResponse | {
-    error?: string;
-} | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -22613,9 +22487,7 @@ export type GetWhatsAppSdkConfigResponse = ({
     } | null;
 });
 
-export type GetWhatsAppSdkConfigError = ({
-    error?: string;
-});
+export type GetWhatsAppSdkConfigError = (ErrorResponse);
 
 export type ConnectDiscordChannelData = {
     body: {
@@ -22637,8 +22509,6 @@ export type ConnectDiscordChannelData = {
 export type ConnectDiscordChannelResponse = (unknown);
 
 export type ConnectDiscordChannelError = (ErrorResponse | {
-    error?: string;
-} | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -22749,9 +22619,7 @@ export type ListSlackChannelsResponse = (({
     state: string;
 }));
 
-export type ListSlackChannelsError = (unknown | {
-    error?: string;
-});
+export type ListSlackChannelsError = (unknown | ErrorResponse);
 
 export type ConnectSlackChannelData = {
     body: {
@@ -22774,8 +22642,6 @@ export type ConnectSlackChannelData = {
 export type ConnectSlackChannelResponse = (unknown);
 
 export type ConnectSlackChannelError = (ErrorResponse | {
-    error?: string;
-} | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -22864,9 +22730,7 @@ export type GetTelegramConnectStatusResponse = ({
     instructions?: Array<(string)>;
 });
 
-export type GetTelegramConnectStatusError = (unknown | {
-    error?: string;
-});
+export type GetTelegramConnectStatusError = (unknown | ErrorResponse);
 
 export type InitiateTelegramConnectData = {
     body: {
@@ -22893,9 +22757,7 @@ export type InitiateTelegramConnectResponse = ({
     };
 });
 
-export type InitiateTelegramConnectError = (unknown | {
-    error?: string;
-});
+export type InitiateTelegramConnectError = (unknown | ErrorResponse);
 
 export type CompleteTelegramConnectData = {
     query: {
@@ -22929,9 +22791,7 @@ export type CompleteTelegramConnectResponse = (({
     message?: string;
 }));
 
-export type CompleteTelegramConnectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CompleteTelegramConnectError = (ErrorResponse | unknown);
 
 export type GetPageWebhookSubscriptionData = {
     path: {
@@ -22993,9 +22853,7 @@ export type ListBusinessPartnersResponse = ({
     partners?: Array<MetaPagePartner>;
 });
 
-export type ListBusinessPartnersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListBusinessPartnersError = (ErrorResponse | unknown);
 
 export type GrantBusinessPartnerData = {
     body: {
@@ -23037,9 +22895,7 @@ export type GrantBusinessPartnerResponse = ({
     };
 });
 
-export type GrantBusinessPartnerError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GrantBusinessPartnerError = (ErrorResponse | unknown);
 
 export type RevokeBusinessPartnerData = {
     path: {
@@ -23062,9 +22918,7 @@ export type RevokeBusinessPartnerResponse = ({
     revoked?: boolean;
 });
 
-export type RevokeBusinessPartnerError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RevokeBusinessPartnerError = (ErrorResponse | unknown);
 
 export type GetFacebookPagesData = {
     path: {
@@ -23094,9 +22948,7 @@ export type GetFacebookPagesResponse = ({
     cached?: boolean;
 });
 
-export type GetFacebookPagesError = ({
-    error?: string;
-} | unknown);
+export type GetFacebookPagesError = (ErrorResponse | unknown);
 
 export type UpdateFacebookPageData = {
     body: {
@@ -23115,9 +22967,7 @@ export type UpdateFacebookPageResponse = ({
     };
 });
 
-export type UpdateFacebookPageError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateFacebookPageError = (unknown | ErrorResponse);
 
 export type GetLinkedInOrganizationsData = {
     path: {
@@ -23134,9 +22984,7 @@ export type GetLinkedInOrganizationsResponse = ({
     }>;
 });
 
-export type GetLinkedInOrganizationsError = ({
-    error?: string;
-} | unknown);
+export type GetLinkedInOrganizationsError = (ErrorResponse | unknown);
 
 export type GetLinkedInAggregateAnalyticsData = {
     path: {
@@ -23185,9 +23033,7 @@ export type GetLinkedInAggregateAnalyticsError = ({
      */
     param?: string;
     type?: string;
-} | {
-    error?: string;
-} | {
+} | ErrorResponse | {
     error?: string;
     code?: string;
 } | {
@@ -23266,9 +23112,7 @@ export type GetLinkedInPostAnalyticsResponse = ({
 export type GetLinkedInPostAnalyticsError = ({
     error?: string;
     code?: 'missing_urn' | 'invalid_urn' | 'invalid_platform';
-} | {
-    error?: string;
-} | unknown | {
+} | ErrorResponse | unknown | {
     error?: string;
     code?: string;
     requiredScope?: string;
@@ -23276,7 +23120,7 @@ export type GetLinkedInPostAnalyticsError = ({
 } | {
     error?: string;
     code?: string;
-} | ErrorResponse);
+});
 
 export type GetLinkedInPostReactionsData = {
     path: {
@@ -23358,9 +23202,7 @@ export type GetLinkedInPostReactionsResponse = ({
     lastUpdated?: string;
 });
 
-export type GetLinkedInPostReactionsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetLinkedInPostReactionsError = (ErrorResponse | unknown);
 
 export type UpdateLinkedInOrganizationData = {
     body: {
@@ -23380,9 +23222,7 @@ export type UpdateLinkedInOrganizationResponse = ({
     accountName?: string;
 });
 
-export type UpdateLinkedInOrganizationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateLinkedInOrganizationError = (unknown | ErrorResponse);
 
 export type GetLinkedInMentionsData = {
     path: {
@@ -23432,7 +23272,7 @@ export type GetLinkedInMentionsResponse = ({
 
 export type GetLinkedInMentionsError = ({
     error?: string;
-});
+} | ErrorResponse);
 
 export type ListInstagramStoriesData = {
     path: {
@@ -23476,9 +23316,7 @@ export type ListInstagramStoriesResponse = ({
     }>;
 });
 
-export type ListInstagramStoriesError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListInstagramStoriesError = (unknown | ErrorResponse);
 
 export type GetInstagramPublishingLimitData = {
     path: {
@@ -23504,9 +23342,7 @@ export type GetInstagramPublishingLimitResponse = ({
     quotaDurationSeconds?: number;
 });
 
-export type GetInstagramPublishingLimitError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetInstagramPublishingLimitError = (unknown | ErrorResponse);
 
 export type SearchInstagramAudioData = {
     path: {
@@ -23531,9 +23367,7 @@ export type SearchInstagramAudioResponse = ({
     audio?: Array<InstagramAudioAsset>;
 });
 
-export type SearchInstagramAudioError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SearchInstagramAudioError = (ErrorResponse | unknown);
 
 export type GetInstagramAudioData = {
     path: {
@@ -23552,9 +23386,7 @@ export type GetInstagramAudioResponse = ({
     audio?: InstagramAudioAsset;
 });
 
-export type GetInstagramAudioError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetInstagramAudioError = (ErrorResponse | unknown);
 
 export type GetInstagramStoryInsightsData = {
     path: {
@@ -23614,9 +23446,7 @@ export type GetInstagramStoryInsightsResponse = ({
     };
 });
 
-export type GetInstagramStoryInsightsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetInstagramStoryInsightsError = (unknown | ErrorResponse);
 
 export type GetPinterestBoardsData = {
     path: {
@@ -23633,9 +23463,7 @@ export type GetPinterestBoardsResponse = ({
     }>;
 });
 
-export type GetPinterestBoardsError = (unknown | {
-    error?: string;
-});
+export type GetPinterestBoardsError = (unknown | ErrorResponse);
 
 export type UpdatePinterestBoardsData = {
     body: {
@@ -23652,9 +23480,7 @@ export type UpdatePinterestBoardsResponse = ({
     account?: SocialAccount;
 });
 
-export type UpdatePinterestBoardsError = (unknown | {
-    error?: string;
-});
+export type UpdatePinterestBoardsError = (unknown | ErrorResponse);
 
 export type CreatePinterestBoardData = {
     body: {
@@ -23686,9 +23512,7 @@ export type CreatePinterestBoardResponse = ({
     };
 });
 
-export type CreatePinterestBoardError = (unknown | {
-    error?: string;
-});
+export type CreatePinterestBoardError = (unknown | ErrorResponse);
 
 export type GetYoutubeCaptionsData = {
     path: {
@@ -23773,9 +23597,7 @@ export type GetYoutubeCaptionsResponse = ({
     }>;
 });
 
-export type GetYoutubeCaptionsError = (ErrorResponse | {
-    error?: string;
-});
+export type GetYoutubeCaptionsError = (ErrorResponse);
 
 export type GetYoutubePlaylistsData = {
     path: {
@@ -23795,9 +23617,7 @@ export type GetYoutubePlaylistsResponse = ({
     defaultPlaylistId?: (string) | null;
 });
 
-export type GetYoutubePlaylistsError = (unknown | {
-    error?: string;
-});
+export type GetYoutubePlaylistsError = (unknown | ErrorResponse);
 
 export type CreateYoutubePlaylistData = {
     body: {
@@ -23827,9 +23647,7 @@ export type CreateYoutubePlaylistResponse = ({
     };
 });
 
-export type CreateYoutubePlaylistError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateYoutubePlaylistError = (ErrorResponse | unknown);
 
 export type UpdateYoutubeDefaultPlaylistData = {
     body: {
@@ -23845,9 +23663,7 @@ export type UpdateYoutubeDefaultPlaylistResponse = ({
     success?: boolean;
 });
 
-export type UpdateYoutubeDefaultPlaylistError = (unknown | {
-    error?: string;
-});
+export type UpdateYoutubeDefaultPlaylistError = (unknown | ErrorResponse);
 
 export type GetGmbLocationsData = {
     path: {
@@ -23888,9 +23704,7 @@ export type GetGmbLocationsResponse = ({
     cached?: boolean;
 });
 
-export type GetGmbLocationsError = (unknown | {
-    error?: string;
-});
+export type GetGmbLocationsError = (unknown | ErrorResponse);
 
 export type UpdateGmbLocationData = {
     body: {
@@ -23914,9 +23728,7 @@ export type UpdateGmbLocationResponse = ({
     };
 });
 
-export type UpdateGmbLocationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateGmbLocationError = (unknown | ErrorResponse);
 
 export type AssignGoogleBusinessLocationData = {
     body: {
@@ -23961,9 +23773,7 @@ export type AssignGoogleBusinessLocationResponse = ({
     };
 });
 
-export type AssignGoogleBusinessLocationError = (unknown | {
-    error?: string;
-});
+export type AssignGoogleBusinessLocationError = (unknown | ErrorResponse);
 
 export type GetFacebookPostReactionsData = {
     path: {
@@ -24004,9 +23814,7 @@ export type GetFacebookPostReactionsResponse = ({
     lastUpdated?: string;
 });
 
-export type GetFacebookPostReactionsError = (unknown | {
-    error?: string;
-});
+export type GetFacebookPostReactionsError = (unknown | ErrorResponse);
 
 export type GetRedditSubredditsData = {
     path: {
@@ -24043,9 +23851,7 @@ export type GetRedditSubredditsResponse = ({
     defaultSubreddit?: string;
 });
 
-export type GetRedditSubredditsError = (unknown | {
-    error?: string;
-});
+export type GetRedditSubredditsError = (unknown | ErrorResponse);
 
 export type UpdateRedditSubredditsData = {
     body: {
@@ -24060,9 +23866,7 @@ export type UpdateRedditSubredditsResponse = ({
     success?: boolean;
 });
 
-export type UpdateRedditSubredditsError = (unknown | {
-    error?: string;
-});
+export type UpdateRedditSubredditsError = (unknown | ErrorResponse);
 
 export type GetSubredditRulesData = {
     path: {
@@ -24110,9 +23914,7 @@ export type GetSubredditRulesResponse = ({
     siteRules?: Array<(string)>;
 });
 
-export type GetSubredditRulesError = (unknown | {
-    error?: string;
-});
+export type GetSubredditRulesError = (unknown | ErrorResponse);
 
 export type VoteRedditThingData = {
     body: {
@@ -24138,9 +23940,7 @@ export type VoteRedditThingResponse = ({
     success?: boolean;
 });
 
-export type VoteRedditThingError = (unknown | {
-    error?: string;
-});
+export type VoteRedditThingError = (unknown | ErrorResponse);
 
 export type GetRedditFlairsData = {
     path: {
@@ -24175,9 +23975,7 @@ export type GetRedditFlairsResponse = ({
     }>;
 });
 
-export type GetRedditFlairsError = (unknown | {
-    error?: string;
-});
+export type GetRedditFlairsError = (unknown | ErrorResponse);
 
 export type SetRedditPostFlairData = {
     body: {
@@ -24210,9 +24008,7 @@ export type SetRedditPostFlairResponse = ({
     success?: boolean;
 });
 
-export type SetRedditPostFlairError = (unknown | {
-    error?: string;
-});
+export type SetRedditPostFlairError = (unknown | ErrorResponse);
 
 export type GetSlackSettingsData = {
     path: {
@@ -24238,9 +24034,7 @@ export type GetSlackSettingsResponse = ({
     };
 });
 
-export type GetSlackSettingsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetSlackSettingsError = (ErrorResponse | unknown);
 
 export type UpdateSlackSettingsData = {
     body: {
@@ -24260,9 +24054,7 @@ export type UpdateSlackSettingsData = {
 
 export type UpdateSlackSettingsResponse = (unknown);
 
-export type UpdateSlackSettingsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateSlackSettingsError = (ErrorResponse | unknown);
 
 export type GetBlueskySettingsData = {
     path: {
@@ -24274,9 +24066,7 @@ export type GetBlueskySettingsResponse = ({
     defaultLangs?: Array<(string)> | null;
 });
 
-export type GetBlueskySettingsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetBlueskySettingsError = (ErrorResponse | unknown);
 
 export type UpdateBlueskySettingsData = {
     body: {
@@ -24289,9 +24079,7 @@ export type UpdateBlueskySettingsData = {
 
 export type UpdateBlueskySettingsResponse = (unknown);
 
-export type UpdateBlueskySettingsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateBlueskySettingsError = (ErrorResponse | unknown);
 
 export type GetDiscordSettingsData = {
     path: {
@@ -24342,9 +24130,7 @@ export type GetDiscordSettingsResponse = ({
     };
 });
 
-export type GetDiscordSettingsError = (unknown | {
-    error?: string;
-});
+export type GetDiscordSettingsError = (unknown | ErrorResponse);
 
 export type UpdateDiscordSettingsData = {
     body: {
@@ -24383,9 +24169,7 @@ export type UpdateDiscordSettingsResponse = ({
     };
 });
 
-export type UpdateDiscordSettingsError = (unknown | {
-    error?: string;
-});
+export type UpdateDiscordSettingsError = (unknown | ErrorResponse);
 
 export type GetDiscordChannelsData = {
     path: {
@@ -24410,9 +24194,7 @@ export type GetDiscordChannelsResponse = ({
     }>;
 });
 
-export type GetDiscordChannelsError = (unknown | {
-    error?: string;
-});
+export type GetDiscordChannelsError = (unknown | ErrorResponse);
 
 export type ListSlackMembersData = {
     path: {
@@ -24448,9 +24230,7 @@ export type ListSlackMembersResponse = ({
     }>;
 });
 
-export type ListSlackMembersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListSlackMembersError = (ErrorResponse | unknown);
 
 export type SendDiscordDirectMessageData = {
     body: {
@@ -24514,9 +24294,7 @@ export type SendDiscordDirectMessageResponse = ({
     };
 });
 
-export type SendDiscordDirectMessageError = (unknown | {
-    error?: string;
-});
+export type SendDiscordDirectMessageError = (unknown | ErrorResponse);
 
 export type ListDiscordGuildRolesData = {
     path: {
@@ -24564,9 +24342,7 @@ export type ListDiscordGuildRolesResponse = ({
     }>;
 });
 
-export type ListDiscordGuildRolesError = (unknown | {
-    error?: string;
-});
+export type ListDiscordGuildRolesError = (unknown | ErrorResponse);
 
 export type CreateDiscordGuildRoleData = {
     body: {
@@ -24606,9 +24382,7 @@ export type CreateDiscordGuildRoleResponse = ({
     data?: DiscordRole;
 });
 
-export type CreateDiscordGuildRoleError = (unknown | {
-    error?: string;
-});
+export type CreateDiscordGuildRoleError = (unknown | ErrorResponse);
 
 export type EditDiscordGuildRoleData = {
     body: {
@@ -24643,9 +24417,7 @@ export type EditDiscordGuildRoleResponse = ({
     data?: DiscordRole;
 });
 
-export type EditDiscordGuildRoleError = (unknown | {
-    error?: string;
-});
+export type EditDiscordGuildRoleError = (unknown | ErrorResponse);
 
 export type DeleteDiscordGuildRoleData = {
     path: {
@@ -24670,9 +24442,7 @@ export type DeleteDiscordGuildRoleResponse = ({
     success?: boolean;
 });
 
-export type DeleteDiscordGuildRoleError = (unknown | {
-    error?: string;
-});
+export type DeleteDiscordGuildRoleError = (unknown | ErrorResponse);
 
 export type ListDiscordGuildMembersData = {
     path: {
@@ -24702,9 +24472,7 @@ export type ListDiscordGuildMembersResponse = ({
     };
 });
 
-export type ListDiscordGuildMembersError = (unknown | {
-    error?: string;
-});
+export type ListDiscordGuildMembersError = (unknown | ErrorResponse);
 
 export type SearchDiscordGuildMembersData = {
     path: {
@@ -24724,9 +24492,7 @@ export type SearchDiscordGuildMembersResponse = ({
     data?: Array<DiscordGuildMember>;
 });
 
-export type SearchDiscordGuildMembersError = (unknown | {
-    error?: string;
-});
+export type SearchDiscordGuildMembersError = (unknown | ErrorResponse);
 
 export type GetDiscordGuildMemberData = {
     path: {
@@ -24745,9 +24511,7 @@ export type GetDiscordGuildMemberResponse = ({
     data?: DiscordGuildMember;
 });
 
-export type GetDiscordGuildMemberError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetDiscordGuildMemberError = (ErrorResponse | unknown);
 
 export type AddDiscordMemberRoleData = {
     path: {
@@ -24771,9 +24535,7 @@ export type AddDiscordMemberRoleResponse = ({
     roleId?: string;
 });
 
-export type AddDiscordMemberRoleError = (unknown | {
-    error?: string;
-});
+export type AddDiscordMemberRoleError = (unknown | ErrorResponse);
 
 export type RemoveDiscordMemberRoleData = {
     path: {
@@ -24794,9 +24556,7 @@ export type RemoveDiscordMemberRoleResponse = ({
     roleId?: string;
 });
 
-export type RemoveDiscordMemberRoleError = (unknown | {
-    error?: string;
-});
+export type RemoveDiscordMemberRoleError = (unknown | ErrorResponse);
 
 export type DeleteDiscordMessageData = {
     path: {
@@ -24821,9 +24581,7 @@ export type DeleteDiscordMessageResponse = ({
     success?: boolean;
 });
 
-export type DeleteDiscordMessageError = (unknown | {
-    error?: string;
-});
+export type DeleteDiscordMessageError = (unknown | ErrorResponse);
 
 export type CrosspostDiscordMessageData = {
     path: {
@@ -24853,9 +24611,7 @@ export type CrosspostDiscordMessageResponse = ({
     };
 });
 
-export type CrosspostDiscordMessageError = (unknown | {
-    error?: string;
-});
+export type CrosspostDiscordMessageError = (unknown | ErrorResponse);
 
 export type CreateDiscordThreadData = {
     body: {
@@ -24896,9 +24652,7 @@ export type CreateDiscordThreadResponse = ({
     };
 });
 
-export type CreateDiscordThreadError = (unknown | {
-    error?: string;
-});
+export type CreateDiscordThreadError = (unknown | ErrorResponse);
 
 export type ListDiscordPinnedMessagesData = {
     path: {
@@ -24933,9 +24687,7 @@ export type ListDiscordPinnedMessagesResponse = ({
     }>;
 });
 
-export type ListDiscordPinnedMessagesError = (unknown | {
-    error?: string;
-});
+export type ListDiscordPinnedMessagesError = (unknown | ErrorResponse);
 
 export type PinDiscordMessageData = {
     path: {
@@ -24954,9 +24706,7 @@ export type PinDiscordMessageResponse = ({
     messageId?: string;
 });
 
-export type PinDiscordMessageError = (unknown | {
-    error?: string;
-});
+export type PinDiscordMessageError = (unknown | ErrorResponse);
 
 export type UnpinDiscordMessageData = {
     path: {
@@ -24975,9 +24725,7 @@ export type UnpinDiscordMessageResponse = ({
     messageId?: string;
 });
 
-export type UnpinDiscordMessageError = (unknown | {
-    error?: string;
-});
+export type UnpinDiscordMessageError = (unknown | ErrorResponse);
 
 export type ListDiscordScheduledEventsData = {
     path: {
@@ -24996,9 +24744,7 @@ export type ListDiscordScheduledEventsResponse = ({
     data?: Array<DiscordScheduledEvent>;
 });
 
-export type ListDiscordScheduledEventsError = (unknown | {
-    error?: string;
-});
+export type ListDiscordScheduledEventsError = (unknown | ErrorResponse);
 
 export type CreateDiscordScheduledEventData = {
     body: {
@@ -25045,9 +24791,7 @@ export type CreateDiscordScheduledEventResponse = ({
     data?: DiscordScheduledEvent;
 });
 
-export type CreateDiscordScheduledEventError = (unknown | {
-    error?: string;
-});
+export type CreateDiscordScheduledEventError = (unknown | ErrorResponse);
 
 export type GetDiscordScheduledEventData = {
     path: {
@@ -25063,9 +24807,7 @@ export type GetDiscordScheduledEventResponse = ({
     data?: DiscordScheduledEvent;
 });
 
-export type GetDiscordScheduledEventError = ({
-    error?: string;
-} | unknown);
+export type GetDiscordScheduledEventError = (ErrorResponse | unknown);
 
 export type UpdateDiscordScheduledEventData = {
     body: {
@@ -25094,9 +24836,7 @@ export type UpdateDiscordScheduledEventResponse = ({
     data?: DiscordScheduledEvent;
 });
 
-export type UpdateDiscordScheduledEventError = (unknown | {
-    error?: string;
-});
+export type UpdateDiscordScheduledEventError = (unknown | ErrorResponse);
 
 export type DeleteDiscordScheduledEventData = {
     path: {
@@ -25116,9 +24856,7 @@ export type DeleteDiscordScheduledEventResponse = ({
     deleted?: string;
 });
 
-export type DeleteDiscordScheduledEventError = ({
-    error?: string;
-} | unknown);
+export type DeleteDiscordScheduledEventError = (ErrorResponse | unknown);
 
 export type ListQueueSlotsData = {
     query: {
@@ -25142,9 +24880,7 @@ export type ListQueueSlotsResponse = ((QueueSlotsResponse | {
     count?: number;
 }));
 
-export type ListQueueSlotsError = (unknown | {
-    error?: string;
-});
+export type ListQueueSlotsError = (unknown | ErrorResponse);
 
 export type CreateQueueSlotData = {
     body: {
@@ -25171,9 +24907,7 @@ export type CreateQueueSlotResponse = ({
     nextSlots?: Array<(string)>;
 });
 
-export type CreateQueueSlotError = (unknown | {
-    error?: string;
-});
+export type CreateQueueSlotError = (unknown | ErrorResponse);
 
 export type UpdateQueueSlotData = {
     body: {
@@ -25202,9 +24936,7 @@ export type UpdateQueueSlotData = {
 
 export type UpdateQueueSlotResponse = (QueueUpdateResponse);
 
-export type UpdateQueueSlotError = (unknown | {
-    error?: string;
-});
+export type UpdateQueueSlotError = (unknown | ErrorResponse);
 
 export type DeleteQueueSlotData = {
     query: {
@@ -25218,9 +24950,7 @@ export type DeleteQueueSlotData = {
 
 export type DeleteQueueSlotResponse = (QueueDeleteResponse);
 
-export type DeleteQueueSlotError = (unknown | {
-    error?: string;
-});
+export type DeleteQueueSlotError = (unknown | ErrorResponse);
 
 export type PreviewQueueData = {
     query: {
@@ -25235,9 +24965,7 @@ export type PreviewQueueData = {
 
 export type PreviewQueueResponse = (QueuePreviewResponse);
 
-export type PreviewQueueError = (unknown | {
-    error?: string;
-});
+export type PreviewQueueError = (unknown | ErrorResponse);
 
 export type GetNextQueueSlotData = {
     query: {
@@ -25251,17 +24979,13 @@ export type GetNextQueueSlotData = {
 
 export type GetNextQueueSlotResponse = (QueueNextSlotResponse);
 
-export type GetNextQueueSlotError = (unknown | {
-    error?: string;
-});
+export type GetNextQueueSlotError = (unknown | ErrorResponse);
 
 export type GetWebhookSettingsResponse = ({
     webhooks?: Array<Webhook>;
 });
 
-export type GetWebhookSettingsError = ({
-    error?: string;
-} | {
+export type GetWebhookSettingsError = (ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -25318,9 +25042,7 @@ export type CreateWebhookSettingsResponse = ({
     webhook?: Webhook;
 });
 
-export type CreateWebhookSettingsError = (unknown | {
-    error?: string;
-} | {
+export type CreateWebhookSettingsError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -25386,9 +25108,7 @@ export type UpdateWebhookSettingsResponse = ({
     webhook?: Webhook;
 });
 
-export type UpdateWebhookSettingsError = (unknown | {
-    error?: string;
-} | {
+export type UpdateWebhookSettingsError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -25415,9 +25135,7 @@ export type DeleteWebhookSettingsResponse = ({
     success?: boolean;
 });
 
-export type DeleteWebhookSettingsError = (unknown | {
-    error?: string;
-} | {
+export type DeleteWebhookSettingsError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -25481,9 +25199,7 @@ export type GetWebhookLogsResponse = ({
     };
 });
 
-export type GetWebhookLogsError = (unknown | {
-    error?: string;
-} | {
+export type GetWebhookLogsError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -25510,9 +25226,7 @@ export type RedeliverWebhookEventResponse = ({
     message?: string;
 });
 
-export type RedeliverWebhookEventError = (unknown | {
-    error?: string;
-} | {
+export type RedeliverWebhookEventError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -25538,9 +25252,7 @@ export type TestWebhookResponse = ({
     message?: string;
 });
 
-export type TestWebhookError = (unknown | {
-    error?: string;
-} | {
+export type TestWebhookError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -25692,9 +25404,7 @@ export type ListLogsResponse = ({
     };
 });
 
-export type ListLogsError = (unknown | {
-    error?: string;
-});
+export type ListLogsError = (unknown | ErrorResponse);
 
 export type ListInboxConversationsData = {
     query?: {
@@ -25936,9 +25646,7 @@ export type ListInboxConversationsResponse = ({
     };
 });
 
-export type ListInboxConversationsError = ({
-    error?: string;
-} | unknown);
+export type ListInboxConversationsError = (ErrorResponse | unknown);
 
 export type CreateInboxConversationData = {
     body: {
@@ -26120,9 +25828,7 @@ export type CreateInboxConversationResponse = ({
 export type CreateInboxConversationError = (({
     error?: string;
     code?: 'PLATFORM_NOT_SUPPORTED' | 'PLATFORM_LIMITATION' | 'TEMPLATE_REQUIRED' | 'INVALID_TEMPLATE_PARAMS' | 'INVALID_TEMPLATE_BUTTON_PARAM' | 'INVALID_TEMPLATE_HEADER' | 'INVALID_TEMPLATE_CARD_PARAM' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED' | 'invalid_content';
-} | WhatsAppTemplateLookupError) | {
-    error?: string;
-} | unknown | ({
+} | WhatsAppTemplateLookupError) | ErrorResponse | unknown | ({
     error?: string;
     code?: 'account_not_found' | 'PARTICIPANT_NOT_FOUND';
 } | WhatsAppTemplateLookupError) | {
@@ -26234,9 +25940,7 @@ export type SearchInboxConversationsResponse = ({
     };
 });
 
-export type SearchInboxConversationsError = (unknown | {
-    error?: string;
-});
+export type SearchInboxConversationsError = (unknown | ErrorResponse);
 
 export type GetInboxConversationData = {
     path: {
@@ -26382,9 +26086,7 @@ export type GetInboxConversationResponse = ({
     };
 });
 
-export type GetInboxConversationError = ({
-    error?: string;
-} | unknown);
+export type GetInboxConversationError = (ErrorResponse | unknown);
 
 export type UpdateInboxConversationData = {
     body: {
@@ -26413,9 +26115,7 @@ export type UpdateInboxConversationResponse = ({
     };
 });
 
-export type UpdateInboxConversationError = ({
-    error?: string;
-} | unknown);
+export type UpdateInboxConversationError = (ErrorResponse | unknown);
 
 export type GetInboxConversationMessagesData = {
     path: {
@@ -26643,9 +26343,7 @@ export type GetInboxConversationMessagesResponse = ({
     lastUpdated?: string;
 });
 
-export type GetInboxConversationMessagesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetInboxConversationMessagesError = (ErrorResponse | unknown);
 
 export type SendInboxMessageData = {
     body: {
@@ -27352,8 +27050,6 @@ export type SendInboxMessageError = ({
          */
         type?: string;
     };
-} | {
-    error?: string;
 } | ErrorResponse | unknown | (ErrorResponse | WhatsAppTemplateLookupError) | WhatsAppTemplateLookupError);
 
 export type GetWhatsAppMediaData = {
@@ -27373,9 +27069,7 @@ export type GetWhatsAppMediaData = {
 
 export type GetWhatsAppMediaResponse = ((Blob | File));
 
-export type GetWhatsAppMediaError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppMediaError = (unknown | ErrorResponse);
 
 export type EditInboxMessageData = {
     body: {
@@ -27418,9 +27112,7 @@ export type EditInboxMessageResponse = ({
     };
 });
 
-export type EditInboxMessageError = (unknown | {
-    error?: string;
-});
+export type EditInboxMessageError = (unknown | ErrorResponse);
 
 export type DeleteInboxMessageData = {
     path: {
@@ -27445,9 +27137,7 @@ export type DeleteInboxMessageResponse = ({
     success?: boolean;
 });
 
-export type DeleteInboxMessageError = (unknown | {
-    error?: string;
-});
+export type DeleteInboxMessageError = (unknown | ErrorResponse);
 
 export type SendTypingIndicatorData = {
     body: {
@@ -27468,9 +27158,7 @@ export type SendTypingIndicatorResponse = ({
     success?: boolean;
 });
 
-export type SendTypingIndicatorError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SendTypingIndicatorError = (ErrorResponse | unknown);
 
 export type SetConversationThreadControlData = {
     body: {
@@ -27503,9 +27191,7 @@ export type SetConversationThreadControlResponse = ({
     };
 });
 
-export type SetConversationThreadControlError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SetConversationThreadControlError = (ErrorResponse | unknown);
 
 export type MarkConversationReadData = {
     body: {
@@ -27530,9 +27216,7 @@ export type MarkConversationReadResponse = ({
     markedCount?: number;
 });
 
-export type MarkConversationReadError = ({
-    error?: string;
-} | unknown);
+export type MarkConversationReadError = (ErrorResponse | unknown);
 
 export type AddMessageReactionData = {
     body: {
@@ -27569,9 +27253,7 @@ export type AddMessageReactionResponse = ({
     platformMessageId?: string;
 });
 
-export type AddMessageReactionError = (unknown | {
-    error?: string;
-});
+export type AddMessageReactionError = (unknown | ErrorResponse);
 
 export type RemoveMessageReactionData = {
     path: {
@@ -27604,9 +27286,7 @@ export type RemoveMessageReactionResponse = ({
     platformMessageId?: string;
 });
 
-export type RemoveMessageReactionError = (unknown | {
-    error?: string;
-});
+export type RemoveMessageReactionError = (unknown | ErrorResponse);
 
 export type UploadMediaDirectData = {
     body: {
@@ -27640,9 +27320,7 @@ export type UploadMediaDirectResponse = ({
     size?: number;
 });
 
-export type UploadMediaDirectError = (unknown | {
-    error?: string;
-});
+export type UploadMediaDirectError = (unknown | ErrorResponse);
 
 export type GetMessengerMenuData = {
     path: {
@@ -27656,9 +27334,7 @@ export type GetMessengerMenuResponse = ({
     }>;
 });
 
-export type GetMessengerMenuError = (unknown | {
-    error?: string;
-});
+export type GetMessengerMenuError = (unknown | ErrorResponse);
 
 export type SetMessengerMenuData = {
     body: {
@@ -27676,9 +27352,7 @@ export type SetMessengerMenuData = {
 
 export type SetMessengerMenuResponse = (unknown);
 
-export type SetMessengerMenuError = (unknown | {
-    error?: string;
-});
+export type SetMessengerMenuError = (unknown | ErrorResponse);
 
 export type DeleteMessengerMenuData = {
     path: {
@@ -27688,9 +27362,7 @@ export type DeleteMessengerMenuData = {
 
 export type DeleteMessengerMenuResponse = (unknown);
 
-export type DeleteMessengerMenuError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteMessengerMenuError = (ErrorResponse);
 
 export type GetMessengerGetStartedData = {
     path: {
@@ -27757,9 +27429,7 @@ export type GetInstagramIceBreakersResponse = ({
     }>;
 });
 
-export type GetInstagramIceBreakersError = (unknown | {
-    error?: string;
-});
+export type GetInstagramIceBreakersError = (unknown | ErrorResponse);
 
 export type SetInstagramIceBreakersData = {
     body: {
@@ -27775,9 +27445,7 @@ export type SetInstagramIceBreakersData = {
 
 export type SetInstagramIceBreakersResponse = (unknown);
 
-export type SetInstagramIceBreakersError = (unknown | {
-    error?: string;
-});
+export type SetInstagramIceBreakersError = (unknown | ErrorResponse);
 
 export type DeleteInstagramIceBreakersData = {
     path: {
@@ -27787,9 +27455,7 @@ export type DeleteInstagramIceBreakersData = {
 
 export type DeleteInstagramIceBreakersResponse = (unknown);
 
-export type DeleteInstagramIceBreakersError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteInstagramIceBreakersError = (ErrorResponse);
 
 export type GetTelegramCommandsData = {
     path: {
@@ -27804,9 +27470,7 @@ export type GetTelegramCommandsResponse = ({
     }>;
 });
 
-export type GetTelegramCommandsError = (unknown | {
-    error?: string;
-});
+export type GetTelegramCommandsError = (unknown | ErrorResponse);
 
 export type SetTelegramCommandsData = {
     body: {
@@ -27828,9 +27492,7 @@ export type SetTelegramCommandsData = {
 
 export type SetTelegramCommandsResponse = (unknown);
 
-export type SetTelegramCommandsError = (unknown | {
-    error?: string;
-});
+export type SetTelegramCommandsError = (unknown | ErrorResponse);
 
 export type DeleteTelegramCommandsData = {
     path: {
@@ -27840,9 +27502,7 @@ export type DeleteTelegramCommandsData = {
 
 export type DeleteTelegramCommandsResponse = (unknown);
 
-export type DeleteTelegramCommandsError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteTelegramCommandsError = (ErrorResponse);
 
 export type GetMessageAttachmentData = {
     path: {
@@ -27883,9 +27543,7 @@ export type GetMessageAttachmentResponse = ({
     refreshed?: boolean;
 });
 
-export type GetMessageAttachmentError = (unknown | ErrorResponse | {
-    error?: string;
-});
+export type GetMessageAttachmentError = (unknown | ErrorResponse);
 
 export type ListInboxCommentsData = {
     query?: {
@@ -27999,9 +27657,7 @@ export type ListInboxCommentsResponse = ({
     };
 });
 
-export type ListInboxCommentsError = ({
-    error?: string;
-} | unknown);
+export type ListInboxCommentsError = (ErrorResponse | unknown);
 
 export type GetInboxPostCommentsData = {
     path: {
@@ -28205,9 +27861,7 @@ export type GetInboxPostCommentsResponse = ({
     };
 });
 
-export type GetInboxPostCommentsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetInboxPostCommentsError = (unknown | ErrorResponse);
 
 export type ReplyToInboxPostData = {
     body: {
@@ -28260,9 +27914,7 @@ export type ReplyToInboxPostResponse = ({
     };
 });
 
-export type ReplyToInboxPostError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ReplyToInboxPostError = (unknown | ErrorResponse);
 
 export type DeleteInboxCommentData = {
     path: {
@@ -28289,7 +27941,7 @@ export type DeleteInboxCommentResponse = ({
 
 export type DeleteInboxCommentError = ({
     error?: string;
-} | unknown | ErrorResponse);
+} | ErrorResponse | unknown);
 
 export type EditInboxCommentData = {
     body: {
@@ -28318,9 +27970,7 @@ export type EditInboxCommentResponse = ({
     platform?: string;
 });
 
-export type EditInboxCommentError = (unknown | {
-    error?: string;
-});
+export type EditInboxCommentError = (unknown | ErrorResponse);
 
 export type SetCommentModerationData = {
     body: {
@@ -28352,9 +28002,7 @@ export type SetCommentModerationResponse = ({
     success?: boolean;
 });
 
-export type SetCommentModerationError = (unknown | {
-    error?: string;
-});
+export type SetCommentModerationError = (unknown | ErrorResponse);
 
 export type HideInboxCommentData = {
     body: {
@@ -28376,9 +28024,7 @@ export type HideInboxCommentResponse = ({
     platform?: string;
 });
 
-export type HideInboxCommentError = (unknown | {
-    error?: string;
-});
+export type HideInboxCommentError = (unknown | ErrorResponse);
 
 export type UnhideInboxCommentData = {
     path: {
@@ -28397,9 +28043,7 @@ export type UnhideInboxCommentResponse = ({
     platform?: string;
 });
 
-export type UnhideInboxCommentError = (unknown | {
-    error?: string;
-});
+export type UnhideInboxCommentError = (unknown | ErrorResponse);
 
 export type PinInboxCommentData = {
     body: {
@@ -28421,9 +28065,7 @@ export type PinInboxCommentResponse = ({
     platform?: string;
 });
 
-export type PinInboxCommentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type PinInboxCommentError = (ErrorResponse | unknown);
 
 export type UnpinInboxCommentData = {
     path: {
@@ -28442,9 +28084,7 @@ export type UnpinInboxCommentResponse = ({
     platform?: string;
 });
 
-export type UnpinInboxCommentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UnpinInboxCommentError = (ErrorResponse | unknown);
 
 export type LikeInboxCommentData = {
     body: {
@@ -28486,9 +28126,7 @@ export type LikeInboxCommentResponse = ({
     platform?: string;
 });
 
-export type LikeInboxCommentError = (unknown | {
-    error?: string;
-});
+export type LikeInboxCommentError = (unknown | ErrorResponse);
 
 export type UnlikeInboxCommentData = {
     path: {
@@ -28511,9 +28149,7 @@ export type UnlikeInboxCommentResponse = ({
     platform?: string;
 });
 
-export type UnlikeInboxCommentError = (unknown | {
-    error?: string;
-});
+export type UnlikeInboxCommentError = (unknown | ErrorResponse);
 
 export type LikePostData = {
     body: {
@@ -28560,9 +28196,7 @@ export type LikePostResponse = ({
     reactionType?: string;
 });
 
-export type LikePostError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type LikePostError = (ErrorResponse | unknown);
 
 export type UnlikePostData = {
     path: {
@@ -28590,9 +28224,7 @@ export type UnlikePostResponse = ({
     liked?: boolean;
 });
 
-export type UnlikePostError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UnlikePostError = (ErrorResponse | unknown);
 
 export type SendPrivateReplyToCommentData = {
     body: {
@@ -28689,9 +28321,7 @@ export type SendPrivateReplyToCommentResponse = ({
     platform?: 'instagram' | 'facebook';
 });
 
-export type SendPrivateReplyToCommentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SendPrivateReplyToCommentError = (ErrorResponse | unknown);
 
 export type RetweetPostData = {
     body: {
@@ -28713,9 +28343,7 @@ export type RetweetPostResponse = ({
     platform?: string;
 });
 
-export type RetweetPostError = (unknown | {
-    error?: string;
-});
+export type RetweetPostError = (unknown | ErrorResponse);
 
 export type UndoRetweetData = {
     query: {
@@ -28734,9 +28362,7 @@ export type UndoRetweetResponse = ({
     platform?: string;
 });
 
-export type UndoRetweetError = (unknown | {
-    error?: string;
-});
+export type UndoRetweetError = (unknown | ErrorResponse);
 
 export type BookmarkPostData = {
     body: {
@@ -28758,9 +28384,7 @@ export type BookmarkPostResponse = ({
     platform?: string;
 });
 
-export type BookmarkPostError = (unknown | {
-    error?: string;
-});
+export type BookmarkPostError = (unknown | ErrorResponse);
 
 export type RemoveBookmarkData = {
     query: {
@@ -28779,9 +28403,7 @@ export type RemoveBookmarkResponse = ({
     platform?: string;
 });
 
-export type RemoveBookmarkError = (unknown | {
-    error?: string;
-});
+export type RemoveBookmarkError = (unknown | ErrorResponse);
 
 export type FollowUserData = {
     body: {
@@ -28807,9 +28429,7 @@ export type FollowUserResponse = ({
     platform?: string;
 });
 
-export type FollowUserError = (unknown | {
-    error?: string;
-});
+export type FollowUserError = (unknown | ErrorResponse);
 
 export type UnfollowUserData = {
     query: {
@@ -28828,9 +28448,7 @@ export type UnfollowUserResponse = ({
     platform?: string;
 });
 
-export type UnfollowUserError = (unknown | {
-    error?: string;
-});
+export type UnfollowUserError = (unknown | ErrorResponse);
 
 export type SearchTweetsData = {
     query: {
@@ -28907,9 +28525,7 @@ export type SearchTweetsResponse = ({
     };
 });
 
-export type SearchTweetsError = (unknown | {
-    error?: string;
-});
+export type SearchTweetsError = (unknown | ErrorResponse);
 
 export type GetTweetData = {
     query: {
@@ -28956,9 +28572,7 @@ export type GetTweetResponse = ({
     };
 });
 
-export type GetTweetError = (unknown | {
-    error?: string;
-});
+export type GetTweetError = (unknown | ErrorResponse);
 
 export type ListInboxMentionsData = {
     query?: {
@@ -29032,9 +28646,7 @@ export type ListInboxMentionsResponse = ({
     };
 });
 
-export type ListInboxMentionsError = ({
-    error?: string;
-} | unknown);
+export type ListInboxMentionsError = (ErrorResponse | unknown);
 
 export type ReplyToMentionData = {
     body: {
@@ -29065,9 +28677,7 @@ export type ReplyToMentionResponse = ({
     id?: string;
 });
 
-export type ReplyToMentionError = (unknown | {
-    error?: string;
-});
+export type ReplyToMentionError = (unknown | ErrorResponse);
 
 export type ListInboxReviewsData = {
     query?: {
@@ -29178,9 +28788,7 @@ export type ListInboxReviewsResponse = ({
     };
 });
 
-export type ListInboxReviewsError = ({
-    error?: string;
-} | unknown);
+export type ListInboxReviewsError = (ErrorResponse | unknown);
 
 export type ReplyToInboxReviewData = {
     body: {
@@ -29211,9 +28819,7 @@ export type ReplyToInboxReviewResponse = ({
     platform?: string;
 });
 
-export type ReplyToInboxReviewError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReplyToInboxReviewError = (ErrorResponse | unknown);
 
 export type DeleteInboxReviewReplyData = {
     body: {
@@ -29230,9 +28836,7 @@ export type DeleteInboxReviewReplyResponse = ({
     platform?: string;
 });
 
-export type DeleteInboxReviewReplyError = ({
-    error?: string;
-} | unknown);
+export type DeleteInboxReviewReplyError = (ErrorResponse | unknown);
 
 export type GetWhatsAppTemplatesData = {
     query: {
@@ -29273,9 +28877,7 @@ export type GetWhatsAppTemplatesResponse = ({
     }>;
 });
 
-export type GetWhatsAppTemplatesError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppTemplatesError = (unknown | ErrorResponse);
 
 export type CreateWhatsAppTemplateData = {
     body: {
@@ -29356,9 +28958,7 @@ export type CreateWhatsAppTemplateResponse = ({
     };
 });
 
-export type CreateWhatsAppTemplateError = (unknown | {
-    error?: string;
-});
+export type CreateWhatsAppTemplateError = (unknown | ErrorResponse);
 
 export type GetWhatsAppTemplateData = {
     path: {
@@ -29413,9 +29013,7 @@ export type GetWhatsAppTemplateResponse = ({
     };
 });
 
-export type GetWhatsAppTemplateError = (ErrorResponse | {
-    error?: string;
-} | unknown | {
+export type GetWhatsAppTemplateError = (ErrorResponse | unknown | {
     error?: string;
     type?: 'invalid_request_error';
     code?: 'ambiguous_template';
@@ -29471,9 +29069,7 @@ export type UpdateWhatsAppTemplateResponse = ({
     };
 });
 
-export type UpdateWhatsAppTemplateError = (ErrorResponse | {
-    error?: string;
-} | unknown | {
+export type UpdateWhatsAppTemplateError = (ErrorResponse | unknown | {
     error?: string;
     type?: 'invalid_request_error';
     code?: 'ambiguous_template';
@@ -29515,9 +29111,7 @@ export type DeleteWhatsAppTemplateResponse = ({
     message?: string;
 });
 
-export type DeleteWhatsAppTemplateError = (ErrorResponse | {
-    error?: string;
-} | unknown | {
+export type DeleteWhatsAppTemplateError = (ErrorResponse | unknown | {
     error?: string;
     type?: 'invalid_request_error';
     code?: 'ambiguous_template';
@@ -29576,9 +29170,7 @@ export type GetWhatsAppTemplateByIdResponse = ({
     };
 });
 
-export type GetWhatsAppTemplateByIdError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetWhatsAppTemplateByIdError = (ErrorResponse | unknown);
 
 export type UpdateWhatsAppTemplateByIdData = {
     body: {
@@ -29616,9 +29208,7 @@ export type UpdateWhatsAppTemplateByIdResponse = ({
     };
 });
 
-export type UpdateWhatsAppTemplateByIdError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateWhatsAppTemplateByIdError = (ErrorResponse | unknown);
 
 export type DeleteWhatsAppTemplateByIdData = {
     path: {
@@ -29642,9 +29232,7 @@ export type DeleteWhatsAppTemplateByIdResponse = ({
     message?: string;
 });
 
-export type DeleteWhatsAppTemplateByIdError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteWhatsAppTemplateByIdError = (ErrorResponse | unknown);
 
 export type GetWhatsAppCallingConfigData = {
     query: {
@@ -29692,9 +29280,7 @@ export type GetWhatsAppCallingConfigResponse = ({
     forwardCallerId?: 'business' | 'caller';
 });
 
-export type GetWhatsAppCallingConfigError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppCallingConfigError = (ErrorResponse | unknown);
 
 export type EnableWhatsAppCallingLegacyData = {
     body: {
@@ -29738,9 +29324,7 @@ export type EnableWhatsAppCallingLegacyResponse = ({
     callerIdMode?: 'business' | 'platform';
 });
 
-export type EnableWhatsAppCallingLegacyError = (unknown | {
-    error?: string;
-});
+export type EnableWhatsAppCallingLegacyError = (unknown | ErrorResponse);
 
 export type UpdateWhatsAppCallingLegacyData = {
     body: {
@@ -29766,9 +29350,7 @@ export type UpdateWhatsAppCallingLegacyData = {
 
 export type UpdateWhatsAppCallingLegacyResponse = (unknown);
 
-export type UpdateWhatsAppCallingLegacyError = (unknown | {
-    error?: string;
-});
+export type UpdateWhatsAppCallingLegacyError = (unknown | ErrorResponse);
 
 export type DisableWhatsAppCallingLegacyData = {
     path: {
@@ -29781,9 +29363,7 @@ export type DisableWhatsAppCallingLegacyData = {
 
 export type DisableWhatsAppCallingLegacyResponse = (unknown);
 
-export type DisableWhatsAppCallingLegacyError = (unknown | {
-    error?: string;
-});
+export type DisableWhatsAppCallingLegacyError = (unknown | ErrorResponse);
 
 export type GetWhatsAppCallPermissionsData = {
     query: {
@@ -29809,9 +29389,7 @@ export type GetWhatsAppCallPermissionsResponse = ({
     }>;
 });
 
-export type GetWhatsAppCallPermissionsError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppCallPermissionsError = (ErrorResponse | unknown);
 
 export type InitiateWhatsAppCallData = {
     body: {
@@ -29868,9 +29446,7 @@ export type InitiateWhatsAppCallResponse = ({
     recordingEnabled?: boolean;
 });
 
-export type InitiateWhatsAppCallError = ({
-    error?: string;
-} | unknown);
+export type InitiateWhatsAppCallError = (ErrorResponse | unknown);
 
 export type ListWhatsAppCallsData = {
     query: {
@@ -29923,9 +29499,7 @@ export type ListWhatsAppCallsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListWhatsAppCallsError = ({
-    error?: string;
-});
+export type ListWhatsAppCallsError = (ErrorResponse);
 
 export type GetWhatsAppCallData = {
     path: {
@@ -29942,9 +29516,7 @@ export type GetWhatsAppCallResponse = ({
     };
 });
 
-export type GetWhatsAppCallError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppCallError = (ErrorResponse | unknown);
 
 export type GetWhatsAppCallRecordingData = {
     path: {
@@ -29963,9 +29535,7 @@ export type GetWhatsAppCallRecordingResponse = ({
     url?: string;
 });
 
-export type GetWhatsAppCallRecordingError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppCallRecordingError = (unknown | ErrorResponse);
 
 export type GetWhatsAppCallEstimateData = {
     query: {
@@ -29998,9 +29568,7 @@ export type GetWhatsAppCallEstimateResponse = ({
     };
 });
 
-export type GetWhatsAppCallEstimateError = ({
-    error?: string;
-});
+export type GetWhatsAppCallEstimateError = (ErrorResponse);
 
 export type ListCallsData = {
     query?: {
@@ -30036,9 +29604,7 @@ export type ListCallsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListCallsError = ({
-    error?: string;
-});
+export type ListCallsError = (ErrorResponse);
 
 export type GetCallData = {
     path: {
@@ -30055,9 +29621,7 @@ export type GetCallResponse = ({
 });
 });
 
-export type GetCallError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCallError = (ErrorResponse | unknown);
 
 export type GetCallRecordingData = {
     path: {
@@ -30075,9 +29639,7 @@ export type GetCallRecordingResponse = ({
     url?: string;
 });
 
-export type GetCallRecordingError = (unknown | ErrorResponse | {
-    error?: string;
-});
+export type GetCallRecordingError = (unknown | ErrorResponse);
 
 export type CreateVoiceCallData = {
     body: {
@@ -30144,9 +29706,7 @@ export type CreateVoiceCallResponse = ({
     transcriptionLanguage?: 'auto' | 'en' | 'es';
 });
 
-export type CreateVoiceCallError = ({
-    error?: string;
-} | unknown);
+export type CreateVoiceCallError = (ErrorResponse | unknown);
 
 export type ListVoiceCallsData = {
     query?: {
@@ -30166,9 +29726,7 @@ export type ListVoiceCallsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListVoiceCallsError = ({
-    error?: string;
-});
+export type ListVoiceCallsError = (ErrorResponse);
 
 export type GetVoiceCallData = {
     path: {
@@ -30180,9 +29738,7 @@ export type GetVoiceCallResponse = ({
     call?: CallRecord;
 });
 
-export type GetVoiceCallError = ({
-    error?: string;
-} | unknown);
+export type GetVoiceCallError = (ErrorResponse | unknown);
 
 export type EndVoiceCallData = {
     path: {
@@ -30199,9 +29755,7 @@ export type EndVoiceCallResponse = ({
     status?: string;
 });
 
-export type EndVoiceCallError = ({
-    error?: string;
-} | unknown);
+export type EndVoiceCallError = (ErrorResponse | unknown);
 
 export type GetVoiceCallRecordingData = {
     path: {
@@ -30219,9 +29773,7 @@ export type GetVoiceCallRecordingResponse = ({
     url?: string;
 });
 
-export type GetVoiceCallRecordingError = (unknown | {
-    error?: string;
-});
+export type GetVoiceCallRecordingError = (unknown | ErrorResponse);
 
 export type TransferVoiceCallData = {
     body: {
@@ -30241,9 +29793,7 @@ export type TransferVoiceCallResponse = ({
     transferredTo?: string;
 });
 
-export type TransferVoiceCallError = ({
-    error?: string;
-} | unknown);
+export type TransferVoiceCallError = (ErrorResponse | unknown);
 
 export type GetVoiceCallEstimateData = {
     query: {
@@ -30287,9 +29837,7 @@ export type GetVoiceCallEstimateResponse = ({
     };
 });
 
-export type GetVoiceCallEstimateError = ({
-    error?: string;
-});
+export type GetVoiceCallEstimateError = (ErrorResponse);
 
 export type CreateVoiceWebSessionResponse = ({
     success?: boolean;
@@ -30305,9 +29853,7 @@ export type CreateVoiceWebSessionResponse = ({
     sdk?: string;
 });
 
-export type CreateVoiceWebSessionError = ({
-    error?: string;
-} | unknown);
+export type CreateVoiceWebSessionError = (ErrorResponse | unknown);
 
 export type DialVoiceWebCallData = {
     body: {
@@ -30338,17 +29884,13 @@ export type DialVoiceWebCallResponse = ({
     recordingEnabled?: boolean;
 });
 
-export type DialVoiceWebCallError = ({
-    error?: string;
-} | unknown);
+export type DialVoiceWebCallError = (ErrorResponse | unknown);
 
 export type ListImessageSendersResponse = ({
     senders?: Array<ImessageSender>;
 });
 
-export type ListImessageSendersError = ({
-    error?: string;
-});
+export type ListImessageSendersError = (ErrorResponse);
 
 export type RegisterImessageSenderData = {
     body: {
@@ -30373,9 +29915,7 @@ export type RegisterImessageSenderResponse = ({
     account?: ImessageSender;
 });
 
-export type RegisterImessageSenderError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RegisterImessageSenderError = (ErrorResponse | unknown);
 
 export type ListImessageSenderOrdersData = {
     query?: {
@@ -30387,9 +29927,7 @@ export type ListImessageSenderOrdersResponse = ({
     senders?: Array<ImessageSenderLifecycle>;
 });
 
-export type ListImessageSenderOrdersError = (ErrorResponse | {
-    error?: string;
-});
+export type ListImessageSenderOrdersError = (ErrorResponse);
 
 export type OrderImessageSenderData = {
     body: {
@@ -30436,9 +29974,7 @@ export type OrderImessageSenderResponse = ({
     sender?: ImessageSenderLifecycle;
 });
 
-export type OrderImessageSenderError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type OrderImessageSenderError = (ErrorResponse | unknown);
 
 export type GetImessageSenderData = {
     path: {
@@ -30462,9 +29998,7 @@ export type GetImessageSenderResponse = ({
     imessageLink?: (string) | null;
 });
 
-export type GetImessageSenderError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetImessageSenderError = (ErrorResponse | unknown);
 
 export type UpdateImessageSenderData = {
     body: {
@@ -30488,9 +30022,7 @@ export type UpdateImessageSenderResponse = ({
     sender?: ImessageSenderLifecycle;
 });
 
-export type UpdateImessageSenderError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateImessageSenderError = (ErrorResponse | unknown);
 
 export type CancelImessageSenderData = {
     path: {
@@ -30503,9 +30035,7 @@ export type CancelImessageSenderResponse = ({
     sender?: ImessageSenderLifecycle;
 });
 
-export type CancelImessageSenderError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CancelImessageSenderError = (ErrorResponse | unknown);
 
 export type ListImessageAudienceData = {
     query?: {
@@ -30530,9 +30060,7 @@ export type ListImessageAudienceResponse = ({
     skip?: number;
 });
 
-export type ListImessageAudienceError = (ErrorResponse | {
-    error?: string;
-});
+export type ListImessageAudienceError = (ErrorResponse);
 
 export type ListImessageSandboxContactsResponse = ({
     sandbox?: {
@@ -30549,9 +30077,7 @@ export type ListImessageSandboxContactsResponse = ({
     contacts?: Array<ImessageSandboxContact>;
 });
 
-export type ListImessageSandboxContactsError = ({
-    error?: string;
-} | unknown);
+export type ListImessageSandboxContactsError = (ErrorResponse | unknown);
 
 export type AddImessageSandboxContactData = {
     body: {
@@ -30566,9 +30092,7 @@ export type AddImessageSandboxContactResponse = ({
     contact?: ImessageSandboxContact;
 });
 
-export type AddImessageSandboxContactError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddImessageSandboxContactError = (ErrorResponse | unknown);
 
 export type RemoveImessageSandboxContactData = {
     path: {
@@ -30580,9 +30104,7 @@ export type RemoveImessageSandboxContactResponse = ({
     success?: boolean;
 });
 
-export type RemoveImessageSandboxContactError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveImessageSandboxContactError = (ErrorResponse | unknown);
 
 export type SetImessageSubscriptionData = {
     body: {
@@ -30598,9 +30120,7 @@ export type SetImessageSubscriptionResponse = ({
     subscribed?: boolean;
 });
 
-export type SetImessageSubscriptionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SetImessageSubscriptionError = (ErrorResponse | unknown);
 
 export type CreateImessageOptInLinkData = {
     body: {
@@ -30644,9 +30164,7 @@ export type CreateImessageOptInLinkResponse = ({
     };
 });
 
-export type CreateImessageOptInLinkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateImessageOptInLinkError = (ErrorResponse | unknown);
 
 export type ListImessageAvailableNumbersData = {
     query?: {
@@ -30673,9 +30191,7 @@ export type ListImessageAvailableNumbersResponse = ({
     region?: (string) | null;
 });
 
-export type ListImessageAvailableNumbersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListImessageAvailableNumbersError = (ErrorResponse | unknown);
 
 export type ReserveImessageAvailableNumberData = {
     path: {
@@ -30689,9 +30205,7 @@ export type ReserveImessageAvailableNumberResponse = ({
     expiresInSeconds?: number;
 });
 
-export type ReserveImessageAvailableNumberError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReserveImessageAvailableNumberError = (ErrorResponse | unknown);
 
 export type CreateImessageGroupData = {
     body: {
@@ -30723,9 +30237,7 @@ export type CreateImessageGroupResponse = ({
     requestId?: string;
 });
 
-export type CreateImessageGroupError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateImessageGroupError = (ErrorResponse | unknown);
 
 export type GetImessageGroupData = {
     path: {
@@ -30754,9 +30266,7 @@ export type GetImessageGroupResponse = ({
     };
 });
 
-export type GetImessageGroupError = (unknown | {
-    error?: string;
-});
+export type GetImessageGroupError = (unknown | ErrorResponse);
 
 export type UpdateImessageGroupData = {
     body: {
@@ -30777,9 +30287,7 @@ export type UpdateImessageGroupResponse = ({
     conversationId?: string;
 });
 
-export type UpdateImessageGroupError = (unknown | {
-    error?: string;
-});
+export type UpdateImessageGroupError = (unknown | ErrorResponse);
 
 export type AddImessageGroupParticipantData = {
     body: {
@@ -30800,9 +30308,7 @@ export type AddImessageGroupParticipantResponse = ({
     contact?: string;
 });
 
-export type AddImessageGroupParticipantError = (unknown | {
-    error?: string;
-});
+export type AddImessageGroupParticipantError = (unknown | ErrorResponse);
 
 export type RemoveImessageGroupParticipantData = {
     path: {
@@ -30823,9 +30329,7 @@ export type RemoveImessageGroupParticipantResponse = ({
     contact?: string;
 });
 
-export type RemoveImessageGroupParticipantError = (unknown | {
-    error?: string;
-});
+export type RemoveImessageGroupParticipantError = (unknown | ErrorResponse);
 
 export type SendSmsData = {
     body: {
@@ -30870,17 +30374,13 @@ export type SendSmsResponse = ({
     status?: 'sent';
 });
 
-export type SendSmsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SendSmsError = (ErrorResponse | unknown);
 
 export type ListRcsBrandsResponse = ({
     brands?: Array<RcsBrand>;
 });
 
-export type ListRcsBrandsError = ({
-    error?: string;
-} | unknown);
+export type ListRcsBrandsError = (ErrorResponse | unknown);
 
 export type ListRcsAgentsData = {
     query?: {
@@ -30895,9 +30395,7 @@ export type ListRcsAgentsResponse = ({
     agents?: Array<RcsAgent>;
 });
 
-export type ListRcsAgentsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListRcsAgentsError = (ErrorResponse | unknown);
 
 export type CreateRcsAgentData = {
     body: {
@@ -30927,9 +30425,7 @@ export type CreateRcsAgentResponse = ({
     agent?: RcsAgent;
 });
 
-export type CreateRcsAgentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateRcsAgentError = (ErrorResponse | unknown);
 
 export type GetRcsAgentData = {
     path: {
@@ -30941,9 +30437,7 @@ export type GetRcsAgentResponse = ({
     agent?: RcsAgent;
 });
 
-export type GetRcsAgentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetRcsAgentError = (ErrorResponse | unknown);
 
 export type UpdateRcsAgentData = {
     body: {
@@ -30962,9 +30456,7 @@ export type UpdateRcsAgentResponse = ({
     agent?: RcsAgent;
 });
 
-export type UpdateRcsAgentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateRcsAgentError = (ErrorResponse | unknown);
 
 export type DeactivateRcsAgentData = {
     path: {
@@ -30976,9 +30468,7 @@ export type DeactivateRcsAgentResponse = ({
     agent?: RcsAgent;
 });
 
-export type DeactivateRcsAgentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeactivateRcsAgentError = (ErrorResponse | unknown);
 
 export type RequestRcsAgentLaunchData = {
     body: RcsLaunchRequest;
@@ -30991,9 +30481,7 @@ export type RequestRcsAgentLaunchResponse = ({
     agent?: RcsAgent;
 });
 
-export type RequestRcsAgentLaunchError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RequestRcsAgentLaunchError = (ErrorResponse | unknown);
 
 export type ListRcsTestDevicesData = {
     path: {
@@ -31005,9 +30493,7 @@ export type ListRcsTestDevicesResponse = ({
     testDevices?: Array<RcsTestDevice>;
 });
 
-export type ListRcsTestDevicesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListRcsTestDevicesError = (ErrorResponse | unknown);
 
 export type AddRcsTestDeviceData = {
     body: {
@@ -31025,9 +30511,7 @@ export type AddRcsTestDeviceResponse = ({
     testDevice?: RcsTestDevice;
 });
 
-export type AddRcsTestDeviceError = (unknown | {
-    error?: string;
-});
+export type AddRcsTestDeviceError = (unknown | ErrorResponse);
 
 export type RemoveRcsTestDeviceData = {
     path: {
@@ -31040,9 +30524,7 @@ export type RemoveRcsTestDeviceResponse = ({
     success?: boolean;
 });
 
-export type RemoveRcsTestDeviceError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveRcsTestDeviceError = (ErrorResponse | unknown);
 
 export type UploadRcsAssetData = {
     body: {
@@ -31058,9 +30540,7 @@ export type UploadRcsAssetResponse = ({
     url?: string;
 });
 
-export type UploadRcsAssetError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UploadRcsAssetError = (ErrorResponse | unknown);
 
 export type SendRcsMessageData = {
     body: {
@@ -31094,9 +30574,7 @@ export type SendRcsMessageResponse = ({
     status?: 'sent';
 });
 
-export type SendRcsMessageError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SendRcsMessageError = (ErrorResponse | unknown);
 
 export type GetRcsCapabilitiesData = {
     query: {
@@ -31112,9 +30590,7 @@ export type GetRcsCapabilitiesResponse = ({
     capabilities?: Array<RcsCapability>;
 });
 
-export type GetRcsCapabilitiesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetRcsCapabilitiesError = (ErrorResponse | unknown);
 
 export type LookupSmsNumberData = {
     query: {
@@ -31135,9 +30611,7 @@ export type LookupSmsNumberResponse = ({
     smsReachable?: boolean;
 });
 
-export type LookupSmsNumberError = ({
-    error?: string;
-} | unknown);
+export type LookupSmsNumberError = (ErrorResponse | unknown);
 
 export type ListSmsOptOutsData = {
     query?: {
@@ -31162,9 +30636,7 @@ export type ListSmsOptOutsResponse = ({
     count?: number;
 });
 
-export type ListSmsOptOutsError = ({
-    error?: string;
-});
+export type ListSmsOptOutsError = (ErrorResponse);
 
 export type CreateSmsSenderIdData = {
     body: {
@@ -31184,9 +30656,7 @@ export type CreateSmsSenderIdResponse = ({
     isActive?: boolean;
 });
 
-export type CreateSmsSenderIdError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateSmsSenderIdError = (ErrorResponse | unknown);
 
 export type ListSmsSenderIdsResponse = ({
     senderIds?: Array<{
@@ -31222,9 +30692,7 @@ export type ListSmsSenderIdsResponse = ({
     };
 });
 
-export type ListSmsSenderIdsError = ({
-    error?: string;
-});
+export type ListSmsSenderIdsError = (ErrorResponse);
 
 export type RequestSmsSenderIdLimitIncreaseData = {
     body: {
@@ -31244,9 +30712,7 @@ export type RequestSmsSenderIdLimitIncreaseResponse = ({
     requestedCap?: number;
 });
 
-export type RequestSmsSenderIdLimitIncreaseError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RequestSmsSenderIdLimitIncreaseError = (ErrorResponse | unknown);
 
 export type DeleteSmsSenderIdData = {
     path: {
@@ -31261,9 +30727,7 @@ export type DeleteSmsSenderIdResponse = ({
     deleted?: boolean;
 });
 
-export type DeleteSmsSenderIdError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteSmsSenderIdError = (ErrorResponse | unknown);
 
 export type CreateBrandedCallingEnterpriseData = {
     body: {
@@ -31307,17 +30771,13 @@ export type CreateBrandedCallingEnterpriseData = {
 
 export type CreateBrandedCallingEnterpriseResponse = (BrandedCallingEnterprise);
 
-export type CreateBrandedCallingEnterpriseError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateBrandedCallingEnterpriseError = (ErrorResponse | unknown);
 
 export type ListBrandedCallingEnterprisesResponse = ({
     enterprises?: Array<BrandedCallingEnterprise>;
 });
 
-export type ListBrandedCallingEnterprisesError = ({
-    error?: string;
-});
+export type ListBrandedCallingEnterprisesError = (ErrorResponse);
 
 export type GetBrandedCallingEnterpriseData = {
     path: {
@@ -31327,9 +30787,7 @@ export type GetBrandedCallingEnterpriseData = {
 
 export type GetBrandedCallingEnterpriseResponse = (BrandedCallingEnterprise);
 
-export type GetBrandedCallingEnterpriseError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetBrandedCallingEnterpriseError = (ErrorResponse | unknown);
 
 export type DeleteBrandedCallingEnterpriseData = {
     path: {
@@ -31341,9 +30799,7 @@ export type DeleteBrandedCallingEnterpriseResponse = ({
     status?: 'deleted';
 });
 
-export type DeleteBrandedCallingEnterpriseError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteBrandedCallingEnterpriseError = (ErrorResponse | unknown);
 
 export type ShareBrandedCallingIdentityFormData = {
     body?: {
@@ -31363,17 +30819,13 @@ export type ShareBrandedCallingIdentityFormResponse = ({
     expiresAt?: string;
 });
 
-export type ShareBrandedCallingIdentityFormError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ShareBrandedCallingIdentityFormError = (ErrorResponse | unknown);
 
 export type ListBrandedCallingCallReasonsResponse = ({
     callReasons?: Array<(string)>;
 });
 
-export type ListBrandedCallingCallReasonsError = ({
-    error?: string;
-});
+export type ListBrandedCallingCallReasonsError = (ErrorResponse);
 
 export type CreateBrandedCallingIdentityData = {
     body: {
@@ -31415,17 +30867,13 @@ export type CreateBrandedCallingIdentityData = {
 
 export type CreateBrandedCallingIdentityResponse = (BrandedCallingIdentity);
 
-export type CreateBrandedCallingIdentityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateBrandedCallingIdentityError = (ErrorResponse | unknown);
 
 export type ListBrandedCallingIdentitiesResponse = ({
     identities?: Array<BrandedCallingIdentity>;
 });
 
-export type ListBrandedCallingIdentitiesError = ({
-    error?: string;
-});
+export type ListBrandedCallingIdentitiesError = (ErrorResponse);
 
 export type PreflightBrandedCallingIdentityData = {
     body: {
@@ -31457,9 +30905,7 @@ export type PreflightBrandedCallingIdentityResponse = ({
     }>;
 });
 
-export type PreflightBrandedCallingIdentityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type PreflightBrandedCallingIdentityError = (ErrorResponse | unknown);
 
 export type GetBrandedCallingIdentityData = {
     path: {
@@ -31469,9 +30915,7 @@ export type GetBrandedCallingIdentityData = {
 
 export type GetBrandedCallingIdentityResponse = (BrandedCallingIdentity);
 
-export type GetBrandedCallingIdentityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetBrandedCallingIdentityError = (ErrorResponse | unknown);
 
 export type UpdateBrandedCallingIdentityData = {
     body: {
@@ -31519,9 +30963,7 @@ export type UpdateBrandedCallingIdentityData = {
 
 export type UpdateBrandedCallingIdentityResponse = (BrandedCallingIdentity);
 
-export type UpdateBrandedCallingIdentityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateBrandedCallingIdentityError = (ErrorResponse | unknown);
 
 export type DeleteBrandedCallingIdentityData = {
     path: {
@@ -31533,9 +30975,7 @@ export type DeleteBrandedCallingIdentityResponse = ({
     status?: 'deleted';
 });
 
-export type DeleteBrandedCallingIdentityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteBrandedCallingIdentityError = (ErrorResponse | unknown);
 
 export type ResendBrandedCallingAuthorizerCodeData = {
     path: {
@@ -31547,9 +30987,7 @@ export type ResendBrandedCallingAuthorizerCodeResponse = ({
     status?: 'sent';
 });
 
-export type ResendBrandedCallingAuthorizerCodeError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ResendBrandedCallingAuthorizerCodeError = (ErrorResponse | unknown);
 
 export type ConfirmBrandedCallingAuthorizerEmailData = {
     body: {
@@ -31562,9 +31000,7 @@ export type ConfirmBrandedCallingAuthorizerEmailData = {
 
 export type ConfirmBrandedCallingAuthorizerEmailResponse = (BrandedCallingIdentity);
 
-export type ConfirmBrandedCallingAuthorizerEmailError = (unknown | {
-    error?: string;
-});
+export type ConfirmBrandedCallingAuthorizerEmailError = (unknown | ErrorResponse);
 
 export type ListBrandedCallingIdentityNumbersData = {
     path: {
@@ -31576,9 +31012,7 @@ export type ListBrandedCallingIdentityNumbersResponse = ({
     numbers?: Array<BrandedCallingIdentityNumber>;
 });
 
-export type ListBrandedCallingIdentityNumbersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListBrandedCallingIdentityNumbersError = (ErrorResponse | unknown);
 
 export type AttachBrandedCallingNumbersData = {
     body: {
@@ -31606,9 +31040,7 @@ export type AttachBrandedCallingNumbersResponse = ({
     numbers?: Array<BrandedCallingIdentityNumber>;
 });
 
-export type AttachBrandedCallingNumbersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AttachBrandedCallingNumbersError = (ErrorResponse | unknown);
 
 export type DetachBrandedCallingNumbersData = {
     body: {
@@ -31626,9 +31058,7 @@ export type DetachBrandedCallingNumbersResponse = ({
     removed?: Array<(string)>;
 });
 
-export type DetachBrandedCallingNumbersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DetachBrandedCallingNumbersError = (ErrorResponse | unknown);
 
 export type StartSmsRegistrationData = {
     body: {
@@ -31802,9 +31232,7 @@ export type StartSmsRegistrationResponse = ({
     awaitingOtp?: boolean;
 });
 
-export type StartSmsRegistrationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type StartSmsRegistrationError = (ErrorResponse | unknown);
 
 export type ListSmsRegistrationsData = {
     query?: {
@@ -31890,9 +31318,7 @@ export type ListSmsRegistrationsResponse = ({
     }>;
 });
 
-export type ListSmsRegistrationsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListSmsRegistrationsError = (ErrorResponse);
 
 export type PreflightSmsRegistrationData = {
     body: {
@@ -31945,9 +31371,7 @@ export type PreflightSmsRegistrationResponse = ({
     aiUnavailable?: boolean;
 });
 
-export type PreflightSmsRegistrationError = (ErrorResponse | {
-    error?: string;
-});
+export type PreflightSmsRegistrationError = (ErrorResponse);
 
 export type DeactivateSmsRegistrationData = {
     path: {
@@ -31959,9 +31383,7 @@ export type DeactivateSmsRegistrationResponse = ({
     status?: 'deactivated';
 });
 
-export type DeactivateSmsRegistrationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeactivateSmsRegistrationError = (ErrorResponse | unknown);
 
 export type GetSmsRegistrationData = {
     path: {
@@ -32002,9 +31424,7 @@ export type GetSmsRegistrationResponse = ({
     };
 });
 
-export type GetSmsRegistrationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetSmsRegistrationError = (ErrorResponse | unknown);
 
 export type VerifySmsRegistrationOtpData = {
     body: {
@@ -32019,9 +31439,7 @@ export type VerifySmsRegistrationOtpResponse = ({
     verified?: boolean;
 });
 
-export type VerifySmsRegistrationOtpError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type VerifySmsRegistrationOtpError = (ErrorResponse | unknown);
 
 export type ResendSmsRegistrationOtpData = {
     path: {
@@ -32033,9 +31451,7 @@ export type ResendSmsRegistrationOtpResponse = ({
     sent?: boolean;
 });
 
-export type ResendSmsRegistrationOtpError = (unknown | {
-    error?: string;
-});
+export type ResendSmsRegistrationOtpError = (unknown | ErrorResponse);
 
 export type AppealSmsRegistrationData = {
     body: {
@@ -32059,9 +31475,7 @@ export type AppealSmsRegistrationResponse = ({
     status?: 'pending';
 });
 
-export type AppealSmsRegistrationError = (unknown | {
-    error?: string;
-});
+export type AppealSmsRegistrationError = (unknown | ErrorResponse);
 
 export type RespondToSmsRegistrationReviewData = {
     body: {
@@ -32108,9 +31522,7 @@ export type RespondToSmsRegistrationReviewResponse = ({
     status?: 'requested' | 'rejected';
 });
 
-export type RespondToSmsRegistrationReviewError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RespondToSmsRegistrationReviewError = (ErrorResponse | unknown);
 
 export type UploadSmsOptInProofFileData = {
     body: {
@@ -32128,9 +31540,7 @@ export type UploadSmsOptInProofFileResponse = ({
     url?: string;
 });
 
-export type UploadSmsOptInProofFileError = ({
-    error?: string;
-} | unknown);
+export type UploadSmsOptInProofFileError = (ErrorResponse | unknown);
 
 export type UploadSmsOptInProofData = {
     body: {
@@ -32151,9 +31561,7 @@ export type UploadSmsOptInProofResponse = ({
     url?: string;
 });
 
-export type UploadSmsOptInProofError = ({
-    error?: string;
-} | unknown);
+export type UploadSmsOptInProofError = (ErrorResponse | unknown);
 
 export type ShareSmsRegistrationData = {
     body: {
@@ -32169,9 +31577,7 @@ export type ShareSmsRegistrationResponse = ({
     expiresAt?: string;
 });
 
-export type ShareSmsRegistrationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ShareSmsRegistrationError = (ErrorResponse | unknown);
 
 export type GetWhatsAppLibraryTemplateData = {
     query: {
@@ -32208,9 +31614,7 @@ export type GetWhatsAppLibraryTemplateResponse = ({
     } | null;
 });
 
-export type GetWhatsAppLibraryTemplateError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppLibraryTemplateError = (unknown | ErrorResponse);
 
 export type ListWhatsAppCatalogsData = {
     query: {
@@ -32233,9 +31637,7 @@ export type ListWhatsAppCatalogsResponse = ({
     }>;
 });
 
-export type ListWhatsAppCatalogsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListWhatsAppCatalogsError = (ErrorResponse);
 
 export type LinkWhatsAppCatalogData = {
     body: {
@@ -32262,9 +31664,7 @@ export type LinkWhatsAppCatalogResponse = ({
     }>;
 });
 
-export type LinkWhatsAppCatalogError = (ErrorResponse | {
-    error?: string;
-});
+export type LinkWhatsAppCatalogError = (ErrorResponse);
 
 export type UnlinkWhatsAppCatalogData = {
     query: {
@@ -32289,9 +31689,7 @@ export type UnlinkWhatsAppCatalogResponse = ({
     catalogId?: string;
 });
 
-export type UnlinkWhatsAppCatalogError = (ErrorResponse | {
-    error?: string;
-});
+export type UnlinkWhatsAppCatalogError = (ErrorResponse);
 
 export type GetWhatsAppCommerceSettingsData = {
     query: {
@@ -32310,9 +31708,7 @@ export type GetWhatsAppCommerceSettingsResponse = ({
     settings?: WhatsAppCommerceSettings;
 });
 
-export type GetWhatsAppCommerceSettingsError = (ErrorResponse | {
-    error?: string;
-});
+export type GetWhatsAppCommerceSettingsError = (ErrorResponse);
 
 export type UpdateWhatsAppCommerceSettingsData = {
     body: {
@@ -32330,9 +31726,7 @@ export type UpdateWhatsAppCommerceSettingsResponse = ({
     settings?: WhatsAppCommerceSettings;
 });
 
-export type UpdateWhatsAppCommerceSettingsError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateWhatsAppCommerceSettingsError = (ErrorResponse);
 
 export type GetWhatsAppBusinessProfileData = {
     query: {
@@ -32365,9 +31759,7 @@ export type GetWhatsAppBusinessProfileResponse = ({
     };
 });
 
-export type GetWhatsAppBusinessProfileError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppBusinessProfileError = (unknown | ErrorResponse);
 
 export type UpdateWhatsAppBusinessProfileData = {
     body: {
@@ -32411,9 +31803,7 @@ export type UpdateWhatsAppBusinessProfileResponse = ({
     message?: string;
 });
 
-export type UpdateWhatsAppBusinessProfileError = (unknown | {
-    error?: string;
-});
+export type UpdateWhatsAppBusinessProfileError = (unknown | ErrorResponse);
 
 export type UploadWhatsAppProfilePhotoData = {
     body: {
@@ -32433,9 +31823,7 @@ export type UploadWhatsAppProfilePhotoResponse = ({
     message?: string;
 });
 
-export type UploadWhatsAppProfilePhotoError = (unknown | {
-    error?: string;
-});
+export type UploadWhatsAppProfilePhotoError = (unknown | ErrorResponse);
 
 export type GetWhatsAppDisplayNameData = {
     query: {
@@ -32464,9 +31852,7 @@ export type GetWhatsAppDisplayNameResponse = ({
     };
 });
 
-export type GetWhatsAppDisplayNameError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppDisplayNameError = (unknown | ErrorResponse);
 
 export type UpdateWhatsAppDisplayNameData = {
     body: {
@@ -32490,9 +31876,7 @@ export type UpdateWhatsAppDisplayNameResponse = ({
     };
 });
 
-export type UpdateWhatsAppDisplayNameError = (unknown | {
-    error?: string;
-});
+export type UpdateWhatsAppDisplayNameError = (unknown | ErrorResponse);
 
 export type GetWhatsappBusinessUsernameData = {
     query: {
@@ -32515,9 +31899,7 @@ export type GetWhatsappBusinessUsernameResponse = ({
     status?: 'approved' | 'reserved' | 'none';
 });
 
-export type GetWhatsappBusinessUsernameError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsappBusinessUsernameError = (ErrorResponse | unknown);
 
 export type SetWhatsappBusinessUsernameData = {
     body: {
@@ -32543,9 +31925,7 @@ export type SetWhatsappBusinessUsernameResponse = ({
     status?: 'approved' | 'reserved' | 'none';
 });
 
-export type SetWhatsappBusinessUsernameError = (unknown | {
-    error?: string;
-});
+export type SetWhatsappBusinessUsernameError = (unknown | ErrorResponse);
 
 export type DeleteWhatsappBusinessUsernameData = {
     body: {
@@ -32560,9 +31940,7 @@ export type DeleteWhatsappBusinessUsernameResponse = ({
     success?: boolean;
 });
 
-export type DeleteWhatsappBusinessUsernameError = ({
-    error?: string;
-} | unknown);
+export type DeleteWhatsappBusinessUsernameError = (ErrorResponse | unknown);
 
 export type GetWhatsappBusinessUsernameSuggestionsData = {
     query: {
@@ -32581,9 +31959,7 @@ export type GetWhatsappBusinessUsernameSuggestionsResponse = ({
     suggestions?: Array<(string)>;
 });
 
-export type GetWhatsappBusinessUsernameSuggestionsError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsappBusinessUsernameSuggestionsError = (ErrorResponse | unknown);
 
 export type GetWhatsAppNumberInfoData = {
     query: {
@@ -32648,9 +32024,7 @@ export type GetWhatsAppNumberInfoResponse = ({
     } | null;
 });
 
-export type GetWhatsAppNumberInfoError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppNumberInfoError = (unknown | ErrorResponse);
 
 export type GetWhatsAppPricingAnalyticsData = {
     query: {
@@ -32751,9 +32125,7 @@ export type GetWhatsAppBlockStatusResponse = ({
     blocked?: boolean;
 });
 
-export type GetWhatsAppBlockStatusError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppBlockStatusError = (ErrorResponse | unknown);
 
 export type GetWhatsAppBlockedUsersData = {
     query: {
@@ -32785,9 +32157,7 @@ export type GetWhatsAppBlockedUsersResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type GetWhatsAppBlockedUsersError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppBlockedUsersError = (ErrorResponse | unknown);
 
 export type BlockWhatsAppUsersData = {
     body: {
@@ -32825,9 +32195,7 @@ export type BlockWhatsAppUsersResponse = ({
     }>;
 });
 
-export type BlockWhatsAppUsersError = ({
-    error?: string;
-} | unknown);
+export type BlockWhatsAppUsersError = (ErrorResponse | unknown);
 
 export type UnblockWhatsAppUsersData = {
     body: {
@@ -32865,9 +32233,7 @@ export type UnblockWhatsAppUsersResponse = ({
     }>;
 });
 
-export type UnblockWhatsAppUsersError = ({
-    error?: string;
-} | unknown);
+export type UnblockWhatsAppUsersError = (ErrorResponse | unknown);
 
 export type ListWhatsAppAccountEventsData = {
     query: {
@@ -32900,9 +32266,7 @@ export type ListWhatsAppAccountEventsResponse = ({
     }>;
 });
 
-export type ListWhatsAppAccountEventsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListWhatsAppAccountEventsError = (ErrorResponse | unknown);
 
 export type GetWhatsAppDatasetData = {
     query: {
@@ -32920,9 +32284,7 @@ export type GetWhatsAppDatasetResponse = ({
     datasetId?: (string) | null;
 });
 
-export type GetWhatsAppDatasetError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppDatasetError = (ErrorResponse | unknown);
 
 export type CreateWhatsAppDatasetData = {
     body: {
@@ -32944,9 +32306,7 @@ export type CreateWhatsAppDatasetResponse = ({
     created?: boolean;
 });
 
-export type CreateWhatsAppDatasetError = ({
-    error?: string;
-} | unknown);
+export type CreateWhatsAppDatasetError = (ErrorResponse | unknown);
 
 export type ListPhoneNumbersData = {
     query?: {
@@ -33019,9 +32379,7 @@ export type ListPhoneNumbersResponse = ({
     } | null;
 });
 
-export type ListPhoneNumbersError = ({
-    error?: string;
-});
+export type ListPhoneNumbersError = (ErrorResponse);
 
 export type GetPhoneNumberData = {
     path: {
@@ -33058,7 +32416,7 @@ export type GetPhoneNumberResponse = ({
     };
 });
 
-export type GetPhoneNumberError = ({
+export type GetPhoneNumberError = (ErrorResponse | {
     error?: string;
 });
 
@@ -33084,9 +32442,9 @@ export type ReleasePhoneNumberResponse = ({
     };
 });
 
-export type ReleasePhoneNumberError = (unknown | {
+export type ReleasePhoneNumberError = (unknown | ErrorResponse | {
     error?: string;
-} | ErrorResponse);
+});
 
 export type PurchasePhoneNumberData = {
     body: {
@@ -33231,9 +32589,7 @@ export type GetPhoneNumberClaimResponse = ({
     phoneNumber?: (string) | null;
 });
 
-export type GetPhoneNumberClaimError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetPhoneNumberClaimError = (ErrorResponse | unknown);
 
 export type ListPhoneNumberCountriesResponse = ({
     countries?: Array<{
@@ -33410,9 +32766,7 @@ export type SearchAvailablePhoneNumbersResponse = ({
     claimUrl?: string;
 });
 
-export type SearchAvailablePhoneNumbersError = (unknown | {
-    error?: string;
-});
+export type SearchAvailablePhoneNumbersError = (unknown | ErrorResponse);
 
 export type CheckPhoneNumberAvailabilityData = {
     query: {
@@ -33541,9 +32895,7 @@ export type CheckPhoneNumberAvailabilityResponse = ({
     };
 });
 
-export type CheckPhoneNumberAvailabilityError = (unknown | {
-    error?: string;
-});
+export type CheckPhoneNumberAvailabilityError = (unknown | ErrorResponse);
 
 export type GetWhatsAppPhoneNumbersData = {
     query?: {
@@ -33616,9 +32968,7 @@ export type GetWhatsAppPhoneNumbersResponse = ({
     } | null;
 });
 
-export type GetWhatsAppPhoneNumbersError = (ErrorResponse | {
-    error?: string;
-});
+export type GetWhatsAppPhoneNumbersError = (ErrorResponse);
 
 export type PurchaseWhatsAppPhoneNumberData = {
     body: {
@@ -33677,9 +33027,7 @@ export type PurchaseWhatsAppPhoneNumberResponse = (({
     kycUrl?: string;
 });
 
-export type PurchaseWhatsAppPhoneNumberError = (unknown | {
-    error?: string;
-} | {
+export type PurchaseWhatsAppPhoneNumberError = (unknown | ErrorResponse | {
     error?: string;
     code?: 'PURCHASE_VELOCITY' | 'AREA_CODE_UNAVAILABLE' | 'PHONE_NUMBER_UNAVAILABLE' | 'COUNTRY_OUT_OF_STOCK' | 'NO_WHATSAPP_ELIGIBLE_NUMBER';
 } | {
@@ -33703,9 +33051,7 @@ export type ListWhatsAppNumberCountriesResponse = ({
     }>;
 });
 
-export type ListWhatsAppNumberCountriesError = ({
-    error?: string;
-});
+export type ListWhatsAppNumberCountriesError = (ErrorResponse);
 
 export type SearchAvailableWhatsAppNumbersData = {
     query?: {
@@ -33750,9 +33096,7 @@ export type SearchAvailableWhatsAppNumbersResponse = ({
     }>;
 });
 
-export type SearchAvailableWhatsAppNumbersError = (unknown | {
-    error?: string;
-});
+export type SearchAvailableWhatsAppNumbersError = (unknown | ErrorResponse);
 
 export type CheckWhatsAppNumberAvailabilityData = {
     query: {
@@ -33881,9 +33225,7 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
     };
 });
 
-export type CheckWhatsAppNumberAvailabilityError = (unknown | {
-    error?: string;
-});
+export type CheckWhatsAppNumberAvailabilityError = (unknown | ErrorResponse);
 
 export type GetPhoneNumberKycFormData = {
     query: {
@@ -33963,9 +33305,7 @@ export type GetPhoneNumberKycFormResponse = ({
     pendingReview?: boolean;
 });
 
-export type GetPhoneNumberKycFormError = (unknown | {
-    error?: string;
-});
+export type GetPhoneNumberKycFormError = (unknown | ErrorResponse);
 
 export type SubmitPhoneNumberKycData = {
     body: {
@@ -34074,9 +33414,7 @@ export type SubmitPhoneNumberKycResponse = ({
     }>;
 });
 
-export type SubmitPhoneNumberKycError = (unknown | {
-    error?: string;
-});
+export type SubmitPhoneNumberKycError = (unknown | ErrorResponse);
 
 export type ViewPhoneNumberKycDocumentData = {
     path: {
@@ -34089,9 +33427,7 @@ export type ViewPhoneNumberKycDocumentData = {
 
 export type ViewPhoneNumberKycDocumentResponse = ((Blob | File));
 
-export type ViewPhoneNumberKycDocumentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ViewPhoneNumberKycDocumentError = (ErrorResponse | unknown);
 
 export type UploadPhoneNumberKycDocumentData = {
     body: (Blob | File);
@@ -34110,9 +33446,7 @@ export type UploadPhoneNumberKycDocumentResponse = ({
     documentId?: string;
 });
 
-export type UploadPhoneNumberKycDocumentError = (unknown | {
-    error?: string;
-});
+export type UploadPhoneNumberKycDocumentError = (unknown | ErrorResponse);
 
 export type ValidatePhoneNumberKycAddressData = {
     body: {
@@ -34160,9 +33494,7 @@ export type ValidatePhoneNumberKycAddressError = ({
             value?: string;
         }>;
     };
-} | {
-    error?: string;
-});
+} | ErrorResponse);
 
 export type CreatePhoneNumberKycLinkData = {
     body: {
@@ -34216,9 +33548,7 @@ export type CreatePhoneNumberKycLinkResponse = ({
     expiresAt?: string;
 });
 
-export type CreatePhoneNumberKycLinkError = (unknown | {
-    error?: string;
-});
+export type CreatePhoneNumberKycLinkError = (unknown | ErrorResponse);
 
 export type CreatePhoneNumberPortInData = {
     body: {
@@ -34331,9 +33661,7 @@ export type CreatePhoneNumberPortInResponse = ({
     }>;
 });
 
-export type CreatePhoneNumberPortInError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreatePhoneNumberPortInError = (ErrorResponse | unknown);
 
 export type ListPhoneNumberPortInsResponse = ({
     orders?: Array<{
@@ -34354,9 +33682,7 @@ export type ListPhoneNumberPortInsResponse = ({
     }>;
 });
 
-export type ListPhoneNumberPortInsError = ({
-    error?: string;
-});
+export type ListPhoneNumberPortInsError = (ErrorResponse);
 
 export type CheckPhoneNumberPortabilityData = {
     body: {
@@ -34414,9 +33740,7 @@ export type CheckPhoneNumberPortabilityResponse = ({
     }>;
 });
 
-export type CheckPhoneNumberPortabilityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CheckPhoneNumberPortabilityError = (ErrorResponse | unknown);
 
 export type GetPhoneNumberPortClaimData = {
     path: {
@@ -34435,9 +33759,7 @@ export type GetPhoneNumberPortClaimResponse = ({
     countryCode?: (string) | null;
 });
 
-export type GetPhoneNumberPortClaimError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetPhoneNumberPortClaimError = (ErrorResponse | unknown);
 
 export type UploadPhoneNumberPortInDocumentData = {
     body: {
@@ -34456,9 +33778,7 @@ export type UploadPhoneNumberPortInDocumentResponse = ({
     documentId?: string;
 });
 
-export type UploadPhoneNumberPortInDocumentError = (unknown | {
-    error?: string;
-});
+export type UploadPhoneNumberPortInDocumentError = (unknown | ErrorResponse);
 
 export type GetPhoneNumberPortInRequirementsData = {
     query: {
@@ -34499,9 +33819,7 @@ export type GetPhoneNumberPortInRequirementsResponse = ({
     }>;
 });
 
-export type GetPhoneNumberPortInRequirementsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetPhoneNumberPortInRequirementsError = (ErrorResponse | unknown);
 
 export type GetPhoneNumberPortInOrderRequirementsData = {
     path: {
@@ -34529,9 +33847,7 @@ export type GetPhoneNumberPortInOrderRequirementsResponse = ({
     }>;
 });
 
-export type GetPhoneNumberPortInOrderRequirementsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetPhoneNumberPortInOrderRequirementsError = (ErrorResponse | unknown);
 
 export type CancelPhoneNumberPortInData = {
     path: {
@@ -34547,9 +33863,7 @@ export type CancelPhoneNumberPortInResponse = ({
     status?: 'draft' | 'pending' | 'foc_confirmed' | 'ported' | 'exception' | 'cancelled';
 });
 
-export type CancelPhoneNumberPortInError = ({
-    error?: string;
-} | unknown);
+export type CancelPhoneNumberPortInError = (ErrorResponse | unknown);
 
 export type ReviewPhoneNumberKycPacketData = {
     body: {
@@ -34591,9 +33905,7 @@ export type ReviewPhoneNumberKycPacketResponse = ({
     }>;
 });
 
-export type ReviewPhoneNumberKycPacketError = ({
-    error?: string;
-});
+export type ReviewPhoneNumberKycPacketError = (ErrorResponse);
 
 export type GetPhoneNumberRemediationData = {
     path: {
@@ -34616,9 +33928,7 @@ export type GetPhoneNumberRemediationResponse = ({
     }>;
 });
 
-export type GetPhoneNumberRemediationError = (unknown | {
-    error?: string;
-});
+export type GetPhoneNumberRemediationError = (unknown | ErrorResponse);
 
 export type RemediatePhoneNumberData = {
     body: {
@@ -34653,9 +33963,7 @@ export type RemediatePhoneNumberResponse = ({
     };
 });
 
-export type RemediatePhoneNumberError = (unknown | {
-    error?: string;
-});
+export type RemediatePhoneNumberError = (unknown | ErrorResponse);
 
 export type ReplyToPhoneNumberReviewerData = {
     body: {
@@ -34687,9 +33995,7 @@ export type ReplyToPhoneNumberReviewerResponse = ({
     attachments?: number;
 });
 
-export type ReplyToPhoneNumberReviewerError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReplyToPhoneNumberReviewerError = (ErrorResponse | unknown);
 
 export type RespondToPhoneNumberReviewerData = {
     body: {
@@ -34758,9 +34064,7 @@ export type RespondToPhoneNumberReviewerResponse = ({
     siblingsResubmitted?: number;
 });
 
-export type RespondToPhoneNumberReviewerError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RespondToPhoneNumberReviewerError = (ErrorResponse | unknown);
 
 export type GetWhatsAppNumberKycFormData = {
     query: {
@@ -34841,9 +34145,7 @@ export type GetWhatsAppNumberKycFormResponse = ({
     pendingReview?: boolean;
 });
 
-export type GetWhatsAppNumberKycFormError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppNumberKycFormError = (unknown | ErrorResponse);
 
 export type SubmitWhatsAppNumberKycData = {
     body: {
@@ -34948,9 +34250,7 @@ export type SubmitWhatsAppNumberKycResponse = ({
     }>;
 });
 
-export type SubmitWhatsAppNumberKycError = (unknown | {
-    error?: string;
-});
+export type SubmitWhatsAppNumberKycError = (unknown | ErrorResponse);
 
 export type UploadWhatsAppNumberKycDocumentData = {
     body: (Blob | File);
@@ -34969,9 +34269,7 @@ export type UploadWhatsAppNumberKycDocumentResponse = ({
     documentId?: string;
 });
 
-export type UploadWhatsAppNumberKycDocumentError = (unknown | {
-    error?: string;
-});
+export type UploadWhatsAppNumberKycDocumentError = (unknown | ErrorResponse);
 
 export type ValidateWhatsAppNumberKycAddressData = {
     body: {
@@ -35019,9 +34317,7 @@ export type ValidateWhatsAppNumberKycAddressError = ({
             value?: string;
         }>;
     };
-} | {
-    error?: string;
-});
+} | ErrorResponse);
 
 export type CreateWhatsAppNumberKycLinkData = {
     body: {
@@ -35075,9 +34371,7 @@ export type CreateWhatsAppNumberKycLinkResponse = ({
     expiresAt?: string;
 });
 
-export type CreateWhatsAppNumberKycLinkError = (unknown | {
-    error?: string;
-});
+export type CreateWhatsAppNumberKycLinkError = (unknown | ErrorResponse);
 
 export type MoveWhatsAppNumberToProfileData = {
     body: {
@@ -35106,9 +34400,7 @@ export type MoveWhatsAppNumberToProfileResponse = ({
     movedPlatforms?: Array<(string)>;
 });
 
-export type MoveWhatsAppNumberToProfileError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type MoveWhatsAppNumberToProfileError = (ErrorResponse | unknown);
 
 export type GetWhatsAppNumberRemediationData = {
     path: {
@@ -35131,9 +34423,7 @@ export type GetWhatsAppNumberRemediationResponse = ({
     }>;
 });
 
-export type GetWhatsAppNumberRemediationError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppNumberRemediationError = (unknown | ErrorResponse);
 
 export type RemediateWhatsAppNumberData = {
     body: {
@@ -35168,9 +34458,7 @@ export type RemediateWhatsAppNumberResponse = ({
     };
 });
 
-export type RemediateWhatsAppNumberError = (unknown | {
-    error?: string;
-});
+export type RemediateWhatsAppNumberError = (unknown | ErrorResponse);
 
 export type EnableVoiceOnNumberData = {
     body?: {
@@ -35262,9 +34550,7 @@ export type EnableVoiceOnNumberResponse = ({
     }>;
 });
 
-export type EnableVoiceOnNumberError = ({
-    error?: string;
-} | unknown);
+export type EnableVoiceOnNumberError = (ErrorResponse | unknown);
 
 export type DisableVoiceOnNumberData = {
     path: {
@@ -35280,9 +34566,7 @@ export type DisableVoiceOnNumberResponse = ({
     phoneNumber?: string;
 });
 
-export type DisableVoiceOnNumberError = ({
-    error?: string;
-} | unknown);
+export type DisableVoiceOnNumberError = (ErrorResponse | unknown);
 
 export type CreatePhoneNumberStockWatchData = {
     body: {
@@ -35313,17 +34597,13 @@ export type CreatePhoneNumberStockWatchResponse = ((PhoneNumberStockWatch & {
     preOrderable?: boolean;
 }));
 
-export type CreatePhoneNumberStockWatchError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreatePhoneNumberStockWatchError = (ErrorResponse | unknown);
 
 export type ListPhoneNumberStockWatchesResponse = ({
     watches?: Array<PhoneNumberStockWatch>;
 });
 
-export type ListPhoneNumberStockWatchesError = ({
-    error?: string;
-});
+export type ListPhoneNumberStockWatchesError = (ErrorResponse);
 
 export type DeletePhoneNumberStockWatchData = {
     path: {
@@ -35335,9 +34615,7 @@ export type DeletePhoneNumberStockWatchResponse = ({
     deleted?: boolean;
 });
 
-export type DeletePhoneNumberStockWatchError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeletePhoneNumberStockWatchError = (ErrorResponse | unknown);
 
 export type CreateSipTrunkData = {
     body: {
@@ -35384,9 +34662,7 @@ export type CreateSipTrunkResponse = ({
     digestPassword?: string;
 });
 
-export type CreateSipTrunkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateSipTrunkError = (ErrorResponse | unknown);
 
 export type ListSipTrunksResponse = ({
     trunks?: Array<{
@@ -35408,9 +34684,7 @@ export type ListSipTrunksResponse = ({
     enabled?: boolean;
 });
 
-export type ListSipTrunksError = ({
-    error?: string;
-});
+export type ListSipTrunksError = (ErrorResponse);
 
 export type GetSipTrunkData = {
     path: {
@@ -35439,9 +34713,7 @@ export type GetSipTrunkResponse = ({
     }>;
 });
 
-export type GetSipTrunkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetSipTrunkError = (ErrorResponse | unknown);
 
 export type DeleteSipTrunkData = {
     path: {
@@ -35453,9 +34725,7 @@ export type DeleteSipTrunkResponse = ({
     deleted?: boolean;
 });
 
-export type DeleteSipTrunkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteSipTrunkError = (ErrorResponse | unknown);
 
 export type RotateSipTrunkCredentialsData = {
     path: {
@@ -35477,9 +34747,7 @@ export type RotateSipTrunkCredentialsResponse = ({
     digestPassword?: string;
 });
 
-export type RotateSipTrunkCredentialsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RotateSipTrunkCredentialsError = (ErrorResponse | unknown);
 
 export type AttachNumberToSipTrunkData = {
     body: {
@@ -35502,9 +34770,7 @@ export type AttachNumberToSipTrunkResponse = ({
     trunkId?: string;
 });
 
-export type AttachNumberToSipTrunkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AttachNumberToSipTrunkError = (ErrorResponse | unknown);
 
 export type DetachNumberFromSipTrunkData = {
     path: {
@@ -35520,9 +34786,7 @@ export type DetachNumberFromSipTrunkResponse = ({
     phoneNumber?: string;
 });
 
-export type DetachNumberFromSipTrunkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DetachNumberFromSipTrunkError = (ErrorResponse | unknown);
 
 export type EnableSmsOnNumberData = {
     path: {
@@ -35577,9 +34841,7 @@ export type EnableSmsOnNumberResponse = ({
     message?: string;
 });
 
-export type EnableSmsOnNumberError = ({
-    error?: string;
-} | unknown);
+export type EnableSmsOnNumberError = (ErrorResponse | unknown);
 
 export type DisableSmsOnNumberData = {
     path: {
@@ -35599,9 +34861,7 @@ export type DisableSmsOnNumberResponse = ({
     disabled?: boolean;
 });
 
-export type DisableSmsOnNumberError = ({
-    error?: string;
-} | unknown);
+export type DisableSmsOnNumberError = (ErrorResponse | unknown);
 
 export type ReuseSmsRegistrationForNumberData = {
     path: {
@@ -35617,9 +34877,7 @@ export type ReuseSmsRegistrationForNumberResponse = ({
     status?: 'pending' | 'approved' | 'rejected' | 'requested' | 'changes_requested' | 'deactivated';
 });
 
-export type ReuseSmsRegistrationForNumberError = ({
-    error?: string;
-} | unknown);
+export type ReuseSmsRegistrationForNumberError = (ErrorResponse | unknown);
 
 export type RequestPhoneNumberWhatsAppCodeData = {
     body?: {
@@ -35703,9 +34961,7 @@ export type GetWhatsAppCallingResponse = ({
     forwardCallerId?: 'business' | 'caller';
 });
 
-export type GetWhatsAppCallingError = (unknown | {
-    error?: string;
-});
+export type GetWhatsAppCallingError = (unknown | ErrorResponse);
 
 export type EnableWhatsAppCallingData = {
     body: {
@@ -35749,9 +35005,7 @@ export type EnableWhatsAppCallingResponse = ({
     callerIdMode?: 'business' | 'platform';
 });
 
-export type EnableWhatsAppCallingError = (unknown | {
-    error?: string;
-});
+export type EnableWhatsAppCallingError = (unknown | ErrorResponse);
 
 export type UpdateWhatsAppCallingData = {
     body: {
@@ -35777,9 +35031,7 @@ export type UpdateWhatsAppCallingData = {
 
 export type UpdateWhatsAppCallingResponse = (unknown);
 
-export type UpdateWhatsAppCallingError = (unknown | {
-    error?: string;
-});
+export type UpdateWhatsAppCallingError = (unknown | ErrorResponse);
 
 export type DisableWhatsAppCallingData = {
     path: {
@@ -35792,9 +35044,7 @@ export type DisableWhatsAppCallingData = {
 
 export type DisableWhatsAppCallingResponse = (unknown);
 
-export type DisableWhatsAppCallingError = (unknown | {
-    error?: string;
-});
+export type DisableWhatsAppCallingError = (unknown | ErrorResponse);
 
 export type StartWhatsAppCallerIdVerificationData = {
     body?: {
@@ -35814,9 +35064,7 @@ export type StartWhatsAppCallerIdVerificationResponse = ({
     method?: 'sms' | 'call';
 });
 
-export type StartWhatsAppCallerIdVerificationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type StartWhatsAppCallerIdVerificationError = (ErrorResponse | unknown);
 
 export type VerifyWhatsAppCallerIdData = {
     body: {
@@ -35834,9 +35082,7 @@ export type VerifyWhatsAppCallerIdResponse = ({
     verified?: boolean;
 });
 
-export type VerifyWhatsAppCallerIdError = (unknown | {
-    error?: string;
-});
+export type VerifyWhatsAppCallerIdError = (unknown | ErrorResponse);
 
 export type GetWhatsAppPhoneNumberData = {
     path: {
@@ -35873,7 +35119,7 @@ export type GetWhatsAppPhoneNumberResponse = ({
     };
 });
 
-export type GetWhatsAppPhoneNumberError = ({
+export type GetWhatsAppPhoneNumberError = (ErrorResponse | {
     error?: string;
 });
 
@@ -35899,9 +35145,9 @@ export type ReleaseWhatsAppPhoneNumberResponse = ({
     };
 });
 
-export type ReleaseWhatsAppPhoneNumberError = (unknown | {
+export type ReleaseWhatsAppPhoneNumberError = (unknown | ErrorResponse | {
     error?: string;
-} | ErrorResponse);
+});
 
 export type ListWhatsAppSandboxSessionsResponse = ({
     sessions?: Array<WhatsAppSandboxSession>;
@@ -35911,9 +35157,7 @@ export type ListWhatsAppSandboxSessionsResponse = ({
     sandboxNumber?: (string) | null;
 });
 
-export type ListWhatsAppSandboxSessionsError = ({
-    error?: string;
-} | unknown);
+export type ListWhatsAppSandboxSessionsError = (ErrorResponse | unknown);
 
 export type CreateWhatsAppSandboxSessionData = {
     body: {
@@ -35929,9 +35173,7 @@ export type CreateWhatsAppSandboxSessionResponse = ({
     sandboxNumber?: string;
 });
 
-export type CreateWhatsAppSandboxSessionError = (unknown | {
-    error?: string;
-});
+export type CreateWhatsAppSandboxSessionError = (unknown | ErrorResponse);
 
 export type DeleteWhatsAppSandboxSessionData = {
     path: {
@@ -35946,9 +35188,7 @@ export type DeleteWhatsAppSandboxSessionResponse = ({
     success?: boolean;
 });
 
-export type DeleteWhatsAppSandboxSessionError = (unknown | {
-    error?: string;
-});
+export type DeleteWhatsAppSandboxSessionError = (unknown | ErrorResponse);
 
 export type ListWhatsAppGroupChatsData = {
     query: {
@@ -35990,9 +35230,7 @@ export type ListWhatsAppGroupChatsResponse = ({
     };
 });
 
-export type ListWhatsAppGroupChatsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListWhatsAppGroupChatsError = (ErrorResponse);
 
 export type CreateWhatsAppGroupChatData = {
     body: {
@@ -36023,9 +35261,7 @@ export type CreateWhatsAppGroupChatResponse = ({
     };
 });
 
-export type CreateWhatsAppGroupChatError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateWhatsAppGroupChatError = (ErrorResponse);
 
 export type GetWhatsAppGroupChatData = {
     path: {
@@ -36148,9 +35384,7 @@ export type AddWhatsAppGroupParticipantsResponse = ({
     message?: string;
 });
 
-export type AddWhatsAppGroupParticipantsError = (ErrorResponse | {
-    error?: string;
-});
+export type AddWhatsAppGroupParticipantsError = (ErrorResponse);
 
 export type RemoveWhatsAppGroupParticipantsData = {
     body: {
@@ -36178,9 +35412,7 @@ export type RemoveWhatsAppGroupParticipantsResponse = ({
     message?: string;
 });
 
-export type RemoveWhatsAppGroupParticipantsError = (ErrorResponse | {
-    error?: string;
-});
+export type RemoveWhatsAppGroupParticipantsError = (ErrorResponse);
 
 export type CreateWhatsAppGroupInviteLinkData = {
     path: {
@@ -36202,9 +35434,7 @@ export type CreateWhatsAppGroupInviteLinkResponse = ({
     inviteLink?: string;
 });
 
-export type CreateWhatsAppGroupInviteLinkError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateWhatsAppGroupInviteLinkError = (ErrorResponse);
 
 export type ListWhatsAppGroupJoinRequestsData = {
     path: {
@@ -36235,9 +35465,7 @@ export type ListWhatsAppGroupJoinRequestsResponse = ({
     }>;
 });
 
-export type ListWhatsAppGroupJoinRequestsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListWhatsAppGroupJoinRequestsError = (ErrorResponse);
 
 export type ApproveWhatsAppGroupJoinRequestsData = {
     body: {
@@ -36265,9 +35493,7 @@ export type ApproveWhatsAppGroupJoinRequestsResponse = ({
     message?: string;
 });
 
-export type ApproveWhatsAppGroupJoinRequestsError = (ErrorResponse | {
-    error?: string;
-});
+export type ApproveWhatsAppGroupJoinRequestsError = (ErrorResponse);
 
 export type RejectWhatsAppGroupJoinRequestsData = {
     body: {
@@ -36295,9 +35521,7 @@ export type RejectWhatsAppGroupJoinRequestsResponse = ({
     message?: string;
 });
 
-export type RejectWhatsAppGroupJoinRequestsError = (ErrorResponse | {
-    error?: string;
-});
+export type RejectWhatsAppGroupJoinRequestsError = (ErrorResponse);
 
 export type ListWhatsAppFlowsData = {
     query: {
@@ -36329,9 +35553,7 @@ export type ListWhatsAppFlowsResponse = ({
     }>;
 });
 
-export type ListWhatsAppFlowsError = (unknown | {
-    error?: string;
-});
+export type ListWhatsAppFlowsError = (unknown | ErrorResponse);
 
 export type CreateWhatsAppFlowData = {
     body: {
@@ -36380,9 +35602,7 @@ export type CreateWhatsAppFlowResponse = ({
     };
 });
 
-export type CreateWhatsAppFlowError = (unknown | {
-    error?: string;
-});
+export type CreateWhatsAppFlowError = (unknown | ErrorResponse);
 
 export type GetWhatsAppFlowData = {
     path: {
@@ -36421,9 +35641,7 @@ export type GetWhatsAppFlowResponse = ({
     };
 });
 
-export type GetWhatsAppFlowError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppFlowError = (ErrorResponse | unknown);
 
 export type UpdateWhatsAppFlowData = {
     body: {
@@ -36453,9 +35671,7 @@ export type UpdateWhatsAppFlowResponse = ({
     success?: boolean;
 });
 
-export type UpdateWhatsAppFlowError = (unknown | {
-    error?: string;
-});
+export type UpdateWhatsAppFlowError = (unknown | ErrorResponse);
 
 export type DeleteWhatsAppFlowData = {
     path: {
@@ -36476,9 +35692,7 @@ export type DeleteWhatsAppFlowResponse = ({
     success?: boolean;
 });
 
-export type DeleteWhatsAppFlowError = (unknown | {
-    error?: string;
-});
+export type DeleteWhatsAppFlowError = (unknown | ErrorResponse);
 
 export type GetWhatsAppFlowJsonData = {
     path: {
@@ -36507,9 +35721,7 @@ export type GetWhatsAppFlowJsonResponse = ({
     }>;
 });
 
-export type GetWhatsAppFlowJsonError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppFlowJsonError = (ErrorResponse | unknown);
 
 export type UploadWhatsAppFlowJsonData = {
     body: {
@@ -36548,9 +35760,7 @@ export type UploadWhatsAppFlowJsonResponse = ({
     }>;
 });
 
-export type UploadWhatsAppFlowJsonError = (unknown | {
-    error?: string;
-});
+export type UploadWhatsAppFlowJsonError = (unknown | ErrorResponse);
 
 export type GetWhatsAppFlowPreviewData = {
     path: {
@@ -36576,9 +35786,7 @@ export type GetWhatsAppFlowPreviewResponse = ({
     expires_at?: (string) | null;
 });
 
-export type GetWhatsAppFlowPreviewError = ({
-    error?: string;
-} | unknown);
+export type GetWhatsAppFlowPreviewError = (ErrorResponse | unknown);
 
 export type ListWhatsAppFlowVersionsData = {
     path: {
@@ -36609,9 +35817,7 @@ export type ListWhatsAppFlowVersionsResponse = ({
     }>;
 });
 
-export type ListWhatsAppFlowVersionsError = ({
-    error?: string;
-} | unknown);
+export type ListWhatsAppFlowVersionsError = (ErrorResponse | unknown);
 
 export type PublishWhatsAppFlowData = {
     body: {
@@ -36632,9 +35838,7 @@ export type PublishWhatsAppFlowResponse = ({
     success?: boolean;
 });
 
-export type PublishWhatsAppFlowError = (unknown | {
-    error?: string;
-});
+export type PublishWhatsAppFlowError = (unknown | ErrorResponse);
 
 export type DeprecateWhatsAppFlowData = {
     body: {
@@ -36655,9 +35859,7 @@ export type DeprecateWhatsAppFlowResponse = ({
     success?: boolean;
 });
 
-export type DeprecateWhatsAppFlowError = (unknown | {
-    error?: string;
-});
+export type DeprecateWhatsAppFlowError = (unknown | ErrorResponse);
 
 export type GetWhatsAppFlowsEncryptionKeyData = {
     query: {
@@ -36685,8 +35887,6 @@ export type GetWhatsAppFlowsEncryptionKeyResponse = ({
 
 export type GetWhatsAppFlowsEncryptionKeyError = (ErrorResponse | {
     error?: string;
-} | {
-    error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
@@ -36712,8 +35912,6 @@ export type SetWhatsAppFlowsEncryptionKeyResponse = ({
 });
 
 export type SetWhatsAppFlowsEncryptionKeyError = (ErrorResponse | {
-    error?: string;
-} | {
     error?: string;
     code?: 'insufficient_permissions' | 'unclassified_resource';
     /**
@@ -36787,9 +35985,7 @@ export type SendWhatsAppFlowMessageResponse = ({
     messageId?: string;
 });
 
-export type SendWhatsAppFlowMessageError = (unknown | {
-    error?: string;
-});
+export type SendWhatsAppFlowMessageError = (unknown | ErrorResponse);
 
 export type ListWhatsAppFlowResponsesData = {
     query: {
@@ -36835,9 +36031,7 @@ export type ListWhatsAppFlowResponsesResponse = ({
     }>;
 });
 
-export type ListWhatsAppFlowResponsesError = ({
-    error?: string;
-} | unknown);
+export type ListWhatsAppFlowResponsesError = (ErrorResponse | unknown);
 
 export type ListContactsData = {
     query?: {
@@ -36900,9 +36094,7 @@ export type ListContactsResponse = ({
     };
 });
 
-export type ListContactsError = (unknown | {
-    error?: string;
-});
+export type ListContactsError = (unknown | ErrorResponse);
 
 export type CreateContactData = {
     body: {
@@ -36954,9 +36146,7 @@ export type CreateContactResponse = ({
     warning?: string;
 });
 
-export type CreateContactError = (unknown | {
-    error?: string;
-});
+export type CreateContactError = (unknown | ErrorResponse);
 
 export type GetContactData = {
     path: {
@@ -37015,7 +36205,7 @@ export type GetContactResponse = ({
     }>;
 });
 
-export type GetContactError = (unknown | {
+export type GetContactError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37051,7 +36241,7 @@ export type UpdateContactResponse = ({
     };
 });
 
-export type UpdateContactError = (unknown | {
+export type UpdateContactError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37063,7 +36253,7 @@ export type DeleteContactData = {
 
 export type DeleteContactResponse = (unknown);
 
-export type DeleteContactError = (unknown | {
+export type DeleteContactError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37090,7 +36280,7 @@ export type GetContactChannelsResponse = ({
     }>;
 });
 
-export type GetContactChannelsError = (unknown | {
+export type GetContactChannelsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37130,9 +36320,7 @@ export type BulkCreateContactsResponse = ({
     total?: number;
 });
 
-export type BulkCreateContactsError = (unknown | {
-    error?: string;
-});
+export type BulkCreateContactsError = (unknown | ErrorResponse);
 
 export type SetContactFieldValueData = {
     body: {
@@ -37149,7 +36337,7 @@ export type SetContactFieldValueData = {
 
 export type SetContactFieldValueResponse = (unknown);
 
-export type SetContactFieldValueError = ({
+export type SetContactFieldValueError = (ErrorResponse | {
     error?: string;
 });
 
@@ -37162,7 +36350,7 @@ export type ClearContactFieldValueData = {
 
 export type ClearContactFieldValueResponse = (unknown);
 
-export type ClearContactFieldValueError = ({
+export type ClearContactFieldValueError = (ErrorResponse | {
     error?: string;
 });
 
@@ -37187,9 +36375,7 @@ export type ListCustomFieldsResponse = ({
     }>;
 });
 
-export type ListCustomFieldsError = (unknown | {
-    error?: string;
-});
+export type ListCustomFieldsError = (unknown | ErrorResponse);
 
 export type CreateCustomFieldData = {
     body: {
@@ -37219,9 +36405,7 @@ export type CreateCustomFieldResponse = ({
     };
 });
 
-export type CreateCustomFieldError = (unknown | {
-    error?: string;
-});
+export type CreateCustomFieldError = (unknown | ErrorResponse);
 
 export type UpdateCustomFieldData = {
     body: {
@@ -37244,7 +36428,7 @@ export type UpdateCustomFieldResponse = ({
     };
 });
 
-export type UpdateCustomFieldError = (unknown | {
+export type UpdateCustomFieldError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37256,7 +36440,7 @@ export type DeleteCustomFieldData = {
 
 export type DeleteCustomFieldResponse = (unknown);
 
-export type DeleteCustomFieldError = (unknown | {
+export type DeleteCustomFieldError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37308,9 +36492,7 @@ export type ListBroadcastsResponse = ({
     };
 });
 
-export type ListBroadcastsError = (unknown | {
-    error?: string;
-});
+export type ListBroadcastsError = (unknown | ErrorResponse);
 
 export type CreateBroadcastData = {
     body: {
@@ -37369,9 +36551,7 @@ export type CreateBroadcastResponse = ({
     };
 });
 
-export type CreateBroadcastError = (unknown | {
-    error?: string;
-});
+export type CreateBroadcastError = (unknown | ErrorResponse);
 
 export type GetBroadcastData = {
     path: {
@@ -37411,7 +36591,7 @@ export type GetBroadcastResponse = ({
     };
 });
 
-export type GetBroadcastError = ({
+export type GetBroadcastError = (ErrorResponse | {
     error?: string;
 });
 
@@ -37464,7 +36644,7 @@ export type UpdateBroadcastResponse = ({
     };
 });
 
-export type UpdateBroadcastError = ({
+export type UpdateBroadcastError = (ErrorResponse | {
     error?: string;
 });
 
@@ -37476,7 +36656,7 @@ export type DeleteBroadcastData = {
 
 export type DeleteBroadcastResponse = (unknown);
 
-export type DeleteBroadcastError = ({
+export type DeleteBroadcastError = (ErrorResponse | {
     error?: string;
 });
 
@@ -37506,7 +36686,7 @@ export type SendBroadcastResponse = ({
     recipientCount?: number;
 });
 
-export type SendBroadcastError = (unknown | {
+export type SendBroadcastError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37528,7 +36708,7 @@ export type ScheduleBroadcastResponse = ({
     };
 });
 
-export type ScheduleBroadcastError = (unknown | {
+export type ScheduleBroadcastError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37546,7 +36726,7 @@ export type CancelBroadcastResponse = ({
     };
 });
 
-export type CancelBroadcastError = (unknown | {
+export type CancelBroadcastError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37607,7 +36787,7 @@ export type ListBroadcastRecipientsResponse = ({
     };
 });
 
-export type ListBroadcastRecipientsError = (unknown | {
+export type ListBroadcastRecipientsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37643,7 +36823,7 @@ export type AddBroadcastRecipientsResponse = ({
     skipped?: number;
 });
 
-export type AddBroadcastRecipientsError = (unknown | {
+export type AddBroadcastRecipientsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37683,9 +36863,7 @@ export type ListWorkflowsResponse = ({
     };
 });
 
-export type ListWorkflowsError = ({
-    error?: string;
-});
+export type ListWorkflowsError = (ErrorResponse);
 
 export type CreateWorkflowData = {
     body: {
@@ -37717,9 +36895,7 @@ export type CreateWorkflowResponse = ({
     };
 });
 
-export type CreateWorkflowError = (unknown | {
-    error?: string;
-});
+export type CreateWorkflowError = (unknown | ErrorResponse);
 
 export type GetWorkflowData = {
     path: {
@@ -37748,7 +36924,7 @@ export type GetWorkflowResponse = ({
     };
 });
 
-export type GetWorkflowError = ({
+export type GetWorkflowError = (ErrorResponse | {
     error?: string;
 });
 
@@ -37783,7 +36959,7 @@ export type UpdateWorkflowResponse = ({
     };
 });
 
-export type UpdateWorkflowError = (unknown | {
+export type UpdateWorkflowError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37795,7 +36971,7 @@ export type DeleteWorkflowData = {
 
 export type DeleteWorkflowResponse = (unknown);
 
-export type DeleteWorkflowError = ({
+export type DeleteWorkflowError = (ErrorResponse | {
     error?: string;
 });
 
@@ -37814,7 +36990,7 @@ export type ActivateWorkflowResponse = ({
     };
 });
 
-export type ActivateWorkflowError = (unknown | {
+export type ActivateWorkflowError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37877,7 +37053,7 @@ export type ListWorkflowExecutionsResponse = ({
     };
 });
 
-export type ListWorkflowExecutionsError = (unknown | {
+export type ListWorkflowExecutionsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -37917,7 +37093,7 @@ export type TriggerWorkflowResponse = ({
     } | null;
 });
 
-export type TriggerWorkflowError = (unknown | {
+export type TriggerWorkflowError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38061,7 +37237,7 @@ export type RestoreWorkflowVersionResponse = ({
     restoredFromVersion?: number;
 });
 
-export type RestoreWorkflowVersionError = (unknown | {
+export type RestoreWorkflowVersionError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38110,9 +37286,7 @@ export type ListSequencesResponse = ({
     };
 });
 
-export type ListSequencesError = (unknown | {
-    error?: string;
-});
+export type ListSequencesError = (unknown | ErrorResponse);
 
 export type CreateSequenceData = {
     body: {
@@ -38162,9 +37336,7 @@ export type CreateSequenceResponse = ({
     };
 });
 
-export type CreateSequenceError = (unknown | {
-    error?: string;
-});
+export type CreateSequenceError = (unknown | ErrorResponse);
 
 export type GetSequenceData = {
     path: {
@@ -38205,7 +37377,7 @@ export type GetSequenceResponse = ({
     };
 });
 
-export type GetSequenceError = (unknown | {
+export type GetSequenceError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38257,7 +37429,7 @@ export type UpdateSequenceResponse = ({
     };
 });
 
-export type UpdateSequenceError = (unknown | {
+export type UpdateSequenceError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38269,7 +37441,7 @@ export type DeleteSequenceData = {
 
 export type DeleteSequenceResponse = (unknown);
 
-export type DeleteSequenceError = (unknown | {
+export type DeleteSequenceError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38287,7 +37459,7 @@ export type ActivateSequenceResponse = ({
     };
 });
 
-export type ActivateSequenceError = (unknown | {
+export type ActivateSequenceError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38305,7 +37477,7 @@ export type PauseSequenceResponse = ({
     };
 });
 
-export type PauseSequenceError = (unknown | {
+export type PauseSequenceError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38345,7 +37517,7 @@ export type EnrollContactsResponse = ({
     }>;
 });
 
-export type EnrollContactsError = (unknown | {
+export type EnrollContactsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38358,7 +37530,7 @@ export type UnenrollContactData = {
 
 export type UnenrollContactResponse = (unknown);
 
-export type UnenrollContactError = (unknown | {
+export type UnenrollContactError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38397,7 +37569,7 @@ export type ListSequenceEnrollmentsResponse = ({
     };
 });
 
-export type ListSequenceEnrollmentsError = (unknown | {
+export type ListSequenceEnrollmentsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -38499,9 +37671,7 @@ export type ListCommentAutomationsResponse = ({
     }>;
 });
 
-export type ListCommentAutomationsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListCommentAutomationsError = (unknown | ErrorResponse);
 
 export type CreateCommentAutomationData = {
     body: {
@@ -38657,9 +37827,7 @@ export type CreateCommentAutomationResponse = ({
     };
 });
 
-export type CreateCommentAutomationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateCommentAutomationError = (unknown | ErrorResponse);
 
 export type GetCommentAutomationData = {
     path: {
@@ -38785,7 +37953,7 @@ export type GetCommentAutomationResponse = ({
     }>;
 });
 
-export type GetCommentAutomationError = ({
+export type GetCommentAutomationError = (ErrorResponse | {
     error?: string;
 });
 
@@ -38900,7 +38068,7 @@ export type UpdateCommentAutomationResponse = ({
     };
 });
 
-export type UpdateCommentAutomationError = ({
+export type UpdateCommentAutomationError = (ErrorResponse | {
     error?: string;
 });
 
@@ -38912,7 +38080,7 @@ export type DeleteCommentAutomationData = {
 
 export type DeleteCommentAutomationResponse = (unknown);
 
-export type DeleteCommentAutomationError = ({
+export type DeleteCommentAutomationError = (ErrorResponse | {
     error?: string;
 });
 
@@ -39088,9 +38256,7 @@ export type ListAdsResponse = (AdsListResponse | (AdsListResponse & {
     backfillPending: boolean;
 }));
 
-export type ListAdsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdsError = (ErrorResponse | unknown);
 
 export type GetAdsSearchTermsData = {
     query: {
@@ -39176,9 +38342,7 @@ export type GetAdsSearchTermsResponse = ({
     stale?: boolean;
 });
 
-export type GetAdsSearchTermsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetAdsSearchTermsError = (ErrorResponse | unknown);
 
 export type ListGoogleRecommendationsData = {
     query: {
@@ -39320,9 +38484,7 @@ export type ListBidStrategiesResponse = ({
     stale?: boolean;
 });
 
-export type ListBidStrategiesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListBidStrategiesError = (ErrorResponse | unknown);
 
 export type CreateBidStrategyData = {
     body: {
@@ -39363,9 +38525,7 @@ export type CreateBidStrategyResponse = ({
     };
 });
 
-export type CreateBidStrategyError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateBidStrategyError = (unknown | ErrorResponse);
 
 export type UpdateBidStrategyData = {
     body: {
@@ -39401,9 +38561,7 @@ export type UpdateBidStrategyResponse = ({
     };
 });
 
-export type UpdateBidStrategyError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateBidStrategyError = (ErrorResponse | unknown);
 
 export type ListLocalServicesLeadsData = {
     query: {
@@ -39486,9 +38644,7 @@ export type ListLocalServicesLeadsResponse = ({
     };
 });
 
-export type ListLocalServicesLeadsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListLocalServicesLeadsError = (ErrorResponse | unknown);
 
 export type ListLocalServicesLeadConversationsData = {
     path: {
@@ -39554,9 +38710,7 @@ export type ListLocalServicesLeadConversationsResponse = ({
     };
 });
 
-export type ListLocalServicesLeadConversationsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListLocalServicesLeadConversationsError = (ErrorResponse | unknown);
 
 export type ListAdKeywordsData = {
     query?: {
@@ -39606,9 +38760,7 @@ export type ListAdKeywordsResponse = ({
     pagination?: Pagination;
 });
 
-export type ListAdKeywordsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdKeywordsError = (ErrorResponse | unknown);
 
 export type AddAdKeywordsData = {
     body: {
@@ -39635,9 +38787,7 @@ export type AddAdKeywordsResponse = ({
     keywords?: Array<AdKeyword>;
 });
 
-export type AddAdKeywordsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddAdKeywordsError = (ErrorResponse | unknown);
 
 export type UpdateAdKeywordData = {
     body: {
@@ -39655,9 +38805,7 @@ export type UpdateAdKeywordResponse = ({
     keyword?: AdKeyword;
 });
 
-export type UpdateAdKeywordError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAdKeywordError = (ErrorResponse | unknown);
 
 export type RemoveAdKeywordData = {
     path: {
@@ -39695,9 +38843,7 @@ export type RemoveAdKeywordResponse = ({
     adSetId?: string;
 });
 
-export type RemoveAdKeywordError = (ErrorResponse | {
-    error?: string;
-});
+export type RemoveAdKeywordError = (ErrorResponse);
 
 export type ListAdCampaignsData = {
     query?: {
@@ -39763,9 +38909,7 @@ export type ListAdCampaignsResponse = ({
     pagination?: Pagination;
 });
 
-export type ListAdCampaignsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdCampaignsError = (ErrorResponse | unknown);
 
 export type CreateAdCampaignData = {
     body: {
@@ -39856,9 +39000,7 @@ export type CreateAdCampaignResponse = ({
     status?: 'ACTIVE' | 'PAUSED';
 });
 
-export type CreateAdCampaignError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateAdCampaignError = (unknown | ErrorResponse);
 
 export type UpdateAdCampaignStatusData = {
     body: {
@@ -39900,9 +39042,7 @@ export type UpdateAdCampaignStatusResponse = ({
     skippedReasons?: Array<(string)>;
 });
 
-export type UpdateAdCampaignStatusError = (unknown | {
-    error?: string;
-});
+export type UpdateAdCampaignStatusError = (unknown | ErrorResponse);
 
 export type GetCampaignAdScheduleData = {
     path: {
@@ -39984,9 +39124,7 @@ export type GetCampaignAdScheduleResponse = ({
     };
 });
 
-export type GetCampaignAdScheduleError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCampaignAdScheduleError = (ErrorResponse | unknown);
 
 export type UpdateCampaignAdScheduleData = {
     body: {
@@ -40028,9 +39166,7 @@ export type UpdateCampaignAdScheduleResponse = ({
     servesAroundTheClock?: boolean;
 });
 
-export type UpdateCampaignAdScheduleError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCampaignAdScheduleError = (ErrorResponse | unknown);
 
 export type GetCampaignBiddingData = {
     path: {
@@ -40064,9 +39200,7 @@ export type GetCampaignBiddingResponse = (({
     campaignId?: string;
 } & CampaignBidding));
 
-export type GetCampaignBiddingError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetCampaignBiddingError = (unknown | ErrorResponse);
 
 export type GetAdCampaignDetailsData = {
     path: {
@@ -40096,9 +39230,7 @@ export type GetAdCampaignDetailsResponse = ({
     };
 });
 
-export type GetAdCampaignDetailsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetAdCampaignDetailsError = (ErrorResponse | unknown);
 
 export type UpdateAdCampaignData = {
     body: {
@@ -40181,9 +39313,7 @@ export type UpdateAdCampaignResponse = ({
     };
 });
 
-export type UpdateAdCampaignError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateAdCampaignError = (unknown | ErrorResponse);
 
 export type DeleteAdCampaignData = {
     body: {
@@ -40209,9 +39339,7 @@ export type DeleteAdCampaignResponse = ({
     adCount?: number;
 });
 
-export type DeleteAdCampaignError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteAdCampaignError = (ErrorResponse | unknown);
 
 export type ListCampaignNegativeKeywordsData = {
     path: {
@@ -40244,9 +39372,7 @@ export type ListCampaignNegativeKeywordsResponse = ({
     stale?: boolean;
 });
 
-export type ListCampaignNegativeKeywordsError = ({
-    error?: string;
-} | unknown);
+export type ListCampaignNegativeKeywordsError = (ErrorResponse | unknown);
 
 export type ReplaceCampaignNegativeKeywordsData = {
     body: {
@@ -40283,9 +39409,7 @@ export type ReplaceCampaignNegativeKeywordsResponse = ({
     }>;
 });
 
-export type ReplaceCampaignNegativeKeywordsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReplaceCampaignNegativeKeywordsError = (ErrorResponse | unknown);
 
 export type BulkUpdateAdCampaignStatusData = {
     body: {
@@ -40317,9 +39441,7 @@ export type BulkUpdateAdCampaignStatusResponse = ({
     }>;
 });
 
-export type BulkUpdateAdCampaignStatusError = (unknown | {
-    error?: string;
-});
+export type BulkUpdateAdCampaignStatusError = (unknown | ErrorResponse);
 
 export type DuplicateAdCampaignData = {
     body: {
@@ -40377,9 +39499,7 @@ export type DuplicateAdCampaignResponse = ({
     };
 });
 
-export type DuplicateAdCampaignError = (unknown | {
-    error?: string;
-});
+export type DuplicateAdCampaignError = (unknown | ErrorResponse);
 
 export type GetCampaignTargetingData = {
     path: {
@@ -40456,9 +39576,7 @@ export type GetCampaignTargetingResponse = ({
     stale?: boolean;
 });
 
-export type GetCampaignTargetingError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCampaignTargetingError = (ErrorResponse | unknown);
 
 export type UpdateCampaignTargetingData = {
     body: {
@@ -40566,9 +39684,7 @@ export type UpdateCampaignTargetingResponse = ({
     }>;
 });
 
-export type UpdateCampaignTargetingError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCampaignTargetingError = (ErrorResponse | unknown);
 
 export type ListAdSetsData = {
     query?: {
@@ -40673,9 +39789,7 @@ export type ListAdSetsResponse = ({
     }>;
 });
 
-export type ListAdSetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdSetsError = (ErrorResponse | unknown);
 
 export type CreateAdSetData = {
     body: {
@@ -40719,9 +39833,7 @@ export type CreateAdSetResponse = ({
     campaignId?: string;
 });
 
-export type CreateAdSetError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateAdSetError = (ErrorResponse | unknown);
 
 export type DuplicateAdSetData = {
     body: {
@@ -40776,9 +39888,7 @@ export type DuplicateAdSetResponse = ({
     };
 });
 
-export type DuplicateAdSetError = (unknown | {
-    error?: string;
-});
+export type DuplicateAdSetError = (unknown | ErrorResponse);
 
 export type DuplicateAdData = {
     body?: {
@@ -40821,9 +39931,7 @@ export type DuplicateAdResponse = ({
     };
 });
 
-export type DuplicateAdError = (unknown | {
-    error?: string;
-});
+export type DuplicateAdError = (unknown | ErrorResponse);
 
 export type GetAdSetDetailsData = {
     path: {
@@ -40853,9 +39961,7 @@ export type GetAdSetDetailsResponse = ({
     };
 });
 
-export type GetAdSetDetailsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetAdSetDetailsError = (unknown | ErrorResponse);
 
 export type UpdateAdSetData = {
     body: {
@@ -41023,9 +40129,7 @@ export type UpdateAdSetResponse = ({
     };
 });
 
-export type UpdateAdSetError = (unknown | {
-    error?: string;
-});
+export type UpdateAdSetError = (unknown | ErrorResponse);
 
 export type DeleteAdSetData = {
     path: {
@@ -41044,9 +40148,7 @@ export type DeleteAdSetResponse = ({
     adCount?: number;
 });
 
-export type DeleteAdSetError = ({
-    error?: string;
-} | unknown);
+export type DeleteAdSetError = (ErrorResponse | unknown);
 
 export type UpdateAdSetStatusData = {
     body: {
@@ -41092,9 +40194,7 @@ export type UpdateAdSetStatusResponse = ({
     skippedReasons?: Array<(string)>;
 });
 
-export type UpdateAdSetStatusError = (unknown | {
-    error?: string;
-});
+export type UpdateAdSetStatusError = (unknown | ErrorResponse);
 
 export type GetAdTreeData = {
     query?: {
@@ -41181,9 +40281,7 @@ export type GetAdTreeResponse = (AdTreeResponse | (AdTreeResponse & {
     backfillPending: boolean;
 }));
 
-export type GetAdTreeError = ({
-    error?: string;
-} | unknown);
+export type GetAdTreeError = (ErrorResponse | unknown);
 
 export type GetAdsTimelineData = {
     query: {
@@ -41217,9 +40315,7 @@ export type GetAdsTimelineResponse = (AdsTimelineResponse | (AdsTimelineResponse
     backfillPending: boolean;
 }));
 
-export type GetAdsTimelineError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetAdsTimelineError = (ErrorResponse | unknown);
 
 export type GetAdData = {
     path: {
@@ -41472,7 +40568,7 @@ export type UpdateAdResponse = ({
     message?: string;
 });
 
-export type UpdateAdError = (unknown | {
+export type UpdateAdError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -41486,7 +40582,7 @@ export type DeleteAdResponse = ({
     message?: string;
 });
 
-export type DeleteAdError = ({
+export type DeleteAdError = (ErrorResponse | {
     error?: string;
 });
 
@@ -41525,9 +40621,7 @@ export type UpdateAdStatusResponse = ({
     message?: string;
 });
 
-export type UpdateAdStatusError = (unknown | {
-    error?: string;
-});
+export type UpdateAdStatusError = (unknown | ErrorResponse);
 
 export type ListCampaignAssetsData = {
     path: {
@@ -41577,9 +40671,7 @@ export type ListCampaignAssetsResponse = ({
     stale?: boolean;
 });
 
-export type ListCampaignAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCampaignAssetsError = (ErrorResponse | unknown);
 
 export type AttachCampaignAssetsData = {
     body: {
@@ -41615,9 +40707,7 @@ export type AttachCampaignAssetsResponse = ({
     structuredSnippetAssetResourceNames?: Array<(string)>;
 });
 
-export type AttachCampaignAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AttachCampaignAssetsError = (ErrorResponse | unknown);
 
 export type UpdateCampaignAssetsData = {
     body: {
@@ -41648,9 +40738,7 @@ export type UpdateCampaignAssetsResponse = ({
     updated?: number;
 });
 
-export type UpdateCampaignAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCampaignAssetsError = (ErrorResponse | unknown);
 
 export type RemoveCampaignAssetsData = {
     body: {
@@ -41682,9 +40770,7 @@ export type RemoveCampaignAssetsResponse = ({
     removed?: boolean;
 });
 
-export type RemoveCampaignAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveCampaignAssetsError = (ErrorResponse | unknown);
 
 export type ListAdGroupAssetsData = {
     path: {
@@ -41734,9 +40820,7 @@ export type ListAdGroupAssetsResponse = ({
     stale?: boolean;
 });
 
-export type ListAdGroupAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdGroupAssetsError = (ErrorResponse | unknown);
 
 export type AttachAdGroupAssetsData = {
     body: {
@@ -41772,9 +40856,7 @@ export type AttachAdGroupAssetsResponse = ({
     structuredSnippetAssetResourceNames?: Array<(string)>;
 });
 
-export type AttachAdGroupAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AttachAdGroupAssetsError = (ErrorResponse | unknown);
 
 export type UpdateAdGroupAssetsData = {
     body: {
@@ -41805,9 +40887,7 @@ export type UpdateAdGroupAssetsResponse = ({
     updated?: number;
 });
 
-export type UpdateAdGroupAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAdGroupAssetsError = (ErrorResponse | unknown);
 
 export type RemoveAdGroupAssetsData = {
     body: {
@@ -41839,9 +40919,7 @@ export type RemoveAdGroupAssetsResponse = ({
     removed?: boolean;
 });
 
-export type RemoveAdGroupAssetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveAdGroupAssetsError = (ErrorResponse | unknown);
 
 export type GetCampaignAnalyticsData = {
     path: {
@@ -41886,9 +40964,9 @@ export type GetCampaignAnalyticsResponse = (CampaignAnalyticsResponse | (Campaig
     backfillPending: boolean;
 }));
 
-export type GetCampaignAnalyticsError = (ErrorResponse | {
+export type GetCampaignAnalyticsError = (ErrorResponse | unknown | {
     error?: string;
-} | unknown);
+});
 
 export type GenerateAdPreviewsData = {
     body: {
@@ -41927,9 +41005,7 @@ export type GenerateAdPreviewsResponse = ({
     }>;
 });
 
-export type GenerateAdPreviewsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GenerateAdPreviewsError = (unknown | ErrorResponse);
 
 export type GetAdPreviewsData = {
     path: {
@@ -41957,9 +41033,7 @@ export type GetAdPreviewsResponse = ({
     }>;
 });
 
-export type GetAdPreviewsError = (unknown | {
-    error?: string;
-});
+export type GetAdPreviewsError = (unknown | ErrorResponse);
 
 export type GetAdMediaData = {
     path: {
@@ -42001,9 +41075,7 @@ export type GetAdMediaResponse = ({
     }>;
 });
 
-export type GetAdMediaError = (unknown | {
-    error?: string;
-});
+export type GetAdMediaError = (unknown | ErrorResponse);
 
 export type GenerateKeywordIdeasData = {
     body: {
@@ -42065,9 +41137,7 @@ export type GenerateKeywordIdeasResponse = ({
     };
 });
 
-export type GenerateKeywordIdeasError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GenerateKeywordIdeasError = (unknown | ErrorResponse);
 
 export type GenerateKeywordHistoricalMetricsData = {
     body: {
@@ -42115,9 +41185,7 @@ export type GenerateKeywordHistoricalMetricsResponse = ({
     } | null;
 });
 
-export type GenerateKeywordHistoricalMetricsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GenerateKeywordHistoricalMetricsError = (unknown | ErrorResponse);
 
 export type QueryAdInsightsData = {
     query: {
@@ -42277,9 +41345,7 @@ export type QueryAdInsightsResponse = ({
     };
 });
 
-export type QueryAdInsightsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type QueryAdInsightsError = (unknown | ErrorResponse);
 
 export type CreateAdInsightsReportData = {
     body: {
@@ -42339,9 +41405,7 @@ export type CreateAdInsightsReportResponse = ({
     status?: string;
 });
 
-export type CreateAdInsightsReportError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateAdInsightsReportError = (unknown | ErrorResponse);
 
 export type GetAdInsightsReportData = {
     path: {
@@ -42377,9 +41441,7 @@ export type GetAdInsightsReportResponse = ({
     };
 });
 
-export type GetAdInsightsReportError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetAdInsightsReportError = (unknown | ErrorResponse);
 
 export type GetAdAnalyticsData = {
     path: {
@@ -42418,9 +41480,9 @@ export type GetAdAnalyticsResponse = (AdAnalyticsResponse | (AdAnalyticsResponse
     backfillPending: boolean;
 }));
 
-export type GetAdAnalyticsError = (ErrorResponse | {
+export type GetAdAnalyticsError = (ErrorResponse | unknown | {
     error?: string;
-} | unknown);
+});
 
 export type GetAdTrackingTagsData = {
     path: {
@@ -42466,9 +41528,7 @@ export type GetAdTrackingTagsResponse = ({
     } | null;
 });
 
-export type GetAdTrackingTagsError = ({
-    error?: string;
-} | unknown);
+export type GetAdTrackingTagsError = (ErrorResponse | unknown);
 
 export type UpdateAdTrackingTagsData = {
     body: {
@@ -42521,9 +41581,7 @@ export type UpdateAdTrackingTagsResponse = ({
     [key: string]: unknown | string;
 });
 
-export type UpdateAdTrackingTagsError = ({
-    error?: string;
-} | unknown);
+export type UpdateAdTrackingTagsError = (ErrorResponse | unknown);
 
 export type GetAdCommentsData = {
     path: {
@@ -42619,7 +41677,7 @@ export type GetAdCommentsResponse = ({
     };
 });
 
-export type GetAdCommentsError = (unknown | {
+export type GetAdCommentsError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -42660,9 +41718,7 @@ export type ReplyToAdCommentResponse = ({
     commentId: string;
 });
 
-export type ReplyToAdCommentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReplyToAdCommentError = (ErrorResponse | unknown);
 
 export type HideAdCommentData = {
     body: {
@@ -42705,9 +41761,7 @@ export type HideAdCommentResponse = ({
     hidden?: boolean;
 });
 
-export type HideAdCommentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type HideAdCommentError = (ErrorResponse | unknown);
 
 export type DeleteAdCommentData = {
     path: {
@@ -42740,9 +41794,7 @@ export type DeleteAdCommentResponse = ({
     commentId: string;
 });
 
-export type DeleteAdCommentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteAdCommentError = (ErrorResponse | unknown);
 
 export type ListAdsBusinessCentersData = {
     query: {
@@ -42757,9 +41809,7 @@ export type ListAdsBusinessCentersResponse = ({
     businessCenters?: Array<BusinessCenter>;
 });
 
-export type ListAdsBusinessCentersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdsBusinessCentersError = (ErrorResponse | unknown);
 
 export type GetAdsActivityLogData = {
     query: {
@@ -42807,9 +41857,7 @@ export type GetAdsActivityLogResponse = ({
     };
 });
 
-export type GetAdsActivityLogError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetAdsActivityLogError = (unknown | ErrorResponse);
 
 export type CreateRfPredictionData = {
     body: {
@@ -42859,9 +41907,7 @@ export type CreateRfPredictionResponse = ({
     prediction?: RfPrediction;
 });
 
-export type CreateRfPredictionError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateRfPredictionError = (unknown | ErrorResponse);
 
 export type GetRfPredictionData = {
     path: {
@@ -42879,9 +41925,7 @@ export type GetRfPredictionResponse = ({
     prediction?: RfPrediction;
 });
 
-export type GetRfPredictionError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetRfPredictionError = (unknown | ErrorResponse);
 
 export type CancelRfReservationData = {
     path: {
@@ -42895,9 +41939,7 @@ export type CancelRfReservationData = {
 
 export type CancelRfReservationResponse = (unknown);
 
-export type CancelRfReservationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CancelRfReservationError = (unknown | ErrorResponse);
 
 export type ReserveRfPredictionData = {
     body: {
@@ -42914,9 +41956,7 @@ export type ReserveRfPredictionResponse = ({
     prediction?: RfPrediction;
 });
 
-export type ReserveRfPredictionError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ReserveRfPredictionError = (unknown | ErrorResponse);
 
 export type ListAdStudiesData = {
     query: {
@@ -42956,9 +41996,7 @@ export type ListAdStudiesResponse = ({
     };
 });
 
-export type ListAdStudiesError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListAdStudiesError = (unknown | ErrorResponse);
 
 export type ListAdsTikTokIdentitiesData = {
     query: {
@@ -42988,9 +42026,7 @@ export type ListAdsTikTokIdentitiesResponse = ({
     }>;
 });
 
-export type ListAdsTikTokIdentitiesError = (ErrorResponse | {
-    error?: string;
-});
+export type ListAdsTikTokIdentitiesError = (ErrorResponse);
 
 export type GetTikTokSmartPlusMaterialReportData = {
     query: {
@@ -43076,9 +42112,7 @@ export type GetTikTokSmartPlusMaterialReportResponse = ({
     }>;
 });
 
-export type GetTikTokSmartPlusMaterialReportError = (ErrorResponse | {
-    error?: string;
-});
+export type GetTikTokSmartPlusMaterialReportError = (ErrorResponse);
 
 export type ListAdsInstagramAccountsData = {
     query: {
@@ -43132,9 +42166,7 @@ export type ListAdsInstagramAccountsResponse = ({
     };
 });
 
-export type ListAdsInstagramAccountsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdsInstagramAccountsError = (ErrorResponse | unknown);
 
 export type ListAdsInstagramPostsData = {
     query: {
@@ -43208,9 +42240,7 @@ export type ListAdsInstagramPostsResponse = ({
     };
 });
 
-export type ListAdsInstagramPostsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdsInstagramPostsError = (ErrorResponse | unknown);
 
 export type ListAdvertisableApplicationsData = {
     query: {
@@ -43248,9 +42278,7 @@ export type ListAdvertisableApplicationsResponse = ({
     }>;
 });
 
-export type ListAdvertisableApplicationsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdvertisableApplicationsError = (ErrorResponse | unknown);
 
 export type GetIosFourteenCampaignLimitsData = {
     query: {
@@ -43286,9 +42314,7 @@ export type GetIosFourteenCampaignLimitsResponse = ({
     } | null;
 });
 
-export type GetIosFourteenCampaignLimitsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetIosFourteenCampaignLimitsError = (ErrorResponse | unknown);
 
 export type ListMetaBusinessesData = {
     query: {
@@ -43319,9 +42345,7 @@ export type ListMetaBusinessesResponse = ({
     };
 });
 
-export type ListMetaBusinessesError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListMetaBusinessesError = (unknown | ErrorResponse);
 
 export type ListMetaBusinessUsersData = {
     query: {
@@ -43342,9 +42366,7 @@ export type ListMetaBusinessUsersResponse = ({
     systemUsers?: Array<MetaBusinessUser>;
 });
 
-export type ListMetaBusinessUsersError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListMetaBusinessUsersError = (unknown | ErrorResponse);
 
 export type ListPageUsersData = {
     query: {
@@ -43369,9 +42391,7 @@ export type ListPageUsersResponse = ({
     users?: Array<MetaAssignedUser>;
 });
 
-export type ListPageUsersError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListPageUsersError = (unknown | ErrorResponse);
 
 export type AssignPageUserData = {
     body: {
@@ -43404,9 +42424,7 @@ export type AssignPageUserResponse = ({
     };
 });
 
-export type AssignPageUserError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type AssignPageUserError = (unknown | ErrorResponse);
 
 export type RemovePageUserData = {
     query: {
@@ -43431,9 +42449,7 @@ export type RemovePageUserResponse = ({
     removed?: boolean;
 });
 
-export type RemovePageUserError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type RemovePageUserError = (unknown | ErrorResponse);
 
 export type ListAdLabelsData = {
     query: {
@@ -43485,9 +42501,7 @@ export type ListAdLabelsResponse = ({
     stale?: boolean;
 });
 
-export type ListAdLabelsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdLabelsError = (ErrorResponse | unknown);
 
 export type CreateAdLabelData = {
     body: {
@@ -43528,9 +42542,7 @@ export type CreateAdLabelResponse = ({
     resourceName?: string;
 });
 
-export type CreateAdLabelError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateAdLabelError = (ErrorResponse | unknown);
 
 export type UpdateAdLabelData = {
     body: {
@@ -43567,9 +42579,7 @@ export type UpdateAdLabelResponse = ({
     label?: GoogleAdLabel;
 });
 
-export type UpdateAdLabelError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAdLabelError = (ErrorResponse | unknown);
 
 export type RemoveAdLabelData = {
     path: {
@@ -43604,9 +42614,7 @@ export type RemoveAdLabelResponse = ({
     removed?: boolean;
 });
 
-export type RemoveAdLabelError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveAdLabelError = (ErrorResponse | unknown);
 
 export type AttachAdLabelData = {
     body: GoogleAdLabelAssignments;
@@ -43631,9 +42639,7 @@ export type AttachAdLabelResponse = ({
     unchanged?: number;
 });
 
-export type AttachAdLabelError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AttachAdLabelError = (ErrorResponse | unknown);
 
 export type DetachAdLabelData = {
     body: GoogleAdLabelAssignments;
@@ -43658,9 +42664,7 @@ export type DetachAdLabelResponse = ({
     unchanged?: number;
 });
 
-export type DetachAdLabelError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DetachAdLabelError = (ErrorResponse | unknown);
 
 export type ListHighDemandPeriodsData = {
     query: {
@@ -43703,9 +42707,7 @@ export type ListHighDemandPeriodsResponse = ({
     };
 });
 
-export type ListHighDemandPeriodsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListHighDemandPeriodsError = (unknown | ErrorResponse);
 
 export type CreateHighDemandPeriodData = {
     body: {
@@ -43753,9 +42755,7 @@ export type CreateHighDemandPeriodResponse = ({
     id?: string;
 });
 
-export type CreateHighDemandPeriodError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateHighDemandPeriodError = (unknown | ErrorResponse);
 
 export type ListAdCreativesData = {
     query: {
@@ -43795,9 +42795,7 @@ export type ListAdCreativesResponse = ({
     };
 });
 
-export type ListAdCreativesError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListAdCreativesError = (unknown | ErrorResponse);
 
 export type CreateAdCreativeData = {
     body: {
@@ -43869,9 +42867,7 @@ export type CreateAdCreativeResponse = ({
     creativeId?: string;
 });
 
-export type CreateAdCreativeError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateAdCreativeError = (unknown | ErrorResponse);
 
 export type GetAdCreativeData = {
     path: {
@@ -43901,9 +42897,7 @@ export type GetAdCreativeResponse = ({
     };
 });
 
-export type GetAdCreativeError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetAdCreativeError = (unknown | ErrorResponse);
 
 export type UpdateAdCreativeData = {
     body: {
@@ -43927,9 +42921,7 @@ export type UpdateAdCreativeResponse = ({
     message?: string;
 });
 
-export type UpdateAdCreativeError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateAdCreativeError = (unknown | ErrorResponse);
 
 export type DeleteAdCreativeData = {
     path: {
@@ -43951,9 +42943,7 @@ export type DeleteAdCreativeResponse = ({
     message?: string;
 });
 
-export type DeleteAdCreativeError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type DeleteAdCreativeError = (unknown | ErrorResponse);
 
 export type ListValueRuleSetsData = {
     query: {
@@ -43987,9 +42977,7 @@ export type ListValueRuleSetsResponse = ({
     };
 });
 
-export type ListValueRuleSetsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListValueRuleSetsError = (unknown | ErrorResponse);
 
 export type CreateValueRuleSetData = {
     body: {
@@ -44017,9 +43005,7 @@ export type CreateValueRuleSetResponse = ({
     valueRuleSetId?: (string) | null;
 });
 
-export type CreateValueRuleSetError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateValueRuleSetError = (unknown | ErrorResponse);
 
 export type GetValueRuleSetData = {
     path: {
@@ -44040,9 +43026,7 @@ export type GetValueRuleSetResponse = ({
     valueRuleSet?: ValueRuleSet;
 });
 
-export type GetValueRuleSetError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetValueRuleSetError = (unknown | ErrorResponse);
 
 export type UpdateValueRuleSetData = {
     body: {
@@ -44074,9 +43058,7 @@ export type UpdateValueRuleSetResponse = ({
     message?: string;
 });
 
-export type UpdateValueRuleSetError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateValueRuleSetError = (unknown | ErrorResponse);
 
 export type DeleteValueRuleSetData = {
     path: {
@@ -44098,9 +43080,7 @@ export type DeleteValueRuleSetResponse = ({
     message?: string;
 });
 
-export type DeleteValueRuleSetError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type DeleteValueRuleSetError = (unknown | ErrorResponse);
 
 export type ListAdNegativeKeywordListsData = {
     query: {
@@ -44130,9 +43110,7 @@ export type ListAdNegativeKeywordListsResponse = ({
     stale?: boolean;
 });
 
-export type ListAdNegativeKeywordListsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdNegativeKeywordListsError = (ErrorResponse | unknown);
 
 export type CreateAdNegativeKeywordListData = {
     body: {
@@ -44183,9 +43161,7 @@ export type CreateAdNegativeKeywordListResponse = ({
     customerId?: string;
 });
 
-export type CreateAdNegativeKeywordListError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateAdNegativeKeywordListError = (ErrorResponse | unknown);
 
 export type GetAdNegativeKeywordListData = {
     path: {
@@ -44220,9 +43196,7 @@ export type GetAdNegativeKeywordListResponse = ({
     stale?: boolean;
 });
 
-export type GetAdNegativeKeywordListError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetAdNegativeKeywordListError = (ErrorResponse | unknown);
 
 export type UpdateAdNegativeKeywordListData = {
     body: {
@@ -44261,9 +43235,7 @@ export type UpdateAdNegativeKeywordListResponse = ({
     customerId?: string;
 });
 
-export type UpdateAdNegativeKeywordListError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAdNegativeKeywordListError = (ErrorResponse | unknown);
 
 export type DeleteAdNegativeKeywordListData = {
     path: {
@@ -44288,9 +43260,7 @@ export type DeleteAdNegativeKeywordListResponse = ({
     customerId?: string;
 });
 
-export type DeleteAdNegativeKeywordListError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteAdNegativeKeywordListError = (ErrorResponse | unknown);
 
 export type ReplaceAdNegativeKeywordListKeywordsData = {
     body: {
@@ -44336,9 +43306,7 @@ export type ReplaceAdNegativeKeywordListKeywordsResponse = ({
     customerId?: string;
 });
 
-export type ReplaceAdNegativeKeywordListKeywordsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReplaceAdNegativeKeywordListKeywordsError = (ErrorResponse | unknown);
 
 export type ListCampaignNegativeKeywordListsData = {
     path: {
@@ -44365,9 +43333,7 @@ export type ListCampaignNegativeKeywordListsResponse = ({
     stale?: boolean;
 });
 
-export type ListCampaignNegativeKeywordListsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCampaignNegativeKeywordListsError = (ErrorResponse | unknown);
 
 export type ReplaceCampaignNegativeKeywordListsData = {
     body: {
@@ -44397,9 +43363,7 @@ export type ReplaceCampaignNegativeKeywordListsResponse = ({
     customerId?: string;
 });
 
-export type ReplaceCampaignNegativeKeywordListsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReplaceCampaignNegativeKeywordListsError = (ErrorResponse | unknown);
 
 export type ListAccountCalloutsData = {
     query: {
@@ -44429,9 +43393,7 @@ export type ListAccountCalloutsResponse = ({
     stale?: boolean;
 });
 
-export type ListAccountCalloutsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAccountCalloutsError = (ErrorResponse | unknown);
 
 export type AddAccountCalloutsData = {
     body: {
@@ -44460,9 +43422,7 @@ export type AddAccountCalloutsResponse = ({
     }>;
 });
 
-export type AddAccountCalloutsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddAccountCalloutsError = (ErrorResponse | unknown);
 
 export type UpdateAccountCalloutsData = {
     body: {
@@ -44496,9 +43456,7 @@ export type UpdateAccountCalloutsResponse = ({
     customerId?: string;
 });
 
-export type UpdateAccountCalloutsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAccountCalloutsError = (ErrorResponse | unknown);
 
 export type RemoveAccountCalloutData = {
     body: {
@@ -44524,9 +43482,7 @@ export type RemoveAccountCalloutResponse = ({
     customerId?: string;
 });
 
-export type RemoveAccountCalloutError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveAccountCalloutError = (ErrorResponse | unknown);
 
 export type ListAccountSitelinksData = {
     query: {
@@ -44561,9 +43517,7 @@ export type ListAccountSitelinksResponse = ({
     stale?: boolean;
 });
 
-export type ListAccountSitelinksError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAccountSitelinksError = (ErrorResponse | unknown);
 
 export type AddAccountSitelinksData = {
     body: {
@@ -44595,9 +43549,7 @@ export type AddAccountSitelinksResponse = ({
     }>;
 });
 
-export type AddAccountSitelinksError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddAccountSitelinksError = (ErrorResponse | unknown);
 
 export type UpdateAccountSitelinksData = {
     body: {
@@ -44638,9 +43590,7 @@ export type UpdateAccountSitelinksResponse = ({
     customerId?: string;
 });
 
-export type UpdateAccountSitelinksError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAccountSitelinksError = (ErrorResponse | unknown);
 
 export type RemoveAccountSitelinkData = {
     body: {
@@ -44666,9 +43616,7 @@ export type RemoveAccountSitelinkResponse = ({
     customerId?: string;
 });
 
-export type RemoveAccountSitelinkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveAccountSitelinkError = (ErrorResponse | unknown);
 
 export type ListAccountStructuredSnippetsData = {
     query: {
@@ -44701,9 +43649,7 @@ export type ListAccountStructuredSnippetsResponse = ({
     stale?: boolean;
 });
 
-export type ListAccountStructuredSnippetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAccountStructuredSnippetsError = (ErrorResponse | unknown);
 
 export type AddAccountStructuredSnippetsData = {
     body: {
@@ -44733,9 +43679,7 @@ export type AddAccountStructuredSnippetsResponse = ({
     }>;
 });
 
-export type AddAccountStructuredSnippetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddAccountStructuredSnippetsError = (ErrorResponse | unknown);
 
 export type UpdateAccountStructuredSnippetsData = {
     body: {
@@ -44767,9 +43711,7 @@ export type UpdateAccountStructuredSnippetsResponse = ({
     customerId?: string;
 });
 
-export type UpdateAccountStructuredSnippetsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAccountStructuredSnippetsError = (ErrorResponse | unknown);
 
 export type RemoveAccountStructuredSnippetData = {
     body: {
@@ -44795,9 +43737,7 @@ export type RemoveAccountStructuredSnippetResponse = ({
     customerId?: string;
 });
 
-export type RemoveAccountStructuredSnippetError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveAccountStructuredSnippetError = (ErrorResponse | unknown);
 
 export type GetAdAccountHierarchyData = {
     query: {
@@ -44884,9 +43824,7 @@ export type GetAdAccountHierarchyResponse = ({
     stale?: boolean;
 });
 
-export type GetAdAccountHierarchyError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetAdAccountHierarchyError = (ErrorResponse | unknown);
 
 export type InviteAdAccountToManagerData = {
     body: {
@@ -44908,9 +43846,7 @@ export type InviteAdAccountToManagerData = {
 
 export type InviteAdAccountToManagerResponse = (GoogleAdsManagerLink);
 
-export type InviteAdAccountToManagerError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type InviteAdAccountToManagerError = (ErrorResponse | unknown);
 
 export type UpdateAdAccountManagerLinkData = {
     body: {
@@ -44937,9 +43873,7 @@ export type UpdateAdAccountManagerLinkData = {
 
 export type UpdateAdAccountManagerLinkResponse = (GoogleAdsManagerLink);
 
-export type UpdateAdAccountManagerLinkError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAdAccountManagerLinkError = (ErrorResponse | unknown);
 
 export type ListAdAccountUsersData = {
     query: {
@@ -44964,9 +43898,7 @@ export type ListAdAccountUsersResponse = ({
     users?: Array<MetaAssignedUser>;
 });
 
-export type ListAdAccountUsersError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListAdAccountUsersError = (unknown | ErrorResponse);
 
 export type AssignAdAccountUserData = {
     body: {
@@ -44994,9 +43926,7 @@ export type AssignAdAccountUserResponse = ({
     };
 });
 
-export type AssignAdAccountUserError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type AssignAdAccountUserError = (unknown | ErrorResponse);
 
 export type RemoveAdAccountUserData = {
     query: {
@@ -45021,9 +43951,7 @@ export type RemoveAdAccountUserResponse = ({
     removed?: boolean;
 });
 
-export type RemoveAdAccountUserError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type RemoveAdAccountUserError = (unknown | ErrorResponse);
 
 export type GetAdAccountFinanceData = {
     query: {
@@ -45068,9 +43996,7 @@ export type GetAdAccountFinanceResponse = ({
     } | null;
 });
 
-export type GetAdAccountFinanceError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetAdAccountFinanceError = (unknown | ErrorResponse);
 
 export type CreateAdAccountData = {
     body: {
@@ -45168,9 +44094,7 @@ export type CreateAdAccountResponse = ({
     warnings: Array<(string)>;
 });
 
-export type CreateAdAccountError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateAdAccountError = (ErrorResponse);
 
 export type ListAdAccountsData = {
     query: {
@@ -45325,9 +44249,7 @@ export type ListAdAccountsResponse = ({
     stale?: boolean;
 });
 
-export type ListAdAccountsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdAccountsError = (ErrorResponse | unknown);
 
 export type UpdateAdAccountData = {
     body: {
@@ -45387,9 +44309,7 @@ export type UpdateAdAccountResponse = ({
     };
 });
 
-export type UpdateAdAccountError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateAdAccountError = (unknown | ErrorResponse);
 
 export type GetDsaDefaultsData = {
     query: {
@@ -45412,9 +44332,7 @@ export type GetDsaDefaultsResponse = ({
     };
 });
 
-export type GetDsaDefaultsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetDsaDefaultsError = (unknown | ErrorResponse);
 
 export type GetDsaRecommendationsData = {
     query: {
@@ -45434,9 +44352,7 @@ export type GetDsaRecommendationsResponse = ({
     recommendations?: Array<(string)>;
 });
 
-export type GetDsaRecommendationsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetDsaRecommendationsError = (unknown | ErrorResponse);
 
 export type BoostPostData = {
     body: {
@@ -45924,9 +44840,7 @@ export type BoostPostResponse = ({
     message?: string;
 });
 
-export type BoostPostError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type BoostPostError = (unknown | ErrorResponse);
 
 export type ListGoogleAssetGroupsData = {
     path: {
@@ -47238,9 +46152,7 @@ export type CreateStandaloneAdResponse = ({
     message?: string;
 }));
 
-export type CreateStandaloneAdError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateStandaloneAdError = (unknown | ErrorResponse);
 
 export type ListLeadsData = {
     query?: {
@@ -47312,9 +46224,7 @@ export type ListLeadsResponse = ({
     };
 });
 
-export type ListLeadsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListLeadsError = (ErrorResponse | unknown);
 
 export type ListLeadFormsData = {
     query: {
@@ -47342,9 +46252,7 @@ export type ListLeadFormsResponse = ({
     };
 });
 
-export type ListLeadFormsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListLeadFormsError = (ErrorResponse | unknown);
 
 export type CreateLeadFormData = {
     body: {
@@ -47529,9 +46437,7 @@ export type CreateLeadFormResponse = ({
     };
 });
 
-export type CreateLeadFormError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateLeadFormError = (ErrorResponse | unknown);
 
 export type GetLeadFormData = {
     path: {
@@ -47560,9 +46466,7 @@ export type GetLeadFormResponse = ({
 });
 });
 
-export type GetLeadFormError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetLeadFormError = (ErrorResponse | unknown);
 
 export type ArchiveLeadFormData = {
     path: {
@@ -47585,9 +46489,7 @@ export type ArchiveLeadFormResponse = ({
     archived?: boolean;
 });
 
-export type ArchiveLeadFormError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ArchiveLeadFormError = (ErrorResponse | unknown);
 
 export type ListFormLeadsData = {
     path: {
@@ -47624,9 +46526,7 @@ export type ListFormLeadsResponse = ({
     };
 });
 
-export type ListFormLeadsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListFormLeadsError = (ErrorResponse);
 
 export type CreateTestLeadData = {
     body: {
@@ -47648,9 +46548,7 @@ export type CreateTestLeadResponse = ({
     };
 });
 
-export type CreateTestLeadError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateTestLeadError = (ErrorResponse);
 
 export type DeleteTestLeadData = {
     path: {
@@ -47676,9 +46574,7 @@ export type DeleteTestLeadResponse = ({
     deleted?: Array<(string)>;
 });
 
-export type DeleteTestLeadError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteTestLeadError = (ErrorResponse | unknown);
 
 export type UploadAdImageData = {
     body: {
@@ -47715,9 +46611,7 @@ export type UploadAdImageResponse = ({
     };
 });
 
-export type UploadAdImageError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UploadAdImageError = (unknown | ErrorResponse);
 
 export type ListAdImagesData = {
     query: {
@@ -47757,9 +46651,7 @@ export type ListAdImagesResponse = ({
     };
 });
 
-export type ListAdImagesError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListAdImagesError = (unknown | ErrorResponse);
 
 export type UploadAdVideoData = {
     body: {
@@ -47800,9 +46692,7 @@ export type UploadAdVideoResponse = ({
     };
 });
 
-export type UploadAdVideoError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UploadAdVideoError = (unknown | ErrorResponse);
 
 export type ListAdVideosData = {
     query: {
@@ -47842,9 +46732,7 @@ export type ListAdVideosResponse = ({
     };
 });
 
-export type ListAdVideosError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdVideosError = (ErrorResponse | unknown);
 
 export type DeleteAdVideoData = {
     path: {
@@ -47871,9 +46759,7 @@ export type DeleteAdVideoResponse = ({
     success?: boolean;
 });
 
-export type DeleteAdVideoError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteAdVideoError = (ErrorResponse | unknown);
 
 export type SearchAdInterestsData = {
     query: {
@@ -47896,9 +46782,7 @@ export type SearchAdInterestsResponse = ({
     }>;
 });
 
-export type SearchAdInterestsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SearchAdInterestsError = (ErrorResponse | unknown);
 
 export type SearchAdTargetingData = {
     query: {
@@ -47958,9 +46842,7 @@ export type SearchAdTargetingResponse = ({
     }>;
 });
 
-export type SearchAdTargetingError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type SearchAdTargetingError = (unknown | ErrorResponse);
 
 export type SearchAdLibraryData = {
     query?: {
@@ -48052,9 +46934,7 @@ export type SearchAdLibraryResponse = ({
     };
 });
 
-export type SearchAdLibraryError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SearchAdLibraryError = (ErrorResponse | unknown);
 
 export type EstimateAdReachData = {
     body: {
@@ -48111,9 +46991,7 @@ export type EstimateAdReachResponse = ({
     estimateReady?: (boolean) | null;
 });
 
-export type EstimateAdReachError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type EstimateAdReachError = (unknown | ErrorResponse);
 
 export type GetLinkedInBidPricingData = {
     body: {
@@ -48183,9 +47061,7 @@ export type GetLinkedInBidPricingResponse = ({
     } | null;
 });
 
-export type GetLinkedInBidPricingError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetLinkedInBidPricingError = (unknown | ErrorResponse);
 
 export type GetLinkedInSupplyForecastData = {
     body: {
@@ -48256,9 +47132,7 @@ export type GetLinkedInSupplyForecastResponse = ({
     }>;
 });
 
-export type GetLinkedInSupplyForecastError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetLinkedInSupplyForecastError = (unknown | ErrorResponse);
 
 export type ListAdCatalogsData = {
     query: {
@@ -48286,9 +47160,7 @@ export type ListAdCatalogsResponse = ({
     catalogs?: Array<MetaProductCatalog>;
 });
 
-export type ListAdCatalogsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListAdCatalogsError = (ErrorResponse);
 
 export type CreateAdCatalogData = {
     body: {
@@ -48317,9 +47189,7 @@ export type CreateAdCatalogResponse = ({
     catalog?: MetaProductCatalog;
 });
 
-export type CreateAdCatalogError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateAdCatalogError = (ErrorResponse);
 
 export type GetAdCatalogData = {
     path: {
@@ -48860,9 +47730,7 @@ export type ListAdAudiencesResponse = ({
     }>;
 });
 
-export type ListAdAudiencesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdAudiencesError = (ErrorResponse | unknown);
 
 export type CreateAdAudienceData = {
     body: ({
@@ -49033,9 +47901,7 @@ export type CreateAdAudienceResponse = ({
     message?: string;
 });
 
-export type CreateAdAudienceError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateAdAudienceError = (unknown | ErrorResponse);
 
 export type GetAdAudienceData = {
     path: {
@@ -49058,9 +47924,9 @@ export type GetAdAudienceResponse = ({
     } | null;
 });
 
-export type GetAdAudienceError = ({
+export type GetAdAudienceError = (ErrorResponse | unknown | {
     error?: string;
-} | unknown);
+});
 
 export type UpdateAdAudienceData = {
     body: {
@@ -49083,7 +47949,7 @@ export type UpdateAdAudienceResponse = ({
     message?: string;
 });
 
-export type UpdateAdAudienceError = (unknown | {
+export type UpdateAdAudienceError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -49097,9 +47963,9 @@ export type DeleteAdAudienceResponse = ({
     message?: string;
 });
 
-export type DeleteAdAudienceError = ({
+export type DeleteAdAudienceError = (ErrorResponse | unknown | {
     error?: string;
-} | unknown);
+});
 
 export type AddUsersToAdAudienceData = {
     body: {
@@ -49122,7 +47988,7 @@ export type AddUsersToAdAudienceResponse = ({
     numInvalid?: number;
 });
 
-export type AddUsersToAdAudienceError = (unknown | {
+export type AddUsersToAdAudienceError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -49154,7 +48020,7 @@ export type ReplaceAdAudienceCompaniesResponse = ({
     numReceived?: number;
 });
 
-export type ReplaceAdAudienceCompaniesError = (unknown | {
+export type ReplaceAdAudienceCompaniesError = (unknown | ErrorResponse | {
     error?: string;
 });
 
@@ -49190,9 +48056,7 @@ export type GetConversionsQualityResponse = ({
     }>;
 });
 
-export type GetConversionsQualityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetConversionsQualityError = (ErrorResponse | unknown);
 
 export type SendConversionsData = {
     body: {
@@ -49263,9 +48127,7 @@ export type SendConversionsResponse = ({
     traceId?: string;
 });
 
-export type SendConversionsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type SendConversionsError = (unknown | ErrorResponse);
 
 export type AdjustConversionsData = {
     body: {
@@ -49339,9 +48201,7 @@ export type AdjustConversionsResponse = ({
     traceId?: string;
 });
 
-export type AdjustConversionsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type AdjustConversionsError = (unknown | ErrorResponse);
 
 export type ListConversionActionsData = {
     query: {
@@ -49381,9 +48241,7 @@ export type ListConversionActionsResponse = ({
     stale?: boolean;
 });
 
-export type ListConversionActionsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListConversionActionsError = (ErrorResponse | unknown);
 
 export type CreateConversionActionData = {
     body: {
@@ -49420,9 +48278,7 @@ export type CreateConversionActionResponse = ({
     action?: ConversionAction;
 });
 
-export type CreateConversionActionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateConversionActionError = (ErrorResponse | unknown);
 
 export type ListAdConversionGoalsData = {
     query: {
@@ -49449,9 +48305,7 @@ export type ListAdConversionGoalsResponse = ({
     stale?: boolean;
 });
 
-export type ListAdConversionGoalsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListAdConversionGoalsError = (ErrorResponse | unknown);
 
 export type UpdateAdConversionGoalsData = {
     body: {
@@ -49477,9 +48331,7 @@ export type UpdateAdConversionGoalsResponse = ({
     goals?: Array<GoogleCustomerConversionGoal>;
 });
 
-export type UpdateAdConversionGoalsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateAdConversionGoalsError = (ErrorResponse | unknown);
 
 export type UpdateConversionActionData = {
     body: {
@@ -49517,9 +48369,7 @@ export type UpdateConversionActionResponse = ({
     };
 });
 
-export type UpdateConversionActionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateConversionActionError = (ErrorResponse | unknown);
 
 export type ListCustomConversionGoalsData = {
     query: {
@@ -49546,9 +48396,7 @@ export type ListCustomConversionGoalsResponse = ({
     stale?: boolean;
 });
 
-export type ListCustomConversionGoalsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCustomConversionGoalsError = (ErrorResponse | unknown);
 
 export type CreateCustomConversionGoalData = {
     body: {
@@ -49576,9 +48424,7 @@ export type CreateCustomConversionGoalResponse = ({
     resourceName?: string;
 });
 
-export type CreateCustomConversionGoalError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCustomConversionGoalError = (ErrorResponse | unknown);
 
 export type UpdateCustomConversionGoalData = {
     body: {
@@ -49614,9 +48460,7 @@ export type UpdateCustomConversionGoalResponse = ({
     goal?: GoogleCustomConversionGoal;
 });
 
-export type UpdateCustomConversionGoalError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCustomConversionGoalError = (ErrorResponse | unknown);
 
 export type RemoveCustomConversionGoalData = {
     path: {
@@ -49651,9 +48495,7 @@ export type RemoveCustomConversionGoalResponse = ({
     removed?: boolean;
 });
 
-export type RemoveCustomConversionGoalError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveCustomConversionGoalError = (ErrorResponse | unknown);
 
 export type GetCampaignConversionGoalsData = {
     path: {
@@ -49670,9 +48512,7 @@ export type GetCampaignConversionGoalsResponse = ((GoogleCampaignConversionGoals
     stale?: boolean;
 }));
 
-export type GetCampaignConversionGoalsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCampaignConversionGoalsError = (ErrorResponse | unknown);
 
 export type UpdateCampaignConversionGoalsData = {
     body: {
@@ -49695,9 +48535,7 @@ export type UpdateCampaignConversionGoalsResponse = ((GoogleCampaignConversionGo
     customerId?: string;
 }));
 
-export type UpdateCampaignConversionGoalsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCampaignConversionGoalsError = (ErrorResponse | unknown);
 
 export type ListConversionDestinationsData = {
     path: {
@@ -49762,9 +48600,7 @@ export type ListConversionDestinationsResponse = ({
     }>;
 });
 
-export type ListConversionDestinationsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListConversionDestinationsError = (unknown | ErrorResponse);
 
 export type CreateConversionDestinationData = {
     body: {
@@ -49873,9 +48709,7 @@ export type CreateConversionDestinationResponse = ({
     destination?: ConversionDestination;
 });
 
-export type CreateConversionDestinationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateConversionDestinationError = (unknown | ErrorResponse);
 
 export type GetConversionDestinationData = {
     path: {
@@ -49895,9 +48729,7 @@ export type GetConversionDestinationResponse = ({
     destination?: ConversionDestination;
 });
 
-export type GetConversionDestinationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetConversionDestinationError = (unknown | ErrorResponse);
 
 export type UpdateConversionDestinationData = {
     body: {
@@ -49948,9 +48780,7 @@ export type UpdateConversionDestinationResponse = ({
     destination?: ConversionDestination;
 });
 
-export type UpdateConversionDestinationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateConversionDestinationError = (unknown | ErrorResponse);
 
 export type DeleteConversionDestinationData = {
     path: {
@@ -49967,9 +48797,7 @@ export type DeleteConversionDestinationData = {
 
 export type DeleteConversionDestinationResponse = (void);
 
-export type DeleteConversionDestinationError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type DeleteConversionDestinationError = (unknown | ErrorResponse);
 
 export type ListConversionAssociationsData = {
     path: {
@@ -49993,9 +48821,7 @@ export type ListConversionAssociationsResponse = ({
     }>;
 });
 
-export type ListConversionAssociationsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListConversionAssociationsError = (unknown | ErrorResponse);
 
 export type AddConversionAssociationsData = {
     body: {
@@ -50020,9 +48846,7 @@ export type AddConversionAssociationsResponse = ({
     }>;
 });
 
-export type AddConversionAssociationsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type AddConversionAssociationsError = (unknown | ErrorResponse);
 
 export type RemoveConversionAssociationsData = {
     path: {
@@ -50050,9 +48874,7 @@ export type RemoveConversionAssociationsResponse = ({
     }>;
 });
 
-export type RemoveConversionAssociationsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type RemoveConversionAssociationsError = (unknown | ErrorResponse);
 
 export type GetConversionMetricsData = {
     path: {
@@ -50085,9 +48907,7 @@ export type GetConversionMetricsResponse = ({
     }>;
 });
 
-export type GetConversionMetricsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetConversionMetricsError = (unknown | ErrorResponse);
 
 export type ListWhatsAppConversionsData = {
     query: {
@@ -50129,9 +48949,7 @@ export type ListWhatsAppConversionsResponse = ({
     }>;
 });
 
-export type ListWhatsAppConversionsError = ({
-    error?: string;
-} | unknown);
+export type ListWhatsAppConversionsError = (ErrorResponse | unknown);
 
 export type SendWhatsAppConversionData = {
     body: {
@@ -50250,9 +49068,7 @@ export type SendWhatsAppConversionResponse = ({
     traceId?: string;
 });
 
-export type SendWhatsAppConversionError = (unknown | {
-    error?: string;
-});
+export type SendWhatsAppConversionError = (unknown | ErrorResponse);
 
 export type CreateMessagingAdData = {
     body: (CtwaAdRequestBody & {
@@ -50305,9 +49121,7 @@ export type CreateMessagingAdResponse = ({
     message: string;
 } | (CtwaSingleResponse | CtwaMultiResponse));
 
-export type CreateMessagingAdError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateMessagingAdError = (unknown | ErrorResponse);
 
 export type CreateCallAdData = {
     body: (CtwaAdRequestBody & {
@@ -50330,9 +49144,7 @@ export type CreateCallAdData = {
 
 export type CreateCallAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));
 
-export type CreateCallAdError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateCallAdError = (unknown | ErrorResponse);
 
 export type CreateCtwaAdData = {
     body: CtwaAdRequestBody;
@@ -50346,9 +49158,7 @@ export type CreateCtwaAdData = {
 
 export type CreateCtwaAdResponse = ((CtwaSingleResponse | CtwaMultiResponse));
 
-export type CreateCtwaAdError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateCtwaAdError = (unknown | ErrorResponse);
 
 export type ListCustomConversionsData = {
     path: {
@@ -50370,9 +49180,7 @@ export type ListCustomConversionsResponse = ({
     data?: Array<CustomConversion>;
 });
 
-export type ListCustomConversionsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListCustomConversionsError = (unknown | ErrorResponse);
 
 export type CreateCustomConversionData = {
     body: {
@@ -50409,9 +49217,7 @@ export type CreateCustomConversionData = {
 
 export type CreateCustomConversionResponse = (CustomConversionResult);
 
-export type CreateCustomConversionError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateCustomConversionError = (unknown | ErrorResponse);
 
 export type GetBusinessAgentStatusData = {
     path: {
@@ -50424,9 +49230,7 @@ export type GetBusinessAgentStatusData = {
 
 export type GetBusinessAgentStatusResponse = (BusinessAgentStatus);
 
-export type GetBusinessAgentStatusError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentStatusError = (ErrorResponse);
 
 export type OnboardBusinessAgentData = {
     path: {
@@ -50441,9 +49245,7 @@ export type OnboardBusinessAgentResponse = ({
     agentId: string;
 });
 
-export type OnboardBusinessAgentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type OnboardBusinessAgentError = (ErrorResponse | unknown);
 
 export type ListBusinessAgentSettingsData = {
     path: {
@@ -50461,9 +49263,7 @@ export type ListBusinessAgentSettingsResponse = ({
     settings: Array<BusinessAgentSettings>;
 });
 
-export type ListBusinessAgentSettingsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentSettingsError = (ErrorResponse);
 
 export type UpdateBusinessAgentSettingsData = {
     body: {
@@ -50499,9 +49299,7 @@ export type UpdateBusinessAgentSettingsData = {
 
 export type UpdateBusinessAgentSettingsResponse = (BusinessAgentSettings);
 
-export type UpdateBusinessAgentSettingsError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateBusinessAgentSettingsError = (ErrorResponse);
 
 export type ListBusinessAgentAllowlistData = {
     path: {
@@ -50516,9 +49314,7 @@ export type ListBusinessAgentAllowlistResponse = ({
     entries: Array<BusinessAgentAllowlistEntry>;
 });
 
-export type ListBusinessAgentAllowlistError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentAllowlistError = (ErrorResponse);
 
 export type AddBusinessAgentAllowlistEntryData = {
     body: {
@@ -50534,9 +49330,7 @@ export type AddBusinessAgentAllowlistEntryData = {
 
 export type AddBusinessAgentAllowlistEntryResponse = (BusinessAgentAllowlistEntry);
 
-export type AddBusinessAgentAllowlistEntryError = (ErrorResponse | {
-    error?: string;
-});
+export type AddBusinessAgentAllowlistEntryError = (ErrorResponse);
 
 export type RemoveBusinessAgentAllowlistEntryData = {
     path: {
@@ -50552,9 +49346,7 @@ export type RemoveBusinessAgentAllowlistEntryResponse = ({
     success: boolean;
 });
 
-export type RemoveBusinessAgentAllowlistEntryError = (ErrorResponse | {
-    error?: string;
-});
+export type RemoveBusinessAgentAllowlistEntryError = (ErrorResponse);
 
 export type GetBusinessAgentBusinessInformationData = {
     path: {
@@ -50567,9 +49359,7 @@ export type GetBusinessAgentBusinessInformationData = {
 
 export type GetBusinessAgentBusinessInformationResponse = (BusinessAgentBusinessInformation);
 
-export type GetBusinessAgentBusinessInformationError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentBusinessInformationError = (ErrorResponse);
 
 export type ReplaceBusinessAgentBusinessInformationData = {
     body: BusinessAgentBusinessInformation;
@@ -50583,9 +49373,7 @@ export type ReplaceBusinessAgentBusinessInformationData = {
 
 export type ReplaceBusinessAgentBusinessInformationResponse = (BusinessAgentBusinessInformation);
 
-export type ReplaceBusinessAgentBusinessInformationError = (ErrorResponse | {
-    error?: string;
-});
+export type ReplaceBusinessAgentBusinessInformationError = (ErrorResponse);
 
 export type ResetBusinessAgentBusinessInformationData = {
     path: {
@@ -50600,9 +49388,7 @@ export type ResetBusinessAgentBusinessInformationResponse = ({
     success: boolean;
 });
 
-export type ResetBusinessAgentBusinessInformationError = (ErrorResponse | {
-    error?: string;
-});
+export type ResetBusinessAgentBusinessInformationError = (ErrorResponse);
 
 export type ListBusinessAgentFaqsData = {
     path: {
@@ -50617,9 +49403,7 @@ export type ListBusinessAgentFaqsResponse = ({
     faqs: Array<BusinessAgentFaq>;
 });
 
-export type ListBusinessAgentFaqsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentFaqsError = (ErrorResponse);
 
 export type CreateBusinessAgentFaqData = {
     body: BusinessAgentFaqInput;
@@ -50633,9 +49417,7 @@ export type CreateBusinessAgentFaqData = {
 
 export type CreateBusinessAgentFaqResponse = (BusinessAgentFaq);
 
-export type CreateBusinessAgentFaqError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateBusinessAgentFaqError = (ErrorResponse | unknown);
 
 export type GetBusinessAgentFaqData = {
     path: {
@@ -50649,9 +49431,7 @@ export type GetBusinessAgentFaqData = {
 
 export type GetBusinessAgentFaqResponse = (BusinessAgentFaq);
 
-export type GetBusinessAgentFaqError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentFaqError = (ErrorResponse);
 
 export type UpdateBusinessAgentFaqData = {
     body: BusinessAgentFaqInput;
@@ -50666,9 +49446,7 @@ export type UpdateBusinessAgentFaqData = {
 
 export type UpdateBusinessAgentFaqResponse = (BusinessAgentFaq);
 
-export type UpdateBusinessAgentFaqError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateBusinessAgentFaqError = (ErrorResponse);
 
 export type DeleteBusinessAgentFaqData = {
     path: {
@@ -50684,9 +49462,7 @@ export type DeleteBusinessAgentFaqResponse = ({
     success: boolean;
 });
 
-export type DeleteBusinessAgentFaqError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteBusinessAgentFaqError = (ErrorResponse);
 
 export type ListBusinessAgentWebsitesData = {
     path: {
@@ -50701,9 +49477,7 @@ export type ListBusinessAgentWebsitesResponse = ({
     websites: Array<BusinessAgentWebsite>;
 });
 
-export type ListBusinessAgentWebsitesError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentWebsitesError = (ErrorResponse);
 
 export type AddBusinessAgentWebsiteData = {
     body: BusinessAgentWebsiteInput;
@@ -50717,9 +49491,7 @@ export type AddBusinessAgentWebsiteData = {
 
 export type AddBusinessAgentWebsiteResponse = (BusinessAgentWebsite);
 
-export type AddBusinessAgentWebsiteError = (ErrorResponse | {
-    error?: string;
-});
+export type AddBusinessAgentWebsiteError = (ErrorResponse);
 
 export type GetBusinessAgentWebsiteData = {
     path: {
@@ -50733,9 +49505,7 @@ export type GetBusinessAgentWebsiteData = {
 
 export type GetBusinessAgentWebsiteResponse = (BusinessAgentWebsite);
 
-export type GetBusinessAgentWebsiteError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentWebsiteError = (ErrorResponse);
 
 export type UpdateBusinessAgentWebsiteData = {
     body: BusinessAgentWebsiteInput;
@@ -50750,9 +49520,7 @@ export type UpdateBusinessAgentWebsiteData = {
 
 export type UpdateBusinessAgentWebsiteResponse = (BusinessAgentWebsite);
 
-export type UpdateBusinessAgentWebsiteError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateBusinessAgentWebsiteError = (ErrorResponse);
 
 export type DeleteBusinessAgentWebsiteData = {
     path: {
@@ -50768,9 +49536,7 @@ export type DeleteBusinessAgentWebsiteResponse = ({
     success: boolean;
 });
 
-export type DeleteBusinessAgentWebsiteError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteBusinessAgentWebsiteError = (ErrorResponse);
 
 export type ListBusinessAgentFilesData = {
     path: {
@@ -50785,9 +49551,7 @@ export type ListBusinessAgentFilesResponse = ({
     files: Array<BusinessAgentKnowledgeFile>;
 });
 
-export type ListBusinessAgentFilesError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentFilesError = (ErrorResponse);
 
 export type UploadBusinessAgentFileData = {
     body: {
@@ -50810,9 +49574,7 @@ export type UploadBusinessAgentFileData = {
 
 export type UploadBusinessAgentFileResponse = (BusinessAgentKnowledgeFile);
 
-export type UploadBusinessAgentFileError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UploadBusinessAgentFileError = (ErrorResponse | unknown);
 
 export type GetBusinessAgentFileData = {
     path: {
@@ -50826,9 +49588,7 @@ export type GetBusinessAgentFileData = {
 
 export type GetBusinessAgentFileResponse = (BusinessAgentKnowledgeFile);
 
-export type GetBusinessAgentFileError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentFileError = (ErrorResponse);
 
 export type DeleteBusinessAgentFileData = {
     path: {
@@ -50844,9 +49604,7 @@ export type DeleteBusinessAgentFileResponse = ({
     success: boolean;
 });
 
-export type DeleteBusinessAgentFileError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteBusinessAgentFileError = (ErrorResponse);
 
 export type ListBusinessAgentSkillsData = {
     path: {
@@ -50861,9 +49619,7 @@ export type ListBusinessAgentSkillsResponse = ({
     skills: Array<BusinessAgentSkill>;
 });
 
-export type ListBusinessAgentSkillsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentSkillsError = (ErrorResponse);
 
 export type CreateBusinessAgentSkillData = {
     body: BusinessAgentSkillInput;
@@ -50877,9 +49633,7 @@ export type CreateBusinessAgentSkillData = {
 
 export type CreateBusinessAgentSkillResponse = (BusinessAgentSkill);
 
-export type CreateBusinessAgentSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateBusinessAgentSkillError = (ErrorResponse);
 
 export type GetBusinessAgentSkillData = {
     path: {
@@ -50893,9 +49647,7 @@ export type GetBusinessAgentSkillData = {
 
 export type GetBusinessAgentSkillResponse = (BusinessAgentSkill);
 
-export type GetBusinessAgentSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentSkillError = (ErrorResponse);
 
 export type UpdateBusinessAgentSkillData = {
     body: BusinessAgentSkillInput;
@@ -50910,9 +49662,7 @@ export type UpdateBusinessAgentSkillData = {
 
 export type UpdateBusinessAgentSkillResponse = (BusinessAgentSkill);
 
-export type UpdateBusinessAgentSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateBusinessAgentSkillError = (ErrorResponse);
 
 export type DeleteBusinessAgentSkillData = {
     path: {
@@ -50928,9 +49678,7 @@ export type DeleteBusinessAgentSkillResponse = ({
     success: boolean;
 });
 
-export type DeleteBusinessAgentSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteBusinessAgentSkillError = (ErrorResponse);
 
 export type ListBusinessAgentUiSkillsData = {
     path: {
@@ -50953,9 +49701,7 @@ export type ListBusinessAgentUiSkillsResponse = ({
     };
 });
 
-export type ListBusinessAgentUiSkillsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentUiSkillsError = (ErrorResponse);
 
 export type CreateBusinessAgentUiSkillData = {
     body: BusinessAgentUiSkillInput;
@@ -50969,9 +49715,7 @@ export type CreateBusinessAgentUiSkillData = {
 
 export type CreateBusinessAgentUiSkillResponse = (BusinessAgentUiSkill);
 
-export type CreateBusinessAgentUiSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateBusinessAgentUiSkillError = (ErrorResponse);
 
 export type GetBusinessAgentUiSkillData = {
     path: {
@@ -50985,9 +49729,7 @@ export type GetBusinessAgentUiSkillData = {
 
 export type GetBusinessAgentUiSkillResponse = (BusinessAgentUiSkill);
 
-export type GetBusinessAgentUiSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentUiSkillError = (ErrorResponse);
 
 export type UpdateBusinessAgentUiSkillData = {
     body: BusinessAgentUiSkillInput;
@@ -51002,9 +49744,7 @@ export type UpdateBusinessAgentUiSkillData = {
 
 export type UpdateBusinessAgentUiSkillResponse = (BusinessAgentUiSkill);
 
-export type UpdateBusinessAgentUiSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateBusinessAgentUiSkillError = (ErrorResponse);
 
 export type DeleteBusinessAgentUiSkillData = {
     path: {
@@ -51020,9 +49760,7 @@ export type DeleteBusinessAgentUiSkillResponse = ({
     success: boolean;
 });
 
-export type DeleteBusinessAgentUiSkillError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteBusinessAgentUiSkillError = (ErrorResponse);
 
 export type ListBusinessAgentConnectorsData = {
     path: {
@@ -51037,9 +49775,7 @@ export type ListBusinessAgentConnectorsResponse = ({
     connectors: Array<BusinessAgentConnector>;
 });
 
-export type ListBusinessAgentConnectorsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentConnectorsError = (ErrorResponse);
 
 export type CreateBusinessAgentConnectorData = {
     body: BusinessAgentConnectorInput;
@@ -51053,9 +49789,7 @@ export type CreateBusinessAgentConnectorData = {
 
 export type CreateBusinessAgentConnectorResponse = (BusinessAgentConnector);
 
-export type CreateBusinessAgentConnectorError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateBusinessAgentConnectorError = (ErrorResponse | unknown);
 
 export type GetBusinessAgentConnectorData = {
     path: {
@@ -51069,9 +49803,7 @@ export type GetBusinessAgentConnectorData = {
 
 export type GetBusinessAgentConnectorResponse = (BusinessAgentConnector);
 
-export type GetBusinessAgentConnectorError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentConnectorError = (ErrorResponse);
 
 export type UpdateBusinessAgentConnectorData = {
     body: BusinessAgentConnectorInput;
@@ -51086,9 +49818,7 @@ export type UpdateBusinessAgentConnectorData = {
 
 export type UpdateBusinessAgentConnectorResponse = (BusinessAgentConnector);
 
-export type UpdateBusinessAgentConnectorError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateBusinessAgentConnectorError = (ErrorResponse);
 
 export type DeleteBusinessAgentConnectorData = {
     path: {
@@ -51104,9 +49834,7 @@ export type DeleteBusinessAgentConnectorResponse = ({
     success: boolean;
 });
 
-export type DeleteBusinessAgentConnectorError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteBusinessAgentConnectorError = (ErrorResponse);
 
 export type SetBusinessAgentConnectorCredentialsData = {
     body: ({
@@ -51141,9 +49869,7 @@ export type SetBusinessAgentConnectorCredentialsData = {
 
 export type SetBusinessAgentConnectorCredentialsResponse = (BusinessAgentConnector);
 
-export type SetBusinessAgentConnectorCredentialsError = (ErrorResponse | {
-    error?: string;
-});
+export type SetBusinessAgentConnectorCredentialsError = (ErrorResponse);
 
 export type RefreshBusinessAgentConnectorToolsData = {
     path: {
@@ -51157,9 +49883,7 @@ export type RefreshBusinessAgentConnectorToolsData = {
 
 export type RefreshBusinessAgentConnectorToolsResponse = (BusinessAgentConnector);
 
-export type RefreshBusinessAgentConnectorToolsError = (ErrorResponse | {
-    error?: string;
-});
+export type RefreshBusinessAgentConnectorToolsError = (ErrorResponse);
 
 export type GetBusinessAgentConnectorLogsData = {
     path: {
@@ -51201,9 +49925,7 @@ export type GetBusinessAgentConnectorLogsResponse = ({
     };
 });
 
-export type GetBusinessAgentConnectorLogsError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentConnectorLogsError = (ErrorResponse);
 
 export type ListBusinessAgentConnectorToolsData = {
     path: {
@@ -51219,9 +49941,7 @@ export type ListBusinessAgentConnectorToolsResponse = ({
     tools: Array<BusinessAgentConnectorTool>;
 });
 
-export type ListBusinessAgentConnectorToolsError = (ErrorResponse | {
-    error?: string;
-});
+export type ListBusinessAgentConnectorToolsError = (ErrorResponse);
 
 export type CreateBusinessAgentConnectorToolData = {
     body: BusinessAgentConnectorToolInput;
@@ -51236,9 +49956,7 @@ export type CreateBusinessAgentConnectorToolData = {
 
 export type CreateBusinessAgentConnectorToolResponse = (BusinessAgentConnectorTool);
 
-export type CreateBusinessAgentConnectorToolError = (ErrorResponse | {
-    error?: string;
-});
+export type CreateBusinessAgentConnectorToolError = (ErrorResponse);
 
 export type GetBusinessAgentConnectorToolData = {
     path: {
@@ -51253,9 +49971,7 @@ export type GetBusinessAgentConnectorToolData = {
 
 export type GetBusinessAgentConnectorToolResponse = (BusinessAgentConnectorTool);
 
-export type GetBusinessAgentConnectorToolError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentConnectorToolError = (ErrorResponse);
 
 export type UpdateBusinessAgentConnectorToolData = {
     body: BusinessAgentConnectorToolInput;
@@ -51271,9 +49987,7 @@ export type UpdateBusinessAgentConnectorToolData = {
 
 export type UpdateBusinessAgentConnectorToolResponse = (BusinessAgentConnectorTool);
 
-export type UpdateBusinessAgentConnectorToolError = (ErrorResponse | {
-    error?: string;
-});
+export type UpdateBusinessAgentConnectorToolError = (ErrorResponse);
 
 export type DeleteBusinessAgentConnectorToolData = {
     path: {
@@ -51290,9 +50004,7 @@ export type DeleteBusinessAgentConnectorToolResponse = ({
     success: boolean;
 });
 
-export type DeleteBusinessAgentConnectorToolError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteBusinessAgentConnectorToolError = (ErrorResponse);
 
 export type RunBusinessAgentConnectorToolData = {
     body: {
@@ -51316,9 +50028,7 @@ export type RunBusinessAgentConnectorToolResponse = ({
     status?: string;
 });
 
-export type RunBusinessAgentConnectorToolError = (ErrorResponse | {
-    error?: string;
-});
+export type RunBusinessAgentConnectorToolError = (ErrorResponse);
 
 export type GetBusinessAgentBudgetData = {
     path: {
@@ -51333,9 +50043,7 @@ export type GetBusinessAgentBudgetResponse = ({
     budgets: Array<BusinessAgentBudget>;
 });
 
-export type GetBusinessAgentBudgetError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentBudgetError = (ErrorResponse);
 
 export type ReplaceBusinessAgentBudgetData = {
     body: {
@@ -51353,9 +50061,7 @@ export type ReplaceBusinessAgentBudgetResponse = ({
     budgets: Array<BusinessAgentBudget>;
 });
 
-export type ReplaceBusinessAgentBudgetError = (ErrorResponse | {
-    error?: string;
-});
+export type ReplaceBusinessAgentBudgetError = (ErrorResponse);
 
 export type SendBusinessAgentTestMessageData = {
     body: {
@@ -51372,9 +50078,7 @@ export type SendBusinessAgentTestMessageData = {
 
 export type SendBusinessAgentTestMessageResponse = (BusinessAgentTestMessageResponse);
 
-export type SendBusinessAgentTestMessageError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SendBusinessAgentTestMessageError = (ErrorResponse | unknown);
 
 export type SendBusinessAgentEventData = {
     body: {
@@ -51402,9 +50106,7 @@ export type SendBusinessAgentEventResponse = ({
     agent_event_id?: string;
 });
 
-export type SendBusinessAgentEventError = (ErrorResponse | {
-    error?: string;
-});
+export type SendBusinessAgentEventError = (ErrorResponse);
 
 export type GetBusinessAgentEventData = {
     path: {
@@ -51418,9 +50120,7 @@ export type GetBusinessAgentEventData = {
 
 export type GetBusinessAgentEventResponse = (BusinessAgentEventStatus);
 
-export type GetBusinessAgentEventError = (ErrorResponse | {
-    error?: string;
-});
+export type GetBusinessAgentEventError = (ErrorResponse);
 
 export type ReadBusinessAgentEvalsData = {
     path: {
@@ -51446,9 +50146,7 @@ export type ReadBusinessAgentEvalsResponse = ({
     [key: string]: unknown;
 });
 
-export type ReadBusinessAgentEvalsError = (ErrorResponse | {
-    error?: string;
-});
+export type ReadBusinessAgentEvalsError = (ErrorResponse);
 
 export type StartBusinessAgentEvalRunData = {
     body: {
@@ -51467,9 +50165,7 @@ export type StartBusinessAgentEvalRunResponse = ({
     status: string;
 });
 
-export type StartBusinessAgentEvalRunError = (ErrorResponse | {
-    error?: string;
-});
+export type StartBusinessAgentEvalRunError = (ErrorResponse);
 
 export type ListTrackingTagsData = {
     path: {
@@ -51491,9 +50187,7 @@ export type ListTrackingTagsResponse = ({
     tags?: Array<TrackingTag>;
 });
 
-export type ListTrackingTagsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type ListTrackingTagsError = (unknown | ErrorResponse);
 
 export type CreateTrackingTagData = {
     body: {
@@ -51524,9 +50218,7 @@ export type CreateTrackingTagResponse = ({
     tag?: TrackingTag;
 });
 
-export type CreateTrackingTagError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type CreateTrackingTagError = (unknown | ErrorResponse);
 
 export type GetTrackingTagData = {
     path: {
@@ -51549,9 +50241,7 @@ export type GetTrackingTagResponse = ({
     tag?: TrackingTag;
 });
 
-export type GetTrackingTagError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetTrackingTagError = (ErrorResponse | unknown);
 
 export type UpdateTrackingTagData = {
     body: {
@@ -51597,9 +50287,7 @@ export type UpdateTrackingTagResponse = ({
     tag?: TrackingTag;
 });
 
-export type UpdateTrackingTagError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type UpdateTrackingTagError = (unknown | ErrorResponse);
 
 export type ListTrackingTagSharedAccountsData = {
     path: {
@@ -51616,9 +50304,7 @@ export type ListTrackingTagSharedAccountsResponse = ({
     sharedAccounts?: Array<SharedAdAccount>;
 });
 
-export type ListTrackingTagSharedAccountsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListTrackingTagSharedAccountsError = (ErrorResponse | unknown);
 
 export type AddTrackingTagSharedAccountData = {
     body: {
@@ -51641,9 +50327,7 @@ export type AddTrackingTagSharedAccountResponse = ({
     ok?: boolean;
 });
 
-export type AddTrackingTagSharedAccountError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type AddTrackingTagSharedAccountError = (unknown | ErrorResponse);
 
 export type RemoveTrackingTagSharedAccountData = {
     path: {
@@ -51663,9 +50347,7 @@ export type RemoveTrackingTagSharedAccountData = {
 
 export type RemoveTrackingTagSharedAccountResponse = (void);
 
-export type RemoveTrackingTagSharedAccountError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type RemoveTrackingTagSharedAccountError = (unknown | ErrorResponse);
 
 export type InstallTrackingTagOnStoreData = {
     body: {
@@ -51717,9 +50399,7 @@ export type InstallTrackingTagOnStoreResponse = ({
 });
 });
 
-export type InstallTrackingTagOnStoreError = (ErrorResponse | {
-    error?: string;
-} | unknown | {
+export type InstallTrackingTagOnStoreError = (ErrorResponse | unknown | {
     /**
      * What blocked the install and the manual alternative.
      */
@@ -51776,9 +50456,7 @@ export type GetTrackingTagStoreInstallResponse = ({
 });
 });
 
-export type GetTrackingTagStoreInstallError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetTrackingTagStoreInstallError = (ErrorResponse | unknown);
 
 export type RemoveTrackingTagFromStoreData = {
     path: {
@@ -51810,9 +50488,7 @@ export type RemoveTrackingTagFromStoreResponse = ({
 });
 });
 
-export type RemoveTrackingTagFromStoreError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveTrackingTagFromStoreError = (ErrorResponse | unknown);
 
 export type ListTrackingTagEventsData = {
     path: {
@@ -51835,9 +50511,7 @@ export type ListTrackingTagEventsResponse = ({
     events?: Array<TrackingTagEvent>;
 });
 
-export type ListTrackingTagEventsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListTrackingTagEventsError = (ErrorResponse | unknown);
 
 export type CreateTrackingTagEventData = {
     body: (TrackingTagEventInput & {
@@ -51857,9 +50531,7 @@ export type CreateTrackingTagEventResponse = ({
     event?: TrackingTagEvent;
 });
 
-export type CreateTrackingTagEventError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateTrackingTagEventError = (ErrorResponse | unknown);
 
 export type UpdateTrackingTagEventData = {
     body: TrackingTagEventInput;
@@ -51878,9 +50550,7 @@ export type UpdateTrackingTagEventResponse = ({
     event?: TrackingTagEvent;
 });
 
-export type UpdateTrackingTagEventError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateTrackingTagEventError = (ErrorResponse | unknown);
 
 export type DeleteTrackingTagEventData = {
     path: {
@@ -51905,9 +50575,7 @@ export type DeleteTrackingTagEventResponse = ({
     state?: 'deleted' | 'archived' | 'disabled';
 });
 
-export type DeleteTrackingTagEventError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteTrackingTagEventError = (ErrorResponse | unknown);
 
 export type ListTrackingTagUsersData = {
     path: {
@@ -51924,9 +50592,7 @@ export type ListTrackingTagUsersResponse = ({
     users?: Array<TrackingTagUser>;
 });
 
-export type ListTrackingTagUsersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListTrackingTagUsersError = (ErrorResponse | unknown);
 
 export type AssignTrackingTagUserData = {
     body: {
@@ -51948,9 +50614,7 @@ export type AssignTrackingTagUserResponse = ({
     tasks?: Array<(string)>;
 });
 
-export type AssignTrackingTagUserError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AssignTrackingTagUserError = (ErrorResponse | unknown);
 
 export type RemoveTrackingTagUserData = {
     path: {
@@ -51969,9 +50633,7 @@ export type RemoveTrackingTagUserResponse = ({
     removed?: boolean;
 });
 
-export type RemoveTrackingTagUserError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveTrackingTagUserError = (ErrorResponse | unknown);
 
 export type ListTrackingTagPartnersData = {
     path: {
@@ -51988,9 +50650,7 @@ export type ListTrackingTagPartnersResponse = ({
     partners?: Array<TrackingTagPartner>;
 });
 
-export type ListTrackingTagPartnersError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListTrackingTagPartnersError = (ErrorResponse | unknown);
 
 export type GetTrackingTagDiagnosticsData = {
     path: {
@@ -52007,9 +50667,7 @@ export type GetTrackingTagDiagnosticsResponse = ({
     checks?: Array<TrackingTagDiagnostic>;
 });
 
-export type GetTrackingTagDiagnosticsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetTrackingTagDiagnosticsError = (ErrorResponse | unknown);
 
 export type GetTrackingTagStatsData = {
     path: {
@@ -52051,9 +50709,7 @@ export type GetTrackingTagStatsResponse = ({
     };
 });
 
-export type GetTrackingTagStatsError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type GetTrackingTagStatsError = (unknown | ErrorResponse);
 
 export type ListBlogsData = {
     path: {
@@ -52083,9 +50739,7 @@ export type ListBlogsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListBlogsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListBlogsError = (ErrorResponse | unknown);
 
 export type CreateBlogData = {
     body: {
@@ -52108,9 +50762,7 @@ export type CreateBlogResponse = ({
     blog?: Blog;
 });
 
-export type CreateBlogError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateBlogError = (ErrorResponse | unknown);
 
 export type GetBlogData = {
     path: {
@@ -52130,9 +50782,7 @@ export type GetBlogResponse = ({
     blog?: Blog;
 });
 
-export type GetBlogError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetBlogError = (ErrorResponse | unknown);
 
 export type UpdateBlogData = {
     body: {
@@ -52159,9 +50809,7 @@ export type UpdateBlogResponse = ({
     blog?: Blog;
 });
 
-export type UpdateBlogError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateBlogError = (ErrorResponse | unknown);
 
 export type DeleteBlogData = {
     path: {
@@ -52178,9 +50826,7 @@ export type DeleteBlogData = {
 
 export type DeleteBlogResponse = (void);
 
-export type DeleteBlogError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteBlogError = (ErrorResponse | unknown);
 
 export type ListBlogArticlesData = {
     path: {
@@ -52214,9 +50860,7 @@ export type ListBlogArticlesResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListBlogArticlesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListBlogArticlesError = (ErrorResponse | unknown);
 
 export type CreateBlogArticleData = {
     body: {
@@ -52281,9 +50925,7 @@ export type CreateBlogArticleResponse = ({
     article?: BlogArticle;
 });
 
-export type CreateBlogArticleError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateBlogArticleError = (ErrorResponse | unknown);
 
 export type GetBlogArticleData = {
     path: {
@@ -52307,9 +50949,7 @@ export type GetBlogArticleResponse = ({
     article?: BlogArticle;
 });
 
-export type GetBlogArticleError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetBlogArticleError = (ErrorResponse | unknown);
 
 export type UpdateBlogArticleData = {
     body: {
@@ -52378,9 +51018,7 @@ export type UpdateBlogArticleResponse = ({
     article?: BlogArticle;
 });
 
-export type UpdateBlogArticleError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateBlogArticleError = (ErrorResponse | unknown);
 
 export type DeleteBlogArticleData = {
     path: {
@@ -52401,9 +51039,7 @@ export type DeleteBlogArticleData = {
 
 export type DeleteBlogArticleResponse = (void);
 
-export type DeleteBlogArticleError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteBlogArticleError = (ErrorResponse | unknown);
 
 export type ListProductsData = {
     path: {
@@ -52441,9 +51077,7 @@ export type ListProductsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListProductsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListProductsError = (ErrorResponse | unknown);
 
 export type GetProductData = {
     path: {
@@ -52463,9 +51097,7 @@ export type GetProductResponse = ({
     product?: Product;
 });
 
-export type GetProductError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetProductError = (ErrorResponse | unknown);
 
 export type UpdateProductData = {
     body: {
@@ -52530,9 +51162,7 @@ export type UpdateProductResponse = ({
     product?: Product;
 });
 
-export type UpdateProductError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateProductError = (ErrorResponse | unknown);
 
 export type GetCommerceStoreData = {
     query: {
@@ -52547,9 +51177,7 @@ export type GetCommerceStoreResponse = ({
     store?: CommerceStore;
 });
 
-export type GetCommerceStoreError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommerceStoreError = (ErrorResponse | unknown);
 
 export type ListCommerceProductsData = {
     query: {
@@ -52579,9 +51207,7 @@ export type ListCommerceProductsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListCommerceProductsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceProductsError = (ErrorResponse | unknown);
 
 export type CreateCommerceProductData = {
     body: {
@@ -52627,9 +51253,7 @@ export type CreateCommerceProductResponse = ({
     product?: CommerceProduct;
 });
 
-export type CreateCommerceProductError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceProductError = (ErrorResponse | unknown);
 
 export type ChangeCommerceProductStateData = {
     body: {
@@ -52648,9 +51272,7 @@ export type ChangeCommerceProductStateResponse = ({
     }>;
 });
 
-export type ChangeCommerceProductStateError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ChangeCommerceProductStateError = (ErrorResponse | unknown);
 
 export type GetCommerceProductData = {
     path: {
@@ -52671,9 +51293,7 @@ export type GetCommerceProductResponse = ({
     product?: CommerceProduct;
 });
 
-export type GetCommerceProductError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommerceProductError = (ErrorResponse | unknown);
 
 export type UpdateCommerceProductData = {
     body: {
@@ -52701,9 +51321,7 @@ export type UpdateCommerceProductResponse = ({
     product?: CommerceProduct;
 });
 
-export type UpdateCommerceProductError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommerceProductError = (ErrorResponse | unknown);
 
 export type UpdateCommerceProductPricesData = {
     body: {
@@ -52729,9 +51347,7 @@ export type UpdateCommerceProductPricesResponse = ({
     product?: CommerceProduct;
 });
 
-export type UpdateCommerceProductPricesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommerceProductPricesError = (ErrorResponse | unknown);
 
 export type ListCommerceCollectionsData = {
     query: {
@@ -52753,9 +51369,7 @@ export type ListCommerceCollectionsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListCommerceCollectionsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceCollectionsError = (ErrorResponse | unknown);
 
 export type CreateCommerceCollectionData = {
     body: {
@@ -52780,9 +51394,7 @@ export type CreateCommerceCollectionResponse = ({
     collection?: CommerceCollection;
 });
 
-export type CreateCommerceCollectionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceCollectionError = (ErrorResponse | unknown);
 
 export type GetCommerceCollectionData = {
     path: {
@@ -52803,9 +51415,7 @@ export type GetCommerceCollectionResponse = ({
     collection?: CommerceCollection;
 });
 
-export type GetCommerceCollectionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommerceCollectionError = (ErrorResponse | unknown);
 
 export type UpdateCommerceCollectionData = {
     body: {
@@ -52835,9 +51445,7 @@ export type UpdateCommerceCollectionResponse = ({
     collection?: CommerceCollection;
 });
 
-export type UpdateCommerceCollectionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommerceCollectionError = (ErrorResponse | unknown);
 
 export type DeleteCommerceCollectionData = {
     path: {
@@ -52859,9 +51467,7 @@ export type DeleteCommerceCollectionResponse = ({
     collectionId?: string;
 });
 
-export type DeleteCommerceCollectionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceCollectionError = (ErrorResponse | unknown);
 
 export type ChangeCommerceCollectionProductsData = {
     body: {
@@ -52882,9 +51488,7 @@ export type ChangeCommerceCollectionProductsResponse = ({
     pending?: boolean;
 });
 
-export type ChangeCommerceCollectionProductsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ChangeCommerceCollectionProductsError = (ErrorResponse | unknown);
 
 export type CreateCommerceProductVariantsData = {
     body: {
@@ -52911,9 +51515,7 @@ export type CreateCommerceProductVariantsResponse = ({
     product?: CommerceProduct;
 });
 
-export type CreateCommerceProductVariantsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceProductVariantsError = (ErrorResponse | unknown);
 
 export type DeleteCommerceProductVariantsData = {
     path: {
@@ -52938,9 +51540,7 @@ export type DeleteCommerceProductVariantsResponse = ({
     product?: CommerceProduct;
 });
 
-export type DeleteCommerceProductVariantsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceProductVariantsError = (ErrorResponse | unknown);
 
 export type CreateCommerceProductOptionsData = {
     body: {
@@ -52963,9 +51563,7 @@ export type CreateCommerceProductOptionsResponse = ({
     product?: CommerceProduct;
 });
 
-export type CreateCommerceProductOptionsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceProductOptionsError = (ErrorResponse | unknown);
 
 export type DeleteCommerceProductOptionsData = {
     path: {
@@ -52990,9 +51588,7 @@ export type DeleteCommerceProductOptionsResponse = ({
     product?: CommerceProduct;
 });
 
-export type DeleteCommerceProductOptionsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceProductOptionsError = (ErrorResponse | unknown);
 
 export type AddCommerceProductImagesData = {
     body: {
@@ -53014,9 +51610,7 @@ export type AddCommerceProductImagesResponse = ({
     product?: CommerceProduct;
 });
 
-export type AddCommerceProductImagesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddCommerceProductImagesError = (ErrorResponse | unknown);
 
 export type RemoveCommerceProductImagesData = {
     path: {
@@ -53041,9 +51635,7 @@ export type RemoveCommerceProductImagesResponse = ({
     product?: CommerceProduct;
 });
 
-export type RemoveCommerceProductImagesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RemoveCommerceProductImagesError = (ErrorResponse | unknown);
 
 export type ReorderCommerceProductImagesData = {
     body: {
@@ -53062,9 +51654,7 @@ export type ReorderCommerceProductImagesResponse = ({
     pending?: boolean;
 });
 
-export type ReorderCommerceProductImagesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReorderCommerceProductImagesError = (ErrorResponse | unknown);
 
 export type DuplicateCommerceProductData = {
     body: {
@@ -53085,9 +51675,7 @@ export type DuplicateCommerceProductResponse = ({
     product?: CommerceProduct;
 });
 
-export type DuplicateCommerceProductError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DuplicateCommerceProductError = (ErrorResponse | unknown);
 
 export type ListCommerceProductMetafieldsData = {
     path: {
@@ -53108,9 +51696,7 @@ export type ListCommerceProductMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type ListCommerceProductMetafieldsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceProductMetafieldsError = (ErrorResponse | unknown);
 
 export type SetCommerceProductMetafieldsData = {
     body: {
@@ -53129,9 +51715,7 @@ export type SetCommerceProductMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type SetCommerceProductMetafieldsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SetCommerceProductMetafieldsError = (ErrorResponse | unknown);
 
 export type DeleteCommerceProductMetafieldsData = {
     path: {
@@ -53156,9 +51740,7 @@ export type DeleteCommerceProductMetafieldsResponse = ({
     deleted?: number;
 });
 
-export type DeleteCommerceProductMetafieldsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceProductMetafieldsError = (ErrorResponse | unknown);
 
 export type ChangeCommerceProductChannelsData = {
     body: {
@@ -53183,9 +51765,7 @@ export type ChangeCommerceProductChannelsResponse = ({
     unpublished?: Array<(string)>;
 });
 
-export type ChangeCommerceProductChannelsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ChangeCommerceProductChannelsError = (ErrorResponse | unknown);
 
 export type ListCommerceCollectionMetafieldsData = {
     path: {
@@ -53206,9 +51786,7 @@ export type ListCommerceCollectionMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type ListCommerceCollectionMetafieldsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceCollectionMetafieldsError = (ErrorResponse | unknown);
 
 export type SetCommerceCollectionMetafieldsData = {
     body: {
@@ -53227,9 +51805,7 @@ export type SetCommerceCollectionMetafieldsResponse = ({
     metafields?: Array<CommerceMetafield>;
 });
 
-export type SetCommerceCollectionMetafieldsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SetCommerceCollectionMetafieldsError = (ErrorResponse | unknown);
 
 export type DeleteCommerceCollectionMetafieldsData = {
     path: {
@@ -53254,9 +51830,7 @@ export type DeleteCommerceCollectionMetafieldsResponse = ({
     deleted?: number;
 });
 
-export type DeleteCommerceCollectionMetafieldsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceCollectionMetafieldsError = (ErrorResponse | unknown);
 
 export type ChangeCommerceCollectionChannelsData = {
     body: {
@@ -53281,9 +51855,7 @@ export type ChangeCommerceCollectionChannelsResponse = ({
     unpublished?: Array<(string)>;
 });
 
-export type ChangeCommerceCollectionChannelsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ChangeCommerceCollectionChannelsError = (ErrorResponse | unknown);
 
 export type ChangeCommerceProductTagsData = {
     body: {
@@ -53302,9 +51874,7 @@ export type ChangeCommerceProductTagsResponse = ({
     }>;
 });
 
-export type ChangeCommerceProductTagsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ChangeCommerceProductTagsError = (ErrorResponse | unknown);
 
 export type ReorderCommerceCollectionProductsData = {
     body: {
@@ -53326,9 +51896,7 @@ export type ReorderCommerceCollectionProductsResponse = ({
     pending?: boolean;
 });
 
-export type ReorderCommerceCollectionProductsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ReorderCommerceCollectionProductsError = (ErrorResponse | unknown);
 
 export type ListCommercePagesData = {
     query: {
@@ -53350,9 +51918,7 @@ export type ListCommercePagesResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListCommercePagesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommercePagesError = (ErrorResponse | unknown);
 
 export type CreateCommercePageData = {
     body: {
@@ -53368,9 +51934,7 @@ export type CreateCommercePageResponse = ({
     page?: CommercePage;
 });
 
-export type CreateCommercePageError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommercePageError = (ErrorResponse | unknown);
 
 export type GetCommercePageData = {
     path: {
@@ -53391,9 +51955,7 @@ export type GetCommercePageResponse = ({
     page?: CommercePage;
 });
 
-export type GetCommercePageError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommercePageError = (ErrorResponse | unknown);
 
 export type UpdateCommercePageData = {
     body: {
@@ -53415,9 +51977,7 @@ export type UpdateCommercePageResponse = ({
     page?: CommercePage;
 });
 
-export type UpdateCommercePageError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommercePageError = (ErrorResponse | unknown);
 
 export type DeleteCommercePageData = {
     path: {
@@ -53439,9 +51999,7 @@ export type DeleteCommercePageResponse = ({
     pageId?: string;
 });
 
-export type DeleteCommercePageError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommercePageError = (ErrorResponse | unknown);
 
 export type ListCommerceLocationsData = {
     query: {
@@ -53456,9 +52014,7 @@ export type ListCommerceLocationsResponse = ({
     locations?: Array<CommerceLocation>;
 });
 
-export type ListCommerceLocationsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceLocationsError = (ErrorResponse | unknown);
 
 export type ListCommerceInventoryData = {
     query: {
@@ -53474,9 +52030,7 @@ export type ListCommerceInventoryResponse = ({
     inventory?: Array<CommerceInventoryItem>;
 });
 
-export type ListCommerceInventoryError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceInventoryError = (ErrorResponse | unknown);
 
 export type ChangeCommerceInventoryData = {
     body: {
@@ -53500,9 +52054,7 @@ export type ChangeCommerceInventoryResponse = ({
     inventory?: Array<CommerceInventoryItem>;
 });
 
-export type ChangeCommerceInventoryError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ChangeCommerceInventoryError = (ErrorResponse | unknown);
 
 export type ListCommerceChannelsData = {
     query: {
@@ -53517,9 +52069,7 @@ export type ListCommerceChannelsResponse = ({
     channels?: Array<CommerceChannel>;
 });
 
-export type ListCommerceChannelsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceChannelsError = (ErrorResponse | unknown);
 
 export type ListCommerceDiscountsData = {
     query: {
@@ -53541,9 +52091,7 @@ export type ListCommerceDiscountsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListCommerceDiscountsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceDiscountsError = (ErrorResponse | unknown);
 
 export type CreateCommerceDiscountData = {
     body: {
@@ -53594,9 +52142,7 @@ export type CreateCommerceDiscountResponse = ({
     discount?: CommerceDiscount;
 });
 
-export type CreateCommerceDiscountError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceDiscountError = (ErrorResponse | unknown);
 
 export type GetCommerceDiscountData = {
     path: {
@@ -53617,9 +52163,7 @@ export type GetCommerceDiscountResponse = ({
     discount?: CommerceDiscount;
 });
 
-export type GetCommerceDiscountError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommerceDiscountError = (ErrorResponse | unknown);
 
 export type UpdateCommerceDiscountData = {
     body: {
@@ -53672,9 +52216,7 @@ export type UpdateCommerceDiscountResponse = ({
     discount?: CommerceDiscount;
 });
 
-export type UpdateCommerceDiscountError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommerceDiscountError = (ErrorResponse | unknown);
 
 export type DeleteCommerceDiscountData = {
     path: {
@@ -53696,9 +52238,7 @@ export type DeleteCommerceDiscountResponse = ({
     discountId?: string;
 });
 
-export type DeleteCommerceDiscountError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceDiscountError = (ErrorResponse | unknown);
 
 export type SetCommerceDiscountActiveData = {
     body: {
@@ -53717,9 +52257,7 @@ export type SetCommerceDiscountActiveResponse = ({
     discount?: CommerceDiscount;
 });
 
-export type SetCommerceDiscountActiveError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SetCommerceDiscountActiveError = (ErrorResponse | unknown);
 
 export type AddCommerceDiscountCodesData = {
     body: {
@@ -53738,9 +52276,7 @@ export type AddCommerceDiscountCodesResponse = ({
     pending?: boolean;
 });
 
-export type AddCommerceDiscountCodesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddCommerceDiscountCodesError = (ErrorResponse | unknown);
 
 export type ListCommerceRedirectsData = {
     query: {
@@ -53762,9 +52298,7 @@ export type ListCommerceRedirectsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListCommerceRedirectsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceRedirectsError = (ErrorResponse | unknown);
 
 export type CreateCommerceRedirectData = {
     body: {
@@ -53784,9 +52318,7 @@ export type CreateCommerceRedirectResponse = ({
     redirect?: CommerceRedirect;
 });
 
-export type CreateCommerceRedirectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceRedirectError = (ErrorResponse | unknown);
 
 export type UpdateCommerceRedirectData = {
     body: {
@@ -53806,9 +52338,7 @@ export type UpdateCommerceRedirectResponse = ({
     redirect?: CommerceRedirect;
 });
 
-export type UpdateCommerceRedirectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommerceRedirectError = (ErrorResponse | unknown);
 
 export type DeleteCommerceRedirectData = {
     path: {
@@ -53830,9 +52360,7 @@ export type DeleteCommerceRedirectResponse = ({
     redirectId?: string;
 });
 
-export type DeleteCommerceRedirectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceRedirectError = (ErrorResponse | unknown);
 
 export type ListCommerceMenusData = {
     query: {
@@ -53847,9 +52375,7 @@ export type ListCommerceMenusResponse = ({
     menus?: Array<CommerceMenu>;
 });
 
-export type ListCommerceMenusError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceMenusError = (ErrorResponse | unknown);
 
 export type CreateCommerceMenuData = {
     body: {
@@ -53864,9 +52390,7 @@ export type CreateCommerceMenuResponse = ({
     menu?: CommerceMenu;
 });
 
-export type CreateCommerceMenuError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceMenuError = (ErrorResponse | unknown);
 
 export type GetCommerceMenuData = {
     path: {
@@ -53887,9 +52411,7 @@ export type GetCommerceMenuResponse = ({
     menu?: CommerceMenu;
 });
 
-export type GetCommerceMenuError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommerceMenuError = (ErrorResponse | unknown);
 
 export type UpdateCommerceMenuData = {
     body: {
@@ -53910,9 +52432,7 @@ export type UpdateCommerceMenuResponse = ({
     menu?: CommerceMenu;
 });
 
-export type UpdateCommerceMenuError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommerceMenuError = (ErrorResponse | unknown);
 
 export type DeleteCommerceMenuData = {
     path: {
@@ -53934,9 +52454,7 @@ export type DeleteCommerceMenuResponse = ({
     menuId?: string;
 });
 
-export type DeleteCommerceMenuError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceMenuError = (ErrorResponse | unknown);
 
 export type ListCommerceMetaobjectDefinitionsData = {
     query: {
@@ -53951,9 +52469,7 @@ export type ListCommerceMetaobjectDefinitionsResponse = ({
     definitions?: Array<CommerceMetaobjectDefinition>;
 });
 
-export type ListCommerceMetaobjectDefinitionsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceMetaobjectDefinitionsError = (ErrorResponse | unknown);
 
 export type ListCommerceMetaobjectsData = {
     query: {
@@ -53975,9 +52491,7 @@ export type ListCommerceMetaobjectsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListCommerceMetaobjectsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceMetaobjectsError = (ErrorResponse | unknown);
 
 export type CreateCommerceMetaobjectData = {
     body: {
@@ -53995,9 +52509,7 @@ export type CreateCommerceMetaobjectResponse = ({
     metaobject?: CommerceMetaobject;
 });
 
-export type CreateCommerceMetaobjectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceMetaobjectError = (ErrorResponse | unknown);
 
 export type GetCommerceMetaobjectData = {
     path: {
@@ -54018,9 +52530,7 @@ export type GetCommerceMetaobjectResponse = ({
     metaobject?: CommerceMetaobject;
 });
 
-export type GetCommerceMetaobjectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommerceMetaobjectError = (ErrorResponse | unknown);
 
 export type UpdateCommerceMetaobjectData = {
     body: {
@@ -54043,9 +52553,7 @@ export type UpdateCommerceMetaobjectResponse = ({
     metaobject?: CommerceMetaobject;
 });
 
-export type UpdateCommerceMetaobjectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpdateCommerceMetaobjectError = (ErrorResponse | unknown);
 
 export type DeleteCommerceMetaobjectData = {
     path: {
@@ -54067,9 +52575,7 @@ export type DeleteCommerceMetaobjectResponse = ({
     metaobjectId?: string;
 });
 
-export type DeleteCommerceMetaobjectError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceMetaobjectError = (ErrorResponse | unknown);
 
 export type ListCommerceMarketsData = {
     query: {
@@ -54084,9 +52590,7 @@ export type ListCommerceMarketsResponse = ({
     markets?: Array<CommerceMarket>;
 });
 
-export type ListCommerceMarketsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceMarketsError = (ErrorResponse | unknown);
 
 export type ListCommercePriceListsData = {
     query: {
@@ -54101,9 +52605,7 @@ export type ListCommercePriceListsResponse = ({
     priceLists?: Array<CommercePriceList>;
 });
 
-export type ListCommercePriceListsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommercePriceListsError = (ErrorResponse | unknown);
 
 export type SetCommercePriceListPricesData = {
     body: {
@@ -54130,9 +52632,7 @@ export type SetCommercePriceListPricesResponse = ({
     updated?: number;
 });
 
-export type SetCommercePriceListPricesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SetCommercePriceListPricesError = (ErrorResponse | unknown);
 
 export type DeleteCommercePriceListPricesData = {
     path: {
@@ -54158,9 +52658,7 @@ export type DeleteCommercePriceListPricesResponse = ({
     deleted?: number;
 });
 
-export type DeleteCommercePriceListPricesError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommercePriceListPricesError = (ErrorResponse | unknown);
 
 export type UpsertCommerceMarketingActivityData = {
     body: {
@@ -54200,9 +52698,7 @@ export type UpsertCommerceMarketingActivityResponse = ({
     };
 });
 
-export type UpsertCommerceMarketingActivityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type UpsertCommerceMarketingActivityError = (ErrorResponse | unknown);
 
 export type DeleteCommerceMarketingActivityData = {
     path: {
@@ -54224,9 +52720,7 @@ export type DeleteCommerceMarketingActivityResponse = ({
     remoteId?: string;
 });
 
-export type DeleteCommerceMarketingActivityError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceMarketingActivityError = (ErrorResponse | unknown);
 
 export type AddCommerceMarketingEngagementData = {
     body: {
@@ -54256,9 +52750,7 @@ export type AddCommerceMarketingEngagementResponse = ({
     recorded?: boolean;
 });
 
-export type AddCommerceMarketingEngagementError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type AddCommerceMarketingEngagementError = (ErrorResponse | unknown);
 
 export type ListCommerceCatalogSyncsData = {
     query: {
@@ -54273,9 +52765,7 @@ export type ListCommerceCatalogSyncsResponse = ({
     catalogSyncs?: Array<CommerceCatalogSync>;
 });
 
-export type ListCommerceCatalogSyncsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListCommerceCatalogSyncsError = (ErrorResponse | unknown);
 
 export type CreateCommerceCatalogSyncData = {
     body: {
@@ -54295,9 +52785,7 @@ export type CreateCommerceCatalogSyncResponse = ({
     catalogSync?: CommerceCatalogSync;
 });
 
-export type CreateCommerceCatalogSyncError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateCommerceCatalogSyncError = (ErrorResponse | unknown);
 
 export type GetCommerceCatalogSyncData = {
     path: {
@@ -54309,9 +52797,7 @@ export type GetCommerceCatalogSyncResponse = ({
     catalogSync?: CommerceCatalogSync;
 });
 
-export type GetCommerceCatalogSyncError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetCommerceCatalogSyncError = (ErrorResponse | unknown);
 
 export type DeleteCommerceCatalogSyncData = {
     path: {
@@ -54324,9 +52810,7 @@ export type DeleteCommerceCatalogSyncResponse = ({
     syncId?: string;
 });
 
-export type DeleteCommerceCatalogSyncError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type DeleteCommerceCatalogSyncError = (ErrorResponse | unknown);
 
 export type RunCommerceCatalogSyncData = {
     path: {
@@ -54338,9 +52822,7 @@ export type RunCommerceCatalogSyncResponse = ({
     catalogSync?: CommerceCatalogSync;
 });
 
-export type RunCommerceCatalogSyncError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type RunCommerceCatalogSyncError = (ErrorResponse | unknown);
 
 export type CreateVerificationData = {
     body: {
@@ -54364,9 +52846,7 @@ export type CreateVerificationData = {
 
 export type CreateVerificationResponse = (Verification);
 
-export type CreateVerificationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CreateVerificationError = (ErrorResponse | unknown);
 
 export type GetVerificationData = {
     path: {
@@ -54376,9 +52856,7 @@ export type GetVerificationData = {
 
 export type GetVerificationResponse = (Verification);
 
-export type GetVerificationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type GetVerificationError = (ErrorResponse | unknown);
 
 export type CheckVerificationData = {
     body: {
@@ -54393,9 +52871,7 @@ export type CheckVerificationResponse = ((Verification & {
     valid?: boolean;
 }));
 
-export type CheckVerificationError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type CheckVerificationError = (ErrorResponse | unknown);
 
 export type ListTikTokAdPixelsData = {
     query: {
@@ -54434,9 +52910,7 @@ export type ListTikTokAdPixelsResponse = ({
     }>;
 });
 
-export type ListTikTokAdPixelsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListTikTokAdPixelsError = (ErrorResponse | unknown);
 
 export type ListPartnershipAdContentData = {
     query: {
@@ -54471,9 +52945,7 @@ export type ListPartnershipAdContentResponse = ({
     }>;
 });
 
-export type ListPartnershipAdContentError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListPartnershipAdContentError = (ErrorResponse | unknown);
 
 export type ListPartnershipAdPermissionsData = {
     query: {
@@ -54496,9 +52968,7 @@ export type ListPartnershipAdPermissionsResponse = ({
     }>;
 });
 
-export type ListPartnershipAdPermissionsError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type ListPartnershipAdPermissionsError = (ErrorResponse | unknown);
 
 export type SetPartnershipAdPermissionData = {
     body: {
@@ -54516,9 +52986,7 @@ export type SetPartnershipAdPermissionResponse = ({
     };
 });
 
-export type SetPartnershipAdPermissionError = (ErrorResponse | {
-    error?: string;
-} | unknown);
+export type SetPartnershipAdPermissionError = (ErrorResponse | unknown);
 
 export type DownloadTikTokVideoData = {
     query: {
@@ -54572,9 +53040,7 @@ export type DownloadTikTokVideoResponse = ({
     }>;
 });
 
-export type DownloadTikTokVideoError = (unknown | {
-    error?: string;
-} | ErrorResponse);
+export type DownloadTikTokVideoError = (unknown | ErrorResponse);
 
 export type ListChangelogData = {
     query?: {
