@@ -18024,6 +18024,10 @@ export type DeleteProfileError = (unknown | ErrorResponse | {
 export type ListAccountsData = {
     query?: {
         /**
+         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI), communication = WhatsApp, Telegram, Discord, Slack and iMessage, blogs = Shopify and WordPress, social = every other platform.
+         */
+        category?: 'social' | 'ads' | 'communication' | 'blogs';
+        /**
          * When true, includes accounts from over-limit profiles.
          */
         includeOverLimit?: boolean;
@@ -18032,6 +18036,10 @@ export type ListAccountsData = {
          *
          */
         limit?: number;
+        /**
+         * Direction for `sort`.
+         */
+        order?: 'asc' | 'desc';
         /**
          * Page number (1-based). Must be provided together with limit to enable server-side pagination; sending only one of the two returns 400. Omit both for all accounts.
          *
@@ -18053,6 +18061,14 @@ export type ListAccountsData = {
          * Comma-separated profile IDs (up to 50) to preview, together with perProfile. The response then also carries `profileTotals`.
          */
         profileIds?: string;
+        /**
+         * Case-insensitive match on the account username, display name or platform user id, or an exact account id. Combine with page/limit to paginate the matches.
+         */
+        search?: string;
+        /**
+         * Sort a paginated listing (page/limit) by account name, platform, profile name, status (accounts needing a reconnect first when ascending) or connection date. Ties keep the default order: platform, then newest first.
+         */
+        sort?: 'account' | 'platform' | 'profile' | 'status' | 'connected';
         /**
          * Filter accounts by connection status. `connected` returns healthy accounts; `disconnected` returns accounts that need reconnection (per the same reconnection check surfaced in the dashboard). Omit to return accounts in any status. When combined with page/limit, pagination totals reflect the filtered result set.
          *
