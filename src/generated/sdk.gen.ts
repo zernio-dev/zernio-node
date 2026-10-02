@@ -9775,7 +9775,9 @@ export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(op
  * With `live=true` (which needs a `campaignId` or `adSetId` filter) each listed ad set's own
  * switch (`platformAdSetStatus`) is read live, for the first 20 rows; later rows keep their
  * synced value with `statusReadAt: null`. Live reads cover TikTok, Meta, Google and OpenAI.
- * The rolled-up `status` is not re-derived by a live read.
+ * The rolled-up `status` is not re-derived by a live read. On TikTok the same live read also
+ * returns the ad group's applied `optimizationGoal` and `billingEvent`, as TikTok's adgroup/get
+ * reports them, so you can verify the goal TikTok applied rather than the one you requested.
  */
 export const listAdSets = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdSetsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdSetsResponse, ListAdSetsError, ThrowOnError>({

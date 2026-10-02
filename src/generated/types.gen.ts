@@ -39852,6 +39852,14 @@ export type ListAdSetsResponse = ({
          * Only with `live=true`. When `platformAdSetStatus` was read from the platform; null when this row was not read live.
          */
         statusReadAt?: (string) | null;
+        /**
+         * TikTok only, only with `live=true` and only on rows read live. The ad group's `optimization_goal` exactly as TikTok's adgroup/get returns it now (for example ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, CLICK, CONVERT). Absent on rows not read live and on other platforms.
+         */
+        optimizationGoal?: (string) | null;
+        /**
+         * TikTok only, only with `live=true` and only on rows read live. The ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
+         */
+        billingEvent?: (string) | null;
     }>;
 });
 
