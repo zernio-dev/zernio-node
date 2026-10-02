@@ -387,6 +387,10 @@ export type Ad = {
          */
         googleDescription?: string;
         /**
+         * Google only. YouTube video ids behind a Video campaign ad (video and responsive video ads) or a Demand Gen video ad, same id as `youtubeVideoId` on Performance Max asset groups. When the ad has no image, `thumbnailUrl` is the first video's YouTube thumbnail. Absent on ads without a video.
+         */
+        youtubeVideoIds?: Array<(string)>;
+        /**
          * Destination URL
          */
         linkUrl?: string;
