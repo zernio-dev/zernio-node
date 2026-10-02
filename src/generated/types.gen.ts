@@ -2952,7 +2952,7 @@ export type CampaignAnalyticsResponse = {
         name?: (string) | null;
         platform?: string;
         /**
-         * Effective campaign status (ACTIVE when any child ad is active).
+         * The platform's own campaign status in its vocabulary (Google ENABLED / PAUSED / REMOVED, Meta ACTIVE / PAUSED, ...), the same value as platformCampaignStatus on /v1/ads/campaigns and /v1/ads/tree. For a campaign synced before that value was stored it falls back to an active child ad's status, else the newest ad's.
          */
         status?: (string) | null;
         /**
