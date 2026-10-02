@@ -730,6 +730,7 @@ import {
   replyToInboxReview,
   replyToMention,
   replyToPhoneNumberReviewer,
+  requestPhoneNumberWhatsAppCode,
   requestRcsAgentLaunch,
   requestSmsSenderIdLimitIncrease,
   requestWhatsAppVerificationCode,
@@ -1846,6 +1847,7 @@ export class Zernio {
     createPhoneNumberStockWatch: this._bind(createPhoneNumberStockWatch),
     listPhoneNumberStockWatches: this._bind(listPhoneNumberStockWatches),
     deletePhoneNumberStockWatch: this._bind(deletePhoneNumberStockWatch),
+    requestPhoneNumberWhatsAppCode: this._bind(requestPhoneNumberWhatsAppCode),
   };
 
   /**

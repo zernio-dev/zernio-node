@@ -35621,6 +35621,42 @@ export type ReuseSmsRegistrationForNumberError = ({
     error?: string;
 } | unknown);
 
+export type RequestPhoneNumberWhatsAppCodeData = {
+    body?: {
+        /**
+         * Delivery method for the code. Omit to let Zernio pick (SMS when the number can receive it, else VOICE).
+         */
+        method?: 'SMS' | 'VOICE';
+    };
+    path: {
+        /**
+         * Phone number record ID (from GET /v1/phone-numbers).
+         */
+        id: string;
+    };
+};
+
+export type RequestPhoneNumberWhatsAppCodeResponse = ({
+    message?: string;
+    method?: 'SMS' | 'VOICE';
+    /**
+     * Meta already reports the number as verified. No code is sent and the number is activated.
+     */
+    alreadyVerified?: boolean;
+    /**
+     * Meta refused the original number, which had never been live, so it was replaced on the same record.
+     */
+    replaced?: boolean;
+    /**
+     * The replacement number, present when `replaced` is true.
+     */
+    newPhoneNumber?: string;
+});
+
+export type RequestPhoneNumberWhatsAppCodeError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
 export type GetWhatsAppCallingData = {
     path: {
         /**
