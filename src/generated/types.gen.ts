@@ -32044,6 +32044,13 @@ export type GetWhatsAppPricingAnalyticsData = {
          * Range end, ISO 8601 date or date-time. Must be after start.
          */
         end: string;
+        /**
+         * Size of each data point. Meta refuses MONTHLY when the range is too short for a
+         * monthly bucket (for example a range that starts at the beginning of the current
+         * month and ends today); that is a 400 with `param: granularity` and Meta's reason
+         * in `error`. Use DAILY for short or month-to-date ranges.
+         *
+         */
         granularity: 'HALF_HOUR' | 'DAILY' | 'MONTHLY';
         /**
          * Comma-separated: COST, VOLUME. Defaults to both.
