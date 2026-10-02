@@ -498,6 +498,7 @@ try {
 | `adCampaigns.createStandaloneAd()` | Create standalone ad |
 | `adCampaigns.getAd()` | Get ad details |
 | `adCampaigns.getAdCampaignDetails()` | Get live campaign details |
+| `adCampaigns.getAdReview()` | Read the platform's review verdict for an ad |
 | `adCampaigns.getAdSetDetails()` | Get live ad-set details |
 | `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |

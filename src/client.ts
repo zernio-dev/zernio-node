@@ -289,6 +289,7 @@ import {
   getAdMedia,
   getAdNegativeKeywordList,
   getAdPreviews,
+  getAdReview,
   getAdSetDetails,
   getAdTrackingTags,
   getAdTree,
@@ -2021,6 +2022,7 @@ export class Zernio {
     attachAdGroupAssets: this._bind(attachAdGroupAssets),
     updateAdGroupAssets: this._bind(updateAdGroupAssets),
     removeAdGroupAssets: this._bind(removeAdGroupAssets),
+    getAdReview: this._bind(getAdReview),
     listCampaignNegativeKeywordLists: this._bind(listCampaignNegativeKeywordLists),
     replaceCampaignNegativeKeywordLists: this._bind(replaceCampaignNegativeKeywordLists),
     boostPost: this._bind(boostPost),
@@ -2579,6 +2581,8 @@ export class Zernio {
     updateAdGroupAssets: this._bind(updateAdGroupAssets),
     /** @deprecated Use `zernio.adcampaigns.removeAdGroupAssets` instead. */
     removeAdGroupAssets: this._bind(removeAdGroupAssets),
+    /** @deprecated Use `zernio.adcampaigns.getAdReview` instead. */
+    getAdReview: this._bind(getAdReview),
     /** @deprecated Use `zernio.adcampaigns.listCampaignNegativeKeywordLists` instead. */
     listCampaignNegativeKeywordLists: this._bind(listCampaignNegativeKeywordLists),
     /** @deprecated Use `zernio.adcampaigns.replaceCampaignNegativeKeywordLists` instead. */

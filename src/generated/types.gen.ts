@@ -41109,6 +41109,67 @@ export type GetAdPreviewsResponse = ({
 
 export type GetAdPreviewsError = (unknown | ErrorResponse);
 
+export type GetAdReviewData = {
+    path: {
+        /**
+         * Zernio ad id (24-char hex) or the platform ad id.
+         */
+        adId: string;
+    };
+};
+
+export type GetAdReviewResponse = ({
+    adId?: string;
+    platform?: string;
+    platformAdId?: string;
+    review?: {
+        /**
+         * TikTok `is_approved`.
+         */
+        approved?: (boolean) | null;
+        /**
+         * TikTok `review_status`, verbatim: ALL_AVAILABLE (approved everywhere), PART_AVAILABLE (approved for part of the targeting), UNAVAILABLE (rejected).
+         */
+        reviewStatus?: (string) | null;
+        forbiddenPlacements?: Array<(string)>;
+        forbiddenAges?: Array<(string)>;
+        forbiddenLocations?: Array<(string)>;
+        forbiddenOperatingSystems?: Array<(string)>;
+        /**
+         * One entry per rejected piece of content (TikTok `reject_info`). Empty when the ad was approved.
+         */
+        rejections?: Array<{
+            reasons?: Array<(string)>;
+            /**
+             * TikTok's advice for fixing the rejection.
+             */
+            suggestion?: (string) | null;
+            forbiddenPlacements?: Array<(string)>;
+            forbiddenAges?: Array<(string)>;
+            forbiddenLocations?: Array<(string)>;
+            /**
+             * The content TikTok reviewed.
+             */
+            content?: {
+                /**
+                 * MODE_STRING, MODE_IMAGE, MODE_VIDEO or MODE_CAROUSEL_MUSIC.
+                 */
+                type?: (string) | null;
+                text?: (string) | null;
+                imageId?: (string) | null;
+                videoId?: (string) | null;
+                musicId?: (string) | null;
+            } | null;
+        }>;
+        /**
+         * When the verdict was read from TikTok.
+         */
+        readAt?: string;
+    };
+});
+
+export type GetAdReviewError = (ErrorResponse | unknown);
+
 export type GetAdMediaData = {
     path: {
         /**
