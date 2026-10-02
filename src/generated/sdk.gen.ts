@@ -5535,7 +5535,8 @@ export const listImessageSenderOrders = <ThrowOnError extends boolean = false>(o
  * the response is 202 with the lifecycle object; poll
  * GET /v1/imessage/senders/{senderId} or subscribe to the
  * account.connected webhook. Billing starts at activation (monthly per
- * sender, no proration). Requires usage-based billing and a valid
+ * sender, no proration); when the account spend threshold is below the
+ * sender price, the first month is charged before the number is bought. Requires usage-based billing and a valid
  * payment method. Pass purchaseIntentId to make retries idempotent —
  * the provider-side order is never retried automatically. Ordered phone
  * senders include SMS/RCS fallback with call forwarding and the ability
