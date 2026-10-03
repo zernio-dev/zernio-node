@@ -9781,7 +9781,8 @@ export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(op
  * It also returns `nativeSettings`: TikTok's own adgroup/get record for the ad group, verbatim and
  * read in that same call (budget, budget_mode, schedule, placements, locations, ages, gender,
  * languages, interests, actions, audiences and exclusions), plus the advertiser's currency and
- * timezone (TikTok's schedule times are in that timezone). `configReadAt` says when it was read; it
+ * timezone. TikTok's `schedule_start_time` / `schedule_end_time` are UTC wall clocks
+ * ("YYYY-MM-DD HH:MM:SS", no offset); Ads Manager displays them in `advertiser_timezone`. `configReadAt` says when it was read; it
  * is null on every row whose native settings were not read now, so never treat a null as a match.
  * These are read, not retained create payloads, and are not stored.
  */
