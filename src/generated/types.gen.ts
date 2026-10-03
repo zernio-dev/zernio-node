@@ -1634,11 +1634,11 @@ export type AnalyticsDeltaEntry = {
          */
         follows: number;
         /**
-         * Instagram Reels average watch time, in milliseconds
+         * Average watch time per play, in milliseconds (Instagram Reels, Facebook Reels, TikTok business videos)
          */
         igReelsAvgWatchTime: number;
         /**
-         * Instagram Reels total watch time, in milliseconds
+         * Total watch time including replays, in milliseconds (Instagram Reels, Facebook Reels, TikTok business videos)
          */
         igReelsVideoViewTotalTime: number;
         reposts: number;
@@ -8807,11 +8807,11 @@ export type PostAnalytics = {
      */
     follows?: (number) | null;
     /**
-     * Instagram Reels only: average watch time per play, in milliseconds. 0 for non-Reels media and other platforms.
+     * Average watch time per play, in milliseconds, for Instagram Reels, Facebook Reels and TikTok videos (business accounts). On Facebook it includes replays within a play, so it can exceed the Reel length. 0 for other media and platforms, including regular Facebook videos.
      */
     igReelsAvgWatchTime?: number;
     /**
-     * Instagram Reels only: total watch time including replays, in milliseconds. 0 for non-Reels media and other platforms.
+     * Total watch time including replays, in milliseconds, for Instagram Reels, Facebook Reels and TikTok videos (business accounts). 0 for other media and platforms, including regular Facebook videos.
      */
     igReelsVideoViewTotalTime?: number;
     /**
