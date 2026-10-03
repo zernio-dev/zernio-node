@@ -12109,7 +12109,8 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * TikTok geo searches return every matching level in one list (`type` is
  * `country`, `region`, `city`, `district`, or `metro` for DMA areas), and
  * `geoType` is not applied. Results are scoped to the advertiser's targetable
- * markets. A `country` result's id is its ISO 3166-1 alpha-2 code, for
+ * markets (pass `adAccountId` when the connection holds several advertisers). A
+ * two-letter `q` also matches a country by ISO code (`q=GB` returns the United Kingdom first). A `country` result's id is its ISO 3166-1 alpha-2 code, for
  * `targeting.countries`; every other id is TikTok's numeric location id,
  * usable in `regions`/`cities`/`metros` keys on `POST /v1/ads/create`.
  *

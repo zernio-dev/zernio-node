@@ -46946,6 +46946,10 @@ export type SearchAdTargetingData = {
          */
         accountId: string;
         /**
+         * TikTok only: the advertiser to search as, when the connection holds several. Each TikTok advertiser has its own targetable regions and catalogs. Defaults to the connection's first advertiser; an advertiser the connection does not hold returns 400.
+         */
+        adAccountId?: string;
+        /**
          * ISO 3166-1 alpha-2 country code (e.g. NL) to scope a geo search.
          */
         countryCode?: string;
