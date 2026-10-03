@@ -10224,7 +10224,7 @@ export type TargetingSpec = {
      */
     languages?: Array<(string)>;
     /**
-     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id. Rejected with 400 on Google (use Demand Gen audience userInterests there) and OpenAI.
+     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id. On Google, applied as ad-group interest criteria (affinity and in-market categories) on Display and Search ad groups the request creates; rejected with 400 on Performance Max, on Demand Gen (use the Demand Gen audience `userInterests` there), when attaching to an existing ad group (`adSetId`), and on OpenAI. On Google, interests are create-only.
      */
     interests?: Array<{
         id: string;
