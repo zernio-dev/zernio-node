@@ -45581,6 +45581,17 @@ export type CreateStandaloneAdData = {
          */
         existingCampaignId?: string;
         /**
+         * Meta attach shape only (`adSetId`). The phone number (E.164, e.g. `+4712345678`)
+         * for an ad added to a "website and phone call" ad set (destination_type
+         * `WEBSITE_AND_PHONE_CALL`), sent as the creative's call configuration. Optional:
+         * when omitted, the number on the ad set's existing ads is reused, and if none of
+         * them carries one the request is a 400. Rejected with 400 on any other ad set,
+         * with `existingCreativeId`, without `adSetId`, or on other platforms (a new call
+         * campaign is `POST /v1/ads/call`).
+         *
+         */
+        phoneNumber?: string;
+        /**
          * Meta only. Reuse an EXISTING ad creative by id instead of
          * building a new one from the copy/media fields (which are then
          * ignored). Combine with `existingCampaignId` to build a
