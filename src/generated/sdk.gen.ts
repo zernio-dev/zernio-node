@@ -9778,6 +9778,12 @@ export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(op
  * The rolled-up `status` is not re-derived by a live read. On TikTok the same live read also
  * returns the ad group's applied `optimizationGoal` and `billingEvent`, as TikTok's adgroup/get
  * reports them, so you can verify the goal TikTok applied rather than the one you requested.
+ * It also returns `nativeSettings`: TikTok's own adgroup/get record for the ad group, verbatim and
+ * read in that same call (budget, budget_mode, schedule, placements, locations, ages, gender,
+ * languages, interests, actions, audiences and exclusions), plus the advertiser's currency and
+ * timezone (TikTok's schedule times are in that timezone). `configReadAt` says when it was read; it
+ * is null on every row whose native settings were not read now, so never treat a null as a match.
+ * These are read, not retained create payloads, and are not stored.
  */
 export const listAdSets = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdSetsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdSetsResponse, ListAdSetsError, ThrowOnError>({

@@ -517,6 +517,16 @@ export type AdCampaign = {
      */
     statusReadAt?: (string) | null;
     /**
+     * TikTok only, only on GET /v1/ads/campaigns with `live=true` and only on campaigns read live. TikTok's campaign/get record verbatim: operation_status, objective_type, budget_mode (BUDGET_MODE_INFINITE means no campaign budget, so budget lives on the ad groups), budget, and budget_optimize_on when TikTok returns it. Plus advertiser_currency and advertiser_timezone from TikTok's advertiser/info.
+     */
+    nativeSettings?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Only on GET /v1/ads/campaigns with `live=true`. When `nativeSettings` was read from the platform. Null whenever native settings were not read now.
+     */
+    configReadAt?: (string) | null;
+    /**
      * Platform-reported campaign issues (Meta `issues_info[]`).
      */
     campaignIssuesInfo?: Array<{
@@ -39860,6 +39870,16 @@ export type ListAdSetsResponse = ({
          * TikTok only, only with `live=true` and only on rows read live. The ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
          */
         billingEvent?: (string) | null;
+        /**
+         * TikTok only, only with `live=true` and only on rows read live. TikTok's adgroup/get record verbatim (snake_case, TikTok's own names and enums): operation_status, optimization_goal, optimization_event, billing_event, bid_type, bid_price, budget, budget_mode, pacing, schedule_type, schedule_start_time, schedule_end_time, dayparting, placement_type, placements, location_ids, age_groups, gender, languages, interest_category_ids, interest_keyword_ids, actions, audience_ids, excluded_audience_ids, operating_systems, frequency, frequency_schedule, smart_audience_enabled, smart_interest_behavior_enabled. Plus advertiser_currency and advertiser_timezone from TikTok's advertiser/info. A field TikTok does not return is absent.
+         */
+        nativeSettings?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Only with `live=true`. When `nativeSettings` was read from the platform. Null on every row whose native settings were not read now (row past the cap, failed read, or a platform without a native read).
+         */
+        configReadAt?: (string) | null;
     }>;
 });
 
