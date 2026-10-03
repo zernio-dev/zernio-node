@@ -40088,6 +40088,26 @@ export type UpdateAdSetData = {
          */
         bidStrategy?: (BidStrategy);
         /**
+         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is
+         * TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`.
+         * When on, TikTok may deliver beyond the selected audiences or interests. Available on
+         * Video views, Traffic, Lead generation, App install, Web conversion and Community interaction.
+         * Only the flags you send are written; an unwritten flag reads back null in
+         * `nativeSettings`, so send `false` explicitly to be able to verify it is off.
+         * Applied with TikTok's adgroup/update; read it back with GET /v1/ads/ad-sets?adSetId=...&live=true.
+         *
+         */
+        smartTargeting?: {
+            /**
+             * TikTok smart_audience_enabled.
+             */
+            audience?: boolean;
+            /**
+             * TikTok smart_interest_behavior_enabled.
+             */
+            interestsBehaviors?: boolean;
+        };
+        /**
          * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when
          * bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP. Internally converted to Meta's
          * smallest-denomination integer, or (on OpenAI) to micros (× 1,000,000). Meta only:
@@ -44966,6 +44986,26 @@ export type BoostPostData = {
          */
         bodies?: Array<(string)>;
         /**
+         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is
+         * TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`.
+         * When on, TikTok may deliver beyond the selected audiences or interests. Available on
+         * Video views, Traffic, Lead generation, App install, Web conversion and Community interaction.
+         * Only the flags you send are written; an unwritten flag reads back null in
+         * `nativeSettings`, so send `false` explicitly to be able to verify it is off.
+         * Not available with smartPlus or when attaching to an existing ad set (adSetId).
+         *
+         */
+        smartTargeting?: {
+            /**
+             * TikTok smart_audience_enabled.
+             */
+            audience?: boolean;
+            /**
+             * TikTok smart_interest_behavior_enabled.
+             */
+            interestsBehaviors?: boolean;
+        };
+        /**
          * Meta, or TikTok with `goal: video_views`. TikTok: ENGAGED_VIEW (6-second
          * Focused View, the default) or ENGAGED_VIEW_FIFTEEN (15-second views), both
          * billed per view (CPV); any other value is a 400. Meta: explicit ad-set
@@ -45239,6 +45279,26 @@ export type CreateStandaloneAdData = {
          *
          */
         goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits' | 'job_applicants';
+        /**
+         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is
+         * TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`.
+         * When on, TikTok may deliver beyond the selected audiences or interests. Available on
+         * Video views, Traffic, Lead generation, App install, Web conversion and Community interaction.
+         * Only the flags you send are written; an unwritten flag reads back null in
+         * `nativeSettings`, so send `false` explicitly to be able to verify it is off.
+         * Not available with smartPlus or when attaching to an existing ad set (adSetId).
+         *
+         */
+        smartTargeting?: {
+            /**
+             * TikTok smart_audience_enabled.
+             */
+            audience?: boolean;
+            /**
+             * TikTok smart_interest_behavior_enabled.
+             */
+            interestsBehaviors?: boolean;
+        };
         /**
          * Meta, or TikTok with goal video_views (ENGAGED_VIEW, the 6-second default, or ENGAGED_VIEW_FIFTEEN; both bill per view). Meta: Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
          */
