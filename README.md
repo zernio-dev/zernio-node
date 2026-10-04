@@ -227,6 +227,7 @@ try {
 | `analytics.getBestTimeToPost()` | Get best times to post |
 | `analytics.getContentDecay()` | Get content performance decay |
 | `analytics.getDailyMetrics()` | Get daily aggregated metrics |
+| `analytics.getFacebookDemographics()` | Get Facebook Page demographics |
 | `analytics.getFacebookPageInsights()` | Get Facebook Page insights |
 | `analytics.getFacebookPostEarnings()` | Get Facebook post monetization earnings |
 | `analytics.getFacebookPostReactions()` | Get Facebook post reactions |

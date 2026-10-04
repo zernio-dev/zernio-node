@@ -16045,6 +16045,59 @@ export type GetInstagramFollowerHistoryResponse = (InstagramAccountInsightsRespo
 
 export type GetInstagramFollowerHistoryError = (unknown | ErrorResponse);
 
+export type GetFacebookDemographicsData = {
+    query: {
+        /**
+         * The Zernio SocialAccount ID for the Facebook account
+         */
+        accountId: string;
+        /**
+         * Comma-separated list of demographic dimensions: country, city.
+         * Defaults to both if omitted.
+         *
+         */
+        breakdown?: string;
+    };
+};
+
+export type GetFacebookDemographicsResponse = ({
+    success?: boolean;
+    accountId?: string;
+    platform?: 'facebook';
+    metric?: 'follower_demographics';
+    /**
+     * Date of Meta's snapshot (YYYY-MM-DD), or null when Meta has no snapshot yet.
+     */
+    snapshotDate?: (string) | null;
+    /**
+     * Only the requested breakdowns are present. Entries are sorted by value, largest first.
+     */
+    demographics?: {
+        country?: Array<{
+            dimension?: string;
+            /**
+             * Followers
+             */
+            value?: number;
+        }>;
+        city?: Array<{
+            dimension?: string;
+            /**
+             * Followers
+             */
+            value?: number;
+        }>;
+    };
+    note?: string;
+});
+
+export type GetFacebookDemographicsError = (ErrorResponse | {
+    error?: string;
+    code?: string;
+} | {
+    error?: string;
+});
+
 export type GetInstagramDemographicsData = {
     query: {
         /**
