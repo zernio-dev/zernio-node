@@ -12482,8 +12482,28 @@ export const listAdAudiences = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Create custom audience
- * Create a custom audience. `customer_list` is supported on Meta, Google, X, LinkedIn, TikTok, and Pinterest;
- * `website` and `lookalike` are Meta-only; `company_list`, `engagement` and `website_retargeting` are LinkedIn-only.
+ * Create a custom audience. `customer_list` is supported on Meta, Google, X, LinkedIn, TikTok, and Pinterest.
+ * `website` (pixel/tag visitors) and `lookalike` are supported on Meta, TikTok, Pinterest and Google.
+ * `meta_engagement` is Meta-only, `tiktok_engagement` TikTok-only, `pinterest_engagement` Pinterest-only;
+ * `company_list`, `engagement` and `website_retargeting` are LinkedIn-only. A type sent to a platform
+ * that does not support it is a 422 `FEATURE_NOT_AVAILABLE`.
+ *
+ * Per-platform rules for `website`:
+ *
+ * - Meta: `pixelId` required, `retentionDays` 1-180, optional `urlContains` or raw `rule`. `event` is not accepted.
+ * - TikTok: `pixelId` required, `retentionDays` one of 7, 14, 30, 60, 90, 180. `event` is a TikTok pixel event
+ * (default `PAGE BROWSE`; also `CLICK BUTTON`, `PIXEL SUBMIT FORM`, `CONTACT`, `DOWNLOAD`,
+ * `PIXEL ADD PAYMENT INFO`, `COMPLETE PAYMENT`, `INITIATE CHECKOUT`, `COMPLETE REGISTRATION`,
+ * `PRODUCT DETAIL PAGE BROWSE`, `PIXEL SEARCH`, `PIXEL ADD TO CART`, `PLACE AN ORDER`,
+ * `PIXEL ADD TO WISHLIST`, `PIXEL SUBSCRIBE`), optional `urlContains`.
+ * - Pinterest: `pixelId` is the Pinterest tag id, `retentionDays` 1-540, optional `event` (e.g. `checkout`, `addtocart`).
+ * Pinterest matches URLs exactly, so `urlContains` is a 400 there.
+ * - Google: no `pixelId` (the account's Google tag is used), `retentionDays` 1-540, `urlContains`
+ * defaults to `/` (all visitors). Built as a rule-based user list with prepopulation requested.
+ *
+ * Per-platform rules for `lookalike`: Meta takes `ratio` (0.01-0.20); Pinterest takes `ratio` in whole
+ * percents (0.01-0.10) and `country` US, CA or GB; TikTok and Google take `size` (narrow, balanced, broad)
+ * instead of `ratio`. TikTok needs a seed with at least 1,000 matched people.
  * `saved_targeting` stores a reusable TargetingSpec (no member upload, no adAccountId) that you reference later via
  * `savedTargetingId` on `POST /v1/ads/create`.
  *
@@ -12494,7 +12514,8 @@ export const listAdAudiences = <ThrowOnError extends boolean = false>(options: O
  * - `company_list` is filled AT CREATION from the `companies` array below, which is required. To change the list
  * afterwards send the new full list to `POST /v1/ads/audiences/{audienceId}/companies` (a replace, not a merge).
  * The `/users` endpoint rejects these audiences with a 422.
- * - `website`, `website_retargeting`, `engagement`, `meta_engagement` and `lookalike` fill themselves from the pixel,
+ * - `website`, `website_retargeting`, `engagement`, `meta_engagement`, `tiktok_engagement`, `pinterest_engagement`
+ * and `lookalike` fill themselves from the pixel,
  * engagement source or seed audience you point them at. They take no member upload at all.
  *
  * Create is not idempotent, never auto-retry.

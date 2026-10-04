@@ -47983,7 +47983,7 @@ export type ListAdAudiencesResponse = ({
         platformAudienceId?: string;
         name?: string;
         description?: string;
-        type?: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'tiktok_engagement' | 'pinterest_engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
         /**
          * Present (and the only meaningful payload) when `type` is `saved_targeting`. Null for uploaded/derived audience types.
          */
@@ -48005,7 +48005,7 @@ export type CreateAdAudienceData = {
     adAccountId: string;
     name: string;
     description?: string;
-    type: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'website' | 'website_retargeting' | 'lookalike';
+    type: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'tiktok_engagement' | 'pinterest_engagement' | 'website' | 'website_retargeting' | 'lookalike';
     /**
      * Required for website_retargeting audiences (LinkedIn only).
      * Each rule is a URL pattern; a member who visits any
@@ -48068,11 +48068,11 @@ export type CreateAdAudienceData = {
         linkedinPageUrl?: string;
     }>;
     /**
-     * Required for website audiences
+     * website: the Meta pixel, TikTok pixel or Pinterest tag id. Required on those three, rejected on Google.
      */
     pixelId?: string;
     /**
-     * Required for website (max 180) and meta_engagement (max 365) audiences.
+     * Required for website (Meta max 180, TikTok 7/14/30/60/90/180, Pinterest and Google max 540), meta_engagement (max 365) and tiktok_engagement (7/14/30/60/90/180; organic and live video and most business-account events only 7/14/30).
      */
     retentionDays?: number;
     /**
@@ -48087,9 +48087,25 @@ export type CreateAdAudienceData = {
      */
     sourceId?: string;
     /**
-     * meta_engagement only. The engagement event; defaults per source
+     * meta_engagement: the engagement event; defaults per source
      * (page → page_engaged, instagram → ig_business_profile_all,
      * video → video_watched). Ignored when `rule` is provided.
+     *
+     * website on TikTok: the pixel event (default `PAGE BROWSE`). website
+     * on Pinterest: the tag event (`pagevisit`, `signup`, `checkout`, `viewcategory`, `search`, `addtocart`, `watchvideo`, `lead`, `custom` or a partner-defined event).
+     *
+     * tiktok_engagement (required): the TikTok engagement event, validated
+     * per `source` (TikTok's filter values, spaces included):
+     * - ads: `CLICK`, `IMPRESSION`, `PLAY 2S`, `PLAY 6S`, `PLAY 25`, `PLAY 50`, `PLAY 75`,
+     * `PLAY OVER`, and the `ENGAGEMENT APP PROFILE` / `ENGAGEMENT TIKTOK INSTANT` /
+     * `ENGAGEMENT COLLECTION ADS` `CLICK` and `IMPRESSION` events.
+     * - organic_video: `ORGANIC VIDEO PLAY 2S`, `ORGANIC VIDEO PLAY 6S`,
+     * `ORGANIC VIDEO PLAY OVER`, `ORGANIC VIDEO ENGAGEMENT`.
+     * - live_video: `LIVE VIDEO VIEW`, `LIVE VIDEO ENGAGEMENT`.
+     * - business_account: `BUSINESS ACCOUNT PROFILE FOLLOW`, `BUSINESS ACCOUNT PROFILE VISIT`,
+     * `BUSINESS ACCOUNT ENGAGEMENT`, `BUSINESS ACCOUNT PLAY 2S`, `BUSINESS ACCOUNT PLAY 6S`,
+     * `BUSINESS ACCOUNT PLAY OVER` and the rest of TikTok's business-account events.
+     * An unknown value is a 400 that lists the valid ones.
      *
      */
     event?: string;
@@ -48102,17 +48118,66 @@ export type CreateAdAudienceData = {
      */
     country?: string;
     /**
-     * Required for lookalike audiences
+     * lookalike on Meta (0.01-0.20) and Pinterest (0.01-0.10, whole percents). Rejected on TikTok and Google.
      */
     ratio?: number;
     /**
-     * website only. Narrows the audience from all visitors to visitors of
-     * URLs containing this substring. Ignored when `rule` is supplied.
+     * lookalike on TikTok and Google: audience breadth. Rejected on Meta and Pinterest.
+     */
+    size?: 'narrow' | 'balanced' | 'broad';
+    /**
+     * Required for tiktok_engagement: what people engaged with.
+     */
+    source?: 'ads' | 'organic_video' | 'live_video' | 'business_account';
+    /**
+     * tiktok_engagement: ad group / campaign ids for `ads`, video ids for `organic_video` and `live_video` (max 10). Required except for `business_account`.
+     */
+    sourceIds?: Array<(string)>;
+    /**
+     * tiktok_engagement: the TikTok identity that owns the videos or business account. Required for organic_video, live_video and business_account.
+     */
+    identityId?: string;
+    /**
+     * tiktok_engagement: type of `identityId`.
+     */
+    identityType?: 'TT_USER' | 'BC_AUTH_TT';
+    /**
+     * tiktok_engagement: required when identityType is BC_AUTH_TT.
+     */
+    identityAuthorizedBcId?: string;
+    /**
+     * pinterest_engagement: Pinterest's `engager_type`, passed through when set.
+     */
+    engagerType?: 1 | 2;
+    /**
+     * pinterest_engagement: limit to one engagement action.
+     */
+    engagementType?: 'click' | 'save' | 'closeup' | 'comment' | 'like';
+    /**
+     * pinterest_engagement: people who engaged with Pins from these domains. The domain must be claimed on the Pinterest account or Pinterest rejects it.
+     */
+    engagementDomains?: Array<(string)>;
+    /**
+     * pinterest_engagement: people who engaged with these campaigns' ads.
+     */
+    campaignIds?: Array<(string)>;
+    /**
+     * pinterest_engagement: people who engaged with these ads.
+     */
+    adIds?: Array<(string)>;
+    /**
+     * pinterest_engagement: people who engaged with these Pins. At least one of engagementDomains, campaignIds, adIds or pinIds is required.
+     */
+    pinIds?: Array<(string)>;
+    /**
+     * website on Meta, TikTok and Google. Narrows the audience from all visitors
+     * to visitors of URLs containing this substring. Ignored when `rule` is
+     * supplied. A 400 on Pinterest, which only matches exact URLs.
      *
      */
     urlContains?: string;
     /**
-     * Optional raw Meta rule, replacing the one we build. Omit it for all
+     * Meta only (a 400 elsewhere). Optional raw Meta rule, replacing the one we build. Omit it for all
      * visitors of `pixelId`, or use `urlContains` for the common page-match
      * case.
      *
