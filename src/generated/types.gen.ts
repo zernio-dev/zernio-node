@@ -1676,6 +1676,16 @@ export type AnalyticsDeltaEntry = {
         audienceCountries: {
             [key: string]: (number);
         };
+        /**
+         * Facebook Reels only: plays that were replays. 0 elsewhere.
+         */
+        replays?: number;
+        /**
+         * Facebook Reels only: share of plays still watching at each second, keyed by the second, fractions 0 to 1. Empty object elsewhere.
+         */
+        retentionCurve?: {
+            [key: string]: (number);
+        };
     };
 };
 
@@ -8846,6 +8856,16 @@ export type PostAnalytics = {
      * TikTok accounts connected through the TikTok for Business app only: share of views by viewer country as fractions 0 to 1, keyed by upper-case ISO-3166 alpha-2 code (T+24-48h, only for posts active in the last 7 days). At most 20 country keys plus `other`: the catch-all bucket TikTok sends, any country below 0.001 and anything past the twentieth all sum into `other`, so the values still add up to 1. Empty object when TikTok reports nothing, and for other platforms. Views-weighted across accounts like impressionSources.
      */
     audienceCountries?: {
+        [key: string]: (number);
+    };
+    /**
+     * Facebook Reels only: plays that were replays (Meta fb_reels_replay_count). Summed across accounts. 0 for other media and platforms.
+     */
+    replays?: number;
+    /**
+     * Facebook Reels only: share of plays still watching at each second of the Reel, keyed by the second from "0", fractions 0 to 1 (Meta post_video_retention_graph). Empty object for other media and platforms. Views-weighted across accounts like impressionSources.
+     */
+    retentionCurve?: {
         [key: string]: (number);
     };
     /**
@@ -16506,6 +16526,16 @@ export type GetPostTimelineResponse = ({
          * TikTok business lane: viewer-country shares on this date keyed by ISO-3166 alpha-2, fractions 0 to 1, top 20 with the tail in `other`; empty object elsewhere
          */
         audienceCountries?: {
+            [key: string]: (number);
+        };
+        /**
+         * Facebook Reels only: plays that were replays, as of this date; 0 elsewhere
+         */
+        replays?: number;
+        /**
+         * Facebook Reels only: share of plays still watching at each second as of this date, keyed by the second, fractions 0 to 1; empty object elsewhere
+         */
+        retentionCurve?: {
             [key: string]: (number);
         };
     }>;
