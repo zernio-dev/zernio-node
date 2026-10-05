@@ -39128,6 +39128,10 @@ export type ListAdCampaignsData = {
          */
         adAccountId?: string;
         /**
+         * Platform campaign ID (the `platformCampaignId` on each returned campaign). Returns only that campaign, or an empty list when it is not visible to the caller. Mirrors the same filter on /v1/ads and /v1/ads/tree.
+         */
+        campaignId?: string;
+        /**
          * Start of metrics date range (YYYY-MM-DD, inclusive). Defaults to 90 days ago when both date params are omitted.
          */
         fromDate?: string;
@@ -39735,8 +39739,17 @@ export type DuplicateAdCampaignData = {
          * Reschedule the copied hierarchy's end, read like `startTime`; a date-only end runs to 23:59:59 local. Defaults to the source's end.
          */
         endTime?: string;
+        /**
+         * Meta's native `rename_strategy` values. `DEEP_RENAME` renames the copied campaign and every copied child (ad sets, ads) with `renamePrefix` / `renameSuffix`. `ONLY_TOP_LEVEL_RENAME` renames only the copied campaign; children keep their source names. `NO_RENAME` keeps every source name. With no rename option at all, Meta appends its own ` - Copy` suffix; LinkedIn defaults to `DEEP_RENAME` (its campaign group and campaigns are renamed). Ignored on TikTok, where `renamePrefix` / `renameSuffix` apply to every copied object.
+         */
         renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
+        /**
+         * Text prepended to each renamed object's name.
+         */
         renamePrefix?: string;
+        /**
+         * Text appended to each renamed object's name. On LinkedIn an omitted suffix defaults to ` (Copy)`.
+         */
         renameSuffix?: string;
         /**
          * Trigger ads discovery on the owning account after the copy succeeds
@@ -40127,7 +40140,7 @@ export type CreateAdSetError = (ErrorResponse | unknown);
 
 export type DuplicateAdSetData = {
     body: {
-        platform: 'facebook' | 'instagram';
+        platform: 'facebook' | 'instagram' | 'tiktok';
         /**
          * Destination platform campaign id (defaults to the source's campaign)
          */
@@ -40145,8 +40158,17 @@ export type DuplicateAdSetData = {
          * Reschedule the copy's end, read like `startTime`; a date-only end runs to 23:59:59 local.
          */
         endTime?: string;
+        /**
+         * Meta's native `rename_strategy` values. `DEEP_RENAME` renames the copied ad set and its copied ads with `renamePrefix` / `renameSuffix`. `ONLY_TOP_LEVEL_RENAME` renames only the copied ad set; its ads keep their source names. `NO_RENAME` keeps every source name. With no rename option at all, Meta appends its own ` - Copy` suffix. Ignored on TikTok, where `renamePrefix` / `renameSuffix` still apply.
+         */
         renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
+        /**
+         * Text prepended to each renamed object's name.
+         */
         renamePrefix?: string;
+        /**
+         * Text appended to each renamed object's name.
+         */
         renameSuffix?: string;
         syncAfter?: boolean;
     };
@@ -40187,8 +40209,17 @@ export type DuplicateAdData = {
          */
         adSetId?: string;
         statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
+        /**
+         * Meta's native `rename_strategy` values. An ad has no copied children, so `DEEP_RENAME` and `ONLY_TOP_LEVEL_RENAME` both rename the copy with `renamePrefix` / `renameSuffix`, and `NO_RENAME` keeps the source name. With no rename option at all, Meta appends its own ` - Copy` suffix.
+         */
         renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
+        /**
+         * Text prepended to the copy's name.
+         */
         renamePrefix?: string;
+        /**
+         * Text appended to the copy's name.
+         */
         renameSuffix?: string;
         syncAfter?: boolean;
         /**

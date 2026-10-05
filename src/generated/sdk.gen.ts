@@ -9453,7 +9453,9 @@ export const createAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * `skipped: 1`, with the reason). Otherwise the switch is written (`updated: 1`), read back and
  * stored, and the delivery status of the ads under it (up to 20) is re-read and stored, so an
  * immediate GET returns what the platform now reports. A stored switch never skips a write, and
- * when the platform cannot be read the write always goes out.
+ * when the platform cannot be read the write always goes out. On Meta the check reads the
+ * campaign's own `status`, so a delivery status such as `IN_PROCESS` or `WITH_ISSUES` does not
+ * force a write.
  *
  */
 export const updateAdCampaignStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdCampaignStatusData, ThrowOnError>) => {
@@ -10005,7 +10007,9 @@ export const deleteAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * the delivery status of its ads (up to 20) is re-read and stored, so an
  * immediate GET returns what the platform now reports. A stored switch
  * never skips a write, and when the platform cannot be read the write
- * always goes out.
+ * always goes out. On Meta the check reads the ad set's own `status`, so
+ * a repeated request skips even while `platformAdSetStatus` reads
+ * `CAMPAIGN_PAUSED`, `WITH_ISSUES` or `IN_PROCESS`.
  *
  */
 export const updateAdSetStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdSetStatusData, ThrowOnError>) => {
