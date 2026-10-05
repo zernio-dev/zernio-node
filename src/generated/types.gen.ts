@@ -40044,6 +40044,10 @@ export type ListAdSetsData = {
          */
         accountId?: string;
         /**
+         * Platform ad account id (Meta act_<n>). Lists every synced ad set of that ad account; no campaignId needed.
+         */
+        adAccountId?: string;
+        /**
          * Platform ad set ID
          */
         adSetId?: string;
@@ -40101,12 +40105,14 @@ export type ListAdSetsResponse = ({
             endDate?: string;
         } | null;
         /**
-         * The audience this ad set delivers to, as the platform reports it. LinkedIn only
-         * today; null for every other platform and for LinkedIn ad sets not yet re-synced.
+         * The audience this ad set delivers to, as the platform reports it at the last sync.
+         * LinkedIn and Meta; null for every other platform and for ad sets not yet re-synced.
          *
-         * `include` and `exclude` are the campaign's `targetingCriteria` verbatim, so they
-         * can be read, edited and sent back without reconstructing them from our normalized
-         * targeting spec. Exclusions were previously not readable at all.
+         * On Meta it is the ad set's `targeting` verbatim (snake_case: geo_locations,
+         * age_min, custom_audiences, flexible_spec, ...), so it can be read, edited and sent
+         * back as is. On LinkedIn `include` and `exclude` (below) are the campaign's
+         * `targetingCriteria` verbatim, without reconstructing them from our normalized
+         * targeting spec.
          *
          */
         targeting?: {
@@ -40130,6 +40136,7 @@ export type ListAdSetsResponse = ({
              * Whether the campaign may deliver on the LinkedIn Audience Network, off LinkedIn itself.
              */
             offsiteDeliveryEnabled?: boolean;
+            [key: string]: unknown | boolean;
         } | null;
         isExternal?: (boolean) | null;
         platformCreatedAt?: (string) | null;
@@ -40138,13 +40145,27 @@ export type ListAdSetsResponse = ({
          */
         statusReadAt?: (string) | null;
         /**
-         * TikTok only, only with `live=true` and only on rows read live. The ad group's `optimization_goal` exactly as TikTok's adgroup/get returns it now (for example ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, CLICK, CONVERT). Absent on rows not read live and on other platforms.
+         * The ad set's optimization goal as last synced, in the platform's own enum (Meta `optimization_goal`, for example OFFSITE_CONVERSIONS or LINK_CLICKS). On TikTok with `live=true`, rows read live carry the ad group's `optimization_goal` exactly as TikTok's adgroup/get returns it now (for example ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, CLICK, CONVERT).
          */
         optimizationGoal?: (string) | null;
         /**
-         * TikTok only, only with `live=true` and only on rows read live. The ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
+         * The ad set's billing event as last synced, where the platform reports one. On TikTok with `live=true`, rows read live carry the ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
          */
         billingEvent?: (string) | null;
+        /**
+         * The bid strategy as last synced, in the platform's own enum (Meta `bid_strategy`, for example LOWEST_COST_WITHOUT_CAP, COST_CAP). On Meta under a campaign budget this is the campaign's strategy.
+         */
+        bidStrategy?: (string) | null;
+        /**
+         * Bid cap or cost target in whole units of `currency`, as last synced. Null when the strategy has none.
+         */
+        bidAmount?: (number) | null;
+        /**
+         * Meta only. The ad set's `promoted_object` verbatim (snake_case, for example pixel_id + custom_event_type, page_id, application_id), as last synced from its most recent ad. Null on other platforms and on an ad set with no ad yet; GET /v1/ads/accounts/live reads it live for every ad set.
+         */
+        promotedObject?: {
+            [key: string]: unknown;
+        } | null;
         /**
          * TikTok only, only with `live=true` and only on rows read live. TikTok's adgroup/get record verbatim (snake_case, TikTok's own names and enums): operation_status, optimization_goal, optimization_event, billing_event, bid_type, bid_price, budget, budget_mode, pacing, schedule_type, schedule_start_time, schedule_end_time, dayparting, placement_type, placements, location_ids, age_groups, gender, languages, interest_category_ids, interest_keyword_ids, actions, audience_ids, excluded_audience_ids, operating_systems, frequency, frequency_schedule, smart_audience_enabled, smart_interest_behavior_enabled. schedule_start_time and schedule_end_time are UTC wall clocks (YYYY-MM-DD HH:MM:SS). location_ids holds TikTok's native location ids (GeoNames ids for countries); GET /v1/ads/targeting/search?dimension=geo returns them as `platformId` on country results. Plus advertiser_currency and advertiser_timezone from TikTok's advertiser/info. A field TikTok does not return is absent.
          */
@@ -44465,6 +44486,184 @@ export type GetAdAccountFinanceResponse = ({
 });
 
 export type GetAdAccountFinanceError = (unknown | ErrorResponse);
+
+export type GetAdAccountLiveEntitiesData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from `paging.campaigns.after` or `paging.adSets.after` of a previous response. Requires `level`.
+         */
+        after?: string;
+        /**
+         * Read only one level. Required with `after`. Both levels are read when omitted.
+         */
+        level?: 'campaign' | 'adSet';
+        /**
+         * Maximum rows per level in this response.
+         */
+        limit?: number;
+        /**
+         * Comma-separated Meta `effective_status` values to keep: ACTIVE, PAUSED, IN_PROCESS,
+         * WITH_ISSUES, DELETED, ARCHIVED, and CAMPAIGN_PAUSED (ad sets only; the campaigns level
+         * ignores it). Defaults to every status except DELETED and ARCHIVED. An unknown value is a 400.
+         */
+        status?: string;
+    };
+};
+
+export type GetAdAccountLiveEntitiesResponse = ({
+    accountId?: string;
+    adAccountId?: string;
+    platform?: 'facebook';
+    /**
+     * ISO 4217 code every budget and bid amount is expressed in.
+     */
+    currency?: string;
+    /**
+     * When Meta was read.
+     */
+    readAt?: string;
+    /**
+     * Absent when `level=adSet`.
+     */
+    campaigns?: Array<{
+        platformCampaignId?: string;
+        campaignName?: (string) | null;
+        /**
+         * Meta `effective_status`, for example ACTIVE, PAUSED, WITH_ISSUES.
+         */
+        platformCampaignStatus?: (string) | null;
+        /**
+         * Meta `status`: the campaign's own switch (ACTIVE, PAUSED, DELETED, ARCHIVED).
+         */
+        configuredStatus?: (string) | null;
+        /**
+         * Zernio's normalized status (active, paused, ...), derived from `platformCampaignStatus`.
+         */
+        status?: string;
+        /**
+         * The campaign budget, same shape as the synced rows. Null when the budget lives on the ad sets.
+         */
+        budget?: {
+            amount?: number;
+            type?: 'daily' | 'lifetime';
+        } | null;
+        /**
+         * Meta `daily_budget` in whole units of `currency`.
+         */
+        dailyBudget?: (number) | null;
+        /**
+         * Meta `lifetime_budget` in whole units of `currency`.
+         */
+        lifetimeBudget?: (number) | null;
+        /**
+         * Meta `budget_remaining` in whole units of `currency`. Null when the campaign has no budget of its own.
+         */
+        budgetRemaining?: (number) | null;
+        /**
+         * Campaign spending limit (Meta `spend_cap`) in whole units of `currency`. Null when none is set.
+         */
+        spendCap?: (number) | null;
+        /**
+         * Meta `bid_strategy`, set on campaigns with a campaign budget.
+         */
+        bidStrategy?: (string) | null;
+    }>;
+    /**
+     * Absent when `level=campaign`.
+     */
+    adSets?: Array<{
+        platformAdSetId?: string;
+        adSetName?: (string) | null;
+        platformCampaignId?: (string) | null;
+        /**
+         * Meta `effective_status`, for example ACTIVE, PAUSED, CAMPAIGN_PAUSED.
+         */
+        platformAdSetStatus?: (string) | null;
+        /**
+         * Meta `status`: the ad set's own switch.
+         */
+        configuredStatus?: (string) | null;
+        /**
+         * Zernio's normalized status, derived from `platformAdSetStatus`.
+         */
+        status?: string;
+        /**
+         * The ad set budget, same shape as the synced rows. Null under a campaign budget.
+         */
+        budget?: {
+            amount?: number;
+            type?: 'daily' | 'lifetime';
+        } | null;
+        /**
+         * Meta `daily_budget` in whole units of `currency`.
+         */
+        dailyBudget?: (number) | null;
+        /**
+         * Meta `lifetime_budget` in whole units of `currency`.
+         */
+        lifetimeBudget?: (number) | null;
+        /**
+         * Meta `budget_remaining` in whole units of `currency`. Null when the ad set has no budget of its own.
+         */
+        budgetRemaining?: (number) | null;
+        /**
+         * Meta `bid_strategy`.
+         */
+        bidStrategy?: (string) | null;
+        /**
+         * Meta `bid_amount` (bid cap or cost target) in whole units of `currency`. Null when the strategy has none.
+         */
+        bidAmount?: (number) | null;
+        /**
+         * Meta `optimization_goal`.
+         */
+        optimizationGoal?: (string) | null;
+        /**
+         * Meta `billing_event`.
+         */
+        billingEvent?: (string) | null;
+        /**
+         * Meta `promoted_object` verbatim (snake_case).
+         */
+        promotedObject?: {
+            [key: string]: unknown;
+        } | null;
+        /**
+         * Meta `targeting` verbatim (snake_case), as Meta returns it now.
+         */
+        targeting?: {
+            [key: string]: unknown;
+        } | null;
+        schedule?: {
+            startDate?: string;
+            /**
+             * Absent when the ad set runs until it is stopped.
+             */
+            endDate?: string;
+        } | null;
+    }>;
+    /**
+     * One entry per level read. `after` is null on the last page.
+     */
+    paging?: {
+        campaigns?: {
+            after?: (string) | null;
+        };
+        adSets?: {
+            after?: (string) | null;
+        };
+    };
+});
+
+export type GetAdAccountLiveEntitiesError = (ErrorResponse | unknown);
 
 export type CreateAdAccountData = {
     body: {

@@ -430,6 +430,7 @@ try {
 | `adAccounts.createValueRuleSet()` | Create a value rule set |
 | `adAccounts.getAdAccountFinance()` | Ad account finances |
 | `adAccounts.getAdAccountHierarchy()` | Get manager account hierarchy |
+| `adAccounts.getAdAccountLiveEntities()` | Read an ad account's campaigns and ad sets live |
 | `adAccounts.getAdComments()` | List comments on an ad |
 | `adAccounts.getAdNegativeKeywordList()` | Get a negative keyword list |
 | `adAccounts.getAdsActivityLog()` | Ad account change / audit log |

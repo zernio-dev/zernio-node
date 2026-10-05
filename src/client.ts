@@ -277,6 +277,7 @@ import {
   getAd,
   getAdAccountFinance,
   getAdAccountHierarchy,
+  getAdAccountLiveEntities,
   getAdAnalytics,
   getAdAudience,
   getAdCampaignDetails,
@@ -2170,6 +2171,7 @@ export class Zernio {
     assignAdAccountUser: this._bind(assignAdAccountUser),
     removeAdAccountUser: this._bind(removeAdAccountUser),
     getAdAccountFinance: this._bind(getAdAccountFinance),
+    getAdAccountLiveEntities: this._bind(getAdAccountLiveEntities),
     createAdAccount: this._bind(createAdAccount),
     listAdAccounts: this._bind(listAdAccounts),
     updateAdAccount: this._bind(updateAdAccount),
@@ -2723,6 +2725,8 @@ export class Zernio {
     removeAdAccountUser: this._bind(removeAdAccountUser),
     /** @deprecated Use `zernio.adaccounts.getAdAccountFinance` instead. */
     getAdAccountFinance: this._bind(getAdAccountFinance),
+    /** @deprecated Use `zernio.adaccounts.getAdAccountLiveEntities` instead. */
+    getAdAccountLiveEntities: this._bind(getAdAccountLiveEntities),
     /** @deprecated Use `zernio.adaccounts.createAdAccount` instead. */
     createAdAccount: this._bind(createAdAccount),
     /** @deprecated Use `zernio.adaccounts.listAdAccounts` instead. */
