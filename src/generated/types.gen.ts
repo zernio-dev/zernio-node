@@ -5146,12 +5146,12 @@ export type ErrorResponse = {
      * (every Google account is affected and there is nothing to change on your side),
      * `ACCOUNT` means your own ad account. A Meta 429 carries neither field.
      *
-     * A Zernio Google Ads budget 429 carries `budgetScope` instead, and never
+     * A Zernio Google Ads burst-limit 429 carries `budgetScope` instead, and never
      * `quotaExhausted`: these are Zernio's own limits, applied before the call
-     * reaches Google. `user` is your own burst or daily allowance, so the work is
-     * yours to reschedule; `platform` is the fleet-wide daily budget shared with
-     * every other customer, so only waiting for the reset clears it. The two
-     * scopes are separate axes from `quotaScope`, not the same pool named twice.
+     * reaches Google, and both clear within a minute. `account` is the limit of 15
+     * requests per minute per connected Google Ads account; `user` is the ceiling of
+     * 120 requests per minute per Zernio user across all their Google Ads accounts.
+     * Both are separate axes from `quotaScope`, not the same pool named twice.
      *
      * A failed Meta ad create (`POST /v1/ads/create`, `POST /v1/ads/boost`,
      * `POST /v1/ads/ctwa`) carries `stage`, `adAccountId` and `createdObjects`: where
@@ -5205,9 +5205,9 @@ export type ErrorResponse = {
          */
         quotaScope?: 'DEVELOPER' | 'ACCOUNT';
         /**
-         * Zernio Google Ads burst-limit 429 only (never set alongside `quotaExhausted`). `user` is your own per-minute allowance on user-driven Google Ads calls; it clears within a minute.
+         * Zernio Google Ads burst-limit 429 only (never set alongside `quotaExhausted`). `account` is the limit of 15 requests per minute per connected Google Ads account; `user` is the ceiling of 120 requests per minute per Zernio user across all their Google Ads accounts. Both clear within a minute.
          */
-        budgetScope?: 'user';
+        budgetScope?: 'account' | 'user';
         [key: string]: unknown | string | boolean;
     };
 };
@@ -5228,9 +5228,9 @@ export type stage = 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activa
 export type quotaScope = 'DEVELOPER' | 'ACCOUNT';
 
 /**
- * Zernio Google Ads burst-limit 429 only (never set alongside `quotaExhausted`). `user` is your own per-minute allowance on user-driven Google Ads calls; it clears within a minute.
+ * Zernio Google Ads burst-limit 429 only (never set alongside `quotaExhausted`). `account` is the limit of 15 requests per minute per connected Google Ads account; `user` is the ceiling of 120 requests per minute per Zernio user across all their Google Ads accounts. Both clear within a minute.
  */
-export type budgetScope = 'user';
+export type budgetScope = 'account' | 'user';
 
 /**
  * A media item on a native (external/synced) post, as carried by post.external.* webhook payloads. Distinct from the richer MediaItem used for Zernio-authored posts: external items are always already-published and limited to image or video. Kept as a separate schema so the generated SDK model does not collide with MediaItem.
