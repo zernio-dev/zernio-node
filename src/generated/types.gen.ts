@@ -23134,8 +23134,18 @@ export type GetFacebookPagesResponse = ({
         username?: string;
         category?: string;
         fan_count?: number;
+        /**
+         * The Instagram professional account linked to the Page (Meta instagram_business_account), or null when none is linked or the list was served from a cache stored before this field existed (pass refresh=true to re-read it).
+         */
+        instagramAccount?: {
+            /**
+             * Instagram professional account id, usable as instagramAccountId on POST /v1/ads/create
+             */
+            id?: string;
+            username?: (string) | null;
+        } | null;
     }>;
-    selectedPageId?: string;
+    selectedPageId?: (string) | null;
     /**
      * false when this response was just read from Meta (cold cache or a refresh that ran), true when served from the stored list (including a debounced refresh or an empty Meta answer)
      */

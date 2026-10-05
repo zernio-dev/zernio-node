@@ -2696,7 +2696,8 @@ export const revokeBusinessPartner = <ThrowOnError extends boolean = false>(opti
 
 /**
  * List Facebook pages
- * Returns all Facebook pages the connected account has access to, including the currently selected page.
+ * Returns all Facebook Pages the connected account has access to, including the currently selected Page and the Instagram professional account linked to each Page. Works on `facebook` accounts and on `metaads` accounts (classic and Facebook Login for Business connections). On a business-login `metaads` connection `selectedPageId` is the default Page ads run as, and every listed Page can be passed as `pageId` on POST /v1/ads/create. A classic `metaads` connection has no default Page, so `selectedPageId` is null there.
+ *
  */
 export const getFacebookPages = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetFacebookPagesData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetFacebookPagesResponse, GetFacebookPagesError, ThrowOnError>({
@@ -2707,7 +2708,8 @@ export const getFacebookPages = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Update Facebook page
- * Switch which Facebook Page is active for a connected account.
+ * Switch which Facebook Page is active for a connected account. On a `facebook` account this changes the Page posts publish to. On a Facebook Login for Business `metaads` connection it changes the default Page ads run as (and the Page whose leads are ingested). A classic `metaads` connection has no default Page and answers 400; pass `pageId` per ad on POST /v1/ads/create instead. The Page must be in the list returned by GET (use refresh=true to pick up newly granted Pages).
+ *
  */
 export const updateFacebookPage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateFacebookPageData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdateFacebookPageResponse, UpdateFacebookPageError, ThrowOnError>({
