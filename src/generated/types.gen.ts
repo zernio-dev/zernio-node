@@ -4243,7 +4243,7 @@ export type CtwaAdRequestBody = {
      * building a campaign, so the ad set keeps its learning phase. It then
      * owns budget, targeting and schedule, so `budgetAmount`, `budgetType`,
      * `budgetLevel`, `startDate`, `endDate`, `objective`, `campaignStatus`,
-     * `existingCampaignId`, the special ad category fields and every
+     * `adSetStatus`, `existingCampaignId`, the special ad category fields and every
      * targeting field except `ageMin`, `ageMax`, `placements` and
      * `advantageAudience` are rejected with a 400 alongside it. Its
      * `destination_type` must match the ad's destination.
@@ -4548,6 +4548,24 @@ export type CtwaAdRequestBody = {
      */
     campaignStatus?: 'ACTIVE' | 'PAUSED';
     /**
+     * Ad-set-level status, same semantics as `POST /v1/ads/create`. Sets
+     * the new ad set's switch alone and overrides `status` for it. A
+     * level status (`campaignStatus`, `adSetStatus`, `adStatus`) always
+     * wins for its level, and `status: PAUSED` adds a hold of its own
+     * only when none of them is PAUSED. Rejected with a 400 alongside
+     * `adSetId` (that ad set already exists).
+     *
+     */
+    adSetStatus?: 'ACTIVE' | 'PAUSED';
+    /**
+     * Ad-level status, same semantics as `POST /v1/ads/create`. Sets the
+     * new ads' switch and overrides `status` for them, also with
+     * `adSetId`. Send `campaignStatus`, `adSetStatus` and `adStatus` all
+     * PAUSED to create every object paused.
+     *
+     */
+    adStatus?: 'ACTIVE' | 'PAUSED';
+    /**
      * Meta bid strategy applied to the shared ad set. Defaults to
      * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
      * `LOWEST_COST_WITH_BID_CAP` and `COST_CAP` require
@@ -4662,6 +4680,26 @@ export type status13 = 'ACTIVE' | 'PAUSED';
  *
  */
 export type campaignStatus = 'ACTIVE' | 'PAUSED';
+
+/**
+ * Ad-set-level status, same semantics as `POST /v1/ads/create`. Sets
+ * the new ad set's switch alone and overrides `status` for it. A
+ * level status (`campaignStatus`, `adSetStatus`, `adStatus`) always
+ * wins for its level, and `status: PAUSED` adds a hold of its own
+ * only when none of them is PAUSED. Rejected with a 400 alongside
+ * `adSetId` (that ad set already exists).
+ *
+ */
+export type adSetStatus = 'ACTIVE' | 'PAUSED';
+
+/**
+ * Ad-level status, same semantics as `POST /v1/ads/create`. Sets the
+ * new ads' switch and overrides `status` for them, also with
+ * `adSetId`. Send `campaignStatus`, `adSetStatus` and `adStatus` all
+ * PAUSED to create every object paused.
+ *
+ */
+export type adStatus = 'ACTIVE' | 'PAUSED';
 
 /**
  * Meta bid strategy applied to the shared ad set. Defaults to
@@ -11451,7 +11489,7 @@ export type Webhook = {
      */
     isActive?: boolean;
     /**
-     * Timestamp of last successful webhook delivery
+     * Timestamp of the last successful webhook delivery. On a healthy endpoint it is refreshed at most once every 10 minutes, so it can trail the most recent delivery by up to 10 minutes.
      */
     lastFiredAt?: string;
     /**
@@ -45502,13 +45540,29 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default, back-compat); PAUSED pauses only the TOP-MOST object this call creates and switches everything below it on, so one resume of that object brings the new tree live and nothing that already existed is touched: a new campaign is held paused with its ad set and ad on; with `existingCampaignId` the new ad set is held paused with its ad on; with `adSetId` the new ad itself is paused. `campaignStatus: ACTIVE` with `status: PAUSED` moves the pause down to the new ad set. LinkedIn: a held campaign group is PAUSED with its campaign and creative ACTIVE; a new campaign in an existing group stays DRAFT. X has no per-ad switch, so its lowest level is the line item. Google Performance Max and Demand Gen accept PAUSED only (the campaign is created paused).
+         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default, back-compat); PAUSED pauses only the TOP-MOST object this call creates and switches everything below it on, so one resume of that object brings the new tree live and nothing that already existed is touched: a new campaign is held paused with its ad set and ad on; with `existingCampaignId` the new ad set is held paused with its ad on; with `adSetId` the new ad itself is paused. `campaignStatus: ACTIVE` with `status: PAUSED` moves the pause down to the new ad set. `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level; `status: PAUSED` adds a hold of its own only when none of them is PAUSED. To create every object paused, send all three as PAUSED. LinkedIn: a held campaign group is PAUSED with its campaign and creative ACTIVE; a new campaign in an existing group stays DRAFT. X has no per-ad switch, so its lowest level is the line item. Google Performance Max and Demand Gen accept PAUSED only (the campaign is created paused).
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Meta, Google, and ChatGPT (OpenAI). Overrides `status` for the new campaign alone. `PAUSED` holds the campaign off with its ad set and ad on; `ACTIVE` with `status: PAUSED` switches the campaign on and holds the new ad set paused (its ad on). Omitted, it follows `status`.
+         * Every platform. Sets the switch of the new campaign alone (LinkedIn: the campaign group) and overrides `status` for it. `PAUSED` holds the campaign off with its ad set and ad on unless `adSetStatus` or `adStatus` say otherwise; `ACTIVE` with `status: PAUSED` switches the campaign on and holds the new ad set paused (its ad on). Omitted, it follows `status`. Ignored when the request creates no campaign (`existingCampaignId` or `adSetId`).
          */
         campaignStatus?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Every platform. Sets the switch of the new ad set alone (Google, TikTok, Pinterest and ChatGPT: the ad group; LinkedIn: the campaign, which stays DRAFT when held; X: the line item) and overrides `status` for it. Omitted, it follows `status`.
+         *
+         * Precedence: a level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level. `status: PAUSED` then holds the top-most new object that has no level status, and only when no level status is PAUSED; every other new object is switched on. So `campaignStatus: ACTIVE` + `adSetStatus: PAUSED` + `adStatus: PAUSED` keeps the campaign on with the new ad set and ad off, and all three PAUSED creates the whole tree paused.
+         *
+         * Rejected with a 400 alongside `adSetId` (that ad set already exists; change it with PUT /v1/ads/ad-sets/{adSetId}/status). Performance Max and Demand Gen accept PAUSED only.
+         *
+         */
+        adSetStatus?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId`, and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`.
+         *
+         * X returns a 400: a promoted post has no switch of its own, so hold the line item with `adSetStatus`. `PAUSED` with `buyingType: RESERVED` returns a 400 (Meta creates the first Reach and Frequency ad ACTIVE). Performance Max and Demand Gen accept PAUSED only.
+         *
+         */
+        adStatus?: 'ACTIVE' | 'PAUSED';
         /**
          * Meta only. Where the budget lives, which selects the Meta budget model:
          * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the
