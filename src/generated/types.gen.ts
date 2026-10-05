@@ -12430,7 +12430,7 @@ export type WebhookPayloadComment = {
         parentCommentId: (string) | null;
         /**
          * Ad context. Present only when the comment was made on paid content.
-         * Instagram: populated from the webhook payload's value.media.ad_id and value.media.ad_title.
+         * Instagram: populated from the webhook payload's value.media.ad_id, value.media.ad_title and value.media.original_media_id, each only when Meta includes it.
          * Facebook: populated via a Graph API lookup of the parent post's promotion_status.
          * Absent for comments on organic posts that are not currently promoted.
          *
@@ -12444,6 +12444,10 @@ export type WebhookPayloadComment = {
              * Ad creative title (Instagram only).
              */
             title?: string;
+            /**
+             * Original media ID that Meta reports for the ad (Instagram only).
+             */
+            originalMediaId?: string;
             /**
              * Facebook promotion status returned by Graph API. Common values:
              * "active" (organic post currently boosted), "ineligible" (dark
