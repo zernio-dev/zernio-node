@@ -11489,7 +11489,7 @@ export type Webhook = {
      */
     isActive?: boolean;
     /**
-     * Timestamp of the last successful webhook delivery. On a healthy endpoint it is refreshed at most once every 10 minutes, so it can trail the most recent delivery by up to 10 minutes.
+     * Timestamp of last successful webhook delivery
      */
     lastFiredAt?: string;
     /**
