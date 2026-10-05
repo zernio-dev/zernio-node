@@ -1686,7 +1686,7 @@ export type AnalyticsDeltaEntry = {
          */
         replays?: number;
         /**
-         * Facebook Reels only: share of plays still watching at each second of playback, fractions 0 to 1 (Meta post_video_retention_graph). Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. Empty object elsewhere.
+         * Facebook Reels only: share still watching at each second of playback, fractions 0 to 1 (Meta post_video_retention_graph). The base is a subset of plays that Meta selects and does not expose: on small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays. Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. Empty object elsewhere.
          */
         retentionCurve?: {
             [key: string]: (number);
@@ -8939,7 +8939,7 @@ export type PostAnalytics = {
      */
     replays?: number;
     /**
-     * Facebook Reels only: share of plays still watching at each second of playback, fractions 0 to 1 (Meta post_video_retention_graph). Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. Empty object for other media and platforms. Views-weighted across accounts like impressionSources.
+     * Facebook Reels only: share still watching at each second of playback, fractions 0 to 1 (Meta post_video_retention_graph). The base is a subset of plays that Meta selects and does not expose: on small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays. Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. Empty object for other media and platforms. Views-weighted across accounts like impressionSources.
      */
     retentionCurve?: {
         [key: string]: (number);
@@ -16728,7 +16728,7 @@ export type GetPostTimelineResponse = ({
          */
         replays?: number;
         /**
-         * Facebook Reels only: share of plays still watching at each second of playback, fractions 0 to 1 (Meta post_video_retention_graph). Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. Values are as of this date; empty object elsewhere.
+         * Facebook Reels only: share still watching at each second of playback, fractions 0 to 1 (Meta post_video_retention_graph). The base is a subset of plays that Meta selects and does not expose: on small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays. Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. Values are as of this date; empty object elsewhere.
          */
         retentionCurve?: {
             [key: string]: (number);
