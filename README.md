@@ -556,6 +556,7 @@ try {
 | `adCreatives.getAdCreative()` | Creative details |
 | `adCreatives.getAdMedia()` | Direct video and image URLs for an ad |
 | `adCreatives.getAdPreviews()` | Render previews of an existing ad |
+| `adCreatives.getAdVideoStatus()` | Get ad video processing status |
 | `adCreatives.updateAdCreative()` | Rename a creative |
 | `adCreatives.deleteAdCreative()` | Delete a creative |
 | `adCreatives.deleteAdVideo()` | Delete an ad video |

@@ -293,6 +293,7 @@ import {
   getAdSetDetails,
   getAdTrackingTags,
   getAdTree,
+  getAdVideoStatus,
   getAdsActivityLog,
   getAdsSearchTerms,
   getAdsTimeline,
@@ -2076,6 +2077,7 @@ export class Zernio {
     listAdImages: this._bind(listAdImages),
     uploadAdVideo: this._bind(uploadAdVideo),
     listAdVideos: this._bind(listAdVideos),
+    getAdVideoStatus: this._bind(getAdVideoStatus),
     deleteAdVideo: this._bind(deleteAdVideo),
     listPartnershipAdContent: this._bind(listPartnershipAdContent),
     listPartnershipAdPermissions: this._bind(listPartnershipAdPermissions),
@@ -2763,6 +2765,8 @@ export class Zernio {
     uploadAdVideo: this._bind(uploadAdVideo),
     /** @deprecated Use `zernio.adcreatives.listAdVideos` instead. */
     listAdVideos: this._bind(listAdVideos),
+    /** @deprecated Use `zernio.adcreatives.getAdVideoStatus` instead. */
+    getAdVideoStatus: this._bind(getAdVideoStatus),
     /** @deprecated Use `zernio.adcreatives.deleteAdVideo` instead. */
     deleteAdVideo: this._bind(deleteAdVideo),
     /** @deprecated Use `zernio.adcreatives.listPartnershipAdContent` instead. */

@@ -4118,7 +4118,7 @@ export type CtwaAdRequestBody = {
          */
         url?: string;
         /**
-         * Reuse a video already uploaded to this ad account (list them with GET /v1/ads/videos) instead of re-uploading. Wins over `url`. Provide either `url` or `id`.
+         * Reuse a video already uploaded to this ad account (list them with GET /v1/ads/videos) instead of re-uploading. Wins over `url`. Provide either `url` or `id`. Meta: a video still processing is waited on for up to 30 s, then answered 409 `invalid_resource_state` (poll GET /v1/ads/videos/{videoId}).
          */
         id?: string;
         /**
@@ -4217,7 +4217,7 @@ export type CtwaAdRequestBody = {
              */
             url?: string;
             /**
-             * Reuse a video already uploaded to this ad account (list them with GET /v1/ads/videos) instead of re-uploading. Wins over `url`. Provide either `url` or `id`.
+             * Reuse a video already uploaded to this ad account (list them with GET /v1/ads/videos) instead of re-uploading. Wins over `url`. Provide either `url` or `id`. Meta: a video still processing is waited on for up to 30 s, then answered 409 `invalid_resource_state` (poll GET /v1/ads/videos/{videoId}).
              */
             id?: string;
             /**
@@ -11479,7 +11479,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -12011,6 +12011,72 @@ export type event6 = 'ad.status_changed';
 export type level2 = 'CAMPAIGN' | 'AD_SET' | 'AD';
 
 /**
+ * Webhook payload for the `ad.video.processed` event. Fires once per
+ * `POST /v1/ads/videos` call made with `async: true`, when Meta finishes
+ * processing the video (Meta only).
+ *
+ */
+export type WebhookPayloadAdVideoProcessed = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery.
+     */
+    id: string;
+    event: 'ad.video.processed';
+    /**
+     * The connected ads account the video was uploaded with.
+     */
+    account: {
+        /**
+         * Internal Zernio account ID.
+         */
+        accountId: string;
+        /**
+         * Internal Zernio profile ID this account belongs to.
+         */
+        profileId: string;
+        /**
+         * Ads connection platform. Currently always `metaads`.
+         */
+        platform: string;
+        username: string;
+        displayName?: (string) | null;
+    };
+    video: {
+        /**
+         * Meta video id, as returned by the 202 upload response.
+         */
+        id: string;
+        /**
+         * Meta ad account id (act_<n>) the video was uploaded to.
+         */
+        platformAdAccountId: string;
+        /**
+         * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
+         */
+        status: 'ready' | 'error';
+        /**
+         * Meta's processing error when status is `error`, otherwise null.
+         */
+        error: (string) | null;
+        /**
+         * Meta's auto-generated poster when status is `ready` and Meta produced one, otherwise null.
+         */
+        thumbnailUrl: (string) | null;
+    };
+    /**
+     * UTC time at which Zernio generated this event.
+     */
+    timestamp: string;
+};
+
+export type event7 = 'ad.video.processed';
+
+/**
+ * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
+ */
+export type status32 = 'ready' | 'error';
+
+/**
  * Webhook payload for `analytics.synced`. Fired once per connected account each
  * time its analytics sync cycle completes successfully. Poll-driven (roughly
  * hourly per account), not real-time, and never fired for a skipped or failed
@@ -12081,7 +12147,7 @@ export type WebhookPayloadAnalyticsSynced = {
     timestamp: string;
 };
 
-export type event7 = 'analytics.synced';
+export type event8 = 'analytics.synced';
 
 export type WebhookPayloadApiChangelogPublished = {
     /**
@@ -12096,7 +12162,7 @@ export type WebhookPayloadApiChangelogPublished = {
     timestamp: string;
 };
 
-export type event8 = 'api.changelog.published';
+export type event9 = 'api.changelog.published';
 
 /**
  * Webhook payload for the `call.ended` event. Fires on call hangup
@@ -12166,7 +12232,7 @@ export type WebhookPayloadCallEnded = {
     timestamp: string;
 };
 
-export type event9 = 'call.ended';
+export type event10 = 'call.ended';
 
 /**
  * Webhook payload for the `call.failed` event. Fired when a call
@@ -12200,7 +12266,7 @@ export type WebhookPayloadCallFailed = {
     timestamp: string;
 };
 
-export type event10 = 'call.failed';
+export type event11 = 'call.failed';
 
 /**
  * Webhook payload for the `call.permission_request` event. Fires
@@ -12237,7 +12303,7 @@ export type WebhookPayloadCallPermissionRequest = {
     timestamp: string;
 };
 
-export type event11 = 'call.permission_request';
+export type event12 = 'call.permission_request';
 
 export type response = 'accept' | 'reject';
 
@@ -12291,7 +12357,7 @@ export type WebhookPayloadCallReceived = {
     timestamp: string;
 };
 
-export type event12 = 'call.received';
+export type event13 = 'call.received';
 
 /**
  * Webhook payload for comment received events (Instagram, Facebook, Threads, YouTube, LinkedIn, Bluesky, Reddit, TikTok). X/Twitter does NOT fire this event. TikTok events carry only the author id: the comment.update webhook has no username, picture or owner flag.
@@ -12447,7 +12513,7 @@ export type WebhookPayloadComment = {
     timestamp: string;
 };
 
-export type event13 = 'comment.received';
+export type event14 = 'comment.received';
 
 export type platform13 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
@@ -12486,7 +12552,7 @@ export type WebhookPayloadCommerceProduct = {
     };
 };
 
-export type event14 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
+export type event15 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
 export type type16 = 'product';
 
@@ -12524,7 +12590,7 @@ export type WebhookPayloadConversationControlChanged = {
     timestamp: string;
 };
 
-export type event15 = 'conversation.control_changed';
+export type event16 = 'conversation.control_changed';
 
 /**
  * Who answers now. ai_agent: Meta Business Agent; app: you; other: another partner app on the number.
@@ -12561,7 +12627,7 @@ export type WebhookPayloadConversationStarted = {
     timestamp: string;
 };
 
-export type event16 = 'conversation.started';
+export type event17 = 'conversation.started';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
@@ -12593,7 +12659,7 @@ export type WebhookPayloadExternalPost = {
     timestamp: string;
 };
 
-export type event17 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+export type event18 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
 
 /**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
@@ -12664,7 +12730,7 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event18 = 'lead.received';
+export type event19 = 'lead.received';
 
 export type platform14 = 'facebook';
 
@@ -13223,7 +13289,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event19 = 'message.received';
+export type event20 = 'message.received';
 
 /**
  * Which Zernio surface produced the message. Always present and
@@ -13284,7 +13350,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event20 = 'message.deleted';
+export type event21 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, message.played and
@@ -13347,7 +13413,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event21 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
+export type event22 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -13385,7 +13451,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event22 = 'message.edited';
+export type event23 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API, or from the WhatsApp Business app on Coexistence numbers)
@@ -13603,7 +13669,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event23 = 'message.sent';
+export type event24 = 'message.sent';
 
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
@@ -13657,7 +13723,7 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
     timestamp: string;
 };
 
-export type event24 = 'phone_number.stock_available';
+export type event25 = 'phone_number.stock_available';
 
 /**
  * Webhook payload for post events
@@ -13707,7 +13773,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event25 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event26 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -13826,12 +13892,12 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event26 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
+export type event27 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
 
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status32 = 'published' | 'failed' | 'deleted';
+export type status33 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -13886,7 +13952,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event27 = 'reaction.received';
+export type event28 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -13960,7 +14026,7 @@ export type WebhookPayloadReferral = {
     timestamp: string;
 };
 
-export type event28 = 'referral.received';
+export type event29 = 'referral.received';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -13987,7 +14053,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event29 = 'review.new';
+export type event30 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits their
@@ -14020,7 +14086,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event30 = 'review.updated';
+export type event31 = 'review.updated';
 
 /**
  * Webhook payload for test deliveries
@@ -14041,7 +14107,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event31 = 'webhook.test';
+export type event32 = 'webhook.test';
 
 /**
  * Webhook payload for `whatsapp.account.alert_received`, forwarded from Meta's
@@ -14088,7 +14154,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
     timestamp: string;
 };
 
-export type event32 = 'whatsapp.account.alert_received';
+export type event33 = 'whatsapp.account.alert_received';
 
 export type platform16 = 'whatsapp';
 
@@ -14139,12 +14205,12 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     timestamp: string;
 };
 
-export type event33 = 'whatsapp.account.name_status_updated';
+export type event34 = 'whatsapp.account.name_status_updated';
 
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status33 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status34 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -14192,7 +14258,7 @@ export type WebhookPayloadWhatsAppAccountQualityUpdated = {
     timestamp: string;
 };
 
-export type event34 = 'whatsapp.account.quality_updated';
+export type event35 = 'whatsapp.account.quality_updated';
 
 /**
  * The Meta webhook field that reported the change.
@@ -14263,12 +14329,12 @@ export type WebhookPayloadWhatsAppAccountStatusUpdated = {
     timestamp: string;
 };
 
-export type event35 = 'whatsapp.account.status_updated';
+export type event36 = 'whatsapp.account.status_updated';
 
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status34 = 'restricted' | 'active';
+export type status35 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -14315,7 +14381,7 @@ export type WebhookPayloadWhatsAppContactIdentityChanged = {
     timestamp: string;
 };
 
-export type event36 = 'whatsapp.contact.identity_changed';
+export type event37 = 'whatsapp.contact.identity_changed';
 
 /**
  * Which Meta signal reported the change. `user_changed_number`: new phone number. `user_changed_user_id` and `user_id_update`: new BSUID.
@@ -14384,7 +14450,7 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     timestamp: string;
 };
 
-export type event37 = 'whatsapp.template.category_updated';
+export type event38 = 'whatsapp.template.category_updated';
 
 /**
  * `scheduled` is Meta's 24h advance notice of an upcoming
@@ -14461,7 +14527,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event38 = 'whatsapp.template.status_updated';
+export type event39 = 'whatsapp.template.status_updated';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -14469,7 +14535,7 @@ export type event38 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status35 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status36 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 /**
  * WhatsApp only. Meta's `conversation` object from the status webhook (the billing
@@ -14840,7 +14906,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status36 = 'success' | 'failed' | 'pending';
+export type status37 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -25276,7 +25342,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -25342,7 +25408,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -47144,6 +47210,10 @@ export type UploadAdVideoData = {
          * Optional filename shown alongside the upload session. Applied only when uploading via videoBase64.
          */
         filename?: string;
+        /**
+         * true: answer 202 once Meta accepts the upload instead of waiting for processing. Poll GET /v1/ads/videos/{videoId} or subscribe to ad.video.processed.
+         */
+        async?: boolean;
     };
 };
 
@@ -47154,8 +47224,22 @@ export type UploadAdVideoResponse = ({
          * Meta video id, reusable as video.id on POST /v1/ads/create and inside POST /v1/ads/preview creativeSpec.
          */
         id?: string;
+        status?: 'ready';
         /**
          * Meta-hosted poster URL if available; null when Meta has not produced a poster yet.
+         */
+        thumbnailUrl?: (string) | null;
+    };
+} | {
+    adAccountId?: string;
+    video?: {
+        /**
+         * Meta video id. Usable as video.id once GET /v1/ads/videos/{videoId} reports ready.
+         */
+        id?: string;
+        status?: 'processing';
+        /**
+         * Always null on 202; read it from GET /v1/ads/videos/{videoId} once ready.
          */
         thumbnailUrl?: (string) | null;
     };
@@ -47202,6 +47286,51 @@ export type ListAdVideosResponse = ({
 });
 
 export type ListAdVideosError = (ErrorResponse | unknown);
+
+export type GetAdVideoStatusData = {
+    path: {
+        /**
+         * Meta ad video id (numeric).
+         */
+        videoId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>) the video was uploaded to.
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetAdVideoStatusResponse = ({
+    adAccountId?: string;
+    video?: {
+        id: string;
+        status: 'processing' | 'ready' | 'error';
+        /**
+         * Meta's raw status.video_status, forwarded verbatim.
+         */
+        platformStatus: (string) | null;
+        /**
+         * Meta's processing percentage when reported.
+         */
+        processingProgress: (number) | null;
+        /**
+         * Meta's processing error when status is error.
+         */
+        error: (string) | null;
+        /**
+         * Meta's auto-generated poster once ready, when Meta produced one.
+         */
+        thumbnailUrl: (string) | null;
+    };
+});
+
+export type GetAdVideoStatusError = (ErrorResponse | unknown);
 
 export type DeleteAdVideoData = {
     path: {
