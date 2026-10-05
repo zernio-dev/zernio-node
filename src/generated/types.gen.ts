@@ -1635,7 +1635,7 @@ export type AnalyticsDeltaEntry = {
         clicks: number;
         views: number;
         /**
-         * Follows attributed to this post (Instagram)
+         * Follows attributed to this post (Instagram feed and stories, Facebook Reels, TikTok business lane)
          */
         follows: number;
         /**
@@ -8889,7 +8889,7 @@ export type PostAnalytics = {
     clicks?: number;
     views?: number;
     /**
-     * Instagram feed posts and stories only: organic accounts that started following from this post. Null on Instagram Reels and non-Reels video, where Meta does not expose this metric for the media. 0 for other platforms.
+     * Accounts that started following from this post. Instagram feed posts and stories (organic follows), Facebook Reels (Meta post_video_followers) and the TikTok business lane. Null on Instagram Reels and non-Reels video and on Facebook posts that are not Reels, where Meta does not expose this metric for the media. 0 for other platforms.
      */
     follows?: (number) | null;
     /**
@@ -16690,9 +16690,9 @@ export type GetPostTimelineResponse = ({
          */
         views?: number;
         /**
-         * Follows attributed to the post on this date (Instagram feed and stories, TikTok business lane); 0 elsewhere
+         * Follows attributed to the post on this date (Instagram feed and stories, Facebook Reels, TikTok business lane). Null on Instagram Reels and video and on Facebook posts that are not Reels, where Meta has no follows metric; 0 on other platforms.
          */
-        follows?: number;
+        follows?: (number) | null;
         /**
          * TikTok business lane: share of viewers who watched to the end on this date, 0 to 1; 0 elsewhere
          */
