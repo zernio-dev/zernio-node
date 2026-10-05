@@ -11489,7 +11489,7 @@ export type Webhook = {
      */
     isActive?: boolean;
     /**
-     * Timestamp of last successful webhook delivery
+     * Timestamp of the last successful webhook delivery. On a healthy endpoint it is refreshed at most once every 10 minutes, so it can trail the most recent delivery by up to 10 minutes.
      */
     lastFiredAt?: string;
     /**
@@ -19609,13 +19609,16 @@ export type ConnectAdsData = {
          * with `details.accountStatus` (Meta's `account_status`) and, when Meta
          * gives one, `details.disableReason`. Unsettled and in-grace accounts
          * are accepted, matching the `selectable` flag of `GET /v1/ads/accounts`.
-         * Setting a scope also removes already synced ads from de-scoped ad
-         * accounts. On Meta the scope also decides which ad accounts Zernio
-         * subscribes to ad-account webhooks: only the scoped ones, instead of
-         * every ad account the login can reach. The scope is kept when this
-         * call returns an `authUrl`, so the Meta Ads account created after
-         * OAuth is scoped (and only its scoped ad accounts synced and
-         * subscribed) from the start. For multiple accounts use `adAccountIds` instead.
+         * Setting a scope also removes already synced ads, campaigns, ad sets
+         * and keywords from de-scoped ad accounts. On Meta the scope also decides
+         * which ad accounts Zernio subscribes to ad-account webhooks: only the
+         * scoped ones, instead of every ad account the login can reach. The scope
+         * is kept when this call returns an `authUrl`, so the Meta Ads account
+         * created after OAuth is scoped (and only its scoped ad accounts synced and
+         * subscribed) from the start. On `googleads` the scope is kept through
+         * OAuth when `redirect_url` is set, so the Google Ads connection created
+         * after OAuth syncs only its scoped customers from the first sync.
+         * For multiple accounts use `adAccountIds` instead.
          *
          */
         adAccountId?: string;
@@ -19624,7 +19627,8 @@ export type ConnectAdsData = {
          * support and id shapes as `adAccountId`). Repeat the param
          * (`?adAccountIds=act_1&adAccountIds=act_2`) or comma-separate
          * (`?adAccountIds=act_1,act_2`). Persisted server-side; latest call
-         * wins, and de-scoped ad accounts have their synced ads removed.
+         * wins, and de-scoped ad accounts have their synced ads, campaigns,
+         * ad sets and keywords removed.
          * On Meta only the scoped ad accounts get webhook subscriptions,
          * including when the call starts a fresh OAuth.
          * Omitting both `adAccountId` and `adAccountIds` keeps any previously
