@@ -16932,7 +16932,7 @@ export type GetInboxTopAccountsData = {
     query: {
         fromDate: string;
         /**
-         * Cap on returned rows. Lower than the posting listing's 100 because each row triggers a SocialAccount Mongo lookup.
+         * Cap on returned rows. Lower than the posting listing's 100 because each row triggers a social account lookup.
          */
         limit?: number;
         platform?: string;
@@ -16998,7 +16998,7 @@ export type ListInboxConversationAnalyticsResponse = ({
          */
         conversationId?: string;
         /**
-         * The Conversation document _id, when a matching doc exists
+         * The Zernio conversation id, when a matching conversation exists
          */
         mongoId?: (string) | null;
         accountId?: string;
@@ -17037,7 +17037,7 @@ export type ListInboxConversationAnalyticsError = ({
 export type GetInboxConversationAnalyticsData = {
     path: {
         /**
-         * Mongo _id or platformConversationId.
+         * Zernio conversation id or platformConversationId.
          */
         conversationId: string;
     };
@@ -29524,7 +29524,7 @@ export type EnableWhatsAppCallingLegacyData = {
     };
     path: {
         /**
-         * WhatsAppPhoneNumber Mongo ID
+         * WhatsApp phone number id
          */
         id: string;
     };

@@ -645,11 +645,11 @@ export const listInboxConversationAnalytics = <ThrowOnError extends boolean = fa
  * /v1/analytics/post-timeline: one conversation, daily totals,
  * source mix.
  *
- * The {conversationId} path param accepts EITHER the Mongo `_id` of
- * the Conversation document OR its `platformConversationId` (the
- * same identity used by metadata.conversationId at ingest time).
- * Ownership is verified in MongoDB against the caller's team
- * before the Tinybird query fires.
+ * The {conversationId} path param accepts EITHER the Zernio
+ * conversation id OR its `platformConversationId` (the same
+ * identity used by metadata.conversationId at ingest time).
+ * Ownership is verified against the caller's team before the
+ * Tinybird query fires.
  *
  * Max date range is 365 days.
  *
