@@ -442,6 +442,11 @@ export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lea
 
 export type type = 'daily' | 'lifetime';
 
+/**
+ * Request-side publish switch for `adStatus` on ad creation endpoints only (`status`, `campaignStatus` and `adSetStatus` carry their own inline ACTIVE/PAUSED enum there; the status-update endpoints are a separate lowercase `active`/`paused` enum). Distinct from `AdStatus` (the platform-reported delivery status returned on reads).
+ */
+export type AdActivationStatus = 'ACTIVE' | 'PAUSED';
+
 export type AdAnalyticsResponse = {
     /**
      * Present and true while historical data is being backfilled.
@@ -4564,7 +4569,7 @@ export type CtwaAdRequestBody = {
      * PAUSED to create every object paused.
      *
      */
-    adStatus?: 'ACTIVE' | 'PAUSED';
+    adStatus?: AdActivationStatus;
     /**
      * Meta bid strategy applied to the shared ad set. Defaults to
      * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
@@ -4691,15 +4696,6 @@ export type campaignStatus = 'ACTIVE' | 'PAUSED';
  *
  */
 export type adSetStatus = 'ACTIVE' | 'PAUSED';
-
-/**
- * Ad-level status, same semantics as `POST /v1/ads/create`. Sets the
- * new ads' switch and overrides `status` for them, also with
- * `adSetId`. Send `campaignStatus`, `adSetStatus` and `adStatus` all
- * PAUSED to create every object paused.
- *
- */
-export type adStatus = 'ACTIVE' | 'PAUSED';
 
 /**
  * Meta bid strategy applied to the shared ad set. Defaults to
@@ -45566,7 +45562,7 @@ export type CreateStandaloneAdData = {
          * X returns a 400: a promoted post has no switch of its own, so hold the line item with `adSetStatus`. `PAUSED` with `buyingType: RESERVED` returns a 400 (Meta creates the first Reach and Frequency ad ACTIVE). Performance Max and Demand Gen accept PAUSED only.
          *
          */
-        adStatus?: 'ACTIVE' | 'PAUSED';
+        adStatus?: AdActivationStatus;
         /**
          * Meta only. Where the budget lives, which selects the Meta budget model:
          * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the
