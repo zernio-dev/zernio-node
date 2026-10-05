@@ -382,6 +382,7 @@ import {
   getInboxVolume,
   getInstagramAccountInsights,
   getInstagramAudio,
+  getInstagramBusinessDiscovery,
   getInstagramDemographics,
   getInstagramFollowStatus,
   getInstagramFollowerHistory,
@@ -1471,6 +1472,7 @@ export class Zernio {
     getInstagramPublishingLimit: this._bind(getInstagramPublishingLimit),
     searchInstagramAudio: this._bind(searchInstagramAudio),
     getInstagramAudio: this._bind(getInstagramAudio),
+    getInstagramBusinessDiscovery: this._bind(getInstagramBusinessDiscovery),
     getInstagramStoryInsights: this._bind(getInstagramStoryInsights),
   };
 

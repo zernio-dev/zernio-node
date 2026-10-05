@@ -993,6 +993,7 @@ try {
 |--------|-------------|
 | `instagram.listInstagramStories()` | List active Instagram stories |
 | `instagram.getInstagramAudio()` | Get Instagram audio metadata |
+| `instagram.getInstagramBusinessDiscovery()` | Look up a public Instagram Business account |
 | `instagram.getInstagramPublishingLimit()` | Get Instagram publishing limit |
 | `instagram.getInstagramStoryInsights()` | Get Instagram story insights |
 | `instagram.searchInstagramAudio()` | Search Instagram audio |

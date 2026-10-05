@@ -7071,6 +7071,48 @@ export type InstagramAudioAsset = {
  */
 export type audioType = 'music' | 'original_sound';
 
+export type InstagramBusinessDiscovery = {
+    profile: {
+        /**
+         * Instagram user ID of the looked-up account
+         */
+        id: string;
+        username: string;
+        name?: (string) | null;
+        biography?: (string) | null;
+        website?: (string) | null;
+        /**
+         * Temporary CDN URL; download it rather than storing the link.
+         */
+        profilePictureUrl?: (string) | null;
+        followersCount?: (number) | null;
+        followsCount?: (number) | null;
+        mediaCount?: (number) | null;
+    };
+    /**
+     * Most recent media first, up to `limit`.
+     */
+    media: Array<{
+        id?: string;
+        caption?: (string) | null;
+        /**
+         * IMAGE, VIDEO or CAROUSEL_ALBUM
+         */
+        mediaType?: (string) | null;
+        /**
+         * FEED or REELS
+         */
+        mediaProductType?: (string) | null;
+        timestamp?: (string) | null;
+        permalink?: (string) | null;
+        /**
+         * Null when the owner hides like counts
+         */
+        likeCount?: (number) | null;
+        commentsCount?: (number) | null;
+    }>;
+};
+
 export type InstagramDemographicsResponse = {
     success?: boolean;
     /**
@@ -23539,6 +23581,29 @@ export type GetInstagramAudioResponse = ({
 });
 
 export type GetInstagramAudioError = (ErrorResponse | unknown);
+
+export type GetInstagramBusinessDiscoveryData = {
+    path: {
+        /**
+         * The ID of a connected Instagram account (Facebook Login).
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * How many of the most recent media to return.
+         */
+        limit?: number;
+        /**
+         * Instagram handle to look up, with or without the leading @. Case-insensitive.
+         */
+        username: string;
+    };
+};
+
+export type GetInstagramBusinessDiscoveryResponse = (InstagramBusinessDiscovery);
+
+export type GetInstagramBusinessDiscoveryError = (ErrorResponse);
 
 export type GetInstagramStoryInsightsData = {
     path: {
