@@ -366,6 +366,7 @@ try {
 | `connect.connectSlackChannel()` | Connect a Slack channel |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
 | `connect.connectWhatsAppEmbeddedSignup()` | Connect WhatsApp from Embedded Signup |
+| `connect.connectWhopAdsCredentials()` | Connect a Whop account |
 | `connect.connectWordPressWithApplicationPassword()` | Connect self-hosted WordPress with an application password |
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |

@@ -394,6 +394,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.connectOpenAIAdsCredentials).toBeTypeOf('function');
     });
 
+    it('should have connectWhopAdsCredentials method', () => {
+      expect(client.connect.connectWhopAdsCredentials).toBeDefined();
+      expect(client.connect.connectWhopAdsCredentials).toBeTypeOf('function');
+    });
+
     it('should have connectWhatsAppCredentials method', () => {
       expect(client.connect.connectWhatsAppCredentials).toBeDefined();
       expect(client.connect.connectWhatsAppCredentials).toBeTypeOf('function');

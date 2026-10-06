@@ -10288,7 +10288,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs' | 'whopads';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -10370,7 +10370,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform11 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs';
+export type platform11 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs' | 'whopads';
 
 /**
  * A tracking tag's install on a connected store: a Shopify web pixel, or a Custom HTML widget on a WordPress site. Fields marked Shopify or WordPress are present only for that platform.
@@ -10943,7 +10943,7 @@ export type TrackingTag = {
      */
     events?: Array<TrackingTagEvent>;
     name: string;
-    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads';
+    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
     /**
      * Platform-native flavor of the tag (Meta: `pixel`).
      */
@@ -10998,7 +10998,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform12 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads';
+export type platform12 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -19013,7 +19013,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'whopads';
         /**
          * Filter by profile ID
          */
@@ -22960,6 +22960,97 @@ export type ConnectOpenAiAdsCredentialsResponse = ({
 });
 
 export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+});
+
+export type ConnectWhopAdsCredentialsData = {
+    body: {
+        /**
+         * Account API key from the Whop dashboard.
+         */
+        apiKey: string;
+        /**
+         * Your Zernio profile ID
+         */
+        profileId: string;
+        /**
+         * Optional state passthrough for the connect flow.
+         */
+        state?: string;
+        /**
+         * Optional URL to redirect to after successful connection, echoed back as redirectUrl.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type ConnectWhopAdsCredentialsResponse = ({
+    /**
+     * The Zernio account id (platform `whopads`) to use as `{accountId}` on the tracking-tags routes.
+     */
+    accountId?: string;
+    /**
+     * The Whop account id (`biz_...`), which is also the tracking tag id.
+     */
+    whopAccountId?: string;
+    accountName?: string;
+    redirectUrl?: string;
+});
+
+export type ConnectWhopAdsCredentialsError = (ErrorResponse | unknown | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -51860,7 +51951,7 @@ export type ListTrackingTagsData = {
 };
 
 export type ListTrackingTagsResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
     tags?: Array<TrackingTag>;
 });
 
@@ -51891,7 +51982,7 @@ export type CreateTrackingTagData = {
 };
 
 export type CreateTrackingTagResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
     tag?: TrackingTag;
 });
 
@@ -51914,7 +52005,7 @@ export type GetTrackingTagData = {
 };
 
 export type GetTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
     tag?: TrackingTag;
 });
 
@@ -51960,7 +52051,7 @@ export type UpdateTrackingTagData = {
 };
 
 export type UpdateTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
     tag?: TrackingTag;
 });
 
@@ -52055,7 +52146,7 @@ export type InstallTrackingTagOnStoreData = {
 };
 
 export type InstallTrackingTagOnStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
     install?: (StorePixelInstall & {
     /**
      * Shopify only: the pixel this install replaced on the store, if any.
@@ -52108,7 +52199,7 @@ export type GetTrackingTagStoreInstallData = {
 };
 
 export type GetTrackingTagStoreInstallResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only.
@@ -52156,7 +52247,7 @@ export type RemoveTrackingTagFromStoreData = {
 };
 
 export type RemoveTrackingTagFromStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only: number of Zernio widgets deleted.
@@ -52375,7 +52466,7 @@ export type GetTrackingTagStatsData = {
 };
 
 export type GetTrackingTagStatsResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
     stats?: {
         aggregation?: string;
         startTime?: number;
