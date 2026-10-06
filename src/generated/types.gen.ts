@@ -9040,6 +9040,10 @@ export type PlatformAnalytics = {
      * Failure detail. On failed entries, why the post failed to publish. On unavailable entries, why analytics cannot be synced (e.g. Google Business Profile, a TikTok upload that never received a video id). On pending entries, the most recent analytics sync error for the account (null while no sync has failed), cleared after the next successful sync.
      */
     errorMessage?: (string) | null;
+    /**
+     * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
+     */
+    errorCode?: ('post_not_found' | 'permission_missing') | null;
 };
 
 export type status24 = 'published' | 'failed';
@@ -9048,6 +9052,11 @@ export type status24 = 'published' | 'failed';
  * Sync state of analytics for this platform
  */
 export type syncStatus2 = 'synced' | 'pending' | 'unavailable';
+
+/**
+ * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
+ */
+export type errorCode = 'post_not_found' | 'permission_missing';
 
 export type PlatformTarget = {
     /**
