@@ -5183,6 +5183,16 @@ export type ErrorResponse = {
      * create with a 5xx or dropped the connection and Zernio could not confirm
      * whether the object exists: check that parent before creating it again.
      *
+     * When Meta refuses a write because the ad account's status is ineligible to manage
+     * ads (Meta subcode 2490592 or 4841021, on the write itself or on a cleanup delete),
+     * any Meta ads write (create, boost, CTWA, campaign / ad set / ad updates and status
+     * changes) answers 422 `ad_account_unusable`. The message names the ad account when
+     * known, links Meta's fix (https://www.facebook.com/business/help/422289316306981),
+     * lists the objects left behind and ends with Meta's original error, which also stays
+     * verbatim in `platformError`. Meta often reports the first failure under an
+     * unrelated code (e.g. 1487194 on the creative), so branch on `code`, not on
+     * `platformError`.
+     *
      */
     details?: {
         /**
