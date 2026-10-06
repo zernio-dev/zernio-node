@@ -10613,7 +10613,7 @@ export type TikTokPlatformData = {
      */
     musicSoundInfo?: {
         /**
-         * The id field of a track from GET /v1/accounts/{accountId}/tiktok/commercial-music (a song clip id). TikTok fails the publish with a generic 51065 when given the commercial music id instead.
+         * The clip.id of a track from GET /v1/accounts/{accountId}/tiktok/commercial-music (its id publishes too, but viewers may see the sound as unavailable in their country; observed from Germany). TikTok fails the publish with a generic 51065 when given the commercial music id instead.
          */
         musicSoundId: string;
         /**
@@ -18894,7 +18894,7 @@ export type ListTikTokCommercialMusicData = {
 export type ListTikTokCommercialMusicResponse = ({
     tracks?: Array<{
         /**
-         * The id to send as musicSoundId (the full track's song clip id). TikTok rejects the commercial music id itself at publish time.
+         * The full track's song clip id. Accepted as musicSoundId, but prefer clip.id: posts published with this id have shown viewers a sound page saying the song is not available in their country (observed from Germany). TikTok rejects the commercial music id itself at publish time.
          */
         id?: string;
         /**
@@ -18915,7 +18915,7 @@ export type ListTikTokCommercialMusicResponse = ({
          */
         rank?: number;
         /**
-         * The trending excerpt of the track, when TikTok provides one. Its id is also accepted as musicSoundId.
+         * The trending excerpt of the track, when TikTok provides one. Send clip.id as musicSoundId: it publishes and its sound page opens for viewers, unlike the full-track id (observed from Germany, 2026-10-06).
          */
         clip?: {
             id?: string;

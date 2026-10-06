@@ -1501,7 +1501,7 @@ export const getInstagramFollowStatus = <ThrowOnError extends boolean = false>(o
 
 /**
  * List trending commercial music
- * Returns the 100 currently trending tracks of TikTok's Commercial Music Library for a TikTok account connected through the TikTok for Business app. Use a track id as tiktokSettings.musicSoundInfo.musicSoundId when creating a post. The list is not paged; countryCode selects the country chart.
+ * Returns the 100 currently trending tracks of TikTok's Commercial Music Library for a TikTok account connected through the TikTok for Business app. Send a track's clip.id as tiktokSettings.musicSoundInfo.musicSoundId when creating a post; fall back to id only when the track has no clip. Both publish, but with the full-track id TikTok has shown viewers "This song is not available in your country" on the sound page (observed from Germany, 2026-10-06), while the clip id gave a working sound page for the same track. The list is not paged; countryCode selects the country chart.
  */
 export const listTikTokCommercialMusic = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTikTokCommercialMusicData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTikTokCommercialMusicResponse, ListTikTokCommercialMusicError, ThrowOnError>({
