@@ -356,6 +356,48 @@ export type Ad = {
          */
         mediaUrls?: Array<(string)>;
         /**
+         * Meta only today. The carousel's cards in the order the ad shows them, one per
+         * Meta `link_data.child_attachments` entry, using the same field names as the
+         * `carouselCards` create input. On a carousel synced from Meta, `imageUrl` is resolved
+         * exactly like `mediaUrls` (the stable `/adimages` permalink first), so the cards that
+         * carry an image line up with `mediaUrls` in order; a card whose image Meta does not
+         * resolve keeps its place without `imageUrl`. On a carousel created through Zernio
+         * it starts as the cards you sent. Absent on non-carousel ads and on
+         * other platforms. Synced carousels stored before this field existed fill it in on
+         * their next sync.
+         *
+         */
+        carouselCards?: Array<{
+            /**
+             * Card image, resolved like the matching `mediaUrls` entry. Absent when Meta returns no resolvable image for the card.
+             */
+            imageUrl?: string;
+            /**
+             * Meta ad image hash of the card image (`image_hash`).
+             */
+            imageHash?: string;
+            /**
+             * Card title (Meta `name`).
+             */
+            headline?: string;
+            /**
+             * Card description, under the title (Meta `description`).
+             */
+            description?: string;
+            /**
+             * Card destination URL (Meta `link`).
+             */
+            linkUrl?: string;
+            /**
+             * Card call to action type (Meta `call_to_action.type`), e.g. SHOP_NOW or WATCH_MORE.
+             */
+            callToAction?: string;
+            /**
+             * Meta video id when the card is a video (`video_id`).
+             */
+            videoId?: string;
+        }>;
+        /**
          * LinkedIn only. Whether LinkedIn is currently serving this specific creative. Complements the ad-level `servingStatuses`, which describes the parent campaign.
          */
         isServing?: (boolean) | null;
