@@ -10335,6 +10335,14 @@ export type SocialAccount = {
     username?: string;
     displayName?: string;
     /**
+     * The account's id on its platform as the platform reports it to Zernio; stable across reconnects, so it is the key to match an account against your own records. Instagram: the app-scoped user id on Instagram Login accounts (the professional account id is in `metadata.instagramScopedId`), the professional account id (`17841...`) on Facebook Login accounts. TikTok: the open_id of Zernio's TikTok app, which differs from the open_id any other app sees for the same user. Either value can be passed back as `expectedPlatformUserId` on GET /v1/connect/{platform}.
+     */
+    platformUserId?: string;
+    /**
+     * TikTok accounts only. The account type TikTok reported when the account was connected. `personal` accounts cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts): skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect. `business` is the prerequisite, not a guarantee; messaging also needs the messaging scopes granted and TikTok's regional availability. `unknown` on accounts connected before this was captured or whose grant left out the account-type scope.
+     */
+    tiktokAccountType?: 'business' | 'personal' | 'unknown';
+    /**
      * URL to the account's profile picture on the platform. May be null if the platform does not provide one.
      */
     profilePicture?: (string) | null;
@@ -10402,6 +10410,7 @@ export type SocialAccount = {
      *
      * For Instagram accounts:
      * - loginMethod: "facebook_login" when the account was connected through Facebook Login. Absent on accounts connected with Instagram Login. On facebook_login accounts, comment reads leave hidden comments out entirely instead of returning them with isHidden true.
+     * - instagramScopedId: the Instagram professional account id (`17841...`). On Instagram Login accounts this is the id that is the same whichever app connected the account, while platformUserId is app-scoped; Facebook Login accounts hold this id as platformUserId.
      *
      * For X (Twitter) accounts:
      * - profileData.extraData.isPremium: Whether X reports a paid subscription (Basic, Premium, Premium+, or a blue verified badge), which raises the post length limit from 280 to 25,000 characters. Read live at connect and reconnect and refreshed by the daily follower snapshot; because X intermittently reports no subscription for subscribed accounts, a cancellation is stored on the fourth consecutive daily snapshot that reports it (about four days). Accounts connected before the extraData layout carry the same flag at profileData.isPremium.
@@ -10413,6 +10422,11 @@ export type SocialAccount = {
 };
 
 export type platform11 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'sms' | 'phone' | 'rcs' | 'whopads';
+
+/**
+ * TikTok accounts only. The account type TikTok reported when the account was connected. `personal` accounts cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts): skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect. `business` is the prerequisite, not a guarantee; messaging also needs the messaging scopes granted and TikTok's regional availability. `unknown` on accounts connected before this was captured or whose grant left out the account-type scope.
+ */
+export type tiktokAccountType = 'business' | 'personal' | 'unknown';
 
 /**
  * A tracking tag's install on a connected store: a Shopify web pixel, or a Custom HTML widget on a WordPress site. Fields marked Shopify or WordPress are present only for that platform.
@@ -19888,6 +19902,14 @@ export type GetConnectUrlData = {
          */
         brandName?: string;
         /**
+         * Only connect if the login lands on this platform account; any other account ends the flow with `error=account_mismatch` (a 409 `account_mismatch` on POST /v1/connect/instagram/select-account) and nothing is written. Compared with every id the platform reports for the authorized account: the `platformUserId` of a Zernio account on this platform, or on Instagram either the app-scoped id or the professional account id (`metadata.instagramScopedId`, the `17841...` id that Facebook Login accounts hold as platformUserId). TikTok open_ids are app-scoped, so an id from your own TikTok app never matches; use expectedUsername there. Honoured by the OAuth callback (every platform that connects without a selection step, Instagram Login included) and by the Instagram selection step; on the other selection endpoints you choose the destination yourself. In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged. On X it counts toward the OAuth state limit described under redirect_url.
+         */
+        expectedPlatformUserId?: string;
+        /**
+         * Only connect if the authorized account's handle is this one (case-insensitive, a leading @ is ignored); otherwise the flow ends with `error=account_mismatch`, `error_message` naming the handle that was authorized, and nothing is written. Same coverage and transport as expectedPlatformUserId; when both are sent both must match. Use this on a first connection, where you hold the handle the user typed but no Zernio id yet.
+         */
+        expectedUsername?: string;
+        /**
          * When true, the user is redirected to your redirect_url with raw OAuth data (code, state) instead of Zernio's default account selection UI. Use this to build a custom connect experience.
          */
         headless?: boolean;
@@ -19937,7 +19959,7 @@ export type GetConnectUrlData = {
          * `dashboard_url`, `missing_scopes`, `error_reason` and the `platform_error*` params are
          * conditional and must be treated as optional. Your own query params are kept on every
          * redirect, but ours overwrite a param of yours with the same name. On an error redirect the
-         * internal `headless`, `adsConnect`, `adsScope` and `reconnectAccountId` markers we add during the flow are removed.
+         * internal `headless`, `adsConnect`, `adsScope`, `reconnectAccountId`, `expectedPlatformUserId` and `expectedUsername` markers we add during the flow are removed.
          *
          * Correlation (every redirect from an OAuth callback, success and failure, and the
          * `redirect_url` returned by the selection endpoints such as POST /v1/connect/facebook/select-page):
@@ -19990,7 +20012,7 @@ export type GetConnectUrlData = {
          * oauth_denied, invalid_callback, invalid_state, unsupported_platform, connection_failed,
          * internal_error, token_exchange_failed, byok_config_error, personal_account_not_supported,
          * missing_google_permissions, missing_tiktok_permissions, platform_requires_destination,
-         * reconnect_account_mismatch, instagram_login_method_mismatch, invalid_request,
+         * reconnect_account_mismatch, account_mismatch, instagram_login_method_mismatch, invalid_request,
          * code_already_redeemed
          *
          * Access and limits:
