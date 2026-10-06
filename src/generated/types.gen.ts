@@ -45520,9 +45520,29 @@ export type BoostPostData = {
          */
         leadGenFormId?: string;
         /**
-         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default); PAUSED pauses only the top-most object this boost creates and switches everything below it on: a new campaign is held paused with its ad set and ad on (one PUT /v1/ads/campaigns/{campaignId}/status with `active` brings it live); into an existing campaign (TikTok `existingCampaignId`) the new ad set is held paused; attached to an existing ad set (`adSetId`) the new ad itself is paused. On LinkedIn the held campaign group is PAUSED, its campaign and creative ACTIVE. X has no per-ad switch, so its lowest level is the line item.
+         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default); PAUSED pauses only the top-most object this boost creates and switches everything below it on: a new campaign is held paused with its ad set and ad on (one PUT /v1/ads/campaigns/{campaignId}/status with `active` brings it live); into an existing campaign (TikTok `existingCampaignId`) the new ad set is held paused; attached to an existing ad set (`adSetId`) the new ad itself is paused. On LinkedIn the held campaign group is PAUSED, its campaign and creative ACTIVE. X has no per-ad switch, so its lowest level is the line item. `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level; `status: PAUSED` adds a hold of its own only when none of them is PAUSED. To create every object paused, send all three as PAUSED.
          */
         status?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Every platform, same semantics as POST /v1/ads/create. Sets the switch of the new campaign alone (LinkedIn: the campaign group) and overrides `status` for it. `ACTIVE` with `status: PAUSED` switches the campaign on and holds the new ad set paused (its ad on). Omitted, it follows `status`. Rejected with a 400 alongside `adSetId` or `existingCampaignId`, where no campaign is created (change an existing one with PUT /v1/ads/campaigns/{campaignId}/status).
+         */
+        campaignStatus?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Every platform, same semantics as POST /v1/ads/create. Sets the switch of the new ad set alone (Google, TikTok and Pinterest: the ad group; LinkedIn: the campaign, which stays DRAFT when held; X: the line item) and overrides `status` for it. Omitted, it follows `status`.
+         *
+         * Precedence: a level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level. `status: PAUSED` then holds the top-most new object that has no level status, and only when no level status is PAUSED; every other new object is switched on. So `campaignStatus: ACTIVE` + `adSetStatus: PAUSED` + `adStatus: PAUSED` keeps the campaign on with the new ad set and ad off, and all three PAUSED create the whole tree paused.
+         *
+         * Rejected with a 400 alongside `adSetId` (that ad set already exists; change it with PUT /v1/ads/ad-sets/{adSetId}/status).
+         *
+         */
+        adSetStatus?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId` (Meta, TikTok Smart+), and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`.
+         *
+         * X returns a 400: a promoted post has no switch of its own, so hold the line item with `adSetStatus`.
+         *
+         */
+        adStatus?: AdActivationStatus;
         /**
          * Meta only, same semantics as POST /v1/ads/create: campaign = Advantage campaign budget (CBO), the budget and bid strategy sit on the campaign and the ad set inherits them. Default adset. Not allowed with adSetId.
          */

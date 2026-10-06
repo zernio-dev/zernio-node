@@ -10228,7 +10228,10 @@ export const updateAd = <ThrowOnError extends boolean = false>(options: OptionsL
 
 /**
  * Cancel an ad
- * Cancels the ad on the platform and marks it as cancelled in the database. The ad is preserved for history. OpenAI Ads has no delete API; the ad is archived instead (a terminal state, the closest equivalent).
+ * Deletes the ad on the platform and marks it as cancelled in the database. The ad is preserved for history. OpenAI Ads has no delete API; the ad is archived instead (a terminal state, the closest equivalent).
+ *
+ * Only the ad is deleted; a campaign or ad set is never deleted while it still holds another ad. On Meta, when the ad set and campaign were created by Zernio (by `POST /v1/ads/create` or `POST /v1/ads/boost`) and Meta lists no other ad in the ad set (archived ads count), the emptied ad set is deleted too, then the campaign once it holds no other ad set. Parents created outside Zernio, and the parents of an ad imported from the platform, are always kept. To delete a whole campaign on purpose use `DELETE /v1/ads/campaigns/{campaignId}`.
+ *
  */
 export const deleteAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAdData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteAdResponse, DeleteAdError, ThrowOnError>({
