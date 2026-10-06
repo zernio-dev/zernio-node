@@ -3105,6 +3105,23 @@ export type CampaignBidding = {
 export type channel2 = 'SEARCH' | 'DISPLAY';
 
 /**
+ * Actions taken on the matched comment itself (comment trigger only; ignored on the
+ * story-reply and DM doors). They never block or fail the DM: when one cannot run,
+ * the log row says why (`likeSkipped`, `hideSkipped`).
+ *
+ */
+export type CommentAutomationActions = {
+    /**
+     * Like the comment as the account. Facebook always; Instagram only for accounts connected through Facebook Login and allowlisted for likes while Meta reviews the permission. Otherwise the like is skipped and logged.
+     */
+    likeComment?: boolean;
+    /**
+     * Hide the comment once the first DM has been attempted, so the private reply is never sent to an already hidden comment.
+     */
+    hideComment?: boolean;
+};
+
+/**
  * Who a comment automation answers. Instagram only - Meta exposes the follow
  * relationship on no other platform, and only for people who have MESSAGED the
  * account (a comment grants no consent). `whenUnknown` is therefore the important
@@ -3151,6 +3168,23 @@ export type followerStatus = 'any' | 'follower' | 'non_follower';
 export type whenUnknown = 'send' | 'skip' | 'verify';
 
 /**
+ * An image, video, audio clip or file sent right after the DM text as a second message
+ * (a Meta message carries one body, so text and attachment are two sends). On the comment
+ * trigger Meta may refuse the second message until the commenter replies; the DM then
+ * still counts as sent and the log row carries `mediaError`.
+ *
+ */
+export type CommentAutomationDmMedia = {
+    type: 'image' | 'video' | 'audio' | 'file';
+    /**
+     * Publicly reachable http(s) URL Meta downloads the media from.
+     */
+    url: string;
+};
+
+export type type3 = 'image' | 'video' | 'audio' | 'file';
+
+/**
  * Copy for the follow gate. Sensible defaults are used for any field left empty.
  */
 export type CommentAutomationFollowGate = {
@@ -3168,13 +3202,191 @@ export type CommentAutomationFollowGate = {
     notFollowingMessage?: string;
 };
 
+export type CommentAutomationLog = {
+    id?: string;
+    commentId?: string;
+    commenterId?: string;
+    commenterName?: (string) | null;
+    commenterUsername?: (string) | null;
+    commentText?: (string) | null;
+    /**
+     * Which door triggered this send. Null on rows written before this field existed (all of those are comment-triggered).
+     */
+    source?: ('comment' | 'live_comment' | 'story_reply' | 'story_mention' | 'dm') | null;
+    /**
+     * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap. 'skipped' also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
+     */
+    status?: 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
+    /**
+     * How the audience rule resolved. Null on automations without one.
+     */
+    audienceOutcome?: ('passed' | 'blocked' | 'gate_sent' | 'gate_passed' | 'gate_failed') | null;
+    /**
+     * Whether the follow-gate button reached the commenter: 'rejected' = Meta refused the gate DM, 'omitted' = the prompt went out as plain text because it was over 640 characters. Null when no gate DM was sent.
+     */
+    gateButtonStatus?: ('delivered' | 'rejected' | 'omitted') | null;
+    /**
+     * Follow relationship at decision time. Null when Instagram would not tell us (the commenter never messaged the account).
+     */
+    commenterIsFollower?: (boolean) | null;
+    commenterFollowerCount?: (number) | null;
+    /**
+     * When the follow-gate tap was claimed.
+     */
+    gateResolvedAt?: (string) | null;
+    /**
+     * DM error message when status is failed, or the reason when it is skipped.
+     */
+    error?: (string) | null;
+    /**
+     * Platform error codes of the failed DM (Meta `code` and `error_subcode`), when the platform sent them. Null on successful rows and on rows written before this field existed.
+     */
+    platformError?: {
+        code?: number;
+        subcode?: number;
+    } | null;
+    /**
+     * True when the failed send spent the comment's single private reply (Instagram subcode 1545133 or 2534023, or Meta code 10900 on Instagram and Facebook), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Null on direct DMs and on rows written before this field existed.
+     */
+    privateReplyConsumed?: (boolean) | null;
+    /**
+     * Outcome of the optional public reply on the triggering comment. With publicReplyPolicy after_dm, 'skipped' if no commentReply was configured or if the DM failed (the public reply is not attempted in that case).
+     */
+    commentReplyStatus?: ('pending' | 'sent' | 'failed' | 'skipped') | null;
+    /**
+     * Public-reply error message if commentReplyStatus is failed
+     */
+    commentReplyError?: (string) | null;
+    /**
+     * When the public reply was posted. Null when it was not.
+     */
+    publicReplyPostedAt?: (string) | null;
+    /**
+     * Why actions.likeComment did not like the comment. Null when it did or was not configured.
+     */
+    likeSkipped?: (string) | null;
+    /**
+     * Why actions.hideComment did not hide the comment. Null when it did or was not configured.
+     */
+    hideSkipped?: (string) | null;
+    /**
+     * Why the dmMedia follow-up was not delivered. The DM itself still counts as sent.
+     */
+    mediaError?: (string) | null;
+    /**
+     * When the next queued send fires. Present only while something is still pending.
+     */
+    nextDueAt?: (string) | null;
+    /**
+     * This recipient's first click on a tracked link (what uniqueClicks counts).
+     */
+    clickedAt?: (string) | null;
+    /**
+     * This recipient's total clicks on tracked links.
+     */
+    clickCount?: number;
+    createdAt?: string;
+};
+
+/**
+ * Which door triggered this send. Null on rows written before this field existed (all of those are comment-triggered).
+ */
+export type source = 'comment' | 'live_comment' | 'story_reply' | 'story_mention' | 'dm';
+
+/**
+ * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap. 'skipped' also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
+ */
+export type status10 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
+
+/**
+ * How the audience rule resolved. Null on automations without one.
+ */
+export type audienceOutcome = 'passed' | 'blocked' | 'gate_sent' | 'gate_passed' | 'gate_failed';
+
+/**
+ * Whether the follow-gate button reached the commenter: 'rejected' = Meta refused the gate DM, 'omitted' = the prompt went out as plain text because it was over 640 characters. Null when no gate DM was sent.
+ */
+export type gateButtonStatus = 'delivered' | 'rejected' | 'omitted';
+
+/**
+ * Outcome of the optional public reply on the triggering comment. With publicReplyPolicy after_dm, 'skipped' if no commentReply was configured or if the DM failed (the public reply is not attempted in that case).
+ */
+export type commentReplyStatus = 'pending' | 'sent' | 'failed' | 'skipped';
+
+export type CommentAutomationQuickReply = {
+    title: string;
+    /**
+     * Delivered back via the messaging webhook when tapped.
+     */
+    payload: string;
+    imageUrl?: string;
+};
+
+/**
+ * Whether a commenter can receive this automation's DM more than once.
+ * * `once` (default) - one DM per person per door, ever.
+ * * `every_comment` - every new matching comment is eligible again. One comment
+ * is still answered at most once. `cooldownHours` suppresses a repeat sent to the
+ * same person within that many hours.
+ *
+ */
+export type CommentAutomationRepeatPolicy = {
+    mode: 'once' | 'every_comment';
+    /**
+     * every_comment only (400 with once). Hours after a DM during which the same person is not DMed again.
+     */
+    cooldownHours?: number;
+};
+
+export type mode = 'once' | 'every_comment';
+
+/**
+ * Running counters for the automation.
+ */
+export type CommentAutomationStats = {
+    /**
+     * Matched triggers that reached the audience or send stage.
+     */
+    triggered?: number;
+    dmsSent?: number;
+    dmsFailed?: number;
+    uniqueContacts?: number;
+    /**
+     * DMs sent with a trackable (wrapped) link. CTR denominator: divide clicks by this, not dmsSent. Lags dmsSent for campaigns that predate click tracking.
+     */
+    trackedSends?: number;
+    /**
+     * Total clicks on tracked links (bots/prefetch excluded).
+     */
+    linkClicks?: number;
+    /**
+     * Distinct people who clicked a tracked link.
+     */
+    uniqueClicks?: number;
+    /**
+     * DMs confirmed delivered (Messenger; IG emits no delivery receipt).
+     */
+    delivered?: number;
+    /**
+     * DMs confirmed read (IG messaging_seen / Messenger message_reads).
+     */
+    read?: number;
+    /**
+     * Triggers the audience rule did not answer with the DM.
+     */
+    audienceSkipped?: number;
+    followGateSent?: number;
+    followGatePassed?: number;
+    followGateFailed?: number;
+};
+
 /**
  * A Meta generic template (product card) sent as the automation's first DM.
  * It REPLACES the plain `dmMessage` bubble: a Meta message carries one body
  * shape, and a comment gets exactly one private reply, so the card and the
  * text cannot both be delivered. Put your selling copy in `subtitle`.
- * Mutually exclusive with `buttons` (sending both is a 400). Works on both
- * the `comment` and `story_reply` triggers.
+ * Mutually exclusive with `buttons` (sending both is a 400). Works on every
+ * Instagram and Facebook trigger.
  * Up to 10 elements, rendered as a horizontally swipeable carousel.
  * Rendering confirmed on the Instagram and Messenger mobile apps.
  *
@@ -3188,7 +3400,7 @@ export type CommentAutomationTemplate = {
     elements: Array<CommentAutomationTemplateElement>;
 };
 
-export type type3 = 'generic';
+export type type4 = 'generic';
 
 /**
  * Facebook only. How Messenger renders each element imageUrl: horizontal (1.91:1, the default) or square (1:1). Instagram has no such setting, so an Instagram automation carrying it is a 400.
@@ -3360,9 +3572,9 @@ export type platform5 = 'shopify';
 
 export type method = 'code' | 'automatic';
 
-export type type4 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
+export type type5 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
 
-export type status10 = 'active' | 'scheduled' | 'expired';
+export type status11 = 'active' | 'scheduled' | 'expired';
 
 export type CommerceImage = {
     /**
@@ -3417,7 +3629,7 @@ export type CommerceMarket = {
     type?: string;
 };
 
-export type status11 = 'active' | 'draft';
+export type status12 = 'active' | 'draft';
 
 export type CommerceMenu = {
     id?: string;
@@ -3438,7 +3650,7 @@ export type CommerceMenuItem = {
     items?: Array<CommerceMenuItem>;
 };
 
-export type type5 = 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
+export type type6 = 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
 
 export type CommerceMenuItemInput = {
     title: string;
@@ -3807,7 +4019,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status12 = 'active' | 'inactive';
+export type status13 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -4693,7 +4905,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * `adSetId`, the new ads themselves.
  *
  */
-export type status13 = 'ACTIVE' | 'PAUSED';
+export type status14 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
@@ -5077,7 +5289,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status14 = 1 | 2 | 3 | 4;
+export type status15 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -5111,7 +5323,7 @@ export type DmButton = {
     phone?: string;
 };
 
-export type type6 = 'url' | 'postback' | 'phone';
+export type type7 = 'url' | 'postback' | 'phone';
 
 /**
  * Canonical error envelope. `error` is the human-readable message; `type`,
@@ -5246,7 +5458,7 @@ export type ErrorResponse = {
 /**
  * Error class for programmatic handling.
  */
-export type type7 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+export type type8 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
  * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on), or `other` (a read or check before any write).
@@ -5287,7 +5499,7 @@ export type ExternalPostMediaItem = {
     unavailableReason?: 'platform_withheld';
 };
 
-export type type8 = 'image' | 'video';
+export type type9 = 'image' | 'video';
 
 /**
  * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
@@ -5446,7 +5658,7 @@ export type ExternalPostWebhookPost = {
 /**
  * Always "external". Distinguishes these from Zernio-originated post.* events.
  */
-export type source = 'external';
+export type source2 = 'external';
 
 /**
  * Feed posts support up to 10 images (no mixed video+image). Stories require single media (24h, no captions). Reels require a single vertical video (9:16). The Zernio API does not preflight Reel duration. Meta's Reels publishing guide documents 3-90 seconds. Geo-restriction is a hard visibility restriction: users outside the specified countries cannot see the post. Not supported for stories. Draft, carousel, and colored-background text options live under facebookSettings, see FacebookSettings.
@@ -5619,7 +5831,7 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status15 = 'received';
+export type status16 = 'received';
 
 export type FollowerStatsResponse = {
     accounts?: Array<AccountWithFollowerStats>;
@@ -5744,7 +5956,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status16 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status17 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -5842,7 +6054,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status17 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status18 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 /**
  * Link one asset to the asset group. Send exactly one of asset (an existing asset), text, imageUrl or youtubeVideoId (new content, created in the same request).
@@ -6014,7 +6226,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type9 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type10 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * A Google Business Profile review, as returned by every gmb-reviews read endpoint.
@@ -6332,7 +6544,7 @@ export type GoogleListingGroupFilterNode = {
     } | null;
 };
 
-export type type10 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
+export type type11 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
 
 export type GoogleListingGroupNode = {
     dimension: GoogleListingGroupDimension;
@@ -6563,7 +6775,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status18 = 'applied' | 'dismissed' | 'failed';
+export type status19 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -6651,7 +6863,7 @@ export type ImessageSandboxContact = {
     createdAt?: string;
 };
 
-export type status19 = 'pending' | 'active';
+export type status20 = 'pending' | 'active';
 
 /**
  * An iMessage sender registered as an account on a profile.
@@ -6720,7 +6932,7 @@ export type kind = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
-export type status20 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status21 = 'ordering' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Attachment snapshot inside an edit-history entry.
@@ -6792,7 +7004,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status21 = 'active' | 'archived';
+export type status22 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -7907,7 +8119,7 @@ export type MediaItem = {
     tiktokProcessed?: boolean;
 };
 
-export type type11 = 'image' | 'video' | 'gif' | 'document';
+export type type12 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaSubtitle = {
     /**
@@ -7948,6 +8160,28 @@ export type MessagingCarouselCard = {
      * Not accepted: a 400. The card tap opens the conversation, not a website.
      */
     linkUrl?: string;
+};
+
+export type MessengerGreeting = {
+    /**
+     * Meta locale, e.g. `default`, `en_US`, `es_ES`.
+     */
+    locale: string;
+    text: string;
+};
+
+export type MessengerIceBreakerLocale = {
+    /**
+     * Meta locale, e.g. `default`, `en_US`.
+     */
+    locale: string;
+    call_to_actions: Array<{
+        question: string;
+        /**
+         * Postback payload sent on tap. `zernio:workflow:<workflowId>` starts that workflow.
+         */
+        payload: string;
+    }>;
 };
 
 /**
@@ -8633,7 +8867,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status22 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status23 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -8763,7 +8997,7 @@ export type PlatformAnalytics = {
     errorMessage?: (string) | null;
 };
 
-export type status23 = 'published' | 'failed';
+export type status24 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -8892,7 +9126,7 @@ export type PortfolioBidStrategy = {
     targetRoas?: (number) | null;
 };
 
-export type type12 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+export type type13 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
 
 export type Post = {
     _id?: string;
@@ -9173,7 +9407,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status24 = 'active' | 'draft' | 'archived';
+export type status25 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -9388,7 +9622,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status25 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status26 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -9440,7 +9674,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status26 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status27 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -9527,7 +9761,7 @@ export type RcsCarrierApproval = {
 
 export type scope2 = 'carrier' | 'hub' | 'bot';
 
-export type status27 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status28 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -9553,7 +9787,7 @@ export type RcsContent = {
     suggestions?: Array<RcsSuggestion>;
 };
 
-export type type13 = 'text';
+export type type14 = 'text';
 
 export type orientation = 'VERTICAL' | 'HORIZONTAL';
 
@@ -9666,7 +9900,7 @@ export type RcsSuggestion = {
     postbackData?: string;
 };
 
-export type type14 = 'reply';
+export type type15 = 'reply';
 
 export type application = 'BROWSER' | 'WEBVIEW';
 
@@ -11003,7 +11237,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type15 = 'image' | 'video' | 'document';
+export type type16 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -11012,7 +11246,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status28 = 'pending' | 'completed' | 'expired';
+export type status29 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -11213,7 +11447,7 @@ export type granularity = 'day' | 'month' | 'total';
 /**
  * `cycle` = a real billing period resolved; `window` = trailing/custom window (or cycle fallback).
  */
-export type source2 = 'cycle' | 'window';
+export type source3 = 'cycle' | 'window';
 
 export type groupBy = 'profile' | 'account';
 
@@ -11519,7 +11753,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status29 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status30 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel4 = 'sms' | 'whatsapp';
 
@@ -11551,7 +11785,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -11673,7 +11907,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status30 = 'success' | 'failed';
+export type status31 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -11785,7 +12019,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status31 = 'success' | 'failure';
+export type status32 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -12146,7 +12380,7 @@ export type event7 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status32 = 'ready' | 'error';
+export type status33 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each
@@ -12501,6 +12735,10 @@ export type WebhookPayloadComment = {
          */
         parentCommentId: (string) | null;
         /**
+         * Instagram only: true when the comment was made on a live broadcast (the live_comments webhook field). Absent on every other comment.
+         */
+        isLive?: boolean;
+        /**
          * Ad context. Present only when the comment was made on paid content.
          * Instagram: populated from the webhook payload's value.media.ad_id, value.media.ad_title and value.media.original_media_id, each only when Meta includes it.
          * Facebook: populated via a Graph API lookup of the parent post's promotion_status.
@@ -12630,11 +12868,72 @@ export type WebhookPayloadCommerceProduct = {
 
 export type event15 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
-export type type16 = 'product';
+export type type17 = 'product';
+
+export type WebhookPayloadContactFieldChanged = {
+    /**
+     * Event id, the dedupe key.
+     */
+    id: string;
+    event: 'contact.field_changed';
+    timestamp: string;
+    contact: {
+        /**
+         * Zernio contact id.
+         */
+        id?: string;
+    };
+    /**
+     * Custom field slug.
+     */
+    field: string;
+    /**
+     * Value before the write; null when the field was not set.
+     */
+    previousValue: unknown;
+    /**
+     * Value after the write; null when the field was removed.
+     */
+    value: unknown;
+    /**
+     * Who wrote the field: the API or dashboard, a workflow set_field node, or an automation.
+     */
+    source: 'api' | 'workflow' | 'automation';
+};
+
+export type event16 = 'contact.field_changed';
 
 /**
- * WhatsApp only. Who answers a conversation changed: Meta Business Agent took it over,
- * handed it to you, or another partner app took it.
+ * Who wrote the field: the API or dashboard, a workflow set_field node, or an automation.
+ */
+export type source4 = 'api' | 'workflow' | 'automation';
+
+export type WebhookPayloadContactTag = {
+    /**
+     * Event id, the dedupe key.
+     */
+    id: string;
+    event: 'contact.tag_added' | 'contact.tag_removed';
+    timestamp: string;
+    contact: {
+        /**
+         * Zernio contact id.
+         */
+        id?: string;
+    };
+    tag: string;
+    /**
+     * Who wrote the tag: the API or dashboard, a workflow add_tag / remove_tag node, or a comment-automation link click.
+     */
+    source: 'api' | 'workflow' | 'automation';
+};
+
+export type event17 = 'contact.tag_added' | 'contact.tag_removed';
+
+/**
+ * Who answers a conversation changed under Meta's handover protocol. WhatsApp: Meta
+ * Business Agent took it over, handed it to you, or another partner app took it.
+ * Facebook and Instagram: another app passed the thread to you, or took or received it.
  *
  */
 export type WebhookPayloadConversationControlChanged = {
@@ -12647,13 +12946,17 @@ export type WebhookPayloadConversationControlChanged = {
     account: InboxWebhookAccount;
     control: {
         /**
-         * Who answers now. ai_agent: Meta Business Agent; app: you; other: another partner app on the number.
+         * Who answers now. ai_agent: Meta Business Agent (WhatsApp); app: you; other: another app (a WhatsApp partner, or a Messenger / Instagram receiver such as Page Inbox).
          */
         owner: 'app' | 'ai_agent' | 'other';
         /**
-         * Owner before this change, null when the thread had never been agent-handled.
+         * Owner before this change, null when no handover had touched the thread.
          */
         previousOwner: ('app' | 'ai_agent' | 'other') | null;
+        /**
+         * Meta app id of the new owner, when Meta names it (Facebook and Instagram handovers, WhatsApp partner apps). Page Inbox is 263902037430900.
+         */
+        ownerAppId?: string;
         /**
          * Free-form string the transferring app attached to the handover, forwarded verbatim.
          */
@@ -12666,15 +12969,15 @@ export type WebhookPayloadConversationControlChanged = {
     timestamp: string;
 };
 
-export type event16 = 'conversation.control_changed';
+export type event18 = 'conversation.control_changed';
 
 /**
- * Who answers now. ai_agent: Meta Business Agent; app: you; other: another partner app on the number.
+ * Who answers now. ai_agent: Meta Business Agent (WhatsApp); app: you; other: another app (a WhatsApp partner, or a Messenger / Instagram receiver such as Page Inbox).
  */
 export type owner = 'app' | 'ai_agent' | 'other';
 
 /**
- * Owner before this change, null when the thread had never been agent-handled.
+ * Owner before this change, null when no handover had touched the thread.
  */
 export type previousOwner = 'app' | 'ai_agent' | 'other';
 
@@ -12703,7 +13006,7 @@ export type WebhookPayloadConversationStarted = {
     timestamp: string;
 };
 
-export type event17 = 'conversation.started';
+export type event19 = 'conversation.started';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
@@ -12735,7 +13038,7 @@ export type WebhookPayloadExternalPost = {
     timestamp: string;
 };
 
-export type event18 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+export type event20 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
 
 /**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
@@ -12806,7 +13109,7 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event19 = 'lead.received';
+export type event21 = 'lead.received';
 
 export type platform14 = 'facebook';
 
@@ -13000,15 +13303,35 @@ export type WebhookPayloadMessage = {
          *
          */
         sentVia?: ('human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api') | null;
+        /**
+         * Always null on this event; see message.sent.
+         */
+        automationId?: (string) | null;
+        /**
+         * Always null on this event; see message.sent.
+         */
+        workflowId?: (string) | null;
+        /**
+         * Always null on this event; see message.sent.
+         */
+        executionId?: (string) | null;
+        /**
+         * Always null on this event; see message.sent.
+         */
+        broadcastId?: (string) | null;
+        /**
+         * Always null on this event; see message.sent.
+         */
+        sequenceId?: (string) | null;
     };
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific message context (present when the message is a quick reply tap, postback button tap, inline keyboard callback, a quote-reply to an earlier message, a WhatsApp inbound that Meta Business Agent is answering, or a TikTok DM that is not plain text)
+     * Platform-specific message context (present when the message is a quick reply tap, postback button tap, inline keyboard callback, a quote-reply to an earlier message, an inbound another app is answering under Meta's handover protocol, or a TikTok DM that is not plain text)
      */
     metadata?: {
         /**
-         * WhatsApp only. true when this inbound arrived while Meta Business Agent held the conversation: the agent answers it, and Zernio only observes. Sending a reply takes control back. See conversation.control_changed.
+         * true when this inbound arrived on Meta's standby path because another app owned the conversation: Meta Business Agent on WhatsApp, another handover receiver (such as Page Inbox) on Facebook and Instagram. That app answers it, Zernio only observes, and no automation runs. On WhatsApp sending a reply takes control back; on Facebook and Instagram take control first with POST /v1/inbox/conversations/{conversationId}/thread-control. See conversation.control_changed.
          */
         standby?: boolean;
         /**
@@ -13365,7 +13688,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event20 = 'message.received';
+export type event22 = 'message.received';
 
 /**
  * Which Zernio surface produced the message. Always present and
@@ -13426,7 +13749,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event21 = 'message.deleted';
+export type event23 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, message.played and
@@ -13489,7 +13812,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event22 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
+export type event24 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -13527,7 +13850,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event23 = 'message.edited';
+export type event25 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API, or from the WhatsApp Business app on Coexistence numbers)
@@ -13649,6 +13972,26 @@ export type WebhookPayloadMessageSent = {
          *
          */
         sentVia?: ('human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api') | null;
+        /**
+         * The comment automation that sent this DM (sentVia comment_automation). Null otherwise.
+         */
+        automationId?: (string) | null;
+        /**
+         * The workflow whose run sent this message (sentVia workflow). Null otherwise.
+         */
+        workflowId?: (string) | null;
+        /**
+         * The workflow run (execution) that sent this message, as returned by the workflow executions endpoints. Null when workflowId is null.
+         */
+        executionId?: (string) | null;
+        /**
+         * The broadcast that sent this message (sentVia broadcast). Null otherwise.
+         */
+        broadcastId?: (string) | null;
+        /**
+         * The sequence whose step sent this message (sentVia sequence). Null otherwise.
+         */
+        sequenceId?: (string) | null;
     };
     pricing?: WhatsAppMessagePricing;
     billingConversation?: WhatsAppBillingConversation;
@@ -13745,7 +14088,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event24 = 'message.sent';
+export type event26 = 'message.sent';
 
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
@@ -13755,7 +14098,7 @@ export type platform15 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 't
 /**
  * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts); meta_business_agent when Meta Business Agent answered on the number. Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
  */
-export type source3 = 'whatsapp_business_app' | 'cloud_api' | 'meta_business_agent';
+export type source5 = 'whatsapp_business_app' | 'cloud_api' | 'meta_business_agent';
 
 /**
  * Webhook payload for phone_number.stock_available events
@@ -13799,7 +14142,7 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
     timestamp: string;
 };
 
-export type event25 = 'phone_number.stock_available';
+export type event27 = 'phone_number.stock_available';
 
 /**
  * Webhook payload for post events
@@ -13849,7 +14192,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event26 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event28 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -13968,12 +14311,12 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event27 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
+export type event29 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
 
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status33 = 'published' | 'failed' | 'deleted';
+export type status34 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -14028,7 +14371,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event28 = 'reaction.received';
+export type event30 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -14102,7 +14445,7 @@ export type WebhookPayloadReferral = {
     timestamp: string;
 };
 
-export type event29 = 'referral.received';
+export type event31 = 'referral.received';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -14129,7 +14472,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event30 = 'review.new';
+export type event32 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits their
@@ -14162,7 +14505,40 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event31 = 'review.updated';
+export type event33 = 'review.updated';
+
+export type WebhookPayloadSequenceEnrollment = {
+    /**
+     * Event id, the dedupe key.
+     */
+    id: string;
+    event: 'sequence.enrolled' | 'sequence.exited';
+    timestamp: string;
+    sequence: {
+        id?: string;
+        name?: string;
+    };
+    contact: {
+        /**
+         * Zernio contact id.
+         */
+        id?: string;
+    };
+    enrollment: {
+        id?: string;
+    };
+    /**
+     * sequence.exited only. completed: the last step was sent; replied: the contact replied and the sequence exits on reply; manual: unenrolled through the API; failed: the step kept failing to send; unsubscribed: the contact opted out.
+     */
+    exitReason?: 'completed' | 'replied' | 'manual' | 'failed' | 'unsubscribed';
+};
+
+export type event34 = 'sequence.enrolled' | 'sequence.exited';
+
+/**
+ * sequence.exited only. completed: the last step was sent; replied: the contact replied and the sequence exits on reply; manual: unenrolled through the API; failed: the step kept failing to send; unsubscribed: the contact opted out.
+ */
+export type exitReason = 'completed' | 'replied' | 'manual' | 'failed' | 'unsubscribed';
 
 /**
  * Webhook payload for test deliveries
@@ -14183,7 +14559,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event32 = 'webhook.test';
+export type event35 = 'webhook.test';
 
 /**
  * Webhook payload for `whatsapp.account.alert_received`, forwarded from Meta's
@@ -14230,7 +14606,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
     timestamp: string;
 };
 
-export type event33 = 'whatsapp.account.alert_received';
+export type event36 = 'whatsapp.account.alert_received';
 
 export type platform16 = 'whatsapp';
 
@@ -14281,12 +14657,12 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     timestamp: string;
 };
 
-export type event34 = 'whatsapp.account.name_status_updated';
+export type event37 = 'whatsapp.account.name_status_updated';
 
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status34 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status35 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -14334,12 +14710,12 @@ export type WebhookPayloadWhatsAppAccountQualityUpdated = {
     timestamp: string;
 };
 
-export type event35 = 'whatsapp.account.quality_updated';
+export type event38 = 'whatsapp.account.quality_updated';
 
 /**
  * The Meta webhook field that reported the change.
  */
-export type source4 = 'phone_number_quality_update' | 'business_capability_update';
+export type source6 = 'phone_number_quality_update' | 'business_capability_update';
 
 /**
  * Webhook payload for `whatsapp.account.status_updated`. Fired when Meta restricts,
@@ -14405,12 +14781,12 @@ export type WebhookPayloadWhatsAppAccountStatusUpdated = {
     timestamp: string;
 };
 
-export type event36 = 'whatsapp.account.status_updated';
+export type event39 = 'whatsapp.account.status_updated';
 
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status35 = 'restricted' | 'active';
+export type status36 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -14457,7 +14833,7 @@ export type WebhookPayloadWhatsAppContactIdentityChanged = {
     timestamp: string;
 };
 
-export type event37 = 'whatsapp.contact.identity_changed';
+export type event40 = 'whatsapp.contact.identity_changed';
 
 /**
  * Which Meta signal reported the change. `user_changed_number`: new phone number. `user_changed_user_id` and `user_id_update`: new BSUID.
@@ -14526,7 +14902,7 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     timestamp: string;
 };
 
-export type event38 = 'whatsapp.template.category_updated';
+export type event41 = 'whatsapp.template.category_updated';
 
 /**
  * `scheduled` is Meta's 24h advance notice of an upcoming
@@ -14603,7 +14979,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event39 = 'whatsapp.template.status_updated';
+export type event42 = 'whatsapp.template.status_updated';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -14611,7 +14987,66 @@ export type event39 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status36 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status37 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+
+export type WebhookPayloadWorkflowRun = {
+    /**
+     * Event id, the dedupe key.
+     */
+    id: string;
+    event: 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed';
+    timestamp: string;
+    workflow: {
+        id?: string;
+        /**
+         * Null when the workflow was deleted while the run was live.
+         */
+        name?: (string) | null;
+    };
+    execution: {
+        /**
+         * Workflow run (execution) id.
+         */
+        id?: string;
+        /**
+         * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
+         */
+        status?: 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+    };
+    /**
+     * Null while a comment-triggered run has not sent the private reply that opens its conversation.
+     */
+    conversation: {
+        id?: string;
+    } | null;
+    contact: {
+        /**
+         * Zernio contact id.
+         */
+        id?: string;
+    } | null;
+    trigger: {
+        /**
+         * The trigger node type, e.g. inbound_message (the default when the node sets none). Null when the workflow was deleted while the run was live.
+         */
+        type?: (string) | null;
+        /**
+         * The inbound message that started the run, when there was one.
+         */
+        text?: string;
+    };
+    /**
+     * workflow.run.failed only: which node failed and why.
+     */
+    error?: string;
+};
+
+export type event43 = 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed';
+
+/**
+ * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
+ */
+export type status38 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * WhatsApp only. Meta's `conversation` object from the status webhook (the billing
@@ -14698,6 +15133,24 @@ export type WhatsAppContactIdentity = {
      * The user's WhatsApp username, when Meta sent one with the change. Null on `previous`.
      */
     whatsappUsername: (string) | null;
+};
+
+export type WhatsAppConversationalAutomation = {
+    /**
+     * When true, Meta sends a `request_welcome` event the first time a person opens a chat with the number.
+     */
+    enable_welcome_message?: boolean;
+    /**
+     * Ice breakers shown to a person opening a chat. Tapping one sends its text as a normal message.
+     */
+    prompts?: Array<(string)>;
+    /**
+     * Slash commands shown when a person types `/`. Names are unique, letters, digits and underscores, without the slash.
+     */
+    commands?: Array<{
+        command_name: string;
+        command_description: string;
+    }>;
 };
 
 export type WhatsAppFooterComponent = {
@@ -14858,7 +15311,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type17 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type18 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -14900,7 +15353,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type18 = 'platform_error';
+export type type19 = 'platform_error';
 
 export type code = 'platform_api_error';
 
@@ -14982,7 +15435,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status37 = 'success' | 'failed' | 'pending';
+export type status39 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -15004,13 +15457,16 @@ export type WorkflowNode = {
     /**
      * Type-specific settings. All string fields support `{{variable}}` interpolation against the run's variable bag (resolved at execution time).
      *
-     * **trigger**: `{ triggerType: inbound_message|api_call|whatsapp_event, keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean, eventType: message_sent|message_delivered|message_read|message_failed|reaction }`. Default `triggerType` is `inbound_message` for legacy nodes. `eventType` is only honored when `triggerType` is `whatsapp_event` (WhatsApp-only).
+     * **trigger**: `{ triggerType: inbound_message|api_call|whatsapp_event|referral|story_mention|comment|reaction, keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean, eventType: message_sent|message_delivered|message_read|message_failed|reaction, referral:{ ref, matchType: exact|prefix|any }, reaction:{ emojis:[string] }, comment:{ keywords:[string], matchType: any|contains|exact|regex, platformPostId }, cooldownHours:int (1-720) }`. Default `triggerType` is `inbound_message` for legacy nodes. A workflow starts only on events of its own trigger type: `inbound_message` on a message, `referral` on an ig.me / m.me / click-to-message ad referral (standalone, or the first message carrying one; the two are deduplicated per conversation within 60 seconds), `story_mention` on an Instagram story mention, `reaction` on a reaction (Instagram, Facebook, WhatsApp, Telegram groups), `comment` on an Instagram or Facebook comment (the run starts with no conversation and its first `send_message`, which must be text (with optional buttons or quick replies) or cards and must follow the trigger directly (checked on save; Instagram delivers only plain text to commenters who do not follow the account), is sent as a private reply to the comment; the run then continues in the conversation that reply opens; when an active comment automation's keywords match the comment, the automation answers and the workflow does not start), `whatsapp_event` on a WhatsApp status of a message we sent (filtered by `eventType`), `api_call` only via `POST /v1/workflows/{workflowId}/trigger`. `referral.matchType` defaults to `any`. `cooldownHours` (inbound_message, referral, story_mention, reaction and whatsapp_event) stops the same contact from starting the workflow again inside the window. A `whatsapp_event` workflow never starts on the status of a message a workflow, sequence or comment automation sent. A redelivered platform event never starts the same workflow twice.
      *
-     * **send_message**: `{ messageType: text|template|media|interactive, text, template:{name,language,variableMapping}, media:{mediaType:image|video|audio|document, url,caption}, interactive }`. `template` and `interactive` are WhatsApp-only. `interactive.type` is inferred from the payload shape when omitted; payloads with neither `type` nor an inferable shape are rejected.
+     * **Variables** available from the start of every run (absent values are `''`): `lastMessage`, `inboundText`, `triggerText`, `conversationId`, `contact.name`, `contact.phone`, `contact.handle`, `contact.tags` (array), `contact.fields` (the contact's custom fields object), `contact.lastInteractionAt` (ISO date), `contact.lastInteractionHoursAgo` (number), `contact.isFollower` (Instagram, from the stored profile: true, false or `''` when unknown), `referral.ref`, `referral.source`, `referral.type`, `referral.adId`, `postback.payload`, `postback.title`, `quickReply.payload`, `quickReply.title`, `story.id`, `story.url`, `comment.id`, `comment.text`, `comment.platformPostId`, `reaction.emoji`, `reaction.action` (added|removed). `api_call` runs also get the request's `variables`, merged over these. An array or object interpolated into text renders as JSON.
      *
-     * **wait_for_reply**: `{ timeoutMinutes:int (max 43200), saveAs:string }`. Resume via the `'reply'` edge on inbound, or `'timeout'` edge after `timeoutMinutes` of silence.
+     * **send_message**: `{ messageType: text|template|media|interactive|cards, text, template, media:{mediaType:image|video|audio|document, url,caption}, interactive, buttons, quickReplies, messageTag }`. `template` is `{name,language,variableMapping}` for `messageType: template` and `{ type: generic, elements:[{ title, subtitle, imageUrl, buttons }] }` (1 to 10 cards) for `messageType: cards`. `template` and `interactive` are WhatsApp-only. `interactive.type` is inferred from the payload shape when omitted; payloads with neither `type` nor an inferable shape are rejected.
+     * Facebook and Instagram only (rejected with a 400 on other platforms; WhatsApp keeps `interactive`): `cards`, plus `buttons` on `text` (cards carry their own buttons) and `quickReplies` / `messageTag` on `text`, `media` and `cards`. `media` takes no `buttons` (a 400 at save). `buttons:[{ type: url|postback|phone, title, url, payload, phone, workflowId }]` (1 to 3, text only and the text then 640 characters at most, sent as Meta's button_template, `phone` Facebook-only, not inside cards), `quickReplies:[{ title, payload, imageUrl, workflowId }]` (1 to 13, not combined with `buttons`) and `messageTag: HUMAN_AGENT|CONFIRMED_EVENT_UPDATE|POST_PURCHASE_UPDATE|ACCOUNT_UPDATE` (Instagram accepts only `HUMAN_AGENT`). Titles are capped at 20 characters (80 for card titles and subtitles). A postback button or quick reply with no `payload` gets `zernio:workflow:<this workflow id>`, so a tap answers this workflow's pending `wait_for_reply` or restarts it; with `workflowId` (a 24-hex workflow id, not combined with `payload`) the tap starts that workflow instead.
      *
-     * **condition**: `{ rules:[{ id, variable, operator: equals|not_equals|contains|not_contains|starts_with|ends_with|exists|not_exists|matches, value }] }`. First matching rule takes its `id` as the sourceHandle; otherwise `'default'`.
+     * **wait_for_reply**: `{ timeoutMinutes:int (max 43200), saveAs:string }`. Resume via the `'reply'` edge on inbound, or `'timeout'` edge after `timeoutMinutes` of silence. On Facebook and Instagram a button tap sets `{{postback.payload}}` / `{{postback.title}}` and a quick reply tap sets `{{quickReply.payload}}` / `{{quickReply.title}}`; each reply clears the previous tap.
+     *
+     * **condition**: `{ rules:[{ id, variable, operator: equals|not_equals|contains|not_contains|starts_with|ends_with|exists|not_exists|matches|greater_than|less_than|greater_or_equal|less_or_equal|before|after|has_tag|not_has_tag|is_true|is_false, value }] }`. First matching rule takes its `id` as the sourceHandle; otherwise `'default'`. Text operators compare case-insensitively. `greater_than`, `less_than`, `greater_or_equal` and `less_or_equal` compare numbers (a non-numeric side is false); `before` and `after` compare ISO dates; `has_tag` and `not_has_tag` test whether an array variable (such as `contact.tags`) contains `value`; `is_true` and `is_false` take no value.
      *
      * **set_variable**: `{ assignments:[{ name, value }] }`. Run-scoped (lives only for this execution; use `set_field` for persistent values).
      *
@@ -15059,7 +15515,7 @@ export type WorkflowNode = {
  * integrations (webhook, ai, handoff, start_call).
  *
  */
-export type type19 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type20 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -15179,7 +15635,7 @@ export type XArticle = {
 /**
  * Publish creates an X Article draft and then publishes it. Draft stops after draft creation and returns the X draft ID without a public URL.
  */
-export type mode = 'publish' | 'draft';
+export type mode2 = 'publish' | 'draft';
 
 export type XArticleBlock = {
     type: 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
@@ -15195,7 +15651,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type20 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type21 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -15274,7 +15730,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type21 = 'divider' | 'latex';
+export type type22 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -25457,7 +25913,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -25523,7 +25979,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.video.processed' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -25863,6 +26319,10 @@ export type ListInboxConversationsData = {
          */
         cursor?: string;
         /**
+         * requests lists Facebook and Instagram Message Requests (threads from people the account has not accepted) live from Meta, first page only, each item with `folder: requests`. Meta has no accept call: replying moves a thread to the inbox, which is what POST /v1/inbox/conversations/{conversationId}/accept does. When Meta will not list the folder for the one account asked (`accountId`), the call answers 400 PLATFORM_LIMITATION; across several accounts the refusal is reported per account in meta.failedAccounts.
+         */
+        folder?: 'inbox' | 'requests';
+        /**
          * Maximum number of conversations to return
          */
         limit?: number;
@@ -25917,9 +26377,13 @@ export type ListInboxConversationsResponse = ({
          */
         unreadCount?: (number) | null;
         /**
-         * WhatsApp only, present once Meta Business Agent has touched the thread. ai_agent: the agent answers and new inbound arrive flagged metadata.standby; app: you hold control; other: another partner app does. Change it with POST /v1/inbox/conversations/{conversationId}/thread-control.
+         * Present once a handover has touched the thread (WhatsApp, Facebook, Instagram). ai_agent: Meta Business Agent answers (WhatsApp) and new inbound arrive flagged metadata.standby; app: you hold control; other: another app does (a WhatsApp partner, or a Messenger / Instagram receiver such as Page Inbox). Change it with POST /v1/inbox/conversations/{conversationId}/thread-control.
          */
         threadControl?: 'app' | 'ai_agent' | 'other';
+        /**
+         * Present only on items listed with folder=requests: a Message Request the account has not accepted yet.
+         */
+        folder?: 'requests';
         /**
          * iMessage only, true for a group thread. Manage it through the /v1/imessage/groups/{conversationId} endpoints.
          */
@@ -26869,6 +27333,9 @@ export type SendInboxMessageData = {
          * Instagram / Facebook: also mutually exclusive with `template`.
          * A Meta message carries one body shape, so sending both is a 400
          * rather than a silent drop of the buttons.
+         * The buttons and `message` render as Meta's button_template (one
+         * bubble with the text and the buttons below it), so `message` must
+         * be 640 characters or less when buttons are attached (400 otherwise).
          *
          * WhatsApp: buttons always render as interactive reply buttons.
          * Only `title` and `payload` are used; `type`, `url`, and `phone`
@@ -27612,11 +28079,18 @@ export type SetConversationThreadControlData = {
          * Social account ID
          */
         accountId: string;
-        action: 'release' | 'take' | 'pass';
         /**
-         * With action pass: send control to Meta Business Agent instead of the escalation partner.
+         * `request` is Facebook and Instagram only.
+         */
+        action: 'release' | 'take' | 'pass' | 'request';
+        /**
+         * WhatsApp only. With action pass: send control to Meta Business Agent instead of the escalation partner.
          */
         target?: 'ai_agent';
+        /**
+         * Facebook and Instagram only, required with action pass: the Meta app id receiving the thread.
+         */
+        targetAppId?: string;
         /**
          * Free-form note forwarded verbatim to the app receiving control (its messaging_handovers webhook).
          */
@@ -27634,10 +28108,42 @@ export type SetConversationThreadControlResponse = ({
     success?: boolean;
     control?: {
         owner?: 'app' | 'ai_agent' | 'other';
+        /**
+         * The app that received the thread, on a Facebook or Instagram pass.
+         */
+        ownerAppId?: string;
     };
 });
 
 export type SetConversationThreadControlError = (ErrorResponse | unknown);
+
+export type AcceptConversationRequestData = {
+    body: {
+        /**
+         * Facebook or Instagram social account ID
+         */
+        accountId: string;
+        /**
+         * The reply that accepts the request
+         */
+        message: string;
+    };
+    path: {
+        /**
+         * The `id` of the request item from the requests folder.
+         */
+        conversationId: string;
+    };
+};
+
+export type AcceptConversationRequestResponse = ({
+    success?: boolean;
+    data?: {
+        messageId?: string;
+    };
+});
+
+export type AcceptConversationRequestError = (ErrorResponse | unknown);
 
 export type MarkConversationReadData = {
     body: {
@@ -27862,6 +28368,102 @@ export type DeleteMessengerGetStartedResponse = ({
 export type DeleteMessengerGetStartedError = (ErrorResponse | {
     error?: string;
 } | unknown);
+
+export type GetMessengerGreetingData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetMessengerGreetingResponse = ({
+    data?: Array<MessengerGreeting>;
+});
+
+export type GetMessengerGreetingError = (ErrorResponse | {
+    error?: string;
+});
+
+export type SetMessengerGreetingData = {
+    body: {
+        /**
+         * One entry per locale; one must use locale `default`.
+         */
+        greeting: Array<MessengerGreeting>;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type SetMessengerGreetingResponse = ({
+    success?: boolean;
+});
+
+export type SetMessengerGreetingError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteMessengerGreetingData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type DeleteMessengerGreetingResponse = ({
+    success?: boolean;
+});
+
+export type DeleteMessengerGreetingError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetMessengerIceBreakersData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetMessengerIceBreakersResponse = ({
+    data?: Array<MessengerIceBreakerLocale>;
+});
+
+export type GetMessengerIceBreakersError = (ErrorResponse | {
+    error?: string;
+});
+
+export type SetMessengerIceBreakersData = {
+    body: {
+        /**
+         * One entry per locale; one must use locale `default`.
+         */
+        ice_breakers: Array<MessengerIceBreakerLocale>;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type SetMessengerIceBreakersResponse = ({
+    success?: boolean;
+});
+
+export type SetMessengerIceBreakersError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteMessengerIceBreakersData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type DeleteMessengerIceBreakersResponse = ({
+    success?: boolean;
+});
+
+export type DeleteMessengerIceBreakersError = (ErrorResponse | {
+    error?: string;
+});
 
 export type GetInstagramIceBreakersData = {
     path: {
@@ -32173,6 +32775,57 @@ export type UpdateWhatsAppCommerceSettingsResponse = ({
 });
 
 export type UpdateWhatsAppCommerceSettingsError = (ErrorResponse);
+
+export type GetWhatsAppConversationalAutomationData = {
+    query: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetWhatsAppConversationalAutomationResponse = ({
+    data?: WhatsAppConversationalAutomation;
+});
+
+export type GetWhatsAppConversationalAutomationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type SetWhatsAppConversationalAutomationData = {
+    body: ({
+    /**
+     * WhatsApp account ID
+     */
+    accountId: string;
+} & WhatsAppConversationalAutomation);
+};
+
+export type SetWhatsAppConversationalAutomationResponse = ({
+    success?: boolean;
+});
+
+export type SetWhatsAppConversationalAutomationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteWhatsAppConversationalAutomationData = {
+    query: {
+        /**
+         * WhatsApp account ID
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteWhatsAppConversationalAutomationResponse = ({
+    success?: boolean;
+});
+
+export type DeleteWhatsAppConversationalAutomationError = (ErrorResponse | {
+    error?: string;
+});
 
 export type GetWhatsAppBusinessProfileData = {
     query: {
@@ -36955,12 +37608,22 @@ export type CreateBroadcastData = {
         name: string;
         description?: string;
         message?: {
+            /**
+             * Required on every platform except WhatsApp (which sends `template`) and an SMS broadcast that carries attachments.
+             */
             text?: string;
+            /**
+             * SMS only: sent as MMS media, one media_url per attachment. Each url must be public http(s); JPEG, PNG, GIF, WEBP, MP4 or 3GPP under 1 MB (checked at create when the host answers a HEAD request; Telnyx enforces the 1 MB total per message at send).
+             */
             attachments?: Array<{
                 type?: string;
                 url?: string;
                 filename?: string;
             }>;
+            /**
+             * Instagram and Facebook only. Meta message tag sent with every recipient message (messaging_type MESSAGE_TAG) so the broadcast can reach people outside the 24h window. Instagram accepts HUMAN_AGENT only. Rejected with a 400 on any other platform.
+             */
+            messageTag?: 'CONFIRMED_EVENT_UPDATE' | 'POST_PURCHASE_UPDATE' | 'ACCOUNT_UPDATE' | 'HUMAN_AGENT';
         };
         /**
          * WhatsApp template (required when platform is whatsapp)
@@ -36987,6 +37650,12 @@ export type CreateBroadcastData = {
         segmentFilters?: {
             tags?: Array<(string)>;
             isSubscribed?: boolean;
+            /**
+             * Custom field values a contact must hold, keyed by field slug. Exact match per key (type included: 5 does not match "5"); every key must match.
+             */
+            customFields?: {
+                [key: string]: unknown;
+            };
         };
     };
 };
@@ -37029,6 +37698,10 @@ export type GetBroadcastResponse = ({
         };
         segmentFilters?: {
             tags?: Array<(string)>;
+            isSubscribed?: boolean;
+            customFields?: {
+                [key: string]: unknown;
+            };
         };
         status?: 'draft' | 'scheduled' | 'sending' | 'completed' | 'failed' | 'cancelled';
         scheduledAt?: string;
@@ -37057,6 +37730,18 @@ export type UpdateBroadcastData = {
          */
         message?: {
             text?: string;
+            /**
+             * SMS only: sent as MMS media.
+             */
+            attachments?: Array<{
+                type?: string;
+                url?: string;
+                filename?: string;
+            }>;
+            /**
+             * Instagram and Facebook only. See createBroadcast.
+             */
+            messageTag?: 'CONFIRMED_EVENT_UPDATE' | 'POST_PURCHASE_UPDATE' | 'ACCOUNT_UPDATE' | 'HUMAN_AGENT';
         };
         /**
          * WhatsApp template payload (used when platform is `whatsapp`).
@@ -37490,7 +38175,10 @@ export type ListWorkflowExecutionsResponse = ({
             [key: string]: unknown;
         };
         platformIdentifier?: string;
-        conversationId?: string;
+        /**
+         * Null only while a comment-triggered run has not sent its private reply yet.
+         */
+        conversationId?: (string) | null;
         stepCount?: number;
         lastError?: (string) | null;
         resumeAt?: (string) | null;
@@ -37547,6 +38235,40 @@ export type TriggerWorkflowResponse = ({
 });
 
 export type TriggerWorkflowError = (unknown | ErrorResponse | {
+    error?: string;
+});
+
+export type TriggerApiCallWorkflowData = {
+    body: {
+        /**
+         * A conversation on the workflow's account
+         */
+        conversationId?: string;
+        /**
+         * A contact with a conversation on the workflow's account
+         */
+        contactId?: string;
+        /**
+         * Recipient phone in E.164 (WhatsApp workflows only)
+         */
+        to?: string;
+        /**
+         * Seed variables, merged over the standard run variables
+         */
+        variables?: {
+            [key: string]: unknown;
+        };
+    };
+    path: {
+        workflowId: string;
+    };
+};
+
+export type TriggerApiCallWorkflowResponse = ({
+    executionId: string;
+});
+
+export type TriggerApiCallWorkflowError = (ErrorResponse | {
     error?: string;
 });
 
@@ -38040,11 +38762,12 @@ export type ListCommentAutomationsResponse = ({
     automations?: Array<{
         id?: string;
         name?: string;
-        platform?: 'instagram' | 'facebook';
-        trigger?: 'comment' | 'story_reply';
+        platform?: 'instagram' | 'facebook' | 'tiktok' | 'threads' | 'linkedin' | 'youtube';
+        trigger?: 'comment' | 'live_comment' | 'story_reply' | 'story_mention';
         accountId?: string;
         platformPostId?: string;
         postTitle?: string;
+        postId?: string;
         keywords?: Array<(string)>;
         /**
          * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
@@ -38093,33 +38816,19 @@ export type ListCommentAutomationsResponse = ({
          * Whether these keywords also fire on a plain inbound DM.
          */
         alsoMatchInDms?: boolean;
+        repeatPolicy?: CommentAutomationRepeatPolicy;
+        /**
+         * Same-text dedupe window in hours. Omitted when off.
+         */
+        dedupeSameTextHours?: number;
+        publicReplyPolicy?: 'after_dm' | 'always';
+        actions?: CommentAutomationActions;
+        quickReplies?: Array<CommentAutomationQuickReply>;
+        dmMedia?: CommentAutomationDmMedia;
+        audience?: CommentAutomationAudience;
+        followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
-        stats?: {
-            triggered?: number;
-            dmsSent?: number;
-            dmsFailed?: number;
-            uniqueContacts?: number;
-            /**
-             * DMs sent with a trackable (wrapped) link. CTR denominator: divide clicks by this, not dmsSent. Lags dmsSent for campaigns that predate click tracking.
-             */
-            trackedSends?: number;
-            /**
-             * Total clicks on tracked links (bots/prefetch excluded).
-             */
-            linkClicks?: number;
-            /**
-             * Distinct people who clicked a tracked link.
-             */
-            uniqueClicks?: number;
-            /**
-             * DMs confirmed delivered (Messenger; IG emits no delivery receipt).
-             */
-            delivered?: number;
-            /**
-             * DMs confirmed read (IG messaging_seen / Messenger message_reads).
-             */
-            read?: number;
-        };
+        stats?: CommentAutomationStats;
         createdAt?: string;
     }>;
 });
@@ -38130,13 +38839,13 @@ export type CreateCommentAutomationData = {
     body: {
         profileId: string;
         /**
-         * Instagram or Facebook account ID
+         * Instagram, Facebook, TikTok, Threads, LinkedIn or YouTube account ID. On the last four the automation only posts the public reply. X accounts are refused (400, code platform_not_supported) while X comment polling is off.
          */
         accountId: string;
         /**
-         * What fires the automation. 'comment' (keyword comment on a post) or 'story_reply' (keyword reply to an Instagram story). For 'story_reply', platformPostId is the story media id (omit for any story).
+         * What fires the automation. 'comment' (keyword comment on a post), 'live_comment' (keyword comment on an Instagram live broadcast), 'story_reply' (keyword reply to an Instagram story) or 'story_mention' (a story mentioning the Instagram account). For 'story_reply', platformPostId is the story media id (omit for any story). Every trigger but 'comment' is Instagram only; reply-only platforms accept 'comment' only.
          */
-        trigger?: 'comment' | 'story_reply';
+        trigger?: 'comment' | 'live_comment' | 'story_reply' | 'story_mention';
         /**
          * Platform media/post ID (or story media id when trigger=story_reply). Omit for an account-wide (any-post / any-story) automation.
          */
@@ -38170,9 +38879,9 @@ export type CreateCommentAutomationData = {
          */
         typoTolerance?: boolean;
         /**
-         * DM text to send to commenter. Max 640 chars when buttons are set, otherwise ~1000.
+         * DM text sent to the commenter. Required on Instagram and Facebook (400 missing_required_field when absent). Rejected on TikTok, Threads, LinkedIn and YouTube, which have no private reply (400 invalid_field_value). Max 640 chars when buttons are set, otherwise ~1000.
          */
-        dmMessage: string;
+        dmMessage?: string;
         /**
          * Optional inline DM buttons (1-3). Phone buttons are Facebook-only. Omit or pass [] for a plain-text DM.
          */
@@ -38182,7 +38891,7 @@ export type CreateCommentAutomationData = {
          */
         template?: (CommentAutomationTemplate);
         /**
-         * Optional public reply to the comment
+         * Public reply to the comment. Optional on Instagram and Facebook; required on TikTok, Threads, LinkedIn and YouTube, where it is the automation's only action.
          */
         commentReply?: string;
         /**
@@ -38215,6 +38924,25 @@ export type CreateCommentAutomationData = {
         alsoMatchInDms?: boolean;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
+        repeatPolicy?: CommentAutomationRepeatPolicy;
+        /**
+         * Skip the DM when this recipient already received identical DM text (after personalisation) from this account, from any automation, within this many hours. The skip is logged with status skipped.
+         */
+        dedupeSameTextHours?: (number) | null;
+        /**
+         * 'after_dm' posts commentReply only after a successful DM. 'always' posts it whatever the audience rule, dedupe or DM outcome: the moment a comment matches, or after commentReplyDelaySeconds when set (raised to dmDelaySeconds, so it never precedes the DM attempt).
+         */
+        publicReplyPolicy?: 'after_dm' | 'always';
+        actions?: CommentAutomationActions;
+        /**
+         * Opt-in quick-reply chips on the DM (up to 13). Chips do not render in Message Requests, where a first DM to a cold commenter lands, so prefer buttons for first contact. Mutually exclusive with buttons and template (400).
+         */
+        quickReplies?: Array<CommentAutomationQuickReply>;
+        dmMedia?: (CommentAutomationDmMedia | null);
+        /**
+         * Create the automation paused with false.
+         */
+        isActive?: boolean;
     };
 };
 
@@ -38223,8 +38951,8 @@ export type CreateCommentAutomationResponse = ({
     automation?: {
         id?: string;
         name?: string;
-        platform?: string;
-        trigger?: 'comment' | 'story_reply';
+        platform?: 'instagram' | 'facebook' | 'tiktok' | 'threads' | 'linkedin' | 'youtube';
+        trigger?: 'comment' | 'live_comment' | 'story_reply' | 'story_mention';
         platformPostId?: string;
         keywords?: Array<(string)>;
         /**
@@ -38270,17 +38998,22 @@ export type CreateCommentAutomationResponse = ({
          * Whether these keywords also fire on a plain inbound DM.
          */
         alsoMatchInDms?: boolean;
+        repeatPolicy?: CommentAutomationRepeatPolicy;
+        /**
+         * Same-text dedupe window in hours. Omitted when off.
+         */
+        dedupeSameTextHours?: number;
+        publicReplyPolicy?: 'after_dm' | 'always';
+        actions?: CommentAutomationActions;
+        quickReplies?: Array<CommentAutomationQuickReply>;
+        dmMedia?: CommentAutomationDmMedia;
         isActive?: boolean;
-        stats?: {
-            totalTriggered?: number;
-            totalSent?: number;
-            totalFailed?: number;
-        };
+        stats?: CommentAutomationStats;
         createdAt?: string;
     };
 });
 
-export type CreateCommentAutomationError = (unknown | ErrorResponse);
+export type CreateCommentAutomationError = (ErrorResponse | unknown);
 
 export type GetCommentAutomationData = {
     path: {
@@ -38293,8 +39026,8 @@ export type GetCommentAutomationResponse = ({
     automation?: {
         id?: string;
         name?: string;
-        platform?: string;
-        trigger?: 'comment' | 'story_reply';
+        platform?: 'instagram' | 'facebook' | 'tiktok' | 'threads' | 'linkedin' | 'youtube';
+        trigger?: 'comment' | 'live_comment' | 'story_reply' | 'story_mention';
         accountId?: string;
         platformPostId?: string;
         postId?: string;
@@ -38343,67 +39076,24 @@ export type GetCommentAutomationResponse = ({
          * Whether these keywords also fire on a plain inbound DM.
          */
         alsoMatchInDms?: boolean;
+        repeatPolicy?: CommentAutomationRepeatPolicy;
+        /**
+         * Same-text dedupe window in hours. Omitted when off.
+         */
+        dedupeSameTextHours?: number;
+        publicReplyPolicy?: 'after_dm' | 'always';
+        actions?: CommentAutomationActions;
+        quickReplies?: Array<CommentAutomationQuickReply>;
+        dmMedia?: CommentAutomationDmMedia;
         isActive?: boolean;
-        stats?: {
-            totalTriggered?: number;
-            totalSent?: number;
-            totalFailed?: number;
-        };
+        stats?: CommentAutomationStats;
         createdAt?: string;
         updatedAt?: string;
     };
-    logs?: Array<{
-        id?: string;
-        commentId?: string;
-        commenterId?: string;
-        commenterName?: string;
-        commentText?: string;
-        /**
-         * Which door triggered this send. Absent on rows written before this field existed (all of those are comment-triggered).
-         */
-        source?: 'comment' | 'story_reply' | 'dm';
-        /**
-         * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
-         */
-        status?: 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
-        /**
-         * How the audience rule resolved. Absent on automations without one.
-         */
-        audienceOutcome?: 'passed' | 'blocked' | 'gate_sent' | 'gate_passed' | 'gate_failed';
-        /**
-         * Follow relationship at decision time. Absent when Instagram would not tell us (the commenter never messaged the account).
-         */
-        commenterIsFollower?: boolean;
-        commenterFollowerCount?: number;
-        /**
-         * DM error message if status is failed
-         */
-        error?: string;
-        /**
-         * Platform error codes of the failed DM (Meta `code` and `error_subcode`), when the platform sent them. Absent on successful rows and on rows written before this field existed.
-         */
-        platformError?: {
-            code?: number;
-            subcode?: number;
-        };
-        /**
-         * True when the failed send spent the comment's single private reply (Instagram subcode 1545133 or 2534023, or Meta code 10900 on Instagram and Facebook), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs and on rows written before this field existed.
-         */
-        privateReplyConsumed?: boolean;
-        /**
-         * Outcome of the optional public reply on the triggering comment. 'skipped' if no commentReply was configured or if the DM failed (the public reply is not attempted in that case).
-         */
-        commentReplyStatus?: 'sent' | 'failed' | 'skipped';
-        /**
-         * Public-reply error message if commentReplyStatus is failed
-         */
-        commentReplyError?: string;
-        /**
-         * When the next queued send fires. Present only while something is still pending.
-         */
-        nextDueAt?: string;
-        createdAt?: string;
-    }>;
+    /**
+     * The 20 most recent trigger logs.
+     */
+    logs?: Array<CommentAutomationLog>;
 });
 
 export type GetCommentAutomationError = (ErrorResponse | {
@@ -38414,9 +39104,9 @@ export type UpdateCommentAutomationData = {
     body?: {
         name?: string;
         /**
-         * What fires the automation. Changing it detaches the automation from its bound post or story (a post id and a story id are different objects), unless this same request sets a new binding. 'story_reply' is Instagram only.
+         * What fires the automation. Changing it detaches the automation from its bound post or story (a post id and a story id are different objects), unless this same request sets a new binding. Every trigger but 'comment' is Instagram only; 'story_mention' also requires no keywords and no binding.
          */
-        trigger?: 'comment' | 'story_reply';
+        trigger?: 'comment' | 'live_comment' | 'story_reply' | 'story_mention';
         keywords?: Array<(string)>;
         /**
          * How a keyword is compared with the comment. 'contains' (default) matches anywhere, even inside another word (keyword 'app' fires on 'happy'). 'word' matches the keyword only as a standalone word. 'exact' requires the whole comment to be exactly the keyword.
@@ -38471,6 +39161,21 @@ export type UpdateCommentAutomationData = {
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
         isActive?: boolean;
+        repeatPolicy?: CommentAutomationRepeatPolicy;
+        /**
+         * Skip the DM when this recipient already received identical DM text (after personalisation) from this account, from any automation, within this many hours. The skip is logged with status skipped. Send null to clear.
+         */
+        dedupeSameTextHours?: (number) | null;
+        /**
+         * 'after_dm' posts commentReply only after a successful DM. 'always' posts it whatever the audience rule, dedupe or DM outcome: the moment a comment matches, or after commentReplyDelaySeconds when set (raised to dmDelaySeconds, so it never precedes the DM attempt).
+         */
+        publicReplyPolicy?: 'after_dm' | 'always';
+        actions?: CommentAutomationActions;
+        /**
+         * Opt-in quick-reply chips on the DM (up to 13). Chips do not render in Message Requests, where a first DM to a cold commenter lands, so prefer buttons for first contact. Mutually exclusive with buttons and template (400). Send null to clear.
+         */
+        quickReplies?: Array<CommentAutomationQuickReply> | null;
+        dmMedia?: (CommentAutomationDmMedia | null);
     };
     path: {
         automationId: string;
@@ -38516,7 +39221,17 @@ export type UpdateCommentAutomationResponse = ({
          * Whether these keywords also fire on a plain inbound DM.
          */
         alsoMatchInDms?: boolean;
+        repeatPolicy?: CommentAutomationRepeatPolicy;
+        /**
+         * Same-text dedupe window in hours. Omitted when off.
+         */
+        dedupeSameTextHours?: number;
+        publicReplyPolicy?: 'after_dm' | 'always';
+        actions?: CommentAutomationActions;
+        quickReplies?: Array<CommentAutomationQuickReply>;
+        dmMedia?: CommentAutomationDmMedia;
         isActive?: boolean;
+        stats?: CommentAutomationStats;
         updatedAt?: string;
     };
 });
@@ -38553,58 +39268,7 @@ export type ListCommentAutomationLogsData = {
 
 export type ListCommentAutomationLogsResponse = ({
     success?: boolean;
-    logs?: Array<{
-        id?: string;
-        commentId?: string;
-        commenterId?: string;
-        commenterName?: string;
-        commentText?: string;
-        /**
-         * Which door triggered this send. Absent on rows written before this field existed (all of those are comment-triggered).
-         */
-        source?: 'comment' | 'story_reply' | 'dm';
-        /**
-         * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap.
-         */
-        status?: 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
-        /**
-         * How the audience rule resolved. Absent on automations without one.
-         */
-        audienceOutcome?: 'passed' | 'blocked' | 'gate_sent' | 'gate_passed' | 'gate_failed';
-        /**
-         * Follow relationship at decision time. Absent when Instagram would not tell us (the commenter never messaged the account).
-         */
-        commenterIsFollower?: boolean;
-        commenterFollowerCount?: number;
-        /**
-         * DM error message if status is failed
-         */
-        error?: string;
-        /**
-         * Platform error codes of the failed DM (Meta `code` and `error_subcode`), when the platform sent them. Absent on successful rows and on rows written before this field existed.
-         */
-        platformError?: {
-            code?: number;
-            subcode?: number;
-        };
-        /**
-         * True when the failed send spent the comment's single private reply (Instagram subcode 1545133 or 2534023, or Meta code 10900 on Instagram and Facebook), the same rule as `details.privateReplyConsumed` on the private-reply endpoint. Absent on direct DMs and on rows written before this field existed.
-         */
-        privateReplyConsumed?: boolean;
-        /**
-         * Outcome of the optional public reply on the triggering comment. 'skipped' if no commentReply was configured or if the DM failed (the public reply is not attempted in that case).
-         */
-        commentReplyStatus?: 'sent' | 'failed' | 'skipped';
-        /**
-         * Public-reply error message if commentReplyStatus is failed
-         */
-        commentReplyError?: string;
-        /**
-         * When the next queued send fires. Present only while something is still pending.
-         */
-        nextDueAt?: string;
-        createdAt?: string;
-    }>;
+    logs?: Array<CommentAutomationLog>;
     pagination?: {
         total?: number;
         limit?: number;
@@ -45216,6 +45880,10 @@ export type BoostPostData = {
          */
         whatsappPhoneNumber?: string;
         /**
+         * Meta messaging boosts only (callToAction MESSAGE_PAGE, WHATSAPP_MESSAGE or INSTAGRAM_MESSAGE). A workflow in the account's profile, started in the conversation a click on the ad opens. Stored on the ad. 400 without a messaging callToAction or on another platform, 404 when no such workflow exists in the profile.
+         */
+        workflowId?: string;
+        /**
          * ISO 4217 currency code matching the ad account's currency. Meta only. Optional: Zernio resolves it from the ad account when omitted. The value selects the minor-unit exponent Zernio converts budget/bid amounts by before calling Meta (most currencies are cents; zero-decimal currencies like JPY/KRW are sent as-is).
          */
         currency?: string;
@@ -50100,6 +50768,10 @@ export type CreateMessagingAdData = {
      *
      */
     placementAssets?: (MetaPlacementAssets);
+    /**
+     * A workflow in the ad account's profile. When someone clicks the ad, that workflow starts in the conversation the click opens (on the first message, a postback or a standalone referral carrying the ad id), ahead of keyword-matched workflows, if it is active on the receiving account. Stored on the ad. 404 when no such workflow exists in the profile.
+     */
+    workflowId?: string;
     /**
      * Dry-runs the ad on Meta with execution_options validate_only as ONE inline campaign + ad set + creative + ad (or creative + ad on the existing ad set with `adSetId`). Nothing is uploaded or created and nothing is stored; media is checked by URL. Supports one creative with `imageUrl`, image `placementAssets`, `carouselCards`, an existing `video.id`, or an existing post. Several creatives, a new `video.url` and video `placementAssets` need uploads first and return 400. Success returns 200 with per-node results; a Meta rejection returns the Meta error.
      */

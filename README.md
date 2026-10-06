@@ -390,15 +390,21 @@ try {
 |--------|-------------|
 | `accountSettings.getInstagramIceBreakers()` | Get IG ice breakers |
 | `accountSettings.getMessengerGetStarted()` | Get FB Get Started button |
-| `accountSettings.getMessengerMenu()` | Get FB persistent menu |
+| `accountSettings.getMessengerGreeting()` | Get FB greeting text |
+| `accountSettings.getMessengerIceBreakers()` | Get FB ice breakers |
+| `accountSettings.getMessengerMenu()` | Get persistent menu |
 | `accountSettings.getTelegramCommands()` | Get TG bot commands |
 | `accountSettings.deleteInstagramIceBreakers()` | Delete IG ice breakers |
 | `accountSettings.deleteMessengerGetStarted()` | Delete FB Get Started button |
-| `accountSettings.deleteMessengerMenu()` | Delete FB persistent menu |
+| `accountSettings.deleteMessengerGreeting()` | Delete FB greeting text |
+| `accountSettings.deleteMessengerIceBreakers()` | Delete FB ice breakers |
+| `accountSettings.deleteMessengerMenu()` | Delete persistent menu |
 | `accountSettings.deleteTelegramCommands()` | Delete TG bot commands |
 | `accountSettings.setInstagramIceBreakers()` | Set IG ice breakers |
 | `accountSettings.setMessengerGetStarted()` | Set FB Get Started button |
-| `accountSettings.setMessengerMenu()` | Set FB persistent menu |
+| `accountSettings.setMessengerGreeting()` | Set FB greeting text |
+| `accountSettings.setMessengerIceBreakers()` | Set FB ice breakers |
+| `accountSettings.setMessengerMenu()` | Set persistent menu |
 | `accountSettings.setTelegramCommands()` | Set TG bot commands |
 
 ### Ad Accounts
@@ -1029,6 +1035,7 @@ try {
 | `messages.getMessageAttachment()` | Resolve message attachment |
 | `messages.updateInboxConversation()` | Update conversation status |
 | `messages.deleteInboxMessage()` | Delete message |
+| `messages.acceptConversationRequest()` | Accept a message request |
 | `messages.addMessageReaction()` | Add reaction |
 | `messages.editInboxMessage()` | Edit message |
 | `messages.markConversationRead()` | Mark a conversation as read |
@@ -1036,7 +1043,7 @@ try {
 | `messages.searchInboxConversations()` | Search conversations |
 | `messages.sendInboxMessage()` | Send message |
 | `messages.sendTypingIndicator()` | Send typing indicator |
-| `messages.setConversationThreadControl()` | Hand a conversation to or from Meta Business Agent |
+| `messages.setConversationThreadControl()` | Change who answers a conversation (handover) |
 | `messages.uploadMediaDirect()` | Upload media file |
 
 ### Messaging Ads
@@ -1281,6 +1288,7 @@ try {
 | `whatsapp.getWhatsappBusinessUsername()` | Get business username |
 | `whatsapp.getWhatsappBusinessUsernameSuggestions()` | Get username suggestions |
 | `whatsapp.getWhatsAppCommerceSettings()` | Get a number's commerce settings |
+| `whatsapp.getWhatsAppConversationalAutomation()` | Get ice breakers and commands |
 | `whatsapp.getWhatsAppDataset()` | Get CTWA conversions dataset |
 | `whatsapp.getWhatsAppDisplayName()` | Get display name status |
 | `whatsapp.getWhatsAppGroupChat()` | Get group info |
@@ -1295,6 +1303,7 @@ try {
 | `whatsapp.updateWhatsAppTemplate()` | Update template |
 | `whatsapp.updateWhatsAppTemplateById()` | Update template by id |
 | `whatsapp.deleteWhatsappBusinessUsername()` | Delete business username |
+| `whatsapp.deleteWhatsAppConversationalAutomation()` | Clear ice breakers and commands |
 | `whatsapp.deleteWhatsAppGroupChat()` | Delete group |
 | `whatsapp.deleteWhatsAppTemplate()` | Delete template |
 | `whatsapp.deleteWhatsAppTemplateById()` | Delete template by id |
@@ -1308,6 +1317,7 @@ try {
 | `whatsapp.requestWhatsAppVerificationCode()` | Request a Meta re-verification code for a BYO WhatsApp number |
 | `whatsapp.sendWhatsAppConversion()` | Send WhatsApp conversion event |
 | `whatsapp.setWhatsappBusinessUsername()` | Set business username |
+| `whatsapp.setWhatsAppConversationalAutomation()` | Set ice breakers and commands |
 | `whatsapp.unblockWhatsAppUsers()` | Unblock users |
 | `whatsapp.unlinkWhatsAppCatalog()` | Unlink a catalog from a WhatsApp number |
 | `whatsapp.uploadWhatsAppProfilePhoto()` | Upload profile picture |
@@ -1401,6 +1411,7 @@ try {
 | `workflows.duplicateWorkflow()` | Duplicate a workflow |
 | `workflows.pauseWorkflow()` | Pause workflow |
 | `workflows.restoreWorkflowVersion()` | Restore a workflow version |
+| `workflows.triggerApiCallWorkflow()` | Start an API-triggered workflow |
 | `workflows.triggerWorkflow()` | Manually start a workflow run |
 
 ### Invites
