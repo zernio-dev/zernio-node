@@ -45537,7 +45537,7 @@ export type BoostPostData = {
          */
         adSetStatus?: 'ACTIVE' | 'PAUSED';
         /**
-         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId` (Meta, TikTok Smart+), and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`.
+         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId` (Meta, TikTok Smart+), and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`. LinkedIn: a creative held off is created DRAFT, because LinkedIn refuses PAUSED on a creative until its review is APPROVED. A DRAFT creative is not submitted for review and cannot serve; it reads `paused`, and resuming the ad (PUT /v1/ads/{adId}/status `active`) switches it ACTIVE, which starts the review.
          *
          * X returns a 400: a promoted post has no switch of its own, so hold the line item with `adSetStatus`.
          *
@@ -45917,7 +45917,7 @@ export type CreateStandaloneAdData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default, back-compat); PAUSED pauses only the TOP-MOST object this call creates and switches everything below it on, so one resume of that object brings the new tree live and nothing that already existed is touched: a new campaign is held paused with its ad set and ad on; with `existingCampaignId` the new ad set is held paused with its ad on; with `adSetId` the new ad itself is paused. `campaignStatus: ACTIVE` with `status: PAUSED` moves the pause down to the new ad set. `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level; `status: PAUSED` adds a hold of its own only when none of them is PAUSED. To create every object paused, send all three as PAUSED. LinkedIn: a held campaign group is PAUSED with its campaign and creative ACTIVE; a new campaign in an existing group stays DRAFT. X has no per-ad switch, so its lowest level is the line item. Google Performance Max and Demand Gen accept PAUSED only (the campaign is created paused).
+         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default, back-compat); PAUSED pauses only the TOP-MOST object this call creates and switches everything below it on, so one resume of that object brings the new tree live and nothing that already existed is touched: a new campaign is held paused with its ad set and ad on; with `existingCampaignId` the new ad set is held paused with its ad on; with `adSetId` the new ad itself is paused. `campaignStatus: ACTIVE` with `status: PAUSED` moves the pause down to the new ad set. `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level; `status: PAUSED` adds a hold of its own only when none of them is PAUSED. To create every object paused, send all three as PAUSED. LinkedIn: a held campaign group is PAUSED with its campaign and creative ACTIVE; a new campaign in an existing group stays DRAFT; a held creative (with `adSetId`) is created DRAFT, as LinkedIn refuses PAUSED until its review is APPROVED. X has no per-ad switch, so its lowest level is the line item. Google Performance Max and Demand Gen accept PAUSED only (the campaign is created paused).
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
@@ -45934,7 +45934,7 @@ export type CreateStandaloneAdData = {
          */
         adSetStatus?: 'ACTIVE' | 'PAUSED';
         /**
-         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId`, and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`.
+         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId`, and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`. LinkedIn: a creative held off is created DRAFT, because LinkedIn refuses PAUSED on a creative until its review is APPROVED. A DRAFT creative is not submitted for review and cannot serve; it reads `paused`, and resuming the ad (PUT /v1/ads/{adId}/status `active`) switches it ACTIVE, which starts the review.
          *
          * X returns a 400: a promoted post has no switch of its own, so hold the line item with `adSetStatus`. `PAUSED` with `buyingType: RESERVED` returns a 400 (Meta creates the first Reach and Frequency ad ACTIVE). Performance Max and Demand Gen accept PAUSED only.
          *
