@@ -4006,6 +4006,8 @@ export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 's
  * - Single-creative: `headline`, `body`, and one of `imageUrl` / `video`,
  * OR `platformPostId` / `objectStoryId` to reuse an organic post.
  * On POST /v1/ads/messaging, `placementAssets` can replace `imageUrl` / `video`.
+ * - Carousel (messaging and CTWA): `body` and `carouselCards` (2-10 image
+ * cards) instead of `imageUrl` / `video`, top level or per `creatives[]` entry.
  * - Multi-creative: a non-empty `creatives[]` array. Top-level
  * creative fields must NOT be set on this shape.
  *
@@ -4167,6 +4169,21 @@ export type CtwaAdRequestBody = {
         }>;
     };
     /**
+     * Messaging and CTWA only (a 400 on POST /v1/ads/call). A hand-built carousel
+     * of 2-10 image cards, sent to Meta as `link_data.child_attachments`; every
+     * card (and the carousel itself) carries the destination's messaging call to
+     * action (WHATSAPP_MESSAGE, MESSAGE_PAGE or INSTAGRAM_MESSAGE), so a tap on any
+     * card opens the conversation. Replaces `imageUrl` / `video` (sending either is
+     * a 400). `body` is required as the primary text; `headline` is optional and
+     * only names the creative (each card has its own `headline`); a top-level
+     * `description` is a 400 (set it per card). `welcomeMessage`,
+     * `whatsappPhoneNumber` and `destinations` apply as on a single-image ad. Also a
+     * 400 with `placementAssets`, `platformPostId`, `existingPostId` or
+     * `objectStoryId`. Single-creative shape; for `creatives[]` set it per entry.
+     *
+     */
+    carouselCards?: Array<MessagingCarouselCard>;
+    /**
      * Multi-creative shape: N CTWA ads under one campaign + one
      * ad set, sharing budget and targeting. Mutually exclusive
      * with the top-level single-creative fields (`headline` /
@@ -4242,6 +4259,10 @@ export type CtwaAdRequestBody = {
              */
             prefillText: string;
         };
+        /**
+         * A 2-10 card carousel for this entry instead of `imageUrl` / `video`; `body` is required. Same rules as the top-level `carouselCards`. Carousel and single-media entries can be mixed on one ad set.
+         */
+        carouselCards?: Array<MessagingCarouselCard>;
     }>;
     /**
      * Attach the creatives to this EXISTING messaging ad set instead of
@@ -7876,6 +7897,32 @@ export type type11 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
+};
+
+/**
+ * One card of a messaging ad carousel (Meta link_data.child_attachments). Every card opens the same conversation, so a card has no link of its own.
+ */
+export type MessagingCarouselCard = {
+    /**
+     * Card image. Uploaded to the ad account and sent as the card image_hash (by URL on validateOnly).
+     */
+    imageUrl: string;
+    /**
+     * Card title (Meta name).
+     */
+    headline?: string;
+    /**
+     * Card description, under the title.
+     */
+    description?: string;
+    /**
+     * Optional. Must equal the destination's messaging call to action (WHATSAPP_MESSAGE for whatsapp, MESSAGE_PAGE for messenger, INSTAGRAM_MESSAGE for instagram_direct; with `destinations` the first one listed). Any other value is a 400 naming the card, because Meta refuses a carousel whose cards do not all open the destination.
+     */
+    callToAction?: string;
+    /**
+     * Not accepted: a 400. The card tap opens the conversation, not a website.
+     */
+    linkUrl?: string;
 };
 
 /**
@@ -49970,7 +50017,7 @@ export type CreateMessagingAdData = {
      */
     placementAssets?: (MetaPlacementAssets);
     /**
-     * Dry-runs the ad on Meta with execution_options validate_only as ONE inline campaign + ad set + creative + ad (or creative + ad on the existing ad set with `adSetId`). Nothing is uploaded or created and nothing is stored; media is checked by URL. Supports one creative with `imageUrl`, image `placementAssets`, an existing `video.id`, or an existing post. Several creatives, a new `video.url` and video `placementAssets` need uploads first and return 400. Success returns 200 with per-node results; a Meta rejection returns the Meta error.
+     * Dry-runs the ad on Meta with execution_options validate_only as ONE inline campaign + ad set + creative + ad (or creative + ad on the existing ad set with `adSetId`). Nothing is uploaded or created and nothing is stored; media is checked by URL. Supports one creative with `imageUrl`, image `placementAssets`, `carouselCards`, an existing `video.id`, or an existing post. Several creatives, a new `video.url` and video `placementAssets` need uploads first and return 400. Success returns 200 with per-node results; a Meta rejection returns the Meta error.
      */
     validateOnly?: boolean;
 });
