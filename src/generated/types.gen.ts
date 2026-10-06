@@ -7593,6 +7593,9 @@ export type graduationStrategy = 'MANUAL' | 'SS_PERFORMANCE';
  */
 export type KeywordEntry = string | {
     text: string;
+    /**
+     * Defaults to broad. Accepted in any case (EXACT, Exact) and stored lowercase.
+     */
     matchType?: 'exact' | 'phrase' | 'broad';
 };
 
@@ -40027,6 +40030,9 @@ export type ListAdKeywordsData = {
          */
         campaignId?: string;
         limit?: number;
+        /**
+         * Accepted in any case.
+         */
         matchType?: 'exact' | 'phrase' | 'broad' | 'unknown';
         /**
          * true = negative keywords only, false = positive only. Omit for both.
@@ -40715,8 +40721,14 @@ export type BulkUpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
         campaigns: Array<{
+            /**
+             * The campaign id on the ad platform (e.g. the numeric Google campaign id), not a Zernio id.
+             */
             platformCampaignId: string;
-            platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai';
+            /**
+             * The ad platform, e.g. `google` for Google Ads. The ads connection slug (`googleads`, `tiktokads`, ...) is accepted as an alias. `metaads` is not: send `facebook` or `instagram`.
+             */
+            platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'googleads' | 'tiktokads' | 'linkedinads' | 'pinterestads' | 'xads' | 'openaiads';
         }>;
     };
 };
@@ -42127,7 +42139,13 @@ export type UpdateCampaignAssetsResponse = ({
 export type UpdateCampaignAssetsError = (ErrorResponse | unknown);
 
 export type RemoveCampaignAssetsData = {
-    body: {
+    path: {
+        /**
+         * Numeric Google platform id.
+         */
+        campaignId: string;
+    };
+    query: {
         /**
          * Zernio Google Ads connection id.
          */
@@ -42137,18 +42155,18 @@ export type RemoveCampaignAssetsData = {
          */
         adAccountId?: string;
         /**
+         * Asset resource names, retained for compatibility. Repeat the parameter or pass a comma-separated list.
+         */
+        assetResourceNames: Array<(string)>;
+        /**
+         * campaign_asset resource names to remove, e.g. customers/1234567890/campaignAssets/456~123~CALLOUT. Repeat the parameter or pass a comma-separated list.
+         */
+        campaignAssetResourceNames: Array<(string)>;
+        /**
          * Alias of adAccountId, kept for existing callers
          * @deprecated
          */
         customerId?: string;
-        assetResourceNames: Array<(string)>;
-        campaignAssetResourceNames: Array<(string)>;
-    };
-    path: {
-        /**
-         * Numeric Google platform id.
-         */
-        campaignId: string;
     };
 };
 
@@ -42276,7 +42294,13 @@ export type UpdateAdGroupAssetsResponse = ({
 export type UpdateAdGroupAssetsError = (ErrorResponse | unknown);
 
 export type RemoveAdGroupAssetsData = {
-    body: {
+    path: {
+        /**
+         * Numeric Google platform id.
+         */
+        adSetId: string;
+    };
+    query: {
         /**
          * Zernio Google Ads connection id.
          */
@@ -42286,18 +42310,18 @@ export type RemoveAdGroupAssetsData = {
          */
         adAccountId?: string;
         /**
+         * ad_group_asset resource names to remove, e.g. customers/1234567890/adGroupAssets/456~123~CALLOUT. Repeat the parameter or pass a comma-separated list.
+         */
+        adGroupAssetResourceNames: Array<(string)>;
+        /**
+         * Asset resource names, retained for compatibility. Repeat the parameter or pass a comma-separated list.
+         */
+        assetResourceNames: Array<(string)>;
+        /**
          * Alias of adAccountId, kept for existing callers
          * @deprecated
          */
         customerId?: string;
-        assetResourceNames: Array<(string)>;
-        adGroupAssetResourceNames: Array<(string)>;
-    };
-    path: {
-        /**
-         * Numeric Google platform id.
-         */
-        adSetId: string;
     };
 };
 
@@ -44089,12 +44113,42 @@ export type AttachAdLabelResponse = ({
 export type AttachAdLabelError = (ErrorResponse | unknown);
 
 export type DetachAdLabelData = {
-    body: GoogleAdLabelAssignments;
     path: {
         /**
          * Google label id
          */
         labelId: string;
+    };
+    query: {
+        /**
+         * Zernio Google Ads connection id.
+         */
+        accountId: string;
+        /**
+         * Platform ad account ID (Google customer ID, digits only). Required when the connection has multiple customers.
+         */
+        adAccountId?: string;
+        /**
+         * Google ad group ad ids, {adGroupId}~{adId}. Repeat the parameter or pass a comma-separated list.
+         */
+        adIds?: Array<(string)>;
+        /**
+         * Google ad group ids. Repeat the parameter or pass a comma-separated list.
+         */
+        adSetIds?: Array<(string)>;
+        /**
+         * Google campaign ids. Repeat the parameter or pass a comma-separated list.
+         */
+        campaignIds?: Array<(string)>;
+        /**
+         * Alias of adAccountId, kept for existing callers
+         * @deprecated
+         */
+        customerId?: string;
+        /**
+         * Google keyword criterion ids, {adGroupId}~{criterionId}. Repeat the parameter or pass a comma-separated list.
+         */
+        keywordIds?: Array<(string)>;
     };
 };
 
@@ -44906,7 +44960,7 @@ export type UpdateAccountCalloutsResponse = ({
 export type UpdateAccountCalloutsError = (ErrorResponse | unknown);
 
 export type RemoveAccountCalloutData = {
-    body: {
+    query: {
         /**
          * Zernio Google Ads connection id.
          */
@@ -44916,11 +44970,14 @@ export type RemoveAccountCalloutData = {
          */
         adAccountId?: string;
         /**
+         * Numeric Google Ads asset id.
+         */
+        assetId: string;
+        /**
          * Alias of adAccountId, kept for existing callers
          * @deprecated
          */
         customerId?: string;
-        assetId: string;
     };
 };
 
@@ -45040,7 +45097,7 @@ export type UpdateAccountSitelinksResponse = ({
 export type UpdateAccountSitelinksError = (ErrorResponse | unknown);
 
 export type RemoveAccountSitelinkData = {
-    body: {
+    query: {
         /**
          * Zernio Google Ads connection id.
          */
@@ -45050,11 +45107,14 @@ export type RemoveAccountSitelinkData = {
          */
         adAccountId?: string;
         /**
+         * Numeric Google Ads asset id.
+         */
+        assetId: string;
+        /**
          * Alias of adAccountId, kept for existing callers
          * @deprecated
          */
         customerId?: string;
-        assetId: string;
     };
 };
 
@@ -45161,7 +45221,7 @@ export type UpdateAccountStructuredSnippetsResponse = ({
 export type UpdateAccountStructuredSnippetsError = (ErrorResponse | unknown);
 
 export type RemoveAccountStructuredSnippetData = {
-    body: {
+    query: {
         /**
          * Zernio Google Ads connection id.
          */
@@ -45171,11 +45231,14 @@ export type RemoveAccountStructuredSnippetData = {
          */
         adAccountId?: string;
         /**
+         * Numeric Google Ads asset id.
+         */
+        assetId: string;
+        /**
          * Alias of adAccountId, kept for existing callers
          * @deprecated
          */
         customerId?: string;
-        assetId: string;
     };
 };
 
@@ -47018,15 +47081,18 @@ export type CreateStandaloneAdData = {
          * budget and schedule are inherited (passing those fields
          * returns 400).
          *
-         * On Google Ads the `adSetId` is the AD GROUP id. `goal` is
-         * still REQUIRED even though budget and targeting are
-         * inherited from the ad group. Send `campaignType: "search"`
-         * to attach into a Search ad group, including one created by
-         * `POST /v1/ads/ad-sets` (always SEARCH_STANDARD): without it
-         * the request is treated as Display and requires
-         * `images.landscape` + `images.square` + `businessName`, and
-         * the resulting display creative does not match a Search ad
-         * group.
+         * On Google Ads the `adSetId` is the AD GROUP id (numeric). `goal`
+         * is not required: the ad group keeps its campaign's bidding,
+         * budget and targeting. `campaignType` is read from the ad group's
+         * campaign (Search, Display or Demand Gen), so it can be omitted;
+         * a `campaignType` that contradicts the ad group returns 400, an
+         * ad group Google does not know in that customer returns 404, and
+         * any other campaign type returns 422. A Search ad needs
+         * `headline` + `body` + `linkUrl`; a Display ad also needs
+         * `images.landscape` + `images.square` + `businessName`. Google
+         * allows 3 responsive search ads per ad group: a fourth returns
+         * 422 naming the limit (`RESPONSIVE_SEARCH_ADS_PER_AD_GROUP`) and
+         * the ad group.
          * `budgetAmount`/`budgetType` and bidding fields
          * (`bidStrategy`, `bidAmount`, `portfolioBidStrategyId`)
          * return 400 on this shape; the ad group already owns them.
@@ -47548,7 +47614,7 @@ export type CreateStandaloneAdData = {
          */
         audienceId?: string;
         /**
-         * Google only. Performance Max requires assetGroup and Demand Gen requires demandGen; both are always created PAUSED.
+         * Google only. Performance Max requires assetGroup and Demand Gen requires demandGen; both are always created PAUSED. With `adSetId` it defaults to the ad group's own campaign type instead of display.
          */
         campaignType?: 'display' | 'search' | 'pmax' | 'demand_gen';
         /**
@@ -47570,11 +47636,11 @@ export type CreateStandaloneAdData = {
          */
         campaignNegativeKeywords?: Array<KeywordEntry>;
         /**
-         * Google Search RSA only. Extra text assets as strings or objects with text and optional pinnedField. Existing string input remains supported. The effective create lists, including primary text and deduplication, must contain 3-15 headlines and 2-4 descriptions; excess entries return 400.
+         * Google Search RSA only. Extra text assets as strings or objects with text and optional pinnedField. Existing string input remains supported. The effective create lists, including primary text and deduplication, must contain 3-15 headlines and 2-4 descriptions; excess entries return 400. Each headline is at most 30 characters (Google's limit): a longer one returns 400 naming the field and index (e.g. `additionalHeadlines[2]`), it is never truncated. On Search the same limit applies to `headline` and `longHeadline` (30) and to `body` (90).
          */
         additionalHeadlines?: Array<(string | GoogleRsaHeadline)>;
         /**
-         * Google Search RSA only. Extra text assets as strings or objects with text and optional pinnedField. Existing string input remains supported. The effective create lists, including primary text and deduplication, must contain 3-15 headlines and 2-4 descriptions; excess entries return 400.
+         * Google Search RSA only. Extra text assets as strings or objects with text and optional pinnedField. Existing string input remains supported. The effective create lists, including primary text and deduplication, must contain 3-15 headlines and 2-4 descriptions; excess entries return 400. Each description is at most 90 characters (Google's limit): a longer one returns 400 naming the field and index (e.g. `additionalDescriptions[2]`), it is never truncated. On Search the same limit applies to `headline` and `longHeadline` (30) and to `body` (90).
          */
         additionalDescriptions?: Array<(string | GoogleRsaDescription)>;
         /**

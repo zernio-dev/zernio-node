@@ -10524,7 +10524,7 @@ export const updateCampaignAssets = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Remove campaign assets
- * Removes the specified attachments only. Google assets cannot be deleted. Other attachments remain. assetResourceNames is retained for compatibility.
+ * Removes the specified attachments only. Google assets cannot be deleted. Other attachments remain. assetResourceNames is retained for compatibility. Fields go in the query string. A JSON body with the same fields is also accepted and, when sent, the query string is ignored.
  */
 export const removeCampaignAssets = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveCampaignAssetsData, ThrowOnError>) => {
     return (options?.client ?? client).delete<RemoveCampaignAssetsResponse, RemoveCampaignAssetsError, ThrowOnError>({
@@ -10568,7 +10568,7 @@ export const updateAdGroupAssets = <ThrowOnError extends boolean = false>(option
 
 /**
  * Remove ad-group assets
- * Removes the specified attachments only. Google assets cannot be deleted. Other attachments remain. assetResourceNames is retained for compatibility.
+ * Removes the specified attachments only. Google assets cannot be deleted. Other attachments remain. assetResourceNames is retained for compatibility. Fields go in the query string. A JSON body with the same fields is also accepted and, when sent, the query string is ignored.
  */
 export const removeAdGroupAssets = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveAdGroupAssetsData, ThrowOnError>) => {
     return (options?.client ?? client).delete<RemoveAdGroupAssetsResponse, RemoveAdGroupAssetsError, ThrowOnError>({
@@ -10822,6 +10822,8 @@ export const getAdTrackingTags = <ThrowOnError extends boolean = false>(options:
  * / dark / asset_feed creatives whose object_story_spec Meta strips (those return 422 asking for
  * `creative`).
  * - Google: `trackingUrlTemplate` and/or `finalUrlSuffix` (full template strings; account quota applies).
+ * Written at the CAMPAIGN level (the campaign's `tracking_url_template` / `final_url_suffix`), so
+ * the change applies to every ad in the ad's campaign.
  * - LinkedIn: `dynamicValueParameters` and/or `customValueParameters` (campaign-level Dynamic UTM).
  *
  */
@@ -11267,7 +11269,7 @@ export const attachAdLabel = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Detach a Google Ads label
- * Removes the label from the given targets. Idempotent; a target without the label is counted in `unchanged`.
+ * Removes the label from the given targets. Idempotent; a target without the label is counted in `unchanged`. Fields go in the query string. A JSON body with the same fields is also accepted and, when sent, the query string is ignored.
  */
 export const detachAdLabel = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DetachAdLabelData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DetachAdLabelResponse, DetachAdLabelError, ThrowOnError>({
@@ -11624,7 +11626,7 @@ export const updateAccountCallouts = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Remove account callout
- * Removes the customer_asset attachment only. The underlying shared asset and its campaign or ad-group attachments remain.
+ * Removes the customer_asset attachment only. The underlying shared asset and its campaign or ad-group attachments remain. Fields go in the query string. A JSON body with the same fields is also accepted and, when sent, the query string is ignored.
  */
 export const removeAccountCallout = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveAccountCalloutData, ThrowOnError>) => {
     return (options?.client ?? client).delete<RemoveAccountCalloutResponse, RemoveAccountCalloutError, ThrowOnError>({
@@ -11668,7 +11670,7 @@ export const updateAccountSitelinks = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Remove account sitelink
- * Removes the customer_asset attachment only. The underlying shared asset and its campaign or ad-group attachments remain.
+ * Removes the customer_asset attachment only. The underlying shared asset and its campaign or ad-group attachments remain. Fields go in the query string. A JSON body with the same fields is also accepted and, when sent, the query string is ignored.
  */
 export const removeAccountSitelink = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveAccountSitelinkData, ThrowOnError>) => {
     return (options?.client ?? client).delete<RemoveAccountSitelinkResponse, RemoveAccountSitelinkError, ThrowOnError>({
@@ -11712,7 +11714,7 @@ export const updateAccountStructuredSnippets = <ThrowOnError extends boolean = f
 
 /**
  * Remove account snippet
- * Removes the customer_asset attachment only. The underlying shared asset and its campaign or ad-group attachments remain.
+ * Removes the customer_asset attachment only. The underlying shared asset and its campaign or ad-group attachments remain. Fields go in the query string. A JSON body with the same fields is also accepted and, when sent, the query string is ignored.
  */
 export const removeAccountStructuredSnippet = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveAccountStructuredSnippetData, ThrowOnError>) => {
     return (options?.client ?? client).delete<RemoveAccountStructuredSnippetResponse, RemoveAccountStructuredSnippetError, ThrowOnError>({
