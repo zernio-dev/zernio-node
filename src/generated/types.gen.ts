@@ -7861,7 +7861,7 @@ export type duration = 'ONE_DAY' | 'THREE_DAYS' | 'SEVEN_DAYS' | 'FOURTEEN_DAYS'
 /**
  * MIME type of the file to upload. Rejected with a 400 (INVALID_FIELD_VALUE on contentType) when it is not one of these values, so generic types such as application/octet-stream are not accepted here.
  */
-export type MediaContentType = 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp' | 'image/gif' | 'video/mp4' | 'video/mpeg' | 'video/quicktime' | 'video/avi' | 'video/x-msvideo' | 'video/webm' | 'video/x-m4v' | 'application/pdf' | 'audio/mpeg' | 'audio/mp4' | 'audio/aac' | 'audio/ogg' | 'audio/wav' | 'audio/webm' | 'audio/x-m4a';
+export type MediaContentType = 'image/jpeg' | 'image/jpg' | 'image/png' | 'image/webp' | 'image/gif' | 'video/mp4' | 'video/mpeg' | 'video/quicktime' | 'video/avi' | 'video/x-msvideo' | 'video/webm' | 'video/x-m4v' | 'application/pdf' | 'audio/mpeg' | 'audio/mp4' | 'audio/aac' | 'audio/ogg' | 'audio/wav' | 'audio/webm' | 'audio/x-m4a' | 'application/x-subrip' | 'text/vtt';
 
 /**
  * Media referenced in posts. URLs must be publicly reachable over HTTPS. Use POST /v1/media/presign for uploads up to 5GB. Zernio auto-compresses images and videos that exceed platform limits (videos over 200 MB may not be compressed).
@@ -7898,12 +7898,27 @@ export type MediaItem = {
      */
     instagramThumbnail?: string;
     /**
+     * Subtitle (closed caption) files for a video item, in SRT or WebVTT. Each language may appear once per video. Sent to YouTube, Facebook videos, LinkedIn, X and Bluesky; ignored with a warning on every other platform. Zernio downloads each file when the post is created or updated and converts it to the format each platform requires. Per-platform rules: YouTube takes every track; Facebook takes every track, up to 200 KB each; Bluesky takes every track, up to 20 KB each after conversion to WebVTT; X takes the first track only (one subtitle per video); LinkedIn takes the first English track only. Tracks a platform cannot take are skipped and reported in the response warnings. A file that is unreachable, redirects, exceeds 1 MB, is not valid SRT or WebVTT, or is over a platform limit is rejected with a 400 (code INVALID_SUBTITLES). If a platform rejects a file at publish time, the post is still published, without subtitles.
+     */
+    subtitles?: Array<MediaSubtitle>;
+    /**
      * Internal flag indicating the image was resized for TikTok
      */
     tiktokProcessed?: boolean;
 };
 
 export type type11 = 'image' | 'video' | 'gif' | 'document';
+
+export type MediaSubtitle = {
+    /**
+     * Public http(s) URL of an SRT or WebVTT file: your own host, or an upload from POST /v1/media/presign (contentType application/x-subrip or text/vtt). It must serve the file directly, since redirects are refused.
+     */
+    url: string;
+    /**
+     * BCP-47 language code with a two-letter language, e.g. en, es or pt-BR. Viewers see the track labelled with the language name, e.g. English.
+     */
+    language: string;
+};
 
 export type MediaUploadResponse = {
     files?: Array<UploadedFile>;
