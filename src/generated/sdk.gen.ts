@@ -9369,7 +9369,7 @@ export const getCommentAutomation = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Update automation settings
- * Update an automation's keywords, DM message, inline buttons, comment reply, or active status.
+ * Update an automation's keywords, DM message, inline buttons, comment reply, post binding, or active status.
  * Pass `buttons: []` to clear all buttons. When `buttons` is non-empty, `dmMessage` (the new
  * one if you're changing it, otherwise the stored one) must be 640 characters or less.
  * On a TikTok, Threads, LinkedIn or YouTube automation (public reply only) the DM fields

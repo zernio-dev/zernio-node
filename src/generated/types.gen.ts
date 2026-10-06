@@ -38936,6 +38936,9 @@ export type ListCommentAutomationsResponse = ({
          * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
          */
         typoTolerance?: boolean;
+        /**
+         * Instagram and Facebook only. On reply-only platforms (tiktok, threads, linkedin, youtube) every DM-leg field is omitted: dmMessage, dmMessageVariations, buttons, template, quickReplies, dmMedia, publicReplyPolicy, dedupeSameTextHours, actions, audience, followGate, dmDelaySeconds and alsoMatchInDms.
+         */
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
@@ -39122,6 +39125,9 @@ export type CreateCommentAutomationResponse = ({
          * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
          */
         typoTolerance?: boolean;
+        /**
+         * Omitted on reply-only platforms (tiktok, threads, linkedin, youtube), together with every other DM-leg field.
+         */
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
@@ -39200,6 +39206,9 @@ export type GetCommentAutomationResponse = ({
          * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
          */
         typoTolerance?: boolean;
+        /**
+         * Omitted on reply-only platforms (tiktok, threads, linkedin, youtube), together with every other DM-leg field.
+         */
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
@@ -39275,6 +39284,18 @@ export type UpdateCommentAutomationData = {
          * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
          */
         typoTolerance?: boolean;
+        /**
+         * Re-binds the automation to another post: the platform media/post ID (or story media id when trigger=story_reply). postId, platformPostId and postTitle move as a unit: sending any of them replaces all three, and an omitted one is cleared. Send all three as null (or empty) to make it account-wide (any post / any story). Omit all three to keep the current binding. 409 when another active automation already owns the new post.
+         */
+        platformPostId?: (string) | null;
+        /**
+         * Zernio post ID (24 hexadecimal characters); platform IDs return 400. Use it INSTEAD of platformPostId to bind to a not-yet-published Zernio post: the automation stays pending and arms itself when that post publishes. Moves as a unit with platformPostId and postTitle (see platformPostId).
+         */
+        postId?: (string) | null;
+        /**
+         * Post content snippet for display. Moves as a unit with platformPostId and postId (see platformPostId).
+         */
+        postTitle?: (string) | null;
         dmMessage?: string;
         /**
          * Inline DM buttons (1-3). Pass [] to clear all buttons.
@@ -39355,6 +39376,9 @@ export type UpdateCommentAutomationResponse = ({
          * Only with matchMode=word: also fire on close misspellings of a keyword (one edit for 4-7 character keywords, two from 8 up). Keywords shorter than 4 characters are never fuzzy-matched.
          */
         typoTolerance?: boolean;
+        /**
+         * Omitted on reply-only platforms (tiktok, threads, linkedin, youtube), together with every other DM-leg field.
+         */
         dmMessage?: string;
         /**
          * Inline DM buttons (up to 3). Omitted when none are set.
@@ -39393,7 +39417,7 @@ export type UpdateCommentAutomationResponse = ({
 
 export type UpdateCommentAutomationError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
 export type DeleteCommentAutomationData = {
     path: {
