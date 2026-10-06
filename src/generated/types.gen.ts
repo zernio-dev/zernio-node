@@ -13619,8 +13619,15 @@ export type WebhookPayloadMessage = {
         isStoryMention?: boolean;
         /**
          * Click attribution forwarded verbatim from Meta. Populated only on
-         * the FIRST inbound message after the click; absent on subsequent
-         * messages of the same conversation. On Instagram and Messenger a
+         * the first inbound message Meta attaches it to, and absent on the
+         * other messages of the same conversation. That is not always the
+         * first message after the click: on Instagram Click-to-Direct Meta
+         * usually delivers the ad post itself first, as an attachment-only
+         * `share` / `ig_post` message with no referral, and attaches the
+         * referral to the message right after it. The first referral of a
+         * conversation is also stored on the conversation as
+         * `metadata.meta_ad_*` (`GET /v1/inbox/conversations/{conversationId}`),
+         * so read it there instead of matching webhooks. On Instagram and Messenger a
          * RETURNING click also attaches it to the first message that
          * follows, so read it on every `message.received` for per-click
          * attribution; a click that opens an existing thread WITHOUT a
@@ -27091,10 +27098,12 @@ export type GetInboxConversationResponse = ({
          * Ad-click attribution for a conversation that started from a Meta ad.
          * Absent when the conversation did not originate from an ad click.
          *
-         * Captured once, on the first inbound message after the click, and never
-         * overwritten. If the same person later clicks a different ad, the
-         * original values are kept. Meta only sends the referral on that first
-         * message.
+         * Captured once, from the first inbound message Meta attaches the referral
+         * to, and never overwritten. If the same person later clicks a different
+         * ad, the original values are kept. On Instagram Click-to-Direct that is
+         * usually not the first message: Meta first delivers the ad post as an
+         * attachment-only `share` / `ig_post` message with no referral, then
+         * attaches the referral to the next message.
          *
          * This operation currently returns only the `meta_ad_*` family, which
          * covers Instagram Click-to-Direct and Facebook Messenger
