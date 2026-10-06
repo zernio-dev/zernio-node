@@ -236,6 +236,7 @@ try {
 | `analytics.getInstagramAccountInsights()` | Get Instagram insights |
 | `analytics.getInstagramDemographics()` | Get Instagram demographics |
 | `analytics.getInstagramFollowerHistory()` | Get Instagram follower history |
+| `analytics.getInstagramOnlineFollowers()` | Get Instagram online followers |
 | `analytics.getLinkedInAggregateAnalytics()` | Get LinkedIn aggregate stats |
 | `analytics.getLinkedInOrgAggregateAnalytics()` | Get LinkedIn org analytics |
 | `analytics.getLinkedInPostAnalytics()` | Get LinkedIn post stats |

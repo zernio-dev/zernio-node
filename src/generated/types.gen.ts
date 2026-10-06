@@ -16350,6 +16350,45 @@ export type GetInstagramDemographicsError = ({
     code?: string;
 });
 
+export type GetInstagramOnlineFollowersData = {
+    query: {
+        /**
+         * The Zernio SocialAccount ID for the Instagram account
+         */
+        accountId: string;
+    };
+};
+
+export type GetInstagramOnlineFollowersResponse = ({
+    success?: boolean;
+    accountId?: string;
+    platform?: 'instagram';
+    metric?: 'online_followers';
+    /**
+     * Oldest first, as Meta returns them. Days Meta still reports as empty are left out.
+     */
+    days?: Array<{
+        /**
+         * The end_time Meta returns for this day.
+         */
+        endTime?: string;
+        /**
+         * Followers online per hour, keyed "0" to "23".
+         */
+        hours?: {
+            [key: string]: (number);
+        };
+    }>;
+    note?: string;
+});
+
+export type GetInstagramOnlineFollowersError = (ErrorResponse | {
+    error?: string;
+    code?: string;
+} | {
+    error?: string;
+});
+
 export type GetYouTubeDemographicsData = {
     query: {
         /**
