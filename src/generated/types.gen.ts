@@ -41233,14 +41233,32 @@ export type ListAdSetsResponse = ({
             endDate?: string;
         } | null;
         /**
-         * The audience this ad set delivers to, as the platform reports it at the last sync.
-         * LinkedIn and Meta; null for every other platform and for ad sets not yet re-synced.
+         * The audience this ad set delivers to, as the platform reports it at the last sync,
+         * in the platform's own shape. Every platform; null only for an ad set not re-synced
+         * yet, or when the platform's targeting read failed on every sync so far (a failed read
+         * keeps the last stored value).
          *
-         * On Meta it is the ad set's `targeting` verbatim (snake_case: geo_locations,
-         * age_min, custom_audiences, flexible_spec, ...), so it can be read, edited and sent
-         * back as is. On LinkedIn `include` and `exclude` (below) are the campaign's
-         * `targetingCriteria` verbatim, without reconstructing them from our normalized
-         * targeting spec.
+         * - Meta: the ad set's `targeting` verbatim (snake_case: geo_locations, age_min,
+         * custom_audiences, flexible_spec, ...), so it can be read, edited and sent back as is.
+         * - LinkedIn: `include` and `exclude` (below) are the campaign's `targetingCriteria`
+         * verbatim, without reconstructing them from our normalized targeting spec.
+         * - TikTok: the ad group's targeting fields from adgroup/get, verbatim (placement_type,
+         * placements, location_ids, age_groups, gender, languages, interest_category_ids,
+         * actions, audience_ids, excluded_audience_ids, operating_systems, ...). Only fields
+         * TikTok returned are present.
+         * - Google: `campaignCriteria` (LOCATION, LANGUAGE, PROXIMITY, DEVICE, AGE_RANGE, GENDER,
+         * USER_LIST, INCOME_RANGE, PARENTAL_STATUS) and `adGroupCriteria` (AGE_RANGE, GENDER,
+         * USER_LIST, USER_INTEREST, INCOME_RANGE, PARENTAL_STATUS), each a Google criterion
+         * verbatim (camelCase: resourceName, type, negative, bidModifier and the payload its type sets, for
+         * example `location.geoTargetConstant`). Most Google targeting lives on the campaign,
+         * so every ad group of a campaign carries the same `campaignCriteria`. Keywords are
+         * not included (they have their own endpoints). Synced on Google's slower keyword cycle.
+         * - Pinterest: the ad group's `targeting_spec` verbatim (GEO, AGE_BUCKET, GENDER,
+         * INTEREST, AUDIENCE_INCLUDE, LOCALE, ...).
+         * - X: `targeting_criteria`, the line item's criteria as X lists them (targeting_type,
+         * targeting_value, operator_type, name), the same shape X's batch create takes.
+         * - OpenAI: the campaign's `targeting` (OpenAI targets at the campaign), plus the ad
+         * group's `context_hints` when it has any.
          *
          */
         targeting?: {
@@ -41273,19 +41291,19 @@ export type ListAdSetsResponse = ({
          */
         statusReadAt?: (string) | null;
         /**
-         * The ad set's optimization goal as last synced, in the platform's own enum (Meta `optimization_goal`, for example OFFSITE_CONVERSIONS or LINK_CLICKS). On TikTok with `live=true`, rows read live carry the ad group's `optimization_goal` exactly as TikTok's adgroup/get returns it now (for example ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, CLICK, CONVERT).
+         * The ad set's optimization goal as last synced, in the platform's own enum (Meta `optimization_goal`, for example OFFSITE_CONVERSIONS or LINK_CLICKS; TikTok `optimization_goal`; Pinterest the conversion event of `optimization_goal_metadata`, for example CHECKOUT; X the line item `goal`; OpenAI the campaign `bidding_type`). Always null on Google, which has no per-ad-group optimization goal. On TikTok with `live=true`, rows read live carry the ad group's `optimization_goal` exactly as TikTok's adgroup/get returns it now (for example ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, CLICK, CONVERT).
          */
         optimizationGoal?: (string) | null;
         /**
-         * The ad set's billing event as last synced, where the platform reports one. On TikTok with `live=true`, rows read live carry the ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
+         * The ad set's billing event as last synced, in the platform's own enum (Meta `billing_event`, TikTok `billing_event`, Pinterest `billable_event`, X `pay_by`, OpenAI `bidding_config.billing_event_type`). Always null on Google, which reports none per ad group. On TikTok with `live=true`, rows read live carry the ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
          */
         billingEvent?: (string) | null;
         /**
-         * The bid strategy as last synced, in the platform's own enum (Meta `bid_strategy`, for example LOWEST_COST_WITHOUT_CAP, COST_CAP). On Meta under a campaign budget this is the campaign's strategy.
+         * The bid strategy as last synced, in Meta's vocabulary (LOWEST_COST_WITHOUT_CAP, LOWEST_COST_WITH_BID_CAP, COST_CAP, LOWEST_COST_WITH_MIN_ROAS) on every platform that has an equivalent. On Meta under a campaign budget this is the campaign's strategy. TikTok maps bid_type / deep_bid_type, Pinterest AUTOMATIC_BID / MAX_BID / TARGET_AVG, X AUTO / MAX / TARGET, OpenAI Maximize Results / a max bid. Google bids at the campaign, so an ad group carries its campaign's strategy; one without a Meta equivalent (MANUAL_CPC, TARGET_IMPRESSION_SHARE, or a portfolio strategy's type such as TARGET_CPA) keeps Google's own name. Null on LinkedIn.
          */
         bidStrategy?: (string) | null;
         /**
-         * Bid cap or cost target in whole units of `currency`, as last synced. Null when the strategy has none.
+         * Bid cap or cost target in whole units of `currency`, as last synced. Null when the strategy has none (automatic bidding, ROAS targets, a Google portfolio strategy). On Google a campaign target CPA, a Maximize clicks ceiling, the ad group's own target CPA override, or its CPC bid under MANUAL_CPC.
          */
         bidAmount?: (number) | null;
         /**
