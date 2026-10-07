@@ -20868,6 +20868,10 @@ export type ListFacebookPagesResponse = ({
          */
         tasks?: Array<(string)>;
     }>;
+    /**
+     * True when Meta still had more Pages after the listing hit its time budget or the 10,000 Page cap, so `pages` is incomplete. Do not ask the user to reconnect with fewer Pages ticked: Meta replaces the Page grant on every authorization, so unticked Pages lose access.
+     */
+    truncated?: boolean;
 });
 
 export type ListFacebookPagesError = (unknown | ErrorResponse | {
