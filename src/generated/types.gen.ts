@@ -31003,6 +31003,10 @@ export type CreateVoiceCallData = {
          * Spoken to a detected machine, then hang up (implies `amd`). For outbound voicemail drops.
          */
         voicemailDropMessage?: string;
+        /**
+         * Seconds to let the callee's phone ring before the call ends as no_answer. The destination carrier can end it sooner.
+         */
+        ringTimeoutSeconds?: number;
     };
     headers?: {
         /**
@@ -31194,6 +31198,10 @@ export type DialVoiceWebCallData = {
          */
         fromNumber?: string;
         recordOverride?: boolean;
+        /**
+         * Seconds to let the callee's phone ring before the call ends as no_answer. The destination carrier can end it sooner.
+         */
+        ringTimeoutSeconds?: number;
     };
 };
 
