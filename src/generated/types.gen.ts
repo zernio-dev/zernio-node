@@ -10612,7 +10612,7 @@ export type TargetingSpec = {
         address?: string;
     }>;
     /**
-     * Geo to exclude from the audience. Mirrors the inclusion geo shape: excluded cities can carry a radius catchment and excluded custom (lat/lng) pins are supported, both on Meta (excluded_geo_locations).
+     * Geo to exclude from the audience. Mirrors the inclusion geo shape: excluded cities can carry a radius catchment and excluded custom (lat/lng) pins are supported, both on Meta (excluded_geo_locations). Google (Search, Display, Performance Max) excludes countries, regions, cities and zips as negative location criteria; countryGroups, places, neighborhoods, customLocations and a city radius return 400 there, and Demand Gen returns 400 for any exclusion.
      */
     excludedLocations?: {
         countries?: Array<(string)>;
@@ -40898,6 +40898,27 @@ export type GetCampaignTargetingResponse = ({
          */
         countryCode?: (string) | null;
     }>;
+    /**
+     * The negative (excluded) location criteria, same item shape as `locations` with `negative: true`.
+     */
+    excludedLocations?: Array<{
+        /**
+         * Numeric id from Google's geoTargetConstants/{id}.
+         */
+        geoTargetId?: string;
+        /**
+         * Always true here.
+         */
+        negative?: boolean;
+        name?: (string) | null;
+        canonicalName?: (string) | null;
+        type?: (string) | null;
+        countryCode?: (string) | null;
+    }>;
+    /**
+     * Whether PUT accepts `excludedLocations` for this campaign. False on Demand Gen, which returns 400 for any exclusion.
+     */
+    excludedLocationsEditable?: boolean;
     languages?: Array<{
         /**
          * Google's language code (ISO 639-1, plus variants such as `zh_CN`). Empty when the campaign's language_constant id is not in Zernio's checked-in table.
@@ -40965,6 +40986,28 @@ export type UpdateCampaignTargetingData = {
              * Google's language codes (ISO 639-1, plus variants such as `zh_CN`), e.g. ["en", "de"].
              */
             languages?: Array<(string)>;
+            /**
+             * Locations the campaign never serves in, as a bare country-code array or the nested countries/regions/cities/zips/metros shape. Replaces the excluded set; [] removes every exclusion.
+             */
+            excludedLocations?: (Array<(string)> | {
+    countries?: Array<(string)>;
+    regions?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
+    cities?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
+    zips?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
+    metros?: Array<(string | {
+    key: string;
+    name?: string;
+})>;
+});
             locationTargetingType?: GoogleLocationTargetingType;
         };
     };
@@ -40985,7 +41028,7 @@ export type UpdateCampaignTargetingResponse = ({
     /**
      * Which targeting fields were applied.
      */
-    updated?: Array<('devices' | 'locations' | 'languages' | 'locationTargetingType')>;
+    updated?: Array<('devices' | 'locations' | 'excludedLocations' | 'languages' | 'locationTargetingType')>;
     /**
      * The value read back from Google after the edit.
      */
@@ -41022,6 +41065,17 @@ export type UpdateCampaignTargetingResponse = ({
         /**
          * Google's geo_target_constant.country_code; see GET's description.
          */
+        countryCode?: (string) | null;
+    }>;
+    /**
+     * The negative (excluded) location criteria read back after the edit, same item shape as `locations`.
+     */
+    excludedLocations?: Array<{
+        geoTargetId?: string;
+        negative?: boolean;
+        name?: (string) | null;
+        canonicalName?: (string) | null;
+        type?: (string) | null;
         countryCode?: (string) | null;
     }>;
     languages?: Array<{

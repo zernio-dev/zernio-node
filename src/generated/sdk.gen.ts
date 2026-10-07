@@ -9941,7 +9941,7 @@ export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(option
 };
 
 /**
- * Read a Google campaign's device, location, and language targeting
+ * Read a Google campaign's device, location, excluded location, and language targeting
  * Google Ads compliance requires geo, language, budget, and bidding targeting
  * set at creation to stay editable afterwards; this reads the campaign state
  * so an integrator can build an editor around it. Cached for the quota window
@@ -9954,6 +9954,11 @@ export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(option
  * for that device, `null` when it has none, and `0` when the device is
  * switched off; `included` is false for exactly that case.
  *
+ * `excludedLocations` lists the campaign's negative location criteria (the
+ * places it never serves in). `locations` still lists every location criterion,
+ * each flagged with `negative`, so a client reading the targeted set filters
+ * `negative: false`.
+ *
  */
 export const getCampaignTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCampaignTargetingData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetCampaignTargetingResponse, GetCampaignTargetingError, ThrowOnError>({
@@ -9963,10 +9968,10 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
- * Edit a Google campaign's device, location, or language targeting
+ * Edit a Google campaign's device, location, excluded location, or language targeting
  * Google Ads compliance row M.10: geo and language targeting set at
  * creation must stay editable afterwards. Send at least one of `devices`,
- * `locations`, `languages`, `locationTargetingType`; each provided field REPLACES that field's
+ * `locations`, `excludedLocations`, `languages`, `locationTargetingType`; each provided field REPLACES that field's
  * existing criteria on the campaign (a full set, not a delta). Fields left
  * out of the body are untouched. Google only; every other platform returns
  * 501.
@@ -9978,10 +9983,18 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  *
  * `locations` accepts the same shapes as campaign creation: a bare array of
  * ISO country codes, or an object with `countries`/`regions`/`cities`/`zips`/`metros`
- * key lists (`key` from GET /v1/ads/targeting/search?dimension=geo). Negative
- * (excluded) locations are left untouched by this endpoint. An empty location list
+ * key lists (`key` from GET /v1/ads/targeting/search?dimension=geo). Excluded
+ * locations are left untouched by `locations`. An empty location list
  * returns 400 instead of removing every criterion: a Google campaign with no location
  * criteria targets every country, so omit `locations` to leave targeting alone.
+ *
+ * `excludedLocations` takes the same two shapes and replaces the campaign's negative
+ * location criteria (the places it never serves in), leaving the targeted `locations`
+ * untouched. An empty list (or `{}`) removes every exclusion. Radius exclusions are
+ * not supported. A place cannot be both targeted and excluded: a request whose result
+ * would leave one on both sides returns 400 before anything is written, and moving a
+ * place from one side to the other in the same request is applied atomically. Example:
+ * `{ "platform": "google", "targeting": { "excludedLocations": { "countries": ["CA"], "regions": ["21137"] } } }`.
  *
  * The removes and the creates go out in ONE Google `googleAds:mutate`, so a failed
  * edit leaves the campaign's previous set intact rather than a half-applied one.
@@ -9994,7 +10007,7 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  * (also people searching for or interested in them). Example:
  * `{ "platform": "google", "targeting": { "locationTargetingType": "presence" } }`.
  *
- * The response includes the refreshed `devices`/`locations`/`languages` state
+ * The response includes the refreshed `devices`/`locations`/`excludedLocations`/`languages` state
  * read back from Google after the edit, and invalidates the cached copy
  * `GET` on this campaign would otherwise keep serving.
  *
@@ -10005,6 +10018,7 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  * returns 400 naming them: edit each one with PUT /v1/ads/{adId} `targeting` on an ad of
  * that ad group. Campaigns migrated from Discovery that still target on the campaign keep
  * being written there. `devices` and `locationTargetingType` stay campaign-level.
+ * `excludedLocations` is not available on Demand Gen yet and returns 400.
  *
  */
 export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateCampaignTargetingData, ThrowOnError>) => {

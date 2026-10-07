@@ -515,7 +515,7 @@ try {
 | `adCampaigns.getCampaignAdSchedule()` | Read a campaign's ad schedule (dayparting) |
 | `adCampaigns.getCampaignBidding()` | Read a campaign's current bidding |
 | `adCampaigns.getCampaignConversionGoals()` | Get campaign conversion goals |
-| `adCampaigns.getCampaignTargeting()` | Read a Google campaign's device, location, and language targeting |
+| `adCampaigns.getCampaignTargeting()` | Read a Google campaign's device, location, excluded location, and language targeting |
 | `adCampaigns.getGoogleAssetGroup()` | Get a Performance Max asset group |
 | `adCampaigns.updateAd()` | Update ad |
 | `adCampaigns.updateAdCampaign()` | Update a campaign |
@@ -529,7 +529,7 @@ try {
 | `adCampaigns.updateCampaignAdSchedule()` | Replace a campaign's ad schedule (dayparting) |
 | `adCampaigns.updateCampaignAssets()` | Update campaign assets |
 | `adCampaigns.updateCampaignConversionGoals()` | Update campaign conversion goals |
-| `adCampaigns.updateCampaignTargeting()` | Edit a Google campaign's device, location, or language targeting |
+| `adCampaigns.updateCampaignTargeting()` | Edit a Google campaign's device, location, excluded location, or language targeting |
 | `adCampaigns.updateGoogleAssetGroup()` | Update a Performance Max asset group |
 | `adCampaigns.deleteAd()` | Cancel an ad |
 | `adCampaigns.deleteAdCampaign()` | Delete a campaign |
