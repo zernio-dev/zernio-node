@@ -9041,9 +9041,13 @@ export type PlatformAnalytics = {
      */
     errorMessage?: (string) | null;
     /**
-     * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
+     * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. not_post_owner: the post is owned by another Page or user (collab or visitor post); its analytics cannot be read with this Page's token. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
      */
-    errorCode?: ('post_not_found' | 'permission_missing') | null;
+    errorCode?: ('post_not_found' | 'not_post_owner' | 'permission_missing') | null;
+    /**
+     * Facebook only: true when the connected Page authored the post, false when Facebook reports another author (a collab post), null when unknown or for other platforms.
+     */
+    isOwner?: (boolean) | null;
 };
 
 export type status24 = 'published' | 'failed';
@@ -9054,9 +9058,9 @@ export type status24 = 'published' | 'failed';
 export type syncStatus2 = 'synced' | 'pending' | 'unavailable';
 
 /**
- * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
+ * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. not_post_owner: the post is owned by another Page or user (collab or visitor post); its analytics cannot be read with this Page's token. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
  */
-export type errorCode = 'post_not_found' | 'permission_missing';
+export type errorCode = 'post_not_found' | 'not_post_owner' | 'permission_missing';
 
 export type PlatformTarget = {
     /**
