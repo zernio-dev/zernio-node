@@ -144,6 +144,7 @@ import {
   createRcsAgent,
   createRfPrediction,
   createSequence,
+  createSharedBudget,
   createSipTrunk,
   createSmsSenderId,
   createStandaloneAd,
@@ -645,6 +646,7 @@ import {
   listRcsTestDevices,
   listSequenceEnrollments,
   listSequences,
+  listSharedBudgets,
   listSipTrunks,
   listSlackChannels,
   listSlackMembers,
@@ -2013,6 +2015,8 @@ export class Zernio {
     listBidStrategies: this._bind(listBidStrategies),
     createBidStrategy: this._bind(createBidStrategy),
     updateBidStrategy: this._bind(updateBidStrategy),
+    listSharedBudgets: this._bind(listSharedBudgets),
+    createSharedBudget: this._bind(createSharedBudget),
     listAdKeywords: this._bind(listAdKeywords),
     addAdKeywords: this._bind(addAdKeywords),
     updateAdKeyword: this._bind(updateAdKeyword),
@@ -2533,6 +2537,10 @@ export class Zernio {
     createBidStrategy: this._bind(createBidStrategy),
     /** @deprecated Use `zernio.adcampaigns.updateBidStrategy` instead. */
     updateBidStrategy: this._bind(updateBidStrategy),
+    /** @deprecated Use `zernio.adcampaigns.listSharedBudgets` instead. */
+    listSharedBudgets: this._bind(listSharedBudgets),
+    /** @deprecated Use `zernio.adcampaigns.createSharedBudget` instead. */
+    createSharedBudget: this._bind(createSharedBudget),
     /** @deprecated Use `zernio.adcampaigns.listAdKeywords` instead. */
     listAdKeywords: this._bind(listAdKeywords),
     /** @deprecated Use `zernio.adcampaigns.addAdKeywords` instead. */

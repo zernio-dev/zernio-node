@@ -39947,6 +39947,75 @@ export type UpdateBidStrategyResponse = ({
 
 export type UpdateBidStrategyError = (ErrorResponse | unknown);
 
+export type ListSharedBudgetsData = {
+    query: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+    };
+};
+
+export type ListSharedBudgetsResponse = ({
+    customerId?: string;
+    budgets?: Array<{
+        /**
+         * Numeric budget id; pass as sharedBudgetId.
+         */
+        id?: string;
+        name?: string;
+        /**
+         * In the account's currency units.
+         */
+        amount?: (number) | null;
+        type?: ('daily' | 'lifetime') | null;
+        deliveryMethod?: (string) | null;
+        status?: (string) | null;
+        /**
+         * campaign_budget.reference_count
+         */
+        campaignCount?: number;
+    }>;
+});
+
+export type ListSharedBudgetsError = (ErrorResponse | unknown);
+
+export type CreateSharedBudgetData = {
+    body: {
+        /**
+         * Google ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Platform ad account ID (Google customer ID, digits only). Defaults to the account's connected customer.
+         */
+        adAccountId?: string;
+        name: string;
+        /**
+         * Daily amount in the account's currency units.
+         */
+        amount: number;
+        /**
+         * Only daily is accepted (lifetime returns 422).
+         */
+        type?: 'daily' | 'lifetime';
+    };
+};
+
+export type CreateSharedBudgetResponse = ({
+    budget?: {
+        customerId?: string;
+        id?: string;
+        resourceName?: string;
+    };
+});
+
+export type CreateSharedBudgetError = (ErrorResponse | unknown);
+
 export type ListLocalServicesLeadsData = {
     query: {
         /**
@@ -40656,7 +40725,7 @@ export type UpdateAdCampaignData = {
          */
         portfolioBidStrategyId?: string;
         /**
-         * Google only. Explicitly allow changing a shared campaign budget, affecting every campaign that uses it. Does not bypass an unknown sharing state.
+         * Google only. Explicitly allow changing a shared campaign budget, affecting every campaign that uses it. Does not bypass an unknown sharing state. Also required to move a campaign onto a shared budget with sharedBudgetId.
          */
         allowSharedBudgetUpdate?: boolean;
         /**
@@ -40673,6 +40742,10 @@ export type UpdateAdCampaignData = {
          * **Google only.** campaign.final_url_suffix; an empty string clears it.
          */
         finalUrlSuffix?: string;
+        /**
+         * **Google only.** Move the campaign onto this shared budget (id from GET /v1/ads/shared-budgets), or null to move it back onto a budget of its own sized by `budget`.
+         */
+        sharedBudgetId?: (string) | null;
         /**
          * Meta CBO, Google daily, or OpenAI Ads daily or lifetime campaign budget, in whole currency units.
          */
@@ -40724,6 +40797,10 @@ export type UpdateAdCampaignResponse = ({
     networkSettings?: GoogleNetworkSettings;
     trackingUrlTemplate?: string;
     finalUrlSuffix?: string;
+    /**
+     * Google only. Echoed back when the campaign moved budgets; `budget` is then the budget it now uses.
+     */
+    sharedBudgetId?: (string) | null;
     platformSpecificData?: {
         [key: string]: unknown;
     };

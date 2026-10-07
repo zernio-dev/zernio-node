@@ -500,11 +500,13 @@ try {
 | `adCampaigns.listCampaignNegativeKeywords()` | List campaign-level negative keywords |
 | `adCampaigns.listGoogleAssetGroups()` | List Performance Max asset groups |
 | `adCampaigns.listGoogleRecommendations()` | List Google Ads recommendations |
+| `adCampaigns.listSharedBudgets()` | List shared budgets |
 | `adCampaigns.bulkUpdateAdCampaignStatus()` | Pause or resume many campaigns |
 | `adCampaigns.createAdCampaign()` | Create a standalone campaign |
 | `adCampaigns.createAdSet()` | Create a standalone ad group |
 | `adCampaigns.createBidStrategy()` | Create portfolio bid strategy |
 | `adCampaigns.createGoogleAssetGroup()` | Create a Performance Max asset group |
+| `adCampaigns.createSharedBudget()` | Create a shared budget |
 | `adCampaigns.createStandaloneAd()` | Create standalone ad |
 | `adCampaigns.getAd()` | Get ad details |
 | `adCampaigns.getAdCampaignDetails()` | Get live campaign details |
