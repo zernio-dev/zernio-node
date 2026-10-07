@@ -40725,7 +40725,7 @@ export type UpdateAdCampaignData = {
          */
         portfolioBidStrategyId?: string;
         /**
-         * Google only. Explicitly allow changing a shared campaign budget, affecting every campaign that uses it. Does not bypass an unknown sharing state. Also required to move a campaign onto a shared budget with sharedBudgetId.
+         * Google only. Explicitly allow changing a shared campaign budget (flagged as shared by Google, or used by more than one campaign), affecting every campaign that uses it. Does not bypass an unknown sharing state. Also required to move a campaign onto a shared budget with sharedBudgetId.
          */
         allowSharedBudgetUpdate?: boolean;
         /**

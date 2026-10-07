@@ -9847,7 +9847,9 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  *
  * Google budget updates read the current budget before mutation. Shared budgets return
  * 409 unless allowSharedBudgetUpdate=true is explicitly supplied, because the change
- * affects every campaign using that budget. Unknown sharing state also returns 409.
+ * affects every campaign using that budget. A budget counts as shared when Google flags
+ * it as shared or when more than one campaign uses it (older budgets can serve several
+ * campaigns without the flag). Unknown sharing state also returns 409.
  *
  * `sharedBudgetId` (Google) moves the campaign onto a shared budget from
  * GET /v1/ads/shared-budgets, which also needs `allowSharedBudgetUpdate: true` (409
