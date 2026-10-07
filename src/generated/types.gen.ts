@@ -4342,7 +4342,7 @@ export type CtwaAdRequestBody = {
      */
     pageId?: string;
     /**
-     * WhatsApp only. Optional E.164 number already paired with the Facebook Page. Omit to let Meta select the paired number. Sent to the creative CTA and, when creating a new ad set, its promoted_object. Attach requests do not change the existing ad set. Stored as creative.whatsappPhoneNumber on every created ad.
+     * WhatsApp only. Optional E.164 number already paired with the Facebook Page. Omit to let Meta select the paired number. Sent to the creative CTA and, when creating a new ad set, its promoted_object. Meta can accept the number yet create the ad set without it; the response then carries a `warnings` entry. Attach requests do not change the existing ad set. Stored as creative.whatsappPhoneNumber on every created ad.
      */
     whatsappPhoneNumber?: string;
     /**
@@ -5016,6 +5016,10 @@ export type CtwaMultiResponse = {
     platformCampaignId: string;
     platformAdSetId: string;
     message: string;
+    /**
+     * Present when Meta created the ad set differently from the request. Today: Meta kept the ad set without the requested `whatsappPhoneNumber` in its promoted_object (the ads still carry it on their WhatsApp button).
+     */
+    warnings?: Array<(string)>;
 };
 
 export type adType2 = 'multi';
@@ -5035,6 +5039,10 @@ export type CtwaSingleResponse = {
         [key: string]: unknown;
     };
     message: string;
+    /**
+     * Present when Meta created the ad set differently from the request. Today: Meta kept the ad set without the requested `whatsappPhoneNumber` in its promoted_object (the ads still carry it on their WhatsApp button).
+     */
+    warnings?: Array<(string)>;
 };
 
 export type adType3 = 'single';
