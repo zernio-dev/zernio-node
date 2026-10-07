@@ -10143,6 +10143,59 @@ export type RecyclingState = {
 };
 
 /**
+ * One comment of a Reddit thread as returned by GET /v1/reddit/comments/{postId}; the list is flat and in thread order
+ */
+export type RedditComment = {
+    /**
+     * Reddit comment ID (without type prefix)
+     */
+    id?: string;
+    /**
+     * Reddit fullname (e.g. t1_abc123)
+     */
+    fullname?: string;
+    /**
+     * Fullname of what the comment answers: the post (t3_…) or a parent comment (t1_…)
+     */
+    parentId?: string;
+    /**
+     * The username, or [deleted]
+     */
+    author?: string;
+    /**
+     * Comment text as written (Markdown, not HTML-escaped), or [deleted] / [removed]
+     */
+    body?: string;
+    /**
+     * Full permalink to the comment
+     */
+    permalink?: string;
+    /**
+     * Unix timestamp of the comment
+     */
+    createdUtc?: number;
+    score?: number;
+    /**
+     * Direct replies included in this response; replies Reddit left out are listed in more
+     */
+    numReplies?: number;
+    /**
+     * 0 for a top-level comment of this response, 1 for a reply to it, and so on
+     */
+    depth?: number;
+    /**
+     * Whether the author is the post's author
+     */
+    isSubmitter?: boolean;
+    edited?: boolean;
+    stickied?: boolean;
+    /**
+     * "moderator" or "admin" when the comment is distinguished, else null
+     */
+    distinguished?: (string) | null;
+};
+
+/**
  * Posts are either link (with URL/media), native video (via nativeVideo), or self (text-only). Use forceSelf to override. Subreddit defaults to the account's configured one. Some subreddits require a flair.
  */
 export type RedditPlatformData = {
@@ -18067,6 +18120,44 @@ export type GetRedditFeedResponse = ({
 });
 
 export type GetRedditFeedError = (ErrorResponse);
+
+export type GetRedditPostCommentsData = {
+    path: {
+        /**
+         * Reddit post id, with or without the `t3_` prefix (as `id` or `fullname` on RedditPost).
+         */
+        postId: string;
+    };
+    query: {
+        /**
+         * An active Reddit account the request is made as.
+         */
+        accountId: string;
+        /**
+         * Return only this comment and its replies, with or without the `t1_` prefix; pass an id from `more` to expand it.
+         */
+        commentId?: string;
+        /**
+         * Maximum number of top-level comments.
+         */
+        limit?: number;
+        sort?: 'new' | 'top' | 'best' | 'controversial' | 'old' | 'qa';
+    };
+};
+
+export type GetRedditPostCommentsResponse = ({
+    /**
+     * The post header; null when Reddit omits it (deleted post).
+     */
+    post?: (RedditPost | null);
+    items?: Array<RedditComment>;
+    /**
+     * Ids of comments Reddit left out of this page, at any depth.
+     */
+    more?: Array<(string)>;
+});
+
+export type GetRedditPostCommentsError = (ErrorResponse);
 
 export type GetBillingResponse = (BillingSnapshot);
 

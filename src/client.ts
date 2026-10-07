@@ -434,6 +434,7 @@ import {
   getRcsCapabilities,
   getRedditFeed,
   getRedditFlairs,
+  getRedditPostComments,
   getRedditSubreddits,
   getRfPrediction,
   getSequence,
@@ -1179,6 +1180,7 @@ export class Zernio {
   reddit = {
     searchReddit: this._bind(searchReddit),
     getRedditFeed: this._bind(getRedditFeed),
+    getRedditPostComments: this._bind(getRedditPostComments),
   };
 
   /**

@@ -791,6 +791,11 @@ describe('Endpoint Methods', () => {
       expect(client.reddit.getRedditFeed).toBeTypeOf('function');
     });
 
+    it('should have getRedditPostComments method', () => {
+      expect(client.reddit.getRedditPostComments).toBeDefined();
+      expect(client.reddit.getRedditPostComments).toBeTypeOf('function');
+    });
+
   });
 
   describe('tools', () => {

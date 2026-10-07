@@ -384,6 +384,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `reddit.getRedditFeed()` | Get subreddit feed |
+| `reddit.getRedditPostComments()` | Get the comments of a Reddit post |
 | `reddit.searchReddit()` | Search posts |
 
 ### Account Settings
