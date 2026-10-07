@@ -17744,7 +17744,7 @@ export type ListInboxConversationAnalyticsResponse = ({
     to?: (string) | null;
     items?: Array<{
         /**
-         * The platformConversationId (the same identity used by metadata.conversationId)
+         * The platformConversationId. A thread whose events were logged under both its ids comes back as one row.
          */
         conversationId?: string;
         /**
