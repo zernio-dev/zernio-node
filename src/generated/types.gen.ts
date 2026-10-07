@@ -50515,6 +50515,30 @@ export type CreateConversionActionData = {
          * When true, always use defaultValue and ignore any value sent with the event. Defaults to true when defaultValue is set.
          */
         alwaysUseDefaultValue?: boolean;
+        /**
+         * conversion_action.category. Defaults to DEFAULT on create.
+         */
+        category?: 'DEFAULT' | 'PAGE_VIEW' | 'PURCHASE' | 'SIGNUP' | 'DOWNLOAD' | 'ADD_TO_CART' | 'BEGIN_CHECKOUT' | 'SUBSCRIBE_PAID' | 'PHONE_CALL_LEAD' | 'IMPORTED_LEAD' | 'SUBMIT_LEAD_FORM' | 'BOOK_APPOINTMENT' | 'REQUEST_QUOTE' | 'GET_DIRECTIONS' | 'OUTBOUND_CLICK' | 'CONTACT' | 'ENGAGEMENT' | 'STORE_VISIT' | 'STORE_SALE' | 'QUALIFIED_LEAD' | 'CONVERTED_LEAD';
+        /**
+         * ONE_PER_CLICK counts one conversion per ad click (leads); MANY_PER_CLICK counts every one (purchases).
+         */
+        countingType?: 'ONE_PER_CLICK' | 'MANY_PER_CLICK';
+        /**
+         * ISO 4217 currency of defaultValue (value_settings.default_currency_code).
+         */
+        defaultCurrency?: string;
+        /**
+         * Days after an ad click a conversion still counts.
+         */
+        clickThroughLookbackWindowDays?: number;
+        /**
+         * Days after an ad view a view-through conversion still counts.
+         */
+        viewThroughLookbackWindowDays?: number;
+        /**
+         * true = primary (counts toward bidding when its goal is biddable), false = secondary.
+         */
+        primaryForGoal?: boolean;
     };
 };
 
@@ -50592,10 +50616,37 @@ export type UpdateConversionActionData = {
          * @deprecated
          */
         customerId?: string;
+        name?: string;
         /**
-         * true = primary, false = secondary
+         * REMOVED removes the action and must be sent alone; ENABLED restores a removed one.
          */
-        primaryForGoal: boolean;
+        status?: 'ENABLED' | 'REMOVED';
+        defaultValue?: number;
+        alwaysUseDefaultValue?: boolean;
+        /**
+         * conversion_action.category. Defaults to DEFAULT on create.
+         */
+        category?: 'DEFAULT' | 'PAGE_VIEW' | 'PURCHASE' | 'SIGNUP' | 'DOWNLOAD' | 'ADD_TO_CART' | 'BEGIN_CHECKOUT' | 'SUBSCRIBE_PAID' | 'PHONE_CALL_LEAD' | 'IMPORTED_LEAD' | 'SUBMIT_LEAD_FORM' | 'BOOK_APPOINTMENT' | 'REQUEST_QUOTE' | 'GET_DIRECTIONS' | 'OUTBOUND_CLICK' | 'CONTACT' | 'ENGAGEMENT' | 'STORE_VISIT' | 'STORE_SALE' | 'QUALIFIED_LEAD' | 'CONVERTED_LEAD';
+        /**
+         * ONE_PER_CLICK counts one conversion per ad click (leads); MANY_PER_CLICK counts every one (purchases).
+         */
+        countingType?: 'ONE_PER_CLICK' | 'MANY_PER_CLICK';
+        /**
+         * ISO 4217 currency of defaultValue (value_settings.default_currency_code).
+         */
+        defaultCurrency?: string;
+        /**
+         * Days after an ad click a conversion still counts.
+         */
+        clickThroughLookbackWindowDays?: number;
+        /**
+         * Days after an ad view a view-through conversion still counts.
+         */
+        viewThroughLookbackWindowDays?: number;
+        /**
+         * true = primary (counts toward bidding when its goal is biddable), false = secondary.
+         */
+        primaryForGoal?: boolean;
     };
     path: {
         /**
@@ -50607,9 +50658,21 @@ export type UpdateConversionActionData = {
 
 export type UpdateConversionActionResponse = ({
     customerId?: string;
+    /**
+     * The action id with the fields written, echoed back.
+     */
     action?: {
         id?: string;
+        name?: string;
+        status?: string;
         primaryForGoal?: boolean;
+        category?: string;
+        countingType?: string;
+        defaultValue?: number;
+        defaultCurrency?: string;
+        alwaysUseDefaultValue?: boolean;
+        clickThroughLookbackWindowDays?: number;
+        viewThroughLookbackWindowDays?: number;
     };
 });
 

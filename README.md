@@ -864,7 +864,7 @@ try {
 | `conversions.getConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |
-| `conversions.updateConversionAction()` | Set a conversion action primary or secondary |
+| `conversions.updateConversionAction()` | Update a conversion action's settings |
 | `conversions.updateConversionDestination()` | Update a conversion destination |
 | `conversions.updateCustomConversionGoal()` | Update a custom conversion goal |
 | `conversions.deleteConversionDestination()` | Delete a conversion destination |
