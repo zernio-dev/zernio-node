@@ -16,6 +16,19 @@ export type AccountsListResponse = {
     profileTotals?: {
         [key: string]: (number);
     };
+    /**
+     * Only with includeStatusCounts=true. Counts over every filter of the request except status.
+     */
+    statusCounts?: {
+        /**
+         * Accounts matching the filters in any status.
+         */
+        all: number;
+        /**
+         * Of those, the accounts that need reconnection.
+         */
+        disconnected: number;
+    };
 };
 
 export type AccountWithFollowerStats = SocialAccount & {
@@ -10445,8 +10458,11 @@ export type SocialAccount = {
     /**
      * Whether the user explicitly activated this account. false means the account was
      * created as a side effect (e.g., posting account auto-created when user connected
-     * ads first). Such accounts are hidden from this list, cannot be posted to
-     * (`ACCOUNT_NOT_ENABLED_FOR_POSTING`), and are not billed as connected accounts.
+     * ads first). GET /v1/accounts still returns such accounts unless `excludeHidden=true`
+     * is passed. They cannot be posted to (`ACCOUNT_NOT_ENABLED_FOR_POSTING`) and are not
+     * billed as connected accounts. On an ads account (`metaads`, `googleads`, ...) the value
+     * does not hide the connection: ads accounts are listed whatever their `enabled` value and
+     * keep working for ads.
      *
      */
     enabled?: boolean;
@@ -18964,9 +18980,34 @@ export type ListAccountsData = {
          */
         category?: 'social' | 'ads' | 'communication' | 'blogs';
         /**
+         * When true, leaves out accounts the dashboard does not show as connections: posting
+         * accounts with `enabled: false` (ads accounts are always kept, whatever their `enabled`
+         * value) and the internal `sms` and `phone` accounts behind each phone number. Applied
+         * before pagination, so page totals and `statusCounts` count only the remaining accounts.
+         * Sandbox accounts added by `includeSandbox` are appended after this filter. Accepts
+         * `true` or `false` in any letter case; any other value returns 400.
+         *
+         */
+        excludeHidden?: boolean;
+        /**
          * When true, includes accounts from over-limit profiles.
          */
         includeOverLimit?: boolean;
+        /**
+         * When true, appends the shared WhatsApp sandbox account and the iMessage sandbox account
+         * to the list when they are active, honouring `platform` but no other filter. Ignored on
+         * a paginated request (page/limit) and together with `perProfile`. Accepts `true` or
+         * `false` in any letter case; any other value returns 400.
+         *
+         */
+        includeSandbox?: boolean;
+        /**
+         * When true, the response carries `statusCounts`: how many accounts match every other
+         * filter of the request (with `status` lifted) in total and how many of those need a
+         * reconnection. Accepts `true` or `false` in any letter case; any other value returns 400.
+         *
+         */
+        includeStatusCounts?: boolean;
         /**
          * Page size. Must be provided together with page; sending only one of the two returns 400.
          *
