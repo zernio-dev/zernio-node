@@ -24738,7 +24738,7 @@ export type GetPinterestBoardsResponse = ({
     }>;
 });
 
-export type GetPinterestBoardsError = (unknown | ErrorResponse);
+export type GetPinterestBoardsError = (unknown);
 
 export type UpdatePinterestBoardsData = {
     body: {
@@ -24892,7 +24892,7 @@ export type GetYoutubePlaylistsResponse = ({
     defaultPlaylistId?: (string) | null;
 });
 
-export type GetYoutubePlaylistsError = (unknown | ErrorResponse);
+export type GetYoutubePlaylistsError = (unknown);
 
 export type CreateYoutubePlaylistData = {
     body: {
