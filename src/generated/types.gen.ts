@@ -45567,15 +45567,15 @@ export type GetAdAccountFinanceError = (unknown | ErrorResponse);
 export type GetAdAccountLiveEntitiesData = {
     query: {
         /**
-         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the platform token.
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Meta ad account id (act_<n>) or TikTok advertiser id (digits).
          */
         adAccountId: string;
         /**
-         * Cursor from `paging.campaigns.after` or `paging.adSets.after` of a previous response. Requires `level`.
+         * Cursor from `paging.campaigns.after` or `paging.adSets.after` of a previous response. Requires `level` (and on TikTok the same `limit`).
          */
         after?: string;
         /**
@@ -45590,6 +45590,7 @@ export type GetAdAccountLiveEntitiesData = {
          * Comma-separated Meta `effective_status` values to keep: ACTIVE, PAUSED, IN_PROCESS,
          * WITH_ISSUES, DELETED, ARCHIVED, and CAMPAIGN_PAUSED (ad sets only; the campaigns level
          * ignores it). Defaults to every status except DELETED and ARCHIVED. An unknown value is a 400.
+         * TikTok takes a single value: ACTIVE, PAUSED or DELETED (see the description).
          */
         status?: string;
     };
@@ -45598,13 +45599,13 @@ export type GetAdAccountLiveEntitiesData = {
 export type GetAdAccountLiveEntitiesResponse = ({
     accountId?: string;
     adAccountId?: string;
-    platform?: 'facebook';
+    platform?: 'facebook' | 'tiktok';
     /**
      * ISO 4217 code every budget and bid amount is expressed in.
      */
     currency?: string;
     /**
-     * When Meta was read.
+     * When the platform was read.
      */
     readAt?: string;
     /**
@@ -45614,11 +45615,11 @@ export type GetAdAccountLiveEntitiesResponse = ({
         platformCampaignId?: string;
         campaignName?: (string) | null;
         /**
-         * Meta `effective_status`, for example ACTIVE, PAUSED, WITH_ISSUES.
+         * Meta `effective_status` (ACTIVE, PAUSED, WITH_ISSUES...) or TikTok `secondary_status` (CAMPAIGN_STATUS_ENABLE...).
          */
         platformCampaignStatus?: (string) | null;
         /**
-         * Meta `status`: the campaign's own switch (ACTIVE, PAUSED, DELETED, ARCHIVED).
+         * The campaign's own switch: Meta `status` (ACTIVE, PAUSED, DELETED, ARCHIVED), or TikTok `operation_status` as ACTIVE (ENABLE) / PAUSED (DISABLE).
          */
         configuredStatus?: (string) | null;
         /**
@@ -45633,23 +45634,27 @@ export type GetAdAccountLiveEntitiesResponse = ({
             type?: 'daily' | 'lifetime';
         } | null;
         /**
-         * Meta `daily_budget` in whole units of `currency`.
+         * Daily budget in whole units of `currency` (Meta `daily_budget`; TikTok `budget` under a daily budget mode).
          */
         dailyBudget?: (number) | null;
         /**
-         * Meta `lifetime_budget` in whole units of `currency`.
+         * Lifetime budget in whole units of `currency` (Meta `lifetime_budget`; TikTok `budget` under BUDGET_MODE_TOTAL).
          */
         lifetimeBudget?: (number) | null;
         /**
-         * Meta `budget_remaining` in whole units of `currency`. Null when the campaign has no budget of its own.
+         * TikTok only: `budget_mode` as TikTok reports it (BUDGET_MODE_DAY, BUDGET_MODE_DYNAMIC_DAILY_BUDGET, BUDGET_MODE_TOTAL, BUDGET_MODE_INFINITE).
+         */
+        budgetMode?: (string) | null;
+        /**
+         * Meta `budget_remaining` in whole units of `currency`. Null when the campaign has no budget of its own, and always on TikTok.
          */
         budgetRemaining?: (number) | null;
         /**
-         * Campaign spending limit (Meta `spend_cap`) in whole units of `currency`. Null when none is set.
+         * Campaign spending limit (Meta `spend_cap`) in whole units of `currency`. Null when none is set, and always on TikTok.
          */
         spendCap?: (number) | null;
         /**
-         * Meta `bid_strategy`, set on campaigns with a campaign budget.
+         * Meta `bid_strategy`, set on campaigns with a campaign budget. Null on TikTok.
          */
         bidStrategy?: (string) | null;
     }>;
@@ -45661,11 +45666,11 @@ export type GetAdAccountLiveEntitiesResponse = ({
         adSetName?: (string) | null;
         platformCampaignId?: (string) | null;
         /**
-         * Meta `effective_status`, for example ACTIVE, PAUSED, CAMPAIGN_PAUSED.
+         * Meta `effective_status` (ACTIVE, PAUSED, CAMPAIGN_PAUSED...) or TikTok `secondary_status` (ADGROUP_STATUS_DELIVERY_OK, ADGROUP_STATUS_AUDIT...).
          */
         platformAdSetStatus?: (string) | null;
         /**
-         * Meta `status`: the ad set's own switch.
+         * The ad set's own switch: Meta `status`, or TikTok `operation_status` as ACTIVE / PAUSED.
          */
         configuredStatus?: (string) | null;
         /**
@@ -45680,41 +45685,45 @@ export type GetAdAccountLiveEntitiesResponse = ({
             type?: 'daily' | 'lifetime';
         } | null;
         /**
-         * Meta `daily_budget` in whole units of `currency`.
+         * Daily budget in whole units of `currency`.
          */
         dailyBudget?: (number) | null;
         /**
-         * Meta `lifetime_budget` in whole units of `currency`.
+         * Lifetime budget in whole units of `currency`.
          */
         lifetimeBudget?: (number) | null;
         /**
-         * Meta `budget_remaining` in whole units of `currency`. Null when the ad set has no budget of its own.
+         * TikTok only: `budget_mode` as TikTok reports it.
+         */
+        budgetMode?: (string) | null;
+        /**
+         * Meta `budget_remaining` in whole units of `currency`. Null when the ad set has no budget of its own, and always on TikTok.
          */
         budgetRemaining?: (number) | null;
         /**
-         * Meta `bid_strategy`.
+         * Meta `bid_strategy`. On TikTok the ad group's `bid_type` normalized to the same vocabulary (LOWEST_COST_WITHOUT_CAP, LOWEST_COST_WITH_BID_CAP, LOWEST_COST_WITH_MIN_ROAS).
          */
         bidStrategy?: (string) | null;
         /**
-         * Meta `bid_amount` (bid cap or cost target) in whole units of `currency`. Null when the strategy has none.
+         * Bid cap or cost target in whole units of `currency` (Meta `bid_amount`; TikTok `bid_price`, else `conversion_bid_price`, else `deep_cpa_bid`). Null when the strategy has none.
          */
         bidAmount?: (number) | null;
         /**
-         * Meta `optimization_goal`.
+         * Meta or TikTok `optimization_goal`.
          */
         optimizationGoal?: (string) | null;
         /**
-         * Meta `billing_event`.
+         * Meta or TikTok `billing_event`.
          */
         billingEvent?: (string) | null;
         /**
-         * Meta `promoted_object` verbatim (snake_case).
+         * Meta `promoted_object` verbatim (snake_case). On TikTok `{ pixelId, customEventType, applicationId, customConversionId }` from `pixel_id`, `optimization_event`, `app_id` and `custom_conversion_id`, only the keys TikTok has set; null when none is.
          */
         promotedObject?: {
             [key: string]: unknown;
         } | null;
         /**
-         * Meta `targeting` verbatim (snake_case), as Meta returns it now.
+         * The platform's targeting verbatim (snake_case), as it reports it now: Meta `targeting`, or TikTok's ad group targeting fields (location_ids, age_groups, gender, languages, interest_category_ids, audience_ids, placements...).
          */
         targeting?: {
             [key: string]: unknown;
