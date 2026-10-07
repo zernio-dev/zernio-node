@@ -10502,7 +10502,7 @@ export const listCampaignAssets = <ThrowOnError extends boolean = false>(options
 
 /**
  * Attach campaign assets
- * Creates and attaches sitelinks, callouts and structured snippets in one Google mutation.
+ * Creates and attaches sitelinks, callouts, structured snippets and image assets in one Google mutation. Google shows images only on accounts it deems eligible (account age, policy history, vertical).
  */
 export const attachCampaignAssets = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AttachCampaignAssetsData, ThrowOnError>) => {
     return (options?.client ?? client).post<AttachCampaignAssetsResponse, AttachCampaignAssetsError, ThrowOnError>({
@@ -10546,7 +10546,7 @@ export const listAdGroupAssets = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Attach ad-group assets
- * Creates and attaches sitelinks, callouts and structured snippets in one Google mutation.
+ * Creates and attaches sitelinks, callouts, structured snippets and image assets in one Google mutation. Google shows images only on accounts it deems eligible (account age, policy history, vertical).
  */
 export const attachAdGroupAssets = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AttachAdGroupAssetsData, ThrowOnError>) => {
     return (options?.client ?? client).post<AttachAdGroupAssetsResponse, AttachAdGroupAssetsError, ThrowOnError>({

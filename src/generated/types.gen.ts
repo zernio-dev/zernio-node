@@ -42081,6 +42081,16 @@ export type ListCampaignAssetsResponse = ({
         header?: string;
         values?: Array<(string)>;
     }>;
+    images?: Array<{
+        assetResourceName?: string;
+        campaignAssetResourceName?: string;
+        /**
+         * Google-hosted copy of the image.
+         */
+        imageUrl?: string;
+        width?: number;
+        height?: number;
+    }>;
     /**
      * Time of the cached Google read. Null when no cache was used.
      */
@@ -42111,6 +42121,10 @@ export type AttachCampaignAssetsData = {
         sitelinks?: Array<GoogleSitelink>;
         callouts?: Array<(string)>;
         structuredSnippets?: Array<GoogleStructuredSnippet>;
+        /**
+         * Public image URLs, uploaded to Google as image assets. Landscape 1.91:1 (min 600x314) or square 1:1 (min 300x300), up to 5 MB each.
+         */
+        images?: Array<(string)>;
     };
     path: {
         /**
@@ -42125,6 +42139,7 @@ export type AttachCampaignAssetsResponse = ({
     sitelinkAssetResourceNames?: Array<(string)>;
     calloutAssetResourceNames?: Array<(string)>;
     structuredSnippetAssetResourceNames?: Array<(string)>;
+    imageAssetResourceNames?: Array<(string)>;
 });
 
 export type AttachCampaignAssetsError = (ErrorResponse | unknown);
@@ -42236,6 +42251,16 @@ export type ListAdGroupAssetsResponse = ({
         header?: string;
         values?: Array<(string)>;
     }>;
+    images?: Array<{
+        assetResourceName?: string;
+        adGroupAssetResourceName?: string;
+        /**
+         * Google-hosted copy of the image.
+         */
+        imageUrl?: string;
+        width?: number;
+        height?: number;
+    }>;
     /**
      * Time of the cached Google read. Null when no cache was used.
      */
@@ -42266,6 +42291,10 @@ export type AttachAdGroupAssetsData = {
         sitelinks?: Array<GoogleSitelink>;
         callouts?: Array<(string)>;
         structuredSnippets?: Array<GoogleStructuredSnippet>;
+        /**
+         * Public image URLs, uploaded to Google as image assets. Landscape 1.91:1 (min 600x314) or square 1:1 (min 300x300), up to 5 MB each.
+         */
+        images?: Array<(string)>;
     };
     path: {
         /**
@@ -42280,6 +42309,7 @@ export type AttachAdGroupAssetsResponse = ({
     sitelinkAssetResourceNames?: Array<(string)>;
     calloutAssetResourceNames?: Array<(string)>;
     structuredSnippetAssetResourceNames?: Array<(string)>;
+    imageAssetResourceNames?: Array<(string)>;
 });
 
 export type AttachAdGroupAssetsError = (ErrorResponse | unknown);
