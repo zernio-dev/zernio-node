@@ -42791,7 +42791,33 @@ export type GetAdReviewResponse = ({
             } | null;
         }>;
         /**
-         * When the verdict was read from TikTok.
+         * Google only. ad_group_ad.policy_summary.approval_status, verbatim.
+         */
+        approvalStatus?: (string) | null;
+        /**
+         * Google only. ad_group_ad.policy_summary.policy_topic_entries.
+         */
+        policyTopics?: Array<{
+            topic?: (string) | null;
+            /**
+             * PROHIBITED, LIMITED, FULLY_LIMITED, DESCRIPTIVE, BROADENING, AREA_OF_INTEREST_ONLY.
+             */
+            type?: (string) | null;
+            /**
+             * Google's PolicyTopicEvidence objects, verbatim.
+             */
+            evidences?: Array<{
+                [key: string]: unknown;
+            }>;
+            /**
+             * Google's PolicyTopicConstraint objects, verbatim.
+             */
+            constraints?: Array<{
+                [key: string]: unknown;
+            }>;
+        }>;
+        /**
+         * When the verdict was read from the platform.
          */
         readAt?: string;
     };
@@ -43582,7 +43608,7 @@ export type GetAdsActivityLogData = {
          */
         accountId: string;
         /**
-         * Meta ad account id (act_<n>).
+         * Meta ad account id (act_<n>), or the Google customer id (digits only).
          */
         adAccountId: string;
         /**
@@ -43594,11 +43620,11 @@ export type GetAdsActivityLogData = {
          */
         limit?: number;
         /**
-         * Client-side filter to one Meta object id (campaign, ad set or ad).
+         * Client-side filter to one object id (campaign, ad set / ad group or ad).
          */
         objectId?: string;
         /**
-         * Start of range (YYYY-MM-DD).
+         * Start of range (YYYY-MM-DD). Google: at most 29 days ago, the default.
          */
         since?: string;
         /**

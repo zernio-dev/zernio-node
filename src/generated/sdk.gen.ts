@@ -10699,7 +10699,16 @@ export const getAdPreviews = <ThrowOnError extends boolean = false>(options: Opt
  * not deliver, and every rejection reason with TikTok's suggestion and the piece of content it
  * refers to. Read-only, so it works on a paused ad without re-enabling it.
  *
- * TikTok only (`/ad/review_info/`); every other platform returns 501. Use it alongside the ad's
+ * **Google**: reads `ad_group_ad.policy_summary` live. `approvalStatus` and `reviewStatus` are
+ * Google's verbatim (`approvalStatus`: APPROVED, APPROVED_LIMITED, AREA_OF_INTEREST_ONLY,
+ * DISAPPROVED, UNKNOWN; `reviewStatus`: REVIEW_IN_PROGRESS, REVIEWED, UNDER_APPEAL,
+ * ELIGIBLE_MAY_SERVE); `approved` is true for the three approved statuses, false for
+ * DISAPPROVED, null otherwise. `policyTopics` carries every policy topic entry with its
+ * `type` (PROHIBITED, LIMITED, ...) and Google's `evidences` and `constraints` verbatim; each
+ * PROHIBITED topic is also listed in `rejections` (reason = the topic). The `forbidden*`
+ * arrays are TikTok-only and always empty on Google.
+ *
+ * TikTok uses `/ad/review_info/`; every other platform returns 501. On TikTok, use it alongside the ad's
  * `platformStatus`: TikTok reports `AD_STATUS_AUDIT` while the ad is in review and
  * `AD_STATUS_AD_PRE_ONLINE` once it passed and is about to deliver (both map to
  * `status: pending_review`); `AD_STATUS_AUDIT_DENY` maps to `rejected`.
@@ -11057,6 +11066,19 @@ export const listAdsBusinessCenters = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Ad account change / audit log
+ * **Google**: reads the customer's `change_event` history, newest first. Google keeps 30 days
+ * of it, so `since` defaults to 29 days ago and an older `since` returns 400; `until`
+ * defaults to today. Each change is mapped onto the Meta row shape: `event_type` =
+ * resource_change_operation (CREATE, UPDATE, REMOVE), `event_time` = change_date_time,
+ * `actor_name` = user_email, `object_type` = change_resource_type, `object_id` = the last numeric id
+ * of `object_resource_name`, `application_name` = client_type, `changed_fields` (array), and
+ * `extra_data` = a JSON string `{ old, new }` with Google's old and new resource.
+ * Pass `paging.after` back as `after` for the next page; it is null when nothing older is
+ * left. A page never splits a change batch (the changes of one request share an
+ * `event_time`), so a page can hold fewer rows than `limit` while more follow, or more
+ * when one batch is larger than `limit`. `adAccountId` is the numeric customer id.
+ *
+ * **Meta**:
  * Account-level audit log from Meta's `/act_X/activities`: who changed what and when
  * (creates, edits, status flips, budget changes...) with Meta's translated event names and
  * the structured before/after in `extra_data`. Rows are returned verbatim. Meta has no
