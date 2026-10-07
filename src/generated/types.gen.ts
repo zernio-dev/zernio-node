@@ -6619,6 +6619,30 @@ export type GoogleListingGroupTree = {
  */
 export type GoogleLocationTargetingType = 'presence' | 'presence_or_interest';
 
+/**
+ * Google Search and Display only. Manual CPC bidding. Enhanced CPC is not offered: Google no longer lets Search and Display campaigns enable it. Exclusive with every other strategy field.
+ */
+export type GoogleManualCpc = {
+    /**
+     * Max CPC of the ad groups, in the account's currency units: set on the ad group created with the campaign, and on every ad group of the campaign when an update switches it to Manual CPC. Google gives an ad group without one a 0.01 bid.
+     */
+    maxCpc: number;
+};
+
+/**
+ * Google Search campaigns only. Which networks the campaign serves on besides Google Search. When omitted at creation, search partners are ON and the Display Network is OFF (the defaults Zernio has always used); on an update only the fields sent change.
+ */
+export type GoogleNetworkSettings = {
+    /**
+     * campaign.network_settings.target_search_network
+     */
+    searchPartners?: boolean;
+    /**
+     * campaign.network_settings.target_content_network (Search with Display expansion)
+     */
+    displayNetwork?: boolean;
+};
+
 export type GooglePmaxAssetGroup = {
     /**
      * Stable Google asset group id. Use it in the asset-group endpoints below.
@@ -6858,6 +6882,23 @@ export type GoogleStructuredSnippet = {
 };
 
 export type header = 'Amenities' | 'Brands' | 'Courses' | 'Degree programs' | 'Destinations' | 'Featured hotels' | 'Insurance coverage' | 'Models' | 'Neighborhoods' | 'Service catalog' | 'Shows' | 'Styles' | 'Types';
+
+/**
+ * Google only. Target impression share bidding (Search campaigns only): Google sets bids so the ads show in `location` for `percent` of eligible impressions.
+ */
+export type GoogleTargetImpressionShare = {
+    location: 'ANYWHERE_ON_PAGE' | 'TOP_OF_PAGE' | 'ABSOLUTE_TOP_OF_PAGE';
+    /**
+     * Target share of impressions, in percent (65 = 65%). Sent to Google as location_fraction_micros (1% = 10,000).
+     */
+    percent: number;
+    /**
+     * Max CPC bid limit, in the account's currency units. Google requires it.
+     */
+    maxCpc: number;
+};
+
+export type location = 'ANYWHERE_ON_PAGE' | 'TOP_OF_PAGE' | 'ABSOLUTE_TOP_OF_PAGE';
 
 export type ImessageAudienceContact = {
     conversationId?: string;
@@ -9150,7 +9191,7 @@ export type PortfolioBidStrategy = {
      */
     id?: string;
     name?: string;
-    type?: 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+    type?: 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
     /**
      * ENABLED or REMOVED.
      */
@@ -9182,9 +9223,13 @@ export type PortfolioBidStrategy = {
      * Current target as a decimal multiplier (2.0 = 2.0x). Null for a CPA-family type (TARGET_CPA, MAXIMIZE_CONVERSIONS), or a Maximize type with no target set.
      */
     targetRoas?: (number) | null;
+    /**
+     * Current target for a TARGET_IMPRESSION_SHARE strategy, null for every other type.
+     */
+    targetImpressionShare?: (GoogleTargetImpressionShare | null);
 };
 
-export type type13 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+export type type13 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
 
 export type Post = {
     _id?: string;
@@ -39827,7 +39872,7 @@ export type CreateBidStrategyData = {
          */
         customerId?: string;
         name: string;
-        type: 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+        type: 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
         /**
          * Required when type is TARGET_CPA, in the account's currency units.
          */
@@ -39836,6 +39881,10 @@ export type CreateBidStrategyData = {
          * Required when type is TARGET_ROAS; a multiplier (2.0 = 2.0x).
          */
         targetRoas?: number;
+        /**
+         * Required when type is TARGET_IMPRESSION_SHARE, and refused with any other type.
+         */
+        targetImpressionShare?: (GoogleTargetImpressionShare);
     };
 };
 
@@ -39868,9 +39917,13 @@ export type UpdateBidStrategyData = {
          */
         customerId?: string;
         name?: string;
-        type?: 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE';
+        type?: 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
         targetCpa?: number;
         targetRoas?: number;
+        /**
+         * Retargets a TARGET_IMPRESSION_SHARE strategy; location, percent and maxCpc are all written.
+         */
+        targetImpressionShare?: (GoogleTargetImpressionShare);
     };
     path: {
         /**
@@ -40298,6 +40351,12 @@ export type CreateAdCampaignData = {
          * Google only. Attach an existing portfolio bid strategy (numeric id from GET /v1/ads/bid-strategies) to the new campaign instead of a standard one. Exclusive with bidStrategy.
          */
         portfolioBidStrategyId?: string;
+        /**
+         * Google Search only. Target impression share bidding. Exclusive with bidStrategy, portfolioBidStrategyId and manualCpc; bidAmount is refused alongside it (the ceiling is maxCpc).
+         */
+        targetImpressionShare?: (GoogleTargetImpressionShare);
+        manualCpc?: GoogleManualCpc;
+        networkSettings?: GoogleNetworkSettings;
     };
     headers?: {
         /**
@@ -40595,6 +40654,20 @@ export type UpdateAdCampaignData = {
          */
         allowSharedBudgetUpdate?: boolean;
         /**
+         * Google Search only. Target impression share bidding. Exclusive with bidStrategy, portfolioBidStrategyId and manualCpc; bidAmount is refused alongside it (the ceiling is maxCpc).
+         */
+        targetImpressionShare?: (GoogleTargetImpressionShare);
+        manualCpc?: GoogleManualCpc;
+        networkSettings?: GoogleNetworkSettings;
+        /**
+         * **Google only.** campaign.tracking_url_template; an empty string clears it.
+         */
+        trackingUrlTemplate?: string;
+        /**
+         * **Google only.** campaign.final_url_suffix; an empty string clears it.
+         */
+        finalUrlSuffix?: string;
+        /**
          * Meta CBO, Google daily, or OpenAI Ads daily or lifetime campaign budget, in whole currency units.
          */
         budget?: {
@@ -40640,6 +40713,11 @@ export type UpdateAdCampaignResponse = ({
      * Google only. Echoed back, but NOT mirrored onto local Ad documents (no column for it yet).
      */
     portfolioBidStrategyId?: string;
+    targetImpressionShare?: GoogleTargetImpressionShare;
+    manualCpc?: GoogleManualCpc;
+    networkSettings?: GoogleNetworkSettings;
+    trackingUrlTemplate?: string;
+    finalUrlSuffix?: string;
     platformSpecificData?: {
         [key: string]: unknown;
     };
@@ -41247,6 +41325,10 @@ export type CreateAdSetData = {
         campaignId: string;
         name: string;
         status?: 'ACTIVE' | 'PAUSED';
+        /**
+         * Max CPC of the new ad group, in the account's currency units. Send it when the campaign uses Manual CPC: Google gives an ad group without one a 0.01 bid.
+         */
+        maxCpc?: number;
         /**
          * Platform ad account ID (Google customer ID, digits only). Only required when the connection has more than one.
          */
@@ -46088,11 +46170,26 @@ export type UpdateAdAccountData = {
          * Legal entity paying for ads on this ad account. Defaults to defaultDsaBeneficiary when omitted. Requires defaultDsaBeneficiary.
          */
         defaultDsaPayor?: string;
+        /**
+         * **Google only.** Account tracking template (customer.tracking_url_template); an empty string clears it.
+         */
+        trackingUrlTemplate?: string;
+        /**
+         * **Google only.** Account final URL suffix (customer.final_url_suffix); an empty string clears it.
+         */
+        finalUrlSuffix?: string;
     };
 };
 
 export type UpdateAdAccountResponse = ({
     adAccountId?: string;
+    /**
+     * Google only. The URL tracking fields written.
+     */
+    urlTracking?: {
+        trackingUrlTemplate?: string;
+        finalUrlSuffix?: string;
+    };
     /**
      * Present when defaultDsaBeneficiary was passed.
      */
@@ -47882,6 +47979,15 @@ export type CreateStandaloneAdData = {
          * Google Search and Display only. Performance Max rejects portfolio bidding. Attach an existing portfolio bid strategy (numeric id from GET /v1/ads/bid-strategies) to the new campaign instead of a standard one. Exclusive with bidStrategy.
          */
         portfolioBidStrategyId?: string;
+        /**
+         * Google Search only. Target impression share bidding. Exclusive with bidStrategy, portfolioBidStrategyId and manualCpc; bidAmount is refused alongside it (the ceiling is maxCpc).
+         */
+        targetImpressionShare?: (GoogleTargetImpressionShare);
+        manualCpc?: GoogleManualCpc;
+        /**
+         * Google Search only, when the call creates the campaign (400 with existingCampaignId or adSetId).
+         */
+        networkSettings?: (GoogleNetworkSettings);
         /**
          * Meta only (facebook, instagram; other platforms return 400). Value rule set
          * to attach to the new ad set, from `/v1/ads/value-rule-sets`. Attachment is

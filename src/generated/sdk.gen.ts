@@ -9778,7 +9778,8 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
 /**
  * Update a campaign
  * Campaign-level edits. Send at least one of `budget`, `bidStrategy`,
- * `portfolioBidStrategyId`, `name` or `platformSpecificData`. An unsupported
+ * `portfolioBidStrategyId`, `targetImpressionShare`, `manualCpc`, `networkSettings`,
+ * `trackingUrlTemplate`, `finalUrlSuffix`, `name` or `platformSpecificData`. An unsupported
  * field is always an error, never a silent drop.
  *
  * | Body field | Meta | Google | Others |
@@ -9786,6 +9787,10 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  * | `bidStrategy` | Yes | Yes | 501 |
  * | `bidAmount`, `roasAverageFloor` | 400 (ad-set level) | Yes | 400 |
  * | `portfolioBidStrategyId` | 400 | Yes | 400 |
+ * | `targetImpressionShare` | 400 | Search only | 400 |
+ * | `manualCpc` | 400 | Search and Display | 400 |
+ * | `networkSettings` | 400 | Search only | 400 |
+ * | `trackingUrlTemplate`, `finalUrlSuffix` | 400 | Yes | 400 |
  * | `budget` (CBO; ABO returns 409) | Yes | Daily only | OpenAI: daily or lifetime; others 501 |
  * | `name` | Yes | 501 | 501 |
  * | `platformSpecificData.spendCap` | Yes | 400 | 400 |
@@ -9799,7 +9804,12 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  * `bidAmount` = Target CPA, `LOWEST_COST_WITH_MIN_ROAS` + `roasAverageFloor` =
  * Target ROAS, `LOWEST_COST_WITH_BID_CAP` + `bidAmount` = Maximize Clicks with a
  * CPC ceiling; `portfolioBidStrategyId` attaches a portfolio strategy instead
- * (exclusive with `bidStrategy`). Setting the standard triplet on a campaign that
+ * (exclusive with `bidStrategy`). `targetImpressionShare` switches the campaign to
+ * Target impression share and `manualCpc: { maxCpc }` to Manual CPC (every ad group of the campaign gets `maxCpc` as its bid, in the same mutate); each is exclusive with
+ * every other strategy field. `networkSettings`, `trackingUrlTemplate` and
+ * `finalUrlSuffix` go out in one campaign update, each field sent written on its own
+ * leaf, so an omitted one keeps its current value; an empty string clears a URL field.
+ * Setting the standard triplet on a campaign that
  * is currently on a PORTFOLIO strategy is rejected: detach it in Google Ads
  * first, since it is shared across campaigns.
  *
@@ -11958,7 +11968,14 @@ export const listAdAccounts = <ThrowOnError extends boolean = false>(options: Op
  * covers the common case where the same entity benefits from and pays for the ads.
  * Read the current values back with `GET /v1/ads/dsa-defaults`.
  *
- * Currently supported for Meta accounts only; other platforms return 400.
+ * **Google: account-level URL tracking.** On a Google Ads connection, `adAccountId` is the
+ * customer id and only `trackingUrlTemplate` / `finalUrlSuffix` are accepted (the Meta
+ * fields return 400). They write `customer.tracking_url_template` and
+ * `customer.final_url_suffix`, one update mask leaf per field sent; an empty string clears
+ * the field. The response carries `urlTracking` with the values written. For one campaign,
+ * send the same fields to PUT /v1/ads/campaigns/{campaignId}.
+ *
+ * Other platforms return 400.
  *
  */
 export const updateAdAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdAccountData, ThrowOnError>) => {
