@@ -44746,6 +44746,14 @@ export type GetAdCreativeData = {
          * Comma-separated Graph field override. Supports nested {} projections and Graph field modifiers, so a nested edge can be paged explicitly: without a .limit() modifier the expansion runs at the Meta default page size and the tail is dropped silently.
          */
         fields?: string;
+        /**
+         * Height in pixels of the `thumbnail_url` rendering, forwarded to Meta as `thumbnail_height`. Without it Meta returns a 64x64 thumbnail.
+         */
+        thumbnailHeight?: number;
+        /**
+         * Width in pixels of the `thumbnail_url` rendering, forwarded to Meta as `thumbnail_width`. Without it Meta returns a 64x64 thumbnail.
+         */
+        thumbnailWidth?: number;
     };
 };
 
