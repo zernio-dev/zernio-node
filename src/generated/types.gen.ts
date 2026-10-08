@@ -34022,7 +34022,7 @@ export type GetPhoneNumberResponse = ({
     };
 });
 
-export type GetPhoneNumberError = (ErrorResponse | {
+export type GetPhoneNumberError = (ErrorResponse | unknown | {
     error?: string;
 });
 
