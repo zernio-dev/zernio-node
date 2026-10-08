@@ -21086,7 +21086,7 @@ export type ListFacebookPagesResponse = ({
     truncated?: boolean;
 });
 
-export type ListFacebookPagesError = (unknown | ErrorResponse | {
+export type ListFacebookPagesError = (unknown | ErrorResponse | string | {
     error?: string;
 });
 
@@ -21177,7 +21177,7 @@ export type SelectFacebookPageResponse = ({
     }>;
 });
 
-export type SelectFacebookPageError = (unknown | ErrorResponse);
+export type SelectFacebookPageError = (unknown | ErrorResponse | string);
 
 export type ListInstagramPagesData = {
     headers?: {
@@ -21230,7 +21230,7 @@ export type ListInstagramPagesResponse = ({
     }>;
 });
 
-export type ListInstagramPagesError = (unknown | ErrorResponse);
+export type ListInstagramPagesError = (unknown | ErrorResponse | string);
 
 export type SelectInstagramAccountData = {
     body: {
@@ -21360,7 +21360,7 @@ export type SelectInstagramAccountError = (unknown | ErrorResponse | {
          */
         effective_account_limit?: number;
     };
-});
+} | string);
 
 export type ListGoogleBusinessLocationsData = {
     query?: {
