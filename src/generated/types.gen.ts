@@ -36517,9 +36517,9 @@ export type RequestPhoneNumberWhatsAppCodeResponse = ({
     newPhoneNumber?: string;
 });
 
-export type RequestPhoneNumberWhatsAppCodeError = (ErrorResponse | {
+export type RequestPhoneNumberWhatsAppCodeError = (ErrorResponse | unknown | {
     error?: string;
-} | unknown);
+});
 
 export type GetWhatsAppCallingData = {
     path: {
@@ -36725,7 +36725,7 @@ export type GetWhatsAppPhoneNumberResponse = ({
     };
 });
 
-export type GetWhatsAppPhoneNumberError = (ErrorResponse | {
+export type GetWhatsAppPhoneNumberError = (ErrorResponse | unknown | {
     error?: string;
 });
 
