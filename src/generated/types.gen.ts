@@ -962,7 +962,7 @@ export type AdMetrics = {
     cpm?: number;
     engagement?: number;
     /**
-     * Count of conversion events over the requested date range. FRACTIONAL: attribution splits one conversion across touchpoints and Google additionally reports modeled conversions, so values like 0.347 are normal. Meta: events matching the campaign's promoted_object.custom_event_type (PURCHASE, LEAD, etc.). Google: the account's tracked conversions. X and LinkedIn: their reported website/lead conversions (added 2026-07). 0 for non-conversion campaigns or when no events have fired.
+     * Count of conversion events over the requested date range. FRACTIONAL: attribution splits one conversion across touchpoints and Google additionally reports modeled conversions, so values like 0.347 are normal. Meta: the ad set's Ads Manager Results, derived per ad set: the optimization goal's result (LEAD_GENERATION and QUALITY_LEAD = leads, CONVERSATIONS = messaging conversations started, APP_INSTALLS = installs, LANDING_PAGE_VIEWS = landing page views, LINK_CLICKS = link clicks, THRUPLAY = ThruPlays; REACH, IMPRESSIONS, POST_ENGAGEMENT and PAGE_LIKES report 0), otherwise the promoted_object event (custom_conversion_id when set, else custom_event_type, else PURCHASE). Google: the account's tracked conversions. X and LinkedIn: their reported website/lead conversions (added 2026-07). 0 for non-conversion campaigns or when no events have fired.
      */
     conversions?: number;
     /**
@@ -986,7 +986,7 @@ export type AdMetrics = {
         [key: string]: (number);
     };
     /**
-     * Convenience sum of purchase-type action values, picked from `actionValues` via the same priority list as `conversions` so both fields describe the same events. In ad-account native currency. 0 when the campaign has no purchase event configured. Meta-only.
+     * Convenience sum of purchase-type action values, picked from `actionValues` for the ad set promoted_object event (custom conversion, custom_event_type, else PURCHASE). It matches `conversions` for conversion-optimized ad sets; when the optimization goal reports a different result (LINK_CLICKS, LANDING_PAGE_VIEWS, ...) it stays on the promoted event so ROAS keeps its purchase basis. In ad-account native currency. 0 when the campaign has no purchase event configured. Meta-only.
      */
     purchaseValue?: number;
     /**
@@ -1318,7 +1318,7 @@ export type AdsTimelineResponse = {
          */
         cpm?: number;
         /**
-         * Sum of conversion events over the range. Fractional values are normal (attribution splitting + Google modeled conversions). Meta: events matching the campaign optimization goal. Google: tracked conversions. X / LinkedIn: reported website/lead conversions (added 2026-07).
+         * Sum of conversion events over the range. Fractional values are normal (attribution splitting + Google modeled conversions). Meta: the ad set Ads Manager Results (see AdMetrics.conversions). Google: tracked conversions. X / LinkedIn: reported website/lead conversions (added 2026-07).
          */
         conversions?: number;
         /**
