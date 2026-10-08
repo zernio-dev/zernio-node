@@ -9197,6 +9197,14 @@ export type PlatformTarget = {
      */
     trialGraduationStrategy?: 'MANUAL' | 'SS_PERFORMANCE';
     /**
+     * Number of times the publishing pipeline claimed this target to publish it since it was created or last manually retried (a manual retry resets it, except on TikTok). Not the number of retries (see publishRetries).
+     */
+    publishAttempts?: number;
+    /**
+     * Instagram only. Automatic re-sends of media_publish on the same container that Zernio scheduled after Meta answered a transient error (30 min, 2 h and 6 h after each failure, at most 3). While the target is still processing, the latest one may not have been sent yet. Not reset by a manual retry. Independent of publishAttempts, which counts publish-leg claims. Absent when none was scheduled.
+     */
+    publishRetries?: number;
+    /**
      * Human-readable error message when status is failed. Contains platform-specific error details explaining why the publish failed.
      */
     errorMessage?: string;
