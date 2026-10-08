@@ -1199,6 +1199,12 @@ try {
 | `sms.uploadSmsOptInProofFile()` | Upload opt-in form proof |
 | `sms.verifySmsRegistrationOtp()` | Submit the sole-prop OTP |
 
+### Support Runs
+| Method | Description |
+|--------|-------------|
+| `supportRuns.createSupportRun()` | Start a support run (private beta) |
+| `supportRuns.getSupportRun()` | Get a support run (private beta) |
+
 ### Tracking Tags
 | Method | Description |
 |--------|-------------|

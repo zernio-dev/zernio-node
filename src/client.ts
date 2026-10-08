@@ -148,6 +148,7 @@ import {
   createSipTrunk,
   createSmsSenderId,
   createStandaloneAd,
+  createSupportRun,
   createTestLead,
   createTrackingTag,
   createTrackingTagEvent,
@@ -444,6 +445,7 @@ import {
   getSmsRegistration,
   getSmsUsage,
   getSubredditRules,
+  getSupportRun,
   getTelegramCommands,
   getTelegramConnectStatus,
   getTikTokAccountInsights,
@@ -1955,6 +1957,14 @@ export class Zernio {
     cancelBroadcast: this._bind(cancelBroadcast),
     listBroadcastRecipients: this._bind(listBroadcastRecipients),
     addBroadcastRecipients: this._bind(addBroadcastRecipients),
+  };
+
+  /**
+   * supportruns API
+   */
+  supportruns = {
+    createSupportRun: this._bind(createSupportRun),
+    getSupportRun: this._bind(getSupportRun),
   };
 
   /**
