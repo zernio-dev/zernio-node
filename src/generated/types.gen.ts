@@ -771,10 +771,12 @@ export type AdEngagementCounts = {
  * priority order backs `conversions`, so a purchase-optimised campaign
  * reports the identical number in `conversions` and `funnel.purchases`.
  *
- * Every field is 0 when that step never fired. Populated for Meta ads;
- * other platforms report a different action taxonomy and generally leave
- * these at 0 (read `actions` for those). At ad-set and campaign level each
- * step is summed from its per-ad values.
+ * Every field is 0 when that step never fired. Populated for Meta ads and,
+ * from 2026-10-08, TikTok (contentViews, cartAdds, checkoutsInitiated,
+ * purchases = app purchases, else website complete payments, leads; the
+ * other steps stay 0). Other platforms report a different action taxonomy
+ * and generally leave these at 0 (read `actions` for those). At ad-set and
+ * campaign level each step is summed from its per-ad values.
  *
  */
 export type AdFunnelCounts = {
@@ -977,19 +979,19 @@ export type AdMetrics = {
      */
     costPerConversion?: number;
     /**
-     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...), covering both engagement and conversion events. TikTok: pixel conversions (purchase, add_to_cart, initiate_checkout, view_content, complete_payment, lead) plus the paid-engagement family (follow, post_reaction for paid likes, comment, share). Follow is how FOLLOWERS-goal campaigns report their result. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen) plus `video_view`, which carries LinkedIn's `videoViews` under the same key every other platform uses, so it feeds `engagementBreakdown.videoViews` too; it is an engagement, NOT a conversion, and is excluded from `conversions`. Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
+     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...), covering both engagement and conversion events. TikTok: conversion events plus the paid-engagement family (follow, post_reaction for paid likes, comment, share). Website (pixel) events: complete_payment (TikTok's website purchase, the event a SHOPPING-optimised campaign counts in `conversions`), initiate_checkout, add_to_cart, view_content, lead (website form submissions plus TikTok instant-form leads). App events: purchase, view_content (added to the website count). Follow is how FOLLOWERS-goal campaigns report their result. TikTok history note: website add_to_cart, initiate_checkout, complete_payment and lead counts were missing before 2026-10-08 (TikTok rejected the metric names we requested), and each sync re-fetches only the last 7 days, so older days keep them absent until the ad is re-synced from scratch. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen) plus `video_view`, which carries LinkedIn's `videoViews` under the same key every other platform uses, so it feeds `engagementBreakdown.videoViews` too; it is an engagement, NOT a conversion, and is excluded from `conversions`. Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
      */
     actions?: {
         [key: string]: (number);
     };
     /**
-     * Monetary mirror of `actions`, from Meta's Insights `action_values[]` array. Same keying: values are the revenue attributed to each action_type, in ad-account native currency (same unit as `spend`; see the campaign node's `currency` field). Use this to compute revenue-per-event (e.g. avg purchase value). Meta-only; other platforms return {}.
+     * Monetary mirror of `actions`, from Meta's Insights `action_values[]` array. Same keying: values are the revenue attributed to each action_type, in ad-account native currency (same unit as `spend`; see the campaign node's `currency` field). Use this to compute revenue-per-event (e.g. avg purchase value). Meta and TikTok; other platforms return {}. TikTok: the value TikTok attributes to each key of `actions` (purchase and view_content from app events, complete_payment, initiate_checkout, add_to_cart, view_content and lead from the website pixel), present only when the advertiser sends a value with the event. initiate_checkout and add_to_cart values are basket values, not revenue; revenue is complete_payment (website) and purchase (app). Same history note as `actions`.
      */
     actionValues?: {
         [key: string]: (number);
     };
     /**
-     * Convenience sum of purchase-type action values, picked from `actionValues` for the ad set promoted_object event (custom conversion, custom_event_type, else PURCHASE). It matches `conversions` for conversion-optimized ad sets; when the optimization goal reports a different result (LINK_CLICKS, LANDING_PAGE_VIEWS, ...) it stays on the promoted event so ROAS keeps its purchase basis. In ad-account native currency. 0 when the campaign has no purchase event configured. Meta-only.
+     * Convenience sum of purchase-type action values, picked from `actionValues` for the ad set promoted_object event (custom conversion, custom_event_type, else PURCHASE). It matches `conversions` for conversion-optimized ad sets; when the optimization goal reports a different result (LINK_CLICKS, LANDING_PAGE_VIEWS, ...) it stays on the promoted event so ROAS keeps its purchase basis. In ad-account native currency. 0 when the campaign has no purchase event configured. TikTok: app purchase value plus website complete-payment value (from 2026-10-08; older days carry the app value only). Other platforms report 0.
      */
     purchaseValue?: number;
     /**
