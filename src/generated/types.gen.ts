@@ -21020,7 +21020,17 @@ export type ConfigureTikTokAdsBrandIdentityResponse = ({
 export type ConfigureTikTokAdsBrandIdentityError = (unknown | ErrorResponse);
 
 export type ListFacebookPagesData = {
+    headers?: {
+        /**
+         * The OAuth user token, in place of the tempToken query parameter. Prefer it: a query string is written to request logs along the way.
+         */
+        'X-Temp-Token'?: string;
+    };
     query?: {
+        /**
+         * Set by the Zernio-hosted picker, whose user token stays in an httpOnly cookie. Integrators send tempToken instead.
+         */
+        connectFlow?: string;
         /**
          * Profile ID from your classic connection flow. Required with tempToken.
          */
@@ -21030,7 +21040,7 @@ export type ListFacebookPagesData = {
          */
         selectionToken?: string;
         /**
-         * Temporary Facebook access token from the classic OAuth callback. Required with profileId.
+         * Temporary Facebook access token from the classic OAuth callback. Required with profileId unless sent in the X-Temp-Token header.
          */
         tempToken?: string;
     };
@@ -21088,9 +21098,13 @@ export type SelectFacebookPageData = {
      */
     pageIds?: Array<(string)>;
     /**
-     * Temporary Facebook access token from OAuth.
+     * Temporary Facebook access token from OAuth. Required unless sent in the X-Temp-Token header.
      */
-    tempToken: string;
+    tempToken?: string;
+    /**
+     * Set by the Zernio-hosted picker, whose user token stays in an httpOnly cookie. Integrators send tempToken instead.
+     */
+    connectFlow?: string;
     /**
      * Decoded user profile object from the OAuth callback.
      */
@@ -21159,15 +21173,25 @@ export type SelectFacebookPageResponse = ({
 export type SelectFacebookPageError = (unknown | ErrorResponse);
 
 export type ListInstagramPagesData = {
+    headers?: {
+        /**
+         * The OAuth user token, in place of the tempToken query parameter. Prefer it: a query string is written to request logs along the way.
+         */
+        'X-Temp-Token'?: string;
+    };
     query: {
+        /**
+         * Set by the Zernio-hosted picker, whose user token stays in an httpOnly cookie. Integrators send tempToken instead.
+         */
+        connectFlow?: string;
         /**
          * Profile ID from your connection flow
          */
         profileId: string;
         /**
-         * Long-lived Facebook user access token from the OAuth callback redirect
+         * Long-lived Facebook user access token from the OAuth callback redirect. Required unless sent in the X-Temp-Token header.
          */
-        tempToken: string;
+        tempToken?: string;
     };
 };
 
@@ -21216,9 +21240,13 @@ export type SelectInstagramAccountData = {
          */
         pageIds?: Array<(string)>;
         /**
-         * Long-lived Facebook user access token from the OAuth callback redirect
+         * Long-lived Facebook user access token from the OAuth callback redirect. Required unless sent in the X-Temp-Token header.
          */
-        tempToken: string;
+        tempToken?: string;
+        /**
+         * Set by the Zernio-hosted picker, whose user token stays in an httpOnly cookie. Integrators send tempToken instead.
+         */
+        connectFlow?: string;
         /**
          * Optional custom redirect URL to return to after selection
          */
