@@ -713,8 +713,11 @@ export type AdDailyMetrics = AdMetrics & {
  * Populated for Meta and, since 2026-08, TikTok (`reactions` = paid
  * likes, `comments`, `shares`; TikTok's `follow` count lives in
  * `actions.follow`, not here). Other platforms leave these at 0.
- * TikTok history note: paused TikTok ads are not re-synced, so
- * campaigns that ended before the rollout keep 0s here.
+ * TikTok history note: these splits were added in 2026-08 and only
+ * the last 7 days are re-fetched on each sync (a stopped ad keeps
+ * syncing until its last delivery day is 7 days old), so days
+ * stored before the rollout keep 0s here. Spend, impressions,
+ * clicks and conversions are not affected.
  *
  */
 export type AdEngagementCounts = {
