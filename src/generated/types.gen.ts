@@ -49567,6 +49567,76 @@ export type SearchAdTargetingResponse = ({
 
 export type SearchAdTargetingError = (unknown | ErrorResponse);
 
+export type BrowseAdTargetingData = {
+    query: {
+        /**
+         * A connected Meta account (metaads, facebook or instagram). Any other ad platform returns 501 platform_not_supported.
+         */
+        accountId: string;
+        /**
+         * The Meta ad account to browse as, in the form "act_<digits>".
+         */
+        adAccountId: string;
+        /**
+         * Only the descendants (every depth) of this organizational node, e.g. `Demographics > Financial`. A nodeId that is not an organizational node of the catalog returns 400.
+         */
+        parentNodeId?: string;
+        /**
+         * `true` for selectable entities only, `false` for organizational nodes only.
+         */
+        selectable?: boolean;
+        /**
+         * Only the nodes of this Meta type (e.g. interests, behaviors, life_events, income), plus the organizational nodes leading to them. A type that is not in the catalog returns 400.
+         */
+        type?: string;
+    };
+};
+
+export type BrowseAdTargetingResponse = ({
+    adAccountId: string;
+    nodes: Array<{
+        /**
+         * Identifies the node within this response. Not a Meta id: never put it in a targeting spec.
+         */
+        nodeId: string;
+        /**
+         * nodeId of the parent organizational node, null for a root.
+         */
+        parentNodeId: (string) | null;
+        /**
+         * Meta targeting id, null on organizational nodes.
+         */
+        id: (string) | null;
+        name: string;
+        /**
+         * Meta's targeting spec key (interests, behaviors, industries, life_events, education_statuses, relationship_statuses, family_statuses, income, ...). Null on most organizational nodes.
+         */
+        type: (string) | null;
+        /**
+         * Labels of the ancestors, root first. Does not include the node itself.
+         */
+        path: Array<(string)>;
+        /**
+         * True when the node can be targeted (it has a Meta id).
+         */
+        selectable: boolean;
+        /**
+         * Meta's description, when it has one.
+         */
+        description?: string;
+        /**
+         * Meta's estimated audience size, lower bound, when reported.
+         */
+        audienceSizeLowerBound?: number;
+        /**
+         * Meta's estimated audience size, upper bound, when reported.
+         */
+        audienceSizeUpperBound?: number;
+    }>;
+});
+
+export type BrowseAdTargetingError = (ErrorResponse | unknown);
+
 export type SearchAdLibraryData = {
     query?: {
         /**

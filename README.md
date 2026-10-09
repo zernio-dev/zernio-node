@@ -602,6 +602,7 @@ try {
 |--------|-------------|
 | `adTargeting.getLinkedInBidPricing()` | Suggested bid and budget bounds |
 | `adTargeting.getLinkedInSupplyForecast()` | Forecast ad delivery |
+| `adTargeting.browseAdTargeting()` | Browse targeting categories |
 | `adTargeting.estimateAdReach()` | Estimate audience reach |
 | `adTargeting.searchAdInterests()` | Search targeting interests |
 | `adTargeting.searchAdTargeting()` | Search targeting options |

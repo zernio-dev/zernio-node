@@ -42,6 +42,7 @@ import {
   blockWhatsAppUsers,
   bookmarkPost,
   boostPost,
+  browseAdTargeting,
   bulkCreateContacts,
   bulkUpdateAdCampaignStatus,
   bulkUploadPosts,
@@ -2254,6 +2255,7 @@ export class Zernio {
   adtargeting = {
     searchAdInterests: this._bind(searchAdInterests),
     searchAdTargeting: this._bind(searchAdTargeting),
+    browseAdTargeting: this._bind(browseAdTargeting),
     estimateAdReach: this._bind(estimateAdReach),
     getLinkedInBidPricing: this._bind(getLinkedInBidPricing),
     getLinkedInSupplyForecast: this._bind(getLinkedInSupplyForecast),
@@ -2843,6 +2845,8 @@ export class Zernio {
     searchAdInterests: this._bind(searchAdInterests),
     /** @deprecated Use `zernio.adtargeting.searchAdTargeting` instead. */
     searchAdTargeting: this._bind(searchAdTargeting),
+    /** @deprecated Use `zernio.adtargeting.browseAdTargeting` instead. */
+    browseAdTargeting: this._bind(browseAdTargeting),
     /** @deprecated Use `zernio.adtargeting.estimateAdReach` instead. */
     estimateAdReach: this._bind(estimateAdReach),
     /** @deprecated Use `zernio.adtargeting.getLinkedInBidPricing` instead. */
