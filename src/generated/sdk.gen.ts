@@ -11226,7 +11226,7 @@ export const listAdsTikTokIdentities = <ThrowOnError extends boolean = false>(op
 
 /**
  * Per-creative performance inside TikTok Smart+ ads
- * Breaks a Smart+ ad (or ad group) down by creative material, one row per Spark post, video or image, from TikTok's Smart+ material report. For a Spark post `tiktokItemId` is the TikTok post id. Conversion metrics are TikTok web (pixel) events. TikTok allows two dimensions per report, so rows are keyed by the Smart+ ad (`level=ad`) or by the ad group (`level=adGroup`), not both. Metrics TikTok returns empty come back as null.
+ * Breaks a Smart+ ad (or ad group) down by creative material, one row per Spark post, video or image, from TikTok's Smart+ material report. For a Spark post `tiktokItemId` is the TikTok post id. Conversion metrics are TikTok web (pixel) events. `purchases`, `purchaseValue` and `roas` come from Complete Payment, or from Place an Order (legacy ON_WEB_ORDER pixels) when that reports more; the two are never summed. TikTok allows two dimensions per report, so rows are keyed by the Smart+ ad (`level=ad`) or by the ad group (`level=adGroup`), not both. Metrics TikTok returns empty come back as null.
  */
 export const getTikTokSmartPlusMaterialReport = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTikTokSmartPlusMaterialReportData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetTikTokSmartPlusMaterialReportResponse, GetTikTokSmartPlusMaterialReportError, ThrowOnError>({
