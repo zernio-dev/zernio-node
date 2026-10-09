@@ -1976,7 +1976,14 @@ export type ApiChangelogEntry = {
      * Stable entry id; the same entry is never published twice.
      */
     id: string;
+    /**
+     * When `impact` is set, `breaking_change` means exactly `impact: action_required`.
+     */
     type: 'new_feature' | 'breaking_change' | 'improvement' | 'deprecation' | 'minor';
+    /**
+     * What an integrator has to do, computed from the OpenAPI diff rather than from the prose. `action_required`: an existing call or parser can break (an operation, parameter or field removed, a field newly required, a type narrowed, an enum value removed, or authentication changed). `additive`: only new or looser things, existing integrations keep working. `none`: descriptions or examples only. Null on entries published before October 2026.
+     */
+    impact: ('none' | 'additive' | 'action_required') | null;
     /**
      * Platform and area slugs the entry is about: a platform (`instagram`, `facebook`, `threads`, `tiktok`, `x`, `linkedin`, `youtube`, `pinterest`, `reddit`, `bluesky`, `telegram`, `snapchat`, `whatsapp`, `discord`, `slack`, `google-business`, `imessage`), an ads platform (`meta-ads`, `google-ads`, `tiktok-ads`, `linkedin-ads`, `pinterest-ads`, `x-ads`) or an area (`ads`, `publishing`, `inbox`, `telephony`, `commerce`, `analytics`, `webhooks`, `general`). Filter with the `platform` query parameter.
      */
@@ -2014,12 +2021,28 @@ export type ApiChangelogEntry = {
     };
 };
 
+/**
+ * When `impact` is set, `breaking_change` means exactly `impact: action_required`.
+ */
 export type type2 = 'new_feature' | 'breaking_change' | 'improvement' | 'deprecation' | 'minor';
+
+/**
+ * What an integrator has to do, computed from the OpenAPI diff rather than from the prose. `action_required`: an existing call or parser can break (an operation, parameter or field removed, a field newly required, a type narrowed, an enum value removed, or authentication changed). `additive`: only new or looser things, existing integrations keep working. `none`: descriptions or examples only. Null on entries published before October 2026.
+ */
+export type impact = 'none' | 'additive' | 'action_required';
 
 export type ApiChangelogOperationRef = {
     method: string;
     path: string;
     operationId?: string;
+    /**
+     * OpenAPI tags of the operation.
+     */
+    tags?: Array<(string)>;
+    /**
+     * The operation's `x-platforms` list, verbatim.
+     */
+    xPlatforms?: Array<(string)>;
 };
 
 export type ApiKey = {
@@ -56011,6 +56034,10 @@ export type ListChangelogData = {
          * Only entries published strictly before this instant. Pass the previous page's `nextCursor`.
          */
         before?: string;
+        /**
+         * Only entries with this impact. `action_required` lists the changes an integration may need to act on.
+         */
+        impact?: 'none' | 'additive' | 'action_required';
         limit?: number;
         /**
          * Only entries tagged with this platform or area slug (see `platforms` on the entry). One slug per request.
