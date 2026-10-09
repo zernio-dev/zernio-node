@@ -29496,62 +29496,100 @@ export type GetInboxPostCommentsResponse = ({
         rootCid?: (string) | null;
     }>;
     /**
-     * (Reddit only) Metadata for the target post, returned alongside the comments in Reddit's
-     * single round-trip. Lets integrators render a preview of the post the user is commenting on
-     * without an additional request. Absent for non-Reddit platforms and when the upstream
-     * response is missing the post listing (deleted post, malformed response).
+     * (Reddit, Facebook and Instagram) Metadata for the target post, returned alongside the comments
+     * so integrators can render a preview of the post being commented on without an additional request.
+     *
+     * Facebook and Instagram return the Meta shape: the post thumbnail, text and permalink, for any post
+     * the account can read, including the hidden dark posts Meta publishes for each variant of an ad
+     * (dynamic creative, placement asset customization, Advantage+). Facebook posts need the Facebook
+     * Page connection and Instagram media the Instagram connection. `thumbnailUrl` and `mediaUrl` are
+     * Meta CDN URLs that expire: store a copy if you render them later. On Instagram, `productType`
+     * tells an ad (`AD`) from organic media (`FEED`, `REELS`, `STORY`).
+     *
+     * Absent on other platforms, when the post cannot be read with the connection's token, and on Reddit
+     * when the upstream response is missing the post listing (deleted post, malformed response).
      *
      */
-    post?: {
-        /**
-         * Reddit post base36 id (e.g. "1tjtj26")
-         */
-        id?: string;
-        /**
-         * Fullname with type prefix (e.g. "t3_1tjtj26")
-         */
-        fullname?: string;
-        title?: string;
-        /**
-         * Body text for self-posts (empty for link posts)
-         */
-        selftext?: string;
-        /**
-         * Reddit username, without the u/ prefix
-         */
-        author?: string;
-        /**
-         * Subreddit name, without the r/ prefix
-         */
-        subreddit?: string;
-        /**
-         * Absolute URL to the post on reddit.com
-         */
-        permalink?: string;
-        /**
-         * For link posts, the external URL; for self-posts, the Reddit permalink
-         */
-        url?: string;
-        /**
-         * Net upvotes (upvotes minus downvotes)
-         */
-        score?: number;
-        numComments?: number;
-        /**
-         * Unix timestamp in seconds
-         */
-        createdUtc?: number;
-        over18?: boolean;
-        stickied?: boolean;
-        /**
-         * Link flair text if any
-         */
-        flairText?: (string) | null;
-        /**
-         * True if the post is a Reddit gallery (multiple images)
-         */
-        isGallery?: boolean;
-    } | null;
+    post?: ({
+    /**
+     * Reddit post base36 id (e.g. "1tjtj26")
+     */
+    id?: string;
+    /**
+     * Fullname with type prefix (e.g. "t3_1tjtj26")
+     */
+    fullname?: string;
+    title?: string;
+    /**
+     * Body text for self-posts (empty for link posts)
+     */
+    selftext?: string;
+    /**
+     * Reddit username, without the u/ prefix
+     */
+    author?: string;
+    /**
+     * Subreddit name, without the r/ prefix
+     */
+    subreddit?: string;
+    /**
+     * Absolute URL to the post on reddit.com
+     */
+    permalink?: string;
+    /**
+     * For link posts, the external URL; for self-posts, the Reddit permalink
+     */
+    url?: string;
+    /**
+     * Net upvotes (upvotes minus downvotes)
+     */
+    score?: number;
+    numComments?: number;
+    /**
+     * Unix timestamp in seconds
+     */
+    createdUtc?: number;
+    over18?: boolean;
+    stickied?: boolean;
+    /**
+     * Link flair text if any
+     */
+    flairText?: (string) | null;
+    /**
+     * True if the post is a Reddit gallery (multiple images)
+     */
+    isGallery?: boolean;
+} | {
+    /**
+     * Facebook post id ({pageId}_{postId}) or Instagram media id
+     */
+    id: string;
+    permalink: (string) | null;
+    /**
+     * Facebook post message or Instagram caption
+     */
+    text: (string) | null;
+    /**
+     * Facebook `full_picture` (or the first attachment image); Instagram `thumbnail_url` for videos, `media_url` for images. Expiring Meta CDN URL.
+     */
+    thumbnailUrl: (string) | null;
+    /**
+     * Instagram `media_url` (the video file for videos). Always null on Facebook. Expiring Meta CDN URL.
+     */
+    mediaUrl: (string) | null;
+    /**
+     * Instagram `media_type` (IMAGE, VIDEO, CAROUSEL_ALBUM) or the Facebook attachment type (photo, video_inline, link, ...)
+     */
+    mediaType: (string) | null;
+    /**
+     * Instagram `media_product_type`: AD, FEED, REELS or STORY. Always null on Facebook.
+     */
+    productType: (string) | null;
+    /**
+     * Creation time as Meta returns it (e.g. 2026-05-27T17:15:51+0000)
+     */
+    createdAt: (string) | null;
+} | null);
     /**
      * (Facebook and Instagram only) Present when `commentId` was passed: the requested
      * comment itself, in the same shape as an entry in comments[]. comments[] then holds
