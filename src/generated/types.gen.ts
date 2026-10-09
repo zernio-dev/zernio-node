@@ -20773,7 +20773,11 @@ export type ConnectAdsData = {
          * `instagram`, `linkedin`, `pinterest`) it picks which posting account the ads
          * connection uses when the profile holds several of that platform; with one it can
          * be omitted, and an id that names no active account of the platform on the profile
-         * is ignored. Ignored for standalone platforms (`googleads`).
+         * is ignored, except with `force=true` when it names the posting account the
+         * profile's ads connection hangs off: that account is no longer connected, so the
+         * call returns 409 `reconnect_required` instead of reconnecting another account.
+         * Reconnect it via GET /v1/connect/{platform} first. Ignored for standalone
+         * platforms (`googleads`).
          *
          */
         accountId?: string;
