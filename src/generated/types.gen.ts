@@ -12146,6 +12146,10 @@ export type WebhookLog = {
      */
     event?: string;
     /**
+     * true when the delivery was a sample fired by POST /v1/webhooks/test with an event, not a real event. Absent otherwise.
+     */
+    test?: boolean;
+    /**
      * Destination URL the webhook was delivered to
      */
     url?: string;
@@ -12201,6 +12205,10 @@ export type WebhookPayloadAccountAdsInitialSyncCompleted = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'account.ads.initial_sync_completed';
     account: {
         /**
@@ -12330,6 +12338,10 @@ export type WebhookPayloadAccountAdsSyncFailed = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'account.ads.sync_failed';
     account: WebhookAdsSyncAccount;
     adAccount: WebhookAdsSyncAdAccount;
@@ -12379,6 +12391,10 @@ export type WebhookPayloadAccountAdsSyncRecovered = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'account.ads.sync_recovered';
     account: WebhookAdsSyncAccount;
     adAccount: WebhookAdsSyncAdAccount;
@@ -12405,6 +12421,10 @@ export type WebhookPayloadAccountConnected = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'account.connected';
     account: {
         /**
@@ -12435,6 +12455,10 @@ export type WebhookPayloadAccountDisconnected = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'account.disconnected';
     account: {
         /**
@@ -12493,6 +12517,10 @@ export type WebhookPayloadAdStatusChanged = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'ad.status_changed';
     /**
      * The connected ad-platform account that owns the ad object.
@@ -12608,6 +12636,10 @@ export type WebhookPayloadAdVideoProcessed = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'ad.video.processed';
     /**
      * The connected ads account the video was uploaded with.
@@ -12695,6 +12727,10 @@ export type WebhookPayloadAnalyticsSynced = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'analytics.synced';
     account: {
         /**
@@ -12741,6 +12777,10 @@ export type WebhookPayloadApiChangelogPublished = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'api.changelog.published';
     entry: ApiChangelogEntry;
     /**
@@ -12757,6 +12797,10 @@ export type event9 = 'api.changelog.published';
  *
  */
 export type WebhookPayloadCallEnded = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
@@ -12828,6 +12872,10 @@ export type event10 = 'call.ended';
  */
 export type WebhookPayloadCallFailed = {
     /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
@@ -12862,6 +12910,10 @@ export type event11 = 'call.failed';
  *
  */
 export type WebhookPayloadCallPermissionRequest = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
@@ -12901,6 +12953,10 @@ export type response = 'accept' | 'reject';
  *
  */
 export type WebhookPayloadCallReceived = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
@@ -12954,6 +13010,10 @@ export type WebhookPayloadComment = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'comment.received';
     comment: {
         /**
@@ -13113,6 +13173,10 @@ export type event14 = 'comment.received';
 export type platform13 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 export type WebhookPayloadCommerceProduct = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     id?: string;
     event?: 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
     /**
@@ -13153,6 +13217,10 @@ export type type17 = 'product';
 
 export type WebhookPayloadContactFieldChanged = {
     /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    /**
      * Event id, the dedupe key.
      */
     id: string;
@@ -13191,6 +13259,10 @@ export type source4 = 'api' | 'workflow' | 'automation';
 
 export type WebhookPayloadContactTag = {
     /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    /**
      * Event id, the dedupe key.
      */
     id: string;
@@ -13218,6 +13290,10 @@ export type event17 = 'contact.tag_added' | 'contact.tag_removed';
  *
  */
 export type WebhookPayloadConversationControlChanged = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
@@ -13271,6 +13347,10 @@ export type previousOwner = 'app' | 'ai_agent' | 'other';
  */
 export type WebhookPayloadConversationStarted = {
     /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
@@ -13302,6 +13382,10 @@ export type WebhookPayloadExternalPost = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
     post: ExternalPostWebhookPost;
     account: {
@@ -13329,6 +13413,10 @@ export type WebhookPayloadLead = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'lead.received';
     lead: {
         /**
@@ -13402,6 +13490,10 @@ export type WebhookPayloadMessage = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'message.received';
     message: {
         /**
@@ -14023,6 +14115,10 @@ export type contactsOrigin = 'contact_request' | 'other';
  */
 export type WebhookPayloadMessageDeleted = {
     /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
@@ -14055,6 +14151,10 @@ export type event23 = 'message.deleted';
  *
  */
 export type WebhookPayloadMessageDeliveryStatus = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
@@ -14113,6 +14213,10 @@ export type event24 = 'message.delivered' | 'message.read' | 'message.played' | 
  */
 export type WebhookPayloadMessageEdited = {
     /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    /**
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
@@ -14148,6 +14252,10 @@ export type WebhookPayloadMessageSent = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'message.sent';
     message: {
         /**
@@ -14396,6 +14504,10 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'phone_number.stock_available';
     stock: {
         /**
@@ -14440,6 +14552,10 @@ export type WebhookPayloadPost = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
     post: {
         id: string;
@@ -14507,6 +14623,10 @@ export type WebhookPayloadPostPlatform = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
     post: {
         id: string;
@@ -14614,6 +14734,10 @@ export type WebhookPayloadReaction = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'reaction.received';
     reaction: {
         /**
@@ -14671,6 +14795,10 @@ export type WebhookPayloadReferral = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'referral.received';
     /**
      * Meta's referral object, forwarded verbatim. Same shape as
@@ -14743,6 +14871,10 @@ export type WebhookPayloadReviewNew = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'review.new';
     review: ReviewWebhookReview;
     account: {
@@ -14776,6 +14908,10 @@ export type WebhookPayloadReviewUpdated = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'review.updated';
     review: ReviewWebhookReview;
     account: {
@@ -14796,6 +14932,10 @@ export type WebhookPayloadReviewUpdated = {
 export type event33 = 'review.updated';
 
 export type WebhookPayloadSequenceEnrollment = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Event id, the dedupe key.
      */
@@ -14829,6 +14969,10 @@ export type event34 = 'sequence.enrolled' | 'sequence.exited';
 export type exitReason = 'completed' | 'replied' | 'manual' | 'failed' | 'unsubscribed';
 
 export type WebhookPayloadSupportRun = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Event id, the dedupe key.
      */
@@ -14872,6 +15016,10 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'whatsapp.account.alert_received';
     account: {
         accountId: string;
@@ -14925,6 +15073,10 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'whatsapp.account.name_status_updated';
     account: {
         accountId: string;
@@ -14975,6 +15127,10 @@ export type WebhookPayloadWhatsAppAccountQualityUpdated = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'whatsapp.account.quality_updated';
     account: {
         accountId: string;
@@ -15028,6 +15184,10 @@ export type WebhookPayloadWhatsAppAccountStatusUpdated = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'whatsapp.account.status_updated';
     account: {
         accountId: string;
@@ -15101,6 +15261,10 @@ export type WebhookPayloadWhatsAppContactIdentityChanged = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'whatsapp.contact.identity_changed';
     account: {
         accountId: string;
@@ -15152,6 +15316,10 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'whatsapp.template.category_updated';
     account: {
         accountId: string;
@@ -15238,6 +15406,10 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
      * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
      */
     id: string;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     event: 'whatsapp.template.status_updated';
     account: {
         accountId: string;
@@ -15290,6 +15462,10 @@ export type event43 = 'whatsapp.template.status_updated';
 export type status38 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
     /**
      * Event id, the dedupe key.
      */
@@ -26644,6 +26820,10 @@ export type TestWebhookData = {
          * ID of the webhook to test
          */
         webhookId: string;
+        /**
+         * Send a sample payload of this event instead of `webhook.test`. The sample is marked with `test: true`.
+         */
+        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'conversation.started' | 'conversation.control_changed' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'ad.video.processed' | 'lead.received' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.automatic_event' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'verification.approved' | 'verification.failed' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'api.changelog.published';
     };
 };
 
