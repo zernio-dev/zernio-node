@@ -13749,6 +13749,8 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
  * `accountId` is a Facebook, Instagram or Meta ads (business login) connection;
  * `pageId` picks the Page when that connection was granted several.
  *
+ * **WhatsApp number prerequisite.** For the WhatsApp destination, link the WhatsApp number to the Facebook Page used for the ad before creating it: Meta checks the pairing at creation. Link it from the WhatsApp Business app (Settings > Business tools > Facebook & Instagram) or from the Page settings (Linked accounts > WhatsApp). Linking does not affect the number's WhatsApp connection in Zernio (Cloud API or coexistence), so no reconnect or re-sync is needed. If Meta creates a new ad set without the requested `whatsappPhoneNumber`, the 201 response carries a `warnings` entry. This can happen even when the number is linked (Meta can drop a Page's second linked number).
+ *
  * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). Keys are scoped to your credential and expire after 24h.
  */
 export const createMessagingAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateMessagingAdData, ThrowOnError>) => {
@@ -13794,6 +13796,8 @@ export const createCallAd = <ThrowOnError extends boolean = false>(options: Opti
  * `existingPostId`) or `objectStoryId`, either per creative or at the top level. Omit fresh
  * media and copy for that creative. Optional `whatsappPhoneNumber` selects
  * a number already paired with the Page (WhatsApp destination only).
+ *
+ * **WhatsApp number prerequisite.** Link the WhatsApp number to the Facebook Page used for the ad before creating it: Meta checks the pairing at creation. Link it from the WhatsApp Business app (Settings > Business tools > Facebook & Instagram) or from the Page settings (Linked accounts > WhatsApp). Linking does not affect the number's WhatsApp connection in Zernio (Cloud API or coexistence), so no reconnect or re-sync is needed. If Meta creates a new ad set without the requested `whatsappPhoneNumber`, the 201 response carries a `warnings` entry. This can happen even when the number is linked (Meta can drop a Page's second linked number).
  *
  * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). Keys are scoped to your credential and expire after 24h.
  */
