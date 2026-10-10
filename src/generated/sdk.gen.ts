@@ -1396,7 +1396,7 @@ export const deleteAccount = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Check accounts health
- * Returns health status of all connected accounts including token validity, permissions, and issues needing attention.
+ * Returns health status of all connected accounts including token validity, permissions, and issues needing attention. A failing or stalled analytics sync (see `analyticsSync`) raises a healthy account to at least warning.
  */
 export const getAllAccountsHealth = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetAllAccountsHealthData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAllAccountsHealthResponse, GetAllAccountsHealthError, ThrowOnError>({
@@ -1455,6 +1455,8 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
 /**
  * Check account health
  * Returns detailed health info for a specific account including token status, permissions, and recommendations.
+ *
+ * A failing or stalled analytics sync (see `analyticsSync`) raises a healthy account to at least `warning`.
  *
  * For WhatsApp accounts the response also includes `platformConnection`, a live probe of the
  * Meta link behind the channel (the same read as `GET /v1/whatsapp/number-info`). The OAuth
