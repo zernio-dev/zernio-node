@@ -4244,8 +4244,8 @@ export const sendTypingIndicator = <ThrowOnError extends boolean = false>(option
  *
  * **Facebook and Instagram** (Messenger Platform handover between the apps on the Page, such as Page Inbox):
  * - `pass` with `targetAppId`: give the thread to another app (`pass_thread_control`). Page Inbox is 263902037430900.
- * - `take`: take the thread back (`take_thread_control`); Meta allows it only to the Page's primary receiver.
- * - `request`: ask the current owner to pass the thread (`request_thread_control`); nothing changes until it does.
+ * - `take`: take the thread back (`take_thread_control`); Meta allows it only to the Page's primary receiver, and only on accounts connected through a Facebook Page. On an Instagram Login connection it answers 400 `platform_not_supported`.
+ * - `request`: ask the current owner to pass the thread (`request_thread_control`); nothing changes until it does. Not available on Instagram Login connections (400 `platform_not_supported`).
  * - `release`: give the thread back to the primary receiver (`release_thread_control`).
  *
  * While another app owns a Facebook or Instagram thread, inbound arrive with `metadata.standby: true` and a send answers 409 `not_thread_owner`. The conversation's `threadControl` follows the result; a `conversation.control_changed` webhook fires when Meta later reports the change.

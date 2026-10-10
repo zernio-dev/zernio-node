@@ -13727,7 +13727,7 @@ export type WebhookPayloadMessage = {
      */
     metadata?: {
         /**
-         * true when this inbound arrived on Meta's standby path because another app owned the conversation: Meta Business Agent on WhatsApp, another handover receiver (such as Page Inbox) on Facebook and Instagram. That app answers it, Zernio only observes, and no automation runs. On WhatsApp sending a reply takes control back; on Facebook and Instagram take control first with POST /v1/inbox/conversations/{conversationId}/thread-control. See conversation.control_changed.
+         * true when this inbound arrived on Meta's standby path because another app owned the conversation: Meta Business Agent on WhatsApp, another handover receiver (such as Page Inbox) on Facebook and Instagram. That app answers it, Zernio only observes, and no automation runs. On WhatsApp sending a reply takes control back; on Facebook, and on Instagram accounts connected through a Facebook Page, take control first with POST /v1/inbox/conversations/{conversationId}/thread-control; an Instagram Login connection cannot take or request and waits for the owner to pass it. See conversation.control_changed.
          */
         standby?: boolean;
         /**
@@ -28807,7 +28807,7 @@ export type SetConversationThreadControlData = {
          */
         accountId: string;
         /**
-         * `request` is Facebook and Instagram only.
+         * `request` is Facebook and Instagram only. `take` and `request` are refused with `platform_not_supported` on Instagram accounts connected with Instagram Login.
          */
         action: 'release' | 'take' | 'pass' | 'request';
         /**
