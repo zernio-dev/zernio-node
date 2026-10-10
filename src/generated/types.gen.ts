@@ -10930,14 +10930,14 @@ export type TargetingSpec = {
      */
     languages?: Array<(string)>;
     /**
-     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id. On Google, applied as ad-group interest criteria (affinity and in-market categories) on Display and Search ad groups the request creates; rejected with 400 on Performance Max, on Demand Gen (use the Demand Gen audience `userInterests` there), when attaching to an existing ad group (`adSetId`), and on OpenAI. On Google, interests are create-only.
+     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id. On Google, applied as ad-group interest criteria (affinity and in-market categories) on Display and Search ad groups the request creates; rejected with 400 on Performance Max, on Demand Gen (use the Demand Gen audience `userInterests` there), when attaching to an existing ad group (`adSetId`), and on OpenAI. On Google, interests are create-only. On TikTok, bare numeric ids are interest categories (`interest_category_ids`) and ids like `keyword:123456` from `dimension=interestKeyword` are additional interests (`interest_keyword_ids`); any other id returns 422 naming `targeting.interests`. TikTok matches people who fit ANY selected interest, additional interest or behavior (one OR'd group), and that group is ANDed with location, age, gender and the other dimensions.
      */
     interests?: Array<{
         id: string;
         name?: string;
     }>;
     /**
-     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, and the ad group uses the TikTok placement only.
+     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, or who viewed videos with a picked hashtag (`hashtag:<id>` ids from `dimension=hashtag`, sent as a `HASHTAG_RELATED` action with `VIEW_HASHTAG`), and the ad group uses the TikTok placement only. On TikTok, behaviors are OR'd with interests and additional interests.
      */
     behaviors?: Array<{
         id: string;
@@ -48146,7 +48146,7 @@ export type CreateStandaloneAdData = {
         ageMin?: number;
         ageMax?: number;
         /**
-         * Interest objects from /v1/ads/interests. Each must include id and name.
+         * Interest objects from /v1/ads/targeting/search?dimension=interest (or dimension=interestKeyword on TikTok). Each must include id and name. On TikTok, bare numeric ids are interest categories (`interest_category_ids`) and ids like `keyword:123456` from `dimension=interestKeyword` are additional interests (`interest_keyword_ids`); any other id returns 422 naming `targeting.interests`. TikTok matches people who fit ANY selected interest, additional interest or behavior (one OR'd group), and that group is ANDed with location, age, gender and the other dimensions.
          */
         interests?: Array<{
             id: string;
@@ -48178,7 +48178,7 @@ export type CreateStandaloneAdData = {
             address?: string;
         }>;
         /**
-         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, and the ad group uses the TikTok placement only. Each must include id.
+         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, or who viewed videos with a picked hashtag (`hashtag:<id>` ids from `dimension=hashtag`, sent as a `HASHTAG_RELATED` action with `VIEW_HASHTAG`), and the ad group uses the TikTok placement only. On TikTok, behaviors are OR'd with interests and additional interests. Each must include id.
          */
         behaviors?: Array<{
             id: string;
@@ -49575,9 +49575,9 @@ export type SearchAdTargetingData = {
          */
         countryCode?: string;
         /**
-         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities (`behavior` is Meta only), `income` resolves the normalized income tiers, `language` resolves Google's targetable language_constant table (Google only), `workPosition`/`workEmployer`/`workIndustry` resolve Meta work demographics, `industry`/`jobFunction`/`seniority`/`companySize` resolve LinkedIn B2B facets (LinkedIn only). Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
+         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities (`behavior` on Meta, TikTok and LinkedIn), `interestKeyword`/`hashtag` resolve TikTok additional interests and hashtags (TikTok only), `income` resolves the normalized income tiers, `language` resolves Google's targetable language_constant table (Google only), `workPosition`/`workEmployer`/`workIndustry` resolve Meta work demographics, `industry`/`jobFunction`/`seniority`/`companySize` resolve LinkedIn B2B facets (LinkedIn only). Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
          */
-        dimension?: 'geo' | 'interest' | 'behavior' | 'income' | 'language' | 'workPosition' | 'workEmployer' | 'workIndustry' | 'industry' | 'jobFunction' | 'seniority' | 'companySize';
+        dimension?: 'geo' | 'interest' | 'interestKeyword' | 'behavior' | 'hashtag' | 'income' | 'language' | 'workPosition' | 'workEmployer' | 'workIndustry' | 'industry' | 'jobFunction' | 'seniority' | 'companySize';
         /**
          * Only used when `dimension=geo`. The kind of location to resolve. `all` searches every type in one relevance-ranked call. Defaults to `city`.
          */
@@ -49604,7 +49604,7 @@ export type SearchAdTargetingResponse = ({
          */
         name: string;
         /**
-         * What the result is. Equals the requested dimension (interest, behavior, income, language, workPosition, workEmployer, workIndustry, industry, jobFunction, seniority, companySize), or the location level for geo (country, region, city, zip, metro, ...).
+         * What the result is. Equals the requested dimension (interest, interestKeyword, behavior, hashtag, income, language, workPosition, workEmployer, workIndustry, industry, jobFunction, seniority, companySize), or the location level for geo (country, region, city, zip, metro, ...).
          */
         type: string;
         /**
@@ -49615,6 +49615,10 @@ export type SearchAdTargetingResponse = ({
          * Optional estimated reachable users for this option, when the platform returns it.
          */
         audienceSize?: (number) | null;
+        /**
+         * TikTok `interestKeyword` and `hashtag` results only: TikTok's availability status. `EFFECTIVE` / `INEFFECTIVE` for additional interests, `ONLINE` / `OFFLINE` for hashtags. Only `EFFECTIVE` and `ONLINE` ids can be targeted.
+         */
+        status?: string;
         /**
          * ISO-3166 alpha-2 of the country a sub-country geo result (city, region, zip, metro) belongs to, when the platform reports it (Meta does). Useful to know whether a location falls under the EU DSA disclosure rules before creating the ad.
          */

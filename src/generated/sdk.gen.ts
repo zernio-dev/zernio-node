@@ -12575,10 +12575,17 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * Meta: its fixed behaviors catalog (e.g. `Small business owners`, `Frequent Travelers`).
  * TikTok: video and creator interaction categories (e.g. `Software & Apps`), with ids like
  * `video:1913101` or `creator:24001` and `path` starting with `Video interactions` or
- * `Creator interactions`. LinkedIn: member behaviors (e.g. `Frequent Travelers`,
+ * `Creator interactions` (hashtags are their own `hashtag` dimension). LinkedIn: member behaviors (e.g. `Frequent Travelers`,
  * `Job Seekers`, `Recently Promoted`), ids like `urn:li:memberBehavior:9`. Google has no
  * separate behavior catalog: its in-market and affinity segments come back from `interest`,
  * and X removed behavior targeting from its Ads API
+ * - `interestKeyword`: TikTok only. The "Additional interests" of TikTok Ads Manager (e.g. `folk`
+ * returns `Folk Music`), from TikTok's keyword recommendations for the seed `q`. Ids look like
+ * `keyword:123456` and go in `TargetingSpec.interests`, next to interest categories. Only keywords
+ * TikTok lets an ad group target come back (`status` `EFFECTIVE`). TikTok returns no audience size
+ * - `hashtag`: TikTok only. Hashtags recommended for the seed `q`, to target people who viewed videos
+ * with them. Ids look like `hashtag:123456` and go in `TargetingSpec.behaviors`. Only hashtags
+ * TikTok reports `ONLINE` come back. Spaces in `q` are removed first, because TikTok recommends no hashtags for a multi-word seed (`acoustic guitar` searches `acousticguitar`)
  * - `income`: the household-income tiers the platform can target (Meta, TikTok, Google).
  * The id is the normalized tier (`top_5`, `top_10`, `top_10_25`, `top_25_50`) to pass as
  * `TargetingSpec.incomeTier`, never a platform segment id. Meta's tiers are US-only
@@ -12598,6 +12605,10 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * TikTok `interest` searches TikTok's interest category catalog (about 700 categories over
  * four levels, `path` holds the parent categories), matched by name in Zernio. The ids are
  * what `TargetingSpec.interests` sends to TikTok as `interest_category_ids`.
+ * For `interestKeyword` and `hashtag`, a `q` made only of prefixed ids (`keyword:101,keyword:102` or
+ * `hashtag:201`) looks those ids up instead of searching, unavailable ones included with their `status`
+ * (`INEFFECTIVE` or `OFFLINE`), so ids read back from an ad group (`interest_keyword_ids`, `actions`
+ * in `nativeSettings`) resolve to names. An `interestKeyword` lookup takes at most 50 ids (more returns 400 naming `q`).
  * Work industries are a fixed ~30-entry Meta catalog with no server-side query,
  * so `workIndustry` matching, ranking and `limit` happen in Zernio. `language`
  * is likewise a fixed, checked-in table of Google's targetable
