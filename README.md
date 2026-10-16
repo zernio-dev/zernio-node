@@ -52,9 +52,11 @@ console.log(`Published to ${post.platforms.length} platforms!`);
 const zernio = new Zernio({
   apiKey: 'your-api-key', // Defaults to process.env['ZERNIO_API_KEY']
   baseURL: 'https://zernio.com/api',
-  timeout: 60000,
+  timeout: 300000,
 });
 ```
+
+A per-call `signal` overrides `timeout`, and a timed-out call rejects with a `TimeoutError`.
 
 ## Examples
 

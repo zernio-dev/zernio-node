@@ -983,8 +983,8 @@ export interface ClientOptions {
   baseURL?: string | null | undefined;
 
   /**
-   * The maximum amount of time (in milliseconds) that the client should wait for a response.
-   * @default 60000
+   * Maximum time in milliseconds for each request, response body included. A timed-out call rejects with a `TimeoutError` DOMException. `0` or `Infinity` disables it, and a `signal` passed to a call replaces it for that call. Creates with `publishNow` publish inside the request and can take minutes.
+   * @default 300000
    */
   timeout?: number;
 
@@ -1019,7 +1019,7 @@ export interface ClientOptions {
  * ```
  */
 export class Zernio {
-  private _options: ClientOptions;
+  private _timeout: number | undefined;
 
   /**
    * HTTP client owned by this instance. Every namespace method below is bound
@@ -1049,13 +1049,17 @@ export class Zernio {
    * Routes a generated operation through this instance's client, preserving the
    * operation's own signature. Reads `_client` when the method is called, not
    * when it is bound, because class fields initialize before the constructor
-   * body runs.
+   * body runs. Each call gets its own timeout signal.
    */
   private _bind<F>(operation: F): F {
     return ((options?: Record<string, unknown>) => {
       const withClient = { ...options };
       if (withClient['client'] === undefined) {
         withClient['client'] = this._dispatchClient;
+      }
+      // A caller signal replaces the timeout instead of joining it: AbortSignal.any needs Node 18.17 and engines allows 18.0.
+      if (withClient['signal'] === undefined && this._timeout !== undefined) {
+        withClient['signal'] = AbortSignal.timeout(this._timeout);
       }
       return (operation as (opts: unknown) => unknown)(withClient);
     }) as F;
@@ -3016,7 +3020,11 @@ export class Zernio {
 
     this.apiKey = apiKey;
     this.baseURL = options.baseURL ?? 'https://zernio.com/api';
-    this._options = options;
+    // AbortSignal.timeout throws a RangeError outside uint32 integers, and `timeout` was
+    // ignored by every earlier release, so no value an integrator already passes may start throwing.
+    const timeout = options.timeout ?? 300000;
+    this._timeout =
+      timeout > 0 && Number.isFinite(timeout) ? Math.min(Math.ceil(timeout), 2 ** 32 - 1) : undefined;
 
     // One client per instance. Interceptors used to be registered on the
     // module-global client, so every `new Zernio()` stacked another auth

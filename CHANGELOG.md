@@ -5,6 +5,11 @@ All notable changes to the Late Node.js SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- The `timeout` client option is now applied to every request (it was previously ignored). The default is 300000 ms, and a timed-out call rejects with a `TimeoutError` DOMException. A per-call `signal` replaces the timeout for that call. If you set `timeout` by hand and use `publishNow`, allow for publishes that take minutes. A timed-out create can still complete on the server, so retry it with the same `Idempotency-Key`.
+
 ## [0.2.519] - 2026-08-07
 
 ### Fixed
