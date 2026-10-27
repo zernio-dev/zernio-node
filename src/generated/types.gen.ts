@@ -30751,7 +30751,7 @@ export type ListInboxConversationsResponse = ({
         updatedTime?: string;
         status?: 'active' | 'archived';
         /**
-         * Number of unread messages
+         * Number of unread incoming messages, capped at 1000. Read from a replica, so it can trail a conversation you just marked read by a few seconds.
          */
         unreadCount?: (number) | null;
         /**
