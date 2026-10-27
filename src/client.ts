@@ -266,6 +266,7 @@ import {
   disableVoiceOnNumber,
   disableWhatsAppCalling,
   disableWhatsAppCallingLegacy,
+  dismissAdsAlert,
   dismissGoogleRecommendations,
   downloadTikTokVideo,
   duplicateAd,
@@ -577,6 +578,7 @@ import {
   listAdStudies,
   listAdVideos,
   listAds,
+  listAdsAlerts,
   listAdsBusinessCenters,
   listAdsInstagramAccounts,
   listAdsInstagramPosts,
@@ -2177,6 +2179,8 @@ export class Zernio {
     removeAdGroupAssets: this._bind(removeAdGroupAssets),
     getAdReview: this._bind(getAdReview),
     getTikTokSmartPlusAdReview: this._bind(getTikTokSmartPlusAdReview),
+    listAdsAlerts: this._bind(listAdsAlerts),
+    dismissAdsAlert: this._bind(dismissAdsAlert),
     listTikTokSmartPlusReviews: this._bind(listTikTokSmartPlusReviews),
     listCampaignNegativeKeywordLists: this._bind(listCampaignNegativeKeywordLists),
     replaceCampaignNegativeKeywordLists: this._bind(replaceCampaignNegativeKeywordLists),
@@ -2777,6 +2781,10 @@ export class Zernio {
     getAdReview: this._bind(getAdReview),
     /** @deprecated Use `zernio.adcampaigns.getTikTokSmartPlusAdReview` instead. */
     getTikTokSmartPlusAdReview: this._bind(getTikTokSmartPlusAdReview),
+    /** @deprecated Use `zernio.adcampaigns.listAdsAlerts` instead. */
+    listAdsAlerts: this._bind(listAdsAlerts),
+    /** @deprecated Use `zernio.adcampaigns.dismissAdsAlert` instead. */
+    dismissAdsAlert: this._bind(dismissAdsAlert),
     /** @deprecated Use `zernio.adcampaigns.listTikTokSmartPlusReviews` instead. */
     listTikTokSmartPlusReviews: this._bind(listTikTokSmartPlusReviews),
     /** @deprecated Use `zernio.adcampaigns.listCampaignNegativeKeywordLists` instead. */

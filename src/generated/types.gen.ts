@@ -1738,6 +1738,50 @@ export type AdRuleSchedule = {
  */
 export type everyMinutes = 60 | 180 | 360 | 720 | 1440;
 
+export type AdsAlert = {
+    /**
+     * Stable for the same problem on the same entity. Pass it to POST /v1/ads/alerts/{alertId}/dismiss.
+     */
+    id?: string;
+    kind?: 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limited' | 'spend_no_results';
+    severity?: 'error' | 'warning' | 'info';
+    title?: string;
+    /**
+     * What happened, in plain words. For a rejection or delivery issue, the platform's own reason when it gave one.
+     */
+    message?: string;
+    platform?: string;
+    platformAdAccountId?: string;
+    entity?: {
+        level?: 'ad_account' | 'campaign' | 'ad_set' | 'ad';
+        /**
+         * The platform id of the entity.
+         */
+        id?: string;
+        name?: (string) | null;
+    };
+    /**
+     * The Zernio ad id when the entity is an ad, for GET /v1/ads/{adId}.
+     */
+    adId?: string;
+    currency?: (string) | null;
+    detectedAt?: string;
+    /**
+     * Where to fix it on the platform, when there is such a place.
+     */
+    fix?: {
+        label?: string;
+        url?: string;
+    };
+    dismissed?: boolean;
+};
+
+export type kind = 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limited' | 'spend_no_results';
+
+export type severity = 'error' | 'warning' | 'info';
+
+export type level = 'ad_account' | 'campaign' | 'ad_set' | 'ad';
+
 /**
  * One ad schedule window as Google stores it. Half-open: it is exclusive of the end minute, so 09:00-12:00 and 12:00-17:00 are adjacent, not overlapping.
  */
@@ -1783,6 +1827,19 @@ export type AdsTimelineResponse = {
      * Meta only. Present and true while historical data is being backfilled.
      */
     backfillPending?: boolean;
+    /**
+     * Only with `compare=previous`. The daily rows of `previousRange`, in the same shape as `rows`.
+     */
+    previousRows?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Only with `compare=previous`. The period of the same length that ends the day before `fromDate`.
+     */
+    previousRange?: {
+        fromDate?: string;
+        toDate?: string;
+    };
     rows?: Array<{
         date?: string;
         /**
@@ -1924,6 +1981,10 @@ export type AdTreeAdSet = {
     } | null;
     metrics?: AdMetrics;
     /**
+     * Only with `compare=previous`. The same metrics over `previousRange`.
+     */
+    previousMetrics?: (AdMetrics);
+    /**
      * What the delivery system optimizes for. Meta ad set optimization goal (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION), or on LinkedIn the campaign's effective optimizationTargetType (NONE means manual bidding). See the `optimizationGoal` field on `Ad` for the full value spaces.
      */
     optimizationGoal?: (string) | null;
@@ -2032,6 +2093,10 @@ export type AdTreeCampaign = {
      */
     currency?: (string) | null;
     metrics?: AdMetrics;
+    /**
+     * Only with `compare=previous`. The same metrics over `previousRange`.
+     */
+    previousMetrics?: (AdMetrics);
     platformAdAccountId?: string;
     /**
      * Human-readable advertiser/account name from the platform. Refreshed on every sync.
@@ -2088,6 +2153,17 @@ export type AdTreeCampaign = {
 export type AdTreeResponse = {
     campaigns?: Array<AdTreeCampaign>;
     pagination?: Pagination;
+    /**
+     * When the most recently synced ad on this page was last read from the platform. Null before the first sync.
+     */
+    syncedAt?: (string) | null;
+    /**
+     * Only with `compare=previous`. The range `previousMetrics` covers.
+     */
+    previousRange?: {
+        fromDate?: string;
+        toDate?: string;
+    };
     /**
      * Meta only. Present and true while historical data is being backfilled.
      */
@@ -8081,7 +8157,7 @@ export type GoogleListingGroupDimension = {
     };
 };
 
-export type level = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
+export type level2 = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
 
 export type condition = 'NEW' | 'REFURBISHED' | 'USED';
 
@@ -8567,7 +8643,7 @@ export type ImessageSenderLifecycle = {
     createdAt?: string;
 };
 
-export type kind = 'phone' | 'email';
+export type kind2 = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
@@ -9494,7 +9570,7 @@ export type InstagramVideoFallback = {
     };
 };
 
-export type kind2 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
+export type kind3 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
 
 /**
  * A Google Search keyword: a bare string (BROAD match), or an object naming the match type.
@@ -13385,7 +13461,7 @@ export type platform14 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | '
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
-export type kind3 = 'pixel' | 'tag' | 'insight_tag';
+export type kind4 = 'pixel' | 'tag' | 'insight_tag';
 
 /**
  * One health check the platform runs on a tracking tag.
@@ -14746,7 +14822,7 @@ export type event7 = 'ad.delivery_issue';
 /**
  * Always `AD`.
  */
-export type level2 = 'AD';
+export type level3 = 'AD';
 
 /**
  * Webhook payload for the `ad.review.approved` and `ad.review.rejected` events.
@@ -14954,7 +15030,7 @@ export type event9 = 'ad_rule.triggered';
 /**
  * Whether the rule evaluates campaigns or ad sets.
  */
-export type level3 = 'campaign' | 'adset';
+export type level4 = 'campaign' | 'adset';
 
 /**
  * Webhook payload for the `ad.status_changed` event. Currently emitted
@@ -15086,7 +15162,7 @@ export type event10 = 'ad.status_changed';
 /**
  * Hierarchy level the status applies to. Mirrors Meta's `level`. Creative-level events are not forwarded.
  */
-export type level4 = 'CAMPAIGN' | 'AD_SET' | 'AD';
+export type level5 = 'CAMPAIGN' | 'AD_SET' | 'AD';
 
 /**
  * Webhook payload for the `ad.video.processed` event. Fires once per
@@ -15525,7 +15601,7 @@ export type event18 = 'campaign.budget.depleted';
 /**
  * Always `CAMPAIGN`.
  */
-export type level5 = 'CAMPAIGN';
+export type level6 = 'CAMPAIGN';
 
 /**
  * Webhook payload for comment received events (Instagram, Facebook, Threads, YouTube, LinkedIn, Bluesky, Reddit, TikTok). X/Twitter does NOT fire this event. TikTok events carry only the author id: the comment.update webhook has no username, picture or owner flag.
@@ -46461,6 +46537,10 @@ export type GetAdTreeData = {
          */
         campaignId?: string;
         /**
+         * Set to `previous` to also read the period of the same length that ends the day before `fromDate`. Every campaign, ad set and ad gains `previousMetrics` (same fields as `metrics`) and the response gains `previousRange`, so a table can show the change against the previous period in one call.
+         */
+        compare?: 'previous';
+        /**
          * Which tree levels get the `daily[]` series when `timeIncrement=1`. `campaign` (default) attaches it on campaign nodes only: the common per-campaign-trend case, and the smallest payload. `adset` adds it on ad sets too; `ad` adds it on every ad in `ads[]` as well (heaviest: a long range × up to 100 ads per ad set). Scope with `campaignId` to keep `ad`-level responses small. Ignored when `timeIncrement` is unset.
          */
         dailyLevel?: 'campaign' | 'adset' | 'ad';
@@ -46543,6 +46623,10 @@ export type GetAdsTimelineData = {
          * Optional platform-native ad account ID (e.g. Meta `act_…`, TikTok advertiser ID). Use when the connection wraps multiple platform ad accounts and the chart should show one only. Note: rows ingested before 2026-05-13 don't carry this column; the recurring 7-day re-sync repopulates them naturally.
          */
         adAccountId?: string;
+        /**
+         * Set to `previous` to also return `previousRows` for the period of the same length that ends the day before `fromDate`, with that period as `previousRange`. Needs a `fromDate` (sent or defaulted); `toDate` alone answers 400.
+         */
+        compare?: 'previous';
         /**
          * Inclusive start of metrics range (YYYY-MM-DD). Defaults to 90 days ago.
          */
@@ -48300,6 +48384,50 @@ export type ListAdsBusinessCentersResponse = ({
 });
 
 export type ListAdsBusinessCentersError = (ErrorResponse | unknown);
+
+export type ListAdsAlertsData = {
+    query?: {
+        /**
+         * Only alerts of this ads connection (sibling-expanded like /v1/ads/tree). Omit for every ad account the API key can reach.
+         */
+        accountId?: string;
+        /**
+         * Also return dismissed alerts, with `dismissed: true`.
+         */
+        includeDismissed?: boolean;
+    };
+};
+
+export type ListAdsAlertsResponse = ({
+    alerts?: Array<AdsAlert>;
+    /**
+     * Open (not dismissed) alerts per severity.
+     */
+    counts?: {
+        error?: number;
+        warning?: number;
+        info?: number;
+    };
+});
+
+export type ListAdsAlertsError = (ErrorResponse | unknown);
+
+export type DismissAdsAlertData = {
+    path: {
+        /**
+         * The `id` of an alert from GET /v1/ads/alerts.
+         */
+        alertId: string;
+    };
+};
+
+export type DismissAdsAlertResponse = ({
+    id?: string;
+    dismissed?: boolean;
+    dismissedUntil?: string;
+});
+
+export type DismissAdsAlertError = (ErrorResponse | unknown);
 
 export type GetAdsActivityLogData = {
     query: {

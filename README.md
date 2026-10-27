@@ -529,6 +529,7 @@ try {
 | `adCampaigns.listAdGroupAssets()` | List ad-group assets |
 | `adCampaigns.listAdKeywords()` | List Search keywords |
 | `adCampaigns.listAds()` | List ads |
+| `adCampaigns.listAdsAlerts()` | List ads that need attention |
 | `adCampaigns.listAdSets()` | List ad sets |
 | `adCampaigns.listBidStrategies()` | List portfolio bid strategies |
 | `adCampaigns.listCampaignAssets()` | List campaign assets |
@@ -579,6 +580,7 @@ try {
 | `adCampaigns.attachAdGroupAssets()` | Attach ad-group assets |
 | `adCampaigns.attachCampaignAssets()` | Attach campaign assets |
 | `adCampaigns.boostPost()` | Boost post as ad |
+| `adCampaigns.dismissAdsAlert()` | Dismiss an ads alert |
 | `adCampaigns.dismissGoogleRecommendations()` | Dismiss Google Ads recommendations |
 | `adCampaigns.duplicateAd()` | Duplicate an ad |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
