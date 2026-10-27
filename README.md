@@ -467,6 +467,7 @@ try {
 | `adAccounts.createValueRuleSet()` | Create a value rule set |
 | `adAccounts.getAdAccountBilling()` | Get ad account billing |
 | `adAccounts.getAdAccountFinance()` | Ad account finances |
+| `adAccounts.getAdAccountHealth()` | Check an ad account before creating ads |
 | `adAccounts.getAdAccountHierarchy()` | Get manager account hierarchy |
 | `adAccounts.getAdAccountLiveEntities()` | Read an ad account's campaigns and ad sets live |
 | `adAccounts.getAdComments()` | List comments on an ad |
@@ -1082,6 +1083,7 @@ try {
 | `leadGen.updateLead()` | Update a lead's status |
 | `leadGen.deleteTestLead()` | Delete a test lead |
 | `leadGen.archiveLeadForm()` | Archive a lead form |
+| `leadGen.countLeads()` | Count leads by status |
 
 ### Mentions
 | Method | Description |

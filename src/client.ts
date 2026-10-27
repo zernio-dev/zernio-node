@@ -80,6 +80,7 @@ import {
   connectWhatsAppEmbeddedSignup,
   connectWhopAdsCredentials,
   connectWordPressWithApplicationPassword,
+  countLeads,
   createAccountGroup,
   createAdAccount,
   createAdAudience,
@@ -294,6 +295,7 @@ import {
   getAd,
   getAdAccountBilling,
   getAdAccountFinance,
+  getAdAccountHealth,
   getAdAccountHierarchy,
   getAdAccountLiveEntities,
   getAdAnalytics,
@@ -2338,6 +2340,7 @@ export class Zernio {
     assignAdAccountUser: this._bind(assignAdAccountUser),
     removeAdAccountUser: this._bind(removeAdAccountUser),
     getAdAccountFinance: this._bind(getAdAccountFinance),
+    getAdAccountHealth: this._bind(getAdAccountHealth),
     getAdAccountLiveEntities: this._bind(getAdAccountLiveEntities),
     createAdAccount: this._bind(createAdAccount),
     listAdAccounts: this._bind(listAdAccounts),
@@ -2364,6 +2367,7 @@ export class Zernio {
    */
   leadgen = {
     listLeads: this._bind(listLeads),
+    countLeads: this._bind(countLeads),
     updateLead: this._bind(updateLead),
     listLeadForms: this._bind(listLeadForms),
     createLeadForm: this._bind(createLeadForm),
@@ -2923,6 +2927,8 @@ export class Zernio {
     removeAdAccountUser: this._bind(removeAdAccountUser),
     /** @deprecated Use `zernio.adaccounts.getAdAccountFinance` instead. */
     getAdAccountFinance: this._bind(getAdAccountFinance),
+    /** @deprecated Use `zernio.adaccounts.getAdAccountHealth` instead. */
+    getAdAccountHealth: this._bind(getAdAccountHealth),
     /** @deprecated Use `zernio.adaccounts.getAdAccountLiveEntities` instead. */
     getAdAccountLiveEntities: this._bind(getAdAccountLiveEntities),
     /** @deprecated Use `zernio.adaccounts.createAdAccount` instead. */
@@ -3093,6 +3099,8 @@ export class Zernio {
     reserveRfPrediction: this._bind(reserveRfPrediction),
     /** @deprecated Use `zernio.leadgen.listLeads` instead. */
     listLeads: this._bind(listLeads),
+    /** @deprecated Use `zernio.leadgen.countLeads` instead. */
+    countLeads: this._bind(countLeads),
     /** @deprecated Use `zernio.leadgen.updateLead` instead. */
     updateLead: this._bind(updateLead),
     /** @deprecated Use `zernio.leadgen.listLeadForms` instead. */

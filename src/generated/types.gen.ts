@@ -1121,6 +1121,14 @@ export type AdLead = {
      * When the first WhatsApp message to the lead was delivered.
      */
     firstContactedAt?: (string) | null;
+    /**
+     * The Inbox conversation a lead_received workflow opened with the lead.
+     */
+    conversationId?: (string) | null;
+    /**
+     * Meta leads only. When the `lead.received` webhook was delivered; null while it has not been.
+     */
+    webhookDeliveredAt?: (string) | null;
 };
 
 /**
@@ -6604,6 +6612,12 @@ export type ErrorResponse = {
         [key: string]: unknown;
     };
     /**
+     * Meta ads refusals customers hit most come back with their own `code` instead of
+     * `platform_api_error`, the field to fix in `param`, and `details.fix` ({ label, url }) pointing at
+     * the Meta page that resolves it: `ad_account_payment_required`, `ad_account_policy_not_accepted`,
+     * `meta_security_check_required`, `meta_action_blocked`,
+     * `whatsapp_number_not_linked` and `invalid_targeting`. Meta's own error stays in the message
+     * and in `platformError`.
      * Additional structured context (e.g. field-level validation errors), for example
      * `privateReplyConsumed` on the private-reply endpoint's 400 when the comment's
      * single reply is already spent, and `privateReplyOutcome: "unknown"` on its 502 when Meta
@@ -47279,7 +47293,7 @@ export type GenerateAdPreviewsData = {
          */
         existingCreativeId?: string;
         /**
-         * Raw Meta creative spec forwarded verbatim to /generatepreviews. Mutually exclusive with existingCreativeId.
+         * Raw Meta creative spec forwarded to /generatepreviews. Mutually exclusive with existingCreativeId. An `object_story_spec` without `page_id` or `instagram_user_id`, and a `source_instagram_media_id` spec without `instagram_user_id`, get the connection's Facebook Page and Instagram account, as a create would.
          */
         creativeSpec?: {
             [key: string]: unknown;
@@ -50904,6 +50918,37 @@ export type GetAdAccountFinanceResponse = ({
 
 export type GetAdAccountFinanceError = (unknown | ErrorResponse);
 
+export type GetAdAccountHealthData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetAdAccountHealthResponse = ({
+    adAccountId?: string;
+    status?: 'ok' | 'attention' | 'blocked';
+    checkedAt?: string;
+    checks?: Array<{
+        id: 'account_status' | 'payment' | 'spend_cap' | 'page' | 'instagram' | 'lead_terms' | 'pixel' | 'whatsapp';
+        status: 'ok' | 'warning' | 'error' | 'missing' | 'unknown';
+        title: string;
+        message: string;
+        fix?: {
+            label?: string;
+            url?: string;
+        };
+    }>;
+});
+
+export type GetAdAccountHealthError = (ErrorResponse | unknown);
+
 export type GetAdAccountLiveEntitiesData = {
     query: {
         /**
@@ -53466,9 +53511,17 @@ export type ListLeadsData = {
          */
         accountId?: string;
         /**
+         * Meta only. Comma-separated connected account ids, to list several accounts at once. Without accountId or accountIds every account of the team is listed.
+         */
+        accountIds?: string;
+        /**
          * LinkedIn only: the LinkedIn ad account id whose responses to read (owner-scoped finder).
          */
         adAccountId?: string;
+        /**
+         * Meta only. The platform campaign id the lead came from.
+         */
+        campaignId?: string;
         /**
          * Keyset cursor from a previous response's pagination.cursor (Meta: AdLead id; LinkedIn: numeric start offset).
          */
@@ -53479,9 +53532,21 @@ export type ListLeadsData = {
         formId?: string;
         limit?: number;
         /**
+         * meta skips the LinkedIn live fetch; linkedin requires accountId to be a LinkedIn ads connection (400 otherwise).
+         */
+        platform?: 'meta' | 'linkedin';
+        /**
+         * Meta only. Case-insensitive text search over the lead's answers and the form name.
+         */
+        q?: string;
+        /**
          * Unix seconds; only leads created at/after this timestamp. Millisecond timestamps return 400 with instructions to divide by 1000.
          */
         since?: number;
+        /**
+         * Meta only. Comma-separated lead statuses: new, contacted, unreachable, qualified, converted, disqualified.
+         */
+        status?: string;
     };
 };
 
@@ -53502,6 +53567,34 @@ export type ListLeadsResponse = ({
 });
 
 export type ListLeadsError = (ErrorResponse | unknown);
+
+export type CountLeadsData = {
+    query?: {
+        /**
+         * Count one connected account only.
+         */
+        accountId?: string;
+        /**
+         * The platform campaign id the leads came from.
+         */
+        campaignId?: string;
+    };
+};
+
+export type CountLeadsResponse = ({
+    status?: string;
+    counts?: {
+        new?: number;
+        contacted?: number;
+        unreachable?: number;
+        qualified?: number;
+        converted?: number;
+        disqualified?: number;
+    };
+    total?: number;
+});
+
+export type CountLeadsError = (ErrorResponse | unknown);
 
 export type UpdateLeadData = {
     body: {
