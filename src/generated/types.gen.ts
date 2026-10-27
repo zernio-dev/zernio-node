@@ -2013,6 +2013,10 @@ export type AdTreeAdSet = {
      */
     servingStatuses?: Array<(string)>;
     /**
+     * Meta only. Where the ad set stands in Meta's learning phase, as of the last sync: LEARNING while delivery is still being optimized (about 50 optimization events in 7 days end it), SUCCESS once it has left learning, FAIL when it could not gather enough events (Ads Manager's "Learning limited"). Null on other platforms and for ad sets not yet synced.
+     */
+    learningStatus?: ('LEARNING' | 'SUCCESS' | 'FAIL') | null;
+    /**
      * Meta promoted object for this ad set (conversion event details)
      */
     promotedObject?: {
@@ -2029,6 +2033,11 @@ export type AdTreeAdSet = {
      */
     daily?: Array<AdDailyMetrics>;
 };
+
+/**
+ * Meta only. Where the ad set stands in Meta's learning phase, as of the last sync: LEARNING while delivery is still being optimized (about 50 optimization events in 7 days end it), SUCCESS once it has left learning, FAIL when it could not gather enough events (Ads Manager's "Learning limited"). Null on other platforms and for ad sets not yet synced.
+ */
+export type learningStatus = 'LEARNING' | 'SUCCESS' | 'FAIL';
 
 /**
  * Campaign with nested ad sets and rolled-up metrics
