@@ -56886,7 +56886,7 @@ export type ListAdAudiencesData = {
          * Platform ad account ID
          */
         adAccountId: string;
-        platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads';
+        platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads' | 'redditads';
         /**
          * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences; the other types return uploaded/derived audiences.
          */
@@ -56907,7 +56907,10 @@ export type ListAdAudiencesResponse = ({
         platformAudienceId?: string;
         name?: string;
         description?: string;
-        type?: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'tiktok_engagement' | 'pinterest_engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
+        /**
+         * `reddit_engagement`, `third_party` and `in_market` are listed from Reddit (engagement retargeting, and Reddit's own audiences) so they can be targeted. Zernio cannot create them.
+         */
+        type?: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'tiktok_engagement' | 'pinterest_engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting' | 'reddit_engagement' | 'third_party' | 'in_market';
         /**
          * Present (and the only meaningful payload) when `type` is `saved_targeting`. Null for uploaded/derived audience types.
          */
@@ -56992,11 +56995,11 @@ export type CreateAdAudienceData = {
         linkedinPageUrl?: string;
     }>;
     /**
-     * website: the Meta pixel, TikTok pixel or Pinterest tag id. Required on those three, rejected on Google.
+     * website: the Meta pixel, TikTok pixel, Pinterest tag or Reddit pixel id. Required on those four, rejected on Google.
      */
     pixelId?: string;
     /**
-     * Required for website (Meta max 180, TikTok 7/14/30/60/90/180, Pinterest and Google max 540), meta_engagement (max 365) and tiktok_engagement (7/14/30/60/90/180; organic and live video and most business-account events only 7/14/30).
+     * Required for website (Meta max 180, TikTok 7/14/30/60/90/180, Reddit max 90, Pinterest and Google max 540), meta_engagement (max 365) and tiktok_engagement (7/14/30/60/90/180; organic and live video and most business-account events only 7/14/30).
      */
     retentionDays?: number;
     /**
@@ -57014,6 +57017,8 @@ export type CreateAdAudienceData = {
      * meta_engagement: the engagement event; defaults per source
      * (page → page_engaged, instagram → ig_business_profile_all,
      * video → video_watched). Ignored when `rule` is provided.
+     *
+     * website on Reddit: the conversion event (default `PAGE_VISIT`), or a custom event name.
      *
      * website on TikTok: the pixel event (default `PAGE BROWSE`). website
      * on Pinterest: the tag event (`pagevisit`, `signup`, `checkout`, `viewcategory`, `search`, `addtocart`, `watchvideo`, `lead`, `custom` or a partner-defined event).
@@ -57239,7 +57244,7 @@ export type AddUsersToAdAudienceResponse = ({
     message?: string;
     numReceived?: number;
     /**
-     * Rows the platform could not read. Returned on Meta only.
+     * Rows the platform could not read. Returned on Meta, and on Reddit for rows without a valid email.
      */
     numInvalid?: number;
 });
@@ -57266,11 +57271,11 @@ export type RemoveUsersFromAdAudienceData = {
 export type RemoveUsersFromAdAudienceResponse = ({
     message?: string;
     /**
-     * Rows Meta received.
+     * Rows the platform received.
      */
     numReceived?: number;
     /**
-     * Rows Meta could not read.
+     * Rows the platform could not read.
      */
     numInvalid?: number;
     /**

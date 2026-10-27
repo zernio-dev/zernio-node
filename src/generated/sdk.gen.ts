@@ -15126,7 +15126,10 @@ export const deleteAdCatalogProductSet = <ThrowOnError extends boolean = false>(
  * List custom audiences
  * Lists the custom audiences in an ad account so you can reuse them for targeting.
  *
- * Supports Meta, Google, TikTok, Pinterest, LinkedIn, and X.
+ * Supports Meta, Google, TikTok, Pinterest, LinkedIn, X, and Reddit.
+ *
+ * On Reddit, `size` is the lower bound of Reddit's matched-users range, and `status` is `too_small`
+ * while the list has matched fewer than 1,000 people.
  *
  */
 export const listAdAudiences = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdAudiencesData, ThrowOnError>) => {
@@ -15140,8 +15143,10 @@ export const listAdAudiences = <ThrowOnError extends boolean = false>(options: O
  * Create custom audience
  * Creates a custom audience from a customer list, website visitors, a lookalike, or people who engaged with your content.
  *
- * `customer_list` is supported on Meta, Google, X, LinkedIn, TikTok, and Pinterest.
- * `website` (pixel/tag visitors) and `lookalike` are supported on Meta, TikTok, Pinterest and Google.
+ * `customer_list` is supported on Meta, Google, X, LinkedIn, TikTok, Pinterest, and Reddit.
+ * `website` (pixel/tag visitors) is supported on Meta, TikTok, Pinterest, Google, and Reddit.
+ * `lookalike` is supported on Meta, TikTok, Pinterest and Google (Reddit's API cannot create one).
+ * Reddit audience names need at least 3 characters.
  * `meta_engagement` is Meta-only, `tiktok_engagement` TikTok-only, `pinterest_engagement` Pinterest-only;
  * `company_list`, `engagement` and `website_retargeting` are LinkedIn-only. A type sent to a platform
  * that does not support it is a 422 `FEATURE_NOT_AVAILABLE`.
@@ -15158,6 +15163,9 @@ export const listAdAudiences = <ThrowOnError extends boolean = false>(options: O
  * Pinterest matches URLs exactly, so `urlContains` is a 400 there.
  * - Google: no `pixelId` (the account's Google tag is used), `retentionDays` 1-540, `urlContains`
  * defaults to `/` (all visitors). Built as a rule-based user list with prepopulation requested.
+ * - Reddit: `pixelId` is the Reddit pixel id, `retentionDays` 1-90. `event` is a Reddit conversion event
+ * (`PAGE_VISIT` by default; also `VIEW_CONTENT`, `SEARCH`, `ADD_TO_CART`, `ADD_TO_WISHLIST`, `PURCHASE`,
+ * `LEAD`, `SIGN_UP`); any other value is sent as a custom event name. `urlContains` and `rule` are a 400.
  *
  * Per-platform rules for `lookalike`: Meta takes `ratio` (0.01-0.20); Pinterest takes `ratio` in whole
  * percents (0.01-0.10) and `country` US, CA or GB; TikTok and Google take `size` (narrow, balanced, broad)
@@ -15225,7 +15233,7 @@ export const updateAdAudience = <ThrowOnError extends boolean = false>(options: 
  * Removes a custom audience from its ad platform (archiving it where the platform does not delete).
  *
  * Removes the audience on its ad platform, then deletes the Zernio record. Meta, Google, TikTok,
- * LinkedIn list and engagement segments, and X are deleted; Pinterest audiences and LinkedIn
+ * LinkedIn list and engagement segments, X, and Reddit are deleted; Pinterest audiences and LinkedIn
  * `website_retargeting` segments are archived, which is how those platforms remove them.
  * `saved_targeting` audiences exist only on Zernio, so only the local record is removed.
  *
@@ -15248,6 +15256,9 @@ export const deleteAdAudience = <ThrowOnError extends boolean = false>(options: 
  * Data is SHA256-hashed server-side before sending to the platform.
  * Email is used on every platform; phone is used on Meta only (other platforms ignore it). On TikTok and Pinterest,
  * the first upload also provisions the audience (deferred create). LinkedIn uploads are full-replace. Max 10,000 users per request.
+ * On Reddit, emails are lowercased and trimmed before hashing, duplicates are sent once, and the upload goes out
+ * in batches of 2,500. Reddit matches by email only: rows without a valid email count in `numInvalid`, and a
+ * request where no row has one is a 400. Reddit audiences need the `redditads` connection, not the Reddit posting account (422).
  *
  * customer_list only. A LinkedIn `company_list` audience takes company rows, not people: send those to
  * `POST /v1/ads/audiences/{audienceId}/companies`. This endpoint 422s for every other audience type.
@@ -15262,13 +15273,13 @@ export const addUsersToAdAudience = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Remove users from audience
- * Removes customer emails and phone numbers from a Meta customer list audience. Same body as
+ * Removes customer emails (and phone numbers on Meta) from a Meta or Reddit customer list audience. Same body as
  * `POST /v1/ads/audiences/{audienceId}/users`: send plaintext rows, they are normalized and
  * SHA256-hashed server-side exactly like an upload, so a row removes the person it added.
  *
- * Meta only, customer_list only. Every other platform returns 422 with code `feature_not_available`,
- * and every other audience type returns 422. Max 10,000 users per request. Meta applies the removal
- * asynchronously, so the audience size does not drop immediately.
+ * Meta and Reddit only, customer_list only. Every other platform returns 422 with code `feature_not_available`,
+ * and every other audience type returns 422. Max 10,000 users per request. The platform applies the removal
+ * asynchronously, so the audience size does not drop immediately. On Reddit `invalidEntrySamples` is always empty.
  *
  */
 export const removeUsersFromAdAudience = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveUsersFromAdAudienceData, ThrowOnError>) => {
