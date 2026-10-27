@@ -639,6 +639,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.setRedditPostFlair).toBeTypeOf('function');
     });
 
+    it('should have startMicrosoftAdminConsent method', () => {
+      expect(client.connect.startMicrosoftAdminConsent).toBeDefined();
+      expect(client.connect.startMicrosoftAdminConsent).toBeTypeOf('function');
+    });
+
   });
 
   describe('connect.bluesky', () => {

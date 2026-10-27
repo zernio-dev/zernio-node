@@ -402,6 +402,7 @@ try {
 | `connect.selectPinterestBoard()` | Select Pinterest board |
 | `connect.selectSnapchatProfile()` | Select Snapchat profile |
 | `connect.setRedditPostFlair()` | Set Reddit post flair |
+| `connect.startMicrosoftAdminConsent()` | Admin-consent link for a Microsoft tenant |
 | `connect.voteRedditThing()` | Vote on a Reddit post or comment |
 
 ### Reddit
@@ -765,6 +766,19 @@ try {
 | `businessAgent.startBusinessAgentEvalRun()` | Start an evaluation run |
 | `businessAgent.uploadBusinessAgentFile()` | Upload a knowledge file |
 
+### Calendar
+| Method | Description |
+|--------|-------------|
+| `calendar.listCalendarEvents()` | List events in a window |
+| `calendar.listCalendars()` | List calendars |
+| `calendar.createCalendarEvent()` | Create an event |
+| `calendar.getCalendarEvent()` | Get an event |
+| `calendar.updateCalendarEvent()` | Update an event |
+| `calendar.deleteCalendarEvent()` | Delete an event |
+| `calendar.calendarAvailability()` | Find meeting slots across accounts |
+| `calendar.calendarFreeBusy()` | Busy blocks for one or more accounts |
+| `calendar.rsvpCalendarEvent()` | Respond to an invitation |
+
 ### Calls
 | Method | Description |
 |--------|-------------|
@@ -970,10 +984,38 @@ try {
 | `discord.sendDiscordDirectMessage()` | Send a Discord Direct Message |
 | `discord.unpinDiscordMessage()` | Unpin a Discord message |
 
+### Email
+| Method | Description |
+|--------|-------------|
+| `email.listEmailFolders()` | List mailbox folders |
+| `email.listEmailMessages()` | List email messages |
+| `email.listEmailThreads()` | List email threads |
+| `email.getEmailMessage()` | Get an email message |
+| `email.getEmailThread()` | Get an email thread with its messages |
+| `email.updateEmailMessage()` | Mark read or starred, or move a message |
+| `email.updateEmailThread()` | Update every message in a thread |
+| `email.downloadEmailAttachment()` | Download an attachment |
+| `email.replyEmailMessage()` | Reply to a message |
+| `email.sendEmailMessage()` | Send an email |
+| `email.trashEmailMessage()` | Move a message to trash |
+
 ### Feedback
 | Method | Description |
 |--------|-------------|
 | `feedback.submitFeedback()` | Submit feedback |
+
+### Files
+| Method | Description |
+|--------|-------------|
+| `files.listFiles()` | List files in a folder or search the drive |
+| `files.createFilePickerSession()` | Create a hosted Google Picker session |
+| `files.createFolder()` | Create a folder |
+| `files.getFile()` | Get a file or folder |
+| `files.getFileShareLink()` | Get an anyone-with-the-link share link |
+| `files.updateFile()` | Rename or move a file |
+| `files.downloadFile()` | Download a file |
+| `files.trashFile()` | Move a file to the trash |
+| `files.uploadFile()` | Upload a file |
 
 ### GMB Attributes
 | Method | Description |

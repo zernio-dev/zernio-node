@@ -2651,7 +2651,7 @@ export type ApiKey = {
     /**
      * Resource groups this key can NOT access (opt-out denylist). Absent or empty means legacy full access. A key with any group disabled is a restricted key (zrk_ prefix) and can never manage API keys, invites, or member identity. Each operation's group is published as x-resource-group. With 'messages' disabled, the key cannot read or send direct messages through any API surface, and it cannot create or edit a webhook subscription broader than itself: it cannot subscribe to, test-fire, redeliver, or read delivery logs for message events. Subscriptions created earlier, from the dashboard, or with a full-access key keep delivering whatever their own `disabledResourceGroups` allows, so restricting an existing integration end to end means restricting the subscription too. OAuth connector tokens (AI assistants and MCP clients) resolve against the same registry, but their groups are not settable yet: treat an authorized connector as full access.
      */
-    disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+    disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files')>;
     /**
      * The team member who created this key. For the team owner's listing this can be any team member; for a non-owner it is always themselves, since a non-owner only ever sees their own keys.
      */
@@ -3505,6 +3505,114 @@ export type BusinessCenter = {
     advertiserCount?: (number) | null;
 };
 
+export type BusyBlock = {
+    start?: string;
+    end?: string;
+};
+
+export type Calendar = {
+    id?: string;
+    accountId?: string;
+    provider?: 'google' | 'microsoft';
+    name?: string;
+    primary?: boolean;
+    timezone?: (string) | null;
+    color?: (string) | null;
+    readOnly?: boolean;
+};
+
+export type provider = 'google' | 'microsoft';
+
+export type CalendarEvent = {
+    id?: string;
+    accountId?: string;
+    provider?: 'google' | 'microsoft';
+    calendarId?: string;
+    title?: string;
+    description?: (string) | null;
+    location?: (string) | null;
+    /**
+     * ISO date-time with the rendered offset, or a date for all-day events.
+     */
+    start?: string;
+    end?: string;
+    allDay?: boolean;
+    timezone?: (string) | null;
+    participants?: Array<(EmailAddress & {
+    status?: 'accepted' | 'declined' | 'tentative' | 'pending';
+    comment?: (string) | null;
+})>;
+    organizer?: (EmailAddress | null);
+    recurrence?: Array<(string)> | null;
+    reminders?: {
+        useDefault?: boolean;
+        overrides?: Array<{
+            minutes?: number;
+        }>;
+    };
+    conferencing?: {
+        provider?: 'google_meet' | 'teams' | 'other';
+        url?: string;
+    } | null;
+    busy?: boolean;
+    visibility?: 'default' | 'public' | 'private';
+    status?: 'confirmed' | 'tentative' | 'cancelled';
+    icalUid?: (string) | null;
+    masterEventId?: (string) | null;
+    htmlLink?: (string) | null;
+    readOnly?: boolean;
+    metadata?: {
+        [key: string]: (string);
+    };
+    createdAt?: (string) | null;
+    updatedAt?: (string) | null;
+};
+
+export type visibility = 'default' | 'public' | 'private';
+
+export type status11 = 'confirmed' | 'tentative' | 'cancelled';
+
+export type CalendarEventFields = {
+    title?: string;
+    /**
+     * HTML.
+     */
+    description?: string;
+    location?: string;
+    /**
+     * ISO date-time, or a date (`YYYY-MM-DD`) for all-day events.
+     */
+    start?: string;
+    /**
+     * Exclusive for all-day events.
+     */
+    end?: string;
+    allDay?: boolean;
+    /**
+     * IANA zone the event is scheduled in. Default UTC.
+     */
+    timezone?: string;
+    participants?: Array<EmailAddress>;
+    /**
+     * RRULE lines, e.g. `RRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=10`.
+     */
+    recurrence?: Array<(string)>;
+    reminders?: {
+        useDefault?: boolean;
+        overrides?: Array<{
+            minutes?: number;
+        }>;
+    };
+    conferencing?: 'google_meet' | 'teams';
+    busy?: boolean;
+    visibility?: 'default' | 'public' | 'private';
+    metadata?: {
+        [key: string]: (string);
+    };
+};
+
+export type conferencing = 'google_meet' | 'teams';
+
 /**
  * One call on a number you own, either channel. `channel` tells you which
  * lane it took: `whatsapp` (WhatsApp Business Calling) or `pstn` (a regular
@@ -3636,7 +3744,7 @@ export type channel = 'whatsapp' | 'pstn';
 
 export type direction2 = 'inbound' | 'outbound';
 
-export type status11 = 'ringing' | 'answered' | 'ended' | 'failed';
+export type status12 = 'ringing' | 'answered' | 'ended' | 'failed';
 
 /**
  * Caller ID presented on the forwarded leg.
@@ -4026,7 +4134,7 @@ export type source = 'comment' | 'live_comment' | 'story_reply' | 'story_mention
 /**
  * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap. 'skipped' also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
  */
-export type status12 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
+export type status13 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
 
 /**
  * How the audience rule resolved. Null on automations without one.
@@ -4320,7 +4428,7 @@ export type method = 'code' | 'automatic';
 
 export type type6 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
 
-export type status13 = 'active' | 'scheduled' | 'expired';
+export type status14 = 'active' | 'scheduled' | 'expired';
 
 export type CommerceImage = {
     /**
@@ -4375,7 +4483,7 @@ export type CommerceMarket = {
     type?: string;
 };
 
-export type status14 = 'active' | 'draft';
+export type status15 = 'active' | 'draft';
 
 export type CommerceMenu = {
     id?: string;
@@ -4890,7 +4998,7 @@ export type ConnectHandoff = {
     } | null;
 };
 
-export type status15 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
+export type status16 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
 
 /**
  * Only with `handoff=true`: the link to show as a QR code.
@@ -5111,7 +5219,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status16 = 'active' | 'inactive';
+export type status17 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -5353,6 +5461,14 @@ export type ConversionEvent = {
 export type actionSource = 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 'system_generated' | 'business_messaging';
 
 export type channel3 = 'whatsapp' | 'messenger' | 'instagram_direct';
+
+export type CreateCalendarEventRequest = {
+    accountId: string;
+    /**
+     * Defaults to the primary calendar.
+     */
+    calendarId?: string;
+} & CalendarEventFields;
 
 export type CreatedGoogleAdAccount = {
     platform: 'google';
@@ -6248,7 +6364,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * `adSetId`, the new ads themselves.
  *
  */
-export type status17 = 'ACTIVE' | 'PAUSED';
+export type status18 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
@@ -6334,6 +6450,14 @@ export type CtwaSingleResponse = {
 };
 
 export type adType3 = 'single';
+
+export type CursorPagination = {
+    hasMore?: boolean;
+    /**
+     * Opaque; pass it back as `cursor`.
+     */
+    nextCursor?: (string) | null;
+};
 
 export type CustomConversion = {
     id?: string;
@@ -6640,7 +6764,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status18 = 1 | 2 | 3 | 4;
+export type status19 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -6675,6 +6799,105 @@ export type DmButton = {
 };
 
 export type type8 = 'url' | 'postback' | 'phone';
+
+export type EmailAddress = {
+    email: string;
+    name?: (string) | null;
+};
+
+export type EmailAttachment = {
+    id?: string;
+    filename?: string;
+    contentType?: string;
+    size?: number;
+    isInline?: boolean;
+    contentId?: (string) | null;
+};
+
+export type EmailFolder = {
+    id?: string;
+    accountId?: string;
+    provider?: 'google' | 'microsoft';
+    name?: string;
+    wellKnown?: 'inbox' | 'sent' | 'drafts' | 'trash' | 'spam' | 'archive';
+    unreadCount?: number;
+    totalCount?: number;
+};
+
+export type wellKnown = 'inbox' | 'sent' | 'drafts' | 'trash' | 'spam' | 'archive';
+
+export type EmailListMeta = {
+    /**
+     * The filters the provider could not apply server-side, so they were applied to the fetched page (Microsoft: `bcc`, `anyEmail`, and every other filter when `searchQueryNative` is set).
+     */
+    filteredClientSide?: Array<(string)>;
+};
+
+export type EmailMessage = {
+    /**
+     * The provider's message id.
+     */
+    id?: string;
+    threadId?: string;
+    accountId?: string;
+    provider?: 'google' | 'microsoft';
+    folders?: Array<(string)>;
+    from?: (EmailAddress | null);
+    to?: Array<EmailAddress>;
+    cc?: Array<EmailAddress>;
+    bcc?: Array<EmailAddress>;
+    replyTo?: Array<EmailAddress>;
+    subject?: string;
+    snippet?: string;
+    text?: (string) | null;
+    html?: (string) | null;
+    attachments?: Array<EmailAttachment>;
+    /**
+     * Only with `includeHeaders=true`.
+     */
+    headers?: {
+        [key: string]: (string);
+    };
+    /**
+     * MIME source, only with `raw=true`.
+     */
+    raw?: string;
+    date?: string;
+    unread?: boolean;
+    starred?: boolean;
+    metadata?: {
+        [key: string]: (string);
+    };
+};
+
+export type EmailMessagePatch = {
+    accountId: string;
+    unread?: boolean;
+    starred?: boolean;
+    /**
+     * Well-known folder name or folder id to move into.
+     */
+    folder?: string;
+};
+
+export type EmailThread = {
+    id?: string;
+    accountId?: string;
+    provider?: 'google' | 'microsoft';
+    subject?: string;
+    snippet?: string;
+    participants?: Array<EmailAddress>;
+    messageIds?: Array<(string)>;
+    draftIds?: Array<(string)>;
+    folders?: Array<(string)>;
+    hasAttachments?: boolean;
+    hasDrafts?: boolean;
+    unread?: boolean;
+    starred?: boolean;
+    earliestMessageAt?: (string) | null;
+    latestMessageReceivedAt?: (string) | null;
+    latestMessageSentAt?: (string) | null;
+};
 
 /**
  * Canonical error envelope. `error` is the human-readable message; `type`,
@@ -7319,7 +7542,63 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status19 = 'received';
+export type status20 = 'received';
+
+/**
+ * A file or folder in a connected Google Drive or OneDrive. Ids are the provider's own.
+ */
+export type FileItem = {
+    id: string;
+    accountId: string;
+    provider: 'google' | 'microsoft';
+    name: string;
+    kind: 'file' | 'folder';
+    mimeType: (string) | null;
+    /**
+     * Bytes; null for folders and Google editors files.
+     */
+    size: (number) | null;
+    parentId: (string) | null;
+    /**
+     * The provider's own link to open the item.
+     */
+    webUrl: (string) | null;
+    /**
+     * False for folders and for Drive files whose owner disabled downloading.
+     */
+    downloadable: boolean;
+    /**
+     * Google Docs, Slides and Drawings download as PDF/PNG and Sheets as XLSX; this is the type the download carries.
+     */
+    exportMimeType?: (string) | null;
+    createdAt: (string) | null;
+    modifiedAt: (string) | null;
+    trashed: boolean;
+};
+
+export type kind2 = 'file' | 'folder';
+
+export type FilePickerSession = {
+    /**
+     * Public session id, echoed as `pickerSessionId` on the redirect and as `picker.sessionId` on the webhook.
+     */
+    id: string;
+    /**
+     * The hosted picker page. Open it in the end user's browser (redirect or new tab, not an iframe). It is a credential: single-use and valid until `expiresAt`.
+     */
+    url: string;
+    /**
+     * 30 minutes after creation.
+     */
+    expiresAt: string;
+};
+
+export type FileShareLink = {
+    url: string;
+    scope: 'anyone_with_link';
+};
+
+export type scope2 = 'anyone_with_link';
 
 export type FollowerStatsResponse = {
     accounts?: Array<AccountWithFollowerStats>;
@@ -7448,7 +7727,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status20 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status21 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -7551,7 +7830,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status21 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status22 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 export type GoogleAdsUserAccessInvitation = {
     invitationId?: string;
@@ -7566,7 +7845,7 @@ export type GoogleAdsUserAccessInvitation = {
 
 export type accessRole = 'ADMIN' | 'STANDARD' | 'READ_ONLY' | 'EMAIL_ONLY' | 'UNKNOWN';
 
-export type status22 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
+export type status23 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
 
 export type GoogleAdsUserAccessInvitationResult = {
     customerId?: string;
@@ -7590,7 +7869,7 @@ export type GoogleAdsUserAccessInvitationResult = {
 /**
  * PENDING once the email is sent; PENDING_APPROVAL while Google waits for a second admin's multi-party approval.
  */
-export type status23 = 'PENDING' | 'PENDING_APPROVAL';
+export type status24 = 'PENDING' | 'PENDING_APPROVAL';
 
 export type GoogleAdsUserInvitationApproval = {
     /**
@@ -8440,7 +8719,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status24 = 'applied' | 'dismissed' | 'failed';
+export type status25 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -8575,7 +8854,7 @@ export type ImessageSandboxContact = {
     createdAt?: string;
 };
 
-export type status25 = 'pending' | 'active';
+export type status26 = 'pending' | 'active';
 
 /**
  * An iMessage sender registered as an account on a profile.
@@ -8643,14 +8922,14 @@ export type ImessageSenderLifecycle = {
     createdAt?: string;
 };
 
-export type kind2 = 'phone' | 'email';
+export type kind3 = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
 /**
  * `awaiting_payment`: the first-month charge is still being confirmed by the card; the number is ordered automatically once it is paid (usually under 5 minutes), or the order fails with `failureReason` when the card declines or nothing confirms within 30 minutes.
  */
-export type status26 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status27 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * Click attribution for a conversation that started from a Meta ad or
@@ -8853,7 +9132,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status27 = 'active' | 'archived';
+export type status28 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -9570,7 +9849,7 @@ export type InstagramVideoFallback = {
     };
 };
 
-export type kind3 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
+export type kind4 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
 
 /**
  * A Google Search keyword: a bare string (BROAD match), or an object naming the match type.
@@ -10131,11 +10410,22 @@ export type MediaContentType = 'image/jpeg' | 'image/jpg' | 'image/png' | 'image
  * Media referenced in posts. URLs must be publicly reachable over HTTPS. Use POST /v1/media/presign for uploads up to 5GB. Zernio auto-compresses images and videos that exceed platform limits (videos over 200 MB may not be compressed).
  */
 export type MediaItem = {
+    /**
+     * Optional when the item names a connected file (`fileId`): inferred from the file's MIME type.
+     */
     type?: 'image' | 'video' | 'gif' | 'document';
     /**
-     * A media item with a null, missing or empty url is dropped.
+     * A media item with a null, missing or empty url is dropped, unless it names a connected file with `fileId` + `accountId`.
      */
     url?: string;
+    /**
+     * A file of a connected Google Drive or OneDrive account (see the Files endpoints). The file is copied into Zernio media storage when the post is created and the item is stored as a plain `url`; a folder, an undownloadable file or an unknown id fails the request with a 4xx naming `mediaItems[i].fileId`. Requires `accountId`.
+     */
+    fileId?: string;
+    /**
+     * The connected Google or Microsoft account the `fileId` belongs to (must have the `files` area). Required with `fileId`.
+     */
+    accountId?: string;
     /**
      * Optional title for the media item. Used as the document title for LinkedIn PDF/carousel posts. If omitted, falls back to the post title, then the filename.
      */
@@ -10171,6 +10461,9 @@ export type MediaItem = {
     tiktokProcessed?: boolean;
 };
 
+/**
+ * Optional when the item names a connected file (`fileId`): inferred from the file's MIME type.
+ */
 export type type13 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaSubtitle = {
@@ -10412,7 +10705,7 @@ export type availability = 'in stock' | 'out of stock' | 'preorder' | 'available
 
 export type condition2 = 'new' | 'refurbished' | 'used';
 
-export type visibility = 'published' | 'staging';
+export type visibility2 = 'published' | 'staging';
 
 export type gender2 = 'female' | 'male' | 'unisex';
 
@@ -10774,6 +11067,20 @@ export type MoneyAmount = {
     currencyCode: string;
 };
 
+export type OpenHours = Array<{
+    /**
+     * 0 = Sunday.
+     */
+    days: Array<(number)>;
+    timezone: string;
+    start: string;
+    end: string;
+    /**
+     * Dates to exclude.
+     */
+    exdates?: Array<(string)>;
+}>;
+
 /**
  * A number you bought or ported. Null fields are omitted, except `socialAccountId` and `ownerAccountId`. Credentials stored for the number (such as the SIP digest password) are never returned; `sipAuthUsername` is the only SIP credential field exposed.
  */
@@ -10949,7 +11256,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status28 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status29 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -10988,6 +11295,11 @@ export type ParameterCatalogProductId = string;
  * A facebook, instagram or metaads account whose Meta login carries catalog_management; its token performs the call instead of the account's own
  */
 export type ParameterCatalogTokenAccountId = string;
+
+/**
+ * The connected Google or Microsoft account.
+ */
+export type ParameterEmailAccountId = string;
 
 /**
  * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
@@ -11111,7 +11423,7 @@ export type PlatformAnalytics = {
     isOwner?: (boolean) | null;
 };
 
-export type status29 = 'published' | 'failed';
+export type status30 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -11314,9 +11626,9 @@ export type Post = {
 /**
  * `cancelled` is set by POST /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts. `pending_approval` (set by `requiresApproval: true`) never publishes until POST /v1/posts/{postId}/review approves it.
  */
-export type status30 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status31 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
-export type visibility2 = 'public' | 'private' | 'unlisted';
+export type visibility3 = 'public' | 'private' | 'unlisted';
 
 export type PostAnalytics = {
     impressions?: number;
@@ -11551,7 +11863,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status31 = 'active' | 'draft' | 'archived';
+export type status32 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -11770,7 +12082,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status32 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status33 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -11822,7 +12134,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status33 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status34 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -11907,9 +12219,9 @@ export type RcsCarrierApproval = {
     rejectedReason?: (string) | null;
 };
 
-export type scope2 = 'carrier' | 'hub' | 'bot';
+export type scope3 = 'carrier' | 'hub' | 'bot';
 
-export type status34 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status35 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -12404,6 +12716,62 @@ export type RfPrediction = {
     expiresAt?: (string) | null;
 };
 
+export type SendEmailRequest = {
+    accountId: string;
+    to: Array<EmailAddress>;
+    cc?: Array<EmailAddress>;
+    bcc?: Array<EmailAddress>;
+    replyTo?: Array<EmailAddress>;
+    fromName?: string;
+    subject: string;
+    /**
+     * Plain-text body. One of `text` or `html` is required.
+     */
+    text?: string;
+    html?: string;
+    /**
+     * 25 MB in total; 3 MB per attachment on Microsoft.
+     */
+    attachments?: Array<{
+        filename: string;
+        contentType: string;
+        /**
+         * Fetched at send time. Exactly one of `url` or `base64`.
+         */
+        url?: string;
+        base64?: string;
+        /**
+         * Makes the attachment inline (`cid:` reference in the html).
+         */
+        contentId?: string;
+    }>;
+    /**
+     * Custom `X-` headers only. `List-Unsubscribe` is dropped on Microsoft and reported in `metadata.droppedHeaders`.
+     */
+    headers?: {
+        [key: string]: (string);
+    };
+    metadata?: {
+        [key: string]: (string);
+    };
+    /**
+     * Reserved; currently rejected.
+     */
+    scheduledFor?: string;
+    /**
+     * Reserved; currently rejected.
+     */
+    holdAsDraft?: boolean;
+    /**
+     * Not available; must be false.
+     */
+    trackOpens?: boolean;
+    /**
+     * Not available; must be false.
+     */
+    trackLinks?: boolean;
+};
+
 /**
  * An ad account a tracking tag is shared with (Meta `shared_accounts` edge).
  */
@@ -12489,7 +12857,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'hubspot' | 'webflow' | 'googleanalytics';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -12599,7 +12967,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform13 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'hubspot' | 'webflow' | 'googleanalytics';
+export type platform13 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected. `personal` accounts cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts): skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect. `business` is the prerequisite, not a guarantee; messaging also needs the messaging scopes granted and TikTok's regional availability. `unknown` on accounts connected before this was captured or whose grant left out the account-type scope.
@@ -12741,7 +13109,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status35 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status36 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -13461,7 +13829,7 @@ export type platform14 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | '
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
-export type kind4 = 'pixel' | 'tag' | 'insight_tag';
+export type kind5 = 'pixel' | 'tag' | 'insight_tag';
 
 /**
  * One health check the platform runs on a tracking tag.
@@ -13708,7 +14076,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status36 = 'pending' | 'completed' | 'expired';
+export type status37 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -14219,7 +14587,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status37 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status38 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel5 = 'sms' | 'whatsapp';
 
@@ -14251,7 +14619,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'review.updated' | 'lead.received' | 'ad.status_changed' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'account.rate_limited' | 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted' | 'file.created' | 'file.updated' | 'file.deleted' | 'file.picked' | 'contact.updated' | 'contact.deleted')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -14273,7 +14641,7 @@ export type Webhook = {
     /**
      * Resource groups this subscription does not receive (opt-out denylist, same vocabulary and same semantics as the field on API keys). Absent or empty means the subscription receives every event listed in `events`, which is how every subscription created before this field existed behaves. An event whose group is listed here is dropped before delivery even when it is still present in `events`, and the same check runs on every replay path (test fire, redelivery, dead-letter requeue). Editing the denylist applies to every event emitted afterwards; events already queued when the edit landed can still be delivered for up to five minutes after they were enqueued.
      */
-    disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+    disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files')>;
     /**
      * Profiles this subscription receives events for (allowlist). Absent or empty means every profile, which is how every subscription created before this field existed behaves. A scoped subscription is only sent events attributable to a listed profile. An aggregate `post.*` event is attributed to the profile of every account the post targets, so a post spanning two scoped endpoints' profiles reaches both. Events with no profile behind them (`verification.*`, `phone_number.*`, a legacy post whose accounts were deleted) are not delivered to it. Applied when the event is emitted: a redelivery replays a delivery already made to this endpoint, and a test fire ignores the list.
      */
@@ -14397,7 +14765,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status38 = 'success' | 'failed';
+export type status39 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -14514,7 +14882,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status39 = 'success' | 'failure';
+export type status40 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are
@@ -14705,6 +15073,34 @@ export type event5 = 'account.disconnected';
 export type disconnectionType = 'intentional' | 'unintentional';
 
 /**
+ * Webhook payload for account.rate_limited: a mailbox entered a sending cooldown.
+ */
+export type WebhookPayloadAccountRateLimited = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'account.rate_limited';
+    account: {
+        accountId: string;
+        profileId: string;
+        platform: string;
+        username: string;
+        displayName?: (string) | null;
+        reason: 'recipient_burst' | 'provider_rejection' | 'bounces' | 'daily_cap';
+        cooldownMinutes: number;
+        resetsAt: string;
+    };
+    timestamp: string;
+};
+
+export type event6 = 'account.rate_limited';
+
+export type reason = 'recipient_burst' | 'provider_rejection' | 'bounces' | 'daily_cap';
+
+/**
  * Webhook payload for the `ad_account.status_changed` event. Fires when an ad
  * account Zernio already tracked moves between `active`, `restricted`, `disabled`
  * and `closed`, as read by Zernio's ad account discovery (Meta, Google, TikTok, X).
@@ -14750,7 +15146,7 @@ export type WebhookPayloadAdAccountStatusChanged = {
     timestamp: string;
 };
 
-export type event6 = 'ad_account.status_changed';
+export type event7 = 'ad_account.status_changed';
 
 export type previous = 'active' | 'restricted' | 'disabled' | 'closed';
 
@@ -14817,7 +15213,7 @@ export type WebhookPayloadAdDeliveryIssue = {
     timestamp: string;
 };
 
-export type event7 = 'ad.delivery_issue';
+export type event8 = 'ad.delivery_issue';
 
 /**
  * Always `AD`.
@@ -14891,9 +15287,9 @@ export type WebhookPayloadAdReview = {
     timestamp: string;
 };
 
-export type event8 = 'ad.review.approved' | 'ad.review.rejected';
+export type event9 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status40 = 'approved' | 'rejected';
+export type status41 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -15025,7 +15421,7 @@ export type WebhookPayloadAdRuleTriggered = {
     timestamp: string;
 };
 
-export type event9 = 'ad_rule.triggered';
+export type event10 = 'ad_rule.triggered';
 
 /**
  * Whether the rule evaluates campaigns or ad sets.
@@ -15157,7 +15553,7 @@ export type WebhookPayloadAdStatusChanged = {
     timestamp: string;
 };
 
-export type event10 = 'ad.status_changed';
+export type event11 = 'ad.status_changed';
 
 /**
  * Hierarchy level the status applies to. Mirrors Meta's `level`. Creative-level events are not forwarded.
@@ -15228,12 +15624,12 @@ export type WebhookPayloadAdVideoProcessed = {
     timestamp: string;
 };
 
-export type event11 = 'ad.video.processed';
+export type event12 = 'ad.video.processed';
 
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status41 = 'ready' | 'error';
+export type status42 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each
@@ -15311,7 +15707,7 @@ export type WebhookPayloadAnalyticsSynced = {
     timestamp: string;
 };
 
-export type event12 = 'analytics.synced';
+export type event13 = 'analytics.synced';
 
 export type WebhookPayloadApiChangelogPublished = {
     /**
@@ -15330,7 +15726,36 @@ export type WebhookPayloadApiChangelogPublished = {
     timestamp: string;
 };
 
-export type event13 = 'api.changelog.published';
+export type event14 = 'api.changelog.published';
+
+/**
+ * Webhook payload for calendar.event.created, calendar.event.updated and calendar.event.deleted. Carries the provider event id and the change only; read the event with `GET /v1/calendar/events/{id}` (deleted ids answer 404).
+ */
+export type WebhookPayloadCalendarEvent = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    calendarEvent: {
+        id?: string;
+        changeType?: 'created' | 'updated' | 'deleted';
+    };
+    timestamp: string;
+};
+
+export type event15 = 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted';
+
+export type changeType = 'created' | 'updated' | 'deleted';
 
 /**
  * Webhook payload for the `call.ended` event. Fires on call hangup
@@ -15405,7 +15830,7 @@ export type WebhookPayloadCallEnded = {
     timestamp: string;
 };
 
-export type event14 = 'call.ended';
+export type event16 = 'call.ended';
 
 /**
  * Webhook payload for the `call.failed` event. Fired when a call
@@ -15444,7 +15869,7 @@ export type WebhookPayloadCallFailed = {
     timestamp: string;
 };
 
-export type event15 = 'call.failed';
+export type event17 = 'call.failed';
 
 /**
  * Webhook payload for the `call.permission_request` event. Fires
@@ -15486,7 +15911,7 @@ export type WebhookPayloadCallPermissionRequest = {
     timestamp: string;
 };
 
-export type event16 = 'call.permission_request';
+export type event18 = 'call.permission_request';
 
 export type response = 'accept' | 'reject';
 
@@ -15545,7 +15970,7 @@ export type WebhookPayloadCallReceived = {
     timestamp: string;
 };
 
-export type event17 = 'call.received';
+export type event19 = 'call.received';
 
 /**
  * Webhook payload for the `campaign.budget.depleted` event. Fires when a campaign
@@ -15596,7 +16021,7 @@ export type WebhookPayloadCampaignBudgetDepleted = {
     timestamp: string;
 };
 
-export type event18 = 'campaign.budget.depleted';
+export type event20 = 'campaign.budget.depleted';
 
 /**
  * Always `CAMPAIGN`.
@@ -15778,7 +16203,7 @@ export type WebhookPayloadComment = {
     timestamp: string;
 };
 
-export type event19 = 'comment.received';
+export type event21 = 'comment.received';
 
 export type platform15 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
@@ -15824,7 +16249,7 @@ export type WebhookPayloadCommerceOrder = {
     };
 };
 
-export type event20 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
+export type event22 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
 
 export type type18 = 'order';
 
@@ -15867,9 +16292,38 @@ export type WebhookPayloadCommerceProduct = {
     };
 };
 
-export type event21 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
+export type event23 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
 export type type19 = 'product';
+
+/**
+ * Webhook payload for contact.updated and contact.deleted, fired after a provider contacts sync (Google Contacts, Outlook) changed a contact. Read the contact with `GET /v1/contacts/{id}`.
+ */
+export type WebhookPayloadContact = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'contact.updated' | 'contact.deleted';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    contact: {
+        id?: string;
+        changeType?: 'updated' | 'deleted';
+    };
+    timestamp: string;
+};
+
+export type event24 = 'contact.updated' | 'contact.deleted';
+
+export type changeType2 = 'updated' | 'deleted';
 
 export type WebhookPayloadContactFieldChanged = {
     /**
@@ -15907,7 +16361,7 @@ export type WebhookPayloadContactFieldChanged = {
     source: 'api' | 'workflow' | 'automation';
 };
 
-export type event22 = 'contact.field_changed';
+export type event25 = 'contact.field_changed';
 
 /**
  * Who wrote the field: the API or dashboard, a workflow set_field node, or an automation.
@@ -15939,7 +16393,7 @@ export type WebhookPayloadContactTag = {
     source: 'api' | 'workflow' | 'automation';
 };
 
-export type event23 = 'contact.tag_added' | 'contact.tag_removed';
+export type event26 = 'contact.tag_added' | 'contact.tag_removed';
 
 /**
  * Who answers a conversation changed under Meta's handover protocol. WhatsApp: Meta
@@ -15985,7 +16439,7 @@ export type WebhookPayloadConversationControlChanged = {
     timestamp: string;
 };
 
-export type event24 = 'conversation.control_changed';
+export type event27 = 'conversation.control_changed';
 
 /**
  * Who answers now. ai_agent: Meta Business Agent (WhatsApp); app: you; other: another app (a WhatsApp partner, or a Messenger / Instagram receiver such as Page Inbox).
@@ -16044,7 +16498,7 @@ export type WebhookPayloadConversationStarted = {
     timestamp: string;
 };
 
-export type event25 = 'conversation.started';
+export type event28 = 'conversation.started';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
@@ -16081,7 +16535,69 @@ export type WebhookPayloadExternalPost = {
     timestamp: string;
 };
 
-export type event26 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+export type event29 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+
+/**
+ * Webhook payload for file.created, file.updated and file.deleted. Carries the provider file id and the change only; read the file with `GET /v1/files/{id}`.
+ */
+export type WebhookPayloadFile = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'file.created' | 'file.updated' | 'file.deleted';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    file: {
+        id?: string;
+        changeType?: 'created' | 'updated' | 'deleted';
+    };
+    timestamp: string;
+};
+
+export type event30 = 'file.created' | 'file.updated' | 'file.deleted';
+
+/**
+ * Webhook payload for file.picked: the user picked files on a hosted picker page (`POST /v1/files/picker-sessions`), so the app may now open them. Every id was checked against Drive before the event fired.
+ */
+export type WebhookPayloadFilePicked = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'file.picked';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    picker: {
+        /**
+         * The `id` returned when the session was created.
+         */
+        sessionId?: string;
+        files?: Array<{
+            id?: string;
+            name?: string;
+            mimeType?: (string) | null;
+            kind?: 'file' | 'folder';
+        }>;
+    };
+    timestamp: string;
+};
+
+export type event31 = 'file.picked';
 
 /**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
@@ -16161,7 +16677,7 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event27 = 'lead.received';
+export type event32 = 'lead.received';
 
 export type platform16 = 'facebook';
 
@@ -16764,7 +17280,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event28 = 'message.received';
+export type event33 = 'message.received';
 
 /**
  * Which Zernio surface produced the message. Always present and
@@ -16830,7 +17346,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event29 = 'message.deleted';
+export type event34 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, message.played and
@@ -16898,7 +17414,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event30 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
+export type event35 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -16941,7 +17457,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event31 = 'message.edited';
+export type event36 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API, or from the WhatsApp Business app on Coexistence numbers)
@@ -17187,7 +17703,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event32 = 'message.sent';
+export type event37 = 'message.sent';
 
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
@@ -17245,7 +17761,7 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
     timestamp: string;
 };
 
-export type event33 = 'phone_number.stock_available';
+export type event38 = 'phone_number.stock_available';
 
 /**
  * Webhook payload for post events
@@ -17300,7 +17816,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event34 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event39 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for the per-platform terminal events
@@ -17424,12 +17940,12 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event35 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
+export type event40 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
 
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status42 = 'published' | 'failed' | 'deleted';
+export type status43 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for reaction received events (WhatsApp, Telegram, Slack, Instagram, Facebook Messenger, TikTok)
@@ -17489,7 +18005,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event36 = 'reaction.received';
+export type event41 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -17568,7 +18084,7 @@ export type WebhookPayloadReferral = {
     timestamp: string;
 };
 
-export type event37 = 'referral.received';
+export type event42 = 'referral.received';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -17600,7 +18116,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event38 = 'review.new';
+export type event43 = 'review.new';
 
 /**
  * Webhook payload for the review.updated event. Fired when the reviewer edits their
@@ -17638,7 +18154,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event39 = 'review.updated';
+export type event44 = 'review.updated';
 
 export type WebhookPayloadSequenceEnrollment = {
     /**
@@ -17671,7 +18187,7 @@ export type WebhookPayloadSequenceEnrollment = {
     exitReason?: 'completed' | 'replied' | 'manual' | 'failed' | 'unsubscribed';
 };
 
-export type event40 = 'sequence.enrolled' | 'sequence.exited';
+export type event45 = 'sequence.enrolled' | 'sequence.exited';
 
 /**
  * sequence.exited only. completed: the last step was sent; replied: the contact replied and the sequence exits on reply; manual: unenrolled through the API; failed: the step kept failing to send; unsubscribed: the contact opted out.
@@ -17692,7 +18208,7 @@ export type WebhookPayloadSupportRun = {
     run: SupportRun;
 };
 
-export type event41 = 'support.run.completed' | 'support.run.failed';
+export type event46 = 'support.run.completed' | 'support.run.failed';
 
 /**
  * Webhook payload for test deliveries
@@ -17713,7 +18229,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event42 = 'webhook.test';
+export type event47 = 'webhook.test';
 
 /**
  * Webhook payload for `whatsapp.account.alert_received`, forwarded from Meta's
@@ -17765,7 +18281,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
     timestamp: string;
 };
 
-export type event43 = 'whatsapp.account.alert_received';
+export type event48 = 'whatsapp.account.alert_received';
 
 export type platform18 = 'whatsapp';
 
@@ -17821,12 +18337,12 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     timestamp: string;
 };
 
-export type event44 = 'whatsapp.account.name_status_updated';
+export type event49 = 'whatsapp.account.name_status_updated';
 
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status43 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status44 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -17879,7 +18395,7 @@ export type WebhookPayloadWhatsAppAccountQualityUpdated = {
     timestamp: string;
 };
 
-export type event45 = 'whatsapp.account.quality_updated';
+export type event50 = 'whatsapp.account.quality_updated';
 
 /**
  * The Meta webhook field that reported the change.
@@ -17955,12 +18471,12 @@ export type WebhookPayloadWhatsAppAccountStatusUpdated = {
     timestamp: string;
 };
 
-export type event46 = 'whatsapp.account.status_updated';
+export type event51 = 'whatsapp.account.status_updated';
 
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status44 = 'restricted' | 'active';
+export type status45 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -18012,12 +18528,12 @@ export type WebhookPayloadWhatsAppContactIdentityChanged = {
     timestamp: string;
 };
 
-export type event47 = 'whatsapp.contact.identity_changed';
+export type event52 = 'whatsapp.contact.identity_changed';
 
 /**
  * Which Meta signal reported the change. `user_changed_number`: new phone number. `user_changed_user_id` and `user_id_update`: new BSUID.
  */
-export type reason = 'user_changed_number' | 'user_changed_user_id' | 'user_identity_changed' | 'user_id_update';
+export type reason2 = 'user_changed_number' | 'user_changed_user_id' | 'user_identity_changed' | 'user_id_update';
 
 /**
  * Webhook payload for the `whatsapp.template.category_updated` event.
@@ -18086,14 +18602,14 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     timestamp: string;
 };
 
-export type event48 = 'whatsapp.template.category_updated';
+export type event53 = 'whatsapp.template.category_updated';
 
 /**
  * `scheduled` is Meta's 24h advance notice of an upcoming
  * reclassification; `applied` is the change taking effect.
  *
  */
-export type changeType = 'scheduled' | 'applied';
+export type changeType3 = 'scheduled' | 'applied';
 
 /**
  * The category right now, regardless of changeType.
@@ -18168,7 +18684,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event49 = 'whatsapp.template.status_updated';
+export type event54 = 'whatsapp.template.status_updated';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -18176,7 +18692,7 @@ export type event49 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status45 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status46 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -18235,12 +18751,12 @@ export type WebhookPayloadWorkflowRun = {
     error?: string;
 };
 
-export type event50 = 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed';
+export type event55 = 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed';
 
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status46 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status47 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Present on every event tied to a profile and absent on events that belong to none. Events spanning several profiles (a post published to accounts of different profiles) list each once. Use it to route the event to your tenant without storing Zernio profile ids.
@@ -18638,7 +19154,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status47 = 'success' | 'failed' | 'pending';
+export type status48 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -22706,6 +23222,18 @@ export type GetAccountHealthResponse = ({
      * TikTok only. The TikTok integration the account is connected through: business (TikTok for Business, Accounts API) or developer (the original integration). Absent on other platforms.
      */
     integrationLane?: 'business' | 'developer';
+    /**
+     * Google and Microsoft only: today's outbound mail allowance for the mailbox.
+     */
+    sendCap?: {
+        limit?: number;
+        used?: number;
+        resetsAt?: string;
+    };
+    /**
+     * Google and Microsoft only: state of the provider change-notification subscriptions behind `message.received` and `calendar.event.*`. `pending` means a granted area has no live subscription yet (retried every 6 hours), `failed` that renewals keep failing (reconnect the account).
+     */
+    push?: 'active' | 'pending' | 'failed' | 'not_applicable';
     username?: string;
     displayName?: string;
     /**
@@ -23241,7 +23769,7 @@ export type ListApiKeysError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type CreateApiKeyData = {
@@ -23266,7 +23794,7 @@ export type CreateApiKeyData = {
         /**
          * Resource groups to DISABLE on this key (opt-out denylist). Omit for a legacy full-access key. A key with any group disabled mints with the zrk_ prefix, gets 403 with code=insufficient_permissions and required_group on operations in disabled groups (each operation's group is published as x-resource-group), and can never manage API keys, invites, or member identity. With 'messages' disabled, the key cannot read or send direct messages through any API surface and cannot create or edit a webhook subscription broader than itself. Subscriptions that already exist are governed by their own `disabledResourceGroups`, not by this key's. OAuth connector tokens resolve against the same registry, but their groups are not settable yet.
          */
-        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files')>;
     };
 };
 
@@ -23281,7 +23809,7 @@ export type CreateApiKeyError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type DeleteApiKeyData = {
@@ -23300,7 +23828,7 @@ export type DeleteApiKeyError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 } | {
     error?: string;
 });
@@ -23315,7 +23843,7 @@ export type ListConnectedAppsError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type RevokeConnectedAppData = {
@@ -23346,7 +23874,7 @@ export type RevokeConnectedAppError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type CreateInviteTokenData = {
@@ -23390,7 +23918,7 @@ export type CreateInviteTokenError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type GetConnectUrlData = {
@@ -23398,7 +23926,7 @@ export type GetConnectUrlData = {
         /**
          * Social media platform to connect. `snapchat` is a closed beta with no public release date: it returns 403 `PLATFORM_BETA_RESTRICTED` until the account is approved.
          */
-        platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'reddit' | 'pinterest' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp';
+        platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'reddit' | 'pinterest' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'google' | 'microsoft';
     };
     query: {
         /**
@@ -23429,6 +23957,10 @@ export type GetConnectUrlData = {
          * Hosted signup page only (`signup=hosted`, WhatsApp): language of the page and its follow-along guide. Explainer videos stay in English. Default `en`. Rejected without `signup=hosted`.
          */
         language?: 'en' | 'es' | 'pt-BR';
+        /**
+         * google and microsoft only: pre-fills the account picker with this address so the user lands on the right mailbox.
+         */
+        loginHint?: string;
         /**
          * Instagram only. Which of the two Instagram connection methods to use. Ignored for every other platform.
          *
@@ -23468,7 +24000,11 @@ export type GetConnectUrlData = {
          */
         reconnectAccountId?: string;
         /**
-         * Your custom redirect URL after connection completes. MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is rejected with 400 INVALID_REDIRECT_URL. X (twitter) caps the OAuth `state` at 500 characters and the redirect is carried inside it, so the URL-encoded `redirect_url` must be at most 258 characters for API callers (310 for dashboard sessions; in headless mode the appended `headless=true` counts toward it); a longer one is rejected with 400 INVALID_REDIRECT_URL. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
+         * Your custom redirect URL after connection completes. MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is rejected with 400 INVALID_REDIRECT_URL.
+         *
+         * Exit notice: when `redirect_url` is an http(s) URL on another site (anything but zernio.com), the user is not sent there directly. Every redirect of the flow lands first on a Zernio page, `https://zernio.com/connect/continue?to=<your URL>`, that names your site and continues to it with one click. All the params described below arrive on your URL unchanged; the notice page moves them over. A custom app scheme (myapp://...) is never routed through the notice. In headless mode the redirects we hand you (and the `redirect_url` returned by the selection endpoints) are notice URLs, so pass them back or navigate to them as they are.
+         *
+         * X (twitter) caps the OAuth `state` at 500 characters and the redirect is carried inside it (for an http(s) URL on another site, wrapped in the notice URL), so the URL-encoded form must be at most 258 characters for API callers (310 for dashboard sessions; in headless mode the appended `headless=true` counts toward it). For a plain https URL on another site that leaves about 165 to 190 characters of your own URL, depending on how many characters need encoding; a longer one is rejected with 400 INVALID_REDIRECT_URL, and the error says by how much. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
          *
          * On failure, the browser is sent to the same redirect_url with `error` and `platform` appended.
          * `error` and `platform` are always present. `error_message`, `is_user_fixable`, `reason`,
@@ -23587,7 +24123,7 @@ export type GetConnectUrlData = {
          */
         redirect_url?: string;
         /**
-         * Comma-separated permission areas to request instead of the platform's full permission set. Values: `posting`, `analytics`, `comments`, `messaging`, `ads`. Omit it (the default, and what the dashboard does) to request everything the platform supports.
+         * Comma-separated permission areas to request instead of the platform's full permission set. Values: `posting`, `analytics`, `comments`, `messaging`, `ads`, and on google and microsoft `email`, `calendar`, `files`, `contacts`. Omit it (the default, and what the dashboard does) to request everything the platform supports; google and microsoft REQUIRE it (400 `INVALID_FIELD_VALUE` when absent) because their consent screens are reviewed per area.
          *
          * When present, the consent dialog asks only for the platform scopes behind those areas plus the scopes every connection needs (identity, token refresh, and listing the pages, organizations or channels the user picks from). Scopes the user was never asked for are absent from the account's `permissions`, and the health endpoints report them as not granted, so a `posting`-only account cannot read analytics or the inbox until it is connected again with more areas. First comments need `comments`: a `posting`-only account publishes the post and skips the first comment. Scopes the platform lists under none of the areas (X likes, bookmarks and follows, Pinterest ads-only extras) are requested only when the parameter is omitted.
          *
@@ -23609,6 +24145,15 @@ export type GetConnectUrlData = {
          * | pinterest | `boards:write`, `pins:read`, `pins:write` | `pins:read`, `user_accounts:read` | none | none | `ads:read`, `ads:write`, `boards:write`, `pins:read`, `pins:write` | `boards:read`, `user_accounts:read` |
          * | googlebusiness | `business.manage` | `business.manage` | `business.manage` | none | none | `business.manage`, `userinfo.profile`, `userinfo.email` |
          * | slack | `chat:write`, `chat:write.public`, `chat:write.customize`, `files:write`, `files:read` | none | none | `chat:write`, `chat:write.customize`, `files:write`, `files:read`, `channels:history`, `groups:history`, `im:history`, `mpim:history`, `im:read`, `im:write`, `mpim:read`, `users:read`, `reactions:read`, `reactions:write` | none | `channels:join`, `channels:read`, `groups:read`, `team:read` |
+         *
+         * Google and Microsoft accounts use the mailbox areas instead (`scopes` is required there):
+         *
+         * | Platform | `email` | `calendar` | `files` | `contacts` | Always requested |
+         * |---|---|---|---|---|---|
+         * | google | `gmail.modify` | `calendar` | `drive.file` (only files Zernio created or the user picked, see the Files tag) | `contacts.readonly` | `openid`, `userinfo.email`, `userinfo.profile` |
+         * | microsoft | `Mail.ReadWrite`, `Mail.Send` | `Calendars.ReadWrite` | `Files.ReadWrite` | `Contacts.Read` | `openid`, `profile`, `email`, `offline_access`, `User.Read` |
+         *
+         * Areas accumulate: reconnecting with more areas widens the grant and `GET /v1/accounts/{accountId}/health` reports the result.
          *
          */
         scopes?: string;
@@ -23736,7 +24281,7 @@ export type HandleOAuthCallbackData = {
          * served by their own dedicated routes, documented separately.
          *
          */
-        platform: 'instagram' | 'twitter' | 'threads' | 'linkedin' | 'youtube' | 'tiktok' | 'reddit' | 'pinterest';
+        platform: 'instagram' | 'twitter' | 'threads' | 'linkedin' | 'youtube' | 'tiktok' | 'reddit' | 'pinterest' | 'google' | 'microsoft';
     };
 };
 
@@ -30376,7 +30921,7 @@ export type GetWebhookSettingsError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type CreateWebhookSettingsData = {
@@ -30410,7 +30955,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Resource groups this subscription does not receive (opt-out denylist). Omit or send an empty array to receive every event in `events`. Listing a group here drops its events before delivery and on every replay path. Set at creation it applies to everything this subscription ever receives; changed later via PUT it applies to events emitted after the change, with a five-minute tail for events already queued (see that operation). When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned into whatever you send here, so a restricted key can never create a subscription wider than itself.
          */
-        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files')>;
         /**
          * Profiles this subscription receives events for. Omit or send an empty array to receive every profile. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing is created. Typical use is routing the profile that holds test accounts to a staging endpoint.
          */
@@ -30433,7 +30978,7 @@ export type CreateWebhookSettingsError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type UpdateWebhookSettingsData = {
@@ -30476,7 +31021,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Replaces the subscription's denylist. Send an empty array to clear it and receive every event in `events` again. Omitting the field leaves the current denylist untouched. Applies to events emitted after the update; already-queued events can still deliver for up to five minutes after they were enqueued. When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned back in either way, so a restricted key can neither clear nor widen a subscription past its own groups.
          */
-        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks')>;
+        disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files')>;
         /**
          * Replaces the subscription's profile allowlist. Send an empty array to receive every profile again. Omitting the field leaves the current list untouched. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing changes. Applies to events emitted after the update. Sending the stored list back unchanged is accepted without re-validation, so an endpoint stays editable after a listed profile is deleted.
          */
@@ -30499,7 +31044,7 @@ export type UpdateWebhookSettingsError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type DeleteWebhookSettingsData = {
@@ -30526,7 +31071,7 @@ export type DeleteWebhookSettingsError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type GetWebhookLogsData = {
@@ -30590,7 +31135,7 @@ export type GetWebhookLogsError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 });
 
 export type RedeliverWebhookEventData = {
@@ -30617,7 +31162,7 @@ export type RedeliverWebhookEventError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 } | {
     success?: boolean;
     message?: string;
@@ -30632,7 +31177,7 @@ export type TestWebhookData = {
         /**
          * Send a sample payload of this event instead of `webhook.test`. The sample is marked with `test: true`.
          */
-        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'conversation.started' | 'conversation.control_changed' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'lead.received' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.automatic_event' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'verification.approved' | 'verification.failed' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'api.changelog.published';
+        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'account.rate_limited' | 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted' | 'file.created' | 'file.updated' | 'file.deleted' | 'file.picked' | 'contact.updated' | 'contact.deleted' | 'analytics.synced' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'conversation.started' | 'conversation.control_changed' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'comment.received' | 'review.new' | 'review.updated' | 'ad.status_changed' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'lead.received' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.automatic_event' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'verification.approved' | 'verification.failed' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'api.changelog.published';
     };
 };
 
@@ -30647,7 +31192,7 @@ export type TestWebhookError = (unknown | ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 } | {
     success?: boolean;
     message?: string;
@@ -30806,6 +31351,805 @@ export type ListLogsResponse = ({
 });
 
 export type ListLogsError = (unknown | ErrorResponse);
+
+export type ListEmailThreadsData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        after?: string;
+        /**
+         * Matches from, to, cc or bcc. Applied client-side on Microsoft.
+         */
+        anyEmail?: string;
+        /**
+         * Applied client-side on Microsoft.
+         */
+        bcc?: string;
+        before?: string;
+        cc?: string;
+        cursor?: string;
+        /**
+         * Well-known folder (`inbox`, `sent`, `drafts`, `trash`, `spam`, `archive`) or a provider folder id from `GET /v1/email/folders`. Default inbox.
+         */
+        folder?: string;
+        /**
+         * Sender address.
+         */
+        from?: string;
+        hasAttachment?: boolean;
+        limit?: number;
+        /**
+         * The provider's own search syntax (Gmail search operators, Microsoft KQL). On Microsoft it cannot be combined with other filters or server-side ordering; those are applied to the page.
+         */
+        searchQueryNative?: string;
+        sortOrder?: 'asc' | 'desc';
+        starred?: boolean;
+        /**
+         * Substring match on the subject.
+         */
+        subject?: string;
+        /**
+         * A recipient address.
+         */
+        to?: string;
+        unread?: boolean;
+    };
+};
+
+export type ListEmailThreadsResponse = ({
+    data?: Array<EmailThread>;
+    pagination?: CursorPagination;
+    meta?: EmailListMeta;
+});
+
+export type ListEmailThreadsError = (ErrorResponse);
+
+export type GetEmailThreadData = {
+    path: {
+        threadId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type GetEmailThreadResponse = ({
+    data?: (EmailThread & {
+    messages?: Array<EmailMessage>;
+});
+});
+
+export type GetEmailThreadError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateEmailThreadData = {
+    body: EmailMessagePatch;
+    path: {
+        threadId: string;
+    };
+};
+
+export type UpdateEmailThreadResponse = ({
+    data?: EmailThread;
+});
+
+export type UpdateEmailThreadError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListEmailMessagesData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        after?: string;
+        anyEmail?: string;
+        bcc?: string;
+        before?: string;
+        cc?: string;
+        cursor?: string;
+        folder?: string;
+        from?: string;
+        hasAttachment?: boolean;
+        limit?: number;
+        searchQueryNative?: string;
+        sortOrder?: 'asc' | 'desc';
+        starred?: boolean;
+        subject?: string;
+        to?: string;
+        unread?: boolean;
+    };
+};
+
+export type ListEmailMessagesResponse = ({
+    data?: Array<EmailMessage>;
+    pagination?: CursorPagination;
+    meta?: EmailListMeta;
+});
+
+export type ListEmailMessagesError = (ErrorResponse);
+
+export type SendEmailMessageData = {
+    body: SendEmailRequest;
+};
+
+export type SendEmailMessageResponse = ({
+    data?: EmailMessage;
+});
+
+export type SendEmailMessageError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+});
+
+export type GetEmailMessageData = {
+    path: {
+        messageId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        /**
+         * Include the raw internet headers under `headers`.
+         */
+        includeHeaders?: boolean;
+        /**
+         * Include the MIME source under `raw`.
+         */
+        raw?: boolean;
+    };
+};
+
+export type GetEmailMessageResponse = ({
+    data?: EmailMessage;
+});
+
+export type GetEmailMessageError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateEmailMessageData = {
+    body: EmailMessagePatch;
+    path: {
+        messageId: string;
+    };
+};
+
+export type UpdateEmailMessageResponse = ({
+    data?: EmailMessage;
+});
+
+export type UpdateEmailMessageError = (ErrorResponse | {
+    error?: string;
+});
+
+export type TrashEmailMessageData = {
+    path: {
+        messageId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type TrashEmailMessageResponse = ({
+    data?: {
+        id?: string;
+        trashed?: boolean;
+    };
+});
+
+export type TrashEmailMessageError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ReplyEmailMessageData = {
+    body: (SendEmailRequest & {
+    mode?: 'reply' | 'replyAll';
+    /**
+     * Optional on replies; the provider keeps the thread subject.
+     */
+    subject?: string;
+});
+    path: {
+        messageId: string;
+    };
+};
+
+export type ReplyEmailMessageResponse = ({
+    data?: EmailMessage;
+});
+
+export type ReplyEmailMessageError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | {
+    error?: string;
+});
+
+export type ListEmailFoldersData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type ListEmailFoldersResponse = ({
+    data?: Array<EmailFolder>;
+});
+
+export type ListEmailFoldersError = (ErrorResponse);
+
+export type DownloadEmailAttachmentData = {
+    path: {
+        attachmentId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        messageId: string;
+    };
+};
+
+export type DownloadEmailAttachmentResponse = ((Blob | File));
+
+export type DownloadEmailAttachmentError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListCalendarsData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type ListCalendarsResponse = ({
+    data?: Array<Calendar>;
+});
+
+export type ListCalendarsError = (ErrorResponse);
+
+export type ListCalendarEventsData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        /**
+         * Defaults to the primary calendar.
+         */
+        calendarId?: string;
+        cursor?: string;
+        expandRecurring?: boolean;
+        from: string;
+        icalUid?: string;
+        limit?: number;
+        location?: string;
+        showCancelled?: boolean;
+        sortOrder?: 'asc' | 'desc';
+        /**
+         * IANA zone the `start` and `end` offsets are rendered in. Default UTC.
+         */
+        timezone?: string;
+        title?: string;
+        to: string;
+    };
+};
+
+export type ListCalendarEventsResponse = ({
+    data?: Array<CalendarEvent>;
+    pagination?: CursorPagination;
+});
+
+export type ListCalendarEventsError = (ErrorResponse);
+
+export type CreateCalendarEventData = {
+    body: CreateCalendarEventRequest;
+};
+
+export type CreateCalendarEventResponse = ({
+    data?: CalendarEvent;
+});
+
+export type CreateCalendarEventError = (ErrorResponse);
+
+export type GetCalendarEventData = {
+    path: {
+        eventId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        /**
+         * The calendar holding the event (an id from GET /v1/calendar/calendars). Defaults to the primary calendar.
+         */
+        calendarId?: string;
+        timezone?: string;
+    };
+};
+
+export type GetCalendarEventResponse = ({
+    data?: CalendarEvent;
+});
+
+export type GetCalendarEventError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateCalendarEventData = {
+    body: ({
+    accountId: string;
+    /**
+     * The calendar holding the event (an id from GET /v1/calendar/calendars). Defaults to the primary calendar.
+     */
+    calendarId?: string;
+} & CalendarEventFields);
+    path: {
+        eventId: string;
+    };
+};
+
+export type UpdateCalendarEventResponse = ({
+    data?: CalendarEvent;
+});
+
+export type UpdateCalendarEventError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteCalendarEventData = {
+    path: {
+        eventId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        /**
+         * The calendar holding the event (an id from GET /v1/calendar/calendars). Defaults to the primary calendar.
+         */
+        calendarId?: string;
+    };
+};
+
+export type DeleteCalendarEventResponse = ({
+    data?: {
+        id?: string;
+        deleted?: boolean;
+    };
+});
+
+export type DeleteCalendarEventError = (ErrorResponse | {
+    error?: string;
+});
+
+export type RsvpCalendarEventData = {
+    body: {
+        accountId: string;
+        /**
+         * The calendar holding the event (an id from GET /v1/calendar/calendars). Defaults to the primary calendar.
+         */
+        calendarId?: string;
+        status: 'accepted' | 'declined' | 'tentative';
+        comment?: string;
+    };
+    path: {
+        eventId: string;
+    };
+};
+
+export type RsvpCalendarEventResponse = ({
+    data?: CalendarEvent;
+});
+
+export type RsvpCalendarEventError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CalendarFreeBusyData = {
+    body: {
+        accountIds: Array<(string)>;
+        from: string;
+        to: string;
+    };
+};
+
+export type CalendarFreeBusyResponse = ({
+    data?: Array<{
+        accountId?: string;
+        from?: string;
+        to?: string;
+        busy?: Array<BusyBlock>;
+    }>;
+});
+
+export type CalendarFreeBusyError = (ErrorResponse);
+
+export type CalendarAvailabilityData = {
+    body: {
+        participants: Array<{
+            accountId: string;
+            openHours?: OpenHours;
+        }>;
+        from: string;
+        to: string;
+        durationMinutes: number;
+        intervalMinutes?: number;
+        /**
+         * Rounds the first candidate slot up to this many minutes.
+         */
+        roundTo?: number;
+        buffer?: {
+            before?: number;
+            after?: number;
+        };
+        defaultOpenHours?: OpenHours;
+        method?: 'collective' | 'max_availability';
+    };
+};
+
+export type CalendarAvailabilityResponse = ({
+    data?: {
+        timeSlots?: Array<{
+            from?: string;
+            to?: string;
+            /**
+             * The participants free in this slot.
+             */
+            accountIds?: Array<(string)>;
+        }>;
+    };
+});
+
+export type CalendarAvailabilityError = (ErrorResponse);
+
+export type ListFilesData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+        cursor?: string;
+        /**
+         * Provider folder id; omit for the root.
+         */
+        folderId?: string;
+        limit?: number;
+        /**
+         * Name search.
+         */
+        q?: string;
+    };
+};
+
+export type ListFilesResponse = ({
+    data?: Array<FileItem>;
+    pagination?: {
+        hasMore?: boolean;
+        nextCursor?: (string) | null;
+    };
+});
+
+export type ListFilesError = (ErrorResponse);
+
+export type UploadFileData = {
+    body: {
+        accountId: string;
+        name: string;
+        contentType: string;
+        /**
+         * Target folder; the root when omitted.
+         */
+        parentId?: string;
+        url: string;
+        /**
+         * Google Drive only: import the bytes as a Docs, Sheets or Slides file (a text or Office file becomes an editable document). OneDrive answers 400.
+         */
+        convertTo?: 'application/vnd.google-apps.document' | 'application/vnd.google-apps.spreadsheet' | 'application/vnd.google-apps.presentation';
+    };
+};
+
+export type UploadFileResponse = ({
+    data?: FileItem;
+});
+
+export type UploadFileError = (ErrorResponse);
+
+export type CreateFolderData = {
+    body: {
+        accountId: string;
+        name: string;
+        parentId?: string;
+    };
+};
+
+export type CreateFolderResponse = ({
+    data?: FileItem;
+});
+
+export type CreateFolderError = (ErrorResponse);
+
+export type CreateFilePickerSessionData = {
+    body: {
+        /**
+         * A Google account connected with `scopes=files`.
+         */
+        accountId: string;
+        /**
+         * Where the browser goes when the user finishes. Absolute `http(s)` URL or a custom app scheme (`myapp://...`); relative, protocol-relative and script URLs are refused. Optional when you rely on the `file.picked` webhook.
+         */
+        redirectUrl?: string;
+        /**
+         * Drive file ids to show the user first (Google Picker `DocsView.setFileIds`), for example to ask for access to files your app already knows about. Pre-navigation only: the user still has to pick them.
+         */
+        fileIds?: Array<(string)>;
+        /**
+         * Only show files of these exact media types.
+         */
+        mimeTypes?: Array<(string)>;
+        /**
+         * false limits the pick to one file.
+         */
+        multiselect?: boolean;
+    };
+};
+
+export type CreateFilePickerSessionResponse = ({
+    data?: FilePickerSession;
+});
+
+export type CreateFilePickerSessionError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetFileData = {
+    path: {
+        fileId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type GetFileResponse = ({
+    data?: FileItem;
+});
+
+export type GetFileError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateFileData = {
+    body: {
+        accountId: string;
+        name?: string;
+        parentId?: string;
+    };
+    path: {
+        fileId: string;
+    };
+};
+
+export type UpdateFileResponse = ({
+    data?: FileItem;
+});
+
+export type UpdateFileError = (ErrorResponse | {
+    error?: string;
+});
+
+export type TrashFileData = {
+    path: {
+        fileId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type TrashFileResponse = ({
+    data?: {
+        id?: string;
+        /**
+         * Always true.
+         */
+        trashed?: boolean;
+    };
+});
+
+export type TrashFileError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DownloadFileData = {
+    path: {
+        fileId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type DownloadFileResponse = ((Blob | File));
+
+export type DownloadFileError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetFileShareLinkData = {
+    path: {
+        fileId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type GetFileShareLinkResponse = ({
+    data?: FileShareLink;
+});
+
+export type GetFileShareLinkError = (ErrorResponse | {
+    error?: string;
+});
+
+export type StartMicrosoftAdminConsentData = {
+    query: {
+        accountId: string;
+        /**
+         * Where to send the administrator afterwards.
+         */
+        redirectUrl?: string;
+    };
+};
+
+export type StartMicrosoftAdminConsentResponse = ({
+    data?: {
+        adminConsentUrl?: string;
+    };
+});
+
+export type StartMicrosoftAdminConsentError = (ErrorResponse | {
+    error?: string;
+});
 
 export type ListInboxConversationsData = {
     query?: {
@@ -30968,9 +32312,17 @@ export type CreateInboxConversationData = {
          */
         participantUsername?: string;
         /**
-         * Text content of the message. At least one of message, attachment, or (for WhatsApp) templateName is required. Required when category is set (a Direct Send utility message is a text message).
+         * Text content of the message. At least one of message, attachment, or (for WhatsApp) templateName is required. Required when category is set (a Direct Send utility message is a text message). Required on email accounts.
          */
         message?: string;
+        /**
+         * Email accounts only (Google / Microsoft). Subject of the new thread.
+         */
+        subject?: string;
+        /**
+         * Email accounts only (Google / Microsoft). Extra recipients copied on the opening mail.
+         */
+        cc?: Array<(string)>;
         /**
          * X only. Skip the receives_your_dm eligibility check before sending. Use if you have already verified the recipient accepts DMs.
          */
@@ -31649,6 +33001,10 @@ export type SendInboxMessageData = {
          * iMessage only (JSON body only). Bold title line rendered above the message text. Rejected with 400 on other platforms; ignored on voice-message sends.
          */
         subject?: string;
+        /**
+         * Email threads only (Google / Microsoft accounts, JSON body only). Extra recipients copied on the reply.
+         */
+        cc?: Array<(string)>;
         /**
          * iMessage only (JSON body only). Apple screen/bubble animation played when the message arrives. Rejected with 400 on other platforms.
          */
@@ -41582,7 +42938,7 @@ export type GetWhatsAppFlowsEncryptionKeyError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 } | unknown);
 
 export type SetWhatsAppFlowsEncryptionKeyData = {
@@ -41608,7 +42964,7 @@ export type SetWhatsAppFlowsEncryptionKeyError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 } | unknown);
 
 export type SendWhatsAppFlowMessageData = {
@@ -61242,7 +62598,7 @@ export type PrepareMediaError = (ErrorResponse | {
     /**
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks';
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'calendar' | 'files';
 } | unknown);
 
 export type ListChangelogData = {
