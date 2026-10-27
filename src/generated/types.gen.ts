@@ -660,6 +660,37 @@ export type AdAnalyticsResponse = {
 };
 
 /**
+ * What the create filled in for fields the request left out. Empty when every field was sent. A passing validateOnly returns it too, so a dry run previews these values before anything is created.
+ */
+export type AdAppliedDefaults = {
+    /**
+     * Sent when `name` was omitted: `Ad <YYYY-MM-DD HH:MM:SS>` in UTC.
+     */
+    name?: string;
+    /**
+     * Sent when `goal` was omitted. `lead_generation` with a `leadGenFormId`; `app_promotion` when `promotedObject` names an app; `conversions` with `promotedObject.pixelId` and `customEventType`; `traffic` when the ad has a link (`linkUrl`, a carousel card, `creatives[].linkUrl`, `dynamicCreative.linkUrls` or a LinkedIn carousel card); otherwise `engagement`. Each only when the platform offers it, falling back to `engagement`, then `awareness`, then the platform's first goal. Never inferred with `existingCampaignId`, `smartPlus` or the LinkedIn spotlight, follower and jobs formats: those still return 400 without `goal`.
+     */
+    goal?: string;
+    /**
+     * Sent when `budgetAmount` came without `budgetType`.
+     */
+    budgetType?: 'daily';
+    /**
+     * Sent when a lifetime budget had no `endDate`: 7 days after the start. A start with an offset (or no start) gets a UTC instant; an offset-less start gets an offset-less end, read in the ad account timezone like the start; a date-only start gets the date 6 days later, which runs to 23:59:59. A daily budget never gets one and runs until paused.
+     */
+    endDate?: string;
+    /**
+     * Sent when the request sent no countries and the ad gets the long-standing United States default. Not sent on attach, Google Performance Max or Demand Gen, or a Google ad group joining `existingCampaignId`, which keep their own geo.
+     */
+    countries?: Array<(string)>;
+};
+
+/**
+ * Sent when `budgetAmount` came without `budgetType`.
+ */
+export type budgetType = 'daily';
+
+/**
  * Budget amount in the ad account's native currency (see the campaign's `currency` field for the code).
  */
 export type AdBudget = {
@@ -6106,7 +6137,7 @@ export type CtwaAdRequestBody = {
 /**
  * Required unless `adSetId` is set or `existingCampaignId` names a campaign with a campaign budget. `lifetime` requires `endDate`.
  */
-export type budgetType = 'daily' | 'lifetime';
+export type budgetType2 = 'daily' | 'lifetime';
 
 /**
  * Restrict the audience by gender (Meta `genders`). Omit or send all for everyone; all is ignored in adSetId attach mode. Stored on the ad and read back in `targeting.gender`.
@@ -52281,7 +52312,10 @@ export type CreateStandaloneAdData = {
     body: {
         accountId: string;
         adAccountId: string;
-        name: string;
+        /**
+         * Omitted, the ad is named `Ad <YYYY-MM-DD HH:MM:SS>` (UTC) and the response reports it in `appliedDefaults.name`.
+         */
+        name?: string;
         /**
          * Meta, Reddit and Google. Exact campaign name. Overrides the default `<name> - Campaign`. Ignored when the request joins an existing campaign or ad set. Google: no line breaks and at most 255 characters, checked before calling Google; names are unique in the Google Ads account, and on Search and Display a taken name is a 400 naming this field.
          */
@@ -52296,7 +52330,7 @@ export type CreateStandaloneAdData = {
         adName?: string;
         tracking?: AdTracking;
         /**
-         * Required on legacy and multi-creative shapes; the attach shape inherits it from the ad set. Available goals vary by platform.
+         * Available goals vary by platform. Omitted, it is inferred from the ad (see `appliedDefaults.goal` in the response); the attach shape inherits it from the ad set.
          *
          * **Meta**
          * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event such as PURCHASE or START_TRIAL, or `promotedObject.customConversionId` to optimise against a Custom Conversion, or `customEventType: OTHER` + `customEventStr` to optimise against a pixel custom event.
@@ -52393,7 +52427,7 @@ export type CreateStandaloneAdData = {
          */
         budgetAmount?: number;
         /**
-         * Required on legacy, multi-creative and Performance Max shapes. Inherited on attach. OpenAI Ads accepts both as the campaign's single spend cap. A lifetime cap can later switch to daily with PUT /v1/ads/campaigns/{campaignId}, but OpenAI never switches a daily cap back to lifetime (422). Automatic bidding (Maximize Results) needs a daily budget. Reddit Ads: the ad group's daily or lifetime spend goal; lifetime needs `endDate`.
+         * Defaults to daily when `budgetAmount` is sent without it (reported in `appliedDefaults.budgetType`). Inherited on attach. OpenAI Ads accepts both as the campaign's single spend cap. A lifetime cap can later switch to daily with PUT /v1/ads/campaigns/{campaignId}, but OpenAI never switches a daily cap back to lifetime (422). Automatic bidding (Maximize Results) needs a daily budget. Reddit Ads: the ad group's daily or lifetime spend goal.
          */
         budgetType?: 'daily' | 'lifetime';
         /**
@@ -52920,7 +52954,7 @@ export type CreateStandaloneAdData = {
             [key: string]: (string | number);
         };
         /**
-         * Required for lifetime budgets. Read like `startDate` (account timezone on Meta, TikTok, X, Pinterest, OpenAI and Reddit; whole account-local days on Google; UTC on LinkedIn), and a date-only end runs to 23:59:59 local.
+         * Omitted on a lifetime budget, the ad ends 7 days after it starts (reported in `appliedDefaults.endDate`); a daily budget without one runs until paused. Read like `startDate` (account timezone on Meta, TikTok, X, Pinterest, OpenAI and Reddit; whole account-local days on Google; UTC on LinkedIn), and a date-only end runs to 23:59:59 local.
          */
         endDate?: string;
         /**
@@ -53448,7 +53482,7 @@ export type CreateStandaloneAdData = {
          * Targeting works like on any TikTok ad (defaults to `countries: ["US"]` when
          * omitted); TikTok automates delivery within it.
          * The budget lives on the Smart+ campaign (Campaign Budget Optimization); a `lifetime`
-         * budget additionally requires `endDate`. Cannot be combined with `adSetId`.
+         * budget without `endDate` ends 7 days after it starts. Smart+ needs `goal` sent, it is never inferred. Cannot be combined with `adSetId`.
          *
          */
         smartPlus?: boolean;
@@ -53483,6 +53517,7 @@ export type CreateStandaloneAdResponse = ({
      * Always true in a validate-only response.
      */
     validateOnly?: boolean;
+    appliedDefaults?: AdAppliedDefaults;
     results?: Array<{
         node?: 'campaign' | 'adSet' | 'creative' | 'ad' | 'performanceMaxCampaign';
         status?: 'validated' | 'skipped' | 'unverified';
@@ -53494,11 +53529,13 @@ export type CreateStandaloneAdResponse = ({
     message?: string;
 } | ({
     ad?: Ad;
+    appliedDefaults?: AdAppliedDefaults;
     message?: string;
 } | {
     ads?: Array<Ad>;
     platformCampaignId?: string;
     platformAdSetId?: string;
+    appliedDefaults?: AdAppliedDefaults;
     message?: string;
 }));
 
