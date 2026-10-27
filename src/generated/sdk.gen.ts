@@ -11575,7 +11575,10 @@ export const getAdSetDetails = <ThrowOnError extends boolean = false>(options: O
  * Changes an ad set's settings, such as its budget, bid strategy, status or delivery options.
  *
  * Use this for ABO budget updates, ad-set-scoped
- * pause/resume, bid-strategy edits, Meta value-rule-set attach/detach, and
+ * pause/resume, bid-strategy edits, Meta value-rule-set attach/detach, Meta
+ * beneficiary and payer (`dsaBeneficiary` / `dsaPayor` for the EU,
+ * `regionalRegulatedCategories` / `regionalRegulationIdentities` for the
+ * regional regimes), and
  * Meta-only post-launch delivery settings via `platformSpecificData`. At
  * least one updatable field is required.
  *

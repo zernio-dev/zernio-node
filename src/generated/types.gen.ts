@@ -47599,6 +47599,48 @@ export type UpdateAdSetData = {
          */
         bidStrategy?: (BidStrategy);
         /**
+         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad
+         * set's `dsa_beneficiary`, the legal entity that benefits from its ads, same field and
+         * limits as `dsaBeneficiary` on POST /v1/ads/create. Only the fields you send are
+         * written. It is the EU DSA field; for the regional regimes (Brazil, Malaysia,
+         * Thailand, Australia, Singapore, Taiwan, India) use `regionalRegulatedCategories` and
+         * `regionalRegulationIdentities` instead. Read it back with
+         * GET /v1/ads/ad-sets/{adSetId}?accountId={accountId}&fields=dsa_beneficiary,dsa_payor.
+         *
+         */
+        dsaBeneficiary?: string;
+        /**
+         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad
+         * set's `dsa_payor`, the legal entity that pays for its ads, same field and limits as
+         * `dsaPayor` on POST /v1/ads/create. Can differ from `dsaBeneficiary`.
+         *
+         */
+        dsaPayor?: string;
+        /**
+         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad
+         * set's `regional_regulated_categories`, same values as on POST /v1/ads/create
+         * (AUSTRALIA_FINSERV, AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, INDIA_FINSERV,
+         * MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL,
+         * THAILAND_UNIVERSAL). Send it with `regionalRegulationIdentities`. An empty array is a 400.
+         *
+         */
+        regionalRegulatedCategories?: Array<(string)>;
+        /**
+         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad
+         * set's `regional_regulation_identities`: the Verified identity IDs of the beneficiary
+         * and payer for each declared category, same keys and validation as on
+         * POST /v1/ads/create (for example `universal_beneficiary` / `universal_payer` for
+         * BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL). Send each ID as a
+         * string of digits; an empty object is a 400. When Meta refuses the ad set for a missing
+         * verified advertiser, the 400 `platform_api_error` names the keys the declared categories
+         * expect in `details.expectedIdentityKeys`, as on create. Read both back with
+         * GET /v1/ads/ad-sets/{adSetId}?accountId={accountId}&fields=regional_regulated_categories,regional_regulation_identities.
+         *
+         */
+        regionalRegulationIdentities?: {
+            [key: string]: (string | number);
+        };
+        /**
          * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is
          * TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`.
          * When on, TikTok may deliver beyond the selected audiences or interests. Available on
