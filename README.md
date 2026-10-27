@@ -551,6 +551,7 @@ try {
 | `adCampaigns.getAdCampaignDetails()` | Get live campaign details |
 | `adCampaigns.getAdReview()` | Read the platform's review verdict for an ad |
 | `adCampaigns.getAdSetDetails()` | Get live ad-set details |
+| `adCampaigns.getAdSetTargeting()` | Read a Reddit ad group's targeting and schedule |
 | `adCampaigns.getAdsTimeline()` | Get daily account metrics |
 | `adCampaigns.getAdTree()` | Get campaign tree |
 | `adCampaigns.getCampaignAdSchedule()` | Read a campaign's ad schedule (dayparting) |

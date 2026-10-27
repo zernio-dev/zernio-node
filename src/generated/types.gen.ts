@@ -47739,7 +47739,35 @@ export type UpdateAdSetData = {
             devicePlatforms?: Array<('mobile' | 'desktop')>;
         } | null;
         /**
-         * Meta only (400 elsewhere). Targeting fields to change, same shape as the `targeting`
+         * Reddit only. Every other platform ignores it (nothing is written and no error is returned,
+         * so a body that also sends `status` still applies it); Meta takes it in
+         * `platformSpecificData.startDate`. The ad group's new start_time, ISO 8601. A value
+         * without an offset (`YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account
+         * timezone. It cannot be earlier than the start of a campaign that starts in the future,
+         * nor at or after the ad group's end (400, `param: startDate`).
+         *
+         */
+        startDate?: string;
+        /**
+         * Reddit only. Every other platform ignores it (nothing is written and no error is returned,
+         * so a body that also sends `status` still applies it); Meta takes it in
+         * `platformSpecificData.endDate`. The ad group's new end_time, ISO 8601, read in the ad
+         * account timezone when it has no offset; a date alone means the end of that day. `null`
+         * removes the end date so the ad group runs continuously. Returns 400 with
+         * `param: endDate` when it is not after the start, when it falls after the campaign's
+         * end, when the campaign uses campaign budget optimization with no end date (Reddit then
+         * takes no end date on its ad groups), when `null` would outlive a campaign budget
+         * campaign that ends, or when `null` is sent for an ad group with a lifetime budget.
+         *
+         */
+        endDate?: (string) | null;
+        /**
+         * Meta and Reddit (400 elsewhere). On Reddit, see the description above: `languages`
+         * must be among Reddit's ISO 639-1 codes (AR, CS, DA, DE, EL, EN, ES, FI, FR, HU, IT, JA,
+         * KO, NL, NO, PL, PT, RO, SV, VI, ZH, any case), emptying every included location is a
+         * 400 with `param: targeting.countries`, and fields Reddit ad groups cannot take (age,
+         * income, devices, behaviors, B2B, `places`) return 400 with `param: targeting.<field>`.
+         * On Meta: targeting fields to change, same shape as the `targeting`
          * object on POST /v1/ads/create. Only the keys you send change: Zernio reads the ad set's
          * live targeting from Meta, merges these keys over it and writes the full spec back, so
          * everything you do not send (custom audiences, geo, age, interest groups,
@@ -47901,11 +47929,19 @@ export type UpdateAdSetResponse = ({
         [key: string]: unknown;
     };
     /**
-     * Present when `placements` or `targeting` was sent. The ad set's full Meta targeting as written (Meta snake_case). The same snake_case object is stored as the ad set's and its ads' `targeting`.
+     * Present when `placements` or `targeting` was sent. The ad set's full targeting as written, in the platform's own vocabulary (Meta or Reddit snake_case). Stored as the ad set's `targeting`. Meta stores the same object on its ads; Reddit stores it on its ads in the create vocabulary (`countries`, `communities`, ...), as GET /v1/ads/ad-sets/{adSetId}/targeting returns it.
      */
     targeting?: {
         [key: string]: unknown;
     };
+    /**
+     * Reddit: the start_time written, a UTC instant. Present when `startDate` was sent.
+     */
+    startDate?: string;
+    /**
+     * Reddit: the end_time written, a UTC instant, or null when the end date was removed. Present when `endDate` was sent.
+     */
+    endDate?: (string) | null;
 });
 
 export type UpdateAdSetError = (unknown | ErrorResponse);
@@ -47928,6 +47964,39 @@ export type DeleteAdSetResponse = ({
 });
 
 export type DeleteAdSetError = (ErrorResponse | unknown);
+
+export type GetAdSetTargetingData = {
+    path: {
+        /**
+         * Reddit ad group ID
+         */
+        adSetId: string;
+    };
+    query?: {
+        /**
+         * Disambiguates when the same adSetId string exists on more than one connected platform.
+         */
+        platform?: 'reddit';
+    };
+};
+
+export type GetAdSetTargetingResponse = ({
+    adSetId?: string;
+    /**
+     * Only the keys the ad group sets. `regions`, `metros`, `cities` and `zips` entries carry `{ key, name }`; `interests` carry `{ id, name }`.
+     */
+    targeting?: (TargetingSpec);
+    /**
+     * The ad group's start_time, null when it has none.
+     */
+    startDate?: (string) | null;
+    /**
+     * The ad group's end_time, null when it runs continuously.
+     */
+    endDate?: (string) | null;
+});
+
+export type GetAdSetTargetingError = (ErrorResponse | unknown);
 
 export type UpdateAdSetStatusData = {
     body: {
