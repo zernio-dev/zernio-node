@@ -52210,11 +52210,11 @@ export type CreateStandaloneAdData = {
         adAccountId: string;
         name: string;
         /**
-         * Meta and Reddit. Exact campaign name. Overrides the default `<name> - Campaign`.
+         * Meta, Reddit and Google. Exact campaign name. Overrides the default `<name> - Campaign`. Ignored when the request joins an existing campaign or ad set. Google: no line breaks and at most 255 characters, checked before calling Google; names are unique in the Google Ads account, and on Search and Display a taken name is a 400 naming this field.
          */
         campaignName?: string;
         /**
-         * Meta and Reddit (the ad group). Exact ad set name. Overrides the default `<name> - Ad Set`. (For per-ad names on the multi-creative shape, set `name` on each `creatives[]` entry.)
+         * Meta, Reddit and Google (the ad group). Exact ad set name. Overrides the default `<name> - Ad Set` (Google Search and Display: `<name> - Ad Group`). Ignored when the request joins an existing ad set (`adSetId`). Google Search and Display only, also on `existingCampaignId`, where the new ad group's name is returned as `adSetName`; no line breaks, at most 255 characters, unique in the campaign (a taken name is a 400 naming this field). Demand Gen names its ad group with `demandGen.adGroupName` and Performance Max with `assetGroup.name`. (For per-ad names on the multi-creative shape, set `name` on each `creatives[]` entry.)
          */
         adSetName?: string;
         /**
