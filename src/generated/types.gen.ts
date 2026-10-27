@@ -9682,6 +9682,19 @@ export type InstagramPlatformData = {
      */
     collaborators?: Array<(string)>;
     /**
+     * Output only. Set by Zernio when Instagram rejected these collaborators and the retry was sent without them.
+     */
+    readonly droppedCollaborators?: Array<{
+        /**
+         * The collaborator username Instagram rejected
+         */
+        username: string;
+        /**
+         * The reason Instagram gave for rejecting the collaborator
+         */
+        reason: string;
+    }>;
+    /**
      * Optional first comment to add after the post is created (not applied to Stories)
      */
     firstComment?: string;
