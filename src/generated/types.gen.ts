@@ -55950,7 +55950,7 @@ export type SendConversionsData = {
         destinationId: string;
         events: Array<ConversionEvent>;
         /**
-         * Meta `test_event_code` passthrough. On Pinterest any value sends the batch with `test=true` (validated, not recorded). On Reddit, sent as `test_id` so the events show in the pixel's test view. Ignored by Google, LinkedIn, and OpenAI Ads.
+         * Send it at the request root, never inside an event. A root-level `test_event_code` (Meta's own name) is accepted as an alias and must be a non-empty string; sending both with different values is a 400. On Meta it is sent as `test_event_code`: the events show in Events Manager's Test Events tab for the pixel whose current test code matches (Meta rotates the code, so copy it again from that tab), and Meta still processes them like any other event, so remove it in production. On Pinterest any value sends the batch with `test=true` (validated, not recorded). On Reddit, sent as `test_id` so the events show in the pixel's test view. Ignored by Google, LinkedIn, and OpenAI Ads.
          */
         testCode?: string;
         /**
@@ -56011,6 +56011,10 @@ export type SendConversionsResponse = ({
      *
      */
     traceId?: string;
+    /**
+     * The test code sent to the platform, as received (from `testCode` or `test_event_code`). `null` when the request carried none, so the events were sent as production events.
+     */
+    testCode?: (string) | null;
 });
 
 export type SendConversionsError = (unknown | ErrorResponse);
@@ -56474,7 +56478,7 @@ export type SendEventsData = {
             adPersonalization?: 'GRANTED' | 'DENIED';
         };
         /**
-         * Forwarded as each platform test code (see POST /v1/ads/conversions). Test events are not stored.
+         * Forwarded as each platform test code (see POST /v1/ads/conversions). A root-level `test_event_code` is accepted as an alias. Test events are not stored.
          */
         testCode?: string;
     };
@@ -56489,6 +56493,10 @@ export type SendEventsResponse = ({
      * Whether the events were stored for reporting (always false with testCode).
      */
     stored?: boolean;
+    /**
+     * The test code forwarded to every destination, or `null` when the request carried none.
+     */
+    testCode?: (string) | null;
     destinations?: Array<{
         accountId?: string;
         destinationId?: string;
@@ -57096,9 +57104,11 @@ export type SendWhatsAppConversionData = {
          */
         externalId?: string;
         /**
-         * Meta `test_event_code` passthrough. Routes the event to
-         * the Test Events tab in Events Manager instead of the
-         * production dataset, useful for development.
+         * Meta `test_event_code` passthrough, sent at the request root
+         * (a root-level `test_event_code` is accepted as an alias). The
+         * event shows in Events Manager's Test Events tab for the
+         * dataset whose current test code matches. Meta still
+         * processes it like any other event, so remove it in production.
          *
          */
         testCode?: string;
@@ -57148,6 +57158,10 @@ export type SendWhatsAppConversionResponse = ({
      *
      */
     traceId?: string;
+    /**
+     * The test code sent to Meta, or `null` when the request carried none.
+     */
+    testCode?: (string) | null;
 });
 
 export type SendWhatsAppConversionError = (unknown | ErrorResponse);
