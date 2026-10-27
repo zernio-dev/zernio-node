@@ -1917,7 +1917,7 @@ export type AdTracking = {
         value: string;
     }>;
     /**
-     * POST /v1/ads/create on Meta and Google only. Every ad created there carries `zrn=<platform ad id>` on its landing URL so orders and events tied to the landing URL map back to the ad. Meta: `{ key: zrn, value: '{{ad.id}}' }` is appended after your `urlTags`, which are sent unchanged; a `zrn` key you send yourself is kept. Skipped for lead forms, call ads, `existingCreativeId` and app promotion. Google (Display and Search): the ad's `final_url_suffix` becomes the suffix it would inherit (ad group, campaign or account) plus `&zrn={creative}`, so your account and campaign UTMs still apply; if that suffix cannot be read or Google rejects it, the ad is created untagged. Existing ads are never changed. Set `false` to create the ad with no Zernio tag.
+     * POST /v1/ads/create on Meta and Google only. Every ad created there carries `zrn=<platform ad id>` on its landing URL so orders and events tied to the landing URL map back to the ad. Meta: `{ key: zrn, value: '{{ad.id}}' }` is appended after your `urlTags`, which are sent unchanged; a `zrn` key you send yourself is kept. Skipped for lead forms, call ads, `existingCreativeId` and app promotion. Google (Display and Search): the ad's `final_url_suffix` is set to `zrn={creative}` only when the ad inherits no suffix from its ad group, campaign or account; when one exists the ad is left untouched (your suffix keeps applying) and attribution uses the click's `gclid`. If the inherited suffix cannot be read or Google rejects the tag, the ad is created untagged. Existing ads are never changed. Set `false` to create the ad with no Zernio tag.
      */
     zernioTag?: boolean;
 };
@@ -58068,6 +58068,26 @@ export type ListEventsResponse = ({
         hasEmail?: boolean;
         hasPhone?: boolean;
         hasExternalId?: boolean;
+        /**
+         * The ad behind the event, when Zernio can name it. Google: from the click behind `clickIds.gclid` (synced daily from Google Ads click_view for clicks up to 14 days before the event; gbraid/wbraid clicks are not resolved). Meta: from the `zrn` ad id, for Meta ads Zernio holds. `null` otherwise.
+         */
+        ad?: {
+            platform?: 'googleads' | 'metaads';
+            /**
+             * Google Ads customer id (Google only).
+             */
+            customerId?: string;
+            campaignId?: (string) | null;
+            /**
+             * Google only.
+             */
+            adGroupId?: (string) | null;
+            /**
+             * Meta only.
+             */
+            adSetId?: (string) | null;
+            adId?: (string) | null;
+        } | null;
     }>;
     /**
      * Pass as `cursor` to get the next page; `null` on the last page.
