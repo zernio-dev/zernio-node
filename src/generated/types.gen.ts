@@ -51985,6 +51985,20 @@ export type BoostPostData = {
          *
          */
         metaObjective?: 'OUTCOME_ENGAGEMENT';
+        /**
+         * Meta only (facebook, instagram and Meta ads connections). Dry-runs the boost with Meta's
+         * execution_options validate_only: the campaign, ad set, creative (the post reference) and ad
+         * are checked as sent, everything PAUSED, and nothing is created or stored on Meta or in Zernio.
+         * Returns 200 with the same body as a validateOnly POST /v1/ads/create (`validateOnly`, `results`
+         * per node, `message`). Idempotency-Key storage and the duplicate-boost guard are bypassed. Counts
+         * toward the 30 Meta writes per ad account per 5 minutes. With `adSetId` only the ad is dry-run.
+         * An Instagram video that Meta refuses as a direct reference (subcode 1815279) comes back as
+         * `unverified` nodes, because the copy a real boost makes cannot be dry-run.
+         * `true` on any other platform returns 400 naming `validateOnly` and creates nothing; `false` is
+         * ignored. `dryRun` is not a field: sending it returns 400 instead of creating the ad.
+         *
+         */
+        validateOnly?: boolean;
     };
     headers?: {
         /**
@@ -51995,6 +52009,20 @@ export type BoostPostData = {
 };
 
 export type BoostPostResponse = ({
+    /**
+     * Always true in a validate-only response.
+     */
+    validateOnly?: boolean;
+    results?: Array<{
+        node?: 'campaign' | 'adSet' | 'creative' | 'ad';
+        status?: 'validated' | 'skipped' | 'unverified';
+        /**
+         * Why the node was skipped (it already exists with adSetId), why Meta could not dry-run it (on unverified), or what the dry run could not check (on validated).
+         */
+        reason?: string;
+    }>;
+    message?: string;
+} | {
     ad?: Ad;
     message?: string;
     instagramVideoFallback?: InstagramVideoFallback;
