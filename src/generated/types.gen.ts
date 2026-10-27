@@ -143,6 +143,10 @@ export type Ad = {
      * True for ads synced from platform ad managers
      */
     isExternal?: boolean;
+    /**
+     * Only on GET /v1/ads/{adId}. True when the ad comes from Zernio's synced store; false when it was read live from Meta because it is not synced yet (request made with `accountId`). An unsynced ad has no `id`.
+     */
+    synced?: boolean;
     budget?: {
         amount?: number;
         type?: 'daily' | 'lifetime';
@@ -11328,6 +11332,11 @@ export type ParameterLiveStatusRead = boolean;
  * Page number (1-based)
  */
 export type ParameterPageParam = number;
+
+/**
+ * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+ */
+export type ParameterUnsyncedMetaAdAccountId = string;
 
 export type PhoneNumberStockWatch = {
     id: string;
@@ -48183,6 +48192,10 @@ export type GetAdData = {
     };
     query?: {
         /**
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         */
+        accountId?: string;
+        /**
          * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description. On X the budget is read live in the same read: on GET /v1/ads/{adId} `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches); on the ad set and campaign listings `budget` is the one that line item or campaign holds now (returned, not stored); a row whose budget the other level holds keeps its synced `budget`.
          */
         live?: boolean;
@@ -48200,7 +48213,7 @@ export type GetAdResponse = ({
      */
     stale?: boolean;
     /**
-     * Only with `live=true`. When the switches were read from the platform; null when the live read failed and the stored values were returned.
+     * With `live=true`, when the switches were read from the platform; null when the live read failed and the stored values were returned. Always set on an unsynced Meta ad read with `accountId`, the time of that read.
      */
     statusReadAt?: (string) | null;
     /**
@@ -48240,7 +48253,7 @@ export type GetAdResponse = ({
 
 export type GetAdError = (ErrorResponse | {
     error?: string;
-});
+} | unknown);
 
 export type UpdateAdData = {
     body: {
@@ -48953,11 +48966,15 @@ export type GenerateAdPreviewsError = (unknown | ErrorResponse);
 export type GetAdPreviewsData = {
     path: {
         /**
-         * Zernio ad id (24-char hex).
+         * Zernio ad id (24-char hex) or Meta platform ad id.
          */
         adId: string;
     };
     query?: {
+        /**
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         */
+        accountId?: string;
         /**
          * Comma-separated Meta ad_format values (max 10), one preview per format. Defaults to DESKTOP_FEED_STANDARD.
          */
@@ -48967,6 +48984,10 @@ export type GetAdPreviewsData = {
 
 export type GetAdPreviewsResponse = ({
     adId?: string;
+    /**
+     * False when the ad was read live from Meta because it is not in Zernio's store (request made with `accountId`).
+     */
+    synced?: boolean;
     previews?: Array<{
         format?: string;
         /**
@@ -48985,12 +49006,25 @@ export type GetAdReviewData = {
          */
         adId: string;
     };
+    query?: {
+        /**
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         */
+        accountId?: string;
+    };
 };
 
 export type GetAdReviewResponse = ({
-    adId?: string;
+    /**
+     * Zernio ad id; null for an unsynced Meta ad read with `accountId`.
+     */
+    adId?: (string) | null;
     platform?: string;
     platformAdId?: string;
+    /**
+     * False when the ad was read live from Meta because it is not in Zernio's store.
+     */
+    synced?: boolean;
     review?: {
         /**
          * TikTok `is_approved`. Google and Meta: derived from the platform status (see the description).
@@ -49127,6 +49161,12 @@ export type GetAdMediaData = {
          */
         adId: string;
     };
+    query?: {
+        /**
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         */
+        accountId?: string;
+    };
 };
 
 export type GetAdMediaResponse = ({
@@ -49135,6 +49175,10 @@ export type GetAdMediaResponse = ({
      * 'facebook' or 'instagram'. Only Meta is supported for now.
      */
     platform?: string;
+    /**
+     * False when the ad was read live from Meta because it is not in Zernio's store (request made with `accountId`).
+     */
+    synced?: boolean;
     media?: Array<{
         type?: 'image' | 'video';
         /**

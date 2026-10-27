@@ -11875,6 +11875,15 @@ export const getAdsTimeline = <ThrowOnError extends boolean = false>(options: Op
  * `platformStatus`) and its ad set and campaign switches (`platformAdSetStatus`,
  * `platformCampaignStatus`) are read live.
  *
+ * **Meta ads that are not synced yet.** Pass `accountId` with a Meta `platformAdId` to read an ad
+ * Zernio has not synced (for example one created in Ads Manager on an ad account reached only
+ * through a Facebook connection). The ad is read live from Meta and mapped exactly like a synced
+ * row (name, `status`, `platformStatus`, `configuredStatus`, `platformAdSetId`,
+ * `platformCampaignId`, campaign and ad set names, budgets, and `creative` with its `id`, body,
+ * link, image and video), with `synced: false`, no `id` (it has no Zernio row) and `statusReadAt`
+ * set to the time of the read. Synced ads answer `synced: true`. Only a numeric id takes this
+ * path, so dark post ids (`{pageId}_{postId}`) keep the dark post lookup above.
+ *
  */
 export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdResponse, GetAdError, ThrowOnError>({
@@ -12219,6 +12228,9 @@ export const generateAdPreviews = <ThrowOnError extends boolean = false>(options
  * Renders an EXISTING ad per placement via Meta's `/{ad_id}/previews`. Each preview is an HTML
  * `<iframe>` snippet embeddable directly. Unknown `formats` values return Meta's 400 verbatim.
  *
+ * **Meta ads that are not synced yet.** Pass `accountId` with a Meta platform ad id that is not in
+ * Zernio's store to render it live through that connection; the response carries `synced: false`.
+ *
  */
 export const getAdPreviews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdPreviewsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdPreviewsResponse, GetAdPreviewsError, ThrowOnError>({
@@ -12263,6 +12275,10 @@ export const getAdPreviews = <ThrowOnError extends boolean = false>(options: Opt
  * `platformStatus`: TikTok reports `AD_STATUS_AUDIT` while the ad is in review and
  * `AD_STATUS_AD_PRE_ONLINE` once it passed and is about to deliver (both map to
  * `status: pending_review`); `AD_STATUS_AUDIT_DENY` maps to `rejected`.
+ *
+ * **Meta ads that are not synced yet.** Pass `accountId` with a Meta platform ad id that is not in
+ * Zernio's store to read its review live through that connection. The response then has
+ * `adId: null`, `synced: false`, and nothing is stored. Synced ads answer `synced: true`.
  */
 export const getAdReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdReviewData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdReviewResponse, GetAdReviewError, ThrowOnError>({
@@ -12323,6 +12339,9 @@ export const getTikTokSmartPlusAdReview = <ThrowOnError extends boolean = false>
  * URLs carry an `oe=<hex>` expiration (image_url ~24 h, video source ~12 d). Treat
  * URLs as short-lived: re-fetch this endpoint before serving or downloading assets
  * instead of caching URLs beyond that window.
+ *
+ * **Meta ads that are not synced yet.** Pass `accountId` with a Meta platform ad id that is not in
+ * Zernio's store to read its media live through that connection; the response carries `synced: false`.
  */
 export const getAdMedia = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdMediaData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdMediaResponse, GetAdMediaError, ThrowOnError>({
