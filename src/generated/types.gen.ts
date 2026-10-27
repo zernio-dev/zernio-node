@@ -22120,6 +22120,10 @@ export type ListPostsData = {
          * Zero-padded YYYY-MM-DD, or a full ISO 8601 datetime. An empty value means no date filter; any other malformed value returns 400. The same name the other date-window filters use (ads, analytics).
          */
         toDate?: string;
+        /**
+         * Only posts whose `updatedAt` is at or after this ISO 8601 timestamp, an offset or `Z` required. `updatedAt` moves when the post or any of its platforms changes (an edit, a status change, a platform publishing or failing), so to keep a copy in sync, send the time of your previous sync instead of reading every page again. Combines with the other filters and with `cursor`. Deleted posts are not returned. Not available with `source=external`.
+         */
+        updatedSince?: string;
     };
 };
 
