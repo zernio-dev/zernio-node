@@ -926,6 +926,7 @@ try {
 | `conversions.listConversionDestinations()` | List conversion destinations |
 | `conversions.listCustomConversionGoals()` | List custom conversion goals |
 | `conversions.listEventDestinations()` | List event destinations |
+| `conversions.listEvents()` | List stored events |
 | `conversions.createConversionAction()` | Create website conversion action |
 | `conversions.createConversionDestination()` | Create a conversion destination |
 | `conversions.createCustomConversionGoal()` | Create a custom conversion goal |

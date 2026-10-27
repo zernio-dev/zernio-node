@@ -47384,15 +47384,15 @@ export type ListAdSetsError = (ErrorResponse | unknown);
 export type CreateAdSetData = {
     body: {
         /**
-         * Zernio SocialAccount id owning the Google Ads connection.
+         * Zernio SocialAccount id owning the Google Ads or Reddit Ads connection.
          */
         accountId: string;
         /**
-         * Only "google" is implemented today; every other value returns 501.
+         * "google" and "reddit" are implemented; every other value returns 501.
          */
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
         /**
-         * Google platform campaign ID (numeric) the ad group is created under.
+         * Platform campaign ID the ad group is created under (numeric on Google).
          */
         campaignId: string;
         name: string;
@@ -47402,14 +47402,56 @@ export type CreateAdSetData = {
          */
         maxCpc?: number;
         /**
-         * Platform ad account ID (Google customer ID, digits only). Only required when the connection has more than one.
+         * Platform ad account ID: the Google customer ID (digits only, only required when the connection has more than one) or the Reddit ad account id (required).
          */
         adAccountId?: string;
         /**
-         * Alias of adAccountId, kept for existing callers
+         * Google only. Alias of adAccountId, kept for existing callers
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Reddit only. Budget of the new ad group, in the ad account's currency units. Required when the campaign has no campaign budget; not applied under campaign budget optimization.
+         */
+        budgetAmount?: number;
+        /**
+         * Reddit only. Sent together with budgetAmount.
+         */
+        budgetType?: 'daily' | 'lifetime';
+        /**
+         * Reddit only. ISO 8601 start of the ad group. Defaults to now, or to the campaign start when it is in the future.
+         */
+        startDate?: string;
+        /**
+         * Reddit only. ISO 8601 end of the ad group. Defaults to the campaign end.
+         */
+        endDate?: string;
+        targeting?: TargetingSpec;
+        /**
+         * Reddit only. The pixel and the conversion event the ad group optimizes toward.
+         */
+        promotedObject?: {
+            /**
+             * Reddit pixel id. Defaults to the ad account's first pixel.
+             */
+            pixelId?: string;
+            /**
+             * Conversion event (PURCHASE, LEAD, SIGN_UP, ADD_TO_CART, PAGE_VISIT). Required on a conversions campaign.
+             */
+            customEventType?: string;
+        };
+        /**
+         * Reddit only. VIDEO_VIEW_6S (default) or VIDEO_VIEW_15S on a video views campaign.
+         */
+        optimizationGoal?: string;
+        /**
+         * Reddit only. Defaults to LOWEST_COST_WITHOUT_CAP. Not accepted under campaign budget optimization.
+         */
+        bidStrategy?: 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP';
+        /**
+         * Reddit only. Bid cap in currency units, sent with bidStrategy.
+         */
+        bidAmount?: number;
     };
     headers?: {
         /**
@@ -54191,10 +54233,18 @@ export type CreateStandaloneAdData = {
          * (geo, languages, `demandGen.channels`/`audience`/`audienceId`/
          * `adGroupName`) return 400. `validateOnly` is supported.
          *
+         * On Reddit Ads the `adSetId` is the AD GROUP id. Only the post
+         * and the ad are created; the ad group keeps its budget,
+         * schedule, targeting, bid and optimization, so `budgetAmount`,
+         * `budgetType`, `startDate`, `endDate`, targeting fields,
+         * `promotedObject`, `tracking.pixelId` and `optimizationGoal`
+         * return 400. `goal` is not required. An ad group of another
+         * ad account returns 404.
+         *
          */
         adSetId?: string;
         /**
-         * Meta, Google Ads, LinkedIn and TikTok. On TikTok: creates
+         * Meta, Google Ads, LinkedIn, TikTok and Reddit Ads. On TikTok: creates
          * the ad group and the ad under this existing campaign; the
          * campaign is neither created nor activated and its
          * objective must fit `goal`; not with `smartPlus`.
@@ -54220,8 +54270,26 @@ export type CreateStandaloneAdData = {
          * a new ad group, so geo and language fields return 400 there; the new
          * ad group follows the campaign's targeting. On failure only the entities we
          * authored are cleaned up; the pre-existing parent is left
-         * untouched and is never (re)activated. Mutually exclusive
-         * with `adSetId` and `creatives[]`.
+         * untouched and is never (re)activated. On Reddit Ads:
+         * creates a new ad group and the ad under this EXISTING
+         * campaign; `goal` may be omitted (the campaign's objective
+         * decides it) and any other goal returns 400 naming the one to
+         * send. The ad group must start no earlier than a future
+         * campaign start and end no later than the campaign end
+         * (400 otherwise); without `endDate` it ends with the
+         * campaign. When the campaign has
+         * no campaign budget, send `budgetAmount`/`budgetType` for the
+         * new ad group (400 without them); bid, conversion event and
+         * pixel work as on a new campaign. Under campaign budget
+         * optimization the ad group takes the campaign's bid,
+         * goal type, optimization event and pixel, carries no budget
+         * of its own (a budget in the request is not applied), and
+         * bid fields or another conversion event or pixel return
+         * 400, as does an `endDate` when the campaign has no end
+         * date. A
+         * campaign of another ad account returns 404, a Reddit Max
+         * campaign 422. If the ad fails, the new ad group is
+         * archived. Mutually exclusive with `adSetId` and `creatives[]`.
          *
          */
         existingCampaignId?: string;
@@ -57873,6 +57941,74 @@ export type RemoveCustomConversionGoalResponse = ({
 });
 
 export type RemoveCustomConversionGoalError = (ErrorResponse | unknown);
+
+export type ListEventsData = {
+    query: {
+        /**
+         * `nextCursor` from the previous page.
+         */
+        cursor?: string;
+        /**
+         * Only events with this name, such as `Purchase`.
+         */
+        eventName?: string;
+        /**
+         * Only events at or after this time (ISO 8601, on the event time).
+         */
+        from?: string;
+        limit?: number;
+        profileId: string;
+        /**
+         * Only events before this time (ISO 8601, on the event time).
+         */
+        to?: string;
+    };
+};
+
+export type ListEventsResponse = ({
+    events?: Array<{
+        eventId?: string;
+        eventName?: string;
+        eventTime?: string;
+        receivedAt?: string;
+        actionSource?: (string) | null;
+        value?: (number) | null;
+        currency?: (string) | null;
+        /**
+         * Origin, path and attribution parameters only.
+         */
+        sourceUrl?: (string) | null;
+        utm?: {
+            source?: (string) | null;
+            medium?: (string) | null;
+            campaign?: (string) | null;
+            content?: (string) | null;
+        };
+        /**
+         * Ad ID from the `zrn` parameter Zernio adds to links of ads it creates.
+         */
+        zrn?: (string) | null;
+        clickIds?: {
+            gclid?: (string) | null;
+            fbc?: (string) | null;
+        };
+        /**
+         * Destinations the event was forwarded to.
+         */
+        destinationsSent?: number;
+        hasEmail?: boolean;
+        hasPhone?: boolean;
+        hasExternalId?: boolean;
+    }>;
+    /**
+     * Pass as `cursor` to get the next page; `null` on the last page.
+     */
+    nextCursor?: (string) | null;
+});
+
+export type ListEventsError = (ErrorResponse | {
+    error?: string;
+});
 
 export type SendEventsData = {
     body: {

@@ -660,6 +660,7 @@ import {
   listEmailMessages,
   listEmailThreads,
   listEventDestinations,
+  listEvents,
   listFacebookPages,
   listFacebookTaggedPosts,
   listFacebookVisitorPosts,
@@ -2534,6 +2535,7 @@ export class Zernio {
     createCustomConversionGoal: this._bind(createCustomConversionGoal),
     updateCustomConversionGoal: this._bind(updateCustomConversionGoal),
     removeCustomConversionGoal: this._bind(removeCustomConversionGoal),
+    listEvents: this._bind(listEvents),
     sendEvents: this._bind(sendEvents),
     listEventDestinations: this._bind(listEventDestinations),
     createEventDestination: this._bind(createEventDestination),
@@ -3143,6 +3145,8 @@ export class Zernio {
     updateCustomConversionGoal: this._bind(updateCustomConversionGoal),
     /** @deprecated Use `zernio.conversions.removeCustomConversionGoal` instead. */
     removeCustomConversionGoal: this._bind(removeCustomConversionGoal),
+    /** @deprecated Use `zernio.conversions.listEvents` instead. */
+    listEvents: this._bind(listEvents),
     /** @deprecated Use `zernio.conversions.sendEvents` instead. */
     sendEvents: this._bind(sendEvents),
     /** @deprecated Use `zernio.conversions.listEventDestinations` instead. */
