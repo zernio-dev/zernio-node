@@ -6421,7 +6421,7 @@ export type CtwaMultiResponse = {
     platformAdSetId: string;
     message: string;
     /**
-     * Present when Meta created the ad set differently from the request: a multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change (a WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button), or the ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy` or a `roasAverageFloor` that strategy cannot take was not applied.
+     * Present when Meta created the ad set differently from the request: a multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change (a WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button), or the ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy` or a `roasAverageFloor` that strategy cannot take was not applied. Also present, as an entry starting with `activation_failed:`, when Meta refused the final switch to ACTIVE: nothing was deleted, and the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
      */
     warnings?: Array<(string)>;
 };
@@ -6444,7 +6444,7 @@ export type CtwaSingleResponse = {
     };
     message: string;
     /**
-     * Present when Meta created the ad set differently from the request: a multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change (a WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button), or the ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy` or a `roasAverageFloor` that strategy cannot take was not applied.
+     * Present when Meta created the ad set differently from the request: a multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change (a WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button), or the ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy` or a `roasAverageFloor` that strategy cannot take was not applied. Also present, as an entry starting with `activation_failed:`, when Meta refused the final switch to ACTIVE: nothing was deleted, and the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
      */
     warnings?: Array<(string)>;
 };
@@ -7000,7 +7000,7 @@ export type ErrorResponse = {
      */
     details?: {
         /**
-         * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on), or `other` (a read or check before any write).
+         * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on; no longer returned, since a refused switch to ACTIVE now answers 201 with an `activation_failed:` warning and the objects kept PAUSED), or `other` (a read or check before any write).
          */
         stage?: 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activation' | 'other';
         /**
@@ -7053,7 +7053,7 @@ export type ErrorResponse = {
 export type type9 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
- * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on), or `other` (a read or check before any write).
+ * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on; no longer returned, since a refused switch to ACTIVE now answers 201 with an `activation_failed:` warning and the objects kept PAUSED), or `other` (a read or check before any write).
  */
 export type stage = 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activation' | 'other';
 
@@ -53587,7 +53587,7 @@ export type BoostPostResponse = ({
     message?: string;
     instagramVideoFallback?: InstagramVideoFallback;
     /**
-     * Present with instagramVideoFallback: one human-readable line saying how the Instagram video was boosted.
+     * Present with instagramVideoFallback: one human-readable line saying how the Instagram video was boosted. On Meta also present, as an entry starting with `activation_failed:`, when Meta refused the final switch to ACTIVE of the campaign, ad set or ad this boost created: nothing was deleted, `message` says not everything is ACTIVE, and the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later. A retry without Idempotency-Key inside the 10-minute dedup window that finds the stored ad PAUSED although it asks for ACTIVE gets a `replayed_paused:` entry with the same status calls instead.
      */
     warnings?: Array<(string)>;
 });
@@ -55015,12 +55015,20 @@ export type CreateStandaloneAdResponse = ({
     ad?: Ad;
     appliedDefaults?: AdAppliedDefaults;
     message?: string;
+    /**
+     * Meta only, present only when needed. An `activation_failed:` entry means Meta refused the final switch to ACTIVE: the entry names what was kept PAUSED (the ad, and its ad set or campaign when Meta refused those) and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     */
+    warnings?: Array<(string)>;
 } | {
     ads?: Array<Ad>;
     platformCampaignId?: string;
     platformAdSetId?: string;
     appliedDefaults?: AdAppliedDefaults;
     message?: string;
+    /**
+     * Meta only, present only when needed. An `activation_failed:` entry means Meta refused the final switch to ACTIVE for the ads it names (or for their ad set or campaign): the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     */
+    warnings?: Array<(string)>;
 }));
 
 export type CreateStandaloneAdError = (unknown | ErrorResponse);
