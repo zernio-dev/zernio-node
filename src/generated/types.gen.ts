@@ -47759,7 +47759,7 @@ export type CreateAdSetData = {
          */
         customerId?: string;
         /**
-         * Reddit only. Budget of the new ad group, in the ad account's currency units. Required when the campaign has no campaign budget; not applied under campaign budget optimization.
+         * Reddit only. Budget of the new ad group, in the ad account's currency units. Required when the campaign has no campaign budget; 400 under campaign budget optimization, where the campaign budget funds the ad group.
          */
         budgetAmount?: number;
         /**
@@ -54734,10 +54734,10 @@ export type CreateStandaloneAdData = {
          * new ad group (400 without them); bid, conversion event and
          * pixel work as on a new campaign. Under campaign budget
          * optimization the ad group takes the campaign's bid,
-         * goal type, optimization event and pixel, carries no budget
-         * of its own (a budget in the request is not applied), and
-         * bid fields or another conversion event or pixel return
-         * 400, as does an `endDate` when the campaign has no end
+         * goal type, optimization event and pixel and carries no
+         * budget of its own, so `budgetAmount`/`budgetType`, bid
+         * fields or another conversion event or pixel return 400,
+         * as does an `endDate` when the campaign has no end
          * date. A
          * campaign of another ad account returns 404, a Reddit Max
          * campaign 422. If the ad fails, the new ad group is
