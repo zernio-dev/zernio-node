@@ -8871,6 +8871,10 @@ export type HubSpotSettings = {
      * Whether Zernio logs inbox messages on HubSpot contact timelines.
      */
     logMessages: boolean;
+    /**
+     * Whether Zernio sends closed-won deals as Purchase events to the profile's event destinations.
+     */
+    reportDeals: boolean;
 };
 
 export type platform7 = 'hubspot';
@@ -30249,6 +30253,10 @@ export type UpdateHubSpotSettingsData = {
          * Log inbound and outbound inbox messages on the contact's HubSpot timeline.
          */
         logMessages?: boolean;
+        /**
+         * Send each deal that becomes closed won as a Purchase to the profile's event destinations, about once an hour. Requires the portal to have granted `crm.objects.deals.read`; otherwise 400. Deals closed before it was turned on are not sent.
+         */
+        reportDeals?: boolean;
     };
     path: {
         accountId: string;
