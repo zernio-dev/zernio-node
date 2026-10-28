@@ -641,6 +641,7 @@ try {
 ### Ad Rules
 | Method | Description |
 |--------|-------------|
+| `adRules.listAdRuleActivity()` | List every change ad rules made |
 | `adRules.listAdRuleRuns()` | List an ad rule's runs |
 | `adRules.listAdRules()` | List ad rules |
 | `adRules.createAdRule()` | Create an ad rule |
