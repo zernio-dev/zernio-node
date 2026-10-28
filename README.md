@@ -340,10 +340,12 @@ try {
 | `connect.listGoogleBusinessLocations()` | List Google Business Profile locations |
 | `connect.listInstagramPages()` | List Pages with a linked Instagram account |
 | `connect.listLinkedInOrganizations()` | List LinkedIn orgs |
+| `connect.listOAuthApps()` | List your OAuth apps |
 | `connect.listPinterestBoardsForSelection()` | List Pinterest boards |
 | `connect.listSlackChannels()` | List Slack channels for the channel picker |
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
 | `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
+| `connect.createOAuthApp()` | Add an OAuth app |
 | `connect.createPinterestBoard()` | Create Pinterest board |
 | `connect.createYoutubePlaylist()` | Create YouTube playlist |
 | `connect.getConnectHandoff()` | Get a phone handoff |
@@ -354,6 +356,7 @@ try {
 | `connect.getGoogleAnalyticsConnectUrl()` | Get Google Analytics OAuth connect URL |
 | `connect.getHubSpotConnectUrl()` | Get HubSpot OAuth connect URL |
 | `connect.getLinkedInOrganizations()` | List LinkedIn orgs |
+| `connect.getOAuthApp()` | Get an OAuth app |
 | `connect.getPageWebhookSubscription()` | Read a Facebook Page's webhook subscription |
 | `connect.getPendingOAuthData()` | Get pending OAuth data |
 | `connect.getPinterestBoards()` | List Pinterest boards |
@@ -372,9 +375,11 @@ try {
 | `connect.updateFacebookPage()` | Update Facebook page |
 | `connect.updateGmbLocation()` | Update Google Business Profile location |
 | `connect.updateLinkedInOrganization()` | Switch LinkedIn account type |
+| `connect.updateOAuthApp()` | Update an OAuth app |
 | `connect.updatePinterestBoards()` | Set default Pinterest board |
 | `connect.updateRedditSubreddits()` | Set default subreddit |
 | `connect.updateYoutubeDefaultPlaylist()` | Set default YouTube playlist |
+| `connect.deleteOAuthApp()` | Remove an OAuth app |
 | `connect.assignGoogleBusinessLocation()` | Assign Google Business Profile location to another profile |
 | `connect.completeMetaAdsBusinessLogin()` | Complete Meta business login |
 | `connect.completeTelegramConnect()` | Check Telegram status |
@@ -403,6 +408,7 @@ try {
 | `connect.selectSnapchatProfile()` | Select Snapchat profile |
 | `connect.setRedditPostFlair()` | Set Reddit post flair |
 | `connect.startMicrosoftAdminConsent()` | Admin-consent link for a Microsoft tenant |
+| `connect.testOAuthApp()` | Check an OAuth app's keys |
 | `connect.voteRedditThing()` | Vote on a Reddit post or comment |
 
 ### Reddit

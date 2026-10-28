@@ -474,6 +474,36 @@ describe('Endpoint Methods', () => {
       expect(client.connect.updateConnectWelcomeScreen).toBeTypeOf('function');
     });
 
+    it('should have listOAuthApps method', () => {
+      expect(client.connect.listOAuthApps).toBeDefined();
+      expect(client.connect.listOAuthApps).toBeTypeOf('function');
+    });
+
+    it('should have createOAuthApp method', () => {
+      expect(client.connect.createOAuthApp).toBeDefined();
+      expect(client.connect.createOAuthApp).toBeTypeOf('function');
+    });
+
+    it('should have getOAuthApp method', () => {
+      expect(client.connect.getOAuthApp).toBeDefined();
+      expect(client.connect.getOAuthApp).toBeTypeOf('function');
+    });
+
+    it('should have updateOAuthApp method', () => {
+      expect(client.connect.updateOAuthApp).toBeDefined();
+      expect(client.connect.updateOAuthApp).toBeTypeOf('function');
+    });
+
+    it('should have deleteOAuthApp method', () => {
+      expect(client.connect.deleteOAuthApp).toBeDefined();
+      expect(client.connect.deleteOAuthApp).toBeTypeOf('function');
+    });
+
+    it('should have testOAuthApp method', () => {
+      expect(client.connect.testOAuthApp).toBeDefined();
+      expect(client.connect.testOAuthApp).toBeTypeOf('function');
+    });
+
     it('should have getPendingOAuthData method', () => {
       expect(client.connect.getPendingOAuthData).toBeDefined();
       expect(client.connect.getPendingOAuthData).toBeTypeOf('function');
