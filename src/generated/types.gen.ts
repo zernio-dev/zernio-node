@@ -48306,7 +48306,7 @@ export type DeleteAdSetData = {
 export type DeleteAdSetResponse = ({
     deleted?: boolean;
     /**
-     * Local Ad documents marked cancelled
+     * Local Ad documents marked cancelled (0 for an ad set with no ads)
      */
     adCount?: number;
 });
