@@ -11088,7 +11088,7 @@ export type MetaProductCatalog = {
     id?: string;
     name?: string;
     /**
-     * Catalog vertical (e.g. commerce, vehicles, hotels)
+     * Catalog vertical as Meta reports it (e.g. commerce, services, vehicles, hotels)
      */
     vertical?: (string) | null;
     productCount?: number;
@@ -56889,7 +56889,10 @@ export type CreateAdCatalogData = {
          */
         businessId?: string;
         name: string;
-        vertical?: 'commerce' | 'vehicles' | 'hotels' | 'flights' | 'destinations' | 'home_listings' | 'local_service_business' | 'offline_commerce' | 'ticketed_experiences' | 'transactable_items';
+        /**
+         * Meta catalog vertical. Use services for a professional services catalog (for example one linked to WhatsApp). local_service_business is a deprecated alias of local_service_businesses. The product endpoints under /v1/ads/catalogs/{catalogId}/products write commerce product items only.
+         */
+        vertical?: 'commerce' | 'adoptable_pets' | 'apps_and_software' | 'articles_and_publications' | 'destinations' | 'flights' | 'generic' | 'home_listings' | 'hotels' | 'local_service_businesses' | 'media_titles' | 'offer_items' | 'offline_commerce' | 'services' | 'transactable_items' | 'vehicles' | 'local_service_business';
     };
 };
 
