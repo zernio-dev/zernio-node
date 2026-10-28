@@ -11164,7 +11164,7 @@ export type OAuthApp = {
     /**
      * The permission areas every connect through this app requests. Pick only what your app is approved for on the platform.
      */
-    scopeAreas: Array<('posting' | 'analytics' | 'comments' | 'messaging' | 'ads')>;
+    scopeAreas: Array<('posting' | 'analytics' | 'comments' | 'messaging')>;
     /**
      * `ok`: the platform accepted the keys at the last check. `unchecked`: the check could not reach a verdict (see lastError). `invalid`: the platform rejected the keys; connects and token refreshes through this app will fail until the secret is rotated.
      */
@@ -11179,6 +11179,18 @@ export type OAuthApp = {
      * The OAuth redirect URI to allow in your app's settings on the platform.
      */
     redirectUri: string;
+    /**
+     * Facebook and Instagram only: Meta delivers comments and messages to your app's own webhook, so set it to this callback URL and verify token on the app's webhook product (Page for Facebook, Instagram for Instagram) and subscribe the listed fields. Zernio checks each delivery against your app secret. Null on platforms with nothing to set up.
+     */
+    webhook?: {
+        callbackUrl: string;
+        verifyToken: string;
+        object: OAuthAppWebhookObject;
+        /**
+         * Subscribe the app to these fields.
+         */
+        fields: Array<(string)>;
+    } | null;
     createdAt: string;
 };
 
@@ -11201,10 +11213,15 @@ export type OAuthAppSetup = {
      * The areas an app on this platform can enable, each with the scopes it requests.
      */
     scopeAreas: Array<{
-        area: 'posting' | 'analytics' | 'comments' | 'messaging' | 'ads';
+        area: 'posting' | 'analytics' | 'comments' | 'messaging';
         scopes: Array<(string)>;
     }>;
 };
+
+/**
+ * The webhook object to configure.
+ */
+export type OAuthAppWebhookObject = 'page' | 'instagram';
 
 export type OpenHours = Array<{
     /**
@@ -15251,7 +15268,7 @@ export type WebhookPayloadAccountPermissionsChanged = {
         /**
          * Every area now missing. Enable the permission on your app (or have the user grant it), then reconnect the account.
          */
-        missingScopeAreas: Array<('posting' | 'analytics' | 'comments' | 'messaging' | 'ads')>;
+        missingScopeAreas: Array<('posting' | 'analytics' | 'comments' | 'messaging')>;
         /**
          * The platform error that revealed it.
          */
@@ -27413,7 +27430,7 @@ export type CreateOAuthAppData = {
         /**
          * Areas this app requests. Defaults to every area the platform supports; an area the platform cannot request separately is a 400.
          */
-        scopeAreas?: Array<('posting' | 'analytics' | 'comments' | 'messaging' | 'ads')>;
+        scopeAreas?: Array<('posting' | 'analytics' | 'comments' | 'messaging')>;
     };
 };
 
@@ -27444,7 +27461,7 @@ export type UpdateOAuthAppData = {
         /**
          * Replaces the areas new connects request. Accounts already connected keep what they were granted until they reconnect.
          */
-        scopeAreas?: Array<('posting' | 'analytics' | 'comments' | 'messaging' | 'ads')>;
+        scopeAreas?: Array<('posting' | 'analytics' | 'comments' | 'messaging')>;
     };
     path: {
         appId: string;
