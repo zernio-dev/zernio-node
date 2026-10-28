@@ -11595,9 +11595,9 @@ export const listAdSets = <ThrowOnError extends boolean = false>(options?: Optio
  * yet, so it will not appear in GET /v1/ads/tree (built purely from `ads`
  * rows) until one is added; use GET /v1/ads/ad-sets to see it in the
  * meantime. It can be read, edited and deleted through
- * `/v1/ads/ad-sets/{adSetId}` right away (targeting, schedule, name);
- * its `status`, `budget` and bid fields return 409
- * `invalid_resource_state` until it has an ad.
+ * `/v1/ads/ad-sets/{adSetId}` right away (targeting, schedule, name,
+ * `status`, `budget` and bid fields). A budget on an ad group that spends
+ * its campaign budget returns 422.
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
  */
