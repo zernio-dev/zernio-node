@@ -17833,6 +17833,8 @@ export const listBlogArticles = <ThrowOnError extends boolean = false>(options: 
  * top-level HTML element must fit 30,000 characters), and images in
  * the body are imported into the site's Media Manager.
  *
+ * Send an Idempotency-Key header to make retries safe: a retry with the same key and body replays the original 201 instead of creating a second article. A retry while the first request is still running returns 409; retry after a short backoff.
+ *
  * Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`). WordPress
  * native scheduling depends on the site's scheduler/WP-Cron.
  *

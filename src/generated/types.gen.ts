@@ -61024,6 +61024,12 @@ export type CreateBlogArticleData = {
             [key: string]: unknown;
         };
     };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         */
+        'Idempotency-Key'?: string;
+    };
     path: {
         /**
          * Connected Shopify, WordPress, Wix or Webflow account id.
