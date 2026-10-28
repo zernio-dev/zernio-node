@@ -298,6 +298,41 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getGoogleAnalyticsMetadata).toBeTypeOf('function');
     });
 
+    it('should have openTrackingWindow method', () => {
+      expect(client.analytics.openTrackingWindow).toBeDefined();
+      expect(client.analytics.openTrackingWindow).toBeTypeOf('function');
+    });
+
+    it('should have listTrackingWindows method', () => {
+      expect(client.analytics.listTrackingWindows).toBeDefined();
+      expect(client.analytics.listTrackingWindows).toBeTypeOf('function');
+    });
+
+    it('should have getTrackingWindow method', () => {
+      expect(client.analytics.getTrackingWindow).toBeDefined();
+      expect(client.analytics.getTrackingWindow).toBeTypeOf('function');
+    });
+
+    it('should have cancelTrackingWindow method', () => {
+      expect(client.analytics.cancelTrackingWindow).toBeDefined();
+      expect(client.analytics.cancelTrackingWindow).toBeTypeOf('function');
+    });
+
+    it('should have getPostSamples method', () => {
+      expect(client.analytics.getPostSamples).toBeDefined();
+      expect(client.analytics.getPostSamples).toBeTypeOf('function');
+    });
+
+    it('should have getPostAuthenticity method', () => {
+      expect(client.analytics.getPostAuthenticity).toBeDefined();
+      expect(client.analytics.getPostAuthenticity).toBeTypeOf('function');
+    });
+
+    it('should have listPostAuthenticity method', () => {
+      expect(client.analytics.listPostAuthenticity).toBeDefined();
+      expect(client.analytics.listPostAuthenticity).toBeTypeOf('function');
+    });
+
     it('should have getGoogleBusinessPerformance method', () => {
       expect(client.analytics.getGoogleBusinessPerformance).toBeDefined();
       expect(client.analytics.getGoogleBusinessPerformance).toBeTypeOf('function');

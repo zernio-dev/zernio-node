@@ -230,6 +230,8 @@ try {
 |--------|-------------|
 | `analytics.listFacebookTaggedPosts()` | List the posts a Facebook Page is tagged in |
 | `analytics.listFacebookVisitorPosts()` | List visitor posts on a Facebook Page |
+| `analytics.listPostAuthenticity()` | List authenticity scores |
+| `analytics.listTrackingWindows()` | List tracking windows |
 | `analytics.getAnalytics()` | Get post analytics |
 | `analytics.getAnalyticsDashboard()` | Get an analytics dashboard |
 | `analytics.getAnalyticsDelta()` | Analytics changed since a cursor |
@@ -252,13 +254,18 @@ try {
 | `analytics.getLinkedInOrgAggregateAnalytics()` | Get LinkedIn org analytics |
 | `analytics.getLinkedInPostAnalytics()` | Get LinkedIn post stats |
 | `analytics.getLinkedInPostReactions()` | Get LinkedIn post reactions |
+| `analytics.getPostAuthenticity()` | Get a post's authenticity score |
 | `analytics.getPostingFrequency()` | Get frequency vs engagement |
+| `analytics.getPostSamples()` | Get post samples |
 | `analytics.getPostTimeline()` | Get post analytics timeline |
 | `analytics.getTikTokAccountInsights()` | Get TikTok account-level insights |
+| `analytics.getTrackingWindow()` | Get a tracking window |
 | `analytics.getYouTubeChannelInsights()` | Get YouTube channel insights |
 | `analytics.getYouTubeDailyViews()` | Get YouTube daily views |
 | `analytics.getYouTubeDemographics()` | Get YouTube demographics |
 | `analytics.getYouTubeVideoRetention()` | Get YouTube video retention curve |
+| `analytics.cancelTrackingWindow()` | Cancel a tracking window |
+| `analytics.openTrackingWindow()` | Open a tracking window |
 | `analytics.runGoogleAnalyticsRealtimeReport()` | Run a Google Analytics (GA4) realtime report |
 | `analytics.runGoogleAnalyticsReport()` | Run a Google Analytics (GA4) report |
 | `analytics.syncExternalPosts()` | Sync an external post |
@@ -955,6 +962,50 @@ try {
 | `conversions.sendConversions()` | Send conversion events |
 | `conversions.sendEvents()` | Send events to every destination |
 
+### Creator Campaigns
+| Method | Description |
+|--------|-------------|
+| `creatorCampaigns.listCampaignLedger()` | List campaign ledger |
+| `creatorCampaigns.listCampaignParticipants()` | List campaign participants |
+| `creatorCampaigns.listCampaignPayables()` | List campaign payables |
+| `creatorCampaigns.listCampaignPayoutBatches()` | List payout batches |
+| `creatorCampaigns.listCampaignSubmissions()` | List campaign submissions |
+| `creatorCampaigns.listCreatorCampaigns()` | List creator campaigns |
+| `creatorCampaigns.createCampaignAdjustment()` | Create campaign adjustment |
+| `creatorCampaigns.createCampaignInviteLink()` | Create campaign invite link |
+| `creatorCampaigns.createCampaignParticipant()` | Invite campaign participant |
+| `creatorCampaigns.createCampaignPayoutBatch()` | Pay creators with one card payment |
+| `creatorCampaigns.createCreatorCampaign()` | Create creator campaign |
+| `creatorCampaigns.getCampaignParticipant()` | Get campaign participant |
+| `creatorCampaigns.getCampaignReport()` | Get campaign report |
+| `creatorCampaigns.getCampaignSubmission()` | Get campaign submission |
+| `creatorCampaigns.getCreatorCampaign()` | Get creator campaign |
+| `creatorCampaigns.updateCreatorCampaign()` | Update creator campaign |
+| `creatorCampaigns.activateCreatorCampaign()` | Activate creator campaign |
+| `creatorCampaigns.approveCampaignSubmission()` | Approve campaign submission |
+| `creatorCampaigns.closeCreatorCampaign()` | Close creator campaign |
+| `creatorCampaigns.pauseCreatorCampaign()` | Pause creator campaign |
+| `creatorCampaigns.raiseCreatorCampaignBudget()` | Raise creator campaign budget |
+| `creatorCampaigns.reinstateCampaignParticipant()` | Reinstate campaign participant |
+| `creatorCampaigns.rejectCampaignSubmission()` | Reject campaign submission |
+| `creatorCampaigns.removeCampaignParticipant()` | Remove campaign participant |
+| `creatorCampaigns.reopenCampaignSubmission()` | Reopen campaign submission |
+| `creatorCampaigns.settleCampaignParticipant()` | Settle campaign participant |
+| `creatorCampaigns.suspendCampaignParticipant()` | Suspend campaign participant |
+
+### Creator Portal
+| Method | Description |
+|--------|-------------|
+| `creatorPortal.createCreatorPayoutLogin()` | Open the creator's Stripe dashboard |
+| `creatorPortal.getCreatorPayouts()` | List a creator's earnings history |
+| `creatorPortal.getCreatorPayoutStatement()` | Download a payout statement |
+| `creatorPortal.getCreatorPortal()` | Read a creator invite or participant page |
+| `creatorPortal.joinCreatorCampaign()` | Join a campaign |
+| `creatorPortal.recoverCreatorPortalLinks()` | Email a creator their campaign links |
+| `creatorPortal.startCreatorConnect()` | Start connecting a creator account |
+| `creatorPortal.startCreatorPayouts()` | Start payout onboarding |
+| `creatorPortal.submitCreatorPost()` | Submit a post |
+
 ### Custom Fields
 | Method | Description |
 |--------|-------------|
@@ -1137,6 +1188,12 @@ try {
 | `leadGen.deleteTestLead()` | Delete a test lead |
 | `leadGen.archiveLeadForm()` | Archive a lead form |
 | `leadGen.countLeads()` | Count leads by status |
+
+### Ledger
+| Method | Description |
+|--------|-------------|
+| `ledger.listLedgerEntries()` | List ledger entries |
+| `ledger.getLedgerBalances()` | Get ledger balances |
 
 ### Mentions
 | Method | Description |
@@ -1353,6 +1410,21 @@ try {
 | `trackingTags.removeTrackingTagFromStore()` | Remove from a Shopify, WordPress, Wix or Webflow site |
 | `trackingTags.removeTrackingTagSharedAccount()` | Stop sharing with an account |
 | `trackingTags.removeTrackingTagUser()` | Remove a user from a tag |
+
+### Treasury
+| Method | Description |
+|--------|-------------|
+| `treasury.listPayees()` | List payees |
+| `treasury.listTopups()` | List top-ups |
+| `treasury.listTransfers()` | List transfers |
+| `treasury.createPayeeOnboardingLink()` | Create a payee onboarding link |
+| `treasury.createTopup()` | Create a top-up |
+| `treasury.createTransfer()` | Create a transfer |
+| `treasury.getBalance()` | Get balance |
+| `treasury.getPayoutBatch()` | Get a payout batch |
+| `treasury.getTopupReceipt()` | Get a top-up receipt |
+| `treasury.getTransfer()` | Get a transfer |
+| `treasury.cancelPayoutBatch()` | Cancel an unpaid payout batch |
 
 ### Twitter Engagement
 | Method | Description |
