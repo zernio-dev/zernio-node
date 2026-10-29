@@ -990,6 +990,7 @@ try {
 | `creatorCampaigns.rejectCampaignSubmission()` | Reject campaign submission |
 | `creatorCampaigns.removeCampaignParticipant()` | Remove campaign participant |
 | `creatorCampaigns.reopenCampaignSubmission()` | Reopen campaign submission |
+| `creatorCampaigns.resendCampaignParticipantInvite()` | Resend campaign participant invite |
 | `creatorCampaigns.settleCampaignParticipant()` | Settle campaign participant |
 | `creatorCampaigns.suspendCampaignParticipant()` | Suspend campaign participant |
 
@@ -1425,6 +1426,9 @@ try {
 | `treasury.getTopupReceipt()` | Get a top-up receipt |
 | `treasury.getTransfer()` | Get a transfer |
 | `treasury.cancelPayoutBatch()` | Cancel an unpaid payout batch |
+| `treasury.cancelTopup()` | Cancel a top-up |
+| `treasury.confirmPayoutBatch()` | Confirm a payout batch payment |
+| `treasury.confirmTopup()` | Confirm a top-up |
 
 ### Twitter Engagement
 | Method | Description |

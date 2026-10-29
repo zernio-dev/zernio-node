@@ -4471,7 +4471,7 @@ export type CampaignSubmission = {
      * The creator account the post was published from.
      */
     accountId: string;
-    platform: 'tiktok' | 'instagram' | 'youtube';
+    platform: 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
     platformPostId: string;
     platformPostUrl: (string) | null;
     /**
@@ -4494,7 +4494,7 @@ export type CampaignSubmission = {
     reviewedBy: (string) | null;
     reviewedAt: (string) | null;
     /**
-     * Views when the post was submitted; they never count toward earnings.
+     * Views when the post was submitted. They count toward earnings like every later view.
      */
     viewsAtSubmission: (number) | null;
     /**
@@ -4502,7 +4502,7 @@ export type CampaignSubmission = {
      */
     viewsLatest: (number) | null;
     /**
-     * Views gained after submission that count toward earnings, read at the tracking window end at the latest: once the window completes or is cancelled, the last read at or before its end is final and this value stops moving.
+     * Views that count toward earnings: every view the platform reports for the post, including those before submission, read at the tracking window end at the latest: once the window completes or is cancelled, the last read at or before its end is final and this value stops moving.
      */
     viewsEligible: (number) | null;
     lastAccruedViews: number;
@@ -4562,7 +4562,7 @@ export type CampaignSubmission = {
     };
 };
 
-export type platform4 = 'tiktok' | 'instagram' | 'youtube';
+export type platform4 = 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
 
 export type status15 = 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
 
@@ -4594,12 +4594,12 @@ export type CampaignSubmissionDetail = CampaignSubmission & {
 };
 
 export type CampaignSubmissionFlag = {
-    code: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity';
+    code: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap';
     detail: string;
     raisedAt: string;
 };
 
-export type code = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity';
+export type code = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap';
 
 /**
  * Actions taken on the matched comment itself (comment trigger only; ignored on the
@@ -6140,15 +6140,18 @@ export type CreateCreatorCampaignRequest = {
      */
     caps?: (CreatorCampaignCaps);
     /**
-     * Platforms creators may post on. At least one is needed to activate.
+     * Platforms creators may post on. At least one is needed to activate. `twitter` (X) needs usage-based billing: X reads are billed at cost, up to `caps.maxXReadSpendCents`, and X views are the post's impressions. `facebook` takes Page reels and videos only.
      */
-    platforms?: Array<('tiktok' | 'instagram' | 'youtube')>;
+    platforms?: Array<('tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter')>;
     contentRules?: (string) | null;
     startsAt?: (string) | null;
     endsAt?: (string) | null;
     trackingDays?: number;
     holdDays?: number;
-    maxPostAgeMinutes?: number;
+    /**
+     * Optional maximum age in minutes of a post when it is submitted. Null or omitted (the default) accepts any age. Posts published before the campaign started are always refused.
+     */
+    maxPostAgeMinutes?: (number) | null;
     settlement?: 'none' | 'external' | 'treasury';
     branding?: (CreatorCampaignBranding | null);
 };
@@ -6340,7 +6343,7 @@ export type CreatorCampaign = {
      */
     type: 'cpm' | 'per_post' | 'pool';
     currency: string;
-    platforms: Array<('tiktok' | 'instagram' | 'youtube')>;
+    platforms: Array<('tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter')>;
     /**
      * Free-text rules shown to creators on the join page.
      */
@@ -6359,9 +6362,13 @@ export type CreatorCampaign = {
      */
     holdDays: number;
     /**
-     * A post older than this when submitted is refused.
+     * A post older than this many minutes when submitted is refused. Null (the default) accepts any age. Either way, a post published before the campaign started (`startsAt`, or `activatedAt` without one) is refused.
      */
-    maxPostAgeMinutes: number;
+    maxPostAgeMinutes: (number) | null;
+    /**
+     * When the campaign was first activated. Without `startsAt`, posts must be published after this moment.
+     */
+    activatedAt: (string) | null;
     /**
      * none: settle records a payout made elsewhere. external: you pay from your own rails on campaign_payout.payable and settle with your reference. treasury: settle moves the money from your Zernio balance to the creator's Stripe account, and the creator sets up payouts from their campaign page.
      */
@@ -6387,6 +6394,10 @@ export type CreatorCampaign = {
     consumedCents: number;
     participantCount: number;
     submissionCounts: CampaignSubmissionCounts;
+    /**
+     * What the campaign's creators can be paid now, summed over every participant's payable balance.
+     */
+    payableCents: number;
 };
 
 /**
@@ -6424,6 +6435,15 @@ export type CreatorCampaignCaps = {
      * Accounts a participant can use in this campaign. Connecting a new account past it answers 400; only the first accounts connected, up to this count, can submit posts.
      */
     maxAccountsPerParticipant?: number;
+    /**
+     * X campaigns only: what tracking X posts may cost in X reads, in cents. Unset means 5000 ($50).
+     *
+     * X bills one read per tracked post per UTC day, and you pay it at cost through usage-based billing.
+     *
+     * When it is spent, open X posts stop counting views and are flagged `x_read_cap`, and new X posts answer 409.
+     *
+     */
+    maxXReadSpendCents?: number;
     /**
      * A submission whose authenticity score falls below this is flagged `low_authenticity`. It is never rejected automatically. Defaults to 40 on create.
      */
@@ -6488,9 +6508,9 @@ export type CreatorPortalCampaign = {
     currency: string;
     economics: CreatorPortalEconomics;
     /**
-     * A post must be submitted within this many minutes of publishing.
+     * A post must be submitted within this many minutes of publishing. Null means any age. Either way, only posts published after the campaign started are accepted.
      */
-    maxPostAgeMinutes: number;
+    maxPostAgeMinutes: (number) | null;
     /**
      * Days approved earnings stay owed before they become payable.
      */
@@ -12566,7 +12586,7 @@ export type PayoutBatch = {
     id: string;
     campaignId: (string) | null;
     /**
-     * `awaiting_payment` until the card payment completes; `paying` while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (none paid) or `expired` (the Checkout expired unpaid, every amount is payable again).
+     * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
      */
     status: 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
     method: 'card';
@@ -12589,7 +12609,7 @@ export type PayoutBatch = {
 };
 
 /**
- * `awaiting_payment` until the card payment completes; `paying` while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (none paid) or `expired` (the Checkout expired unpaid, every amount is payable again).
+ * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
  */
 export type status36 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
@@ -15648,6 +15668,9 @@ export type TreasuryTopup = {
      * Amount credited to your balance: gross minus the Stripe fee, or the whole charge when Zernio covers the fee; null until Stripe reports it
      */
     netCents?: (number) | null;
+    /**
+     * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
+     */
     status?: 'pending' | 'succeeded' | 'failed' | 'expired';
     createdAt?: string;
     succeededAt?: (string) | null;
@@ -15660,6 +15683,9 @@ export type method4 = 'card' | 'bank_transfer';
  */
 export type purpose = 'balance' | 'payout_batch';
 
+/**
+ * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
+ */
 export type status46 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
@@ -15802,13 +15828,16 @@ export type replySettings = 'following' | 'mentionedUsers' | 'subscribers' | 've
 export type UpdateCreatorCampaignRequest = {
     name?: string;
     brandName?: string;
-    platforms?: Array<('tiktok' | 'instagram' | 'youtube')>;
+    platforms?: Array<('tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter')>;
     contentRules?: (string) | null;
     startsAt?: (string) | null;
     endsAt?: (string) | null;
     trackingDays?: number;
     holdDays?: number;
-    maxPostAgeMinutes?: number;
+    /**
+     * Null removes the limit.
+     */
+    maxPostAgeMinutes?: (number) | null;
     settlement?: 'none' | 'external' | 'treasury';
     economics?: CreatorCampaignEconomics;
     caps?: CreatorCampaignCaps;
@@ -23223,15 +23252,31 @@ export type ListLedgerEntriesError = (ErrorResponse | {
 
 export type GetBalanceResponse = ({
     /**
-     * Balance you can transfer now. Negative after a dispute or refund of a top-up that was already spent; transfers are refused while it is negative.
+     * Your balance, including card top-ups paid in the last 7 days (see payoutLockedCents). Negative after a dispute or refund of a top-up that was already spent; transfers are refused while it is negative.
      */
     availableCents?: number;
     /**
-     * Paid card top-ups still on hold. Card top-ups become available after 7 days.
+     * Part of availableCents from card top-ups charged in the last 7 days, net of refunds and disputes. Transfers to payees cannot use it yet; a transfer that needs it answers 409 `payout_funds_locked` with the day it can be sent.
+     */
+    payoutLockedCents?: number;
+    /**
+     * The card top-ups behind payoutLockedCents, soonest first.
+     */
+    payoutLocks?: Array<{
+        topupId: string;
+        amountCents: number;
+        chargedAt: string;
+        /**
+         * From this time transfers can use it: 7 days after the charge.
+         */
+        unlocksAt: string;
+    }>;
+    /**
+     * Card top-ups paid before 2026-10-29 that were held and are moving to availableCents (within the hour). Always 0 after that.
      */
     pendingCents?: number;
     /**
-     * Card top-ups on hold, each with the time it becomes available.
+     * The held card top-ups behind pendingCents.
      */
     pendingReleases?: Array<{
         topupId: string;
@@ -23323,6 +23368,10 @@ export type CreateTopupData = {
          * Only card is available. bank_transfer returns 400 "Bank transfers are not available yet."
          */
         method: 'card' | 'bank_transfer';
+        /**
+         * A saved card of the billing owner's (`pm_...`). Defaults to the default payment method.
+         */
+        paymentMethodId?: string;
     };
     headers?: {
         /**
@@ -23340,68 +23389,16 @@ export type CreateTopupData = {
 };
 
 export type CreateTopupResponse = ({
-    topupId?: string;
+    topupId: string;
+    status: 'succeeded' | 'processing' | 'requires_action';
     /**
-     * Stripe Checkout URL to send the payer to
+     * PaymentIntent client secret for Stripe.js handleNextAction; set only when status is requires_action
      */
-    url?: string;
+    clientSecret: (string) | null;
 });
 
 export type CreateTopupError = (ErrorResponse | {
-    /**
-     * Human-readable error message suitable for end-user display.
-     */
-    error: string;
-    /**
-     * Machine-readable error code. Stable across versions.
-     */
-    code: 'PAYMENT_REQUIRED';
-    /**
-     * Discriminator for which gate fired.
-     */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
-    /**
-     * Link to the relevant documentation page.
-     */
-    documentation_url?: string;
-    /**
-     * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this opens
-     * the add-payment-method drawer on the Zernio billing page.
-     * For `enterprise_required` this is the Zernio enterprise
-     * contact page.
-     *
-     */
-    dashboard_url?: string;
-    /**
-     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
-     */
-    details?: {
-        /**
-         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
-         */
-        free_tier_account_limit?: number;
-        /**
-         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
-         */
-        current_account_count?: number;
-        /**
-         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
-         */
-        has_payment_method?: boolean;
-        /**
-         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
-         */
-        verification_amount_cents?: number;
-        /**
-         * The negotiated connected-account cap from the
-         * team's enterprise contract. Self-service teams
-         * have no cap and never receive this reason. Only
-         * set when reason=enterprise_required.
-         *
-         */
-        effective_account_limit?: number;
-    };
+    error?: string;
 } | unknown);
 
 export type ListTopupsData = {
@@ -23552,6 +23549,140 @@ export type GetTopupReceiptError = (ErrorResponse | {
      * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
      */
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+} | {
+    error?: string;
+});
+
+export type ConfirmTopupData = {
+    path: {
+        topupId: string;
+    };
+};
+
+export type ConfirmTopupResponse = (TreasuryTopup);
+
+export type ConfirmTopupError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | {
+    error?: string;
+});
+
+export type CancelTopupData = {
+    path: {
+        topupId: string;
+    };
+};
+
+export type CancelTopupResponse = (TreasuryTopup);
+
+export type CancelTopupError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
 } | {
     error?: string;
 });
@@ -24121,6 +24252,23 @@ export type GetPayoutBatchResponse = ({
 });
 
 export type GetPayoutBatchError = (ErrorResponse);
+
+export type ConfirmPayoutBatchData = {
+    path: {
+        /**
+         * Payout batch ID.
+         */
+        batchId: string;
+    };
+};
+
+export type ConfirmPayoutBatchResponse = ({
+    batch: PayoutBatch;
+});
+
+export type ConfirmPayoutBatchError = (ErrorResponse | {
+    error?: string;
+});
 
 export type CancelPayoutBatchData = {
     path: {
@@ -67709,6 +67857,38 @@ export type RemoveCampaignParticipantResponse = ({
 
 export type RemoveCampaignParticipantError = (ErrorResponse);
 
+export type ResendCampaignParticipantInviteData = {
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Participant ID.
+         */
+        participantId: string;
+    };
+};
+
+export type ResendCampaignParticipantInviteResponse = ({
+    participant: CampaignParticipant;
+});
+
+export type ResendCampaignParticipantInviteError = (ErrorResponse);
+
 export type SettleCampaignParticipantData = {
     body: {
         /**
@@ -67765,6 +67945,10 @@ export type CreateCampaignPayoutBatchData = {
          * Leave these participants out.
          */
         excludeParticipantIds?: Array<(string)>;
+        /**
+         * A saved card of the billing owner's (`pm_...`). Defaults to the default payment method.
+         */
+        paymentMethodId?: string;
     };
     headers?: {
         /**
@@ -67789,10 +67973,13 @@ export type CreateCampaignPayoutBatchData = {
 
 export type CreateCampaignPayoutBatchResponse = ({
     batch: PayoutBatch;
-    /**
-     * Stripe Checkout for the card payment.
-     */
-    url: string;
+    payment: {
+        status: 'succeeded' | 'processing' | 'requires_action';
+        /**
+         * PaymentIntent client secret for Stripe.js handleNextAction; set only when status is requires_action
+         */
+        clientSecret: (string) | null;
+    };
 });
 
 export type CreateCampaignPayoutBatchError = (ErrorResponse);
@@ -67840,13 +68027,13 @@ export type ListCampaignSubmissionsData = {
         campaignId: string;
     };
     query?: {
-        flag?: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity';
+        flag?: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap';
         limit?: number;
         maxScore?: number;
         minScore?: number;
         order?: 'asc' | 'desc';
         participantId?: string;
-        platform?: 'tiktok' | 'instagram' | 'youtube';
+        platform?: 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
         /**
          * Only submissions whose creator name or post link contains this text, ignoring case.
          */
