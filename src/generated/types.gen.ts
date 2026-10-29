@@ -2079,6 +2079,27 @@ export type AdTreeAdSet = {
         page_id?: string;
     } | null;
     /**
+     * Meta only. Where the ad set sends people (Meta `destination_type`), e.g. WEBSITE, MESSENGER, WHATSAPP, INSTAGRAM_DIRECT, ON_AD. Meta answers UNDEFINED for an ad set with no explicit destination. As of the last sync; null on other platforms and for ad sets not yet synced.
+     */
+    destinationType?: (string) | null;
+    /**
+     * Meta only. The ad set's conversion attribution windows (Meta `attribution_spec`), in the same shape `attributionSpec` takes on ad creation so a clone can send it back unchanged. As of the last sync; null on other platforms, for ad sets not yet synced and when Meta reports none.
+     */
+    attributionSpec?: Array<{
+        eventType?: 'CLICK_THROUGH' | 'VIEW_THROUGH' | 'ENGAGED_VIDEO_VIEW';
+        windowDays?: 1 | 7 | 28;
+    }> | null;
+    /**
+     * Meta only. Regional regulated categories declared on the ad set (Meta `regional_regulated_categories`), e.g. AUSTRALIA_FINSERV, TAIWAN_UNIVERSAL, SINGAPORE_UNIVERSAL or VOLUNTARY_VERIFICATION. As of the last sync; null on other platforms, for ad sets not yet synced and when Meta reports none.
+     */
+    regionalRegulatedCategories?: Array<(string)> | null;
+    /**
+     * Meta only. Verified identity IDs per regional regulation role (Meta `regional_regulation_identities`), keyed by Meta's role name. IDs are strings because they can exceed a JSON number's precision. As of the last sync; null on other platforms, for ad sets not yet synced and when Meta reports none.
+     */
+    regionalRegulationIdentities?: {
+        [key: string]: (string);
+    } | null;
+    /**
      * Individual ads within this ad set (capped at 100). When the ad set has more than 100 ads these are the 100 highest-spending over the requested date range, so this array depends on `fromDate`/`toDate`; `adCount` is always the true ad set size. Returns a subset of Ad fields from the aggregation: `_id`, `name`, `platform`, `status`, `configuredStatus`, `reviewStatus`, `budget`, `metrics`, `creative`, `goal` and the `platform*` ids are always included; `targeting` and `schedule` may be absent. `configuredStatus` (the ad's own on/off toggle) and `reviewStatus` (the platform's review verdict) are part of this contract, not incidental: a rejected ad is only distinguishable from a healthy one through `reviewStatus`. When `timeIncrement=1&dailyLevel=ad`, each entry also carries a `daily[]` array of `AdDailyMetrics`.
      */
     ads?: Array<Ad>;
