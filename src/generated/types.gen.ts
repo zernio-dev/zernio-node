@@ -11367,7 +11367,7 @@ export type LinkedInPlatformData = {
      */
     organizationUrn?: string;
     /**
-     * Optional first comment to add after the post is created. Mention a profile or Page with @[Name](urn:li:person:ID) or @[Org](urn:li:organization:ID); the name must match LinkedIn's exactly (case-sensitive) or it renders as plain text. The profile-URL form is not resolved in comments, and an unknown person URN posts the plain name.
+     * Optional first comment to add after the post is created. Mention with @[https://www.linkedin.com/in/vanity] (resolved to LinkedIn's live name, same rules and errors as post content) or @[Name](urn:li:person|organization:ID); a hand-written name must match LinkedIn's exactly or it renders as plain text.
      */
     firstComment?: string;
     /**
@@ -38566,7 +38566,7 @@ export type ReplyToInboxPostData = {
     body: {
         accountId: string;
         /**
-         * Reply text. On LinkedIn, mention with @[Name](urn:li:person:ID) or @[Org](urn:li:organization:ID); the name must match LinkedIn's exactly (case-sensitive) or it renders as plain text. The profile-URL form is not resolved in comments, and an unknown person URN posts the plain name.
+         * Reply text. On LinkedIn, mention with @[https://www.linkedin.com/in/vanity] (resolved to LinkedIn's live name, same rules and errors as post content) or @[Name](urn:li:person|organization:ID); a hand-written name must match LinkedIn's exactly or it renders as plain text.
          */
         message: string;
         /**
@@ -38623,7 +38623,13 @@ export type ReplyToInboxPostResponse = ({
     };
 });
 
-export type ReplyToInboxPostError = (unknown | ErrorResponse);
+export type ReplyToInboxPostError = ({
+    error?: string;
+    code?: string;
+    details?: {
+        mentions?: Array<LinkedInMentionIssue>;
+    };
+} | ErrorResponse | unknown);
 
 export type DeleteInboxCommentData = {
     path: {
