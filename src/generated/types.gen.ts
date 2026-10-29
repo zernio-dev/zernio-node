@@ -48899,6 +48899,8 @@ export type CreateCommentAutomationData = {
         template?: (CommentAutomationTemplate);
         /**
          * Public reply to the comment. Optional on Instagram and Facebook; required on TikTok, Threads, LinkedIn and YouTube, where it is the automation's only action.
+         *
+         * On LinkedIn, mention with `@[Name](urn:li:person:ID)` or `@[Name](urn:li:organization:ID)`, getting the URN from `GET /v1/accounts/{accountId}/linkedin-mentions`. The name must match the person's or Page's LinkedIn name exactly, or the mention renders as plain text. Profile or company URL mentions are not resolved here and are sent as plain text.
          */
         commentReply?: string;
         /**
@@ -48907,6 +48909,8 @@ export type CreateCommentAutomationData = {
         dmMessageVariations?: Array<(string)>;
         /**
          * Optional alternate public replies, rotated at random alongside commentReply (picked independently of the DM). Up to 5.
+         *
+         * LinkedIn mentions follow the commentReply rules.
          */
         commentReplyVariations?: Array<(string)>;
         /**
@@ -49164,6 +49168,9 @@ export type UpdateCommentAutomationData = {
          * Product card sent instead of the plain dmMessage bubble. Pass null to clear it and fall back to dmMessage. Mutually exclusive with buttons, including with the buttons already stored on the automation.
          */
         template?: (CommentAutomationTemplate | null);
+        /**
+         * On LinkedIn, mention with `@[Name](urn:li:person:ID)` or `@[Name](urn:li:organization:ID)`, getting the URN from `GET /v1/accounts/{accountId}/linkedin-mentions`. The name must match the person's or Page's LinkedIn name exactly, or the mention renders as plain text. Profile or company URL mentions are not resolved here and are sent as plain text.
+         */
         commentReply?: string;
         /**
          * Alternate DM texts for random rotation (see create). Pass [] to clear.
@@ -49171,6 +49178,8 @@ export type UpdateCommentAutomationData = {
         dmMessageVariations?: Array<(string)>;
         /**
          * Alternate public replies for random rotation. Pass [] to clear.
+         *
+         * LinkedIn mentions follow the commentReply rules.
          */
         commentReplyVariations?: Array<(string)>;
         /**
