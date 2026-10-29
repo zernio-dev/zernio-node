@@ -9,13 +9,27 @@ export const client = createClient(createConfig());
  * Validate character count
  * Check weighted character count per platform and whether the text is within each platform's limit.
  *
- * X uses weighted counting (URLs = 23 chars via t.co, emojis = 2 chars). All other platforms use plain character length.
- *
  * Returns counts and limits for all 15 supported platform variants.
  *
- * X returns two rows and this endpoint cannot tell you which one applies to you: it takes only `text`, so it never resolves an account. `twitter` (280) is the free tier limit. `twitterPremium` (25000) applies only when the target X account has a paid X subscription, and publishing enforces 280 instead for any post carrying a poll (this endpoint has no poll input, so the `twitterPremium` row always shows 25000). A free account trusting the `twitterPremium` row can pass validation here and still fail at publish time, where the account's real limit is enforced.
+ * ### Counting
  *
- * To validate against the per-account limit, use `POST /v1/tools/validate/post` instead: it accepts an `accountId` per platform entry, resolves X Premium status, and checks the text against the limit publishing enforces, including the poll cap. A missing, foreign, or invalid `accountId` falls back to the conservative 280.
+ * - X uses weighted counting (URLs = 23 chars via t.co, emojis = 2 chars).
+ * - All other platforms use plain character length.
+ *
+ * ### X rows
+ *
+ * X returns two rows, and this endpoint cannot tell you which one applies to you: it takes only `text`, so it never resolves an account.
+ *
+ * - `twitter` (280) is the free tier limit.
+ * - `twitterPremium` (25000) applies only when the target X account has a paid X subscription. Publishing enforces 280 instead for any post carrying a poll. This endpoint has no poll input, so the `twitterPremium` row always shows 25000.
+ *
+ * A free account trusting the `twitterPremium` row can pass validation here and still fail at publish time, where the account's real limit is enforced.
+ *
+ * ### Per-account limits
+ *
+ * To validate against the per-account limit, use `POST /v1/tools/validate/post` instead. It accepts an `accountId` per platform entry, resolves X Premium status, and checks the text against the limit publishing enforces, including the poll cap.
+ *
+ * A missing, foreign, or invalid `accountId` falls back to the conservative 280.
  *
  */
 export const validatePostLength = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ValidatePostLengthData, ThrowOnError>) => {
@@ -76,12 +90,31 @@ export const validateSubreddit = <ThrowOnError extends boolean = false>(options:
 /**
  * Get post analytics
  * Returns analytics for posts. With postId, returns a single post. Without it, returns a paginated list with overview stats.
- * Accepts both Zernio Post IDs and External Post IDs (auto-resolved). fromDate defaults to 90 days ago if omitted, max range 366 days.
- * Single post lookups may return 202 (sync pending) or 424 (all platforms failed). For follower stats, use /v1/accounts/follower-stats.
  *
- * LinkedIn personal accounts: Analytics are only available for posts published through Zernio. LinkedIn's API only returns metrics for posts authored by the authenticated user. Organization/company page analytics work for all posts.
+ * - Accepts both Zernio Post IDs and External Post IDs (auto-resolved).
+ * - fromDate defaults to 90 days ago if omitted, max range 366 days.
+ * - Single post lookups may return 202 (sync pending) or 424 (all platforms failed).
+ * - For follower stats, use /v1/accounts/follower-stats.
  *
- * Facebook Page stories: stories on a connected Page, published through Zernio or natively, are collected while they are live and returned like any other post (platformPostUrl points to the story). Their lifetime metrics refresh about hourly, with a final reading shortly before the story expires at 24 hours; after that the values stay at that last reading. Mapping: impressions = story media views (Meta stopped accepting per-story impressions in October 2026, so impressions equals views), reach = unique story media viewers, views = story media views, likes = story reactions, comments = story replies, shares = story shares. Meta exposes no link-click metric for stories, so clicks is always 0. Metrics for a story published through Zernio are available on its Zernio post ID.
+ * ### LinkedIn personal accounts
+ *
+ * Analytics are only available for posts published through Zernio. LinkedIn's API only returns metrics for posts authored by the authenticated user. Organization/company page analytics work for all posts.
+ *
+ * ### Facebook Page stories
+ *
+ * Stories on a connected Page, published through Zernio or natively, are collected while they are live and returned like any other post (platformPostUrl points to the story). Metrics for a story published through Zernio are available on its Zernio post ID.
+ *
+ * Their lifetime metrics refresh about hourly, with a final reading shortly before the story expires at 24 hours. After that the values stay at that last reading.
+ *
+ * Mapping:
+ *
+ * - impressions = story media views (Meta stopped accepting per-story impressions in October 2026, so impressions equals views)
+ * - reach = unique story media viewers
+ * - views = story media views
+ * - likes = story reactions
+ * - comments = story replies
+ * - shares = story shares
+ * - clicks: always 0, because Meta exposes no link-click metric for stories
  *
  */
 export const getAnalytics = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetAnalyticsData, ThrowOnError>) => {
@@ -93,64 +126,68 @@ export const getAnalytics = <ThrowOnError extends boolean = false>(options?: Opt
 
 /**
  * Analytics changed since a cursor
- * Cursor feed of the analytics snapshots that CHANGED, across every account you can
- * read, in one paginated stream. Built for integrations that would otherwise call
- * `GET /v1/analytics` once per connected account. Each page carries changes from
- * many accounts at once, so your call count scales with how much actually changed
- * rather than with how many accounts you have. Measured against a fleet of roughly
- * 1,600 connected accounts: about 1,599 per-account analytics calls an hour became
- * about 205 delta calls an hour, a 7.8x reduction.
+ * Cursor feed of the analytics snapshots that CHANGED, across every account you can read, in one paginated stream. Built for integrations that would otherwise call `GET /v1/analytics` once per connected account.
  *
- * **Bootstrap once, then stay in sync.** Take the cursor FIRST: call this endpoint
- * with NO `cursor` and it answers with an empty `data` array plus the feed's current
- * position in `nextCursor`. Then load your baseline from `GET /v1/analytics`, the
- * historical endpoint, because this one is a rolling 7-day change log and cannot
- * replay history. Then resume from the cursor you took before the baseline. Taking
- * the cursor afterwards instead drops every change that lands while the baseline is
- * loading: it is in neither the row you already read nor the feed you resume behind
- * it. The overlap this order creates is safe, because metrics are absolute values
- * rather than increments, so draining it leaves every post on its newest value.
- * `nextCursor` is present on every response, empty pages included, so you always
- * have something to advance with.
+ * Each page carries changes from many accounts at once, so your call count scales with how much actually changed rather than with how many accounts you have.
  *
- * **Ordering.** Entries come back oldest first, in the order the feed received
- * them. That order is NOT `syncedAt`: `syncedAt` is stamped when an account's sync
- * cycle started, and a slow cycle writes its rows after a faster cycle that started
- * later, so `syncedAt` can go backwards between consecutive entries. Do not sort,
- * filter or resume on it. The cursor is the only stable position, and it is opaque:
- * pass it back verbatim, and do not parse, construct or compare cursors.
+ * Measured against a fleet of roughly 1,600 connected accounts: about 1,599 per-account analytics calls an hour became about 205 delta calls an hour, a 7.8x reduction.
  *
- * **`hasMore: false` does not mean the feed ended.** This stream has no end and
- * `nextCursor` is never null. `hasMore: true` means more changes are already
- * waiting, so call again straight away. `hasMore: false` means you are caught up:
- * keep the cursor and poll again on your normal interval.
+ * ### Bootstrap once, then stay in sync
  *
- * **The newest changes settle before they are served.** The feed deliberately holds
- * back its last few seconds of writes, so that a row can never become visible
- * behind a cursor you have already advanced past. A read issued the instant an
- * `analytics.synced` webhook lands will therefore often return an empty page for
- * that account. Do not read an empty page as "nothing changed": poll again with the
- * SAME cursor you last used rather than advancing.
+ * 1. Take the cursor FIRST: call this endpoint with NO `cursor`. It answers with an empty `data` array plus the feed's current position in `nextCursor`.
+ * 2. Load your baseline from `GET /v1/analytics`, the historical endpoint. This one is a rolling 7-day change log and cannot replay history.
+ * 3. Resume from the cursor you took before the baseline.
  *
- * **Repeats inside one instant.** A sync cycle occasionally records the same post
- * twice at the same feed position. When that happens the feed delivers one of those
- * rows, not both. Measured over a day of production traffic, about 1.3% of rows
- * fall in such a group and 99.4% of those groups are identical rows, so this is far
- * more often deduplication than loss. Metrics are absolute values rather than
- * increments, so a later entry for the same post supersedes an earlier one.
+ * Taking the cursor afterwards instead drops every change that lands while the baseline is loading: it is in neither the row you already read nor the feed you resume behind it.
  *
- * **Retention is 7 days.** Changes older than that leave the feed. A cursor older
- * than 6 days is rejected with a `400` (a day of margin, because expiry is lazy).
- * Recover the same way you bootstrapped: take a fresh cursor from a call to this
- * endpoint with no `cursor`, then re-load from `GET /v1/analytics`, then resume
- * from that cursor. A consumer that polls at least daily never reaches this.
+ * The overlap this order creates is safe. Metrics are absolute values rather than increments, so draining it leaves every post on its newest value.
  *
- * Pairs with the `analytics.synced` webhook, so changes can be read on notification
- * instead of on a timer. That event carries no cursor of its own: keep using the
- * `nextCursor` this endpoint gave you.
+ * `nextCursor` is present on every response, empty pages included, so you always have something to advance with.
  *
- * Requires the same analytics access as `GET /v1/analytics`, and shares the
- * stricter per-second rate-limit window applied to analytics endpoints.
+ * ### Ordering
+ *
+ * Entries come back oldest first, in the order the feed received them. That order is NOT `syncedAt`. `syncedAt` is stamped when an account's sync cycle started, and a slow cycle writes its rows after a faster cycle that started later, so `syncedAt` can go backwards between consecutive entries.
+ *
+ * Do not sort, filter or resume on `syncedAt`. The cursor is the only stable position, and it is opaque: pass it back verbatim, and do not parse, construct or compare cursors.
+ *
+ * ### `hasMore: false` does not mean the feed ended
+ *
+ * This stream has no end and `nextCursor` is never null.
+ *
+ * - `hasMore: true`: more changes are already waiting, so call again straight away.
+ * - `hasMore: false`: you are caught up. Keep the cursor and poll again on your normal interval.
+ *
+ * ### The newest changes settle before they are served
+ *
+ * The feed deliberately holds back its last few seconds of writes, so that a row can never become visible behind a cursor you have already advanced past.
+ *
+ * A read issued the instant an `analytics.synced` webhook lands will therefore often return an empty page for that account. Do not read an empty page as "nothing changed": poll again with the SAME cursor you last used rather than advancing.
+ *
+ * ### Repeats inside one instant
+ *
+ * A sync cycle occasionally records the same post twice at the same feed position. When that happens the feed delivers one of those rows, not both.
+ *
+ * Measured over a day of production traffic, about 1.3% of rows fall in such a group and 99.4% of those groups are identical rows, so this is far more often deduplication than loss.
+ *
+ * Metrics are absolute values rather than increments, so a later entry for the same post supersedes an earlier one.
+ *
+ * ### Retention is 7 days
+ *
+ * Changes older than that leave the feed. A cursor older than 6 days is rejected with a `400` (a day of margin, because expiry is lazy).
+ *
+ * Recover the same way you bootstrapped:
+ *
+ * 1. Take a fresh cursor from a call to this endpoint with no `cursor`.
+ * 2. Re-load from `GET /v1/analytics`.
+ * 3. Resume from that cursor.
+ *
+ * A consumer that polls at least daily never reaches this.
+ *
+ * ### Webhook and access
+ *
+ * Pairs with the `analytics.synced` webhook, so changes can be read on notification instead of on a timer. That event carries no cursor of its own: keep using the `nextCursor` this endpoint gave you.
+ *
+ * Requires the same analytics access as `GET /v1/analytics`, and shares the stricter per-second rate-limit window applied to analytics endpoints.
  *
  */
 export const getAnalyticsDelta = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetAnalyticsDeltaData, ThrowOnError>) => {
@@ -219,30 +256,33 @@ export const getLinkedInOrgAggregateAnalytics = <ThrowOnError extends boolean = 
 
 /**
  * Get TikTok account-level insights
- * Returns account-level TikTok insights from /v2/user/info/ (live) plus historical
- * time series joined from Zernio's daily snapshotter (AccountStats).
+ * Returns account-level TikTok insights from /v2/user/info/ (live) plus historical time series joined from Zernio's daily snapshotter (AccountStats).
  *
- * Response shape matches /v1/analytics/instagram/account-insights. Max 89 days,
- * defaults to last 30 days. Requires the user.info.stats
- * scope on the account (412 if missing).
+ * - Response shape matches /v1/analytics/instagram/account-insights.
+ * - Max 89 days, defaults to last 30 days.
+ * - Requires the user.info.stats scope on the account (412 if missing).
  *
- * Scope intentionally narrow: this ACCOUNT-level endpoint exposes only the four
- * counter metrics below. These account-level figures are not on any public TikTok
- * API, for any account type:
+ * ### Why the scope is narrow
+ *
+ * This ACCOUNT-level endpoint intentionally exposes only the four counter metrics below. These account-level figures are not on any public TikTok API, for any account type:
+ *
  * - account-level impressions / reach
  * - follower inflow / outflow breakdown
  * - account-level watch time and audience demographics
  *
- * TikTok's Research API doesn't expose them either, and is restricted to
- * non-commercial academic use per TikTok's eligibility policy.
+ * TikTok's Research API doesn't expose them either, and is restricted to non-commercial academic use per TikTok's eligibility policy.
  *
- * PER-VIDEO is a different story on the Business lane. An account connected through
- * the TikTok for Business app reports profile views, website clicks, follows,
- * full-watched rate, watch time, impression sources, viewer types and viewer
- * countries per video on GET /v1/analytics?postId=..., roughly 24-48h after
- * publishing and only for posts active in the last 7 days. Accounts on the original
- * TikTok integration get the basic counters there (views, likes, comments, shares)
- * and zeros for the rest; they must reconnect through the Business app.
+ * ### Per-video metrics
+ *
+ * PER-VIDEO is a different story on the Business lane. An account connected through the TikTok for Business app reports these per video on GET /v1/analytics?postId=...:
+ *
+ * - profile views, website clicks, follows
+ * - full-watched rate, watch time
+ * - impression sources, viewer types and viewer countries
+ *
+ * They arrive roughly 24-48h after publishing and only for posts active in the last 7 days.
+ *
+ * Accounts on the original TikTok integration get the basic counters there (views, likes, comments, shares) and zeros for the rest. They must reconnect through the Business app.
  *
  */
 export const getTikTokAccountInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTikTokAccountInsightsData, ThrowOnError>) => {
@@ -254,10 +294,10 @@ export const getTikTokAccountInsights = <ThrowOnError extends boolean = false>(o
 
 /**
  * Get YouTube daily views
- * Returns daily view counts for a YouTube video including views, watch time, and subscriber changes.
- * Requires yt-analytics.readonly scope (re-authorization may be needed). YouTube finalizes analytics
- * with a ~3-day delay; by default only finalized days are returned, and an explicit endDate can reach
- * into the delay window (see the endDate parameter). Max 90 days, defaults to last 30 days.
+ * Returns daily view counts for a YouTube video including views, watch time, and subscriber changes. Requires yt-analytics.readonly scope (re-authorization may be needed).
+ *
+ * - YouTube finalizes analytics with a ~3-day delay. By default only finalized days are returned; an explicit endDate can reach into the delay window (see the endDate parameter).
+ * - Max 90 days, defaults to last 30 days.
  *
  */
 export const getYouTubeDailyViews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetYouTubeDailyViewsData, ThrowOnError>) => {
@@ -269,18 +309,17 @@ export const getYouTubeDailyViews = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Get YouTube video retention curve
- * Returns the audience retention curve for a single YouTube video, plus the video's
- * duration for rendering the curve on a time axis. The curve has up to 100 points
- * (elapsedVideoTimeRatio 0.01-1.0) aggregated over the whole date range; YouTube does
- * not support per-day retention breakdowns.
+ * Returns the audience retention curve for a single YouTube video, plus the video's duration for rendering the curve on a time axis. Requires yt-analytics.readonly scope (re-authorization may be needed).
  *
- * audienceWatchRatio is the absolute share of viewers watching at that point in the
- * video and can exceed 1 (rewinds and looping, common on Shorts). relativeRetentionPerformance
- * compares against videos of similar length (0 = worst, 0.5 = median, 1 = best).
- * YouTube returns an empty curve for videos with very few views or before analytics
- * processing completes (2-3 day delay).
+ * ### The curve
  *
- * Requires yt-analytics.readonly scope (re-authorization may be needed).
+ * - Up to 100 points (elapsedVideoTimeRatio 0.01-1.0), aggregated over the whole date range. YouTube does not support per-day retention breakdowns.
+ * - audienceWatchRatio: the absolute share of viewers watching at that point in the video. It can exceed 1 (rewinds and looping, common on Shorts).
+ * - relativeRetentionPerformance: compares against videos of similar length (0 = worst, 0.5 = median, 1 = best).
+ *
+ * ### Empty curves
+ *
+ * YouTube returns an empty curve for videos with very few views or before analytics processing completes (2-3 day delay).
  *
  */
 export const getYouTubeVideoRetention = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetYouTubeVideoRetentionData, ThrowOnError>) => {
@@ -292,17 +331,20 @@ export const getYouTubeVideoRetention = <ThrowOnError extends boolean = false>(o
 
 /**
  * Get Facebook Page insights
- * Returns page-level Facebook insights (media views, views, post engagements, video metrics,
- * follower counts). Response shape matches /v1/analytics/instagram/account-insights so the
- * same client handling works across platforms.
- *
- * Metric names track the current (post-November 2025) Meta Graph API. The legacy
- * page_impressions / page_fans / page_fan_adds / page_fan_removes metrics were deprecated
- * by Meta on November 15, 2025 and are NOT accepted by this endpoint. Use the replacements
- * below. Because Meta did not provide direct adds/removes replacements, Zernio synthesizes
- * followers_gained / followers_lost from the daily follower snapshotter.
+ * Returns page-level Facebook insights (media views, views, post engagements, video metrics, follower counts). The response shape matches /v1/analytics/instagram/account-insights, so the same client handling works across platforms.
  *
  * Max 89 days, defaults to last 30 days.
+ *
+ * ### Metric names
+ *
+ * Metric names track the current (post-November 2025) Meta Graph API. These legacy metrics were deprecated by Meta on November 15, 2025 and are NOT accepted by this endpoint:
+ *
+ * - page_impressions
+ * - page_fans
+ * - page_fan_adds
+ * - page_fan_removes
+ *
+ * Use the replacements below. Because Meta did not provide direct adds/removes replacements, Zernio synthesizes followers_gained / followers_lost from the daily follower snapshotter.
  *
  */
 export const getFacebookPageInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetFacebookPageInsightsData, ThrowOnError>) => {
@@ -314,22 +356,27 @@ export const getFacebookPageInsights = <ThrowOnError extends boolean = false>(op
 
 /**
  * Get Facebook post monetization earnings
- * Returns lifetime monetization earnings for ONE Facebook post, read live from Meta on every
- * request.
+ * Returns lifetime monetization earnings for ONE Facebook post, read live from Meta on every request.
  *
- * Earnings are CUMULATIVE since the post was published, not earnings within a date range, so
- * this endpoint takes no since/until and the totals must not be summed across dates or across
- * posts. Page-level daily earnings live on /v1/analytics/facebook/page-insights.
+ * ### Lifetime totals only
  *
- * A post on a Page that is not enrolled in monetization, or that earned nothing, returns
- * "total": 0 rather than an error: Meta does not distinguish the two. A metric Meta returned no
- * bucket for at all is reported in "unavailableMetrics" and omitted from "metrics", never as a 0.
+ * Earnings are CUMULATIVE since the post was published, not earnings within a date range. So this endpoint takes no since/until, and the totals must not be summed across dates or across posts. Page-level daily earnings live on /v1/analytics/facebook/page-insights.
+ *
+ * ### Zeros and missing metrics
+ *
+ * - A post on a Page that is not enrolled in monetization, or that earned nothing, returns "total": 0 rather than an error: Meta does not distinguish the two.
+ * - A metric Meta returned no bucket for at all is reported in "unavailableMetrics" and omitted from "metrics", never as a 0.
  *
  * Amounts are the platform's raw numbers in the stated "unit" and are never rescaled by Zernio.
- * Breakdown dimensions are not exposed and a "breakdown" param is rejected with 400. So are
- * "since", "until", "period", and "metricType": scoping this endpoint to a window is not
- * possible, and silently returning the lifetime total for one would let a caller sum a year of
- * weekly requests into a figure ~52x the post's real earnings.
+ *
+ * ### Rejected parameters
+ *
+ * These are rejected with 400:
+ *
+ * - "breakdown": breakdown dimensions are not exposed.
+ * - "since", "until", "period", and "metricType": scoping this endpoint to a window is not possible.
+ *
+ * Silently returning the lifetime total for a window would let a caller sum a year of weekly requests into a figure ~52x the post's real earnings.
  *
  */
 export const getFacebookPostEarnings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetFacebookPostEarningsData, ThrowOnError>) => {
@@ -342,9 +389,11 @@ export const getFacebookPostEarnings = <ThrowOnError extends boolean = false>(op
 /**
  * Get Instagram insights
  * Returns account-level Instagram insights such as reach, views, accounts engaged, and total interactions.
- * These metrics reflect the entire account's performance across all content surfaces (feed, stories, explore, profile),
- * and are fundamentally different from post-level metrics. Data may be delayed up to 48 hours.
- * Max 90 days, defaults to last 30 days.
+ *
+ * These metrics reflect the entire account's performance across all content surfaces (feed, stories, explore, profile), and are fundamentally different from post-level metrics.
+ *
+ * - Data may be delayed up to 48 hours.
+ * - Max 90 days, defaults to last 30 days.
  *
  */
 export const getInstagramAccountInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInstagramAccountInsightsData, ThrowOnError>) => {
@@ -375,8 +424,16 @@ export const getInstagramFollowerHistory = <ThrowOnError extends boolean = false
 /**
  * Get Facebook Page demographics
  * Returns the follower breakdown of a connected Facebook Page by country and/or city, from Meta's latest daily snapshot.
- * Country keys are ISO 3166-1 alpha-2 codes; city keys are "City, Region, Country" strings as Meta returns them.
+ *
+ * ### Keys
+ *
+ * - Country keys are ISO 3166-1 alpha-2 codes.
+ * - City keys are "City, Region, Country" strings as Meta returns them.
+ *
+ * ### Limits
+ *
  * Meta removed age and gender demographics for Pages (page_fans_gender_age) on November 15 2025 with no replacement, so only country and city are available.
+ *
  * Meta reports small counts at a privacy floor, so the long tail can show identical low values.
  *
  */
@@ -390,9 +447,19 @@ export const getFacebookDemographics = <ThrowOnError extends boolean = false>(op
 /**
  * Get LinkedIn organization follower demographics
  * Returns the lifetime follower breakdown of a connected LinkedIn organization page by job function, seniority, industry and company size.
- * Function, seniority and industry are labelled with LinkedIn's standardized names (English) and keep the LinkedIn URN in `id`. Company size is labelled as a range such as `2-10` or `10001+`.
+ *
+ * ### Labels
+ *
+ * - Function, seniority and industry are labelled with LinkedIn's standardized names (English) and keep the LinkedIn URN in `id`.
+ * - Company size is labelled as a range such as `2-10` or `10001+`.
+ *
  * LinkedIn returns at most the top 100 values per breakdown and leaves out followers whose profile lacks that field, so a breakdown does not add up to the follower count.
- * Organization accounts only: a personal LinkedIn account answers 400 `personal_account_not_supported`. Requires the r_organization_social, r_organization_followers and r_organization_admin scopes (412 otherwise) and the Analytics add-on.
+ *
+ * ### Requirements
+ *
+ * - Organization accounts only: a personal LinkedIn account answers 400 `personal_account_not_supported`.
+ * - Requires the r_organization_social, r_organization_followers and r_organization_admin scopes (412 otherwise).
+ * - Requires the Analytics add-on.
  *
  */
 export const getLinkedInDemographics = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetLinkedInDemographicsData, ThrowOnError>) => {
@@ -419,9 +486,11 @@ export const getInstagramDemographics = <ThrowOnError extends boolean = false>(o
 /**
  * Get Instagram online followers
  * Returns how many of an Instagram account's followers were online in each hour, for every day of the last 30 days that Meta has data for.
- * Hour keys are "0" to "23" as Meta returns them. endTime is the end_time Meta returns for that day. Meta does not document the timezone of the hour keys.
- * Data is delayed up to 48 hours, so the most recent days are left out until Meta fills them.
- * Requires at least 100 followers; for smaller accounts days is empty.
+ *
+ * - Hour keys are "0" to "23" as Meta returns them. Meta does not document the timezone of the hour keys.
+ * - endTime is the end_time Meta returns for that day.
+ * - Data is delayed up to 48 hours, so the most recent days are left out until Meta fills them.
+ * - Requires at least 100 followers; for smaller accounts days is empty.
  *
  */
 export const getInstagramOnlineFollowers = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInstagramOnlineFollowersData, ThrowOnError>) => {
@@ -433,11 +502,12 @@ export const getInstagramOnlineFollowers = <ThrowOnError extends boolean = false
 
 /**
  * Get YouTube demographics
- * Returns audience demographic insights for a YouTube channel, broken down by age, gender, and/or country.
- * Pass videoId to get the audience profile of a single video instead of the whole channel.
- * Age and gender values are viewer percentages (0-100). Country values are view counts.
- * Data is based on signed-in viewers only, with a 2-3 day delay. YouTube suppresses demographics
- * for videos with too few signed-in views, so low-traffic videos can return empty breakdowns.
+ * Returns audience demographic insights for a YouTube channel, broken down by age, gender, and/or country. Pass videoId to get the audience profile of a single video instead of the whole channel.
+ *
+ * - Age and gender values are viewer percentages (0-100).
+ * - Country values are view counts.
+ *
+ * Data is based on signed-in viewers only, with a 2-3 day delay. YouTube suppresses demographics for videos with too few signed-in views, so low-traffic videos can return empty breakdowns.
  *
  */
 export const getYouTubeDemographics = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetYouTubeDemographicsData, ThrowOnError>) => {
@@ -464,9 +534,16 @@ export const getDailyMetrics = <ThrowOnError extends boolean = false>(options?: 
 /**
  * Get an analytics dashboard
  * Everything an analytics dashboard needs in one call: window totals, follower growth, a per-day series, top posts, recent posts and, optionally, the same figures for the previous period.
- * Daily and total metrics use received attribution: each day holds the engagement that arrived that day, on any post, so `totals` is always the sum of `daily`.
- * `topPosts` and `recentPosts` list posts published in the window with their lifetime metrics. A post cross-posted to several platforms appears once per platform.
+ *
  * All dates are UTC days.
+ *
+ * ### Daily and total metrics
+ *
+ * Daily and total metrics use received attribution: each day holds the engagement that arrived that day, on any post. So `totals` is always the sum of `daily`.
+ *
+ * ### Post lists
+ *
+ * `topPosts` and `recentPosts` list posts published in the window with their lifetime metrics. A post cross-posted to several platforms appears once per platform.
  *
  */
 export const getAnalyticsDashboard = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAnalyticsDashboardData, ThrowOnError>) => {
@@ -521,9 +598,11 @@ export const getPostingFrequency = <ThrowOnError extends boolean = false>(option
 /**
  * Get ledger balances
  * Returns the balance of each bucket (for example accruing, owed, payable) for one ledger scope.
- * A scope owned by another team returns an empty balances object. A profile-scoped key (or a
- * member limited to some profiles) only reads `campaign` and `participant` scopes of campaigns
- * under its profiles; any other scope returns an empty balances object.
+ *
+ * These return an empty balances object:
+ *
+ * - A scope owned by another team.
+ * - For a profile-scoped key (or a member limited to some profiles), any scope other than `campaign` and `participant` scopes of campaigns under its profiles.
  *
  */
 export const getLedgerBalances = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetLedgerBalancesData, ThrowOnError>) => {
@@ -535,10 +614,17 @@ export const getLedgerBalances = <ThrowOnError extends boolean = false>(options:
 
 /**
  * List ledger entries
- * Lists ledger entries for your team, newest first. Filter by scope (matches either side of the entry),
- * kind, or the reference that caused the entry. A profile-scoped key (or a member limited to some
- * profiles) only sees entries of campaigns under its profiles and of their participants; operator
- * and platform scopes stay hidden from it.
+ * Lists ledger entries for your team, newest first.
+ *
+ * ### Filters
+ *
+ * - scope (matches either side of the entry)
+ * - kind
+ * - the reference that caused the entry
+ *
+ * ### Profile-scoped access
+ *
+ * A profile-scoped key (or a member limited to some profiles) only sees entries of campaigns under its profiles and of their participants. Operator and platform scopes stay hidden from it.
  *
  */
 export const listLedgerEntries = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListLedgerEntriesData, ThrowOnError>) => {
@@ -550,7 +636,21 @@ export const listLedgerEntries = <ThrowOnError extends boolean = false>(options?
 
 /**
  * Get balance
- * Returns the balance you can transfer, card top-ups still on hold, top-ups still waiting for payment, and your latest top-ups. Card top-ups become available after 7 days. A transfer debits its amount plus the fee added on top; the payee receives the full amount. A card dispute or refund on a top-up is debited from the available balance and can make it negative; transfers are refused until it is positive again. A profile-scoped key answers 403, since the balance belongs to the whole team.
+ * Returns your team's balance:
+ *
+ * - the balance you can transfer
+ * - card top-ups still on hold
+ * - top-ups still waiting for payment
+ * - your latest top-ups
+ *
+ * Card top-ups become available after 7 days.
+ *
+ * A transfer debits its amount plus the fee added on top; the payee receives the full amount.
+ *
+ * A card dispute or refund on a top-up is debited from the available balance and can make it negative. Transfers are refused until it is positive again.
+ *
+ * A profile-scoped key answers 403, since the balance belongs to the whole team.
+ *
  */
 export const getBalance = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
     return (options?.client ?? client).get<GetBalanceResponse, GetBalanceError, ThrowOnError>({
@@ -615,11 +715,27 @@ export const createPayeeOnboardingLink = <ThrowOnError extends boolean = false>(
 
 /**
  * Create a transfer
- * Moves money from your balance to a payee. The payee receives the full `amountCents`; Zernio's fee (4%, 50 cent minimum) is added on top,
- * so your balance is debited `totalCents` = `amountCents` + `feeCents`.
- * Returns 402 when the balance does not cover the amount plus the fee, or when it is negative after a dispute or refund of a card top-up ("Your balance is negative after a dispute or refund of a card top-up. Add funds to cover it before sending transfers."), and 409 when the payee has not finished onboarding or the Idempotency-Key is still processing.
- * Needs an owner, admin or billing admin, signed in or through a full-access key they created: a profile-scoped key answers 403.
- * A same-key retry never makes the transfer twice within Stripe's 24-hour idempotency window and answers 409 while another request is still waiting on Stripe for it; a transfer Stripe has not confirmed after 24 hours answers 409 until the daily reconciliation marks it paid (Stripe made it) or failed (it did not).
+ * Moves money from your balance to a payee.
+ *
+ * ### Fee
+ *
+ * The payee receives the full `amountCents`. Zernio's fee (4%, 50 cent minimum) is added on top, so your balance is debited `totalCents` = `amountCents` + `feeCents`.
+ *
+ * ### Who can call it
+ *
+ * Needs an owner, admin or billing admin, signed in or through a full-access key they created. A profile-scoped key answers 403.
+ *
+ * ### Errors
+ *
+ * - 402: the balance does not cover the amount plus the fee.
+ * - 402: the balance is negative after a dispute or refund of a card top-up ("Your balance is negative after a dispute or refund of a card top-up. Add funds to cover it before sending transfers.").
+ * - 409: the payee has not finished onboarding, or the Idempotency-Key is still processing.
+ *
+ * ### Retries
+ *
+ * A same-key retry never makes the transfer twice within Stripe's 24-hour idempotency window. It answers 409 while another request is still waiting on Stripe for it.
+ *
+ * A transfer Stripe has not confirmed after 24 hours answers 409 until the daily reconciliation marks it paid (Stripe made it) or failed (it did not).
  *
  */
 export const createTransfer = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTransferData, ThrowOnError>) => {
@@ -651,11 +767,11 @@ export const getTransfer = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Email a creator their campaign links
- * For a creator who lost their link. Emails every personal participant link held by `email`
- * in one message, optionally only the one for `campaignId`. Removed participants and draft
- * campaigns are left out. Always answers 202 with the same body, so the answer never tells
- * whether the address has links. Limited to 5 requests per hour per email address and 5 per
- * hour per IP address.
+ * For a creator who lost their link. Emails every personal participant link held by `email` in one message, optionally only the one for `campaignId`.
+ *
+ * - Removed participants and draft campaigns are left out.
+ * - Always answers 202 with the same body, so the answer never tells whether the address has links.
+ * - Limited to 5 requests per hour per email address and 5 per hour per IP address.
  *
  */
 export const recoverCreatorPortalLinks = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RecoverCreatorPortalLinksData, ThrowOnError>) => {
@@ -667,12 +783,14 @@ export const recoverCreatorPortalLinks = <ThrowOnError extends boolean = false>(
 
 /**
  * Read a creator invite or participant page
- * What a creator sees behind a campaign link, with no API key. `token` is either an open
- * invite token (from `POST /v1/creator-campaigns/{campaignId}/invite-link`), which answers
- * `kind: invite` with the campaign only, or a participant token (from an invite or a join),
- * which answers `kind: participant` with the creator's connected accounts, latest 100
- * submissions, earnings and payout setup. Reading a participant page also re-checks the
- * creator's connected accounts. Never cached.
+ * What a creator sees behind a campaign link, with no API key. Never cached.
+ *
+ * `token` is one of:
+ *
+ * - An open invite token (from `POST /v1/creator-campaigns/{campaignId}/invite-link`): answers `kind: invite` with the campaign only.
+ * - A participant token (from an invite or a join): answers `kind: participant` with the creator's connected accounts, latest 100 submissions, earnings and payout setup.
+ *
+ * Reading a participant page also re-checks the creator's connected accounts.
  *
  */
 export const getCreatorPortal = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCreatorPortalData, ThrowOnError>) => {
@@ -684,10 +802,11 @@ export const getCreatorPortal = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Join a campaign
- * Accepts a participant invite, or joins through an open invite link. With a participant
- * token the body is ignored and the invite is accepted. With an open invite token a new
- * participant is created from `displayName` (required) and `email` (optional), and a fresh
- * participant token comes back: keep it, it is the creator's only key to their page.
+ * Accepts a participant invite, or joins through an open invite link.
+ *
+ * - Participant token: the body is ignored and the invite is accepted.
+ * - Open invite token: a new participant is created from `displayName` (required) and `email` (optional), and a fresh participant token comes back. Keep it: it is the creator's only key to their page.
+ *
  * Open-link joins are limited to about 20 per IP address and 60 per link every 10 minutes.
  *
  */
@@ -771,10 +890,11 @@ export const createCreatorPayoutLogin = <ThrowOnError extends boolean = false>(o
 
 /**
  * Download a payout statement
- * A PDF statement of one paid payout to this creator: who paid, the campaign, the date, the
- * amount and the Stripe transfer id. It is a statement of a payment, not a tax invoice. Only
- * for a paid payout of this participant; anything else answers 404. About 60 downloads per
- * participant every 10 minutes.
+ * A PDF statement of one paid payout to this creator: who paid, the campaign, the date, the amount and the Stripe transfer id. It is a statement of a payment, not a tax invoice.
+ *
+ * Only for a paid payout of this participant; anything else answers 404.
+ *
+ * About 60 downloads per participant every 10 minutes.
  *
  */
 export const getCreatorPayoutStatement = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCreatorPayoutStatementData, ThrowOnError>) => {
@@ -827,10 +947,14 @@ export const getPostTimeline = <ThrowOnError extends boolean = false>(options: O
 /**
  * Run a Google Analytics (GA4) report
  * Runs a report on a connected GA4 property through Google's Data API (`runReport`).
+ *
  * Pick any GA4 dimensions and metrics; filters and ordering use Google's own shapes.
- * Identical requests on the same property are cached for 10 minutes. Google meters each
- * property by quota tokens; when it is used up the request returns 429 until Google refills it
- * (hourly quotas within the hour, daily ones at midnight Pacific time).
+ *
+ * ### Caching and quota
+ *
+ * Identical requests on the same property are cached for 10 minutes.
+ *
+ * Google meters each property by quota tokens. When it is used up the request returns 429 until Google refills it (hourly quotas within the hour, daily ones at midnight Pacific time).
  *
  */
 export const runGoogleAnalyticsReport = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RunGoogleAnalyticsReportData, ThrowOnError>) => {
@@ -869,13 +993,23 @@ export const getGoogleAnalyticsMetadata = <ThrowOnError extends boolean = false>
 
 /**
  * Open a tracking window
- * Starts watching a post's views and engagement. Zernio fetches the numbers from the platform itself on its
- * regular analytics sync, so every reading is verified: it is a value we read from the platform, never one
- * the creator or the caller reported. The window runs for `trackingDays` (30 by default, 90 at most) and
- * ends with one final read, after which the `post.tracking_completed` webhook fires. Identify the post
- * with `postId` (an external post id from Zernio), or with `accountId` together with the post's `url`.
- * Opening a window for a post that is already tracked returns the existing window with `200`. A new
- * window returns `201`.
+ * Starts watching a post's views and engagement.
+ *
+ * Zernio fetches the numbers from the platform itself on its regular analytics sync, so every reading is verified. It is a value we read from the platform, never one the creator or the caller reported.
+ *
+ * ### The window
+ *
+ * - Runs for `trackingDays` (30 by default, 90 at most).
+ * - Ends with one final read, after which the `post.tracking_completed` webhook fires.
+ *
+ * ### Identifying the post
+ *
+ * Send either `postId` (an external post id from Zernio), or `accountId` together with the post's `url`.
+ *
+ * ### Responses
+ *
+ * - `201`: a new window was opened.
+ * - `200`: the post is already tracked; the existing window is returned.
  *
  */
 export const openTrackingWindow = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<OpenTrackingWindowData, ThrowOnError>) => {
@@ -927,11 +1061,14 @@ export const cancelTrackingWindow = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Get post samples
- * Returns the raw readings behind a post's numbers, oldest first. Each sample is one analytics sync: the
- * views and engagement as the platform reported them at `syncedAt`. Zernio only stores what it fetched from
- * the platform, so nothing here was self-reported. `shares` and `saves` are null on platforms that do not
- * return that counter, which is different from a real zero. `watchSeconds` and `completionRate` are null
- * when the platform gives no watch signal.
+ * Returns the raw readings behind a post's numbers, oldest first.
+ *
+ * Each sample is one analytics sync: the views and engagement as the platform reported them at `syncedAt`. Zernio only stores what it fetched from the platform, so nothing here was self-reported.
+ *
+ * ### Null values
+ *
+ * - `shares` and `saves` are null on platforms that do not return that counter, which is different from a real zero.
+ * - `watchSeconds` and `completionRate` are null when the platform gives no watch signal.
  *
  */
 export const getPostSamples = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetPostSamplesData, ThrowOnError>) => {
@@ -943,12 +1080,14 @@ export const getPostSamples = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Get a post's authenticity score
- * Returns Zernio's authenticity score for a post: an integer from 0 to 100 where higher means the view
- * pattern looks more like organic viewing. The score is ours. It is computed only from the verified
- * samples we fetched from the platform, never from anything the creator or caller reported, and `reasons`
- * lists each factor that lowered it with its weight in points. `confidence` (0 to 1) says how much data
- * the score rests on. A stored score newer than 30 minutes is returned as is, otherwise it is recomputed.
- * The `post.authenticity_changed` webhook fires when a score crosses 40.
+ * Returns Zernio's authenticity score for a post: an integer from 0 to 100 where higher means the view pattern looks more like organic viewing.
+ *
+ * The score is ours. It is computed only from the verified samples we fetched from the platform, never from anything the creator or caller reported.
+ *
+ * - `reasons` lists each factor that lowered it with its weight in points.
+ * - `confidence` (0 to 1) says how much data the score rests on.
+ *
+ * A stored score newer than 30 minutes is returned as is, otherwise it is recomputed. The `post.authenticity_changed` webhook fires when a score crosses 40.
  *
  */
 export const getPostAuthenticity = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetPostAuthenticityData, ThrowOnError>) => {
@@ -960,10 +1099,14 @@ export const getPostAuthenticity = <ThrowOnError extends boolean = false>(option
 
 /**
  * List authenticity scores
- * Lists the stored authenticity scores for one connected account, newest first. Scores are 0 to 100 and
- * come from Zernio's own model over verified platform samples. Filter with `minScore` and `maxScore` to
- * find posts that look inflated, and with `from` and `to` to bound when the score was computed. Requires
- * the Analytics add-on.
+ * Lists the stored authenticity scores for one connected account, newest first. Requires the Analytics add-on.
+ *
+ * Scores are 0 to 100 and come from Zernio's own model over verified platform samples.
+ *
+ * ### Filters
+ *
+ * - `minScore` and `maxScore`: find posts that look inflated.
+ * - `from` and `to`: bound when the score was computed.
  *
  */
 export const listPostAuthenticity = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListPostAuthenticityData, ThrowOnError>) => {
@@ -991,9 +1134,14 @@ export const getGoogleBusinessPerformance = <ThrowOnError extends boolean = fals
 /**
  * Get Google Business Profile search keywords
  * Returns search keywords that triggered impressions for a Google Business Profile location.
- * Data is aggregated monthly. Keywords Google reports only as below a threshold have `impressions` 0 and `impressionsThreshold` set to that threshold.
+ *
+ * - Data is aggregated monthly.
+ * - Keywords Google reports only as below a threshold have `impressions` 0 and `impressionsThreshold` set to that threshold.
+ * - Max 18 months of historical data.
+ *
+ * ### Paging
+ *
  * Returns up to 100 keywords per page. When `nextPageToken` is not null, pass it as `pageToken` with the same `startMonth` and `endMonth` to get the next page.
- * Max 18 months of historical data.
  *
  */
 export const getGoogleBusinessSearchKeywords = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetGoogleBusinessSearchKeywordsData, ThrowOnError>) => {
@@ -1074,11 +1222,10 @@ export const getInboxResponseTime = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Get top accounts by inbox volume
- * Leaderboard of accounts by inbox message volume. Decorates
- * each row with display labels from the live SocialAccount record
- * (so the UI shows username + displayName, not only an ID). Accounts
- * that no longer map to a SocialAccount surface as "(disconnected)"
- * so the row stays visible. Max date range is 365 days.
+ * Leaderboard of accounts by inbox message volume. Max date range is 365 days.
+ *
+ * - Each row is decorated with display labels from the live SocialAccount record (so the UI shows username + displayName, not only an ID).
+ * - Accounts that no longer map to a SocialAccount surface as "(disconnected)" so the row stays visible.
  *
  */
 export const getInboxTopAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInboxTopAccountsData, ThrowOnError>) => {
@@ -1225,15 +1372,21 @@ export const getRedditFeed = <ThrowOnError extends boolean = false>(options: Opt
  * Get the comments of a Reddit post
  * Temporarily unavailable: Reddit has blocked third-party apps from its API, so this endpoint returns 503 `PLATFORM_DISABLED` until Reddit restores access. Reddit Ads is not affected.
  *
- * Reads the comments of any Reddit post the connected account can see, for example one found
- * through `/v1/reddit/feed` or `/v1/reddit/search`, straight from Reddit on every call. The tree
- * comes flattened in thread order (a reply follows its parent); rebuild it from `parentId`, which
- * is `t3_…` for a reply to the post and `t1_…` for a reply to a comment. Deleted and removed
- * comments are passed through as Reddit sends them (`[deleted]` / `[removed]`). Where Reddit
- * truncates a thread, the ids it left out are listed in `more`; `commentId` fetches one such
- * comment with its replies. A post Reddit no longer serves answers 404 and a private subreddit
- * 403, both with `platform_api_error`. For comments on posts published through Zernio,
- * `/v1/inbox/comments/{postId}` adds caching, moderation and replies.
+ * Reads the comments of any Reddit post the connected account can see, for example one found through `/v1/reddit/feed` or `/v1/reddit/search`, straight from Reddit on every call.
+ *
+ * ### Thread shape
+ *
+ * - The tree comes flattened in thread order (a reply follows its parent).
+ * - Rebuild it from `parentId`, which is `t3_…` for a reply to the post and `t1_…` for a reply to a comment.
+ * - Deleted and removed comments are passed through as Reddit sends them (`[deleted]` / `[removed]`).
+ * - Where Reddit truncates a thread, the ids it left out are listed in `more`. `commentId` fetches one such comment with its replies.
+ *
+ * ### Errors
+ *
+ * - 404 `platform_api_error`: Reddit no longer serves the post.
+ * - 403 `platform_api_error`: the subreddit is private.
+ *
+ * For comments on posts published through Zernio, `/v1/inbox/comments/{postId}` adds caching, moderation and replies.
  *
  */
 export const getRedditPostComments = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetRedditPostCommentsData, ThrowOnError>) => {
@@ -1286,40 +1439,36 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
 
 /**
  * Usage snapshot (default) or billed-spend metering (with params)
- * Dual-mode endpoint, selected by query params, and fully backward
- * compatible:
+ * Dual-mode endpoint, selected by query params, and fully backward compatible.
  *
- * **Without metering params (the default):** the plan / quota / usage
- * snapshot: plan name, billing period, limits, usage counts, access
- * state. Identical to `GET /v1/usage-stats`. Existing integrations keep
- * working unchanged.
+ * ### Without metering params (the default)
  *
- * **With `range`, `granularity`, `from`, or `to`:** usage METERING:
- * billed spend (USD) by product family (`accounts`, `numbers`,
- * `imessage`, `calls`, `sms`, `messages`, `verify`, `dlc`, `xApi`, `ads`,
- * `credits`, `other`) over the window, at
- * `day` / `month` / `total` granularity, from the usage-based invoice
- * breakdown (the CHARGE view, which always reconciles with what gets billed).
- * Also served at `GET /v1/usage/daily`. Usage-based accounts only:
- * legacy Stripe accounts get `{ "supported": false, "days": [] }`.
+ * Returns the plan / quota / usage snapshot: plan name, billing period, limits, usage counts, access state. Identical to `GET /v1/usage-stats`. Existing integrations keep working unchanged.
  *
- * **Attribution (metering mode):** `groupBy=profile|account` adds an
- * `attribution` breakdown of the window's spend per profile or account,
- * assembled from your own records and pro-rated against the invoice so
- * `sum(groups) + unattributed` equals `totals` exactly. `profileId` /
- * `accountId` instead project the whole payload (`days`, `totals`,
- * `lineItems`) onto that one group; `peaks`, `callUsage` and `tax` are
- * then `null` (team-level facts). Projected `days` spread the
- * group's period share over each day (usage is attributed per period,
- * not per day). Profile-scoped API keys and members only see their
- * profiles' groups (`attribution.restricted: true`, with `totals`
- * summing the visible groups). Credits, 10DLC fees and Verify are always
- * unattributed. `profileId` / `accountId` on their own do not select
- * metering mode: pair them with `range`.
+ * ### With `range`, `granularity`, `from`, or `to`
  *
- * For per-domain consumption *volumes* use `GET /v1/usage/calls` and
- * `GET /v1/usage/sms`. For the billing statement (balance, credits,
- * caps, payment status) use `GET /v1/billing`.
+ * Returns usage METERING: billed spend (USD) by product family over the window, at `day` / `month` / `total` granularity. Product families: `accounts`, `numbers`, `imessage`, `calls`, `sms`, `messages`, `verify`, `dlc`, `xApi`, `ads`, `credits`, `other`.
+ *
+ * Data comes from the usage-based invoice breakdown (the CHARGE view, which always reconciles with what gets billed). Also served at `GET /v1/usage/daily`.
+ *
+ * Usage-based accounts only: legacy Stripe accounts get `{ "supported": false, "days": [] }`.
+ *
+ * ### Attribution (metering mode)
+ *
+ * `groupBy=profile|account` adds an `attribution` breakdown of the window's spend per profile or account. It is assembled from your own records and pro-rated against the invoice so `sum(groups) + unattributed` equals `totals` exactly.
+ *
+ * `profileId` / `accountId` instead project the whole payload (`days`, `totals`, `lineItems`) onto that one group:
+ *
+ * - `peaks`, `callUsage` and `tax` are then `null` (team-level facts).
+ * - Projected `days` spread the group's period share over each day (usage is attributed per period, not per day).
+ * - `profileId` / `accountId` on their own do not select metering mode: pair them with `range`.
+ *
+ * Profile-scoped API keys and members only see their profiles' groups (`attribution.restricted: true`, with `totals` summing the visible groups). Credits, 10DLC fees and Verify are always unattributed.
+ *
+ * ### Related endpoints
+ *
+ * - Per-domain consumption *volumes*: `GET /v1/usage/calls` and `GET /v1/usage/sms`.
+ * - The billing statement (balance, credits, caps, payment status): `GET /v1/billing`.
  *
  */
 export const getUsage = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetUsageData, ThrowOnError>) => {
@@ -1332,23 +1481,23 @@ export const getUsage = <ThrowOnError extends boolean = false>(options?: Options
 /**
  * @deprecated
  * Get plan and usage snapshot (plan, limits, payment status)
- * The plan / quota / payment-status snapshot: current plan name, billing
- * period, plan limits, usage counts, and access state. Identical to a
- * bare `GET /v1/usage` call (this path is its deprecated alias). For
- * billed spend by product, call `GET /v1/usage` with `range` /
- * `granularity` params. The statement view (balance, credits, caps,
- * payment status) lives at `GET /v1/billing`.
+ * The plan / quota / payment-status snapshot: current plan name, billing period, plan limits, usage counts, and access state.
+ *
+ * Identical to a bare `GET /v1/usage` call (this path is its deprecated alias).
+ *
+ * ### Related endpoints
+ *
+ * - Billed spend by product: call `GET /v1/usage` with `range` / `granularity` params.
+ * - The statement view (balance, credits, caps, payment status) lives at `GET /v1/billing`.
+ *
+ * ### Response shape
  *
  * The response shape depends on the account's `billingSystem`:
- * * Stripe users: per-period `usage.uploads` / `usage.profiles` counters.
- * * Usage-based billing users: `usage.connectedAccounts`,
- * `usage.xApiCallsByOperation` (per-operation X API call counts;
- * resolve keys via `GET /v1/billing/x-pricing`), plus a `spend`
- * block with `currentPeriodCents`, `xSpendCents`, and
- * `xSpendLimitCents`. The legacy `usage.xApiCalls` 3-tier
- * aggregate is still emitted for back-compat but excludes the
- * $0.200 URL tier and any future tiers, so new clients should
- * consume `xApiCallsByOperation` only.
+ *
+ * - Stripe users: per-period `usage.uploads` / `usage.profiles` counters.
+ * - Usage-based billing users: `usage.connectedAccounts`, `usage.xApiCallsByOperation` (per-operation X API call counts; resolve keys via `GET /v1/billing/x-pricing`), plus a `spend` block with `currentPeriodCents`, `xSpendCents`, and `xSpendLimitCents`.
+ *
+ * The legacy `usage.xApiCalls` 3-tier aggregate is still emitted for back-compat. It excludes the $0.200 URL tier and any future tiers, so new clients should consume `xApiCallsByOperation` only.
  *
  */
 export const getUsageStats = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetUsageStatsData, ThrowOnError>) => {
@@ -1425,9 +1574,36 @@ export const listPosts = <ThrowOnError extends boolean = false>(options?: Option
  *
  * ## LinkedIn @mentions
  *
- * Put the profile or company URL inside `@[...]` in `content`, or in a LinkedIn entry's `customContent`: `@[https://www.linkedin.com/in/jane-doe]` or `@[https://www.linkedin.com/company/acme]`. The post is published with LinkedIn's real name and link, and no lookup call is needed first. Custom text is optional, as in `@[Jane](https://www.linkedin.com/in/jane-doe)`: for a person it must be the first name, last name or full name, for a company the exact company name, both case-sensitive. Any other text is replaced with LinkedIn's name and a `warnings` entry is returned (`linkedin_mention_name_replaced`). `@[Text](urn:li:person:ID)` markup, as returned by `GET /v1/accounts/{accountId}/linkedin-mentions`, is published exactly as you wrote it: it is not looked up, checked or changed, so its text must already be LinkedIn's name.
+ * Mention a person or company by putting its LinkedIn URL inside `@[...]`, in `content` or in a LinkedIn entry's `customContent`. The post is published with LinkedIn's real name and link, with no lookup call first.
  *
- * Resolving a person's profile URL needs one of your LinkedIn accounts to administer a Page; publishing does not. Only profile and company URLs can fail. A scheduled or published post is rejected when one cannot be resolved: `400` with code `linkedin_mentions_invalid`, `429` with `rate_limited` (LinkedIn is rate limiting), `401` with `reconnect_required` (expired token) or a retryable `503` with `temporarily_unavailable` (LinkedIn did not answer within 8 seconds in total). Each failing mention is listed under `details.mentions[]` (`LinkedInMentionIssue`) with its own code: `linkedin_mention_unresolvable`, `linkedin_mention_requires_page_admin` or `linkedin_mention_name_unavailable` (LinkedIn withheld the name and none was given). A post can resolve at most 10 profile or company URL mentions across its shared content and LinkedIn entries: more is a `400` with `linkedin_mentions_limit_exceeded`. Drafts never fail on a mention: unresolved ones (and more than 10) stay as written and come back as `warnings`. A draft is checked again when it is scheduled. On platforms other than LinkedIn, `@[linkedin.com/in/jane]` is posted as its text, or as the vanity (`jane`) when you wrote no text, and `@[Text](urn:li:...)` as `Text`.
+ * - Person: `@[https://www.linkedin.com/in/jane-doe]`
+ * - Company: `@[https://www.linkedin.com/company/acme]`
+ * - Your own text: `@[Jane](https://www.linkedin.com/in/jane-doe)`. For a person it must be the first, last or full name, for a company the exact company name, both case-sensitive. Other text is replaced with LinkedIn's name and returns a `linkedin_mention_name_replaced` warning.
+ * - `@[Text](urn:li:person:ID)`, as returned by `GET /v1/accounts/{accountId}/linkedin-mentions`: published exactly as written, with no lookup, so its text must already be LinkedIn's name.
+ *
+ * A post can resolve at most 10 profile or company URL mentions across its shared content and LinkedIn entries. Resolving a person's profile URL needs one of your LinkedIn accounts to administer a Page; publishing does not.
+ *
+ * ### When a mention can't be resolved
+ *
+ * Only profile and company URLs can fail. A scheduled or published post is rejected with:
+ *
+ * - `400` `linkedin_mentions_invalid`: a URL could not be resolved
+ * - `400` `linkedin_mentions_limit_exceeded`: more than 10 URL mentions
+ * - `401` `reconnect_required`: the LinkedIn token expired
+ * - `429` `rate_limited`: LinkedIn is rate limiting
+ * - `503` `temporarily_unavailable` (retryable): LinkedIn did not answer within 8 seconds in total
+ *
+ * `details.mentions[]` (`LinkedInMentionIssue`) lists each failing mention with its own code:
+ *
+ * - `linkedin_mention_unresolvable`
+ * - `linkedin_mention_requires_page_admin`
+ * - `linkedin_mention_name_unavailable`: LinkedIn withheld the name and none was given
+ *
+ * Drafts never fail on a mention: unresolved ones (and more than 10) stay as written and come back as `warnings`. A draft is checked again when it is scheduled.
+ *
+ * ### On other platforms
+ *
+ * `@[linkedin.com/in/jane]` is posted as its text, or as the vanity (`jane`) when you wrote no text, and `@[Text](urn:li:...)` as `Text`.
  *
  * ## Scheduling
  *
@@ -1439,31 +1615,55 @@ export const listPosts = <ThrowOnError extends boolean = false>(options?: Option
  *
  * With none of them and `isDraft` unset, the post is saved as a draft. `platforms` is required unless the post is a draft.
  *
- * Precedence: `isDraft: true` wins over `publishNow` and `scheduledFor` (the post is saved, never published), and `publishNow: true` wins over `scheduledFor`. A `scheduledFor` already in the past is not rejected: the post is published synchronously in the same request, exactly like `publishNow`.
+ * Precedence:
+ *
+ * - `isDraft: true` wins over `publishNow` and `scheduledFor` (the post is saved, never published).
+ * - `publishNow: true` wins over `scheduledFor`.
+ * - A `scheduledFor` already in the past is not rejected: the post is published synchronously in the same request, exactly like `publishNow`.
  *
  * ## Idempotency
  *
- * Three layers of duplicate-protection apply, so safe-to-retry callers (network blips, n8n / Zapier retries, etc.) don't accidentally double-post.
+ * Three layers of duplicate-protection apply, so safe-to-retry callers (network blips, n8n / Zapier retries, etc.) don't accidentally double-post. They are checked in this order:
  *
- * **1. `Idempotency-Key` (recommended for retries, 24-hour window).**
- * Send an `Idempotency-Key` header (a UUID per logical post, up to 255 characters) and reuse it when you retry after a 5xx, a timeout or a dropped connection. A retry with the same key within 24 hours returns **HTTP 200** with the original post in the `post` field, and no new post is created. The match is on the key alone, not on the body: a retry returns the original post even if its body differs (for example a re-uploaded media URL). It covers drafts, and a post that was saved even though the original response was a 5xx or timed out.
+ * 1. An `Idempotency-Key` match (200)
+ * 2. Same-`x-request-id` retries (200)
+ * 3. The content-hash dedup (409)
  *
- * If the first request is still being processed, the retry gets **HTTP 409** with `code: idempotency_conflict` and a `Retry-After` header; retry after that delay. If the first request failed without creating a post, the retry is processed as a new request. Keys are scoped to your user. Never reuse a key for a different post: that post would not be created, and the earlier one would be returned instead.
+ * ### 1. `Idempotency-Key` (recommended for retries, 24-hour window)
  *
- * **2. `x-request-id` retry detection (24-hour window).**
- * If a request carries the same `x-request-id` as an earlier one AND collides with it on the content fingerprint below (same account, content and media URLs), we return **HTTP 200** with the original post in the `post` field (or **HTTP 202** with `postId` if the original is still being saved) instead of a 409. A request with the same `x-request-id` but different content is a new post. When both headers are sent, `Idempotency-Key` wins and `x-request-id` is ignored for matching.
+ * Send an `Idempotency-Key` header (a UUID per logical post, up to 255 characters). Reuse it when you retry after a 5xx, a timeout or a dropped connection.
+ *
+ * A retry with the same key within 24 hours returns **HTTP 200** with the original post in the `post` field, and no new post is created.
+ *
+ * The match is on the key alone, not on the body: a retry returns the original post even if its body differs (for example a re-uploaded media URL).
+ *
+ * It covers drafts, and a post that was saved even though the original response was a 5xx or timed out.
+ *
+ * - If the first request is still being processed, the retry gets **HTTP 409** with `code: idempotency_conflict` and a `Retry-After` header; retry after that delay.
+ * - If the first request failed without creating a post, the retry is processed as a new request.
+ *
+ * Keys are scoped to your user. Never reuse a key for a different post: that post would not be created, and the earlier one would be returned instead.
+ *
+ * ### 2. `x-request-id` retry detection (24-hour window)
+ *
+ * A request may carry the same `x-request-id` as an earlier one AND collide with it on the content fingerprint below (same account, content and media URLs).
+ *
+ * Then we return **HTTP 200** with the original post in the `post` field (or **HTTP 202** with `postId` if the original is still being saved) instead of a 409.
+ *
+ * A request with the same `x-request-id` but different content is a new post. When both headers are sent, `Idempotency-Key` wins and `x-request-id` is ignored for matching.
  *
  * The official Zernio SDKs auto-generate a unique `x-request-id` per call. On a generic HTTP client (curl, n8n's HTTP node, Zapier, custom code), either:
  *
  * - Set a unique `x-request-id` per logical call (UUIDv4 is fine)
  * - Or omit the header, and we'll treat each request as new
  *
- * **3. Content-hash dedup (24-hour window).**
- * Independently, we hash `(platform, accountId, content + media URLs)` and reject duplicates within 24 hours with **HTTP 409**. This catches genuine "same content posted twice to the same account" cases regardless of `x-request-id`. The response carries `error`, `accountId`, `platform`, and `existingPostId` so you can find the original.
+ * ### 3. Content-hash dedup (24-hour window)
+ *
+ * Independently, we hash `(platform, accountId, content + media URLs)` and reject duplicates within 24 hours with **HTTP 409**. This catches genuine "same content posted twice to the same account" cases regardless of `x-request-id`.
+ *
+ * The response carries `error`, `accountId`, `platform`, and `existingPostId` so you can find the original.
  *
  * To intentionally re-post identical content within 24h, change something (the caption, the media, the account), because the dedup is keyed on the full content fingerprint.
- *
- * Order: an `Idempotency-Key` match (200) is checked first, then same-`x-request-id` retries (200), then the content-hash dedup (409).
  *
  */
 export const createPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreatePostData, ThrowOnError>) => {
@@ -1475,25 +1675,58 @@ export const createPost = <ThrowOnError extends boolean = false>(options: Option
 
 /**
  * Sync an external post
- * Fetch an account's latest external posts (published directly on the platform, not through Zernio) on demand, so a newly published post is retrievable within seconds instead of waiting for the background sync (which refreshes each account at most every ~90 minutes).
+ * Fetch an account's latest external posts (published directly on the platform, not through Zernio) on demand. A newly published post is then retrievable within seconds instead of waiting for the background sync, which refreshes each account at most every ~90 minutes.
  *
  * Primary use case: verifying a submitted post. When a user publishes on the platform and immediately pastes the post URL into your app, call this with `accountId` plus `url` (or `postId`) to confirm the post exists and return its metadata.
  *
- * Behavior:
+ * ### Behavior
+ *
  * - Account access and connection state are checked before any platform call, including requests inside the debounce window.
  * - Inactive accounts or accounts marked `needsReconnection` return `409` with code `ads_connection_required`. Stop scheduled retries for that account until it is reconnected, then read `GET /v1/accounts` for its current account ID.
  * - For connected accounts, we fetch the latest posts live from the platform, then match and return the submitted post.
  * - Requests are debounced per account (~15s): if the account was synced inside that window, the live fetch is skipped.
  *
- * `accountId` is required, because a post URL or id alone cannot be resolved to an account, and the account must be connected to Zernio (we use its token to read the platform). Supported for every platform with a listing API (Instagram, Facebook, TikTok, YouTube, X, Threads, Pinterest, Reddit, Bluesky, Google Business Profile, and LinkedIn organization accounts).
+ * ### Account and platforms
  *
- * LinkedIn personal profiles: LinkedIn has no listing API for personal profiles, so a `url` is REQUIRED and imports that single post. Pass any LinkedIn post URL (`linkedin.com/posts/…`, `linkedin.com/feed/update/urn:li:activity:…`) or a `urn:li:share:…` / `urn:li:ugcPost:…` URN. Works for posts published outside Zernio and before the account was connected, any age; the post must be authored by the connected member. Imported posts return full analytics (impressions, reach, reactions, comments, reshares, saves) and keep refreshing on the background analytics cycle, but carry no content/media (LinkedIn does not expose them for personal profiles). `publishedAt` comes from the post id: an activity URL (`linkedin.com/feed/update/urn:li:activity:…`) carries the publication time, while a `urn:li:share:…` / `urn:li:ugcPost:…` URN only carries the creation time, which is earlier for a post scheduled in another tool. Pass the activity URL for the exact publication date; importing it again for a post already imported by its URN corrects `publishedAt` on the same record. Right after an import, the per-post `GET /v1/analytics?postId=` read can show zeros for a few minutes while the metrics are ingested; this endpoint's response carries the fetched values immediately.
+ * `accountId` is required, because a post URL or id alone cannot be resolved to an account. The account must be connected to Zernio (we use its token to read the platform).
  *
- * TikTok Business accounts: a `postId` or TikTok `url` that the listing has not stored is fetched from TikTok and imported as an external post, at any age, with its current metrics.
+ * Supported for every platform with a listing API: Instagram, Facebook, TikTok, YouTube, X, Threads, Pinterest, Reddit, Bluesky, Google Business Profile, and LinkedIn organization accounts.
  *
- * `url` accepts any format the platform uses (e.g. `instagram.com/p/…`, `instagram.com/reel/…`, `youtu.be/…`, `youtube.com/shorts/…`, `tiktok.com/@user/video/…`, `vm.tiktok.com` short links, `pinterest.com/pin/…` on any regional domain, and `pin.it` short links). Pass `postId` (the platform media/video/pin id) as an alternative locator.
+ * ### Locating the post
  *
- * Note: post-level analytics (reach, impressions) still carry the platform's own delay (e.g. ~24h on Instagram). This endpoint confirms the post exists and returns its metadata plus basic engagement (likes, comments), not delayed insights.
+ * `url` accepts any format the platform uses, for example:
+ *
+ * - `instagram.com/p/…`, `instagram.com/reel/…`
+ * - `youtu.be/…`, `youtube.com/shorts/…`
+ * - `tiktok.com/@user/video/…`, `vm.tiktok.com` short links
+ * - `pinterest.com/pin/…` on any regional domain, and `pin.it` short links
+ *
+ * Pass `postId` (the platform media/video/pin id) as an alternative locator.
+ *
+ * ### LinkedIn personal profiles
+ *
+ * LinkedIn has no listing API for personal profiles, so a `url` is REQUIRED and imports that single post. Pass any LinkedIn post URL (`linkedin.com/posts/…`, `linkedin.com/feed/update/urn:li:activity:…`) or a `urn:li:share:…` / `urn:li:ugcPost:…` URN.
+ *
+ * It works for posts published outside Zernio and before the account was connected, at any age. The post must be authored by the connected member.
+ *
+ * Imported posts return full analytics (impressions, reach, reactions, comments, reshares, saves) and keep refreshing on the background analytics cycle. They carry no content/media, since LinkedIn does not expose them for personal profiles.
+ *
+ * `publishedAt` comes from the post id:
+ *
+ * - An activity URL (`linkedin.com/feed/update/urn:li:activity:…`) carries the publication time.
+ * - A `urn:li:share:…` / `urn:li:ugcPost:…` URN only carries the creation time, which is earlier for a post scheduled in another tool.
+ *
+ * Pass the activity URL for the exact publication date. Importing it again for a post already imported by its URN corrects `publishedAt` on the same record.
+ *
+ * Right after an import, the per-post `GET /v1/analytics?postId=` read can show zeros for a few minutes while the metrics are ingested. This endpoint's response carries the fetched values immediately.
+ *
+ * ### TikTok Business accounts
+ *
+ * A `postId` or TikTok `url` that the listing has not stored is fetched from TikTok and imported as an external post, at any age, with its current metrics.
+ *
+ * ### Analytics delay
+ *
+ * Post-level analytics (reach, impressions) still carry the platform's own delay (e.g. ~24h on Instagram). This endpoint confirms the post exists and returns its metadata plus basic engagement (likes, comments), not delayed insights.
  *
  */
 export const syncExternalPosts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SyncExternalPostsData, ThrowOnError>) => {
@@ -1517,26 +1750,33 @@ export const getPost = <ThrowOnError extends boolean = false>(options: OptionsLe
 
 /**
  * Update post
- * Update an existing post. Draft, scheduled, failed, partial, and cancelled posts can be edited.
- * Published posts can only have their recycling config updated.
+ * Update an existing post. Draft, scheduled, failed, partial, and cancelled posts can be edited. Published posts can only have their recycling config updated.
  *
- * To promote a draft to scheduled, send `isDraft: false` together with `scheduledFor` (or `publishNow: true`,
- * or `queuedFromProfile`). If `isDraft` is omitted the post keeps its current draft status, so sending only
- * `scheduledFor` to a draft returns 200 but the post remains a draft.
+ * To promote a draft to scheduled, send `isDraft: false` together with `scheduledFor` (or `publishNow: true`, or `queuedFromProfile`). If `isDraft` is omitted the post keeps its current draft status, so sending only `scheduledFor` to a draft returns 200 but the post remains a draft.
  *
- * Non-draft updates run the same per-platform validation as post creation (media requirements, platform-specific
- * field rules, etc.) against the resulting platforms, returning 400 on failure.
+ * Non-draft updates run the same per-platform validation as post creation (media requirements, platform-specific field rules, etc.) against the resulting platforms, returning 400 on failure.
  *
  * ## LinkedIn @mentions
  *
- * Profile and company URLs written as `@[https://www.linkedin.com/in/jane-doe]` or
- * `@[Jane](https://www.linkedin.com/company/acme)` in the `content` or LinkedIn `customContent` you send are
- * resolved to LinkedIn's name and link, exactly as on `POST /v1/posts` (see Create post for the rules). Only what
- * the request sends is looked up: an update of the schedule, status or media makes no LinkedIn call, and
- * `@[Text](urn:li:...)` markup is stored as written. Moving a draft out of draft also resolves the stored
- * `content` and the stored `customContent` of its LinkedIn entries, and saves the result. A mention that cannot be resolved on a non-draft returns `400` `linkedin_mentions_invalid`, `429`
- * `rate_limited`, `401` `reconnect_required` or a retryable `503` `temporarily_unavailable`, with each mention
- * under `details.mentions[]` (`LinkedInMentionIssue`). Drafts get `warnings` instead.
+ * Profile and company URLs in the `content` or LinkedIn `customContent` you send are resolved to LinkedIn's name and link, exactly as on `POST /v1/posts` (see Create post for the rules). For example:
+ *
+ * - `@[https://www.linkedin.com/in/jane-doe]`
+ * - `@[Jane](https://www.linkedin.com/company/acme)`
+ *
+ * Only what the request sends is looked up: an update of the schedule, status or media makes no LinkedIn call, and `@[Text](urn:li:...)` markup is stored as written.
+ *
+ * Moving a draft out of draft also resolves the stored `content` and the stored `customContent` of its LinkedIn entries, and saves the result.
+ *
+ * ### When a mention can't be resolved
+ *
+ * On a non-draft, the request returns one of these, with each mention under `details.mentions[]` (`LinkedInMentionIssue`):
+ *
+ * - `400` `linkedin_mentions_invalid`
+ * - `429` `rate_limited`
+ * - `401` `reconnect_required`
+ * - `503` `temporarily_unavailable` (retryable)
+ *
+ * Drafts get `warnings` instead.
  *
  */
 export const updatePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdatePostData, ThrowOnError>) => {
@@ -1548,9 +1788,31 @@ export const updatePost = <ThrowOnError extends boolean = false>(options: Option
 
 /**
  * Delete post
- * Delete a post from Zernio. Any status except `published` can be deleted: `draft`, `scheduled`, `publishing`, `failed`, `partial` and `cancelled`. Published posts cannot be deleted; use the Unpublish endpoint instead. Upload quota is automatically refunded for draft and scheduled posts.
+ * Delete a post from Zernio. Upload quota is automatically refunded for draft and scheduled posts.
  *
- * Deleting a `publishing` or `partial` post is how you stop entries that are still pending, for example entries held on a disconnected account. It removes the whole post record from Zernio, including the entries that were already published, but it does not remove anything already live on a platform (use Unpublish for that first if needed). An entry that a worker has already started sending when you delete may still go out, or may fail because media uploaded to Zernio and not used by another post is deleted with the post. Analytics for entries already published are removed too. Deleting also frees the content for re-creation, so the same caption and media are no longer reported as a duplicate.
+ * Any status except `published` can be deleted:
+ *
+ * - `draft`
+ * - `scheduled`
+ * - `publishing`
+ * - `failed`
+ * - `partial`
+ * - `cancelled`
+ *
+ * Published posts cannot be deleted; use the Unpublish endpoint instead.
+ *
+ * ### Stopping pending entries
+ *
+ * Deleting a `publishing` or `partial` post is how you stop entries that are still pending, for example entries held on a disconnected account.
+ *
+ * It removes the whole post record from Zernio, including the entries that were already published. It does not remove anything already live on a platform (use Unpublish for that first if needed).
+ *
+ * An entry that a worker has already started sending when you delete may still go out. It may also fail, because media uploaded to Zernio and not used by another post is deleted with the post.
+ *
+ * ### Side effects
+ *
+ * - Analytics for entries already published are removed too.
+ * - Deleting frees the content for re-creation, so the same caption and media are no longer reported as a duplicate.
  *
  */
 export const deletePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeletePostData, ThrowOnError>) => {
@@ -1564,25 +1826,47 @@ export const deletePost = <ThrowOnError extends boolean = false>(options: Option
  * Bulk upload from CSV
  * Create multiple posts by uploading a CSV file. Use dryRun=true to validate without creating posts.
  *
- * CSV columns:
- * - Required: `platforms`, `profiles`, and a schedule (one of `schedule_time`, a `schedule_time_<platform>` override, `publish_now=true`, `use_queue=true`, or `is_draft=true`).
- * - Content: at least one of `post_content`, `title`, or `media_urls` is required.
- * - Aliases: a handful of columns accept the JSON field name from POST /v1/posts, since integrators infer the CSV shape from that endpoint's body. When both are present the real CSV column wins, unless it is blank for that row, in which case the alias value is used.
+ * ### Required columns
+ *
+ * - `platforms`, `profiles`, and a schedule: one of `schedule_time`, a `schedule_time_<platform>` override, `publish_now=true`, `use_queue=true`, or `is_draft=true`.
+ * - Content: at least one of `post_content`, `title`, or `media_urls`.
+ *
+ * ### Aliases
+ *
+ * A handful of columns accept the JSON field name from POST /v1/posts, since integrators infer the CSV shape from that endpoint's body. When both are present the real CSV column wins, unless it is blank for that row, in which case the alias value is used.
+ *
  * - `content` aliases `post_content`
  * - `timezone` aliases `tz`
  * - `scheduledFor` aliases `schedule_time`
  * - `mediaUrls` aliases `media_urls`
- * - Per-platform overrides use three dynamic column prefixes, one column per platform (e.g. `schedule_time_instagram`, `custom_content_tiktok`, `custom_media_youtube`): `schedule_time_<platform>`, `custom_content_<platform>`, `custom_media_<platform>`.
+ *
+ * ### Per-platform overrides
+ *
+ * Three dynamic column prefixes, one column per platform (e.g. `schedule_time_instagram`, `custom_content_tiktok`, `custom_media_youtube`):
+ *
+ * - `schedule_time_<platform>`
+ * - `custom_content_<platform>`
+ * - `custom_media_<platform>`
+ *
+ * ### Other columns and warnings
+ *
  * - Any other column is not read. It does not error, but it is reported in the response's `warnings` array as `unknown_columns:<a,b,c>` (see BulkUploadResult), so a misnamed or unsupported column is never silently dropped.
  * - The `hashtags` and `mentions` columns are stored on the post but not added to the caption. Put them in `post_content` (or a `custom_content_<platform>` column). A filled column adds `not_added_to_caption:<columns>` to `warnings`.
- * - Timezone: `tz` sets the zone `schedule_time` is read in. A row without `tz` uses its profile's `timezone` (when all its target profiles share one), else UTC.
- * - Row limits: 5000 rows is a hard cap that returns 400 above it. 500 rows is only an advisory threshold, it adds `rows_exceed_advisory_limit:500` to `warnings` and the request still processes.
  *
- * Example row (header + one data row):
- * ```
- * post_content,platforms,profiles,schedule_time,tz
- * "Hello world",instagram,MyProfile,2026-09-01 10:00,America/New_York
- * ```
+ * ### Timezone
+ *
+ * `tz` sets the zone `schedule_time` is read in. A row without `tz` uses its profile's `timezone` (when all its target profiles share one), else UTC.
+ *
+ * ### Row limits
+ *
+ * - 5000 rows is a hard cap that returns 400 above it.
+ * - 500 rows is only an advisory threshold: it adds `rows_exceed_advisory_limit:500` to `warnings` and the request still processes.
+ *
+ * ### Example
+ *
+ * Header + one data row:
+ *
+ * ``` post_content,platforms,profiles,schedule_time,tz "Hello world",instagram,MyProfile,2026-09-01 10:00,America/New_York ```
  *
  */
 export const bulkUploadPosts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BulkUploadPostsData, ThrowOnError>) => {
@@ -1662,13 +1946,12 @@ export const unpinPost = <ThrowOnError extends boolean = false>(options: Options
 
 /**
  * Edit published post
- * Edit the text of an already-published post. Supported on X, Discord,
- * Facebook, Reddit, LinkedIn, Telegram, Pinterest, Google Business Profile, YouTube,
- * and Slack. When a post was published to several accounts on the same platform,
- * pass `accountId` to pick which account's copy to edit (without it the request
- * returns 409). Each platform enforces its own rules:
+ * Edit the text of an already-published post. Supported on X, Discord, Facebook, Reddit, LinkedIn, Telegram, Pinterest, Google Business Profile, YouTube, and Slack.
+ *
+ * When a post was published to several accounts on the same platform, pass `accountId` to pick which account's copy to edit (without it the request returns 409). Each platform enforces its own rules.
  *
  * **X**
+ *
  * - Connected X account must have an active X Premium subscription
  * - Must be within 1 hour of original publish time
  * - Maximum 5 edits per tweet (enforced by X)
@@ -1676,66 +1959,61 @@ export const unpinPost = <ThrowOnError extends boolean = false>(options: Options
  * - X assigns a NEW post ID on edit, returned as `id`
  *
  * **Discord**
+ *
  * - No time limit and no premium requirement
  * - The message ID is unchanged after the edit
  *
  * **Facebook**
- * - Graph only permits editing a post that the same app created, so this works on
- * posts published through Zernio and is rejected for posts created in Meta
- * Business Suite / Composer or by another tool
+ *
+ * - Graph only permits editing a post that the same app created. This works on posts published through Zernio and is rejected for posts created in Meta Business Suite / Composer or by another tool
  * - Media cannot be swapped, only the message text
  * - Reactions, comments, and shares are preserved. The post ID is unchanged
  *
  * **Reddit**
+ *
  * - Self-posts only. A link post has no editable body and is rejected before the write
  * - Body only. Reddit exposes no API to edit a post title, ever
  * - The post ID is unchanged
  *
  * **LinkedIn**
- * - Text only, no time limit. Media, polls, articles, and reshare targets cannot be
- * changed
- * - Works for member and organization posts published through this API. The post
- * keeps its ID and LinkedIn shows an "edited" marker
+ *
+ * - Text only, no time limit. Media, polls, articles, and reshare targets cannot be changed
+ * - Works for member and organization posts published through this API. The post keeps its ID and LinkedIn shows an "edited" marker
  * - Text is limited to 3,000 characters; mentions and hashtags are preserved
  *
  * **Telegram**
+ *
  * - No time limit; messages published through Zernio are editable indefinitely
  * - Text posts: edits the message text (up to 4096 characters)
- * - Media posts: edits the caption only (up to 1024 characters). The media itself
- * cannot be swapped
+ * - Media posts: edits the caption only (up to 1024 characters). The media itself cannot be swapped
  * - For albums, the caption shown on the album (its first message) is edited
  * - The message ID is unchanged
  *
  * **Pinterest**
- * - Description only, maximum 800 characters. Media, link, and board cannot be
- * changed, and a pin title derived from the old content's first line at publish
- * stays as-is
- * - Pinterest's pin-update endpoint is currently in closed beta; until the app is
- * allowlisted by Pinterest, edits are rejected with a "beta feature not yet
- * enabled" error
+ *
+ * - Description only, maximum 800 characters. Media, link, and board cannot be changed, and a pin title derived from the old content's first line at publish stays as-is
+ * - Pinterest's pin-update endpoint is currently in closed beta. Until the app is allowlisted by Pinterest, edits are rejected with a "beta feature not yet enabled" error
  * - The pin ID is unchanged
  *
  * **Google Business Profile**
- * - Post body (summary) text only. Call-to-action, event/offer fields, and media are
- * untouched
+ *
+ * - Post body (summary) text only. Call-to-action, event/offer fields, and media are untouched
  * - No time limit and no edit limit. The post ID is unchanged
- * - The post must still exist on Google: a post deleted from the Business Profile
- * dashboard, or an event/offer post past its end date, returns a 404
+ * - The post must still exist on Google: a post deleted from the Business Profile dashboard, or an event/offer post past its end date, returns a 404
  *
  * **YouTube**
- * - `content` replaces the video description only. The title is unchanged, even if
- * it was originally derived from the content's first line at publish time
+ *
+ * - `content` replaces the video description only. The title is unchanged, even if it was originally derived from the content's first line at publish time
  * - Title, tags, thumbnail, and privacy edits belong to `POST /v1/posts/{postId}/update-metadata`
  * - No time window and no edit cap. The video ID is unchanged
  *
  * **Slack**
- * - Text only, up to 4,000 characters. Media cannot be swapped, and media posts
- * whose share message reference never resolved cannot be edited
+ *
+ * - Text only, up to 4,000 characters. Media cannot be swapped, and media posts whose share message reference never resolved cannot be edited
  * - No time limit unless workspace admins restrict message editing
  * - The message ID is unchanged
  *
- * Media edits are not supported on any platform. The post record in Zernio is updated
- * with the new content and an edit-history entry.
+ * Media edits are not supported on any platform. The post record in Zernio is updated with the new content and an edit-history entry.
  *
  */
 export const editPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<EditPostData, ThrowOnError>) => {
@@ -1747,15 +2025,12 @@ export const editPost = <ThrowOnError extends boolean = false>(options: OptionsL
 
 /**
  * Update post metadata
- * Updates metadata of a published video on the specified platform without re-uploading.
- * Currently only supported for YouTube. At least one updatable field is required.
+ * Updates metadata of a published video on the specified platform without re-uploading. Currently only supported for YouTube. At least one updatable field is required.
  *
- * Two modes:
+ * ### Two modes
  *
  * 1. Post-based (video published through Zernio): pass the Zernio postId in the URL and platform in the body.
- * 2. Direct video ID (video uploaded outside Zernio, e.g. directly to YouTube): use _ as the postId,
- * and pass videoId + accountId + platform in the body. The accountId is the Zernio account ID
- * for the connected YouTube channel.
+ * 2. Direct video ID (video uploaded outside Zernio, e.g. directly to YouTube): use _ as the postId, and pass videoId + accountId + platform in the body. The accountId is the Zernio account ID for the connected YouTube channel.
  *
  */
 export const updatePostMetadata = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdatePostMetadataData, ThrowOnError>) => {
@@ -1800,7 +2075,17 @@ export const listProfiles = <ThrowOnError extends boolean = false>(options?: Opt
 
 /**
  * Create profile
- * Creates a new profile with a name, optional description, and color. Names are unique per team: a duplicate returns a 409 whose details.existingProfileId carries the id of the existing profile. Set externalId to your own tenant or client id to find the profile later without storing its Zernio id. A duplicate externalId returns the same kind of 409, with code profile_external_id_conflict. Send an Idempotency-Key header to make retries safe: a retried create with the same key and body replays the original 201 (same _id) instead of conflicting.
+ * Creates a new profile with a name, optional description, and color.
+ *
+ * ### Uniqueness
+ *
+ * - Names are unique per team: a duplicate returns a 409 whose details.existingProfileId carries the id of the existing profile.
+ * - Set externalId to your own tenant or client id to find the profile later without storing its Zernio id. A duplicate externalId returns the same kind of 409, with code profile_external_id_conflict.
+ *
+ * ### Idempotency
+ *
+ * Send an Idempotency-Key header to make retries safe. A retried create with the same key and body replays the original 201 (same _id) instead of conflicting.
+ *
  */
 export const createProfile = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateProfileData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateProfileResponse, CreateProfileError, ThrowOnError>({
@@ -1845,9 +2130,13 @@ export const deleteProfile = <ThrowOnError extends boolean = false>(options: Opt
 /**
  * List accounts
  * Returns connected accounts. Only includes accounts within the plan limit by default. Follower data requires analytics add-on.
- * Supports optional server-side pagination. When omitted, returns all accounts (backward-compatible).
- * Cursor paging: send `limit` alone for the first page, then pass `pagination.nextCursor` back as `cursor` until it is null. Pages are ordered by account id, so accounts added or removed between calls never shift a page. Cannot be combined with `page`, `sort` or `perProfile`.
- * Offset paging: send `page` and `limit` together. Out-of-range page/limit values are rejected with 400 rather than silently clamped.
+ *
+ * ### Pagination
+ *
+ * Server-side pagination is optional. When omitted, returns all accounts (backward-compatible).
+ *
+ * - Cursor paging: send `limit` alone for the first page, then pass `pagination.nextCursor` back as `cursor` until it is null. Pages are ordered by account id, so accounts added or removed between calls never shift a page. Cannot be combined with `page`, `sort` or `perProfile`.
+ * - Offset paging: send `page` and `limit` together. Out-of-range page/limit values are rejected with 400 rather than silently clamped.
  *
  */
 export const listAccounts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAccountsData, ThrowOnError>) => {
@@ -1874,12 +2163,14 @@ export const getFollowerStats = <ThrowOnError extends boolean = false>(options?:
  * Update account
  * Updates a connected account's display name or username override.
  *
- * For X accounts on usage-based billing, also accepts an `xCapabilities`
- * object to toggle background API operations that incur X API pass-through costs.
- * Both fields are opt-in (default `false`). When off, no analytics syncs or DM
- * polling are performed for that account, and no API call is metered for those
- * operations. Publishing and deleting posts are always available regardless of
- * these toggles. Setting `xCapabilities` on a non-X account returns 400.
+ * ### X capabilities
+ *
+ * For X accounts on usage-based billing, also accepts an `xCapabilities` object to toggle background API operations that incur X API pass-through costs.
+ *
+ * - Both fields are opt-in (default `false`).
+ * - When off, no analytics syncs or DM polling are performed for that account, and no API call is metered for those operations.
+ * - Publishing and deleting posts are always available regardless of these toggles.
+ * - Setting `xCapabilities` on a non-X account returns 400.
  *
  */
 export const updateAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAccountData, ThrowOnError>) => {
@@ -1931,10 +2222,12 @@ export const getAllAccountsHealth = <ThrowOnError extends boolean = false>(optio
 /**
  * Register a connected WhatsApp number on the Cloud API
  * Re-runs Meta's Cloud API registration for a WhatsApp account that is already connected.
- * Use it when the number has its own two-step verification PIN: the connect flows register
- * with a default PIN, Meta rejects that with error 133005, and the number then fails every
- * send with the misleading '(#200) You do not have the necessary permission to send messages'
- * while the account still shows as connected. The PIN is used for this call only and is not stored.
+ *
+ * Use it when the number has its own two-step verification PIN. The connect flows register with a default PIN, and Meta rejects that with error 133005.
+ *
+ * The number then fails every send with the misleading '(#200) You do not have the necessary permission to send messages' while the account still shows as connected.
+ *
+ * The PIN is used for this call only and is not stored.
  *
  */
 export const registerWhatsAppNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RegisterWhatsAppNumberData, ThrowOnError>) => {
@@ -1946,12 +2239,11 @@ export const registerWhatsAppNumber = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Request a Meta re-verification code for a BYO WhatsApp number
- * For a bring-your-own WhatsApp number (its own WABA, migrated off another BSP) that
- * Meta demoted to re-verification, this requests a new OTP from Meta. The code lands
- * on the customer's own handset, so verifying it is necessarily self-service; call
- * POST /v1/accounts/{accountId}/whatsapp/verify-code with the code once it arrives.
- * Rate-limited to one request per 10 minutes per account, and Meta enforces its own
- * cooldown on top of that.
+ * Requests a new OTP from Meta for a bring-your-own WhatsApp number (its own WABA, migrated off another BSP) that Meta demoted to re-verification.
+ *
+ * The code lands on the customer's own handset, so verifying it is necessarily self-service. Call POST /v1/accounts/{accountId}/whatsapp/verify-code with the code once it arrives.
+ *
+ * Rate-limited to one request per 10 minutes per account, and Meta enforces its own cooldown on top of that.
  *
  */
 export const requestWhatsAppVerificationCode = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RequestWhatsAppVerificationCodeData, ThrowOnError>) => {
@@ -1981,28 +2273,28 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  *
  * A failing or stalled analytics sync (see `analyticsSync`) raises a healthy account to at least `warning`.
  *
- * On Facebook, Instagram and Threads the token is also probed live. A probe Meta refuses with a
- * dead-token error sets `tokenStatus.valid` to `false` and names Meta's code, subcode and
- * fbtrace in `issues`, unless an analytics sync succeeded with that token in the last six
- * hours: then the token stays `valid` and `issues` reports the probe as inconclusive, since
- * Meta answers a transient 190 to live tokens now and then. Neither verdict disconnects the
- * account; that happens only when a real operation fails, and `account.disconnected` is sent.
+ * ### Facebook, Instagram and Threads
  *
- * For WhatsApp accounts the response also includes `platformConnection`, a live probe of the
- * Meta link behind the channel (the same read as `GET /v1/whatsapp/number-info`). The OAuth
- * token can be perfectly valid while Meta refuses to serve the phone-number object (for
- * example after a phone-side coexistence disconnect), so `tokenStatus` alone is not a
- * liveness signal for WhatsApp. When the Meta link is dead, `platformConnection.status` is
- * `disconnected` and the overall `status` is `error`. When Meta reports that the number's
- * inbound message webhook does not reach Zernio, `platformConnection.inboundWebhookSubscribed`
- * is `false`, an entry is added to `issues`, and the overall `status` is at least `warning`.
+ * The token is also probed live. A probe Meta refuses with a dead-token error sets `tokenStatus.valid` to `false` and names Meta's code, subcode and fbtrace in `issues`.
  *
- * For the standalone ads connections (`googleads`, `redditads`) a connection that cannot serve
- * requests until a fresh OAuth repairs it adds an entry to `issues` and a recommendation to call
- * `GET /v1/connect/{platform}/ads`, whose `authUrl` reconnects the same account. On `redditads`
- * this is a connection authorized before Zernio needed a Reddit permission it now uses (for
- * example `adsconversions`): Reddit refuses those requests until the user reconnects and allows
- * every permission on Reddit's consent screen.
+ * The exception: if an analytics sync succeeded with that token in the last six hours, the token stays `valid` and `issues` reports the probe as inconclusive, since Meta answers a transient 190 to live tokens now and then.
+ *
+ * Neither verdict disconnects the account. That happens only when a real operation fails, and `account.disconnected` is sent.
+ *
+ * ### WhatsApp
+ *
+ * The response also includes `platformConnection`, a live probe of the Meta link behind the channel (the same read as `GET /v1/whatsapp/number-info`).
+ *
+ * The OAuth token can be perfectly valid while Meta refuses to serve the phone-number object (for example after a phone-side coexistence disconnect). So `tokenStatus` alone is not a liveness signal for WhatsApp.
+ *
+ * - When the Meta link is dead, `platformConnection.status` is `disconnected` and the overall `status` is `error`.
+ * - When Meta reports that the number's inbound message webhook does not reach Zernio, `platformConnection.inboundWebhookSubscribed` is `false`, an entry is added to `issues`, and the overall `status` is at least `warning`.
+ *
+ * ### Standalone ads connections (`googleads`, `redditads`)
+ *
+ * A connection that cannot serve requests until a fresh OAuth repairs it adds an entry to `issues`. It also adds a recommendation to call `GET /v1/connect/{platform}/ads`, whose `authUrl` reconnects the same account.
+ *
+ * On `redditads` this is a connection authorized before Zernio needed a Reddit permission it now uses (for example `adsconversions`). Reddit refuses those requests until the user reconnects and allows every permission on Reddit's consent screen.
  *
  */
 export const getAccountHealth = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAccountHealthData, ThrowOnError>) => {
@@ -2014,24 +2306,23 @@ export const getAccountHealth = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * List posts published on the platform
- * Returns the 25 most recent posts that exist on the platform for a connected account, read
- * live from the platform API. This covers everything on the account, including posts that
- * were never created through Zernio.
+ * Returns the 25 most recent posts that exist on the platform for a connected account, read live from the platform API. This covers everything on the account, including posts that were never created through Zernio.
  *
- * Use it to obtain the platform's own post id, which the analytics endpoints take as input.
- * On YouTube the returned `id` is the video ID that `GET /v1/analytics/youtube/daily-views`,
- * `/video-retention` and `/demographics` expect as `videoId`, so this endpoint is what backs
- * a video picker in your own UI.
+ * Use it to obtain the platform's own post id, which the analytics endpoints take as input. On YouTube the returned `id` is the video ID that `GET /v1/analytics/youtube/daily-views`, `/video-retention` and `/demographics` expect as `videoId`, so this endpoint is what backs a video picker in your own UI.
  *
- * Not every field applies to every platform: `reactionCount` is Facebook and LinkedIn,
- * `shareCount` is platform dependent, `cid` is the Bluesky content id needed to reply,
- * `subreddit` is Reddit only, and `title`, `description`, `link`, `boardId` and
- * `boardOwnerUsername` are Pinterest only (the native Pin values; `message` keeps title and
- * description joined). Absent fields are omitted from the response.
+ * ### Platform-specific fields
  *
- * The account's token is refreshed before the call when it has expired. When the refresh
- * cannot recover it, the response is a 401 with code `TOKEN_EXPIRED` and the account has to
- * be reconnected.
+ * Not every field applies to every platform. Absent fields are omitted from the response.
+ *
+ * - `reactionCount`: Facebook and LinkedIn.
+ * - `shareCount`: platform dependent.
+ * - `cid`: the Bluesky content id needed to reply.
+ * - `subreddit`: Reddit only.
+ * - `title`, `description`, `link`, `boardId` and `boardOwnerUsername`: Pinterest only (the native Pin values; `message` keeps title and description joined).
+ *
+ * ### Expired tokens
+ *
+ * The account's token is refreshed before the call when it has expired. When the refresh cannot recover it, the response is a 401 with code `TOKEN_EXPIRED` and the account has to be reconnected.
  *
  */
 export const getAccountPosts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAccountPostsData, ThrowOnError>) => {
@@ -2043,29 +2334,28 @@ export const getAccountPosts = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Check whether an Instagram user follows the account
- * Resolves the follow relationship between an Instagram user and the connected
- * account, plus their public profile counters.
+ * Resolves the follow relationship between an Instagram user and the connected account, plus their public profile counters.
  *
- * `userId` is the Instagram-scoped id (IGSID) Meta gives you on a webhook:
- * `sender.id` on `message.received`, `comment.author.id` on `comment.received`.
+ * `userId` is the Instagram-scoped id (IGSID) Meta gives you on a webhook: `sender.id` on `message.received`, `comment.author.id` on `comment.received`.
  *
- * **Meta only answers for people who have MESSAGED the account.** Commenting grants
- * no consent, so a commenter who has never DMed you is unresolvable - that is a
- * platform rule, not a limitation of this endpoint. When it cannot be resolved the
- * response is still `200` with `isFollower: null` and an `unavailableReason`, because
- * "unknown" is a normal state to branch on:
+ * ### When it cannot be resolved
  *
- * * `consent_required` - the user has never messaged this account.
- * * `dm_access_disabled` - the account owner turned off Instagram Direct API access.
- * * `not_messageable` - the id is not a messaging-scoped id.
- * * `error` - a transient Graph API failure.
+ * **Meta only answers for people who have MESSAGED the account.** Commenting grants no consent, so a commenter who has never DMed you is unresolvable. That is a platform rule, not a limitation of this endpoint.
  *
- * To gate a comment automation on this, use the automation's `audience` rules instead
- * of calling this per comment - they run the same lookup only on comments that
- * actually match a keyword, and can ask the commenter to confirm with one tap.
+ * When it cannot be resolved the response is still `200` with `isFollower: null` and an `unavailableReason`, because "unknown" is a normal state to branch on:
  *
- * Answers are cached briefly per (account, user). Pass `refresh=true` right after
- * asking someone to follow, so a follow from a moment ago is visible.
+ * - `consent_required`: the user has never messaged this account.
+ * - `dm_access_disabled`: the account owner turned off Instagram Direct API access.
+ * - `not_messageable`: the id is not a messaging-scoped id.
+ * - `error`: a transient Graph API failure.
+ *
+ * ### Gating comment automations
+ *
+ * To gate a comment automation on this, use the automation's `audience` rules instead of calling this per comment. They run the same lookup only on comments that actually match a keyword, and can ask the commenter to confirm with one tap.
+ *
+ * ### Caching
+ *
+ * Answers are cached briefly per (account, user). Pass `refresh=true` right after asking someone to follow, so a follow from a moment ago is visible.
  *
  */
 export const getInstagramFollowStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInstagramFollowStatusData, ThrowOnError>) => {
@@ -2077,7 +2367,16 @@ export const getInstagramFollowStatus = <ThrowOnError extends boolean = false>(o
 
 /**
  * List trending commercial music
- * Returns the 100 currently trending tracks of TikTok's Commercial Music Library for a TikTok account connected through the TikTok for Business app. Send a track's clip.id as tiktokSettings.musicSoundInfo.musicSoundId when creating a post; fall back to id only when the track has no clip. Both publish, but with the full-track id TikTok has shown viewers "This song is not available in your country" on the sound page (observed from Germany, 2026-10-06), while the clip id gave a working sound page for the same track. The list is not paged; countryCode selects the country chart.
+ * Returns the 100 currently trending tracks of TikTok's Commercial Music Library for a TikTok account connected through the TikTok for Business app.
+ *
+ * The list is not paged; countryCode selects the country chart.
+ *
+ * ### Using a track in a post
+ *
+ * Send a track's clip.id as tiktokSettings.musicSoundInfo.musicSoundId when creating a post. Fall back to id only when the track has no clip.
+ *
+ * Both publish, but with the full-track id TikTok has shown viewers "This song is not available in your country" on the sound page (observed from Germany, 2026-10-06). The clip id gave a working sound page for the same track.
+ *
  */
 export const listTikTokCommercialMusic = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTikTokCommercialMusicData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTikTokCommercialMusicResponse, ListTikTokCommercialMusicError, ThrowOnError>({
@@ -2088,7 +2387,12 @@ export const listTikTokCommercialMusic = <ThrowOnError extends boolean = false>(
 
 /**
  * Search TikTok location tags
- * Searches the location tags a TikTok account connected through the TikTok for Business app can attach to a video post. Send a result's id and name as tiktokSettings.locationId and locationName when creating a post. TikTok answers the 20 closest matches and fills the list with fuzzy matches when nothing matches, so an unrelated result does not mean the place is missing.
+ * Searches the location tags a TikTok account connected through the TikTok for Business app can attach to a video post.
+ *
+ * Send a result's id and name as tiktokSettings.locationId and locationName when creating a post.
+ *
+ * TikTok answers the 20 closest matches and fills the list with fuzzy matches when nothing matches, so an unrelated result does not mean the place is missing.
+ *
  */
 export const searchTikTokLocations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SearchTikTokLocationsData, ThrowOnError>) => {
     return (options?.client ?? client).get<SearchTikTokLocationsResponse, SearchTikTokLocationsError, ThrowOnError>({
@@ -2110,7 +2414,10 @@ export const getTikTokCreatorInfo = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Verify credential
- * Checks whether the bearer credential on this request is valid, without reading any data. Accepts an API key or an OAuth access token. Intended for clients that must validate a credential before use (for example an MCP server verifying an incoming token) so they do not have to call a data endpoint to do it.
+ * Checks whether the bearer credential on this request is valid, without reading any data. Accepts an API key or an OAuth access token.
+ *
+ * Intended for clients that must validate a credential before use (for example an MCP server verifying an incoming token), so they do not have to call a data endpoint to do it.
+ *
  */
 export const verifyCredential = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
     return (options?.client ?? client).get<VerifyCredentialResponse, VerifyCredentialError, ThrowOnError>({
@@ -2231,16 +2538,25 @@ export const createInviteToken = <ThrowOnError extends boolean = false>(options:
 /**
  * Get OAuth connect URL
  * Initiate an OAuth connection flow. Returns an authUrl to redirect the user to.
- * Standard flow: Zernio hosts the selection UI, then redirects to your redirect_url. Headless mode (headless=true): user is redirected to your redirect_url with OAuth data for custom UI. Use the platform-specific selection endpoints to complete.
  *
- * A profile can hold several accounts of the same platform: connecting a different account adds
- * it as a new account, and reconnecting the SAME account keeps it and all of its history. Ads
- * connections stay one per profile. On a legacy plan limited to N profiles, a new account is
- * refused with 403 `platform_account_limit` once N accounts of its platform are connected.
+ * ### Modes
  *
- * TikTok: every connection now goes through the TikTok for Business app. An authorization that leaves
- * out a permission the connected account needs changes nothing at all and comes back as
- * `missing_tiktok_permissions`; connect again and accept every permission on TikTok's screen.
+ * - Standard flow: Zernio hosts the selection UI, then redirects to your redirect_url.
+ * - Headless mode (headless=true): user is redirected to your redirect_url with OAuth data for custom UI. Use the platform-specific selection endpoints to complete.
+ *
+ * ### Several accounts per platform
+ *
+ * A profile can hold several accounts of the same platform. Connecting a different account adds it as a new account, and reconnecting the SAME account keeps it and all of its history.
+ *
+ * Ads connections stay one per profile.
+ *
+ * On a legacy plan limited to N profiles, a new account is refused with 403 `platform_account_limit` once N accounts of its platform are connected.
+ *
+ * ### TikTok
+ *
+ * Every connection now goes through the TikTok for Business app.
+ *
+ * An authorization that leaves out a permission the connected account needs changes nothing at all and comes back as `missing_tiktok_permissions`. Connect again and accept every permission on TikTok's screen.
  *
  */
 export const getConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetConnectUrlData, ThrowOnError>) => {
@@ -2266,113 +2582,138 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
 
 /**
  * Connect ads for a platform
- * Starts connecting a platform's ads account, giving you a dedicated ads connection to manage campaigns without touching posting accounts.
- *
- * Creates a dedicated ads SocialAccount for the specified platform.
- *
- * **Meta business login (opt-in).** Set `loginMode=business` for `facebook` or
- * `instagram` to use Facebook Login for Business and a Business Integration System User
- * token. No posting account is created or required. This mode always returns an authUrl;
- * it returns 503 when the server has no META_ADS_CONFIG_ID. Complete the dialog in a
- * browser. The callback creates or reconnects only the metaads account, preserving its
- * ID and history. Non-empty successful subscription results replace
- * subscribedAdAccountIds to remove stale grants; an empty result leaves routing unchanged. A reconnect is
- * accepted when the new grant shares at least one ad account with the existing connection (its
- * scopedAdAccountIds plus the previous grant, or the ad accounts its old token can read when neither
- * is stored), so re-running the dialog can add, drop or swap ad accounts. A grant with zero overlap
- * is refused before changing the account and redirects with `error=invalid_field_value` and
- * `error_reason=reconnect_mismatch` (disconnect and connect again to switch); when the previous ad
- * accounts cannot be read at all, it redirects with `error=reconnect_required`. On an accepted
- * reconnect the scope is rebuilt from the new grant: `adAccountIds` passed on the re-auth become the
- * scope; otherwise a stored scope keeps its ad accounts that are still granted plus any granted for the
- * first time, and an unscoped connection follows the new grant.
- *
- * Pass `pageId` to select a granted Page for creatives and lead forms. API integrations
- * otherwise reuse the previous Page or sole granted Page. Multiple Pages without a selection
- * return 400 with available Page IDs for API integrations; restart with pageId.
- * Dashboard session logins use the sole current grant automatically or open the existing
- * Facebook Page picker for several grants, including reconnects. Selection completes
- * the Meta Ads connection.
- * Success redirects with connected=metaads, profileId and accountId.
- * Every failure after Meta's dialog redirects to redirect_url (or the dashboard) with
- * `error`, `platform=metaads`, `error_message`, `request_id` and `stage`, plus
- * `is_user_fixable` and `error_reason` when known. `error` is the API error code:
- * `invalid_field_value` with `error_reason` `no_pages_granted` (no Page ticked),
- * `page_not_granted` (pageId not in the grant), `ad_accounts_not_granted` or
- * `reconnect_mismatch` (the grant shares no ad account with the existing connection);
- * `reconnect_required`, `ads_addon_required`, `payment_required` and the profile gates of
- * GET /v1/connect/{platform}; `invalid_state` with `error_reason=state_expired` after the
- * 30-minute window; `connection_failed` when Meta refuses the code (e.g. a replayed callback).
- * A denial in the dialog is `meta_ads_authorization_denied` with the `platform_error*` params.
- * Only a state that cannot be decrypted at all still answers 400 JSON, since it names no
- * redirect_url.
- * Business login reports metadata.tokenType=system-user in GET /v1/accounts. An absent
- * Meta expires_in leaves tokenExpiresAt absent; no personal-token re-exchange occurs.
- * Subsequent classic requests can change the ad-account scope using the business token;
- * force=true (or disconnecting the business connection first) switches the profile to the
- * standard Facebook login; the ads account is then held by the user token.
- *
- * **Same-token platforms (facebook, instagram, linkedin, pinterest).** The ads SocialAccount
- * (metaads, linkedinads, pinterestads) reuses the OAuth token of the parent posting account,
- * but only when an active parent exists and, for facebook and instagram, its stored token
- * carries ads_management and ads_read (linkedin and pinterest need no extra scope). In that
- * case no extra OAuth happens and the response is alreadyConnected: true.
- *
- * When no such parent exists, or the scopes are missing, the endpoint returns an authUrl and a
- * full OAuth round trip is required. When a parent exists but carries no token usable for ad
- * accounts, the call fails with 400 RECONNECT_REQUIRED. Independently of the branch, the call
- * can return 403 ADS_ADDON_REQUIRED without the ads add-on and 402 PAYMENT_REQUIRED when the
- * billing gate is closed.
- *
- * Meta Ads prerequisite: connecting Meta Ads (via facebook or instagram) requires a Facebook
- * Page. Not because the ad account is read through a Page, but because both parent posting
- * accounts are: the facebook flow only offers Pages you manage, and the instagram flow with
- * loginMethod=facebook_login only offers Instagram accounts linked to one of those Pages.
- * Without a Page there is no parent account to inherit a token from. A user who manages no
- * Facebook Page cannot complete this connection, and the facebook flow ends with
- * error=no_facebook_pages.
- *
- * **Separate-token platforms (tiktok, twitter).** Starts the platform-specific marketing API
- * OAuth flow and creates an ads SocialAccount (tiktokads, xads) with its own token. If the ads
- * account already exists, returns alreadyConnected: true.
- * - tiktok: accountId is OPTIONAL. With accountId, the new tiktokads account links to that posting account (parentAccountId set), so Spark Ads + standalone ads using the posting TT_USER identity become available. Without accountId, ads-only mode kicks in: the new tiktokads account has parentAccountId=null and standalone ads use a synthetic CUSTOMIZED_USER ("Brand Identity"); Spark Ads are unavailable because TikTok requires a posting account for them. The Brand Identity is configured separately via PATCH /v1/connect/tiktok-ads (or inline on POST /v1/ads/create via the brandIdentity field).
- * - twitter (X Ads): accountId is REQUIRED. There's no ads-only mode, because tweets need to be authored by a real X user.
- *
- * **Standalone platforms (googleads).** Starts the Google Ads OAuth flow and creates a
- * standalone ads SocialAccount (googleads) with no parent. If the account already exists and
- * has at least one discovered Google Ads customer account, returns alreadyConnected: true.
- * When the existing connection has zero customer accounts (metadata.googleAdsCustomerIds is
- * empty) or is flagged needsReconnection, it returns an authUrl instead; completing it
- * reconnects the same account (same accountId) and re-runs ad account discovery. Discovery
- * includes the client accounts under every manager (MCC) the Google user can reach, and
- * includes Google Ads test accounts, which Google always reports with status CLOSED. When
- * discovery finds no usable customer account, the callback saves nothing and redirects with
- * `error=google_ads_no_ad_accounts`, `platform=googleads` and an `error_message` naming each
- * customer the Google user can reach and why it was left out (for example
- * CUSTOMER_NOT_ENABLED). Sign in with a Google user that has access to the ad account or to
- * its manager account. When the user unticks the Google Ads permission on Google's consent
- * screen, the callback saves nothing and redirects with `error=missing_google_permissions`,
- * `platform=googleads`, `is_user_fixable=true` and `missing_scopes`. An existing connection
- * whose token lacks that permission is flagged needsReconnection, and the health endpoints
- * report "Google Ads permission not granted"; this endpoint then returns an authUrl for it.
- *
- * **Standalone platforms (redditads).** Starts the Reddit Ads OAuth flow (Reddit permissions
- * `adsread`, `adsedit` and `adsconversions`) and creates a standalone ads SocialAccount
- * (redditads) with no parent, separate from any organic `reddit` posting account. It is
- * reached only as `redditads` in the path. If an active Reddit Ads connection already exists
- * on the profile, is not flagged needsReconnection and holds every one of those permissions,
- * returns alreadyConnected: true. Otherwise it returns an authUrl; completing it reconnects
- * the same account (same accountId). A connection authorized without `adsconversions` keeps
- * managing ads, but the health endpoints list an issue asking to reconnect Reddit Ads and
- * allow every permission, the Conversions API answers 403 `reconnect_required`, and this
- * endpoint returns an authUrl for it. Discovery lists every Reddit ad account the Reddit user
- * can reach. When the user unticks `adsread` or `adsedit` on Reddit's consent screen the
- * callback saves nothing and redirects with `error=reddit_ads_scope_not_granted`; when the
- * user reaches no Reddit ad account it redirects with `error=reddit_ads_no_ad_accounts`
- * (both with `platform=redditads`). Without `redirect_url` the browser lands on the Zernio
- * dashboard's ad account picker for the new connection.
+ * Starts connecting a platform's ads account, giving you a dedicated ads connection to manage campaigns without touching posting accounts. It creates a dedicated ads SocialAccount for the specified platform.
  *
  * Ads accounts appear as regular SocialAccount documents with ads platform values (e.g., metaads, tiktokads) in GET /v1/accounts.
+ *
+ * ### Meta business login (opt-in)
+ *
+ * Set `loginMode=business` for `facebook` or `instagram` to use Facebook Login for Business and a Business Integration System User token. No posting account is created or required.
+ *
+ * This mode always returns an authUrl. It returns 503 when the server has no META_ADS_CONFIG_ID. Complete the dialog in a browser.
+ *
+ * The callback creates or reconnects only the metaads account, preserving its ID and history. Non-empty successful subscription results replace subscribedAdAccountIds to remove stale grants; an empty result leaves routing unchanged.
+ *
+ * #### Reconnecting
+ *
+ * A reconnect is accepted when the new grant shares at least one ad account with the existing connection, so re-running the dialog can add, drop or swap ad accounts.
+ *
+ * The existing connection's ad accounts are its scopedAdAccountIds plus the previous grant, or the ad accounts its old token can read when neither is stored.
+ *
+ * - A grant with zero overlap is refused before changing the account and redirects with `error=invalid_field_value` and `error_reason=reconnect_mismatch` (disconnect and connect again to switch).
+ * - When the previous ad accounts cannot be read at all, it redirects with `error=reconnect_required`.
+ *
+ * On an accepted reconnect the scope is rebuilt from the new grant:
+ *
+ * - `adAccountIds` passed on the re-auth become the scope.
+ * - Otherwise a stored scope keeps its ad accounts that are still granted, plus any granted for the first time.
+ * - An unscoped connection follows the new grant.
+ *
+ * #### Page selection
+ *
+ * Pass `pageId` to select a granted Page for creatives and lead forms. API integrations otherwise reuse the previous Page or the sole granted Page.
+ *
+ * Multiple Pages without a selection return 400 with available Page IDs for API integrations; restart with pageId. Dashboard session logins use the sole current grant automatically, or open the existing Facebook Page picker for several grants, including reconnects. Selection completes the Meta Ads connection.
+ *
+ * #### Result redirects
+ *
+ * Success redirects with connected=metaads, profileId and accountId.
+ *
+ * Every failure after Meta's dialog redirects to redirect_url (or the dashboard) with `error`, `platform=metaads`, `error_message`, `request_id` and `stage`, plus `is_user_fixable` and `error_reason` when known. `error` is the API error code:
+ *
+ * - `invalid_field_value`, with `error_reason`:
+ * - `no_pages_granted`: no Page ticked
+ * - `page_not_granted`: pageId not in the grant
+ * - `ad_accounts_not_granted`
+ * - `reconnect_mismatch`: the grant shares no ad account with the existing connection
+ * - `reconnect_required`, `ads_addon_required`, `payment_required` and the profile gates of GET /v1/connect/{platform}
+ * - `invalid_state` with `error_reason=state_expired`: after the 30-minute window
+ * - `connection_failed`: Meta refuses the code (e.g. a replayed callback)
+ * - `meta_ads_authorization_denied`: a denial in the dialog, with the `platform_error*` params
+ *
+ * Only a state that cannot be decrypted at all still answers 400 JSON, since it names no redirect_url.
+ *
+ * #### Tokens
+ *
+ * Business login reports metadata.tokenType=system-user in GET /v1/accounts. An absent Meta expires_in leaves tokenExpiresAt absent; no personal-token re-exchange occurs.
+ *
+ * Subsequent classic requests can change the ad-account scope using the business token. force=true (or disconnecting the business connection first) switches the profile to the standard Facebook login; the ads account is then held by the user token.
+ *
+ * ### Same-token platforms (facebook, instagram, linkedin, pinterest)
+ *
+ * The ads SocialAccount (metaads, linkedinads, pinterestads) reuses the OAuth token of the parent posting account, but only when:
+ *
+ * - an active parent exists, and
+ * - for facebook and instagram, its stored token carries ads_management and ads_read (linkedin and pinterest need no extra scope).
+ *
+ * In that case no extra OAuth happens and the response is alreadyConnected: true.
+ *
+ * When no such parent exists, or the scopes are missing, the endpoint returns an authUrl and a full OAuth round trip is required.
+ *
+ * Errors:
+ *
+ * - 400 RECONNECT_REQUIRED: a parent exists but carries no token usable for ad accounts
+ * - 403 ADS_ADDON_REQUIRED: no ads add-on (independently of the branch)
+ * - 402 PAYMENT_REQUIRED: the billing gate is closed (independently of the branch)
+ *
+ * #### Meta Ads needs a Facebook Page
+ *
+ * Connecting Meta Ads (via facebook or instagram) requires a Facebook Page. Not because the ad account is read through a Page, but because both parent posting accounts are:
+ *
+ * - the facebook flow only offers Pages you manage
+ * - the instagram flow with loginMethod=facebook_login only offers Instagram accounts linked to one of those Pages
+ *
+ * Without a Page there is no parent account to inherit a token from. A user who manages no Facebook Page cannot complete this connection, and the facebook flow ends with error=no_facebook_pages.
+ *
+ * ### Separate-token platforms (tiktok, twitter)
+ *
+ * Starts the platform-specific marketing API OAuth flow and creates an ads SocialAccount (tiktokads, xads) with its own token. If the ads account already exists, returns alreadyConnected: true.
+ *
+ * - twitter (X Ads): accountId is REQUIRED. There's no ads-only mode, because tweets need to be authored by a real X user.
+ * - tiktok: accountId is OPTIONAL.
+ *
+ * #### TikTok with or without accountId
+ *
+ * - With accountId, the new tiktokads account links to that posting account (parentAccountId set), so Spark Ads + standalone ads using the posting TT_USER identity become available.
+ * - Without accountId, ads-only mode kicks in: the new tiktokads account has parentAccountId=null and standalone ads use a synthetic CUSTOMIZED_USER ("Brand Identity"). Spark Ads are unavailable because TikTok requires a posting account for them.
+ *
+ * The Brand Identity is configured separately via PATCH /v1/connect/tiktok-ads (or inline on POST /v1/ads/create via the brandIdentity field).
+ *
+ * ### Standalone platforms (googleads)
+ *
+ * Starts the Google Ads OAuth flow and creates a standalone ads SocialAccount (googleads) with no parent.
+ *
+ * - If the account already exists and has at least one discovered Google Ads customer account, returns alreadyConnected: true.
+ * - When the existing connection has zero customer accounts (metadata.googleAdsCustomerIds is empty) or is flagged needsReconnection, it returns an authUrl instead. Completing it reconnects the same account (same accountId) and re-runs ad account discovery.
+ *
+ * Discovery includes the client accounts under every manager (MCC) the Google user can reach. It also includes Google Ads test accounts, which Google always reports with status CLOSED.
+ *
+ * When discovery finds no usable customer account, the callback saves nothing and redirects with `error=google_ads_no_ad_accounts`, `platform=googleads` and an `error_message`.
+ *
+ * The message names each customer the Google user can reach and why it was left out (for example CUSTOMER_NOT_ENABLED). Sign in with a Google user that has access to the ad account or to its manager account.
+ *
+ * When the user unticks the Google Ads permission on Google's consent screen, the callback saves nothing and redirects with `error=missing_google_permissions`, `platform=googleads`, `is_user_fixable=true` and `missing_scopes`.
+ *
+ * An existing connection whose token lacks that permission is flagged needsReconnection, and the health endpoints report "Google Ads permission not granted". This endpoint then returns an authUrl for it.
+ *
+ * ### Standalone platforms (redditads)
+ *
+ * Starts the Reddit Ads OAuth flow (Reddit permissions `adsread`, `adsedit` and `adsconversions`) and creates a standalone ads SocialAccount (redditads) with no parent, separate from any organic `reddit` posting account. It is reached only as `redditads` in the path.
+ *
+ * If an active Reddit Ads connection already exists on the profile, is not flagged needsReconnection and holds every one of those permissions, returns alreadyConnected: true. Otherwise it returns an authUrl; completing it reconnects the same account (same accountId).
+ *
+ * A connection authorized without `adsconversions` keeps managing ads, but:
+ *
+ * - the health endpoints list an issue asking to reconnect Reddit Ads and allow every permission
+ * - the Conversions API answers 403 `reconnect_required`
+ * - this endpoint returns an authUrl for it
+ *
+ * Discovery lists every Reddit ad account the Reddit user can reach. The callback redirects with `platform=redditads` and:
+ *
+ * - `error=reddit_ads_scope_not_granted`: the user unticks `adsread` or `adsedit` on Reddit's consent screen (nothing is saved)
+ * - `error=reddit_ads_no_ad_accounts`: the user reaches no Reddit ad account
+ *
+ * Without `redirect_url` the browser lands on the Zernio dashboard's ad account picker for the new connection.
  *
  */
 export const connectAds = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConnectAdsData, ThrowOnError>) => {
@@ -2386,7 +2727,18 @@ export const connectAds = <ThrowOnError extends boolean = false>(options: Option
  * Complete Meta business login
  * Finishes a Meta business login after the user approves access, connects the Meta ads account and sends them back to your app.
  *
- * Facebook Login for Business redirect target. Meta supplies the single-use authorization code and the authenticated state returned by connectAds. The state expires after 30 minutes and binds the user, profile, Page selection and ad-account scope. No bearer token is sent by the browser. Success reconnects only metaads and redirects to the original redirect_url. Invalid state returns 400; inaccessible profiles or missing ads access cannot connect. Dashboard logins with several Pages redirect to the Facebook Page picker with an encrypted selectionToken valid for ten minutes. Listing and selecting require the initiating user and current profile access. No plaintext platform token is returned to the browser.
+ * This is the Facebook Login for Business redirect target. Meta supplies the single-use authorization code and the authenticated state returned by connectAds. No bearer token is sent by the browser.
+ *
+ * The state expires after 30 minutes and binds the user, profile, Page selection and ad-account scope.
+ *
+ * ### Outcomes
+ *
+ * - Success reconnects only metaads and redirects to the original redirect_url.
+ * - Invalid state returns 400.
+ * - Inaccessible profiles or missing ads access cannot connect.
+ * - Dashboard logins with several Pages redirect to the Facebook Page picker with an encrypted selectionToken valid for ten minutes. Listing and selecting require the initiating user and current profile access.
+ *
+ * No plaintext platform token is returned to the browser.
  *
  */
 export const completeMetaAdsBusinessLogin = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CompleteMetaAdsBusinessLoginData, ThrowOnError>) => {
@@ -2398,22 +2750,23 @@ export const completeMetaAdsBusinessLogin = <ThrowOnError extends boolean = fals
 
 /**
  * Get Shopify OAuth connect URL
- * Initiate the Shopify OAuth flow for a store. Shopify is a connect-only
- * platform: the connected account does not publish social posts, it powers
- * the Blogs API (`/v1/accounts/{accountId}/blogs`) and the Products API
- * (`/v1/accounts/{accountId}/products`). Returns an `authUrl`
- * to redirect the merchant to; after they approve the install, Shopify
- * redirects their browser to Zernio's callback, the account is created on
- * the profile (platform `shopify`), and the browser is redirected to
- * `redirect_url` with `connected`, `profileId`, `accountId` and `username`
- * (the store's myshopify.com domain) added, or to the Zernio dashboard
- * when omitted. The account is the store the merchant approved, which can
- * differ from `shop`, so bind on `accountId`. Requested scopes
- * are `read_content`, `write_content`, `read_products` and
- * `write_products` (content and products only; no customer or order
- * data). Connecting the same profile to a store again refreshes the
- * stored token in place, and is how a store connected under the older
- * content-only grant picks up product access.
+ * Initiate the Shopify OAuth flow for a store. Returns an `authUrl` to redirect the merchant to.
+ *
+ * Shopify is a connect-only platform: the connected account does not publish social posts. It powers the Blogs API (`/v1/accounts/{accountId}/blogs`) and the Products API (`/v1/accounts/{accountId}/products`).
+ *
+ * ### Flow
+ *
+ * 1. Redirect the merchant to `authUrl`.
+ * 2. After they approve the install, Shopify redirects their browser to Zernio's callback, and the account is created on the profile (platform `shopify`).
+ * 3. The browser is redirected to `redirect_url` with `connected`, `profileId`, `accountId` and `username` (the store's myshopify.com domain) added, or to the Zernio dashboard when omitted.
+ *
+ * The account is the store the merchant approved, which can differ from `shop`, so bind on `accountId`.
+ *
+ * ### Scopes
+ *
+ * Requested scopes are `read_content`, `write_content`, `read_products` and `write_products` (content and products only; no customer or order data).
+ *
+ * Connecting the same profile to a store again refreshes the stored token in place. This is how a store connected under the older content-only grant picks up product access.
  *
  */
 export const getShopifyConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetShopifyConnectUrlData, ThrowOnError>) => {
@@ -2425,16 +2778,15 @@ export const getShopifyConnectUrl = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Connect a Shopify store with a custom-app Admin token
- * Token-paste alternative to the OAuth flow: connect a store using the
- * Admin API access token of a custom app the merchant created in their
- * own Shopify admin (Settings → Apps and sales channels → Develop apps,
- * with the `read_content`, `write_content`, `read_products` and
- * `write_products` scopes). Use this when the
- * one-click OAuth connect is unavailable or when your users prefer not
- * to install a third-party app on their store. The token is validated
- * against the store before anything is saved; custom-app tokens do not
- * expire. Connecting the same profile to a store again replaces the
- * stored token in place.
+ * Token-paste alternative to the OAuth flow: connect a store using the Admin API access token of a custom app the merchant created in their own Shopify admin.
+ *
+ * The custom app is created under Settings → Apps and sales channels → Develop apps, with the `read_content`, `write_content`, `read_products` and `write_products` scopes.
+ *
+ * Use this when the one-click OAuth connect is unavailable or when your users prefer not to install a third-party app on their store.
+ *
+ * - The token is validated against the store before anything is saved.
+ * - Custom-app tokens do not expire.
+ * - Connecting the same profile to a store again replaces the stored token in place.
  *
  */
 export const connectShopifyWithToken = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConnectShopifyWithTokenData, ThrowOnError>) => {
@@ -2446,19 +2798,27 @@ export const connectShopifyWithToken = <ThrowOnError extends boolean = false>(op
 
 /**
  * Get Google Analytics OAuth connect URL
- * Starts OAuth for Google Analytics (GA4). Each connected GA4 property becomes its own account
- * with platform `googleanalytics`; it reads reports and does not post.
- * Redirect the user to `authUrl`. When the Google account can read one property, Zernio connects
- * it and redirects to `redirect_url` (or the dashboard) with `connected=googleanalytics`,
- * `profileId`, `accountId` and `username` (the property name). When it can read several, the user
- * first picks one on a Zernio-hosted page, which then redirects the same way. To show your own picker
- * instead, add `headless=true` to `redirect_url`: Zernio then redirects there with `step=select_property`,
- * `profileId`, `platform=googleanalytics` and a `pendingDataToken` for
- * `GET /v1/connect/googleanalytics/properties` and `POST /v1/connect/googleanalytics/select-property`. On failure the
- * redirect carries `error`, `platform=googleanalytics` and `error_message`; errors include
- * `googleanalytics_scope_missing` (the user unticked Analytics access) and
- * `googleanalytics_no_properties`.
+ * Starts OAuth for Google Analytics (GA4). Each connected GA4 property becomes its own account with platform `googleanalytics`; it reads reports and does not post.
+ *
  * Requested scope: `https://www.googleapis.com/auth/analytics.readonly`.
+ *
+ * ### Flow
+ *
+ * Redirect the user to `authUrl`.
+ *
+ * - **One readable property:** Zernio connects it and redirects to `redirect_url` (or the dashboard) with `connected=googleanalytics`, `profileId`, `accountId` and `username` (the property name).
+ * - **Several properties:** the user first picks one on a Zernio-hosted page, which then redirects the same way.
+ *
+ * ### Your own property picker
+ *
+ * Add `headless=true` to `redirect_url`. Zernio then redirects there with `step=select_property`, `profileId`, `platform=googleanalytics` and a `pendingDataToken` for `GET /v1/connect/googleanalytics/properties` and `POST /v1/connect/googleanalytics/select-property`.
+ *
+ * ### Errors
+ *
+ * On failure the redirect carries `error`, `platform=googleanalytics` and `error_message`. Errors include:
+ *
+ * - `googleanalytics_scope_missing`: the user unticked Analytics access.
+ * - `googleanalytics_no_properties`
  *
  */
 export const getGoogleAnalyticsConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetGoogleAnalyticsConnectUrlData, ThrowOnError>) => {
@@ -2470,13 +2830,20 @@ export const getGoogleAnalyticsConnectUrl = <ThrowOnError extends boolean = fals
 
 /**
  * List Google Analytics properties for a pending connect
- * For headless flows. When the connect started with `redirect_url=...?headless=true` and the Google
- * account can read several GA4 properties, Zernio redirects to your `redirect_url` with
- * `step=select_property`, `profileId`, `platform=googleanalytics` and a `pendingDataToken`. Call this
- * to list the properties and show your own picker, then call
- * `POST /v1/connect/googleanalytics/select-property`. Listing does not consume the token. A headless
- * token passes through your own URLs, so it is honored only together with your API key (or connect
- * token) for the same profile. It expires after one hour.
+ * For headless flows: lists the GA4 properties of a pending Google Analytics connect, so you can show your own picker.
+ *
+ * ### Flow
+ *
+ * 1. The connect started with `redirect_url=...?headless=true`, and the Google account can read several GA4 properties.
+ * 2. Zernio redirects to your `redirect_url` with `step=select_property`, `profileId`, `platform=googleanalytics` and a `pendingDataToken`.
+ * 3. Call this to list the properties and show your own picker.
+ * 4. Call `POST /v1/connect/googleanalytics/select-property`.
+ *
+ * ### Token
+ *
+ * - Listing does not consume the token.
+ * - A headless token passes through your own URLs, so it is honored only together with your API key (or connect token) for the same profile.
+ * - It expires after one hour.
  *
  */
 export const listGoogleAnalyticsProperties = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListGoogleAnalyticsPropertiesData, ThrowOnError>) => {
@@ -2488,11 +2855,14 @@ export const listGoogleAnalyticsProperties = <ThrowOnError extends boolean = fal
 
 /**
  * Connect the chosen Google Analytics property
- * For headless flows. Connects the property the user picked as a `googleanalytics` account and returns
- * where to send the user next: your `redirect_url` with `connected=googleanalytics`, `profileId`,
- * `accountId` and `username`, or an `error` when the connect was refused (for example a billing block).
- * Consumes the `pendingDataToken`; a refused or failed attempt leaves it usable for a retry. Send your
- * API key (or connect token) for the same profile with a headless token.
+ * For headless flows. Connects the property the user picked as a `googleanalytics` account and returns where to send the user next.
+ *
+ * - On success: your `redirect_url` with `connected=googleanalytics`, `profileId`, `accountId` and `username`.
+ * - When the connect was refused (for example a billing block): an `error`.
+ *
+ * Consumes the `pendingDataToken`; a refused or failed attempt leaves it usable for a retry.
+ *
+ * Send your API key (or connect token) for the same profile with a headless token.
  *
  */
 export const selectGoogleAnalyticsProperty = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SelectGoogleAnalyticsPropertyData, ThrowOnError>) => {
@@ -2504,18 +2874,20 @@ export const selectGoogleAnalyticsProperty = <ThrowOnError extends boolean = fal
 
 /**
  * Get HubSpot OAuth connect URL
- * Initiates OAuth for a HubSpot portal. HubSpot is a connect-only CRM
- * platform: the connected account does not post, read analytics or run
- * ads. One HubSpot portal can be connected per profile; connecting a
- * different portal to a profile that already has one redirects with
- * `error=hubspot_profile_has_portal`.
- * Redirect the user to `authUrl`; after authorization, HubSpot returns
- * the browser to Zernio's internal callback and Zernio redirects to
- * `redirect_url` (or the dashboard when omitted). On success the redirect
- * carries `connected=hubspot`, `profileId`, `accountId` and `username`
- * (the portal domain); on failure it carries `error`, `platform=hubspot`
- * and `error_message`. Reconnecting the same portal and profile updates
- * the stored connection in place and keeps its settings.
+ * Initiates OAuth for a HubSpot portal. HubSpot is a connect-only CRM platform: the connected account does not post, read analytics or run ads.
+ *
+ * One HubSpot portal can be connected per profile. Connecting a different portal to a profile that already has one redirects with `error=hubspot_profile_has_portal`.
+ *
+ * ### Flow
+ *
+ * 1. Redirect the user to `authUrl`.
+ * 2. After authorization, HubSpot returns the browser to Zernio's internal callback.
+ * 3. Zernio redirects to `redirect_url` (or the dashboard when omitted).
+ *
+ * On success the redirect carries `connected=hubspot`, `profileId`, `accountId` and `username` (the portal domain). On failure it carries `error`, `platform=hubspot` and `error_message`.
+ *
+ * Reconnecting the same portal and profile updates the stored connection in place and keeps its settings.
+ *
  * Requested scopes: `oauth`, `crm.objects.contacts.read`, `crm.objects.contacts.write`.
  *
  */
@@ -2529,17 +2901,22 @@ export const getHubSpotConnectUrl = <ThrowOnError extends boolean = false>(optio
 /**
  * Get WordPress.com OAuth connect URL
  * Initiates OAuth for a WordPress.com site or a Jetpack-connected site.
- * WordPress is a connect-only blog platform: the connected account powers
- * the Blogs API (`/v1/accounts/{accountId}/blogs`) and does not support
- * social posts, inbox, analytics, ads, or Shopify product operations.
- * Redirect the user to `authUrl`; after authorization, WordPress returns
- * the browser to Zernio's internal callback and Zernio redirects to
- * `redirect_url` (or the dashboard when omitted). Reconnecting the same
- * site and profile updates the stored connection in place. The consent
- * request omits `scope` to use WordPress.com's default single-site grant.
- * Granular scopes cannot access the `/wp/v2` article API. Zernio checks
- * that API before saving the connection and does not request explicit
- * `global` authorization across all sites.
+ *
+ * WordPress is a connect-only blog platform: the connected account powers the Blogs API (`/v1/accounts/{accountId}/blogs`). It does not support social posts, inbox, analytics, ads, or Shopify product operations.
+ *
+ * ### Flow
+ *
+ * 1. Redirect the user to `authUrl`.
+ * 2. After authorization, WordPress returns the browser to Zernio's internal callback.
+ * 3. Zernio redirects to `redirect_url` (or the dashboard when omitted).
+ *
+ * Reconnecting the same site and profile updates the stored connection in place.
+ *
+ * ### Scopes
+ *
+ * The consent request omits `scope` to use WordPress.com's default single-site grant. Granular scopes cannot access the `/wp/v2` article API.
+ *
+ * Zernio checks that API before saving the connection and does not request explicit `global` authorization across all sites.
  *
  */
 export const getWordPressAuthUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWordPressAuthUrlData, ThrowOnError>) => {
@@ -2551,15 +2928,19 @@ export const getWordPressAuthUrl = <ThrowOnError extends boolean = false>(option
 
 /**
  * Get Wix site install URL
- * Returns the Wix installer link for the Zernio app. The user picks one
- * of their Wix sites there and approves the app; Wix then returns the
- * browser to Zernio's internal callback, which connects that site and
- * redirects to `redirect_url` (or the dashboard when omitted). Wix is a
- * connect-only blog platform: the connected account powers the Blogs
- * API (`/v1/accounts/{accountId}/blogs`) and does not support social
- * posts, inbox, analytics or ads. The site needs the Wix Blog app.
- * Access tokens renew by themselves; removing the Zernio app from the
- * site in Wix disconnects the account.
+ * Returns the Wix installer link for the Zernio app.
+ *
+ * ### Flow
+ *
+ * 1. The user picks one of their Wix sites there and approves the app.
+ * 2. Wix returns the browser to Zernio's internal callback, which connects that site.
+ * 3. The callback redirects to `redirect_url` (or the dashboard when omitted).
+ *
+ * ### What the account supports
+ *
+ * Wix is a connect-only blog platform. The connected account powers the Blogs API (`/v1/accounts/{accountId}/blogs`) and does not support social posts, inbox, analytics or ads. The site needs the Wix Blog app.
+ *
+ * Access tokens renew by themselves. Removing the Zernio app from the site in Wix disconnects the account.
  *
  */
 export const getWixConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWixConnectUrlData, ThrowOnError>) => {
@@ -2571,15 +2952,21 @@ export const getWixConnectUrl = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Get Webflow OAuth URL
- * Returns Webflow's consent URL for the Zernio Webflow app. The user picks
- * exactly one site there; Webflow then returns the browser to Zernio's
- * internal callback, which connects that site and redirects to
- * `redirect_url` (or the dashboard when omitted). Picking several sites
- * connects none and redirects with `error=webflow_pick_one_site`.
- * Connecting a site already connected with a site token upgrades the same
- * account. Only an OAuth connection can install tracking tags on the site
- * (`installTrackingTagOnStore`); blogs work with either. The token does not
- * expire.
+ * Returns Webflow's consent URL for the Zernio Webflow app.
+ *
+ * ### Flow
+ *
+ * 1. The user picks exactly one site on Webflow's consent screen.
+ * 2. Webflow returns the browser to Zernio's internal callback, which connects that site.
+ * 3. Zernio redirects to `redirect_url` (or the dashboard when omitted).
+ *
+ * Picking several sites connects none and redirects with `error=webflow_pick_one_site`.
+ *
+ * ### Notes
+ *
+ * - Connecting a site already connected with a site token upgrades the same account.
+ * - Only an OAuth connection can install tracking tags on the site (`installTrackingTagOnStore`); blogs work with either.
+ * - The token does not expire.
  *
  */
 export const getWebflowConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWebflowConnectUrlData, ThrowOnError>) => {
@@ -2591,15 +2978,16 @@ export const getWebflowConnectUrl = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Connect Webflow with a site API token
- * Connects one Webflow site using a site API token, created in the
- * site's Site settings > Apps & integrations > API access with Sites
- * read-only and CMS read and write access. Zernio checks the token's
- * scopes, reads its site, and stores the token encrypted. Webflow is a
- * connect-only blog platform: each CMS collection with a rich text field
- * is a blog in the Blogs API (`/v1/accounts/{accountId}/blogs`); it does
- * not support social posts, inbox, analytics or ads. Publishing an
- * article needs a site that has been published once. Reconnecting the
- * same site and profile updates the connection in place.
+ * Connects one Webflow site using a site API token. Zernio checks the token's scopes, reads its site, and stores the token encrypted.
+ *
+ * Create the token in the site's Site settings > Apps & integrations > API access, with Sites read-only and CMS read and write access.
+ *
+ * ### What it supports
+ *
+ * Webflow is a connect-only blog platform: each CMS collection with a rich text field is a blog in the Blogs API (`/v1/accounts/{accountId}/blogs`). It does not support social posts, inbox, analytics or ads.
+ *
+ * - Publishing an article needs a site that has been published once.
+ * - Reconnecting the same site and profile updates the connection in place.
  *
  */
 export const connectWebflowWithSiteToken = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConnectWebflowWithSiteTokenData, ThrowOnError>) => {
@@ -2611,12 +2999,13 @@ export const connectWebflowWithSiteToken = <ThrowOnError extends boolean = false
 
 /**
  * Connect self-hosted WordPress with an application password
- * Connects one self-hosted WordPress site using a WordPress username and
- * application password. `siteUrl` must use HTTPS and may include the path
- * where WordPress is installed. Zernio discovers the REST API, verifies
- * the credentials and required post/media/taxonomy capabilities, then
- * stores the password encrypted. Create an application password in the
- * WordPress user's profile; do not send the user's login password.
+ * Connects one self-hosted WordPress site using a WordPress username and application password.
+ *
+ * - `siteUrl` must use HTTPS and may include the path where WordPress is installed.
+ * - Create an application password in the WordPress user's profile; do not send the user's login password.
+ *
+ * Zernio discovers the REST API, verifies the credentials and required post/media/taxonomy capabilities, then stores the password encrypted.
+ *
  * Reconnecting the same site and profile updates the connection in place.
  *
  */
@@ -2629,27 +3018,27 @@ export const connectWordPressWithApplicationPassword = <ThrowOnError extends boo
 
 /**
  * Set TikTok brand identity
- * Set or update the Brand Identity (display name + avatar) for a
- * `tiktokads` SocialAccount. TikTok requires every ad to carry an
- * `identity_id + identity_type` pair. The Brand Identity is the
- * CUSTOMIZED_USER alternative to attributing ads to a real @username
- * (TT_USER). This route uploads the supplied image to TikTok, creates
- * the identity via `/v2/identity/create/`, and caches the resulting
- * `identity_id` on the account so subsequent `POST /v1/ads/create`
- * calls can opt into it via `identityType: 'CUSTOMIZED_USER'`.
+ * Set or update the Brand Identity (display name + avatar) for a `tiktokads` SocialAccount.
  *
- * Configurable on every `tiktokads` account, including linked-mode ones
- * (those with a posting account on the same profile). Configuration is
- * idempotent and harmless when posting is also connected: the default
- * ad-create path still prefers TT_USER, and CUSTOMIZED_USER is only used
- * per-ad when the caller explicitly opts in.
+ * TikTok requires every ad to carry an `identity_id + identity_type` pair. The Brand Identity is the CUSTOMIZED_USER alternative to attributing ads to a real @username (TT_USER).
  *
- * TikTok identities are immutable post-creation. Re-saving creates a new
- * identity on TikTok and swaps the cached id; the old identity stays
- * orphaned on TikTok's side (harmless, no billing impact).
+ * ### What this route does
  *
- * Alternative: pass `brandIdentity` directly on `POST /v1/ads/create` to
- * configure on first ad creation in a single round-trip.
+ * 1. Uploads the supplied image to TikTok.
+ * 2. Creates the identity via `/v2/identity/create/`.
+ * 3. Caches the resulting `identity_id` on the account, so subsequent `POST /v1/ads/create` calls can opt into it via `identityType: 'CUSTOMIZED_USER'`.
+ *
+ * ### Linked accounts
+ *
+ * Configurable on every `tiktokads` account, including linked-mode ones (those with a posting account on the same profile).
+ *
+ * Configuration is idempotent and harmless when posting is also connected. The default ad-create path still prefers TT_USER, and CUSTOMIZED_USER is only used per-ad when the caller explicitly opts in.
+ *
+ * ### Updating an identity
+ *
+ * TikTok identities are immutable post-creation. Re-saving creates a new identity on TikTok and swaps the cached id. The old identity stays orphaned on TikTok's side (harmless, no billing impact).
+ *
+ * Alternative: pass `brandIdentity` directly on `POST /v1/ads/create` to configure on first ad creation in a single round-trip.
  *
  */
 export const configureTikTokAdsBrandIdentity = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConfigureTikTokAdsBrandIdentityData, ThrowOnError>) => {
@@ -2663,7 +3052,13 @@ export const configureTikTokAdsBrandIdentity = <ThrowOnError extends boolean = f
  * List Facebook pages
  * Lists the Facebook Pages a user can pick from after signing in, so they can choose which Page to connect.
  *
- * Classic connections require profileId and tempToken from the OAuth redirect. Use X-Connect-Token for headless connections. The dashboard business-login picker instead sends only selectionToken, an encrypted grant valid for ten minutes. This requires the initiating user and current profile access and returns only Page IDs and names. X-Connect-Token cannot authorize business selection.
+ * ### Authorization by flow
+ *
+ * - Classic connections require profileId and tempToken from the OAuth redirect.
+ * - Headless connections use X-Connect-Token.
+ * - The dashboard business-login picker instead sends only selectionToken, an encrypted grant valid for ten minutes. This requires the initiating user and current profile access, and returns only Page IDs and names.
+ *
+ * X-Connect-Token cannot authorize business selection.
  *
  */
 export const listFacebookPages = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListFacebookPagesData, ThrowOnError>) => {
@@ -2677,7 +3072,18 @@ export const listFacebookPages = <ThrowOnError extends boolean = false>(options?
  * Select Facebook page
  * Connects the Facebook Page the user picked after signing in, completing the Facebook or Meta Ads connection.
  *
- * Complete a classic Facebook Page connection with profileId, pageId, tempToken and userProfile. Use X-Connect-Token for headless connections. The dashboard business-login picker instead sends only selectionToken and pageId to complete a Meta Ads connection. The server verifies the initiating user, profile access, current grants and connection eligibility. The profile, platform token, ad-account scope and return URL come only from the encrypted grant. Business selection requires a session or bearer authentication for the initiating user; X-Connect-Token is not accepted. It returns redirect_url with connected=metaads on success or an eligibility error redirect.
+ * ### Two ways to call it
+ *
+ * - Classic Facebook Page connection: send profileId, pageId, tempToken and userProfile. Use X-Connect-Token for headless connections.
+ * - Dashboard business-login picker: send only selectionToken and pageId to complete a Meta Ads connection.
+ *
+ * ### Business selection
+ *
+ * The server verifies the initiating user, profile access, current grants and connection eligibility. The profile, platform token, ad-account scope and return URL come only from the encrypted grant.
+ *
+ * Business selection requires a session or bearer authentication for the initiating user; X-Connect-Token is not accepted.
+ *
+ * It returns redirect_url with connected=metaads on success or an eligibility error redirect.
  *
  */
 export const selectFacebookPage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SelectFacebookPageData, ThrowOnError>) => {
@@ -2691,7 +3097,13 @@ export const selectFacebookPage = <ThrowOnError extends boolean = false>(options
  * List Pages with a linked Instagram account
  * Completes the `loginMethod=facebook_login` Instagram flow, i.e. "Instagram API with Facebook Login".
  *
- * After the user authorizes on Facebook, extract `tempToken` from the redirect params (headless mode adds `step=select_account`) and pass it here to list the Facebook Pages they manage. Only Pages that have a linked Instagram professional account are returned, so an empty array means the user has no eligible Page. Use the X-Connect-Token header if connecting via API key.
+ * ### Flow
+ *
+ * 1. The user authorizes on Facebook.
+ * 2. Extract `tempToken` from the redirect params (headless mode adds `step=select_account`).
+ * 3. Pass it here to list the Facebook Pages they manage.
+ *
+ * Only Pages that have a linked Instagram professional account are returned, so an empty array means the user has no eligible Page. Use the X-Connect-Token header if connecting via API key.
  *
  * Not used by the default `instagram_login` flow, which creates the account without a selection step.
  *
@@ -3012,16 +3424,22 @@ export const updateGoogleBusinessServices = <ThrowOnError extends boolean = fals
 
 /**
  * Batch get reviews
- * Fetches reviews across multiple locations in a single request.
- * More efficient than calling GET /gmb-reviews per location for multi-location businesses.
- * Returns a flat locationReviews array (not grouped by location): each item carries
- * the location resource name it belongs to (`name`) plus the review object (`review`),
- * whose identity is `review.reviewId`.
- * Reviews are requested from Google ordered by `orderBy` (default `updateTime desc`,
- * newest first), so callers polling for recent reviews can stop paginating once they
- * cross their date window.
- * Note: this endpoint does not return aggregate metrics (averageRating / totalReviewCount).
- * For those, use the single-location GET /gmb-reviews endpoint.
+ * Fetches reviews across multiple locations in a single request. More efficient than calling GET /gmb-reviews per location for multi-location businesses.
+ *
+ * ### Response
+ *
+ * Returns a flat locationReviews array (not grouped by location). Each item carries:
+ *
+ * - `name`: the location resource name it belongs to.
+ * - `review`: the review object, whose identity is `review.reviewId`.
+ *
+ * ### Ordering
+ *
+ * Reviews are requested from Google ordered by `orderBy` (default `updateTime desc`, newest first). Callers polling for recent reviews can stop paginating once they cross their date window.
+ *
+ * ### Aggregate metrics
+ *
+ * This endpoint does not return aggregate metrics (averageRating / totalReviewCount). For those, use the single-location GET /gmb-reviews endpoint.
  *
  */
 export const batchGetGoogleBusinessReviews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BatchGetGoogleBusinessReviewsData, ThrowOnError>) => {
@@ -3034,7 +3452,9 @@ export const batchGetGoogleBusinessReviews = <ThrowOnError extends boolean = fal
 /**
  * Get a review
  * Returns one Google Business Profile review, in the same shape as the entries of GET /v1/accounts/{accountId}/gmb-reviews.
- * The review is read from the account's selected location unless locationId overrides it, and Google returns 404 for a review id that belongs to another location.
+ *
+ * The review is read from the account's selected location unless locationId overrides it. Google returns 404 for a review id that belongs to another location.
+ *
  * Read the review before replying if a human may have answered it already: replies are overwritten in place and Google keeps no history.
  *
  */
@@ -3048,10 +3468,14 @@ export const getGoogleBusinessReview = <ThrowOnError extends boolean = false>(op
 /**
  * Reply to a review
  * Posts (or updates) the business owner reply to a Google Business Profile review.
+ *
  * The reply is associated with the account's currently selected location (set via /v1/accounts/{accountId}/gmb-locations).
+ *
+ * ### Overwrites
+ *
  * Calling this endpoint a second time on the same review overwrites the previous reply (PUT semantics on Google's side).
- * Google keeps no history, so an automated retry silently replaces a reply someone edited by hand in the Google Business Profile UI.
- * Read the review before retrying if a human may have answered it.
+ *
+ * Google keeps no history, so an automated retry silently replaces a reply someone edited by hand in the Google Business Profile UI. Read the review before retrying if a human may have answered it.
  *
  */
 export const replyToGoogleBusinessReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToGoogleBusinessReviewData, ThrowOnError>) => {
@@ -3074,7 +3498,22 @@ export const deleteGoogleBusinessReviewReply = <ThrowOnError extends boolean = f
 
 /**
  * Get a phone handoff
- * Where a connect started with `handoff=true` on `GET /v1/connect/{platform}` stands: `waiting` until the QR code is scanned, `opened` once the phone opened it, then `connected` with the new accounts or `failed` with the error the flow ended on (the same `error` codes as the redirect flow). `expired` when nobody opened the QR code within its 30 minutes. Poll it every 2 to 5 seconds while your QR code is shown, and stop once it is `connected`, `failed` or `expired`. Readable for 60 minutes after it was created, then 404, as is a handoff created by another workspace.
+ * Shows where a connect started with `handoff=true` on `GET /v1/connect/{platform}` stands.
+ *
+ * ### States
+ *
+ * - `waiting`: until the QR code is scanned
+ * - `opened`: the phone opened it
+ * - `connected`: with the new accounts
+ * - `failed`: with the error the flow ended on (the same `error` codes as the redirect flow)
+ * - `expired`: nobody opened the QR code within its 30 minutes
+ *
+ * ### Polling
+ *
+ * Poll it every 2 to 5 seconds while your QR code is shown, and stop once it is `connected`, `failed` or `expired`.
+ *
+ * It is readable for 60 minutes after it was created, then 404. A handoff created by another workspace is also 404.
+ *
  */
 export const getConnectHandoff = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetConnectHandoffData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetConnectHandoffResponse, GetConnectHandoffError, ThrowOnError>({
@@ -3107,7 +3546,16 @@ export const updateConnectWelcomeScreen = <ThrowOnError extends boolean = false>
 
 /**
  * List your OAuth apps
- * Your own OAuth apps on social platforms. A connect runs on one when it passes its id as `oauthAppId`: the consent screen then shows your app's name and logo, and the platform's rate limits and quotas are your app's. Add as many as you need, any number per platform. Also lists, in `platforms`, which platforms accept your own app and what to set up on each. Pages are ordered by id: pass `pagination.nextCursor` back as `cursor` until it is null. Like every OAuth-app call, it needs the account owner or a full-access team member, on a session or a full-scope API key.
+ * Lists your own OAuth apps on social platforms. Add as many as you need, any number per platform.
+ *
+ * A connect runs on one when it passes its id as `oauthAppId`. The consent screen then shows your app's name and logo, and the platform's rate limits and quotas are your app's.
+ *
+ * Also lists, in `platforms`, which platforms accept your own app and what to set up on each.
+ *
+ * Pages are ordered by id: pass `pagination.nextCursor` back as `cursor` until it is null.
+ *
+ * Like every OAuth-app call, it needs the account owner or a full-access team member, on a session or a full-scope API key.
+ *
  */
 export const listOAuthApps = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListOAuthAppsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListOAuthAppsResponse, ListOAuthAppsError, ThrowOnError>({
@@ -3118,7 +3566,17 @@ export const listOAuthApps = <ThrowOnError extends boolean = false>(options?: Op
 
 /**
  * Add an OAuth app
- * Saves your app's client ID and secret for a platform. The keys are checked with the platform first: keys it rejects return 400 OAUTH_APP_KEYS_REJECTED and are not saved; keys it could not check are saved with status `unchecked`. Allow the returned `redirectUri` in your app's settings on the platform before connecting. Only the account owner or a full-access team member can add apps, and not with a profile-scoped API key.
+ * Saves your app's client ID and secret for a platform.
+ *
+ * The keys are checked with the platform first:
+ *
+ * - Keys it rejects return 400 OAUTH_APP_KEYS_REJECTED and are not saved.
+ * - Keys it could not check are saved with status `unchecked`.
+ *
+ * Allow the returned `redirectUri` in your app's settings on the platform before connecting.
+ *
+ * Only the account owner or a full-access team member can add apps, and not with a profile-scoped API key.
+ *
  */
 export const createOAuthApp = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateOAuthAppData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateOAuthAppResponse, CreateOAuthAppError, ThrowOnError>({
@@ -3139,7 +3597,12 @@ export const getOAuthApp = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Update an OAuth app
- * Renames the app or rotates its secret. A new secret is checked with the platform before it is saved, and takes effect for every account on the app at once; their tokens keep working. The client ID cannot change: a different client ID is a different app, so add it and reconnect the accounts through it.
+ * Renames the app or rotates its secret.
+ *
+ * A new secret is checked with the platform before it is saved, and takes effect for every account on the app at once; their tokens keep working.
+ *
+ * The client ID cannot change: a different client ID is a different app, so add it and reconnect the accounts through it.
+ *
  */
 export const updateOAuthApp = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateOAuthAppData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateOAuthAppResponse, UpdateOAuthAppError, ThrowOnError>({
@@ -3172,11 +3635,27 @@ export const testOAuthApp = <ThrowOnError extends boolean = false>(options: Opti
 
 /**
  * Get pending OAuth data
- * Fetch pending OAuth data for headless mode using the pendingDataToken from the redirect URL.
+ * Fetch pending OAuth data for headless mode using the pendingDataToken from the redirect URL. No authentication required.
  *
- * **Scope**: This endpoint is used for LinkedIn organizations, Google Business Profile locations, Slack channels, Snapchat profiles, and Pinterest boards, where the selection list is too large to fit in URL params. The redirect carries a `pendingDataToken` instead of the full payload; the response includes the corresponding selection array (e.g. `boards` for Pinterest). WhatsApp, Facebook and other platforms pass selection state directly via URL query params on the redirect (`profileId`, `tempToken`, `step`), no pending record is created, so this endpoint will return 404 for those flows. Use the platform-specific selection endpoint instead (e.g. `/v1/connect/whatsapp/select-phone-number`).
+ * ### Scope
  *
- * Reading the token does not consume it, so this fetch is repeatable until the token expires 1 hour after issuance. Completing the platform selection deletes the pending record, so the token stops working from then on. No authentication required.
+ * This endpoint is used where the selection list is too large to fit in URL params:
+ *
+ * - LinkedIn organizations
+ * - Google Business Profile locations
+ * - Slack channels
+ * - Snapchat profiles
+ * - Pinterest boards
+ *
+ * The redirect carries a `pendingDataToken` instead of the full payload. The response includes the corresponding selection array (e.g. `boards` for Pinterest).
+ *
+ * WhatsApp, Facebook and other platforms pass selection state directly via URL query params on the redirect (`profileId`, `tempToken`, `step`), and no pending record is created. So this endpoint will return 404 for those flows. Use the platform-specific selection endpoint instead (e.g. `/v1/connect/whatsapp/select-phone-number`).
+ *
+ * ### Token lifetime
+ *
+ * Reading the token does not consume it, so this fetch is repeatable until the token expires 1 hour after issuance.
+ *
+ * Completing the platform selection deletes the pending record, so the token stops working from then on.
  *
  */
 export const getPendingOAuthData = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetPendingOAuthDataData, ThrowOnError>) => {
@@ -3270,11 +3749,14 @@ export const connectBlueskyCredentials = <ThrowOnError extends boolean = false>(
  * Connect an OpenAI Ads account
  * Connect an OpenAI Ads account using an API key from ChatGPT Ads Manager.
  *
- * The key grants full campaign write access on OpenAI's side (OpenAI does
- * not offer a read-only key scope). Zernio uses it to read ads and
- * performance, and to create and manage campaigns you set up through
- * Zernio (create, status, budget, and cancel). Campaigns created
- * directly in ChatGPT Ads Manager can still be managed there.
+ * The key grants full campaign write access on OpenAI's side (OpenAI does not offer a read-only key scope).
+ *
+ * Zernio uses it to:
+ *
+ * - read ads and performance
+ * - create and manage campaigns you set up through Zernio (create, status, budget, and cancel)
+ *
+ * Campaigns created directly in ChatGPT Ads Manager can still be managed there.
  *
  */
 export const connectOpenAiAdsCredentials = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConnectOpenAiAdsCredentialsData, ThrowOnError>) => {
@@ -3305,10 +3787,10 @@ export const connectWhopAdsCredentials = <ThrowOnError extends boolean = false>(
 
 /**
  * Connect WhatsApp via credentials
- * Connect a WhatsApp Business Account by providing Meta credentials directly.
- * This is the headless alternative to the Embedded Signup browser flow.
+ * Connect a WhatsApp Business Account by providing Meta credentials directly. This is the headless alternative to the Embedded Signup browser flow.
  *
- * To get the required credentials:
+ * ### Getting the credentials
+ *
  * 1. Go to Meta Business Suite (business.facebook.com)
  * 2. Create or select a WhatsApp Business Account
  * 3. In Business Settings > System Users, create a System User
@@ -3317,11 +3799,13 @@ export const connectWhopAdsCredentials = <ThrowOnError extends boolean = false>(
  * 6. Get the WABA ID from WhatsApp Manager > Account Tools > Phone Numbers
  * 7. Get the Phone Number ID from the same page (click on the number)
  *
- * Warning: connecting subscribes your own Meta app to this WABA with an override
- * callback that redirects its webhook delivery to Zernio. This WABA's events stop
- * reaching any callback URL you had configured before, immediately and with no
- * overlap window. Do not unsubscribe your app from the WABA afterward: that also
- * cuts off Zernio's delivery, and recovery requires calling this endpoint again.
+ * ### Warning: webhook delivery moves to Zernio
+ *
+ * Connecting subscribes your own Meta app to this WABA with an override callback that redirects its webhook delivery to Zernio.
+ *
+ * This WABA's events stop reaching any callback URL you had configured before, immediately and with no overlap window.
+ *
+ * Do not unsubscribe your app from the WABA afterward: that also cuts off Zernio's delivery, and recovery requires calling this endpoint again.
  *
  */
 export const connectWhatsAppCredentials = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConnectWhatsAppCredentialsData, ThrowOnError>) => {
@@ -3363,12 +3847,13 @@ export const completeWhatsAppPhoneSelection = <ThrowOnError extends boolean = fa
 
 /**
  * Connect WhatsApp from Embedded Signup
- * Exchange the authorization code Meta's Embedded Signup popup returned. This is the call the Zernio-hosted
- * signup page makes after the popup closes (`GET /v1/connect/whatsapp?signup=hosted`), sending the `wabaId`
- * and `phoneNumberId` Meta reported so exactly the chosen number is connected; when both are omitted the
- * first number the token can see is used. The code never passes through a `redirect_uri`, so
- * `POST /v1/connect/{platform}` cannot accept it. Authenticates with an API key, or with the connect token
- * the hosted flow issues (`X-Connect-Token` header).
+ * Exchange the authorization code Meta's Embedded Signup popup returned.
+ *
+ * This is the call the Zernio-hosted signup page makes after the popup closes (`GET /v1/connect/whatsapp?signup=hosted`). It sends the `wabaId` and `phoneNumberId` Meta reported, so exactly the chosen number is connected. When both are omitted, the first number the token can see is used.
+ *
+ * The code never passes through a `redirect_uri`, so `POST /v1/connect/{platform}` cannot accept it.
+ *
+ * Authenticates with an API key, or with the connect token the hosted flow issues (`X-Connect-Token` header).
  *
  */
 export const connectWhatsAppEmbeddedSignup = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConnectWhatsAppEmbeddedSignupData, ThrowOnError>) => {
@@ -3380,10 +3865,11 @@ export const connectWhatsAppEmbeddedSignup = <ThrowOnError extends boolean = fal
 
 /**
  * Get Embedded Signup SDK config
- * The Meta app id and Embedded Signup configuration id the Zernio-hosted signup page uses to open Meta's
- * popup. Integrators do not need this endpoint: start the hosted flow with
- * `GET /v1/connect/whatsapp?signup=hosted` and send the user to the returned `authUrl`. Authenticates with
- * an API key or with the connect token the hosted flow issues (`X-Connect-Token` header).
+ * Returns the Meta app id and Embedded Signup configuration id the Zernio-hosted signup page uses to open Meta's popup.
+ *
+ * Integrators do not need this endpoint: start the hosted flow with `GET /v1/connect/whatsapp?signup=hosted` and send the user to the returned `authUrl`.
+ *
+ * Authenticates with an API key or with the connect token the hosted flow issues (`X-Connect-Token` header).
  *
  */
 export const getWhatsAppSdkConfig = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetWhatsAppSdkConfigData, ThrowOnError>) => {
@@ -3406,21 +3892,24 @@ export const connectDiscordChannel = <ThrowOnError extends boolean = false>(opti
 
 /**
  * List Slack channels for the channel picker
- * Serves the channel picker of the Slack connect flow. Slack's OAuth installs the bot into a
- * workspace, not a channel, so after the redirect the caller lists the workspace's channels
- * here and finalizes one with `POST /v1/connect/slack`. Served by a dedicated route that
- * shadows `GET /v1/connect/{platform}` for `slack`.
+ * Serves the channel picker of the Slack connect flow. Slack's OAuth installs the bot into a workspace, not a channel, so after the redirect the caller lists the workspace's channels here and finalizes one with `POST /v1/connect/slack`.
  *
- * Send exactly one of `pendingDataToken` (first connect: the nonce from the OAuth redirect,
- * bound to the same `profileId`) or `accountId` (add another channel to a workspace already
- * connected: the existing Slack account's workspace token is reused, no re-OAuth). With
- * neither, the endpoint behaves like `GET /v1/connect/{platform}` and returns `authUrl` and
- * `state` to start the OAuth flow.
+ * Served by a dedicated route that shadows `GET /v1/connect/{platform}` for `slack`.
  *
- * Channels are read live from Slack (`conversations.list`, public and private, archived
- * excluded, up to 2,000). `isMember` says whether the Zernio bot is already in the channel:
- * a public channel is joined automatically on finalize, a private one must be invited
- * (`/invite @Zernio`) first.
+ * ### Parameters
+ *
+ * Send exactly one of:
+ *
+ * - `pendingDataToken`: first connect. The nonce from the OAuth redirect, bound to the same `profileId`.
+ * - `accountId`: add another channel to a workspace already connected. The existing Slack account's workspace token is reused, no re-OAuth.
+ *
+ * With neither, the endpoint behaves like `GET /v1/connect/{platform}` and returns `authUrl` and `state` to start the OAuth flow.
+ *
+ * ### Channels
+ *
+ * Channels are read live from Slack (`conversations.list`, public and private, archived excluded, up to 2,000).
+ *
+ * `isMember` says whether the Zernio bot is already in the channel. A public channel is joined automatically on finalize; a private one must be invited (`/invite @Zernio`) first.
  *
  */
 export const listSlackChannels = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListSlackChannelsData, ThrowOnError>) => {
@@ -3523,22 +4012,21 @@ export const listBusinessPartners = <ThrowOnError extends boolean = false>(optio
 /**
  * Share the Page with a partner business
  * Grants a partner business portfolio tasks on the Facebook Page behind this account.
- * With `ADVERTISE`, the partner can run ads for the Page from ad accounts in its own
- * portfolio, which is how an integrator advertises for an end user without touching
- * the end user's ad accounts.
  *
- * Meta only lets a user token share a Page that a business portfolio owns. A Page
- * outside any portfolio must first be claimed into one at business.facebook.com; this
- * endpoint answers `422` until that is done. Meta refuses a second grant to a portfolio
- * that already has access instead of replacing its tasks, so that case answers `200`
- * with `alreadyShared: true` and the tasks the partner currently holds. To change a
- * partner's tasks, revoke and grant again.
+ * With `ADVERTISE`, the partner can run ads for the Page from ad accounts in its own portfolio. This is how an integrator advertises for an end user without touching the end user's ad accounts.
  *
- * After the grant, the partner assigns its own people to the Page with
- * `POST /v1/ads/page-users`; Meta does not assign partner admins automatically.
- * The Instagram professional account linked to the Page is returned in `page` so the
- * partner can reference it; Meta exposes no API to share Instagram accounts, that is
- * done in Business Settings.
+ * ### Responses
+ *
+ * - `422`: the Page is outside any business portfolio. Meta only lets a user token share a Page that a portfolio owns, so claim it into one at business.facebook.com first.
+ * - `200` with `alreadyShared: true` and the tasks the partner currently holds: the portfolio already has access. Meta refuses a second grant instead of replacing its tasks.
+ *
+ * To change a partner's tasks, revoke and grant again.
+ *
+ * ### After the grant
+ *
+ * The partner assigns its own people to the Page with `POST /v1/ads/page-users`; Meta does not assign partner admins automatically.
+ *
+ * The Instagram professional account linked to the Page is returned in `page` so the partner can reference it. Meta exposes no API to share Instagram accounts; that is done in Business Settings.
  *
  */
 export const grantBusinessPartner = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GrantBusinessPartnerData, ThrowOnError>) => {
@@ -3561,7 +4049,12 @@ export const revokeBusinessPartner = <ThrowOnError extends boolean = false>(opti
 
 /**
  * List Facebook pages
- * Returns all Facebook Pages the connected account has access to, including the currently selected Page and the Instagram professional account linked to each Page. Works on `facebook` accounts and on `metaads` accounts (classic and Facebook Login for Business connections). On a business-login `metaads` connection `selectedPageId` is the default Page ads run as, and every listed Page can be passed as `pageId` on POST /v1/ads/create. A classic `metaads` connection has no default Page, so `selectedPageId` is null there.
+ * Returns all Facebook Pages the connected account has access to, including the currently selected Page and the Instagram professional account linked to each Page.
+ *
+ * Works on `facebook` accounts and on `metaads` accounts (classic and Facebook Login for Business connections).
+ *
+ * - Business-login `metaads` connection: `selectedPageId` is the default Page ads run as, and every listed Page can be passed as `pageId` on POST /v1/ads/create.
+ * - Classic `metaads` connection: there is no default Page, so `selectedPageId` is null.
  *
  */
 export const getFacebookPages = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetFacebookPagesData, ThrowOnError>) => {
@@ -3573,7 +4066,13 @@ export const getFacebookPages = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Update Facebook page
- * Switch which Facebook Page is active for a connected account. On a `facebook` account this changes the Page posts publish to. On a Facebook Login for Business `metaads` connection it changes the default Page ads run as (and the Page whose leads are ingested). A classic `metaads` connection has no default Page and answers 400; pass `pageId` per ad on POST /v1/ads/create instead. The Page must be in the list returned by GET (use refresh=true to pick up newly granted Pages).
+ * Switch which Facebook Page is active for a connected account.
+ *
+ * - `facebook` account: changes the Page posts publish to.
+ * - Facebook Login for Business `metaads` connection: changes the default Page ads run as (and the Page whose leads are ingested).
+ * - Classic `metaads` connection: has no default Page and answers 400. Pass `pageId` per ad on POST /v1/ads/create instead.
+ *
+ * The Page must be in the list returned by GET (use refresh=true to pick up newly granted Pages).
  *
  */
 export const updateFacebookPage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateFacebookPageData, ThrowOnError>) => {
@@ -3628,7 +4127,12 @@ export const getLinkedInOrganizations = <ThrowOnError extends boolean = false>(o
 
 /**
  * Get LinkedIn aggregate stats
- * Returns aggregate analytics across all posts for a LinkedIn personal account. Covers every post authored by the member, whether or not it was published through Zernio (LinkedIn aggregates by member, not by post). Org accounts should use /v1/analytics instead. Requires r_member_postAnalytics scope. Saves (POST_SAVE) and sends (POST_SEND) are available for personal accounts; organization pages always return 0 for these two metrics because LinkedIn does not expose them on the organization analytics endpoint.
+ * Returns aggregate analytics across all posts for a LinkedIn personal account. Requires r_member_postAnalytics scope.
+ *
+ * Covers every post authored by the member, whether or not it was published through Zernio (LinkedIn aggregates by member, not by post). Org accounts should use /v1/analytics instead.
+ *
+ * Saves (POST_SAVE) and sends (POST_SEND) are available for personal accounts. Organization pages always return 0 for these two metrics because LinkedIn does not expose them on the organization analytics endpoint.
+ *
  */
 export const getLinkedInAggregateAnalytics = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetLinkedInAggregateAnalyticsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetLinkedInAggregateAnalyticsResponse, GetLinkedInAggregateAnalyticsError, ThrowOnError>({
@@ -3678,20 +4182,36 @@ export const updateLinkedInOrganization = <ThrowOnError extends boolean = false>
  * Resolve LinkedIn mention
  * Converts a LinkedIn profile or company URL to a URN for @mentions in posts.
  *
- * You usually do not need this endpoint. Put the profile or company URL inside `@[...]` in the post `content` (for example `@[https://www.linkedin.com/in/vincentjong]`) and the post resolves it for you, using LinkedIn's own name. Use this endpoint to preview what a URL resolves to, or to get ready-made `@[Name](urn)` markup, which still works in `content` and is published exactly as written.
+ * You usually do not need this endpoint. Put the profile or company URL inside `@[...]` in the post `content` (for example `@[https://www.linkedin.com/in/vincentjong]`) and the post resolves it for you, using LinkedIn's own name.
  *
- * Example:
- * - Resolve: GET /v1/accounts/{id}/linkedin-mentions?url=linkedin.com/in/vincentjong
- * - Returns: mentionFormat: "@[Vincent Jong](urn:li:person:xxx)"
- * - Use in post content: "Great talk with @[Vincent Jong](urn:li:person:xxx) today!"
+ * Use this endpoint to preview what a URL resolves to, or to get ready-made `@[Name](urn)` markup, which still works in `content` and is published exactly as written.
  *
- * Important: The mentions array field in POST /v1/posts is stored for reference only and does NOT trigger @mentions on LinkedIn. Write the mention in the content text.
+ * ### Example
  *
- * Requirements:
- * - Resolving a profile URL to a person mention requires the LinkedIn account to be admin of at least one organization: both endpoints that resolve a profile URL to a member URN take an organization you administer. A resolved person mention publishes from any account. Organization mentions (e.g. @Microsoft) have no such requirement.
- * - The two are not scoped alike. peopleTypeahead?q=organizationFollowers only returns that organization's followers; vanityUrl?q=vanityUrlAsOrganization does not, and its resolvable set is opaque. A 404 here does not mean the person is unknown to you or unknown to LinkedIn: a live public profile can 404 with no reason given.
- * - displayName is deprecated and ignored in practice: the endpoint reads the person's real name from LinkedIn itself. LinkedIn renders a person mention as a link only when the mention text is the person's first name, last name or full name (case-sensitive).
+ * 1. Resolve: GET /v1/accounts/{id}/linkedin-mentions?url=linkedin.com/in/vincentjong
+ * 2. Returns: mentionFormat: "@[Vincent Jong](urn:li:person:xxx)"
+ * 3. Use in post content: "Great talk with @[Vincent Jong](urn:li:person:xxx) today!"
+ *
+ * Important: the mentions array field in POST /v1/posts is stored for reference only and does NOT trigger @mentions on LinkedIn. Write the mention in the content text.
+ *
+ * ### Requirements
+ *
+ * - Resolving a profile URL to a person mention requires the LinkedIn account to be admin of at least one organization: both endpoints that resolve a profile URL to a member URN take an organization you administer.
+ * - A resolved person mention publishes from any account. Organization mentions (e.g. @Microsoft) have no such requirement.
  * - Person mentions DO work when published from personal profiles (the URN only needs to be valid). The limitation is only in the resolution step (URL to URN), not in publishing.
+ *
+ * ### Why a profile can 404
+ *
+ * The two resolution endpoints are not scoped alike:
+ *
+ * - peopleTypeahead?q=organizationFollowers only returns that organization's followers.
+ * - vanityUrl?q=vanityUrlAsOrganization does not, and its resolvable set is opaque.
+ *
+ * A 404 here does not mean the person is unknown to you or unknown to LinkedIn: a live public profile can 404 with no reason given.
+ *
+ * ### Display name
+ *
+ * displayName is deprecated and ignored in practice: the endpoint reads the person's real name from LinkedIn itself. LinkedIn renders a person mention as a link only when the mention text is the person's first name, last name or full name (case-sensitive).
  *
  */
 export const getLinkedInMentions = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetLinkedInMentionsData, ThrowOnError>) => {
@@ -3832,17 +4352,17 @@ export const listInstagramMediaCollaborators = <ThrowOnError extends boolean = f
 
 /**
  * List the live broadcasts of an Instagram account
- * Returns the live videos the connected Instagram account is broadcasting
- * right now. Meta only returns broadcasts in progress at the time of the
- * request, so the list is empty when nothing is live (a 200, not an error).
- * Pair the returned `id` with comments flagged as live (the live_comments
- * webhook field) or with a `live_comment` comment automation.
+ * Returns the live videos the connected Instagram account is broadcasting right now.
  *
- * Requires an Instagram account connected via **Facebook Login**. Meta
- * documents the live_media edge on graph.facebook.com only, so accounts
- * connected with classic Instagram Login receive a 400
- * (`instagram_live_media_requires_facebook_login`) and must be
- * reconnected choosing the Facebook option.
+ * Meta only returns broadcasts in progress at the time of the request, so the list is empty when nothing is live (a 200, not an error).
+ *
+ * Pair the returned `id` with comments flagged as live (the live_comments webhook field) or with a `live_comment` comment automation.
+ *
+ * ### Requires Facebook Login
+ *
+ * The Instagram account must be connected via **Facebook Login**. Meta documents the live_media edge on graph.facebook.com only.
+ *
+ * Accounts connected with classic Instagram Login receive a 400 (`instagram_live_media_requires_facebook_login`) and must be reconnected choosing the Facebook option.
  *
  */
 export const listInstagramLiveMedia = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListInstagramLiveMediaData, ThrowOnError>) => {
@@ -3899,17 +4419,15 @@ export const getInstagramMentionedMedia = <ThrowOnError extends boolean = false>
 
 /**
  * Get a comment that mentions an Instagram account
- * Returns a comment in which another Instagram user @mentioned the
- * connected account, with the post it was left on. Meta sends the
- * comment ID in its mention notification and offers no list of mentions,
- * so this reads one mention by ID. Meta answers an error when comments
- * are disabled on that post.
+ * Returns a comment in which another Instagram user @mentioned the connected account, with the post it was left on.
  *
- * Requires an Instagram account connected via **Facebook Login**. Meta
- * serves mentions on graph.facebook.com only, so accounts connected with
- * classic Instagram Login receive a 400
- * (`instagram_mentions_require_facebook_login`) and must be reconnected
- * choosing the Facebook option.
+ * Meta sends the comment ID in its mention notification and offers no list of mentions, so this reads one mention by ID. Meta answers an error when comments are disabled on that post.
+ *
+ * ### Requires Facebook Login
+ *
+ * The Instagram account must be connected via **Facebook Login**. Meta serves mentions on graph.facebook.com only.
+ *
+ * Accounts connected with classic Instagram Login receive a 400 (`instagram_mentions_require_facebook_login`) and must be reconnected choosing the Facebook option.
  *
  */
 export const getInstagramMentionedComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInstagramMentionedCommentData, ThrowOnError>) => {
@@ -3921,24 +4439,22 @@ export const getInstagramMentionedComment = <ThrowOnError extends boolean = fals
 
 /**
  * Get Instagram story insights
- * Returns metrics for a single story. The `source` field discriminates
- * between three states:
+ * Returns metrics for a single story. The `source` field discriminates between three states:
  *
  * - `live`: fetched from Meta in real time (story is still active)
- * - `cached`: fetched from a persisted `story_insights` webhook payload
- * (story has expired but we received its final-state metrics from Meta)
- * - `unavailable`: story has expired and Meta sent no `story_insights` webhook for it.
- * Meta sends it most reliably for accounts connected with Facebook Login or with their
- * linked Facebook Page connected, so read insights while the story is live if you need
- * final numbers.
+ * - `cached`: fetched from a persisted `story_insights` webhook payload (story has expired but we received its final-state metrics from Meta)
+ * - `unavailable`: story has expired and Meta sent no `story_insights` webhook for it
  *
- * Meta can report an expired story as an empty successful result rather
- * than an error, so an expired story resolves to `cached` or `unavailable`
- * even though the upstream request itself succeeded.
+ * Meta sends that webhook most reliably for accounts connected with Facebook Login or with their linked Facebook Page connected. So read insights while the story is live if you need final numbers.
  *
- * Field semantics follow Meta's API. Counts below 5 may be returned as 0
- * due to Meta's privacy floor on small audiences. The `navigation` field
- * is the sum of `tapsForward + tapsBack + exits + swipesForward`.
+ * Meta can report an expired story as an empty successful result rather than an error. So an expired story resolves to `cached` or `unavailable` even though the upstream request itself succeeded.
+ *
+ * ### Field semantics
+ *
+ * Field semantics follow Meta's API.
+ *
+ * - Counts below 5 may be returned as 0 due to Meta's privacy floor on small audiences.
+ * - The `navigation` field is the sum of `tapsForward + tapsBack + exits + swipesForward`.
  *
  */
 export const getInstagramStoryInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInstagramStoryInsightsData, ThrowOnError>) => {
@@ -3987,9 +4503,15 @@ export const createPinterestBoard = <ThrowOnError extends boolean = false>(optio
  *
  * Auto-generated (ASR) tracks are included: YouTube serves them to the channel owner, which is what the connected account is. Uploaded tracks win over auto-generated ones when both exist for a language.
  *
- * Caching: we store the transcript on first read and serve it from there afterwards, so you do not need to cache it yourself. A cached read costs no YouTube quota and does not call YouTube at all. `source` tells you which happened (`youtube` on the first read, `cache` after). Pass `refresh=true` only when the captions actually changed on YouTube, since that re-downloads.
+ * ### Caching
  *
- * Notes:
+ * We store the transcript on first read and serve it from there afterwards, so you do not need to cache it yourself. A cached read costs no YouTube quota and does not call YouTube at all.
+ *
+ * - `source` tells you which happened: `youtube` on the first read, `cache` after.
+ * - Pass `refresh=true` only when the captions actually changed on YouTube, since that re-downloads.
+ *
+ * ### Notes
+ *
  * - Only videos owned by this connected channel. Anything else returns 404.
  * - `contentDetails.caption` in YouTube's own API reads `false` on videos that DO have a serving auto-generated track, so it is not a usable availability signal. Call this endpoint and handle the 404.
  * - YouTube generates auto-captions only for videos with recognisable speech, and can take a few hours after upload to publish them.
@@ -4015,7 +4537,22 @@ export const getYoutubePlaylists = <ThrowOnError extends boolean = false>(option
 
 /**
  * Create YouTube playlist
- * Creates an empty playlist on the connected YouTube channel. Requires a title; privacy defaults to private. Returns the same playlist shape as the list endpoint. Pass the returned playlist.id as platformSpecificData.playlistId when publishing a video. Does not change the account's default playlist. Requires the youtube or youtube.force-ssl OAuth scope. Costs 50 YouTube quota units. This operation is not idempotent and is not automatically retried: repeating a request can create another playlist, including after a timeout. List playlists before retrying an ambiguous failure. Official series settings are not exposed by YouTube's public API and must be enabled manually in YouTube's desktop playlist settings.
+ * Creates an empty playlist on the connected YouTube channel. Requires a title; privacy defaults to private.
+ *
+ * Returns the same playlist shape as the list endpoint. Pass the returned playlist.id as platformSpecificData.playlistId when publishing a video. Does not change the account's default playlist.
+ *
+ * ### Requirements and cost
+ *
+ * - Requires the youtube or youtube.force-ssl OAuth scope.
+ * - Costs 50 YouTube quota units.
+ *
+ * ### Retries
+ *
+ * This operation is not idempotent and is not automatically retried. Repeating a request can create another playlist, including after a timeout. List playlists before retrying an ambiguous failure.
+ *
+ * ### Official series
+ *
+ * Official series settings are not exposed by YouTube's public API and must be enabled manually in YouTube's desktop playlist settings.
  *
  */
 export const createYoutubePlaylist = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateYoutubePlaylistData, ThrowOnError>) => {
@@ -4038,7 +4575,12 @@ export const updateYoutubeDefaultPlaylist = <ThrowOnError extends boolean = fals
 
 /**
  * List Google Business Profile locations
- * Returns Google Business Profile locations the connected account can access, plus the currently selected location. The list is bounded (see hasMore); for accounts that own many locations, use the search or filter query params to find a specific one instead of loading them all, or raise limit to enumerate an account with more than 100 locations.
+ * Returns Google Business Profile locations the connected account can access, plus the currently selected location.
+ *
+ * The list is bounded (see hasMore). For accounts that own many locations:
+ *
+ * - use the search or filter query params to find a specific one instead of loading them all;
+ * - or raise limit to enumerate an account with more than 100 locations.
  *
  */
 export const getGmbLocations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetGmbLocationsData, ThrowOnError>) => {
@@ -4061,7 +4603,19 @@ export const updateGmbLocation = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Assign Google Business Profile location to another profile
- * Connect a Google Business Profile location onto a DIFFERENT profile by reusing the OAuth grant from an already-connected Google Business Profile account, with no browser and no re-authorization. Built for agencies whose single Google account has manager access to many client locations and who run one profile per client: connect one location the normal way (browser OAuth), then bulk-assign the rest onto each client's profile via this endpoint. The path `accountId` is a SOURCE connected Google Business Profile account (the token holder); the body `profileId` is the TARGET profile, which may already hold other locations; assigning a location it already holds refreshes that account.
+ * Connect a Google Business Profile location onto a DIFFERENT profile by reusing the OAuth grant from an already-connected Google Business Profile account, with no browser and no re-authorization.
+ *
+ * Built for agencies whose single Google account has manager access to many client locations and who run one profile per client:
+ *
+ * 1. Connect one location the normal way (browser OAuth).
+ * 2. Bulk-assign the rest onto each client's profile via this endpoint.
+ *
+ * ### Parameters
+ *
+ * - The path `accountId` is a SOURCE connected Google Business Profile account (the token holder).
+ * - The body `profileId` is the TARGET profile, which may already hold other locations.
+ *
+ * Assigning a location the target profile already holds refreshes that account.
  *
  */
 export const assignGoogleBusinessLocation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AssignGoogleBusinessLocationData, ThrowOnError>) => {
@@ -4090,22 +4644,24 @@ export const getFacebookPostReactions = <ThrowOnError extends boolean = false>(o
 
 /**
  * List visitor posts on a Facebook Page
- * Returns the posts other people published on the connected Facebook Page,
- * newest first. Zernio reads the Page feed (Graph `/{page-id}/feed`, which
- * works on New Pages Experience Pages, unlike the deprecated `visitor_posts`
- * edge) and drops the posts the Page published itself and the posts other
- * people published on their own timeline that only tag the Page. A Page
- * without visitor posts returns an empty `data` array.
+ * Returns the posts other people published on the connected Facebook Page, newest first. A Page without visitor posts returns an empty `data` array.
  *
- * Cursor-paginated: pass `nextCursor` from the previous response as
- * `cursor` to read the next page. `limit` sets how many feed entries are
- * scanned, so a page can hold fewer posts than `limit`, or none, while
- * `nextCursor` is not null. `nextCursor` is null when there are no more
- * pages, and the final page can come back empty.
+ * ### What is returned
  *
- * Works on `facebook` accounts with a Page selected. Meta requires the `pages_read_user_content`
- * permission, which Zernio requests with the comments scope: an account
- * connected without it receives Meta's refusal as `platform_api_error`.
+ * Zernio reads the Page feed (Graph `/{page-id}/feed`, which works on New Pages Experience Pages, unlike the deprecated `visitor_posts` edge). It drops:
+ *
+ * - the posts the Page published itself
+ * - the posts other people published on their own timeline that only tag the Page
+ *
+ * ### Pagination
+ *
+ * Cursor-paginated: pass `nextCursor` from the previous response as `cursor` to read the next page.
+ *
+ * `limit` sets how many feed entries are scanned, so a page can hold fewer posts than `limit`, or none, while `nextCursor` is not null. `nextCursor` is null when there are no more pages, and the final page can come back empty.
+ *
+ * ### Requirements
+ *
+ * Works on `facebook` accounts with a Page selected. Meta requires the `pages_read_user_content` permission, which Zernio requests with the comments scope. An account connected without it receives Meta's refusal as `platform_api_error`.
  *
  */
 export const listFacebookVisitorPosts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListFacebookVisitorPostsData, ThrowOnError>) => {
@@ -4190,11 +4746,11 @@ export const getSubredditRules = <ThrowOnError extends boolean = false>(options:
  *
  * Cast, change, or clear the connected account's vote on a Reddit post or comment.
  *
- * **Reddit requires that votes be cast by humans.** Reddit's API terms permit a client
- * to proxy a human's action one-for-one, and prohibit a bot from deciding how to vote
- * or from amplifying a human's vote. Call this endpoint only in direct response to an
- * explicit action by the account owner. Automated or agent-decided voting is
- * vote manipulation and puts API access at risk.
+ * ### Reddit requires that votes be cast by humans
+ *
+ * Reddit's API terms permit a client to proxy a human's action one-for-one, and prohibit a bot from deciding how to vote or from amplifying a human's vote.
+ *
+ * Call this endpoint only in direct response to an explicit action by the account owner. Automated or agent-decided voting is vote manipulation and puts API access at risk.
  *
  */
 export const voteRedditThing = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<VoteRedditThingData, ThrowOnError>) => {
@@ -4356,22 +4912,21 @@ export const listSlackMembers = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Send a Discord Direct Message
- * Send a 1:1 Direct Message from the bot to a Discord user (by snowflake ID).
- * Supports the same payload shape as channel posts: content, embeds, media
- * attachments, and TTS.
+ * Send a 1:1 Direct Message from the bot to a Discord user (by snowflake ID). Supports the same payload shape as channel posts: content, embeds, media attachments, and TTS.
  *
- * Constraints (Discord platform limits):
+ * ### Constraints (Discord platform limits)
+ *
  * - The bot can only DM users it shares at least one guild with.
- * - If the recipient has DMs disabled for non-friends, Discord returns 403
- * (surfaces as a 502 platform error).
+ * - If the recipient has DMs disabled for non-friends, Discord returns 403 (surfaces as a 502 platform error).
  * - `content` capped at 2,000 chars.
  * - At least one of `content`, `embeds`, or `attachments` is required.
  * - The recipient must be identified by Discord snowflake ID (not username).
  *
- * This is a dedicated endpoint rather than a `POST /v1/posts` variant because
- * DMs are 1:1 operational messages (onboarding, billing reminders, support
- * pings) with a different lifecycle than scheduled channel posts. DMs are
- * not persisted to `Post` / `ExternalPost` and are always sent immediately.
+ * ### Why a separate endpoint
+ *
+ * This is a dedicated endpoint rather than a `POST /v1/posts` variant because DMs are 1:1 operational messages (onboarding, billing reminders, support pings) with a different lifecycle than scheduled channel posts.
+ *
+ * DMs are not persisted to `Post` / `ExternalPost` and are always sent immediately.
  *
  */
 export const sendDiscordDirectMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendDiscordDirectMessageData, ThrowOnError>) => {
@@ -4808,26 +5363,28 @@ export const getWebhookSettings = <ThrowOnError extends boolean = false>(options
  *
  * `name`, `url` and `events` are required. `url` must be a valid URL and `events` must contain at least one event. Whitespace is trimmed from `url` before validation.
  *
- * Webhooks are auto-disabled only once the endpoint has had no successful delivery for 3 days AND has either reached 20 consecutive terminal failures (each one an event that exhausted the full retry ladder) or been failing continuously for 3 days. The owner is emailed; re-enable it with `isActive: true`.
+ * ### Auto-disable
  *
- * A restricted (zrk_) API key can only subscribe to events whose resource group
- * the key holds; an event outside the key's groups is rejected with 403, so a
- * restricted key can never create a subscription broader than itself.
+ * A webhook is auto-disabled only once the endpoint has had no successful delivery for 3 days AND either:
  *
- * `disabledResourceGroups` restricts the subscription itself, independently of
- * which key or session later reads it. Events in a disabled group are dropped
- * before delivery to this endpoint, on live delivery and on every replay path
- * (test fire, redelivery, dead-letter requeue), even if they are listed in
- * `events`. Omit it to receive everything in `events`, which is how existing
- * subscriptions behave. A restricted key's own disabled groups are always
- * unioned in.
+ * - has reached 20 consecutive terminal failures (each one an event that exhausted the full retry ladder), or
+ * - has been failing continuously for 3 days.
  *
- * `profileIds` pins the subscription to a set of profiles and `accountIds`
- * to a set of connected accounts: only events attributable to one of the
- * listed ids are delivered, and a subscription with both lists must match
- * on both. Use them to send test accounts to a staging endpoint. Ids
- * outside your team are rejected with 404 (`profile_not_found`,
- * `account_not_found`).
+ * The owner is emailed; re-enable it with `isActive: true`.
+ *
+ * ### Restricted keys
+ *
+ * A restricted (zrk_) API key can only subscribe to events whose resource group the key holds. An event outside the key's groups is rejected with 403, so a restricted key can never create a subscription broader than itself.
+ *
+ * ### Filtering what is delivered
+ *
+ * `disabledResourceGroups` restricts the subscription itself, independently of which key or session later reads it. Events in a disabled group are dropped before delivery to this endpoint, even if they are listed in `events`. This applies on live delivery and on every replay path (test fire, redelivery, dead-letter requeue).
+ *
+ * Omit it to receive everything in `events`, which is how existing subscriptions behave. A restricted key's own disabled groups are always unioned in.
+ *
+ * `profileIds` pins the subscription to a set of profiles and `accountIds` to a set of connected accounts. Only events attributable to one of the listed ids are delivered, and a subscription with both lists must match on both. Use them to send test accounts to a staging endpoint.
+ *
+ * Ids outside your team are rejected with 404 (`profile_not_found`, `account_not_found`).
  *
  */
 export const createWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateWebhookSettingsData, ThrowOnError>) => {
@@ -4839,33 +5396,48 @@ export const createWebhookSettings = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Update webhook
- * Update an existing webhook configuration. All fields except `webhookId` are optional; only provided fields will be updated. `webhookId` is the same name the other /v1/webhooks operations use (logs, redeliver, test); the deprecated `_id` is still accepted in its place.
+ * Update an existing webhook configuration. All fields except `webhookId` are optional; only provided fields will be updated.
  *
- * When provided, `name` must be 1-50 characters, `url` must be a valid URL, and `events` must contain at least one event. Whitespace is trimmed from `url` before validation.
+ * `webhookId` is the same name the other /v1/webhooks operations use (logs, redeliver, test). The deprecated `_id` is still accepted in its place.
  *
- * Webhooks are auto-disabled only once the endpoint has had no successful delivery for 3 days AND has either reached 20 consecutive terminal failures (each one an event that exhausted the full retry ladder) or been failing continuously for 3 days. The owner is emailed; re-enable it with `isActive: true`.
+ * ### Validation
  *
- * A restricted (zrk_) API key can only set `events` to events whose resource
- * group the key holds; an event outside the key's groups is rejected with 403.
- * It also cannot widen an existing subscription past its own groups.
+ * When provided:
  *
- * `disabledResourceGroups` replaces the subscription's own denylist, which
- * applies to delivery regardless of which key or session created it. Send an
- * empty array to clear it. A restricted key's own disabled groups are unioned
- * into the stored value on every update, so repointing a legacy unrestricted
- * subscription with a restricted key also narrows it.
+ * - `name` must be 1-50 characters.
+ * - `url` must be a valid URL. Whitespace is trimmed from `url` before validation.
+ * - `events` must contain at least one event.
  *
- * Timing: the new denylist applies to every event emitted after the update.
- * Events already queued for delivery when the update landed were filtered
- * against the previous denylist and can still arrive at your endpoint for up
- * to five minutes after they were enqueued, because the delivery worker
- * trusts a five-minute enqueue-time snapshot before re-checking the
- * subscription. Retries beyond that window, dead-letter replays, test fires,
- * and redeliveries are all checked against the current denylist.
+ * ### Auto-disable
  *
- * `profileIds` and `accountIds` replace the subscription's allowlists; an
- * empty array clears one. Ids outside your team are rejected with 404
- * (`profile_not_found`, `account_not_found`).
+ * Webhooks are auto-disabled only once the endpoint has had no successful delivery for 3 days AND either:
+ *
+ * - has reached 20 consecutive terminal failures (each one an event that exhausted the full retry ladder), or
+ * - has been failing continuously for 3 days.
+ *
+ * The owner is emailed. Re-enable it with `isActive: true`.
+ *
+ * ### Restricted keys
+ *
+ * A restricted (zrk_) API key can only set `events` to events whose resource group the key holds. An event outside the key's groups is rejected with 403. It also cannot widen an existing subscription past its own groups.
+ *
+ * ### `disabledResourceGroups`
+ *
+ * `disabledResourceGroups` replaces the subscription's own denylist, which applies to delivery regardless of which key or session created it. Send an empty array to clear it.
+ *
+ * A restricted key's own disabled groups are unioned into the stored value on every update. So repointing a legacy unrestricted subscription with a restricted key also narrows it.
+ *
+ * ### Denylist timing
+ *
+ * The new denylist applies to every event emitted after the update.
+ *
+ * Events already queued for delivery when the update landed were filtered against the previous denylist. They can still arrive at your endpoint for up to five minutes after they were enqueued, because the delivery worker trusts a five-minute enqueue-time snapshot before re-checking the subscription.
+ *
+ * Retries beyond that window, dead-letter replays, test fires, and redeliveries are all checked against the current denylist.
+ *
+ * ### Allowlists
+ *
+ * `profileIds` and `accountIds` replace the subscription's allowlists; an empty array clears one. Ids outside your team are rejected with 404 (`profile_not_found`, `account_not_found`).
  *
  */
 export const updateWebhookSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWebhookSettingsData, ThrowOnError>) => {
@@ -4889,15 +5461,21 @@ export const deleteWebhookSettings = <ThrowOnError extends boolean = false>(opti
 /**
  * List webhook delivery logs
  * Retrieve recorded webhook delivery attempts for the authenticated user, most recent first.
- * Logs are retained for 30 days. Supports filtering by status, event type, webhook ID, and event ID,
- * plus offset-based pagination.
  *
- * For a restricted (zrk_) API key, rows for events outside the key's resource
- * groups are omitted (`pagination.total` may over-count), and an `event` filter
- * naming such an event is rejected with 403. Events blocked by a subscription's
- * own `disabledResourceGroups` are dropped before delivery, so they produce no
- * log rows for anyone; the exception is the five-minute tail after a denylist
- * change, where an already-queued event can still be delivered and logged.
+ * Logs are retained for 30 days. Supports filtering by status, event type, webhook ID, and event ID, plus offset-based pagination.
+ *
+ * ### Restricted keys
+ *
+ * For a restricted (zrk_) API key:
+ *
+ * - Rows for events outside the key's resource groups are omitted (`pagination.total` may over-count).
+ * - An `event` filter naming such an event is rejected with 403.
+ *
+ * ### Denylisted events
+ *
+ * Events blocked by a subscription's own `disabledResourceGroups` are dropped before delivery, so they produce no log rows for anyone.
+ *
+ * The exception is the five-minute tail after a denylist change, where an already-queued event can still be delivered and logged.
  *
  */
 export const getWebhookLogs = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetWebhookLogsData, ThrowOnError>) => {
@@ -4935,21 +5513,25 @@ export const redeliverWebhookEvent = <ThrowOnError extends boolean = false>(opti
  * Send test webhook
  * Send a test webhook to verify your endpoint is configured correctly. The test payload includes event: "webhook.test" to distinguish it from real events.
  *
- * Pass `event` to receive a sample payload of that event instead, so you can exercise the handler
- * for an event that only fires on a real outage or lifecycle change (e.g. `account.ads.sync_failed`).
- * The sample has the exact shape documented for the event under Webhook Events and is delivered
- * like a real one (same `X-Zernio-Event`, `X-Zernio-Event-Id` and `X-Zernio-Signature` headers),
- * with a top-level `test: true` and placeholder ids, never your data. The webhook does not have
- * to be subscribed to the event, but a webhook that lists the event's resource group in its
- * `disabledResourceGroups` answers 403, as does an API key with that group disabled. The delivery
- * shows up in the webhook logs with `test: true`.
+ * ### Sample payload for a specific event
  *
- * `webhook.test` belongs to the `webhooks` resource group, so a key with that
- * group disabled is rejected with 403, as is a test fire on a subscription that
- * lists `webhooks` in its own `disabledResourceGroups` (a 403, not a reported
- * delivery failure). Replays of real events (redelivery, dead-letter requeue) run
- * the same checks as live delivery, against both the key's groups and the
- * subscription's.
+ * Pass `event` to receive a sample payload of that event instead. This exercises the handler for an event that only fires on a real outage or lifecycle change (e.g. `account.ads.sync_failed`).
+ *
+ * - The sample has the exact shape documented for the event under Webhook Events.
+ * - It is delivered like a real one, with the same `X-Zernio-Event`, `X-Zernio-Event-Id` and `X-Zernio-Signature` headers.
+ * - It carries a top-level `test: true` and placeholder ids, never your data.
+ * - The delivery shows up in the webhook logs with `test: true`.
+ *
+ * The webhook does not have to be subscribed to the event. But a webhook that lists the event's resource group in its `disabledResourceGroups` answers 403, as does an API key with that group disabled.
+ *
+ * ### Resource group checks
+ *
+ * `webhook.test` belongs to the `webhooks` resource group. A test fire is rejected with 403 (not a reported delivery failure) when:
+ *
+ * - the key has that group disabled;
+ * - the subscription lists `webhooks` in its own `disabledResourceGroups`.
+ *
+ * Replays of real events (redelivery, dead-letter requeue) run the same checks as live delivery, against both the key's groups and the subscription's.
  *
  */
 export const testWebhook = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<TestWebhookData, ThrowOnError>) => {
@@ -5013,7 +5595,14 @@ export const updateEmailThread = <ThrowOnError extends boolean = false>(options:
 
 /**
  * List email messages
- * Same filters and envelope as `GET /v1/email/threads`, one row per message. Bodies are omitted; fetch a message to read `text` and `html`. On Google, list rows also omit `attachments` (Gmail's metadata pages carry headers only; `hasAttachment=true` still filters server-side), `sortOrder=asc` reverses the fetched page and `archive` means mail without the inbox, trash or spam labels.
+ * Same filters and envelope as `GET /v1/email/threads`, one row per message. Bodies are omitted; fetch a message to read `text` and `html`.
+ *
+ * ### On Google
+ *
+ * - List rows also omit `attachments` (Gmail's metadata pages carry headers only); `hasAttachment=true` still filters server-side.
+ * - `sortOrder=asc` reverses the fetched page.
+ * - `archive` means mail without the inbox, trash or spam labels.
+ *
  */
 export const listEmailMessages = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListEmailMessagesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListEmailMessagesResponse, ListEmailMessagesError, ThrowOnError>({
@@ -5024,11 +5613,21 @@ export const listEmailMessages = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Send an email
- * Sends from the connected mailbox and returns the stored sent copy. The message is mirrored into the inbox (`message.sent` fires once) and counted against the mailbox's daily cap, reported in the `X-Zernio-Send-Limit`, `X-Zernio-Send-Remaining` and `X-Zernio-Send-Reset` response headers.
+ * Sends from the connected mailbox and returns the stored sent copy.
  *
- * Protection on every mailbox: a daily cap (Microsoft 1,000; Google Workspace 500; Gmail consumer 200) that answers 429 `email_send_cap_reached` with `details.cap`; the same body reaching more than 50 distinct recipients within an hour pauses the mailbox with an escalating cooldown (429 `rate_limited`, `account.rate_limited` webhook). These mailboxes are for one-to-one mail, not bulk sends. Gmail sends need a payment method on the workspace (402). Reading, calendar and files do not.
+ * The message is mirrored into the inbox (`message.sent` fires once) and counted against the mailbox's daily cap. The cap is reported in the `X-Zernio-Send-Limit`, `X-Zernio-Send-Remaining` and `X-Zernio-Send-Reset` response headers.
  *
- * `scheduledFor` and `holdAsDraft` are reserved and currently rejected with 400.
+ * ### Sending limits
+ *
+ * These mailboxes are for one-to-one mail, not bulk sends. Protection on every mailbox:
+ *
+ * - Daily cap: Microsoft 1,000; Google Workspace 500; Gmail consumer 200. Reaching it answers 429 `email_send_cap_reached` with `details.cap`.
+ * - The same body reaching more than 50 distinct recipients within an hour pauses the mailbox with an escalating cooldown (429 `rate_limited`, `account.rate_limited` webhook).
+ *
+ * ### Other errors
+ *
+ * - 402: Gmail sends need a payment method on the workspace. Reading, calendar and files do not.
+ * - 400: `scheduledFor` and `holdAsDraft` are reserved and currently rejected.
  *
  */
 export const sendEmailMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendEmailMessageData, ThrowOnError>) => {
@@ -5126,7 +5725,23 @@ export const listCalendarEvents = <ThrowOnError extends boolean = false>(options
 
 /**
  * Create an event
- * `conferencing: teams` adds a Teams meeting on Microsoft accounts; the created event comes back with `conferencing: null` when the tenant has no Teams (the EEA Business Basic SKUs ship without it). `google_meet` is rejected there with 400 (`param: conferencing`). On Google accounts `conferencing: google_meet` adds a Meet link, `teams` is rejected with 400, and `recurrence` accepts any RRULE Google Calendar supports. `recurrence` takes one RRULE line with FREQ, INTERVAL, COUNT, UNTIL, BYDAY and BYSETPOS; other parts are rejected with 400 (`param: recurrence`).
+ * Creates a calendar event. Conferencing and recurrence behave differently on Microsoft and Google accounts.
+ *
+ * ### Microsoft accounts
+ *
+ * - `conferencing: teams` adds a Teams meeting. The created event comes back with `conferencing: null` when the tenant has no Teams (the EEA Business Basic SKUs ship without it).
+ * - `google_meet` is rejected with 400 (`param: conferencing`).
+ *
+ * ### Google accounts
+ *
+ * - `conferencing: google_meet` adds a Meet link.
+ * - `teams` is rejected with 400.
+ * - `recurrence` accepts any RRULE Google Calendar supports.
+ *
+ * ### Recurrence
+ *
+ * `recurrence` takes one RRULE line with FREQ, INTERVAL, COUNT, UNTIL, BYDAY and BYSETPOS. Other parts are rejected with 400 (`param: recurrence`).
+ *
  */
 export const createCalendarEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCalendarEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateCalendarEventResponse, CreateCalendarEventError, ThrowOnError>({
@@ -5199,7 +5814,14 @@ export const calendarAvailability = <ThrowOnError extends boolean = false>(optio
 
 /**
  * List files in a folder or search the drive
- * Children of `folderId` (the root by default), folders first. With `q` and no `folderId` the whole drive is searched by name (on Google, every drive the app can see, shared drives included). The account must have been connected with `scopes=files` (412 `account_scope_missing` otherwise). Cursors are opaque and provider-issued. Google Drive returns only files Zernio created or the user picked (see the Files tag): an unpicked folder lists empty.
+ * Lists the children of `folderId` (the root by default), folders first.
+ *
+ * With `q` and no `folderId` the whole drive is searched by name (on Google, every drive the app can see, shared drives included).
+ *
+ * - The account must have been connected with `scopes=files` (412 `account_scope_missing` otherwise).
+ * - Cursors are opaque and provider-issued.
+ * - Google Drive returns only files Zernio created or the user picked (see the Files tag): an unpicked folder lists empty.
+ *
  */
 export const listFiles = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListFilesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListFilesResponse, ListFilesError, ThrowOnError>({
@@ -5231,7 +5853,15 @@ export const createFolder = <ThrowOnError extends boolean = false>(options: Opti
 
 /**
  * Create a hosted Google Picker session
- * Google accounts are connected with `drive.file`, so Zernio opens only files it created or the user picked (see the Files tag). This is how your end user grants files: create a session, send the user to `url`, and they pick files in Google Picker on a Zernio-hosted page.
+ * Creates a hosted Google Picker session so your end user can grant Zernio access to Drive files.
+ *
+ * Google accounts are connected with `drive.file`, so Zernio opens only files it created or the user picked (see the Files tag).
+ *
+ * 1. Create a session.
+ * 2. Send the user to `url`.
+ * 3. They pick files in Google Picker on a Zernio-hosted page.
+ *
+ * ### Redirect
  *
  * When they finish, the browser is sent to `redirectUrl` with these query params added (existing params are kept):
  *
@@ -5240,7 +5870,11 @@ export const createFolder = <ThrowOnError extends boolean = false>(options: Opti
  *
  * A `file.picked` webhook fires on every successful pick, so `redirectUrl` is optional for server-side integrations. Closing the picker without picking keeps the session open; the user can try again until it expires.
  *
- * The URL is single-use and expires after 30 minutes; create a new session for every pick. Google accounts only: Microsoft accounts answer 400 `platform_not_supported` because OneDrive needs no picker. Picks are permanent grants: once picked, a file stays readable through the Files endpoints until the user removes Zernio from their Google account.
+ * ### Limits
+ *
+ * - The URL is single-use and expires after 30 minutes; create a new session for every pick.
+ * - Google accounts only: Microsoft accounts answer 400 `platform_not_supported` because OneDrive needs no picker.
+ * - Picks are permanent grants: once picked, a file stays readable through the Files endpoints until the user removes Zernio from their Google account.
  *
  */
 export const createFilePickerSession = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateFilePickerSessionData, ThrowOnError>) => {
@@ -5307,7 +5941,17 @@ export const getFileShareLink = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Admin-consent link for a Microsoft tenant
- * Some Microsoft 365 tenants let no user grant mail or calendar access themselves; the API then answers 412 `admin_consent_required` with `details.adminConsentUrl`, a ready admin-consent link. This endpoint mints a fresh one (each is valid for one hour) and lets you choose `redirectUrl`. It returns the Microsoft Entra admin-consent link for the app. A tenant administrator opens it, approves, and is sent to `redirectUrl` with `adminConsent=granted&tenant=…` (or `adminConsent=denied&error=…`); the grant is recorded on the account and later requests succeed without a reconnect.
+ * Returns the Microsoft Entra admin-consent link for the app, so a tenant administrator can grant mail or calendar access.
+ *
+ * Some Microsoft 365 tenants let no user grant mail or calendar access themselves. The API then answers 412 `admin_consent_required` with `details.adminConsentUrl`, a ready admin-consent link.
+ *
+ * This endpoint mints a fresh one (each is valid for one hour) and lets you choose `redirectUrl`.
+ *
+ * ### Flow
+ *
+ * 1. A tenant administrator opens the link and approves.
+ * 2. They are sent to `redirectUrl` with `adminConsent=granted&tenant=…` (or `adminConsent=denied&error=…`).
+ * 3. The grant is recorded on the account, and later requests succeed without a reconnect.
  *
  */
 export const startMicrosoftAdminConsent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<StartMicrosoftAdminConsentData, ThrowOnError>) => {
@@ -5323,13 +5967,22 @@ export const startMicrosoftAdminConsent = <ThrowOnError extends boolean = false>
  *
  * Supported platforms: Facebook, Instagram, X, Bluesky, Reddit, Telegram, WhatsApp, iMessage and SMS.
  *
- * **X limitation.** X has replaced traditional DMs with encrypted "X Chat" for many accounts. Messages sent or received through encrypted X Chat are not accessible via X's API (the /2/dm_events endpoint only returns legacy unencrypted DMs). This means some X conversations may show only outgoing messages or appear empty. This is an X platform limitation that affects all third-party applications. See X's docs on encrypted messaging for more details.
+ * ### X limitation
  *
- * **Instagram and Facebook pre-connect history.** When one of these accounts is connected, Zernio replays the DM history the account already holds on Meta, so conversations that began before the account was connected appear here. Up to 500 conversations per account are replayed.
+ * X has replaced traditional DMs with encrypted "X Chat" for many accounts. Messages sent or received through encrypted X Chat are not accessible via X's API (the /2/dm_events endpoint only returns legacy unencrypted DMs).
  *
- * - The replay runs in the background and can finish after a listing you have already taken, and replayed conversations keep their original lastMessageAt, so they sort into date order rather than appearing at the top. If you mirror this endpoint into your own store, re-run the sweep rather than relying on a single pass at connect time.
+ * This means some X conversations may show only outgoing messages or appear empty. This is an X platform limitation that affects all third-party applications. See X's docs on encrypted messaging for more details.
+ *
+ * ### Instagram and Facebook pre-connect history
+ *
+ * When one of these accounts is connected, Zernio replays the DM history the account already holds on Meta, so conversations that began before the account was connected appear here. Up to 500 conversations per account are replayed.
+ *
+ * - The replay runs in the background and can finish after a listing you have already taken.
+ * - Replayed conversations keep their original lastMessageAt, so they sort into date order rather than appearing at the top.
+ * - If you mirror this endpoint into your own store, re-run the sweep rather than relying on a single pass at connect time.
  * - Replayed history emits no webhooks and is stored as already read, so it never affects unread counts.
- * - Threads that Meta refuses to serve are skipped, and an account whose Instagram "connected tools" message access is turned off is not replayed at all.
+ * - Threads that Meta refuses to serve are skipped.
+ * - An account whose Instagram "connected tools" message access is turned off is not replayed at all.
  *
  */
 export const listInboxConversations = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListInboxConversationsData, ThrowOnError>) => {
@@ -5345,31 +5998,115 @@ export const listInboxConversations = <ThrowOnError extends boolean = false>(opt
  *
  * Supported platforms: X, Bluesky, Reddit, WhatsApp, SMS, Slack, iMessage, and email (Google and Microsoft accounts). Other platforms return PLATFORM_NOT_SUPPORTED.
  *
- * **Email (Google / Microsoft).** Pass the recipient address as participantId with `subject`, `message` and optionally `cc`. The mail is sent from the mailbox, mirrored into the inbox, and the response names the inbox conversation it opened (the provider thread id, usable with the other inbox endpoints). An account connected without the `email` area returns 412 `account_scope_missing`; a disconnected one 409. Gmail accounts need a card on file (402 `payment_required`). Sends count toward the mailbox's daily cap and never toward managed messages.
+ * ### Email (Google / Microsoft)
  *
- * **iMessage.** Pass the recipient as participantId: a phone number in international format (+15551234567) or an iMessage email. Senders ordered through Zernio can message contacts who never wrote to them. The first message to such a contact must be plain text from an identifiable person or business opening a conversation; a cold introduction, including a sales one, is fine ("Hi Mark, this is John from Pratt Media. I help local roofers get more leads. Would you be open to a quick chat?"). It may not contain links, email addresses, phone numbers, prices or attachments (the provider's own rule for opening messages). One that does returns 400 with code `invalid_content`, a message saying what was flagged, and nothing is sent. Each sender may open at most one new conversation every 15 minutes, and a new sender warms up: 2 new conversations per 24 hours on days 1-2 after activation, 5 on days 3-4, 10 on days 5-7, 20 on days 8-14, 30 on days 15-21 and 50 after that. Beyond that the request returns 429 with code `new_contact_limit` and a time to retry. The warm-up counts from when a sender ordered through Zernio went live; senders registered from your own provider account are not warmed up by Zernio. Until the contact replies, the thread accepts the opening and at most two follow-ups, at least 24 hours apart: a follow-up sooner returns 429 `new_contact_limit` with the time to retry, and a fourth message returns 409 `recipient_must_message_first`. The provider treats every message to a contact who has not replied as a new conversation, so follow-ups follow the same content rule and count toward the 15-minute spacing and the daily warm-up like an opening. Once the contact has written, the thread behaves like any other and is not limited. Recipients can report a first message as junk, and reports can get a sender blocked permanently, so keep the reply rate high (above roughly 30%). A sender registered with your own provider account may lack the add-on for new contacts; its sends to them return 409 `recipient_must_message_first`, and an opt-in link is the way in. A contact who opted out returns 409 `recipient_opted_out`.
+ * Pass the recipient address as participantId with `subject`, `message` and optionally `cc`. The mail is sent from the mailbox and mirrored into the inbox. The response names the inbox conversation it opened (the provider thread id, usable with the other inbox endpoints).
  *
- * **Slack.** Pass a workspace member id as participantId (list them with GET /v1/accounts/{accountId}/slack-members). Zernio opens the DM channel with that member and sends the message; the thread then behaves like any other Slack conversation in the inbox. The member must belong to the connected workspace.
+ * - 412 `account_scope_missing`: the account was connected without the `email` area
+ * - 409: the account is disconnected
+ * - 402 `payment_required`: Gmail accounts need a card on file
  *
- * **WhatsApp.** This is the endpoint for sending an approved template message to a phone number. Provide templateName, templateLanguage, and templateParams (variable values for the text header, body and dynamic URL buttons, in that order), with the recipient phone in participantId. A template is required because WhatsApp does not permit freeform messages to open a conversation; a missing template returns TEMPLATE_REQUIRED.
+ * Sends count toward the mailbox's daily cap and never toward managed messages.
  *
- * Before sending, Zernio must resolve an exact APPROVED template definition matching both templateName and templateLanguage. If Meta rejects that lookup, or the exact approved definition is absent, Zernio sends no message and returns the canonical platform error instead. Lookup errors use code `platform_api_error`, type `platform_error`, and platform `whatsapp`. Sanitized Meta code, message, and `error_data.details` are returned in `platformError`; `details` identifies `phase: template_lookup`, the query-free endpoint, upstream status, and only safe provider usage or retry headers.
+ * ### iMessage
  *
- * - Templates with media headers (image, video, document) are handled automatically: Zernio reads the approved template definition and fills the header at send time with the template's approved sample asset. To send a DIFFERENT asset per message (e.g. a distinct invoice PDF for each recipient), pass the headerMedia field with a public link (or a Meta media id); it overrides the sample for that send.
- * - A template whose approved header format is LOCATION has no header asset to reconstruct at all: Meta only accepts the location at send time, so pass headerLocation (latitude and longitude required) whenever such a template is sent; headerMedia and headerLocation cannot both be supplied.
- * - A button that carries its own value at send time (a copy-code button holding a Pix payment code or a coupon, a flow token) is sent with templateButtonParams, addressed by the button's index; templateParams covers text variables and dynamic URL buttons only.
- * - CAROUSEL templates take per-card overrides via templateCards, each addressed by the card's card_index, because card body variables restart at {{1}} per card and cannot be expressed in the flat templateParams order.
+ * Pass the recipient as participantId: a phone number in international format (+15551234567) or an iMessage email. Senders ordered through Zernio can message contacts who never wrote to them.
+ *
+ * #### Opening message rules
+ *
+ * The first message to such a contact must be plain text from an identifiable person or business opening a conversation.
+ *
+ * A cold introduction, including a sales one, is fine ("Hi Mark, this is John from Pratt Media. I help local roofers get more leads. Would you be open to a quick chat?").
+ *
+ * It may not contain links, email addresses, phone numbers, prices or attachments (the provider's own rule for opening messages). One that does returns 400 with code `invalid_content` and a message saying what was flagged, and nothing is sent.
+ *
+ * #### New contact limits
+ *
+ * Each sender may open at most one new conversation every 15 minutes. A new sender warms up, allowing this many new conversations per 24 hours:
+ *
+ * - Days 1-2 after activation: 2
+ * - Days 3-4: 5
+ * - Days 5-7: 10
+ * - Days 8-14: 20
+ * - Days 15-21: 30
+ * - After that: 50
+ *
+ * Beyond that the request returns 429 with code `new_contact_limit` and a time to retry. The warm-up counts from when a sender ordered through Zernio went live. Senders registered from your own provider account are not warmed up by Zernio.
+ *
+ * #### Follow-ups before the contact replies
+ *
+ * Until the contact replies, the thread accepts the opening and at most two follow-ups, at least 24 hours apart.
+ *
+ * - A follow-up sooner returns 429 `new_contact_limit` with the time to retry.
+ * - A fourth message returns 409 `recipient_must_message_first`.
+ *
+ * The provider treats every message to a contact who has not replied as a new conversation.
+ *
+ * Follow-ups therefore follow the same content rule and count toward the 15-minute spacing and the daily warm-up like an opening. Once the contact has written, the thread behaves like any other and is not limited.
+ *
+ * #### Sender safety
+ *
+ * Recipients can report a first message as junk, and reports can get a sender blocked permanently, so keep the reply rate high (above roughly 30%).
+ *
+ * - A sender registered with your own provider account may lack the add-on for new contacts. Its sends to them return 409 `recipient_must_message_first`, and an opt-in link is the way in.
+ * - A contact who opted out returns 409 `recipient_opted_out`.
+ *
+ * ### Slack
+ *
+ * Pass a workspace member id as participantId (list them with GET /v1/accounts/{accountId}/slack-members). Zernio opens the DM channel with that member and sends the message. The thread then behaves like any other Slack conversation in the inbox. The member must belong to the connected workspace.
+ *
+ * ### WhatsApp
+ *
+ * This is the endpoint for sending an approved template message to a phone number. Put the recipient phone in participantId and provide:
+ *
+ * - templateName
+ * - templateLanguage
+ * - templateParams: variable values for the text header, body and dynamic URL buttons, in that order
+ *
+ * A template is required because WhatsApp does not permit freeform messages to open a conversation. A missing template returns TEMPLATE_REQUIRED.
+ *
+ * #### Template lookup
+ *
+ * Before sending, Zernio must resolve an exact APPROVED template definition matching both templateName and templateLanguage. If Meta rejects that lookup, or the exact approved definition is absent, Zernio sends no message and returns the canonical platform error instead.
+ *
+ * Lookup errors use code `platform_api_error`, type `platform_error`, and platform `whatsapp`. Sanitized Meta code, message, and `error_data.details` are returned in `platformError`. `details` identifies `phase: template_lookup`, the query-free endpoint, upstream status, and only safe provider usage or retry headers.
+ *
+ * #### Template headers, buttons and cards
+ *
+ * - Templates with media headers (image, video, document) are handled automatically: Zernio fills the header at send time with the approved template's sample asset.
+ * - To send a DIFFERENT asset per message (e.g. a distinct invoice PDF for each recipient), pass headerMedia with a public link (or a Meta media id); it overrides the sample for that send.
+ * - A template whose approved header format is LOCATION has no header asset to reconstruct: Meta only accepts the location at send time. Pass headerLocation (latitude and longitude required) whenever such a template is sent. headerMedia and headerLocation cannot both be supplied.
+ * - A button that carries its own value at send time (a copy-code button holding a Pix payment code or a coupon, a flow token) is sent with templateButtonParams, addressed by the button's index. templateParams covers text variables and dynamic URL buttons only.
+ * - CAROUSEL templates take per-card overrides via templateCards, each addressed by the card's card_index. Card body variables restart at {{1}} per card and cannot be expressed in the flat templateParams order.
  * - Template fields are accepted on the JSON body only, not on multipart requests.
  *
- * For a number you already have a thread with, this sends the template into that thread, which also makes it the way to re-engage a contact after the 24-hour customer-service window has closed. Once the recipient replies (opening the 24h window), send freeform messages with the send-message endpoint (POST /v1/inbox/conversations/{conversationId}/messages).
+ * #### Existing threads and the 24-hour window
  *
- * Alternatively, WhatsApp Business Accounts eligible for Meta Direct Send can open a conversation with a business-initiated utility text message and no template: pass category: 'utility' together with message (and no templateName). See the category field below.
+ * For a number you already have a thread with, this sends the template into that thread. That makes it the way to re-engage a contact after the 24-hour customer-service window has closed. Once the recipient replies (opening the 24h window), send freeform messages with the send-message endpoint (POST /v1/inbox/conversations/{conversationId}/messages).
  *
- * **DM eligibility (X).** Before sending, the endpoint checks if the recipient accepts DMs from your account (via the receives_your_dm field). If not, a 422 error with code DM_NOT_ALLOWED is returned. You can skip this check with skipDmCheck: true if you have already verified eligibility.
+ * #### Meta Direct Send
  *
- * **X API tier requirement.** DM write endpoints require X API Pro tier ($5,000/month) or Enterprise access. This applies to BYOK (Bring Your Own Key) users who provide their own X API credentials.
+ * WhatsApp Business Accounts eligible for Meta Direct Send can instead open a conversation with a business-initiated utility text message and no template. Pass category: 'utility' together with message (and no templateName). See the category field below.
  *
- * **Rate limits (X only).** X's DM API enforces 200 requests per 15 minutes, 1,000 per 24 hours per connected X account, and 15,000 per 24 hours per X developer app (shared across all DM endpoints). These limits do NOT apply to other platforms. WhatsApp sends are governed by Meta's per-number messaging tiers (unique business-initiated conversations per 24 hours) and per-number throughput instead.
+ * ### X
+ *
+ * #### DM eligibility
+ *
+ * Before sending, the endpoint checks if the recipient accepts DMs from your account (via the receives_your_dm field). If not, a 422 error with code DM_NOT_ALLOWED is returned. Skip this check with skipDmCheck: true if you have already verified eligibility.
+ *
+ * #### API tier requirement
+ *
+ * DM write endpoints require X API Pro tier ($5,000/month) or Enterprise access. This applies to BYOK (Bring Your Own Key) users who provide their own X API credentials.
+ *
+ * #### Rate limits (X only)
+ *
+ * X's DM API enforces, shared across all DM endpoints:
+ *
+ * - 200 requests per 15 minutes per connected X account
+ * - 1,000 per 24 hours per connected X account
+ * - 15,000 per 24 hours per X developer app
+ *
+ * These limits do NOT apply to other platforms. WhatsApp sends are governed by Meta's per-number messaging tiers (unique business-initiated conversations per 24 hours) and per-number throughput instead.
  *
  */
 export const createInboxConversation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateInboxConversationData, ThrowOnError>) => {
@@ -5381,14 +6118,25 @@ export const createInboxConversation = <ThrowOnError extends boolean = false>(op
 
 /**
  * Search conversations
- * Search your conversations two ways at once, and get back the matching conversations, most-recent match first:
+ * Search your conversations two ways at once, and get back the matching conversations, most-recent match first.
  *
- * - Message text: matches words inside message bodies. Case-insensitive and accent-insensitive, exact tokens only (no substrings, no stemming). Each hit carries up to 3 most-recent matching messages. With direction=outgoing you can collect examples of how you write to customers, for example to teach an AI agent your tone of voice.
- * - Contact identity: matches the participant's name, username, or phone number as a case-insensitive substring. These hits have matchCount 0 and an empty matches array.
+ * ### Message text
+ *
+ * Matches words inside message bodies. Case-insensitive and accent-insensitive, exact tokens only (no substrings, no stemming). Each hit carries up to 3 most-recent matching messages.
+ *
+ * With direction=outgoing you can collect examples of how you write to customers, for example to teach an AI agent your tone of voice.
+ *
+ * ### Contact identity
+ *
+ * Matches the participant's name, username, or phone number as a case-insensitive substring. These hits have matchCount 0 and an empty matches array.
  *
  * A conversation that matches both ways is returned once, carrying its message matches.
  *
- * Only platforms whose messages are stored by Zernio are searchable: WhatsApp, SMS, Telegram, Facebook, Instagram, X and Reddit. Bluesky conversations are fetched live from the platform and cannot be searched; those accounts are listed in meta.accountsSkipped.
+ * ### Searchable platforms
+ *
+ * Only platforms whose messages are stored by Zernio are searchable: WhatsApp, SMS, Telegram, Facebook, Instagram, X and Reddit.
+ *
+ * Bluesky conversations are fetched live from the platform and cannot be searched; those accounts are listed in meta.accountsSkipped.
  *
  */
 export const searchInboxConversations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SearchInboxConversationsData, ThrowOnError>) => {
@@ -5422,7 +6170,22 @@ export const updateInboxConversation = <ThrowOnError extends boolean = false>(op
 
 /**
  * Delete conversation
- * Permanently deletes Zernio's stored copy of one conversation and every message in it, in one transaction, and unlinks the contact channel that pointed at it. Nothing is deleted on the platform (the thread stays in WhatsApp, Messenger or Instagram), and the contact record is kept: call DELETE /v1/contacts/{contactId} to erase the person's name and number as well. A platform re-sync can import the thread again: WhatsApp coexistence numbers receive their messaging history from Meta repeatedly, and a Facebook or Instagram account whose DM history walk has not finished imports it on that walk. Inbound media copies Zernio stored are removed on a best-effort basis.
+ * Permanently deletes Zernio's stored copy of one conversation and every message in it, in one transaction, and unlinks the contact channel that pointed at it.
+ *
+ * ### What is kept
+ *
+ * - Nothing is deleted on the platform (the thread stays in WhatsApp, Messenger or Instagram).
+ * - The contact record is kept: call DELETE /v1/contacts/{contactId} to erase the person's name and number as well.
+ *
+ * Inbound media copies Zernio stored are removed on a best-effort basis.
+ *
+ * ### Re-imports
+ *
+ * A platform re-sync can import the thread again:
+ *
+ * - WhatsApp coexistence numbers receive their messaging history from Meta repeatedly.
+ * - A Facebook or Instagram account whose DM history walk has not finished imports it on that walk.
+ *
  */
 export const deleteInboxConversation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteInboxConversationData, ThrowOnError>) => {
     return (options?.client ?? client).delete<DeleteInboxConversationResponse, DeleteInboxConversationError, ThrowOnError>({
@@ -5433,39 +6196,32 @@ export const deleteInboxConversation = <ThrowOnError extends boolean = false>(op
 
 /**
  * List messages
- * Fetch messages for a specific conversation, with cursor-based pagination
- * and ordering control.
+ * Fetch messages for a specific conversation, with cursor-based pagination and ordering control.
  *
- * Pagination: pass `pagination.nextCursor` from a prior response back as
- * the `cursor` query param to fetch the next page. The cursor is opaque;
- * do not parse or construct it client-side.
+ * ### Pagination
  *
- * Sort order: defaults to `asc` (oldest first, chat style). For the
- * "show me the latest messages" pattern, pass `?sortOrder=desc&limit=N`.
- * X, Instagram, Telegram, WhatsApp and Reddit honor the requested
- * order from the local message store. For Facebook and Bluesky, the
- * upstream APIs only return newest-first and have no order parameter, so
- * sort order is best-effort and only reverses items within a single page
- * (pages still walk newest→oldest). The response field `sortOrderApplied`
- * tells you what was actually applied.
+ * Pass `pagination.nextCursor` from a prior response back as the `cursor` query param to fetch the next page. The cursor is opaque; do not parse or construct it client-side.
  *
- * Reddit threads are paginated client-side because Reddit's API has no
- * per-thread cursor. Very long threads may be upstream-truncated by
- * Reddit's inbox/sent windows (~100 most-recent items each); this is a
- * Reddit platform limitation.
+ * ### Sort order
  *
- * Instagram and Facebook conversations include history from before the
- * account was connected, replayed from Meta. That replay covers the 500
- * most recent messages per conversation: a longer thread keeps its newest
- * 500 and older messages are not retrievable. Messages that arrived after
- * the account was connected are unaffected. Replayed messages are stored
- * as already read and emit no webhooks.
+ * Defaults to `asc` (oldest first, chat style). For the "show me the latest messages" pattern, pass `?sortOrder=desc&limit=N`.
  *
- * X limitation: X's encrypted "X Chat" messages are not accessible via the API. Conversations where the other participant uses encrypted X Chat may only show your outgoing messages. See the list conversations endpoint for more details.
+ * - X, Instagram, Telegram, WhatsApp and Reddit honor the requested order from the local message store.
+ * - Facebook and Bluesky upstream APIs only return newest-first and have no order parameter. Sort order is best-effort and only reverses items within a single page (pages still walk newest→oldest).
  *
- * This endpoint is read-only and does NOT mark messages as read or send
- * read receipts. To mark a conversation read (and send WhatsApp blue ticks
- * on eligible accounts), call `POST /v1/inbox/conversations/{conversationId}/read`.
+ * The response field `sortOrderApplied` tells you what was actually applied.
+ *
+ * ### Platform limits
+ *
+ * - **Reddit**: threads are paginated client-side because Reddit's API has no per-thread cursor. Very long threads may be upstream-truncated by Reddit's inbox/sent windows (~100 most-recent items each); this is a Reddit platform limitation.
+ * - **Instagram and Facebook**: conversations include history from before the account was connected, replayed from Meta. See below.
+ * - **X**: X's encrypted "X Chat" messages are not accessible via the API. Conversations where the other participant uses encrypted X Chat may only show your outgoing messages. See the list conversations endpoint for more details.
+ *
+ * The Meta replay covers the 500 most recent messages per conversation: a longer thread keeps its newest 500 and older messages are not retrievable. Messages that arrived after the account was connected are unaffected. Replayed messages are stored as already read and emit no webhooks.
+ *
+ * ### Read state
+ *
+ * This endpoint is read-only and does NOT mark messages as read or send read receipts. To mark a conversation read (and send WhatsApp blue ticks on eligible accounts), call `POST /v1/inbox/conversations/{conversationId}/read`.
  *
  */
 export const getInboxConversationMessages = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInboxConversationMessagesData, ThrowOnError>) => {
@@ -5477,78 +6233,72 @@ export const getInboxConversationMessages = <ThrowOnError extends boolean = fals
 
 /**
  * Send message
- * Send a message in a conversation. Supports text, attachments, quick replies,
- * buttons, templates, and message tags. Attachment and interactive message
- * support varies by platform.
+ * Send a message in a conversation. Supports text, attachments, quick replies, buttons, templates, and message tags. Attachment and interactive message support varies by platform.
  *
- * Email threads (Google / Microsoft accounts): the text is sent as a reply to
- * the latest mail of the thread, in either direction, with its recipients and
- * a "Re:" subject, and `cc` adds recipients. `message` is required; attachments
- * and `replyTo` return 400 here (use POST /v1/email/messages/{messageId}/reply
- * for a reply with attachments). An account connected without the `email` area
- * returns 412 `account_scope_missing`, a disconnected one 409, and a Gmail account
- * without a card on file 402. Mail sends count toward the mailbox's daily cap,
- * never toward managed messages.
+ * ### Email threads (Google / Microsoft accounts)
  *
- * WhatsApp per-recipient rate limit: WhatsApp caps how many messages you may
- * send to the same recipient in a short window and rejects the excess with
- * error code `131056` ("Too many messages sent to this recipient"). Pace
- * sends to a single recipient at roughly 10 per minute; bursts above that
- * return a `400` with code `131056`. Sends to other recipients are
- * unaffected, so parallelise across recipients rather than flooding one.
+ * The text is sent as a reply to the latest mail of the thread, in either direction, with its recipients and a "Re:" subject. `cc` adds recipients. `message` is required.
  *
- * iMessage pacing: messages to contacts who have not written to the
- * sender in the last 24 hours must be at least 2 minutes apart per
- * sender; a send inside that window returns `429` with code
- * `new_contact_limit` and the time to retry. Replies to contacts who
- * wrote within the last day are not paced. A thread opened with
- * `POST /v1/inbox/conversations` takes at most two follow-ups before
- * the contact replies, at least 24 hours apart (`429
- * new_contact_limit` sooner, `409 recipient_must_message_first` for a
- * fourth message). Each such follow-up counts as a new conversation:
- * no links, emails, phone numbers, prices or attachments (`400
- * invalid_content`), and it uses the sender's 15-minute spacing and
- * daily warm-up (`429 new_contact_limit`). Text must be shorter than
- * 10,000 characters.
+ * - 400: attachments and `replyTo` are rejected here (use POST /v1/email/messages/{messageId}/reply for a reply with attachments)
+ * - 412 `account_scope_missing`: the account was connected without the `email` area
+ * - 409: the account is disconnected
+ * - 402: a Gmail account without a card on file
  *
- * WhatsApp template messages: to send an approved template into this
- * conversation (required when the 24-hour customer-service window is
- * closed), use the `template` field with a single element carrying the
- * template reference: `{ "elements": [{ "name": ..., "language": ..., "components": [...] }] }`.
- * See the `template` field below for the exact shape. To send a template
- * to a phone number you have no conversation with yet, use the
- * create-conversation endpoint (POST /v1/inbox/conversations) instead.
+ * Mail sends count toward the mailbox's daily cap, never toward managed messages.
  *
- * Zernio resolves the exact APPROVED template name and language before any
- * WhatsApp template send. A failed lookup or missing exact definition sends
- * no message and returns code `platform_api_error`, type `platform_error`,
- * and platform `whatsapp`. Sanitized Meta code, message, and
- * `error_data.details` are returned in `platformError`; `details` identifies
- * `phase: template_lookup`, the query-free endpoint, upstream status, and
- * only safe provider usage or retry headers.
+ * ### WhatsApp per-recipient rate limit
  *
- * WhatsApp rich interactive messages (list, CTA URL, Flow, location request)
- * are available via the `interactive` field. Tap events are delivered through
- * the `message.received` webhook with WhatsApp-specific `metadata` fields
- * (`interactiveType`, `interactiveId`, `flowResponseJson`, `flowResponseData`).
+ * WhatsApp caps how many messages you may send to the same recipient in a short window. It rejects the excess with error code `131056` ("Too many messages sent to this recipient").
  *
- * **Idempotency:** send an `Idempotency-Key` header to make retries safe
- * (e.g. after a client-side timeout where delivery is unknown): same key +
- * same body replays the original response (with `Idempotent-Replayed: true`)
- * instead of sending the message a second time; same key + different body
- * returns 422; a key still in flight returns 409. Works for JSON and
- * multipart (file upload) requests alike. Keys are retained for 24 hours.
+ * Pace sends to a single recipient at roughly 10 per minute; bursts above that return a `400` with code `131056`. Sends to other recipients are unaffected, so parallelise across recipients rather than flooding one.
  *
- * Only successful (2xx) responses are stored for replay: if the request
- * throws or returns a non-2xx status, the key is released so the same key
- * can be retried once the problem is fixed. The header therefore protects
- * the "request succeeded but the response was lost" case. For an ambiguous
- * failure (a 5xx or a network timeout), reconcile before retrying: a
- * failure after the platform already accepted the message also releases
- * the key, and a blind retry could send it twice. List the conversation's
- * messages first, and treat an empty result as inconclusive rather than
- * as proof nothing was sent, since a send that failed while being recorded
- * leaves no trace on our side.
+ * ### iMessage pacing
+ *
+ * Messages to contacts who have not written to the sender in the last 24 hours must be at least 2 minutes apart per sender.
+ *
+ * A send inside that window returns `429` with code `new_contact_limit` and the time to retry. Replies to contacts who wrote within the last day are not paced.
+ *
+ * A thread opened with `POST /v1/inbox/conversations` takes at most two follow-ups before the contact replies, at least 24 hours apart:
+ *
+ * - `429 new_contact_limit`: a follow-up sent sooner
+ * - `409 recipient_must_message_first`: a fourth message
+ *
+ * Each such follow-up counts as a new conversation:
+ *
+ * - No links, emails, phone numbers, prices or attachments (`400 invalid_content`).
+ * - It uses the sender's 15-minute spacing and daily warm-up (`429 new_contact_limit`).
+ *
+ * Text must be shorter than 10,000 characters.
+ *
+ * ### WhatsApp template messages
+ *
+ * To send an approved template into this conversation (required when the 24-hour customer-service window is closed), use the `template` field with a single element carrying the template reference: `{ "elements": [{ "name": ..., "language": ..., "components": [...] }] }`. See the `template` field below for the exact shape.
+ *
+ * To send a template to a phone number you have no conversation with yet, use the create-conversation endpoint (POST /v1/inbox/conversations) instead.
+ *
+ * #### Template lookup
+ *
+ * Zernio resolves the exact APPROVED template name and language before any WhatsApp template send. A failed lookup or missing exact definition sends no message and returns code `platform_api_error`, type `platform_error`, and platform `whatsapp`.
+ *
+ * Sanitized Meta code, message, and `error_data.details` are returned in `platformError`. `details` identifies `phase: template_lookup`, the query-free endpoint, upstream status, and only safe provider usage or retry headers.
+ *
+ * ### WhatsApp interactive messages
+ *
+ * Rich interactive messages (list, CTA URL, Flow, location request) are available via the `interactive` field. Tap events are delivered through the `message.received` webhook with WhatsApp-specific `metadata` fields (`interactiveType`, `interactiveId`, `flowResponseJson`, `flowResponseData`).
+ *
+ * ### Idempotency
+ *
+ * Send an `Idempotency-Key` header to make retries safe (e.g. after a client-side timeout where delivery is unknown). Works for JSON and multipart (file upload) requests alike. Keys are retained for 24 hours.
+ *
+ * - Same key + same body: replays the original response (with `Idempotent-Replayed: true`) instead of sending the message a second time.
+ * - Same key + different body: returns 422.
+ * - A key still in flight: returns 409.
+ *
+ * Only successful (2xx) responses are stored for replay. If the request throws or returns a non-2xx status, the key is released so the same key can be retried once the problem is fixed. The header therefore protects the "request succeeded but the response was lost" case.
+ *
+ * For an ambiguous failure (a 5xx or a network timeout), reconcile before retrying. A failure after the platform already accepted the message also releases the key, so a blind retry could send it twice.
+ *
+ * List the conversation's messages first. Treat an empty result as inconclusive rather than as proof nothing was sent, since a send that failed while being recorded leaves no trace on our side.
  *
  */
 export const sendInboxMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendInboxMessageData, ThrowOnError>) => {
@@ -5560,24 +6310,19 @@ export const sendInboxMessage = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Download WhatsApp media
- * Streams the binary for a WhatsApp attachment. This is the endpoint the
- * `url` on a WhatsApp `attachments[]` entry points at, in both the
- * `message.received` webhook and the List messages response.
+ * Streams the binary for a WhatsApp attachment. This is the endpoint the `url` on a WhatsApp `attachments[]` entry points at, in both the `message.received` webhook and the List messages response.
  *
- * **This is an authenticated endpoint, not a public link.** Send
- * `Authorization: Bearer <your API key>` exactly as you would for any other
- * call. Passing the URL straight to a browser, an LLM vision API, or a
- * no-code "download file" step without the header returns `401`. This is
- * the most common integration mistake on this endpoint, and it differs from
- * Instagram, Facebook and Telegram, whose `attachments[].url` is a direct
- * CDN link that needs no header.
+ * ### This is an authenticated endpoint, not a public link
  *
- * **Fetch on receipt, not lazily.** WhatsApp media lives in Meta's media
- * store, not ours, and it is removed after a limited retention window
- * (currently 7 days, and Meta has been dropping some inbound media sooner).
- * Once Meta drops it the media is unrecoverable and this endpoint answers
- * `400` permanently, so retrying will never succeed. Download and store the
- * bytes when the webhook arrives.
+ * Send `Authorization: Bearer <your API key>` exactly as you would for any other call. Passing the URL straight to a browser, an LLM vision API, or a no-code "download file" step without the header returns `401`.
+ *
+ * This is the most common integration mistake on this endpoint. It differs from Instagram, Facebook and Telegram, whose `attachments[].url` is a direct CDN link that needs no header.
+ *
+ * ### Fetch on receipt, not lazily
+ *
+ * WhatsApp media lives in Meta's media store, not ours, and it is removed after a limited retention window (currently 7 days, and Meta has been dropping some inbound media sooner).
+ *
+ * Once Meta drops it the media is unrecoverable and this endpoint answers `400` permanently, so retrying will never succeed. Download and store the bytes when the webhook arrives.
  *
  */
 export const getWhatsAppMedia = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppMediaData, ThrowOnError>) => {
@@ -5605,12 +6350,13 @@ export const editInboxMessage = <ThrowOnError extends boolean = false>(options: 
 /**
  * Delete message
  * Delete a message from a conversation. Platform support varies:
- * - Telegram: Full delete (bot's own messages anytime, others if admin)
- * - X: Full delete (own DM events only)
- * - Bluesky: Delete for self only (recipient still sees it)
- * - Reddit: Delete from sender's view only
- * - 'iMessage: Unsend (the bubble disappears for the recipient) within 2 minutes of sending (Apple''s limit; 409 `unsend_window_expired` after that). Own outbound messages only.'
- * - Facebook, Instagram, WhatsApp: Not supported (returns 400)
+ *
+ * - Telegram: full delete (bot's own messages anytime, others if admin)
+ * - X: full delete (own DM events only)
+ * - Bluesky: delete for self only (recipient still sees it)
+ * - Reddit: delete from sender's view only
+ * - iMessage: unsend (the bubble disappears for the recipient) within 2 minutes of sending (Apple's limit; 409 `unsend_window_expired` after that). Own outbound messages only.
+ * - Facebook, Instagram, WhatsApp: not supported (returns 400)
  *
  */
 export const deleteInboxMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteInboxMessageData, ThrowOnError>) => {
@@ -5622,15 +6368,22 @@ export const deleteInboxMessage = <ThrowOnError extends boolean = false>(options
 
 /**
  * Send typing indicator
- * Show a typing indicator in a conversation. Platform support:
- * - Facebook Messenger: Shows "Page is typing..." for 20 seconds
- * - Instagram: Shows "typing..." to the recipient (works for both Instagram Login and Facebook Login accounts). The recipient must be signed in to Instagram to see it.
- * - Telegram: Shows "Bot is typing..." for 5 seconds
- * - WhatsApp: Shows "typing..." for up to 25 seconds. Requires a recent inbound message in the conversation (Meta references the inbound message id) and also marks that message as read as a side-effect.
- * - iMessage: Shows a typing bubble for ~15 seconds (1:1 conversations only; requires a recent two-way exchange)
- * - All others: Returns 200 but no-op (platform doesn't support it)
+ * Show a typing indicator in a conversation.
  *
- * Typing indicators are best-effort. The endpoint always returns 200 even if the platform call fails; `success` reports whether a typing indicator was actually sent to the platform (`false` on unsupported platforms or when the platform call failed).
+ * ### Platform support
+ *
+ * - Facebook Messenger: shows "Page is typing..." for 20 seconds.
+ * - Instagram: shows "typing..." to the recipient (works for both Instagram Login and Facebook Login accounts). The recipient must be signed in to Instagram to see it.
+ * - Telegram: shows "Bot is typing..." for 5 seconds.
+ * - WhatsApp: shows "typing..." for up to 25 seconds. Requires a recent inbound message in the conversation (Meta references the inbound message id) and also marks that message as read as a side-effect.
+ * - iMessage: shows a typing bubble for ~15 seconds (1:1 conversations only; requires a recent two-way exchange).
+ * - All others: returns 200 but no-op (platform doesn't support it).
+ *
+ * ### Response
+ *
+ * Typing indicators are best-effort. The endpoint always returns 200 even if the platform call fails.
+ *
+ * `success` reports whether a typing indicator was actually sent to the platform (`false` on unsupported platforms or when the platform call failed).
  *
  */
 export const sendTypingIndicator = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendTypingIndicatorData, ThrowOnError>) => {
@@ -5642,20 +6395,26 @@ export const sendTypingIndicator = <ThrowOnError extends boolean = false>(option
 
 /**
  * Change who answers a conversation (handover)
- * Meta's handover protocol on WhatsApp, Facebook and Instagram.
+ * Changes who answers a conversation, using Meta's handover protocol on WhatsApp, Facebook and Instagram.
  *
  * **WhatsApp**, on numbers with Meta Business Agent enabled:
+ *
  * - `release`: hand the conversation back to the agent so it resumes answering. You must currently hold control (sending any message takes it implicitly).
  * - `take`: take control before sending anything, so the agent stops replying while an operator reads the thread. Meta accepts this only from the business configured as the number's escalation partner; other apps take control by sending a message.
  * - `pass`: transfer control to the number's configured escalation partner, or to the agent with `target: ai_agent`. Meta's Cloud API currently rejects it ("Pass action is not supported", verified 2026-09-08); use `release` to hand a thread back to the agent.
  *
  * **Facebook and Instagram** (Messenger Platform handover between the apps on the Page, such as Page Inbox):
+ *
  * - `pass` with `targetAppId`: give the thread to another app (`pass_thread_control`). Page Inbox is 263902037430900.
- * - `take`: take the thread back (`take_thread_control`); Meta allows it only to the Page's primary receiver, and only on accounts connected through a Facebook Page. On an Instagram Login connection it answers 400 `platform_not_supported`.
+ * - `take`: take the thread back (`take_thread_control`). Meta allows it only to the Page's primary receiver, and only on accounts connected through a Facebook Page. On an Instagram Login connection it answers 400 `platform_not_supported`.
  * - `request`: ask the current owner to pass the thread (`request_thread_control`); nothing changes until it does. Not available on Instagram Login connections (400 `platform_not_supported`).
  * - `release`: give the thread back to the primary receiver (`release_thread_control`).
  *
- * While another app owns a Facebook or Instagram thread, inbound arrive with `metadata.standby: true` and a send answers 409 `not_thread_owner`. The conversation's `threadControl` follows the result; a `conversation.control_changed` webhook fires when Meta later reports the change.
+ * ### While another app owns the thread
+ *
+ * While another app owns a Facebook or Instagram thread, inbound messages arrive with `metadata.standby: true` and a send answers 409 `not_thread_owner`.
+ *
+ * The conversation's `threadControl` follows the result. A `conversation.control_changed` webhook fires when Meta later reports the change.
  *
  */
 export const setConversationThreadControl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SetConversationThreadControlData, ThrowOnError>) => {
@@ -5667,9 +6426,12 @@ export const setConversationThreadControl = <ThrowOnError extends boolean = fals
 
 /**
  * Accept a message request
- * Accept a Facebook or Instagram Message Request by replying to it (Facebook Page requests are listed with `GET /v1/inbox/conversations?folder=requests`; Instagram answers PLATFORM_LIMITATION there).
- * Meta has no separate accept call: the first reply is what moves the thread into the inbox, so this sends `message`
- * through the same path, checks and webhooks as `POST /v1/inbox/conversations/{conversationId}/messages`, and answers the same way.
+ * Accept a Facebook or Instagram Message Request by replying to it.
+ *
+ * Facebook Page requests are listed with `GET /v1/inbox/conversations?folder=requests`; Instagram answers PLATFORM_LIMITATION there.
+ *
+ * Meta has no separate accept call: the first reply is what moves the thread into the inbox. So this sends `message` through the same path, checks and webhooks as `POST /v1/inbox/conversations/{conversationId}/messages`, and answers the same way.
+ *
  * Supports the `Idempotency-Key` header.
  *
  */
@@ -5775,13 +6537,16 @@ export const markConversationRead = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Add reaction
- * Add an emoji reaction to a message. Platform support:
- * - Telegram: Supports a subset of Unicode emoji reactions
- * - WhatsApp: Supports any standard emoji (one reaction per message per sender)
- * - Instagram and Facebook Messenger: Any standard emoji, subject to Meta's 24h messaging window
- * - Slack: The emoji must have a Slack name (e.g. `:thumbsup:`); unnamed characters return 400
- * - 'iMessage: The six Apple tapbacks (❤️ 👍 👎 😂 ‼️ ❓) render natively; any other emoji is sent as a custom emoji tapback (iOS 18+ recipients)'
- * - All others: Returns 400 (not supported)
+ * Add an emoji reaction to a message.
+ *
+ * ### Platform support
+ *
+ * - Telegram: supports a subset of Unicode emoji reactions
+ * - WhatsApp: supports any standard emoji (one reaction per message per sender)
+ * - Instagram and Facebook Messenger: any standard emoji, subject to Meta's 24h messaging window
+ * - Slack: the emoji must have a Slack name (e.g. `:thumbsup:`); unnamed characters return 400
+ * - iMessage: the six Apple tapbacks (❤️ 👍 👎 😂 ‼️ ❓) render natively; any other emoji is sent as a custom emoji tapback (iOS 18+ recipients)
+ * - All others: returns 400 (not supported)
  *
  */
 export const addMessageReaction = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddMessageReactionData, ThrowOnError>) => {
@@ -5793,13 +6558,16 @@ export const addMessageReaction = <ThrowOnError extends boolean = false>(options
 
 /**
  * Remove reaction
- * Remove a reaction from a message. Platform support:
- * - Telegram: Send empty reaction array to clear
- * - WhatsApp: Send empty emoji to remove
- * - Instagram and Facebook Messenger: Sends Meta's `unreact` action; the emoji does not need to be repeated
- * - Slack: Removes the reaction we previously sent on that message
- * - 'iMessage: Retracts your existing tapback or emoji reaction on the message (400 when you have none)'
- * - All others: Returns 400 (not supported)
+ * Remove a reaction from a message.
+ *
+ * ### Platform support
+ *
+ * - Telegram: send empty reaction array to clear
+ * - WhatsApp: send empty emoji to remove
+ * - Instagram and Facebook Messenger: sends Meta's `unreact` action; the emoji does not need to be repeated
+ * - Slack: removes the reaction we previously sent on that message
+ * - iMessage: retracts your existing tapback or emoji reaction on the message (400 when you have none)
+ * - All others: returns 400 (not supported)
  *
  */
 export const removeMessageReaction = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveMessageReactionData, ThrowOnError>) => {
@@ -5811,17 +6579,19 @@ export const removeMessageReaction = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Upload media file
- * Upload a media file using API key authentication and get back a publicly accessible URL.
- * The URL can be used as attachmentUrl when sending inbox messages.
+ * Upload a media file using API key authentication and get back a publicly accessible URL. The URL can be used as attachmentUrl when sending inbox messages.
  *
  * Files are stored in temporary storage and auto-delete after 7 days.
- * The effective maximum is about 4.5 MB: the multipart body goes through
- * the hosting platform's request body limit, which answers 413 before the
- * endpoint's own 25 MB check is reached. For larger files use
- * POST /v1/media/presign and upload straight to storage.
  *
- * Unlike /v1/media/upload (which uses upload tokens for end-user flows),
- * this endpoint takes your API key in the Authorization header, for programmatic use.
+ * ### Size limit
+ *
+ * The effective maximum is about 4.5 MB. The multipart body goes through the hosting platform's request body limit, which answers 413 before the endpoint's own 25 MB check is reached.
+ *
+ * For larger files use POST /v1/media/presign and upload straight to storage.
+ *
+ * ### Compared with /v1/media/upload
+ *
+ * /v1/media/upload uses upload tokens for end-user flows. This endpoint takes your API key in the Authorization header, for programmatic use.
  *
  */
 export const uploadMediaDirect = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadMediaDirectData, ThrowOnError>) => {
@@ -5849,7 +6619,11 @@ export const getMessengerMenu = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Set persistent menu
- * Set the persistent menu for a Facebook Messenger or Instagram account. Max 3 top-level items, max 5 nested items. On Facebook, Meta only shows a persistent menu on a page that has a Get Started button, so set one first with PUT /v1/accounts/{accountId}/messenger-get-started. A postback button whose payload is `zernio:workflow:<workflowId>` starts that workflow when tapped; the workflow must be active on this account and profile.
+ * Set the persistent menu for a Facebook Messenger or Instagram account. Max 3 top-level items, max 5 nested items.
+ *
+ * - On Facebook, Meta only shows a persistent menu on a page that has a Get Started button. Set one first with PUT /v1/accounts/{accountId}/messenger-get-started.
+ * - A postback button whose payload is `zernio:workflow:<workflowId>` starts that workflow when tapped. The workflow must be active on this account and profile.
+ *
  */
 export const setMessengerMenu = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SetMessengerMenuData, ThrowOnError>) => {
     return (options?.client ?? client).put<SetMessengerMenuResponse, SetMessengerMenuError, ThrowOnError>({
@@ -5882,7 +6656,12 @@ export const getMessengerGetStarted = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Set FB Get Started button
- * Set the Get Started button shown on a Facebook page's Messenger welcome screen. Meta requires it before a persistent menu can be set. Tapping it sends a postback with `payload`, which arrives as a `message.received` webhook carrying it in `metadata.postbackPayload`. Use `zernio:workflow:<workflowId>` to start a workflow on the tap; the workflow must be active on this account and profile.
+ * Set the Get Started button shown on a Facebook page's Messenger welcome screen. Meta requires it before a persistent menu can be set.
+ *
+ * Tapping it sends a postback with `payload`, which arrives as a `message.received` webhook carrying it in `metadata.postbackPayload`.
+ *
+ * Use `zernio:workflow:<workflowId>` to start a workflow on the tap; the workflow must be active on this account and profile.
+ *
  */
 export const setMessengerGetStarted = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SetMessengerGetStartedData, ThrowOnError>) => {
     return (options?.client ?? client).put<SetMessengerGetStartedResponse, SetMessengerGetStartedError, ThrowOnError>({
@@ -5948,7 +6727,12 @@ export const getMessengerIceBreakers = <ThrowOnError extends boolean = false>(op
 
 /**
  * Set FB ice breakers
- * Set up to 4 ice breakers per locale for a Facebook page (Meta's `ice_breakers` Messenger Profile field). One entry must use locale `default`. A tap sends a postback with the question's `payload`, which arrives as `message.received` with `metadata.postbackPayload`; use `zernio:workflow:<workflowId>` to start a workflow (it must be active on this account and profile). Replaces every locale already set.
+ * Set up to 4 ice breakers per locale for a Facebook page (Meta's `ice_breakers` Messenger Profile field). Replaces every locale already set.
+ *
+ * - One entry must use locale `default`.
+ * - A tap sends a postback with the question's `payload`, which arrives as `message.received` with `metadata.postbackPayload`.
+ * - Use `zernio:workflow:<workflowId>` to start a workflow (it must be active on this account and profile).
+ *
  */
 export const setMessengerIceBreakers = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SetMessengerIceBreakersData, ThrowOnError>) => {
     return (options?.client ?? client).put<SetMessengerIceBreakersResponse, SetMessengerIceBreakersError, ThrowOnError>({
@@ -6038,30 +6822,33 @@ export const deleteTelegramCommands = <ThrowOnError extends boolean = false>(opt
  * Resolve message attachment
  * Resolve one attachment on a message to a media url that works right now.
  *
- * Instagram and Facebook sign DM media urls per request and expire them, so
- * the `url` on a message is a snapshot: it works when you read the message
- * and stops working later. This endpoint checks the stored url and, when it
- * has gone stale, re-mints the message's media from Meta and persists it
- * before answering. The message id never expires, so this URL is the one to
- * store. It is returned ready-made on each attachment as `refreshUrl` when
- * you read a message over REST.
+ * ### Why it exists
  *
- * **Webhook payloads do not carry `refreshUrl`**, so a webhook-driven
- * integration builds this URL itself. Every piece is in the event:
- * `message.conversationId`, `message.platformMessageId`, the attachment's
- * zero-based position, and `account.accountId`. **`accountId` is a
- * required query parameter**; omitting it returns `400`
- * `missing_required_field`, which is the same requirement
- * `GET /v1/whatsapp/media/{mediaId}` has.
+ * Instagram and Facebook sign DM media urls per request and expire them. So the `url` on a message is a snapshot: it works when you read the message and stops working later.
  *
- * By default it responds `302` to the live media url, so it can be used
- * directly as an `<img src>` on a browser session. API-key integrators
- * should pass `?format=json` and read `url` off the body, since a browser
- * cannot attach an Authorization header to an image request.
+ * This endpoint checks the stored url and, when it has gone stale, re-mints the message's media from Meta and persists it before answering.
  *
- * Only Instagram and Facebook media can be re-minted. On other platforms
- * the stored url is returned as-is when it still resolves, and `404`
- * otherwise.
+ * The message id never expires, so this URL is the one to store. It is returned ready-made on each attachment as `refreshUrl` when you read a message over REST.
+ *
+ * ### Building the URL from a webhook
+ *
+ * **Webhook payloads do not carry `refreshUrl`**, so a webhook-driven integration builds this URL itself. Every piece is in the event:
+ *
+ * - `message.conversationId`
+ * - `message.platformMessageId`
+ * - the attachment's zero-based position
+ * - `account.accountId`
+ *
+ * **`accountId` is a required query parameter**. Omitting it returns `400` `missing_required_field`, which is the same requirement `GET /v1/whatsapp/media/{mediaId}` has.
+ *
+ * ### Response format
+ *
+ * - By default it responds `302` to the live media url, so it can be used directly as an `<img src>` on a browser session.
+ * - API-key integrators should pass `?format=json` and read `url` off the body, since a browser cannot attach an Authorization header to an image request.
+ *
+ * ### Other platforms
+ *
+ * Only Instagram and Facebook media can be re-minted. On other platforms the stored url is returned as-is when it still resolves, and `404` otherwise.
  *
  */
 export const getMessageAttachment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetMessageAttachmentData, ThrowOnError>) => {
@@ -6075,38 +6862,44 @@ export const getMessageAttachment = <ThrowOnError extends boolean = false>(optio
  * List commented posts
  * Returns posts with comment counts from all connected accounts. Aggregates data across multiple accounts.
  *
- * Responses are cached for up to 10 minutes, so the feed may lag new comments by that
- * window. Do not poll this endpoint for real-time updates: subscribe to the
- * `comment.received` webhook, which fires for every new comment across your posts and
- * carries the post reference needed to keep this list current.
+ * ### Caching
  *
- * For users with the Ads add-on (accounts on usage-based billing always qualify), the user's Meta ads
- * (boosted/dark posts) are included too. There's one row per (ad, placement-with-comments):
- * an ad that runs on both Facebook feed and Instagram feed produces up to two rows (the
- * Page dark post and the IG media have separate comment threads), each flagged
- * `isAd: true` with `adId` and `placement` (`id` is `{adId}:{placement}`). Use
- * `?platform=metaads` to return *only* ad rows; passing `facebook`/`instagram` returns
- * *organic* posts only (no ads); omitting `platform` returns both. Fetch a row's thread
- * from GET /v1/ads/{adId}/comments?placement={placement}. Ad comment counts are read with
- * the Marketing API token (Facebook side) or the connected Instagram account's token
- * (Instagram side); a row whose count can't be read is omitted.
+ * Responses are cached for up to 10 minutes, so the feed may lag new comments by that window.
  *
- * Pagination walks each account's platform listing. Following `nextCursor` reaches past
- * the first page on Facebook, Instagram, Threads, LinkedIn and YouTube, since they are
- * the platforms that support a server-side date window; on the others the listing stops
- * at its first page. Cursor pagination is only coherent for the default sort
- * (`sortBy=date`, `sortOrder=desc`): with `sortOrder=asc`, or with `sortBy=comments`,
- * the cursor filter does not match the sort order and the second page is unreliable.
+ * Do not poll this endpoint for real-time updates. Subscribe to the `comment.received` webhook, which fires for every new comment across your posts and carries the post reference needed to keep this list current.
  *
- * `minComments` is applied to each page after pagination: a page can hold fewer than
- * `limit` posts, even none, while `hasMore` is true; keep following `nextCursor`.
+ * ### Meta ads
  *
- * `nextCursor` is opaque: pass it back verbatim, never construct or parse it, its
- * composition may change without notice. Because each page re-queries a live window,
- * results can still shift between requests, so dedupe by `id` on the client.
+ * For users with the Ads add-on (accounts on usage-based billing always qualify), the user's Meta ads (boosted/dark posts) are included too.
  *
- * `commentCount` semantics differ by platform: YouTube's includes replies, Facebook's counts
- * top-level comments only.
+ * There's one row per (ad, placement-with-comments). An ad that runs on both Facebook feed and Instagram feed produces up to two rows, since the Page dark post and the IG media have separate comment threads.
+ *
+ * Each ad row is flagged `isAd: true` with `adId` and `placement` (`id` is `{adId}:{placement}`). Filter with `platform`:
+ *
+ * - `?platform=metaads`: *only* ad rows.
+ * - `facebook`/`instagram`: *organic* posts only (no ads).
+ * - Omitted: both.
+ *
+ * Fetch a row's thread from GET /v1/ads/{adId}/comments?placement={placement}.
+ *
+ * Ad comment counts are read with the Marketing API token (Facebook side) or the connected Instagram account's token (Instagram side). A row whose count can't be read is omitted.
+ *
+ * ### Pagination
+ *
+ * Pagination walks each account's platform listing. Following `nextCursor` reaches past the first page on Facebook, Instagram, Threads, LinkedIn and YouTube, the platforms that support a server-side date window. On the others the listing stops at its first page.
+ *
+ * Cursor pagination is only coherent for the default sort (`sortBy=date`, `sortOrder=desc`). With `sortOrder=asc`, or with `sortBy=comments`, the cursor filter does not match the sort order and the second page is unreliable.
+ *
+ * `minComments` is applied to each page after pagination. A page can hold fewer than `limit` posts, even none, while `hasMore` is true; keep following `nextCursor`.
+ *
+ * `nextCursor` is opaque: pass it back verbatim, never construct or parse it, its composition may change without notice. Because each page re-queries a live window, results can still shift between requests, so dedupe by `id` on the client.
+ *
+ * ### Comment counts
+ *
+ * `commentCount` semantics differ by platform:
+ *
+ * - YouTube's includes replies.
+ * - Facebook's counts top-level comments only.
  *
  */
 export const listInboxComments = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListInboxCommentsData, ThrowOnError>) => {
@@ -6120,35 +6913,42 @@ export const listInboxComments = <ThrowOnError extends boolean = false>(options?
  * Get post comments
  * Fetch comments for a specific post. Requires accountId query parameter.
  *
- * Pass `commentId` (Facebook, Instagram, Reddit, TikTok) to fetch replies to a specific
- * comment instead of the post's top-level comments. Facebook, Instagram and TikTok return
- * the comment's replies, paged by `limit`/`cursor`; Reddit returns the focused comment
- * thread instead. On Facebook and Instagram the requested comment itself comes back in the
- * top-level `comment` field.
+ * ### Replies to a comment
  *
- * On Facebook, passing a COMMENT id as `postId` (instead of using `commentId`) is also
- * supported for backwards compatibility and returns that comment's replies the same way.
- * Prefer `commentId` for new integrations; it also works on Instagram, which rejects a
- * comment id passed as `postId`. YouTube does not support either form, `postId` must be a
- * video id.
+ * Pass `commentId` (Facebook, Instagram, Reddit, TikTok) to fetch replies to a specific comment instead of the post's top-level comments.
  *
- * Responses are cached for up to 10 minutes, so a page may lag new comments by that
- * window. Do not poll this endpoint for real-time updates: subscribe to the
- * `comment.received` webhook, which delivers new comments as they arrive. Your own
- * writes (creating, replying to, or deleting a comment) refresh the cache immediately.
+ * - Facebook, Instagram and TikTok return the comment's replies, paged by `limit`/`cursor`.
+ * - Reddit returns the focused comment thread instead.
+ * - On Facebook and Instagram the requested comment itself comes back in the top-level `comment` field.
  *
- * TikTok is served for accounts connected through the TikTok for Business app: `postId`
- * is the TikTok video id, each top-level comment carries up to three inline replies, and
- * `commentId` pages the full reply list of one comment. Developer-app TikTok accounts
- * return 400 with code `PLATFORM_LIMITATION`.
+ * On Facebook, passing a COMMENT id as `postId` (instead of using `commentId`) is also supported for backwards compatibility. It returns that comment's replies the same way.
  *
- * On X (Twitter), when `postId` is itself a reply rather than the thread's root post,
- * only replies to that specific post are returned, not the whole conversation thread.
+ * Prefer `commentId` for new integrations; it also works on Instagram, which rejects a comment id passed as `postId`. YouTube does not support either form: `postId` must be a video id.
  *
- * Hidden comments: Facebook Pages and Instagram accounts connected through Instagram Login
- * return them with `isHidden: true`. Instagram accounts connected through Facebook Login do
- * not return them at all (Meta omits them, together with their replies), so a hidden comment
- * and a deleted one look the same on this read.
+ * ### Caching
+ *
+ * Responses are cached for up to 10 minutes, so a page may lag new comments by that window.
+ *
+ * Do not poll this endpoint for real-time updates: subscribe to the `comment.received` webhook, which delivers new comments as they arrive. Your own writes (creating, replying to, or deleting a comment) refresh the cache immediately.
+ *
+ * ### TikTok
+ *
+ * TikTok is served for accounts connected through the TikTok for Business app:
+ *
+ * - `postId` is the TikTok video id.
+ * - Each top-level comment carries up to three inline replies.
+ * - `commentId` pages the full reply list of one comment.
+ *
+ * Developer-app TikTok accounts return 400 with code `PLATFORM_LIMITATION`.
+ *
+ * ### X (Twitter)
+ *
+ * When `postId` is itself a reply rather than the thread's root post, only replies to that specific post are returned, not the whole conversation thread.
+ *
+ * ### Hidden comments
+ *
+ * - Facebook Pages and Instagram accounts connected through Instagram Login return them with `isHidden: true`.
+ * - Instagram accounts connected through Facebook Login do not return them at all (Meta omits them, together with their replies). So a hidden comment and a deleted one look the same on this read.
  *
  */
 export const getInboxPostComments = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInboxPostCommentsData, ThrowOnError>) => {
@@ -6162,21 +6962,19 @@ export const getInboxPostComments = <ThrowOnError extends boolean = false>(optio
  * Reply to comment
  * Post a reply to a post or specific comment. Requires accountId in request body.
  *
- * **Idempotency:** send an `Idempotency-Key` header to make retries safe
- * (e.g. after a client-side timeout where delivery is unknown): same key +
- * same body replays the original response (with `Idempotent-Replayed: true`)
- * instead of posting the comment a second time; same key + different body
- * returns 422; a key still in flight returns 409. Keys are retained for 24
- * hours and are scoped to the credential and to this exact path, so reusing
- * a key against a different postId returns 422 rather than replaying the
- * other post's response.
+ * ### Idempotency
  *
- * Only successful (2xx) responses are stored for replay. If the request
- * throws or returns a non-2xx status the key is released, so the header
- * protects the "request succeeded but the response was lost" case. After an
- * ambiguous failure (a 5xx or a network timeout) list the post's comments
- * before retrying with the same key, and treat an empty result as
- * inconclusive rather than as proof nothing was posted.
+ * Send an `Idempotency-Key` header to make retries safe (e.g. after a client-side timeout where delivery is unknown).
+ *
+ * - Same key + same body replays the original response (with `Idempotent-Replayed: true`) instead of posting the comment a second time.
+ * - Same key + different body returns 422.
+ * - A key still in flight returns 409.
+ *
+ * Keys are retained for 24 hours and are scoped to the credential and to this exact path. Reusing a key against a different postId returns 422 rather than replaying the other post's response.
+ *
+ * Only successful (2xx) responses are stored for replay. If the request throws or returns a non-2xx status the key is released, so the header protects the "request succeeded but the response was lost" case.
+ *
+ * After an ambiguous failure (a 5xx or a network timeout), list the post's comments before retrying with the same key. Treat an empty result as inconclusive rather than as proof nothing was posted.
  *
  */
 export const replyToInboxPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToInboxPostData, ThrowOnError>) => {
@@ -6292,29 +7090,27 @@ export const unpinInboxComment = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Like comment
- * Like or upvote a comment on a post. Supported platforms: Facebook, X,
- * Bluesky, Reddit, LinkedIn, and Instagram in limited release (see below). For
- * Bluesky, the cid (content identifier) is
- * required in the request body. For LinkedIn, pass the composite comment URN returned
- * by the comments endpoints as commentId; an optional reactionType picks the reaction
- * (defaults to LIKE), and accounts connected before the social-feed scopes were
- * requested get a 403 with code `linkedin_reconnect_required`.
+ * Like or upvote a comment on a post. Supported platforms: Facebook, X, Bluesky, Reddit, LinkedIn, and Instagram in limited release (see below).
  *
- * Instagram is in LIMITED RELEASE and not generally available: the call needs
- * `instagram_manage_engagement`, which Meta has so far granted this app only under
- * Standard Access, so it works for app admins, developers and testers of our Meta app
- * and returns a 403 with code `PLATFORM_BETA_RESTRICTED` for every other account.
- * That restriction lifts when Meta App Review grants Advanced Access; the constraints
- * below apply once it does.
+ * ### Platform notes
  *
- * Instagram covers comments and replies on feed posts, reels and carousels. Only an
- * account connected through Facebook Login can be granted
- * `instagram_manage_engagement`: an Instagram Login connection returns a 400 with
- * code `instagram_likes_require_facebook_login`, and an account whose token predates
- * the permission returns a 403 with code `reconnect_required`. Content from private
- * accounts cannot be liked. Instagram also enforces a burst limit of 50 like or
- * unlike calls per 5 seconds per Instagram account, and exceeding it locks that
- * account out of the like API for an hour, so pace bulk loops.
+ * - Bluesky: the cid (content identifier) is required in the request body.
+ * - LinkedIn: pass the composite comment URN returned by the comments endpoints as commentId. An optional reactionType picks the reaction (defaults to LIKE).
+ * - LinkedIn: accounts connected before the social-feed scopes were requested get a 403 with code `linkedin_reconnect_required`.
+ *
+ * ### Instagram (limited release)
+ *
+ * Instagram is in LIMITED RELEASE and not generally available. The call needs `instagram_manage_engagement`, which Meta has so far granted this app only under Standard Access.
+ *
+ * It works for app admins, developers and testers of our Meta app, and returns a 403 with code `PLATFORM_BETA_RESTRICTED` for every other account. That restriction lifts when Meta App Review grants Advanced Access; the constraints below apply once it does.
+ *
+ * Instagram covers comments and replies on feed posts, reels and carousels. Only an account connected through Facebook Login can be granted `instagram_manage_engagement`.
+ *
+ * - 400 `instagram_likes_require_facebook_login`: the account is an Instagram Login connection.
+ * - 403 `reconnect_required`: the account's token predates the permission.
+ * - Content from private accounts cannot be liked.
+ *
+ * Instagram enforces a burst limit of 50 like or unlike calls per 5 seconds per Instagram account. Exceeding it locks that account out of the like API for an hour, so pace bulk loops.
  *
  */
 export const likeInboxComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<LikeInboxCommentData, ThrowOnError>) => {
@@ -6341,40 +7137,36 @@ export const unlikeInboxComment = <ThrowOnError extends boolean = false>(options
 
 /**
  * Like post
- * Like (or react to) a post as a connected account. Supported platforms: LinkedIn,
- * X, Facebook, YouTube, Bluesky, and Instagram in limited release (see below).
- * Threads, TikTok and Pinterest
- * expose no like endpoint in their APIs and return 400. Reddit returns 400 too,
- * pointing at `POST /v1/accounts/{accountId}/reddit-vote`, which covers upvote,
- * downvote and clear on both posts and comments.
+ * Like (or react to) a post as a connected account.
  *
- * The account does not have to be the one that published the post, which is what
- * makes executive engagement possible: pass an exec's `accountId` and the brand
- * post's ID. `postId` accepts either a Zernio post ID or the platform's native post
- * ID. A Zernio post ID resolves to the entry for `accountId`, falling back to the
- * post's single entry on the same platform (two entries on that platform is a 400,
- * so pass the native ID).
+ * ### Platform support
  *
- * LinkedIn requires the `w_member_social_feed` / `w_organization_social_feed`
- * scopes, which are not retroactive: accounts connected before those were requested
- * get a 403 with code `linkedin_reconnect_required` until the user reconnects the
- * account. YouTube spends 50 quota units per call.
+ * - Supported: LinkedIn, X, Facebook, YouTube, Bluesky, and Instagram in limited release (see below).
+ * - Threads, TikTok and Pinterest expose no like endpoint in their APIs and return 400.
+ * - Reddit returns 400 too, pointing at `POST /v1/accounts/{accountId}/reddit-vote`, which covers upvote, downvote and clear on both posts and comments.
  *
- * Instagram is in LIMITED RELEASE and not generally available: the call needs
- * `instagram_manage_engagement`, which Meta has so far granted this app only under
- * Standard Access, so it works for app admins, developers and testers of our Meta app
- * and returns a 403 with code `PLATFORM_BETA_RESTRICTED` for every other account.
- * That restriction lifts when Meta App Review grants Advanced Access; the constraints
- * below apply once it does.
+ * ### Liking as another account
  *
- * Instagram covers feed images, reels and carousels (stories and private-account
- * media are not likeable). Only an account connected through Facebook Login can be
- * granted `instagram_manage_engagement`: an Instagram Login
- * connection returns a 400 with code `instagram_likes_require_facebook_login`, and an
- * account whose token predates the permission returns a 403 with code
- * `reconnect_required`. Instagram also enforces a burst limit of 50 like or unlike
- * calls per 5 seconds per Instagram account, and exceeding it locks that account out
- * of the like API for an hour, so pace bulk loops.
+ * The account does not have to be the one that published the post, which is what makes executive engagement possible: pass an exec's `accountId` and the brand post's ID.
+ *
+ * `postId` accepts either a Zernio post ID or the platform's native post ID. A Zernio post ID resolves to the entry for `accountId`, falling back to the post's single entry on the same platform. Two entries on that platform is a 400, so pass the native ID.
+ *
+ * ### LinkedIn and YouTube
+ *
+ * LinkedIn requires the `w_member_social_feed` / `w_organization_social_feed` scopes, which are not retroactive. Accounts connected before those were requested get a 403 with code `linkedin_reconnect_required` until the user reconnects the account.
+ *
+ * YouTube spends 50 quota units per call.
+ *
+ * ### Instagram (limited release)
+ *
+ * Instagram is in LIMITED RELEASE and not generally available. The call needs `instagram_manage_engagement`, which Meta has so far granted this app only under Standard Access.
+ *
+ * So it works for app admins, developers and testers of our Meta app, and returns a 403 with code `PLATFORM_BETA_RESTRICTED` for every other account. That restriction lifts when Meta App Review grants Advanced Access; the constraints below apply once it does.
+ *
+ * - Instagram covers feed images, reels and carousels (stories and private-account media are not likeable).
+ * - Only an account connected through Facebook Login can be granted `instagram_manage_engagement`. An Instagram Login connection returns a 400 with code `instagram_likes_require_facebook_login`.
+ * - An account whose token predates the permission returns a 403 with code `reconnect_required`.
+ * - Instagram enforces a burst limit of 50 like or unlike calls per 5 seconds per Instagram account. Exceeding it locks that account out of the like API for an hour, so pace bulk loops.
  *
  */
 export const likePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<LikePostData, ThrowOnError>) => {
@@ -6386,12 +7178,14 @@ export const likePost = <ThrowOnError extends boolean = false>(options: OptionsL
 
 /**
  * Unlike post
- * Remove this account's like from a post. Supported platforms: LinkedIn, X,
- * Facebook, YouTube, Bluesky, and Instagram in limited release. On YouTube this clears
- * the rating. Instagram has the same limited release, Facebook Login,
- * `instagram_manage_engagement` and burst-limit constraints as liking. For Bluesky,
- * `likeUri` (returned when the post was liked) is required. Reddit uses
- * `POST /v1/accounts/{accountId}/reddit-vote` with `direction: 0`.
+ * Remove this account's like from a post.
+ *
+ * Supported platforms: LinkedIn, X, Facebook, YouTube, Bluesky, and Instagram in limited release.
+ *
+ * - YouTube: this clears the rating.
+ * - Instagram: has the same limited release, Facebook Login, `instagram_manage_engagement` and burst-limit constraints as liking.
+ * - Bluesky: `likeUri` (returned when the post was liked) is required.
+ * - Reddit: uses `POST /v1/accounts/{accountId}/reddit-vote` with `direction: 0`.
  *
  */
 export const unlikePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UnlikePostData, ThrowOnError>) => {
@@ -6404,23 +7198,32 @@ export const unlikePost = <ThrowOnError extends boolean = false>(options: Option
 /**
  * Send private reply
  * Send a direct message to the author of a comment. Supported on Instagram and Facebook only.
- * One reply per comment, must be sent within 7 days. Optionally attach interactive elements:
- * `quickReplies` (chips above the keyboard, max 13) or `buttons` (1-3 inline postback/url
- * buttons rendered in the same bubble via Meta's button_template). Chips do not render in
- * the Instagram Message Requests folder. Instagram can refuse buttons, cards and
- * attachments to commenters who do not follow the account (Meta code 2, subcode 1545133,
- * returned here as a non-retryable 400 that says so). The refusal is uneven: most accounts
- * do not get it, an affected account gets it on many of its non-followers, and only that
- * account's own past refusals show whether it is affected. The failed call still consumes the
- * comment's single private reply. On an affected account, send plain text to reach
- * non-followers and add buttons once they reply. `quickReplies` and `buttons` are mutually
- * exclusive. When the comment's single private reply is spent (by this call or an earlier
- * one) the 400 carries `details.privateReplyConsumed: true`; never retry it.
- * A 502 means Meta answered a server error after receiving the reply; it carries
- * `details.privateReplyOutcome: "unknown"`, the reply is usually delivered and the comment's
- * private reply spent, so check the conversation before retrying.
- * The reply is recorded in the inbox conversation with the commenter (`sentVia` `api` for
- * key auth, `human` for a session) and fires `message.sent` once.
+ *
+ * One reply per comment, must be sent within 7 days.
+ *
+ * ### Interactive elements
+ *
+ * Optionally attach one of these (`quickReplies` and `buttons` are mutually exclusive):
+ *
+ * - `quickReplies`: chips above the keyboard, max 13. Chips do not render in the Instagram Message Requests folder.
+ * - `buttons`: 1-3 inline postback/url buttons rendered in the same bubble via Meta's button_template.
+ *
+ * ### Non-followers on Instagram
+ *
+ * Instagram can refuse buttons, cards and attachments to commenters who do not follow the account. This is Meta code 2, subcode 1545133, returned here as a non-retryable 400 that says so.
+ *
+ * The refusal is uneven: most accounts do not get it, and an affected account gets it on many of its non-followers. Only that account's own past refusals show whether it is affected.
+ *
+ * The failed call still consumes the comment's single private reply. On an affected account, send plain text to reach non-followers and add buttons once they reply.
+ *
+ * ### Errors
+ *
+ * - 400 with `details.privateReplyConsumed: true`: the comment's single private reply is spent (by this call or an earlier one). Never retry it.
+ * - 502: Meta answered a server error after receiving the reply. It carries `details.privateReplyOutcome: "unknown"`. The reply is usually delivered and the comment's private reply spent, so check the conversation before retrying.
+ *
+ * ### Recording
+ *
+ * The reply is recorded in the inbox conversation with the commenter (`sentVia` `api` for key auth, `human` for a session) and fires `message.sent` once.
  *
  */
 export const sendPrivateReplyToComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendPrivateReplyToCommentData, ThrowOnError>) => {
@@ -6510,13 +7313,20 @@ export const unfollowUser = <ThrowOnError extends boolean = false>(options: Opti
 /**
  * Search recent tweets
  * Search public tweets from the last 7 days matching an X search query, e.g. to discover tweets to reply to.
- * The query string is passed through to X unchanged and supports X's search operators
- * (`from:user`, `-is:retweet`, `is:reply`, `lang:en`, `"exact phrase"`, `conversation_id:123`, boolean `OR`, ...).
+ *
+ * ### Query syntax
+ *
+ * The query string is passed through to X unchanged and supports X's search operators: `from:user`, `-is:retweet`, `is:reply`, `lang:en`, `"exact phrase"`, `conversation_id:123`, boolean `OR`, ...
+ *
  * Standalone operators like `is:` / `has:` / `lang:` must be combined with a keyword or `from:` clause.
+ *
+ * ### Replying
  *
  * To reply to a found tweet, pass its `id` as the twitter platform entry's `platformSpecificData.replyToTweetId` when creating a post.
  *
- * Rate limit: 300 requests per 15-min window per connected account.
+ * ### Rate limit
+ *
+ * 300 requests per 15-min window per connected account.
  *
  */
 export const searchTweets = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SearchTweetsData, ThrowOnError>) => {
@@ -6547,21 +7357,27 @@ export const getTweet = <ThrowOnError extends boolean = false>(options: OptionsL
 
 /**
  * List mentions
- * Returns mentions of your connected accounts from the last 7 days.
+ * Returns mentions of your connected accounts from the last 7 days. Requires Inbox addon.
  *
- * - **LinkedIn**: organization mentions, delivered by webhooks and a background pull.
- * - **Instagram**: comment mentions (someone tags the account in a comment on their own media) and
- * caption mentions (someone tags it in their media caption), delivered by the Meta `mentions`
- * webhook. Only accounts connected through Facebook Login receive them; comments on the account's
- * own posts are never listed, even when they contain its @handle. Their text is read from Instagram
- * in the background after the first request, so `content` can be empty on the first read. Pass
- * `mediaId` and `commentId` to `POST /v1/inbox/mentions/reply` to answer one.
- * - **Facebook**: post mentions (someone tags the Page in a post) and comment mentions (someone tags
- * it in a comment), delivered by the Page `mention` webhook with their text. Comments on the Page's
- * own posts and anything the Page wrote itself are never listed. Facebook mentions cannot be replied
- * to through `POST /v1/inbox/mentions/reply`.
+ * ### LinkedIn
  *
- * Requires Inbox addon.
+ * Organization mentions, delivered by webhooks and a background pull.
+ *
+ * ### Instagram
+ *
+ * Comment mentions (someone tags the account in a comment on their own media) and caption mentions (someone tags it in their media caption), delivered by the Meta `mentions` webhook.
+ *
+ * - Only accounts connected through Facebook Login receive them.
+ * - Comments on the account's own posts are never listed, even when they contain its @handle.
+ * - Their text is read from Instagram in the background after the first request, so `content` can be empty on the first read.
+ * - Pass `mediaId` and `commentId` to `POST /v1/inbox/mentions/reply` to answer one.
+ *
+ * ### Facebook
+ *
+ * Post mentions (someone tags the Page in a post) and comment mentions (someone tags it in a comment), delivered by the Page `mention` webhook with their text.
+ *
+ * - Comments on the Page's own posts and anything the Page wrote itself are never listed.
+ * - Facebook mentions cannot be replied to through `POST /v1/inbox/mentions/reply`.
  *
  */
 export const listInboxMentions = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListInboxMentionsData, ThrowOnError>) => {
@@ -6612,21 +7428,21 @@ export const listInboxReviews = <ThrowOnError extends boolean = false>(options?:
  * Reply to review
  * Post a reply to a review. Requires accountId in request body.
  *
- * **Idempotency:** send an `Idempotency-Key` header to make retries safe
- * (e.g. after a client-side timeout where delivery is unknown): same key +
- * same body replays the original response (with `Idempotent-Replayed: true`)
- * instead of sending the reply to the platform again; same key + different
- * body returns 422; a key still in flight returns 409. Keys are retained for
- * 24 hours and are scoped to the credential and to this exact path, so
- * reusing a key against a different reviewId returns 422 rather than
- * replaying the other review's response.
+ * ### Idempotency
  *
- * Only successful (2xx) responses are stored for replay. If the request
- * throws or returns a non-2xx status the key is released, so the header
- * protects the "request succeeded but the response was lost" case. After an
- * ambiguous failure (a 5xx or a network timeout) fetch the review before
- * retrying with the same key, and treat a missing reply as inconclusive
- * rather than as proof nothing was sent.
+ * Send an `Idempotency-Key` header to make retries safe (e.g. after a client-side timeout where delivery is unknown).
+ *
+ * - Same key + same body: replays the original response (with `Idempotent-Replayed: true`) instead of sending the reply to the platform again.
+ * - Same key + different body: returns 422.
+ * - A key still in flight: returns 409.
+ *
+ * Keys are retained for 24 hours and are scoped to the credential and to this exact path. Reusing a key against a different reviewId returns 422 rather than replaying the other review's response.
+ *
+ * ### Failed requests
+ *
+ * Only successful (2xx) responses are stored for replay. If the request throws or returns a non-2xx status the key is released, so the header protects the "request succeeded but the response was lost" case.
+ *
+ * After an ambiguous failure (a 5xx or a network timeout), fetch the review before retrying with the same key. Treat a missing reply as inconclusive rather than as proof nothing was sent.
  *
  */
 export const replyToInboxReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToInboxReviewData, ThrowOnError>) => {
@@ -6685,12 +7501,16 @@ export const createWhatsAppTemplate = <ThrowOnError extends boolean = false>(opt
  * Get template
  * Retrieve one message template variant by name.
  *
- * Meta stores one template per **name + language**, so a name identifies a family of variants,
- * each with its own Meta id. Pass `language` to address one variant. Without it, a name with a
- * single variant resolves to that variant; a name with several returns `409 ambiguous_template`
- * with `details.languages`. A bare language (`es`) matches a single regional variant (`es_ES`);
- * if the family has several regional variants for it, that is also a 409. A full code (`es_ES`)
- * must match exactly. Variants in `PENDING_DELETION` are not part of the family.
+ * Meta stores one template per **name + language**, so a name identifies a family of variants, each with its own Meta id. Pass `language` to address one variant.
+ *
+ * ### How the variant is resolved
+ *
+ * - Without `language`, a name with a single variant resolves to that variant.
+ * - Without `language`, a name with several returns `409 ambiguous_template` with `details.languages`.
+ * - A bare language (`es`) matches a single regional variant (`es_ES`). If the family has several regional variants for it, that is also a 409.
+ * - A full code (`es_ES`) must match exactly.
+ *
+ * Variants in `PENDING_DELETION` are not part of the family.
  *
  */
 export const getWhatsAppTemplate = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppTemplateData, ThrowOnError>) => {
@@ -6704,20 +7524,24 @@ export const getWhatsAppTemplate = <ThrowOnError extends boolean = false>(option
  * Update template
  * Update one variant's components and/or its message_send_ttl_seconds. Name, language and category cannot change after creation.
  *
- * Meta stores one template per **name + language**, so a name identifies a family of variants,
- * each with its own Meta id. Pass `language` to address one variant. Without it, a name with a
- * single variant resolves to that variant; a name with several returns `409 ambiguous_template`
- * with `details.languages`. A bare language (`es`) matches a single regional variant (`es_ES`);
- * if the family has several regional variants for it, that is also a 409. A full code (`es_ES`)
- * must match exactly. Variants in `PENDING_DELETION` are not part of the family.
+ * ### Choosing the variant
  *
- * Meta only allows editing templates in `APPROVED`, `REJECTED` or `PAUSED` state; an approved
- * template can be edited once per 24 hours and up to 10 times per 30 days. A component update
- * sends the variant back to Meta for review, so the `status` returned here is normally `PENDING`;
- * a TTL-only update keeps an APPROVED variant approved.
- * The final outcome arrives on the `whatsapp.template.status_updated` webhook (which carries the
- * variant's `templateId` and `language`). A variant already in `PENDING` cannot be edited again
- * until Meta finishes reviewing it.
+ * Meta stores one template per **name + language**, so a name identifies a family of variants, each with its own Meta id. Pass `language` to address one variant.
+ *
+ * - Without `language`, a name with a single variant resolves to that variant. A name with several returns `409 ambiguous_template` with `details.languages`.
+ * - A bare language (`es`) matches a single regional variant (`es_ES`). If the family has several regional variants for it, that is also a 409.
+ * - A full code (`es_ES`) must match exactly.
+ * - Variants in `PENDING_DELETION` are not part of the family.
+ *
+ * ### Editing rules
+ *
+ * Meta only allows editing templates in `APPROVED`, `REJECTED` or `PAUSED` state. An approved template can be edited once per 24 hours and up to 10 times per 30 days.
+ *
+ * - A component update sends the variant back to Meta for review, so the `status` returned here is normally `PENDING`.
+ * - A TTL-only update keeps an APPROVED variant approved.
+ * - A variant already in `PENDING` cannot be edited again until Meta finishes reviewing it.
+ *
+ * The final outcome arrives on the `whatsapp.template.status_updated` webhook (which carries the variant's `templateId` and `language`).
  *
  */
 export const updateWhatsAppTemplate = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWhatsAppTemplateData, ThrowOnError>) => {
@@ -6761,13 +7585,17 @@ export const getWhatsAppTemplateById = <ThrowOnError extends boolean = false>(op
  * Update template by id
  * Update one variant's components and/or its message_send_ttl_seconds by its Meta id. Name, language and category cannot change.
  *
- * Meta only allows editing templates in `APPROVED`, `REJECTED` or `PAUSED` state; an approved
- * template can be edited once per 24 hours and up to 10 times per 30 days. A component update
- * sends the variant back to Meta for review, so the `status` returned here is normally `PENDING`;
- * a TTL-only update keeps an APPROVED variant approved.
- * The final outcome arrives on the `whatsapp.template.status_updated` webhook (which carries the
- * variant's `templateId` and `language`). A variant already in `PENDING` cannot be edited again
- * until Meta finishes reviewing it.
+ * ### Editing limits
+ *
+ * - Meta only allows editing templates in `APPROVED`, `REJECTED` or `PAUSED` state.
+ * - An approved template can be edited once per 24 hours and up to 10 times per 30 days.
+ * - A variant already in `PENDING` cannot be edited again until Meta finishes reviewing it.
+ *
+ * ### Review
+ *
+ * A component update sends the variant back to Meta for review, so the `status` returned here is normally `PENDING`. A TTL-only update keeps an APPROVED variant approved.
+ *
+ * The final outcome arrives on the `whatsapp.template.status_updated` webhook (which carries the variant's `templateId` and `language`).
  *
  */
 export const updateWhatsAppTemplateById = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWhatsAppTemplateByIdData, ThrowOnError>) => {
@@ -6792,14 +7620,15 @@ export const deleteWhatsAppTemplateById = <ThrowOnError extends boolean = false>
 
 /**
  * Get calling config for an account
- * Returns the local calling configuration snapshot for the connected
- * WhatsApp account: whether calling is enabled, the forward-to
- * destination URI, recording opt-in state, the phone number record id
- * (use as `{id}` on the read-write calling sub-resource at
- * /v1/phone-numbers/{id}/whatsapp/calling) and whether SIP digest
- * credentials are stored (the encrypted password itself is never
- * returned). Also carries account-level extras (billing eligibility,
- * current-period spend) that the number-keyed GET does not.
+ * Returns the local calling configuration snapshot for the connected WhatsApp account:
+ *
+ * - whether calling is enabled;
+ * - the forward-to destination URI;
+ * - recording opt-in state;
+ * - the phone number record id (use as `{id}` on the read-write calling sub-resource at /v1/phone-numbers/{id}/whatsapp/calling);
+ * - whether SIP digest credentials are stored (the encrypted password itself is never returned).
+ *
+ * It also carries account-level extras (billing eligibility, current-period spend) that the number-keyed GET does not.
  *
  */
 export const getWhatsAppCallingConfig = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppCallingConfigData, ThrowOnError>) => {
@@ -6938,11 +7767,11 @@ export const getWhatsAppCall = <ThrowOnError extends boolean = false>(options: O
 /**
  * Get a call recording
  * Resolves a fresh, playable MP3 URL for the call's recording.
- * Provider-signed recording URLs expire ~10 minutes after signing, so the
- * `recordingUrl` stored on the call is usually stale by the time it is
- * played; this endpoint re-signs on demand. Default responds `302 Found`
- * redirecting to the fresh URL (point an `<audio>` element or a link
- * straight at this endpoint); pass `as=json` to receive `{ url }` instead.
+ *
+ * Provider-signed recording URLs expire ~10 minutes after signing, so the `recordingUrl` stored on the call is usually stale by the time it is played. This endpoint re-signs on demand.
+ *
+ * - Default: responds `302 Found` redirecting to the fresh URL (point an `<audio>` element or a link straight at this endpoint).
+ * - Pass `as=json` to receive `{ url }` instead.
  *
  */
 export const getWhatsAppCallRecording = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppCallRecordingData, ThrowOnError>) => {
@@ -7024,19 +7853,19 @@ export const getCallRecording = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Place an outbound phone call
- * Dials `to` FROM one of your voice-enabled numbers and, on answer,
- * bridges the callee to the number's stored forward destination, or to
- * the per-call `forwardTo` override. Destinations can be your own AI
- * voice agent (Vapi/Retell), a phone, or a SIP endpoint. An optional
- * `greeting` is spoken to the callee before the bridge.
+ * Dials `to` FROM one of your voice-enabled numbers and, on answer, bridges the callee to the number's stored forward destination, or to the per-call `forwardTo` override.
  *
- * The 200 response means the call is dialing; the lifecycle continues
- * asynchronously (track it via `GET /v1/voice/calls/{id}` or the `call.*`
- * webhooks). Outbound calls are capped per rolling hour (429 when hit).
+ * Destinations can be your own AI voice agent (Vapi/Retell), a phone, or a SIP endpoint. An optional `greeting` is spoken to the callee before the bridge.
  *
- * **Idempotency:** send an `Idempotency-Key` header to make retries safe;
- * same key + same body replays the original response instead of dialing
- * (and billing) a second call.
+ * ### Response and limits
+ *
+ * The 200 response means the call is dialing. The lifecycle continues asynchronously: track it via `GET /v1/voice/calls/{id}` or the `call.*` webhooks.
+ *
+ * Outbound calls are capped per rolling hour (429 when hit).
+ *
+ * ### Idempotency
+ *
+ * Send an `Idempotency-Key` header to make retries safe. Same key + same body replays the original response instead of dialing (and billing) a second call.
  *
  */
 export const createVoiceCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateVoiceCallData, ThrowOnError>) => {
@@ -7074,15 +7903,20 @@ export const getVoiceCall = <ThrowOnError extends boolean = false>(options: Opti
 
 /**
  * Hang up a live call
- * Hangs up a live call on demand, including an outbound call that is
- * still ringing and has not been answered yet (the callee stops ringing
- * immediately). Works for PSTN calls and for WhatsApp calls (the `callId`
- * returned by `POST /v1/whatsapp/calls`, or an inbound WhatsApp call id).
- * A WhatsApp call forwarded to a `wss://` destination also ends
- * automatically when that WebSocket closes. Idempotent: ending a call that already
- * ended (or never connected) returns success with the call's current
- * status. Final duration/cost are written asynchronously when the hangup
- * event lands, so the call doc may briefly still show its prior status.
+ * Hangs up a live call on demand, including an outbound call that is still ringing and has not been answered yet (the callee stops ringing immediately).
+ *
+ * ### Supported calls
+ *
+ * - PSTN calls.
+ * - WhatsApp calls: the `callId` returned by `POST /v1/whatsapp/calls`, or an inbound WhatsApp call id.
+ *
+ * A WhatsApp call forwarded to a `wss://` destination also ends automatically when that WebSocket closes.
+ *
+ * ### Idempotency and timing
+ *
+ * Idempotent: ending a call that already ended (or never connected) returns success with the call's current status.
+ *
+ * Final duration/cost are written asynchronously when the hangup event lands, so the call doc may briefly still show its prior status.
  *
  */
 export const endVoiceCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<EndVoiceCallData, ThrowOnError>) => {
@@ -7109,10 +7943,9 @@ export const getVoiceCallRecording = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Blind-transfer a live call
- * Moves the call's current leg to a new destination (a phone number or a
- * SIP endpoint). This is a BLIND transfer: control of the leg is handed
- * off and the call ends normally when the transferred leg hangs up. The
- * caller ID presented on the transfer leg is always your own number.
+ * Moves the call's current leg to a new destination (a phone number or a SIP endpoint).
+ *
+ * This is a BLIND transfer: control of the leg is handed off and the call ends normally when the transferred leg hangs up. The caller ID presented on the transfer leg is always your own number.
  *
  */
 export const transferVoiceCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<TransferVoiceCallData, ThrowOnError>) => {
@@ -7124,15 +7957,11 @@ export const transferVoiceCall = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Estimate call cost
- * Pre-call cost estimate for a PSTN call: the carrier leg plus optional
- * recording and transcription add-ons. Same billing formula as the
- * post-call invoice, so the quote and the final charge can't disagree.
- * The per-minute figure is deliberately conservative (the real cost
- * comes from the settled carrier record after the call), so estimates
- * trend slightly over the actual invoice. Parity endpoint of
- * `GET /v1/whatsapp/calls/estimate`, minus the Meta line (PSTN calls
- * have no separate Meta bill, so `totalCostUSD` equals
- * `billableCostUSD`).
+ * Pre-call cost estimate for a PSTN call: the carrier leg plus optional recording and transcription add-ons.
+ *
+ * It uses the same billing formula as the post-call invoice, so the quote and the final charge can't disagree. The per-minute figure is deliberately conservative (the real cost comes from the settled carrier record after the call), so estimates trend slightly over the actual invoice.
+ *
+ * Parity endpoint of `GET /v1/whatsapp/calls/estimate`, minus the Meta line. PSTN calls have no separate Meta bill, so `totalCostUSD` equals `billableCostUSD`.
  *
  */
 export const getVoiceCallEstimate = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetVoiceCallEstimateData, ThrowOnError>) => {
@@ -7144,13 +7973,12 @@ export const getVoiceCallEstimate = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Mint a browser softphone session
- * Step 1 of the two-step browser softphone handshake. Mints a WebRTC
- * session (token + credential) the browser registers with the
- * `@telnyx/webrtc` SDK. Once registered, call
- * `POST /v1/voice/calls/web/dial` with the returned `credentialId` to
- * place the call. The split avoids bridging to a browser that has not
- * finished registering. The token lives ~1 hour (it must outlive the
- * whole call, not only the handshake).
+ * Step 1 of the two-step browser softphone handshake. Mints a WebRTC session (token + credential) the browser registers with the `@telnyx/webrtc` SDK.
+ *
+ * 1. Call this endpoint and register the browser with the returned session.
+ * 2. Once registered, call `POST /v1/voice/calls/web/dial` with the returned `credentialId` to place the call.
+ *
+ * The split avoids bridging to a browser that has not finished registering. The token lives ~1 hour (it must outlive the whole call, not only the handshake).
  *
  */
 export const createVoiceWebSession = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
@@ -7162,13 +7990,12 @@ export const createVoiceWebSession = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Dial from the browser softphone
- * Step 2 of the browser softphone handshake: rings the browser registered
- * with the credential from `POST /v1/voice/calls/web` first, and dials
- * the target only once the browser answers, so the callee's pickup
- * connects immediately with no ringing after they answer. The call is
- * logged as outbound (from = your number, to = target) and recorded per
- * the number's settings. `ringTimeoutSeconds` applies to the target's
- * phone, not to the browser.
+ * Step 2 of the browser softphone handshake: rings the browser registered with the credential from `POST /v1/voice/calls/web` first, and dials the target only once the browser answers.
+ *
+ * The callee's pickup then connects immediately, with no ringing after they answer.
+ *
+ * - The call is logged as outbound (from = your number, to = target) and recorded per the number's settings.
+ * - `ringTimeoutSeconds` applies to the target's phone, not to the browser.
  *
  */
 export const dialVoiceWebCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DialVoiceWebCallData, ThrowOnError>) => {
@@ -7191,15 +8018,18 @@ export const listImessageSenders = <ThrowOnError extends boolean = false>(option
 
 /**
  * Register an iMessage sender
- * Registers a provider-provisioned iMessage sender (a phone number or an
- * email handle) that YOU already own on a profile, creating an
- * `imessage` account that sends and receives through the inbox
- * conversation endpoints. To have Zernio order a new sender for you, use
- * POST /v1/imessage/senders/order instead. Registration attaches the
- * monthly sender fee (billed while active) and requires a payment method
- * (402 without one). Re-registering the SAME handle refreshes its account;
- * a different handle is added as another sender, and a profile can hold
- * several.
+ * Registers a provider-provisioned iMessage sender (a phone number or an email handle) that YOU already own on a profile. It creates an `imessage` account that sends and receives through the inbox conversation endpoints.
+ *
+ * To have Zernio order a new sender for you, use POST /v1/imessage/senders/order instead.
+ *
+ * ### Billing
+ *
+ * Registration attaches the monthly sender fee (billed while active) and requires a payment method (402 without one).
+ *
+ * ### Re-registering
+ *
+ * - Re-registering the SAME handle refreshes its account.
+ * - A different handle is added as another sender, and a profile can hold several.
  *
  */
 export const registerImessageSender = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RegisterImessageSenderData, ThrowOnError>) => {
@@ -7222,21 +8052,26 @@ export const listImessageSenderOrders = <ThrowOnError extends boolean = false>(o
 
 /**
  * Order a new iMessage sender
- * Orders a NEW dedicated iMessage sender from the delivery provider
- * (compare with POST /v1/imessage/senders, which registers a sender you
- * already own). Activation is asynchronous (minutes to a few hours):
- * the response is 202 with the lifecycle object; poll
- * GET /v1/imessage/senders/{senderId} or subscribe to the
- * account.connected webhook. Billing starts at activation (monthly per
- * sender, no proration); when the account spend threshold is below the
- * sender price, the first month is charged before the number is bought; when the card's
- * answer takes longer than this request, the order is returned as `status: awaiting_payment`
- * and the number is ordered automatically once it is paid (usually under 5 minutes). Requires usage-based billing and a valid
- * payment method. Pass purchaseIntentId to make retries idempotent —
- * the provider-side order is never retried automatically. Ordered phone
- * senders include SMS/RCS fallback with call forwarding and the ability
- * to message contacts who have not written first (sending intervals
- * still apply).
+ * Orders a NEW dedicated iMessage sender from the delivery provider. Compare with POST /v1/imessage/senders, which registers a sender you already own.
+ *
+ * ### Activation
+ *
+ * Activation is asynchronous (minutes to a few hours). The response is 202 with the lifecycle object; poll GET /v1/imessage/senders/{senderId} or subscribe to the account.connected webhook.
+ *
+ * ### Billing
+ *
+ * - Requires usage-based billing and a valid payment method.
+ * - Billing starts at activation (monthly per sender, no proration).
+ * - When the account spend threshold is below the sender price, the first month is charged before the number is bought.
+ * - When the card's answer takes longer than this request, the order is returned as `status: awaiting_payment`. The number is ordered automatically once it is paid (usually under 5 minutes).
+ *
+ * ### Retries
+ *
+ * Pass purchaseIntentId to make retries idempotent. The provider-side order is never retried automatically.
+ *
+ * ### What an ordered sender includes
+ *
+ * Ordered phone senders include SMS/RCS fallback with call forwarding, and the ability to message contacts who have not written first (sending intervals still apply).
  *
  */
 export const orderImessageSender = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<OrderImessageSenderData, ThrowOnError>) => {
@@ -7297,7 +8132,19 @@ export const listImessageAudience = <ThrowOnError extends boolean = false>(optio
 
 /**
  * List iMessage sandbox contacts
- * The shared sandbox line and your sandbox contacts. The sandbox lets you test iMessage without ordering a sender: add your own phone or Apple ID email, send its join code to the sandbox line from that phone, and your messages reach your inbox and webhooks. Replies are allowed for 24 hours after each message from the contact. Group chats and starting conversations are not supported.
+ * Returns the shared sandbox line and your sandbox contacts.
+ *
+ * The sandbox lets you test iMessage without ordering a sender:
+ *
+ * 1. Add your own phone or Apple ID email.
+ * 2. Send its join code to the sandbox line from that phone.
+ * 3. Your messages reach your inbox and webhooks.
+ *
+ * ### Limits
+ *
+ * - Replies are allowed for 24 hours after each message from the contact.
+ * - Group chats and starting conversations are not supported.
+ *
  */
 export const listImessageSandboxContacts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
     return (options?.client ?? client).get<ListImessageSandboxContactsResponse, ListImessageSandboxContactsError, ThrowOnError>({
@@ -7341,18 +8188,19 @@ export const setImessageSubscription = <ThrowOnError extends boolean = false>(op
 
 /**
  * Create a tracked iMessage opt-in link
- * Generates a per-campaign link that opens Messages on this sender with
- * `body` prefilled. A thread the contact opens skips the pacing and the
- * first-message content rule that apply when the sender writes first,
- * and it is the only way in for senders without the add-on for new
- * contacts (their sends to anyone else fail with
- * `recipient_must_message_first`).
+ * Generates a per-campaign link that opens Messages on this sender with `body` prefilled.
  *
- * Each link carries a unique code in place of the `[opt-in-code]`
- * placeholder; when the contact sends it, the resulting `message.received`
- * webhook (and the stored inbox message's `metadata`) has
- * `optIn: true` and your `parameters` under `optInParameters`, so you can
- * attribute the conversation to the campaign or lead that produced it.
+ * ### Why use it
+ *
+ * A thread the contact opens skips the pacing and the first-message content rule that apply when the sender writes first.
+ *
+ * It is also the only way in for senders without the add-on for new contacts. Their sends to anyone else fail with `recipient_must_message_first`.
+ *
+ * ### Attribution
+ *
+ * Each link carries a unique code in place of the `[opt-in-code]` placeholder. When the contact sends it, the resulting `message.received` webhook (and the stored inbox message's `metadata`) has `optIn: true` and your `parameters` under `optInParameters`.
+ *
+ * That lets you attribute the conversation to the campaign or lead that produced it.
  *
  * For an untracked link, use the sender's `optInLink` instead.
  *
@@ -7366,13 +8214,16 @@ export const createImessageOptInLink = <ThrowOnError extends boolean = false>(op
 
 /**
  * List instantly available iMessage numbers
- * Phone numbers the provider has already registered and can assign on the
- * spot. Order one by passing its `id` as `availableNumberId` to
- * POST /v1/imessage/senders/order: the sender activates immediately
- * instead of after the usual provisioning wait. Reserve it first with
- * POST /v1/imessage/senders/available-numbers/{numberId}/reserve while the
- * buyer decides. The list is a snapshot; a number can be taken between
- * listing and ordering.
+ * Phone numbers the provider has already registered and can assign on the spot.
+ *
+ * ### Ordering one
+ *
+ * 1. Reserve it first with POST /v1/imessage/senders/available-numbers/{numberId}/reserve while the buyer decides.
+ * 2. Pass its `id` as `availableNumberId` to POST /v1/imessage/senders/order.
+ *
+ * The sender activates immediately instead of after the usual provisioning wait.
+ *
+ * The list is a snapshot; a number can be taken between listing and ordering.
  *
  */
 export const listImessageAvailableNumbers = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListImessageAvailableNumbersData, ThrowOnError>) => {
@@ -7395,14 +8246,14 @@ export const reserveImessageAvailableNumber = <ThrowOnError extends boolean = fa
 
 /**
  * Start an iMessage group chat
- * Creates a group chat from one of your senders and sends its first
- * message. The provider processes it asynchronously: the response carries
- * the request id, and the thread appears in the inbox (with its group
- * conversation id) on the first webhook. Starting a group counts as
- * messaging new contacts, so the sender needs the provider's
- * init-conversations add-on and the same sending intervals apply; without
- * it the request fails with 409 `recipient_must_message_first`. WhatsApp
- * groups need a `name`.
+ * Creates a group chat from one of your senders and sends its first message.
+ *
+ * The provider processes it asynchronously: the response carries the request id, and the thread appears in the inbox (with its group conversation id) on the first webhook.
+ *
+ * ### Requirements
+ *
+ * - Starting a group counts as messaging new contacts, so the sender needs the provider's init-conversations add-on and the same sending intervals apply. Without it the request fails with 409 `recipient_must_message_first`.
+ * - WhatsApp groups need a `name`.
  *
  */
 export const createImessageGroup = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateImessageGroupData, ThrowOnError>) => {
@@ -7511,11 +8362,12 @@ export const listRcsAgents = <ThrowOnError extends boolean = false>(options?: Op
 
 /**
  * Request an RCS agent
- * Requests a new agent for a profile, with a new company (`brand`) or an existing one
- * (`brandId`, skips vetting when it is already verified). The request lands in our review:
- * nothing is filed with the carriers or billed until we submit it. A profile can hold several agents.
- * Requires usage-based billing and a card on file. Send an `Idempotency-Key` header to make
- * retries safe.
+ * Requests a new agent for a profile, with a new company (`brand`) or an existing one (`brandId`, skips vetting when it is already verified). A profile can hold several agents.
+ *
+ * The request lands in our review: nothing is filed with the carriers or billed until we submit it.
+ *
+ * - Requires usage-based billing and a card on file.
+ * - Send an `Idempotency-Key` header to make retries safe.
  *
  */
 export const createRcsAgent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateRcsAgentData, ThrowOnError>) => {
@@ -7563,10 +8415,11 @@ export const deactivateRcsAgent = <ThrowOnError extends boolean = false>(options
 /**
  * Send the launch filing
  * Sends the launch details the carriers review (campaign, consent and a public test video).
- * US agents send them once they are in `testing`; we review them before they reach the
- * carriers. Agents in other markets send them while still in review (`requested`,
- * `changes_requested` or `brand_vetting`), because we file everything with the carriers at
- * once; this saves the details without changing the status.
+ *
+ * ### When to send
+ *
+ * - **US agents**: send them once they are in `testing`. We review them before they reach the carriers.
+ * - **Other markets**: send them while still in review (`requested`, `changes_requested` or `brand_vetting`), because we file everything with the carriers at once. This saves the details without changing the status.
  *
  */
 export const requestRcsAgentLaunch = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RequestRcsAgentLaunchData, ThrowOnError>) => {
@@ -7631,14 +8484,22 @@ export const uploadRcsAsset = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Send an RCS message
- * Sends from one of your agents. Use `text` for a plain message or `content` for rich
- * content (card, carousel, media, suggestion chips). Before launch an agent only reaches
- * test phones that accepted the invite. With the agent's `smsFallbackFrom` set, phones
- * without RCS get `fallbackText` (default: the message's readable text) as SMS.
+ * Sends an RCS message from one of your agents.
  *
- * Replies and status arrive as webhooks with `platform: "rcs"`: `message.received`
- * (a tapped chip carries its postback in `metadata.postbackPayload`), `message.delivered`,
- * `message.read` and `message.failed`. Send an `Idempotency-Key` header to make retries safe.
+ * - Use `text` for a plain message or `content` for rich content (card, carousel, media, suggestion chips).
+ * - Before launch an agent only reaches test phones that accepted the invite.
+ * - With the agent's `smsFallbackFrom` set, phones without RCS get `fallbackText` (default: the message's readable text) as SMS.
+ *
+ * Send an `Idempotency-Key` header to make retries safe.
+ *
+ * ### Webhooks
+ *
+ * Replies and status arrive as webhooks with `platform: "rcs"`:
+ *
+ * - `message.received` (a tapped chip carries its postback in `metadata.postbackPayload`)
+ * - `message.delivered`
+ * - `message.read`
+ * - `message.failed`
  *
  */
 export const sendRcsMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendRcsMessageData, ThrowOnError>) => {
@@ -7692,18 +8553,20 @@ export const listSmsOptOuts = <ThrowOnError extends boolean = false>(options?: O
 
 /**
  * Create an alphanumeric sender ID
- * Registers an alphanumeric sender ID (e.g. `ZERNIO`), a branded `from`
- * for one-way international SMS. No phone number purchase or carrier
- * registration is needed; once created, pass it as `from` on
- * `POST /v1/sms/messages`.
+ * Registers an alphanumeric sender ID (e.g. `ZERNIO`), a branded `from` for one-way international SMS.
  *
- * Constraints: 3-11 characters (letters, digits, spaces; at least one
- * letter). Sends cannot reach the US, Canada, or Puerto Rico, are
- * text-only, and recipients cannot reply. Sender IDs that impersonate
- * well-known brands or institutions are rejected. Names are not
- * exclusive: the same sender ID can be registered by any number of
- * teams. Creating the same sender ID again is a no-op
- * (re-activates it after a delete).
+ * No phone number purchase or carrier registration is needed. Once created, pass it as `from` on `POST /v1/sms/messages`.
+ *
+ * ### Constraints
+ *
+ * - 3-11 characters (letters, digits, spaces; at least one letter).
+ * - Sends cannot reach the US, Canada, or Puerto Rico.
+ * - Sends are text-only, and recipients cannot reply.
+ * - Sender IDs that impersonate well-known brands or institutions are rejected.
+ *
+ * ### Uniqueness
+ *
+ * Names are not exclusive: the same sender ID can be registered by any number of teams. Creating the same sender ID again is a no-op (re-activates it after a delete).
  *
  */
 export const createSmsSenderId = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateSmsSenderIdData, ThrowOnError>) => {
@@ -7752,11 +8615,11 @@ export const deleteSmsSenderId = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Register a business for Branded Calling
- * Stores the legal entity behind your caller identities. Nothing is filed with the
- * carrier until the business's first identity passes review. Only businesses
- * registered in the US or Canada qualify (a FEIN or Canadian equivalent is
- * required); any other country returns `422`. Send an `Idempotency-Key` so a
- * retry replays the original response instead of registering the business twice.
+ * Stores the legal entity behind your caller identities. Nothing is filed with the carrier until the business's first identity passes review.
+ *
+ * Only businesses registered in the US or Canada qualify (a FEIN or Canadian equivalent is required); any other country returns `422`.
+ *
+ * Send an `Idempotency-Key` so a retry replays the original response instead of registering the business twice.
  *
  */
 export const createBrandedCallingEnterprise = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateBrandedCallingEnterpriseData, ThrowOnError>) => {
@@ -7799,16 +8662,17 @@ export const deleteBrandedCallingEnterprise = <ThrowOnError extends boolean = fa
 
 /**
  * Create a caller identity share link
- * Creates a single-use link (valid 7 days) where the end business fills in
- * the caller identity itself, with no Zernio login: display name, logo, call
- * reasons, the authorizer and the three references. What it submits lands
- * under your team as `requested`, the same review as an API submission, and
- * `branded_calling.identity.status_updated` fires. Scope the link with
- * `identityId` (complete an identity that is `requested` or
- * `changes_requested`), with `enterpriseId` (a new identity for a registered
- * business), or with neither (the business registers itself and its first
- * identity). The person opening the link can forward a fresh one to someone
- * else, which retires theirs.
+ * Creates a single-use link (valid 7 days) where the end business fills in the caller identity itself, with no Zernio login. It covers display name, logo, call reasons, the authorizer and the three references.
+ *
+ * What it submits lands under your team as `requested`, the same review as an API submission, and `branded_calling.identity.status_updated` fires.
+ *
+ * ### Scoping the link
+ *
+ * - `identityId`: complete an identity that is `requested` or `changes_requested`.
+ * - `enterpriseId`: a new identity for a registered business.
+ * - Neither: the business registers itself and its first identity.
+ *
+ * The person opening the link can forward a fresh one to someone else, which retires theirs.
  *
  */
 export const shareBrandedCallingIdentityForm = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ShareBrandedCallingIdentityFormData, ThrowOnError>) => {
@@ -7831,26 +8695,30 @@ export const listBrandedCallingCallReasons = <ThrowOnError extends boolean = fal
 
 /**
  * Create a caller identity
- * A caller identity is what the callee sees: display name, logo and call reasons,
- * backed by a registered business and three references the carrier vetting team
- * phones. It starts in Zernio review (`requested`). Once approved, the carrier emails
- * the authorizer a 6-digit code; confirm it with the verify-email endpoint and the
- * identity goes into carrier vetting on its own. Track it with `GET` or the
- * `branded_calling.identity.status_updated` webhook.
+ * Creates a caller identity: what the callee sees (display name, logo and call reasons). It is backed by a registered business and three references the carrier vetting team phones.
  *
- * Billing: $100 per identity per month while it is verified. The first month is
- * charged when the carrier verifies the identity, never when it is filed: nothing
- * is charged while it is in our review or carrier vetting, or if it is rejected.
- * An edit that sends a verified identity back to vetting pauses the fee until it
- * is verified again. Branded calls add $0.10 each, counted
- * on every outbound call from a verified branded number to a US destination
- * (whether or not the callee's carrier displayed the branding); the surcharge
- * shows as `brandedCallUSD` on the call's billing and in
- * `GET /v1/voice/calls/estimate` when you pass `from`.
+ * ### Lifecycle
  *
- * Run `POST /v1/branded-calling/identities/preflight` with the same body first to
- * catch what the review would bounce. Send an `Idempotency-Key` so a retry replays
- * the original response instead of creating a second identity.
+ * 1. It starts in Zernio review (`requested`).
+ * 2. Once approved, the carrier emails the authorizer a 6-digit code.
+ * 3. Confirm the code with the verify-email endpoint, and the identity goes into carrier vetting on its own.
+ *
+ * Track it with `GET` or the `branded_calling.identity.status_updated` webhook.
+ *
+ * ### Billing
+ *
+ * - $100 per identity per month while it is verified.
+ * - The first month is charged when the carrier verifies the identity, never when it is filed. Nothing is charged while it is in our review or carrier vetting, or if it is rejected.
+ * - An edit that sends a verified identity back to vetting pauses the fee until it is verified again.
+ * - Branded calls add $0.10 each, counted on every outbound call from a verified branded number to a US destination (whether or not the callee's carrier displayed the branding).
+ *
+ * The surcharge shows as `brandedCallUSD` on the call's billing and in `GET /v1/voice/calls/estimate` when you pass `from`.
+ *
+ * ### Before you file
+ *
+ * Run `POST /v1/branded-calling/identities/preflight` with the same body first to catch what the review would bounce.
+ *
+ * Send an `Idempotency-Key` so a retry replays the original response instead of creating a second identity.
  *
  */
 export const createBrandedCallingIdentity = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateBrandedCallingIdentityData, ThrowOnError>) => {
@@ -7872,14 +8740,14 @@ export const listBrandedCallingIdentities = <ThrowOnError extends boolean = fals
 
 /**
  * Dry-run a caller identity before creating it
- * Validates the exact body `POST /v1/branded-calling/identities` takes and runs
- * the same deterministic lints the review runs on it without creating anything,
- * with the same codes and fields the queued identity's findings carry. A `block`
- * finding is what the review would bounce (two references sharing a phone, a
- * reference inside the business, an invalid timezone); a `warn` finding slows
- * vetting (a display name that does not read as the business, a call reason
- * outside the carrier catalogue, a public-mailbox authorizer, a logo that does
- * not answer). `ok` is true when there is no `block`.
+ * Validates the exact body `POST /v1/branded-calling/identities` takes and runs the same deterministic lints the review runs on it, without creating anything. Findings carry the same codes and fields as the queued identity's findings.
+ *
+ * ### Finding levels
+ *
+ * - `block`: what the review would bounce. Examples: two references sharing a phone, a reference inside the business, an invalid timezone.
+ * - `warn`: slows vetting. Examples: a display name that does not read as the business, a call reason outside the carrier catalogue, a public-mailbox authorizer, a logo that does not answer.
+ *
+ * `ok` is true when there is no `block`.
  *
  */
 export const preflightBrandedCallingIdentity = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PreflightBrandedCallingIdentityData, ThrowOnError>) => {
@@ -7964,11 +8832,11 @@ export const listBrandedCallingIdentityNumbers = <ThrowOnError extends boolean =
 
 /**
  * Attach numbers to a verified identity
- * Files a Letter of Authorization signed by you (Zernio is named as the authorized
- * agent managing the numbers) and opens a vetting batch of up to 15 US numbers you
- * own. The batch is all-or-nothing: one ineligible number refuses the whole call.
- * Each number shows the identity once its own status reaches `verified`. A number
- * belongs to one identity at a time.
+ * Files a Letter of Authorization signed by you (Zernio is named as the authorized agent managing the numbers) and opens a vetting batch of up to 15 US numbers you own.
+ *
+ * - The batch is all-or-nothing: one ineligible number refuses the whole call.
+ * - Each number shows the identity once its own status reaches `verified`.
+ * - A number belongs to one identity at a time.
  *
  */
 export const attachBrandedCallingNumbers = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AttachBrandedCallingNumbersData, ThrowOnError>) => {
@@ -7991,20 +8859,17 @@ export const detachBrandedCallingNumbers = <ThrowOnError extends boolean = false
 
 /**
  * Start a carrier registration
- * Starts the US carrier registration that a number needs before SMS
- * delivers: 10DLC (standard company or sole-proprietor) or toll-free
- * verification. 10DLC needs `brand` + `campaign`; toll-free needs
- * `tollFree`. Approval is asynchronous; poll
- * `GET /v1/sms/registrations/{id}` (sole-prop registrations first need
- * the OTP step: a code is texted to the brand's mobile number, submit it
- * via `/verify-otp`).
+ * Starts the US carrier registration that a number needs before SMS delivers: 10DLC (standard company or sole-proprietor) or toll-free verification.
  *
- * Already have an approved registration? Add another number to it with
- * `POST /v1/phone-numbers/{id}/sms/reuse-registration` instead
- * of registering (and paying the carrier brand fee) again.
+ * - 10DLC needs `brand` + `campaign`.
+ * - Toll-free needs `tollFree`.
  *
- * Rather have your client fill in the legal business details? Create a
- * share link with `POST /v1/sms/registrations/share`.
+ * Approval is asynchronous; poll `GET /v1/sms/registrations/{id}`. Sole-prop registrations first need the OTP step: a code is texted to the brand's mobile number, submit it via `/verify-otp`.
+ *
+ * ### Alternatives
+ *
+ * - Already have an approved registration? Add another number to it with `POST /v1/phone-numbers/{id}/sms/reuse-registration` instead of registering (and paying the carrier brand fee) again.
+ * - Rather have your client fill in the legal business details? Create a share link with `POST /v1/sms/registrations/share`.
  *
  */
 export const startSmsRegistration = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<StartSmsRegistrationData, ThrowOnError>) => {
@@ -8026,12 +8891,15 @@ export const listSmsRegistrations = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Pre-check a carrier registration
- * Dry-run of `POST /v1/sms/registrations` for 10DLC: validates and
- * composes the exact brand/campaign payloads a submission would store
- * (branding, disclosures, auto-replies), runs deterministic compliance
- * lints plus an AI reviewer over them, and returns the findings WITHOUT
- * creating anything. Use it to fix issues before submitting; `block`
- * severity findings indicate a near-certain carrier rejection.
+ * Dry-run of `POST /v1/sms/registrations` for 10DLC. It returns the findings WITHOUT creating anything.
+ *
+ * It does three things:
+ *
+ * 1. Validates and composes the exact brand/campaign payloads a submission would store (branding, disclosures, auto-replies).
+ * 2. Runs deterministic compliance lints over them.
+ * 3. Runs an AI reviewer over them.
+ *
+ * Use it to fix issues before submitting. `block` severity findings indicate a near-certain carrier rejection.
  *
  */
 export const preflightSmsRegistration = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PreflightSmsRegistrationData, ThrowOnError>) => {
@@ -8043,13 +8911,10 @@ export const preflightSmsRegistration = <ThrowOnError extends boolean = false>(o
 
 /**
  * Deactivate a brand/campaign registration
- * Terminates the campaign with the carrier registry so the recurring
- * monthly campaign fee stops (carriers bill the first 3 months of a
- * campaign regardless). Numbers covered by it can no longer SEND texts
- * (receiving is unaffected) until they're registered under a new brand.
- * Irreversible: a deactivated campaign cannot be restored; texting again
- * later requires a new registration (new one-time and review fees).
- * Idempotent.
+ * Terminates the campaign with the carrier registry so the recurring monthly campaign fee stops (carriers bill the first 3 months of a campaign regardless). Idempotent.
+ *
+ * - Numbers covered by it can no longer SEND texts (receiving is unaffected) until they're registered under a new brand.
+ * - Irreversible: a deactivated campaign cannot be restored. Texting again later requires a new registration (new one-time and review fees).
  *
  */
 export const deactivateSmsRegistration = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeactivateSmsRegistrationData, ThrowOnError>) => {
@@ -8101,17 +8966,17 @@ export const resendSmsRegistrationOtp = <ThrowOnError extends boolean = false>(o
 
 /**
  * Appeal a rejected campaign
- * Appeals a rejected 10DLC campaign with the carrier registry. Only a
- * registration that reached campaign creation can be appealed; a
- * brand-level rejection should be fixed and re-verified instead. On
- * success the registration returns to `pending`.
+ * Appeals a rejected 10DLC campaign with the carrier registry. On success the registration returns to `pending`.
  *
- * Content rejections (e.g. an opt-in flow without a verifiable form link,
- * or unrealistic samples) should be FIXED in the same call: pass the
- * corrected `messageFlow` / `sample1` / `sample2` and the campaign is
- * updated before the appeal is filed, so the reviewer sees the new
- * content. The current content is on `GET /v1/sms/registrations/{id}`
- * (`campaignContent`).
+ * Only a registration that reached campaign creation can be appealed. A brand-level rejection should be fixed and re-verified instead.
+ *
+ * ### Fixing content in the same call
+ *
+ * Content rejections (e.g. an opt-in flow without a verifiable form link, or unrealistic samples) should be FIXED in the same call.
+ *
+ * Pass the corrected `messageFlow` / `sample1` / `sample2` and the campaign is updated before the appeal is filed, so the reviewer sees the new content.
+ *
+ * The current content is on `GET /v1/sms/registrations/{id}` (`campaignContent`).
  *
  */
 export const appealSmsRegistration = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AppealSmsRegistrationData, ThrowOnError>) => {
@@ -8123,16 +8988,16 @@ export const appealSmsRegistration = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Reply to a change request
- * Replies to a reviewer change request on a registration in
- * `changes_requested` state: a note, hosted document URLs (from
- * `POST /v1/sms/opt-in-proof`), or both, sent together. When the request
- * was written as points (`reviewRequest` on the registration), send one
- * entry in `answers` per point. The registration
- * returns to `requested` (back in review), and you do not need to resubmit the
- * whole registration. A `rejected` registration can also be answered when
- * we asked for changes to fix it (`reviewRequest` set); it stays `rejected`. To change the submitted brand/campaign fields
- * themselves, resubmit via `POST /v1/sms/registrations` with
- * `resubmitRequestId` instead.
+ * Replies to a reviewer change request on a registration in `changes_requested` state. Send a note, hosted document URLs (from `POST /v1/sms/opt-in-proof`), or both, sent together.
+ *
+ * When the request was written as points (`reviewRequest` on the registration), send one entry in `answers` per point.
+ *
+ * ### What happens next
+ *
+ * - The registration returns to `requested` (back in review), and you do not need to resubmit the whole registration.
+ * - A `rejected` registration can also be answered when we asked for changes to fix it (`reviewRequest` set); it stays `rejected`.
+ *
+ * To change the submitted brand/campaign fields themselves, resubmit via `POST /v1/sms/registrations` with `resubmitRequestId` instead.
  *
  */
 export const respondToSmsRegistrationReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RespondToSmsRegistrationReviewData, ThrowOnError>) => {
@@ -8144,12 +9009,11 @@ export const respondToSmsRegistrationReview = <ThrowOnError extends boolean = fa
 
 /**
  * Upload opt-in form proof
- * Hosts a screenshot (or PDF) of your SMS opt-in form and returns its
- * public URL. Include that URL in the campaign's `messageFlow` (the
- * opt-in workflow text). The carrier registry has no attachment field,
- * so reviewers verify consent by opening links in that answer. Works
- * before a registration exists (use it when registering) and for
- * appeals. `/v1/sms/registrations/{id}/opt-in-proof` is an alias.
+ * Hosts a screenshot (or PDF) of your SMS opt-in form and returns its public URL.
+ *
+ * Include that URL in the campaign's `messageFlow` (the opt-in workflow text). The carrier registry has no attachment field, so reviewers verify consent by opening links in that answer.
+ *
+ * Works before a registration exists (use it when registering) and for appeals. `/v1/sms/registrations/{id}/opt-in-proof` is an alias.
  *
  */
 export const uploadSmsOptInProofFile = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadSmsOptInProofFileData, ThrowOnError>) => {
@@ -8166,12 +9030,11 @@ export const uploadSmsOptInProofFile = <ThrowOnError extends boolean = false>(op
 
 /**
  * Upload opt-in form proof for an appeal
- * Hosts a screenshot (or PDF) of your SMS opt-in form and returns its
- * public URL. Carrier reviewers reject campaigns whose consent can't be
- * verified and ask for a "link/screenshot of the opt-in form". The
- * registry has no attachment field, so include the returned URL inside
- * the `messageFlow` you submit with the appeal
- * (`POST /v1/sms/registrations/{id}/appeal`).
+ * Hosts a screenshot (or PDF) of your SMS opt-in form and returns its public URL.
+ *
+ * Carrier reviewers reject campaigns whose consent can't be verified and ask for a "link/screenshot of the opt-in form".
+ *
+ * The registry has no attachment field, so include the returned URL inside the `messageFlow` you submit with the appeal (`POST /v1/sms/registrations/{id}/appeal`).
  *
  */
 export const uploadSmsOptInProof = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadSmsOptInProofData, ThrowOnError>) => {
@@ -8203,11 +9066,9 @@ export const shareSmsRegistration = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Look up a library template
- * Look up a single pre-approved Template Library template by its exact name, to
- * introspect its structure before importing it. Most importantly it returns the
- * template's `buttons`: a library template with `URL` / `PHONE_NUMBER` buttons
- * must be created with a matching `library_template_button_inputs` array (see
- * Create Template), or Meta rejects it. Use this to discover which inputs to collect.
+ * Look up a single pre-approved Template Library template by its exact name, to introspect its structure before importing it.
+ *
+ * Most importantly, it returns the template's `buttons`. A library template with `URL` / `PHONE_NUMBER` buttons must be created with a matching `library_template_button_inputs` array (see Create Template), or Meta rejects it. Use this to discover which inputs to collect.
  *
  */
 export const getWhatsAppLibraryTemplate = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppLibraryTemplateData, ThrowOnError>) => {
@@ -8219,7 +9080,14 @@ export const getWhatsAppLibraryTemplate = <ThrowOnError extends boolean = false>
 
 /**
  * List the catalogs linked to a WhatsApp number
- * The Meta Commerce catalogs connected to the number's WhatsApp Business Account. Pass `catalogAccountId`: the WhatsApp connection's own (embedded signup) token answers an empty list even when a catalog is linked, only a Meta login with catalog_management sees the link. A linked catalog is what product, product_list and catalog_message interactive messages sell from (see POST /v1/inbox/conversations/{conversationId}/messages) and what customers browse in the WhatsApp app. Create and fill catalogs with the /v1/ads/catalogs endpoints.
+ * Lists the Meta Commerce catalogs connected to the number's WhatsApp Business Account.
+ *
+ * Pass `catalogAccountId`. The WhatsApp connection's own (embedded signup) token answers an empty list even when a catalog is linked; only a Meta login with catalog_management sees the link.
+ *
+ * A linked catalog is what product, product_list and catalog_message interactive messages sell from (see POST /v1/inbox/conversations/{conversationId}/messages). It is also what customers browse in the WhatsApp app.
+ *
+ * Create and fill catalogs with the /v1/ads/catalogs endpoints.
+ *
  */
 export const listWhatsAppCatalogs = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListWhatsAppCatalogsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListWhatsAppCatalogsResponse, ListWhatsAppCatalogsError, ThrowOnError>({
@@ -8398,15 +9266,28 @@ export const getWhatsappBusinessUsername = <ThrowOnError extends boolean = false
  * Set business username
  * Claim or transfer a WhatsApp Business username for the account.
  *
- * Username rules: 3-35 characters, letters/digits/period/underscore only, must contain at least one letter,
- * no leading or trailing periods, no consecutive periods, no `www` prefix, no domain TLD suffix (e.g. `.com`).
+ * ### Username rules
  *
- * If the desired username is currently held by another account, pass `transferAction: "force_transfer"` to
- * request a transfer. On failure the API returns a standard error envelope with one of these codes:
- * `whatsapp_username_unavailable` (already taken and transfer not requested),
- * `whatsapp_username_ineligible` (account not eligible to claim a username),
- * `whatsapp_username_transfer_required` (username is held elsewhere; retry with `force_transfer`), or
- * `insufficient_permissions` (Meta has not granted username management for this WhatsApp Business Account).
+ * - 3-35 characters
+ * - letters/digits/period/underscore only
+ * - must contain at least one letter
+ * - no leading or trailing periods
+ * - no consecutive periods
+ * - no `www` prefix
+ * - no domain TLD suffix (e.g. `.com`)
+ *
+ * ### Transfers
+ *
+ * If the desired username is currently held by another account, pass `transferAction: "force_transfer"` to request a transfer.
+ *
+ * ### Errors
+ *
+ * On failure the API returns a standard error envelope with one of these codes:
+ *
+ * - `whatsapp_username_unavailable`: already taken and transfer not requested
+ * - `whatsapp_username_ineligible`: account not eligible to claim a username
+ * - `whatsapp_username_transfer_required`: username is held elsewhere; retry with `force_transfer`
+ * - `insufficient_permissions`: Meta has not granted username management for this WhatsApp Business Account
  *
  */
 export const setWhatsappBusinessUsername = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SetWhatsappBusinessUsernameData, ThrowOnError>) => {
@@ -8444,12 +9325,29 @@ export const getWhatsappBusinessUsernameSuggestions = <ThrowOnError extends bool
 
 /**
  * Get number status
- * Live snapshot of a connected number straight from Meta: the phone-number node
- * (display number, display name + approval, quality rating, messaging-limit tier,
- * throughput, official-business badge, connection status, health_status) and its
- * owning WhatsApp Business Account (name, business verification, timezone,
- * health_status). Fetched live because Meta updates quality/tier/name/health over
- * time; the call also refreshes the cached values shown on the connection card.
+ * Live snapshot of a connected number straight from Meta.
+ *
+ * ### Phone-number node
+ *
+ * - display number
+ * - display name + approval
+ * - quality rating
+ * - messaging-limit tier
+ * - throughput
+ * - official-business badge
+ * - connection status
+ * - health_status
+ *
+ * ### Owning WhatsApp Business Account
+ *
+ * - name
+ * - business verification
+ * - timezone
+ * - health_status
+ *
+ * ### Why live
+ *
+ * It is fetched live because Meta updates quality/tier/name/health over time. The call also refreshes the cached values shown on the connection card.
  *
  */
 export const getWhatsAppNumberInfo = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppNumberInfoData, ThrowOnError>) => {
@@ -8461,12 +9359,11 @@ export const getWhatsAppNumberInfo = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Get pricing analytics
- * Message volume and approximate cost for one connected WhatsApp number, read live
- * from Meta's `pricing_analytics` on the WhatsApp Business Account and scoped to
- * that account's phone number. Meta's figures are approximate and can lag; Meta
- * bills from its own invoice. Meta limits how far back and how fine the data goes
- * (for example HALF_HOUR only over short ranges) and answers out-of-range requests
- * with an error.
+ * Message volume and approximate cost for one connected WhatsApp number. Read live from Meta's `pricing_analytics` on the WhatsApp Business Account and scoped to that account's phone number.
+ *
+ * Meta's figures are approximate and can lag; Meta bills from its own invoice.
+ *
+ * Meta limits how far back and how fine the data goes (for example HALF_HOUR only over short ranges), and answers out-of-range requests with an error.
  *
  */
 export const getWhatsAppPricingAnalytics = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppPricingAnalyticsData, ThrowOnError>) => {
@@ -8508,14 +9405,13 @@ export const getWhatsAppBlockedUsers = <ThrowOnError extends boolean = false>(op
 
 /**
  * Block users
- * Block one or more WhatsApp users on this number. Blocked users cannot
- * message your number or see that you are online, and your sends to them
- * return an error.
+ * Block one or more WhatsApp users on this number. Blocked users cannot message your number or see that you are online, and your sends to them return an error.
  *
- * Meta constraints, surfaced per-user in `failed` (the request itself still
- * succeeds for the rest of the batch):
- * - Only users who messaged your business within the last 24 hours can be
- * blocked (failures outside the window report "Re-engagement required").
+ * ### Meta constraints
+ *
+ * These are surfaced per-user in `failed`; the request itself still succeeds for the rest of the batch.
+ *
+ * - Only users who messaged your business within the last 24 hours can be blocked (failures outside the window report "Re-engagement required").
  * - Up to 1,000 users per request; the blocklist caps at 64,000.
  * - Other WhatsApp Business accounts cannot be blocked.
  *
@@ -8543,13 +9439,14 @@ export const unblockWhatsAppUsers = <ThrowOnError extends boolean = false>(optio
 
 /**
  * List account notifications
- * Returns Meta-originated events recorded for a WhatsApp account, newest
- * first: template review outcomes (approved, rejected, paused, category
- * changes) and WABA status changes (restricted, disabled, reinstated,
- * disconnected). Events are captured from Meta webhooks as they happen;
- * the feed starts at the account's first recorded event and is not
- * backfilled. Complements the push events `whatsapp.template.status_updated`
- * and `account.disconnected` with a pollable history.
+ * Returns Meta-originated events recorded for a WhatsApp account, newest first:
+ *
+ * - template review outcomes (approved, rejected, paused, category changes)
+ * - WABA status changes (restricted, disabled, reinstated, disconnected)
+ *
+ * Events are captured from Meta webhooks as they happen. The feed starts at the account's first recorded event and is not backfilled.
+ *
+ * Complements the push events `whatsapp.template.status_updated` and `account.disconnected` with a pollable history.
  *
  */
 export const listWhatsAppAccountEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListWhatsAppAccountEventsData, ThrowOnError>) => {
@@ -8615,13 +9512,14 @@ export const listPhoneNumbers = <ThrowOnError extends boolean = false>(options?:
 
 /**
  * Get phone number
- * Retrieve the current status of a purchased phone number. Poll this to
- * track Meta pre-verification (US sync path) and, for regulated (Tier 3/4)
- * numbers, the async lifecycle: pending_regulatory → active (or
- * regulatory_declined). When a regulated number has an Onfido ID step,
- * `onfidoVerificationUrl` appears here once the order is placed. Forward
- * it to the end user. (Or subscribe to the whatsapp.number.* webhooks
- * instead of polling.)
+ * Retrieve the current status of a purchased phone number. Poll this to track:
+ *
+ * - Meta pre-verification (US sync path)
+ * - for regulated (Tier 3/4) numbers, the async lifecycle: pending_regulatory → active (or regulatory_declined)
+ *
+ * When a regulated number has an Onfido ID step, `onfidoVerificationUrl` appears here once the order is placed. Forward it to the end user.
+ *
+ * Or subscribe to the whatsapp.number.* webhooks instead of polling.
  *
  */
 export const getPhoneNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetPhoneNumberData, ThrowOnError>) => {
@@ -8649,19 +9547,19 @@ export const releasePhoneNumber = <ThrowOnError extends boolean = false>(options
 
 /**
  * Purchase phone number
- * Payment-first: the system provisions a number and auto-assigns it, unless you pass
- * `phoneNumber` to buy one exact number from `GET /v1/phone-numbers/available`. With
- * usage-based billing active and a payment method on file, the
- * number provisions inline and bills per month on your usage-based invoice (there is
- * no checkout redirect). No payment method on file returns `402 PAYMENT_REQUIRED`;
- * a regulated country returns `202` with `status: "kyc_required"` and a `kycUrl`.
+ * Buys a phone number, payment-first. The system provisions a number and auto-assigns it, unless you pass `phoneNumber` to buy one exact number from `GET /v1/phone-numbers/available`.
  *
- * The monthly price is the one `GET /v1/phone-numbers/countries` quotes for that
- * country and `numberType` at the time of purchase, and it is stamped on the number:
- * later rate-card changes never move a number you already own.
+ * Requires usage-based billing (the Usage plan). The maximum number of phone numbers is determined by the user's plan.
  *
- * Requires usage-based billing (the Usage plan). The maximum number of phone numbers
- * is determined by the user's plan.
+ * ### Outcomes
+ *
+ * - Usage-based billing active and a payment method on file: the number provisions inline and bills per month on your usage-based invoice (there is no checkout redirect).
+ * - No payment method on file: `402 PAYMENT_REQUIRED`.
+ * - A regulated country: `202` with `status: "kyc_required"` and a `kycUrl`.
+ *
+ * ### Price
+ *
+ * The monthly price is the one `GET /v1/phone-numbers/countries` quotes for that country and `numberType` at the time of purchase, and it is stamped on the number. Later rate-card changes never move a number you already own.
  *
  */
 export const purchasePhoneNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PurchasePhoneNumberData, ThrowOnError>) => {
@@ -8689,12 +9587,18 @@ export const getPhoneNumberClaim = <ThrowOnError extends boolean = false>(option
 
 /**
  * List offerable number countries
- * The phone number countries available to purchase, each with its flat
- * monthly price (cents), regulatory tier, whether it needs end-user KYC
- * (Tier 3/4), and per-feature availability (PSTN calls, WhatsApp, SMS,
- * and WhatsApp Business Calling outbound). Drives the country picker.
- * Tier-4 countries appear only when enabled. No API key needed: the
- * catalog is public so you can browse it before you have an account.
+ * The phone number countries available to purchase. Drives the country picker.
+ *
+ * ### Per country
+ *
+ * - flat monthly price (cents)
+ * - regulatory tier
+ * - whether it needs end-user KYC (Tier 3/4)
+ * - per-feature availability: PSTN calls, WhatsApp, SMS, and WhatsApp Business Calling outbound
+ *
+ * Tier-4 countries appear only when enabled.
+ *
+ * No API key needed: the catalog is public so you can browse it before you have an account.
  *
  */
 export const listPhoneNumberCountries = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
@@ -8706,21 +9610,20 @@ export const listPhoneNumberCountries = <ThrowOnError extends boolean = false>(o
 
 /**
  * Search available numbers
- * Search the provider's inventory for numbers available to purchase in a
- * country (default US). Optional filters narrow the results. The country
- * must be offerable (see GET /v1/phone-numbers/countries). Voice
- * capability is always required; pass `sms=true` to only see numbers that
- * can also text (SMS support is per-number, not per-country). Numbers a
- * purchase would refuse are left out, and any result's `phoneNumber` can
- * be bought exactly by passing it to POST /v1/phone-numbers/purchase.
+ * Search the provider's inventory for numbers available to purchase in a country (default US). Optional filters narrow the results.
  *
- * Works without an API key. Keyless calls get up to 12 results with the
- * middle digits masked (`maskedNumber`), each with a `claimId` and a
- * `claimUrl`: a signup link that lands a person on the dashboard's
- * confirm step with that number picked, so an agent can search for a
- * user and hand them one link. Keyless calls are rate limited per IP and
- * results are cached for a few minutes. With an API key you get full
- * numbers and no claim fields.
+ * - The country must be offerable (see GET /v1/phone-numbers/countries).
+ * - Voice capability is always required. Pass `sms=true` to only see numbers that can also text (SMS support is per-number, not per-country).
+ * - Numbers a purchase would refuse are left out.
+ * - Any result's `phoneNumber` can be bought exactly by passing it to POST /v1/phone-numbers/purchase.
+ *
+ * ### Without an API key
+ *
+ * The endpoint works without an API key. Keyless calls get up to 12 results with the middle digits masked (`maskedNumber`), each with a `claimId` and a `claimUrl`.
+ *
+ * The `claimUrl` is a signup link that lands a person on the dashboard's confirm step with that number picked, so an agent can search for a user and hand them one link.
+ *
+ * Keyless calls are rate limited per IP and results are cached for a few minutes. With an API key you get full numbers and no claim fields.
  *
  */
 export const searchAvailablePhoneNumbers = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<SearchAvailablePhoneNumbersData, ThrowOnError>) => {
@@ -8732,19 +9635,17 @@ export const searchAvailablePhoneNumbers = <ThrowOnError extends boolean = false
 
 /**
  * Check country availability
- * Pre-purchase check, so you can warn BEFORE a customer invests in KYC
- * (regulated review is async, 1-3 days). Tells you whether we have
- * deliverable inventory, and what address the customer needs:
- * - `addressConstraint: geo`  → the registered address MUST be in one of
- * the returned `areas` (the only place we have stock). A different-area
- * address passes pre-approval but the number can never be assigned.
- * - `addressConstraint: country` → any in-country address works.
- * - `addressConstraint: none` → field-only / instant country, no address.
- * Call this before starting the KYC form for regulated countries.
+ * Pre-purchase check, so you can warn BEFORE a customer invests in KYC (regulated review is async, 1-3 days). Call this before starting the KYC form for regulated countries.
  *
- * Without an API key it answers from cache only and returns just
- * `country`, `numberType` and `areaOptions`, for building an area
- * picker before signup.
+ * It tells you whether we have deliverable inventory, and what address the customer needs:
+ *
+ * - `addressConstraint: geo`: the registered address MUST be in one of the returned `areas` (the only place we have stock). A different-area address passes pre-approval but the number can never be assigned.
+ * - `addressConstraint: country`: any in-country address works.
+ * - `addressConstraint: none`: field-only / instant country, no address.
+ *
+ * ### Without an API key
+ *
+ * It answers from cache only and returns just `country`, `numberType` and `areaOptions`, for building an area picker before signup.
  *
  */
 export const checkPhoneNumberAvailability = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CheckPhoneNumberAvailabilityData, ThrowOnError>) => {
@@ -8776,22 +9677,22 @@ export const getWhatsAppPhoneNumbers = <ThrowOnError extends boolean = false>(op
 /**
  * @deprecated
  * Purchase phone number
- * Deprecated alias of `/v1/phone-numbers/purchase`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/purchase`; same contract. New integrations should use that path.
  *
- * Payment-first: the system provisions a number and auto-assigns it, unless you pass
- * `phoneNumber` to buy one exact number from `GET /v1/phone-numbers/available`. With
- * usage-based billing active and a payment method on file, the
- * number provisions inline and bills per month on your usage-based invoice (there is
- * no checkout redirect). No payment method on file returns `402 PAYMENT_REQUIRED`;
- * a regulated country returns `202` with `status: "kyc_required"` and a `kycUrl`.
+ * Requires usage-based billing (the Usage plan). The maximum number of phone numbers is determined by the user's plan.
  *
- * The monthly price is the one `GET /v1/phone-numbers/countries` quotes for that
- * country and `numberType` at the time of purchase, and it is stamped on the number:
- * later rate-card changes never move a number you already own.
+ * ### Payment-first purchase
  *
- * Requires usage-based billing (the Usage plan). The maximum number of phone numbers
- * is determined by the user's plan.
+ * The system provisions a number and auto-assigns it, unless you pass `phoneNumber` to buy one exact number from `GET /v1/phone-numbers/available`.
+ *
+ * With usage-based billing active and a payment method on file, the number provisions inline and bills per month on your usage-based invoice (there is no checkout redirect).
+ *
+ * - No payment method on file returns `402 PAYMENT_REQUIRED`.
+ * - A regulated country returns `202` with `status: "kyc_required"` and a `kycUrl`.
+ *
+ * ### Price
+ *
+ * The monthly price is the one `GET /v1/phone-numbers/countries` quotes for that country and `numberType` at the time of purchase. It is stamped on the number: later rate-card changes never move a number you already own.
  *
  */
 export const purchaseWhatsAppPhoneNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PurchaseWhatsAppPhoneNumberData, ThrowOnError>) => {
@@ -8841,18 +9742,15 @@ export const searchAvailableWhatsAppNumbers = <ThrowOnError extends boolean = fa
 /**
  * @deprecated
  * Check country availability
- * Deprecated alias of `/v1/phone-numbers/availability`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/availability`; same contract. New integrations should use that path.
  *
- * Pre-purchase check, so you can warn BEFORE a customer invests in KYC
- * (regulated review is async, 1-3 days). Tells you whether we have
- * deliverable inventory, and what address the customer needs:
- * - `addressConstraint: geo`  → the registered address MUST be in one of
- * the returned `areas` (the only place we have stock). A different-area
- * address passes pre-approval but the number can never be assigned.
- * - `addressConstraint: country` → any in-country address works.
- * - `addressConstraint: none` → field-only / instant country, no address.
- * Call this before starting the KYC form for regulated countries.
+ * A pre-purchase check, so you can warn BEFORE a customer invests in KYC (regulated review is async, 1-3 days). It tells you whether we have deliverable inventory, and what address the customer needs. Call this before starting the KYC form for regulated countries.
+ *
+ * ### Address constraints
+ *
+ * - `addressConstraint: geo`: the registered address MUST be in one of the returned `areas` (the only place we have stock). A different-area address passes pre-approval but the number can never be assigned.
+ * - `addressConstraint: country`: any in-country address works.
+ * - `addressConstraint: none`: field-only / instant country, no address.
  *
  */
 export const checkWhatsAppNumberAvailability = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CheckWhatsAppNumberAvailabilityData, ThrowOnError>) => {
@@ -8878,23 +9776,21 @@ export const getPhoneNumberKycForm = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Submit KYC
- * Submit the end customer's KYC (textual values, uploaded documents,
- * address) for a Tier 3/4 country. Documents are streamed straight to the
- * number provider and are not stored by Zernio. Builds + submits a
- * regulatory requirement group and claims a pending_regulatory slot; the
- * number is ordered + activated once the provider approves (asynchronous).
- * A customer may hold several same-country numbers in review at once; a
- * double-submit of the SAME attempt is deduped via `submissionId`.
+ * Submit the end customer's KYC (textual values, uploaded documents, address) for a Tier 3/4 country. Documents are streamed straight to the number provider and are not stored by Zernio.
  *
- * For an ID-card document requirement, carriers commonly require BOTH sides:
- * combine the front and back into a single file before uploading (the
- * dashboard does this automatically). A one-sided ID is a common decline
- * reason; fix it via POST /v1/phone-numbers/{id}/remediate.
+ * The call builds + submits a regulatory requirement group and claims a pending_regulatory slot. The number is ordered + activated once the provider approves (asynchronous).
  *
- * Before submitting, call GET /v1/phone-numbers/availability to
- * check the country has deliverable inventory and, for geographic-match
- * countries, which area the address must be in. Otherwise the submission
- * can pass review yet never be assignable a number.
+ * A customer may hold several same-country numbers in review at once. A double-submit of the SAME attempt is deduped via `submissionId`.
+ *
+ * ### ID documents
+ *
+ * For an ID-card document requirement, carriers commonly require BOTH sides. Combine the front and back into a single file before uploading (the dashboard does this automatically).
+ *
+ * A one-sided ID is a common decline reason; fix it via POST /v1/phone-numbers/{id}/remediate.
+ *
+ * ### Before submitting
+ *
+ * Call GET /v1/phone-numbers/availability to check the country has deliverable inventory and, for geographic-match countries, which area the address must be in. Otherwise the submission can pass review yet never be assignable a number.
  *
  */
 export const submitPhoneNumberKyc = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SubmitPhoneNumberKycData, ThrowOnError>) => {
@@ -8906,12 +9802,11 @@ export const submitPhoneNumberKyc = <ThrowOnError extends boolean = false>(optio
 
 /**
  * View a KYC document on file
- * Stream a document backing a reusable verification (the `documentId`
- * values from GET /v1/phone-numbers/kyc `reusable.options[].details[]`), so
- * the account holder can see what's on file before reusing it. Returned
- * inline as `application/pdf` (uploads are normalized to PDF). Auth-scoped:
- * a document is viewable only when its id is referenced by one of the
- * caller's own numbers. Otherwise `404`.
+ * Stream a document backing a reusable verification, so the account holder can see what's on file before reusing it. The ids are the `documentId` values from GET /v1/phone-numbers/kyc `reusable.options[].details[]`.
+ *
+ * Returned inline as `application/pdf` (uploads are normalized to PDF).
+ *
+ * Auth-scoped: a document is viewable only when its id is referenced by one of the caller's own numbers. Otherwise `404`.
  *
  */
 export const viewPhoneNumberKycDocument = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ViewPhoneNumberKycDocumentData, ThrowOnError>) => {
@@ -8923,12 +9818,13 @@ export const viewPhoneNumberKycDocument = <ThrowOnError extends boolean = false>
 
 /**
  * Upload a KYC document
- * Upload ONE document and get back its provider document id, to reference
- * from POST /v1/phone-numbers/kyc via `documents[].documentId`.
- * Send the RAW file bytes as the request body (not base64); put the filename
- * in the `X-Filename` header. Uploading documents one-per-request keeps each
- * request under the ~4.5MB body limit. The document streams straight to the
- * number provider and is not stored by Zernio.
+ * Upload ONE document and get back its provider document id, to reference from POST /v1/phone-numbers/kyc via `documents[].documentId`.
+ *
+ * - Send the RAW file bytes as the request body (not base64).
+ * - Put the filename in the `X-Filename` header.
+ * - Uploading documents one-per-request keeps each request under the ~4.5MB body limit.
+ *
+ * The document streams straight to the number provider and is not stored by Zernio.
  *
  */
 export const uploadPhoneNumberKycDocument = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadPhoneNumberKycDocumentData, ThrowOnError>) => {
@@ -8940,15 +9836,13 @@ export const uploadPhoneNumberKycDocument = <ThrowOnError extends boolean = fals
 
 /**
  * Pre-validate KYC address
- * Optional early check for the address step of a Tier 4 (end-user identity)
- * registration: validates a postal address for deliverability BEFORE the full
- * KYC submit, so it can be corrected before any documents are uploaded. The
- * full submit (POST /v1/phone-numbers/kyc) re-validates the address,
- * so this call is purely a fast feedback path and skipping it is safe. Only
- * the postal address is sent (no documents, no gov-ID fields). A region
- * (`administrative_area`) is required by the validator; when it is omitted the
- * pre-check is skipped and `{ ok: true, skipped: true }` is returned (the
- * final submit still validates).
+ * Optional early check for the address step of a Tier 4 (end-user identity) registration. It validates a postal address for deliverability BEFORE the full KYC submit, so it can be corrected before any documents are uploaded.
+ *
+ * The full submit (POST /v1/phone-numbers/kyc) re-validates the address, so this call is purely a fast feedback path and skipping it is safe.
+ *
+ * Only the postal address is sent (no documents, no gov-ID fields).
+ *
+ * A region (`administrative_area`) is required by the validator. When it is omitted the pre-check is skipped and `{ ok: true, skipped: true }` is returned (the final submit still validates).
  *
  */
 export const validatePhoneNumberKycAddress = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ValidatePhoneNumberKycAddressData, ThrowOnError>) => {
@@ -8960,25 +9854,20 @@ export const validatePhoneNumberKycAddress = <ThrowOnError extends boolean = fal
 
 /**
  * Create a hosted KYC link
- * Create a single-use, 7-day hosted KYC link that your end customer
- * completes WITHOUT a Zernio login. Useful when the person who holds the
- * ID and address is not your team. They fill the regulated verification on
- * a Zernio-hosted page; the number provisions under YOUR account once they
- * submit. Only regulated (KYC) countries are valid: a country that does not
- * require KYC returns 400.
+ * Create a single-use, 7-day hosted KYC link that your end customer completes WITHOUT a Zernio login. Useful when the person who holds the ID and address is not your team.
  *
- * Pass `numberType` (`local`, `mobile`, `national`, `toll_free`) to choose
- * which of the country's offered types the shared form collects KYC for and
- * eventually orders; omitted defaults to the country's default type (which
- * may be `national` and therefore have no inventory in a geographic area
- * code). Pass `areaCode` (NDC digits) to constrain the eventual order to a
- * specific area; it is validated against the chosen `numberType`.
+ * They fill the regulated verification on a Zernio-hosted page, and the number provisions under YOUR account once they submit. Only regulated (KYC) countries are valid: a country that does not require KYC returns 400.
  *
- * White-label the page with `branding` (your company name, logo, brand
- * color). Supply `redirect_url` to send the end customer back to your own
- * site after a successful submit (completion params are appended; see
- * below). Listen for the `whatsapp.number.kyc_submitted` webhook to react
- * when the form is completed.
+ * ### Choosing the number
+ *
+ * - `numberType` (`local`, `mobile`, `national`, `toll_free`): which of the country's offered types the shared form collects KYC for and eventually orders. Omitted, it defaults to the country's default type, which may be `national` and therefore have no inventory in a geographic area code.
+ * - `areaCode` (NDC digits): constrains the eventual order to a specific area. It is validated against the chosen `numberType`.
+ *
+ * ### Branding and completion
+ *
+ * - White-label the page with `branding` (your company name, logo, brand color).
+ * - Supply `redirect_url` to send the end customer back to your own site after a successful submit (completion params are appended; see below).
+ * - Listen for the `whatsapp.number.kyc_submitted` webhook to react when the form is completed.
  *
  */
 export const createPhoneNumberKycLink = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreatePhoneNumberKycLinkData, ThrowOnError>) => {
@@ -8991,26 +9880,27 @@ export const createPhoneNumberKycLink = <ThrowOnError extends boolean = false>(o
 /**
  * Port numbers in
  * Submit a port-in for one or more existing numbers from another carrier.
- * Creates the carrier order(s), attaches the end-user (current account)
- * info plus the LOA and invoice documents, and submits to the losing
- * carrier. The transfer PIN is forwarded to the carrier and never stored.
- * Ported numbers arrive voice-ready (and SMS-ready where the order
- * supports messaging).
  *
- * Run the portability check (POST /v1/phone-numbers/port-in/check) and
- * upload the two documents (POST /v1/phone-numbers/port-in/documents)
- * first. Uploaded documents must be attached to an order within 30
- * minutes or the carrier deletes them, so upload right before this call.
- * The carrier may split the numbers into several orders (by country,
- * number type, losing carrier); `orders` carries per-order results, and a
- * partial failure still returns 201 with the failed orders' `error` set
- * (they stay as cancellable drafts).
+ * The call creates the carrier order(s), attaches the end-user (current account) info plus the LOA and invoice documents, and submits to the losing carrier. The transfer PIN is forwarded to the carrier and never stored.
  *
- * Non-US/CA numbers additionally need the country-specific values from
- * GET /v1/phone-numbers/port-in/requirements, passed via `requirements`,
- * and must be submitted one country per request. When required
- * information is still missing after submission, the order is kept as a
- * resumable draft whose `error` / `declineReason` names the gaps.
+ * Ported numbers arrive voice-ready (and SMS-ready where the order supports messaging).
+ *
+ * ### Before calling
+ *
+ * 1. Run the portability check (POST /v1/phone-numbers/port-in/check).
+ * 2. Upload the two documents (POST /v1/phone-numbers/port-in/documents) right before this call. Uploaded documents must be attached to an order within 30 minutes or the carrier deletes them.
+ *
+ * ### Orders and partial failures
+ *
+ * The carrier may split the numbers into several orders (by country, number type, losing carrier). `orders` carries per-order results.
+ *
+ * A partial failure still returns 201 with the failed orders' `error` set (they stay as cancellable drafts).
+ *
+ * ### Non-US/CA numbers
+ *
+ * These additionally need the country-specific values from GET /v1/phone-numbers/port-in/requirements, passed via `requirements`, and must be submitted one country per request.
+ *
+ * When required information is still missing after submission, the order is kept as a resumable draft whose `error` / `declineReason` names the gaps.
  *
  */
 export const createPhoneNumberPortIn = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreatePhoneNumberPortInData, ThrowOnError>) => {
@@ -9035,21 +9925,27 @@ export const listPhoneNumberPortIns = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Check portability
- * Pre-flight portability check: whether each number can be ported in,
- * whether it qualifies for FastPort, and its current carrier and line
- * type where the carrier lookup knows them, BEFORE the user commits to a
- * port order (LOA, invoice, service address). Read-only; creates no
- * order and bills nothing.
+ * Pre-flight portability check, BEFORE the user commits to a port order (LOA, invoice, service address). For each number it returns:
  *
- * Works without an API key for one number per request. Keyless calls
- * are what the checker at https://zernio.com/port-your-number makes:
- * they must come from that page (a browser bot check rejects scripted
- * callers with 401), are limited per IP (3 a minute, 10 a day) and by a
- * shared daily budget (429 once spent), because each check runs a paid
- * carrier lookup. Each portable keyless result carries a `claimId` and
- * a `claimUrl`: a signup link that opens the dashboard's port form with
- * the number filled in. Send an API key to check up to 50 numbers
- * without those limits.
+ * - whether it can be ported in
+ * - whether it qualifies for FastPort
+ * - its current carrier and line type, where the carrier lookup knows them
+ *
+ * Read-only; creates no order and bills nothing.
+ *
+ * ### Keyless calls
+ *
+ * Works without an API key for one number per request. Keyless calls are what the checker at https://zernio.com/port-your-number makes. Because each check runs a paid carrier lookup, they are limited:
+ *
+ * - they must come from that page (a browser bot check rejects scripted callers with 401)
+ * - per IP: 3 a minute, 10 a day
+ * - by a shared daily budget (429 once spent)
+ *
+ * Each portable keyless result carries a `claimId` and a `claimUrl`: a signup link that opens the dashboard's port form with the number filled in.
+ *
+ * ### With an API key
+ *
+ * Send an API key to check up to 50 numbers without those limits.
  *
  */
 export const checkPhoneNumberPortability = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CheckPhoneNumberPortabilityData, ThrowOnError>) => {
@@ -9076,13 +9972,17 @@ export const getPhoneNumberPortClaim = <ThrowOnError extends boolean = false>(op
 
 /**
  * Upload a porting document
- * Upload ONE porting document and get back its `documentId`. For the
- * signed LOA / carrier invoice the id goes to `loaDocumentId` /
- * `invoiceDocumentId`; for a country-specific document requirement
- * (international ports) it becomes that requirement's `fieldValue`.
- * Requirement documents are normalized to PDF automatically (regulators
- * reject raw images). PDF, JPEG, or PNG, 10MB max. Uploads must be
- * attached to an order within 30 minutes or the carrier deletes them.
+ * Upload ONE porting document and get back its `documentId`.
+ *
+ * ### Where the id goes
+ *
+ * - Signed LOA / carrier invoice: the id goes to `loaDocumentId` / `invoiceDocumentId`.
+ * - Country-specific document requirement (international ports): it becomes that requirement's `fieldValue`. Requirement documents are normalized to PDF automatically (regulators reject raw images).
+ *
+ * ### Limits
+ *
+ * - PDF, JPEG, or PNG, 10MB max.
+ * - Uploads must be attached to an order within 30 minutes or the carrier deletes them.
  *
  */
 export const uploadPhoneNumberPortInDocument = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadPhoneNumberPortInDocumentData, ThrowOnError>) => {
@@ -9099,12 +9999,15 @@ export const uploadPhoneNumberPortInDocument = <ThrowOnError extends boolean = f
 
 /**
  * Country porting requirements
- * The country-specific information a port-in needs BEYOND the LOA,
- * invoice, and account/address details, such as an ID copy, proof of
- * address, a tax id, or a porting code. Call it after the portability
- * check (which returns each number's `countryCode` and
- * `phoneNumberType`), render the fields, and pass the collected values as
- * the create request's `requirements`. US/CA return an empty list.
+ * The country-specific information a port-in needs BEYOND the LOA, invoice, and account/address details, such as an ID copy, proof of address, a tax id, or a porting code.
+ *
+ * ### How to use it
+ *
+ * 1. Run the portability check, which returns each number's `countryCode` and `phoneNumberType`.
+ * 2. Call this endpoint and render the fields.
+ * 3. Pass the collected values as the create request's `requirements`.
+ *
+ * US/CA return an empty list.
  *
  */
 export const getPhoneNumberPortInRequirements = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetPhoneNumberPortInRequirementsData, ThrowOnError>) => {
@@ -9148,13 +10051,11 @@ export const cancelPhoneNumberPortIn = <ThrowOnError extends boolean = false>(op
 
 /**
  * Pre-review a KYC packet
- * Advisory dry-run of a regulated-KYC packet before submitting: reviews
- * the exact documents the regulator will see (referenced by the ids from
- * POST /v1/phone-numbers/kyc/upload-document) against the declared values
- * and address, and returns plain-language advisories for likely decline
- * reasons (wrong document type, mismatched address, one-sided ID scans).
- * Non-blocking: advisories are warnings, submitting anyway is always
- * allowed, and any review failure degrades to an empty list.
+ * Advisory dry-run of a regulated-KYC packet before submitting.
+ *
+ * It reviews the exact documents the regulator will see (referenced by the ids from POST /v1/phone-numbers/kyc/upload-document) against the declared values and address. It returns plain-language advisories for likely decline reasons (wrong document type, mismatched address, one-sided ID scans).
+ *
+ * Non-blocking: advisories are warnings, submitting anyway is always allowed, and any review failure degrades to an empty list.
  *
  */
 export const reviewPhoneNumberKycPacket = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReviewPhoneNumberKycPacketData, ThrowOnError>) => {
@@ -9166,11 +10067,11 @@ export const reviewPhoneNumberKycPacket = <ThrowOnError extends boolean = false>
 
 /**
  * Get declined requirements
- * For a number in `regulatory_declined`, returns ONLY the requirements the
- * reviewer flagged declined, as a form spec (same shape as the KYC form GET).
- * The customer fixes only those, because Telnyx supports correcting a declined
- * requirement group and re-submitting it (no new number/group). Falls back
- * to the full spec if the provider exposes no per-requirement flags.
+ * For a number in `regulatory_declined`, returns ONLY the requirements the reviewer flagged declined, as a form spec (same shape as the KYC form GET).
+ *
+ * The customer fixes only those, because Telnyx supports correcting a declined requirement group and re-submitting it (no new number/group).
+ *
+ * It falls back to the full spec if the provider exposes no per-requirement flags.
  *
  */
 export const getPhoneNumberRemediation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetPhoneNumberRemediationData, ThrowOnError>) => {
@@ -9198,14 +10099,14 @@ export const remediatePhoneNumber = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Reply to the regulatory reviewer
- * Post a free-text reply (with optional file attachments) to the reviewer
- * on a number awaiting remediation, for asks the structured form can't
- * express (e.g. "is this personal or business?"). Attachments are stored by
- * us and their links are added to the reviewer's comment thread (the
- * carrier's number order takes no loose files). A reply to a comment-style
- * ask moves the number back to "in review"; a reply on a formal decline is
- * supplementary and you must still resubmit the fix. Requires text or at
- * least one attachment.
+ * Post a free-text reply (with optional file attachments) to the reviewer on a number awaiting remediation. Use it for asks the structured form can't express (e.g. "is this personal or business?").
+ *
+ * Requires text or at least one attachment. Attachments are stored by us and their links are added to the reviewer's comment thread (the carrier's number order takes no loose files).
+ *
+ * ### What happens next
+ *
+ * - A reply to a comment-style ask moves the number back to "in review".
+ * - A reply on a formal decline is supplementary, and you must still resubmit the fix.
  *
  */
 export const replyToPhoneNumberReviewer = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToPhoneNumberReviewerData, ThrowOnError>) => {
@@ -9217,15 +10118,18 @@ export const replyToPhoneNumberReviewer = <ThrowOnError extends boolean = false>
 
 /**
  * Respond to the regulatory reviewer (message + corrections)
- * Send a single response to the reviewer on a number awaiting remediation:
- * a free-text message and/or corrected requirement documents, in one call.
- * If corrections are present they are PATCHed onto the requirement group and
- * re-submitted (the number goes back to "in review"); if a message or file
- * attachments are present they are posted to the reviewer's comment thread.
- * When both are present, your message is the thread comment and the resubmit
- * drives the state change. At least one of message, corrections, or
- * attachments is required. `documents` correct requirement slots; `attachments`
- * are loose files (their links are added to your message).
+ * Send a single response to the reviewer on a number awaiting remediation: a free-text message and/or corrected requirement documents, in one call.
+ *
+ * At least one of message, corrections, or attachments is required.
+ *
+ * - Corrections: PATCHed onto the requirement group and re-submitted (the number goes back to "in review").
+ * - Message or file attachments: posted to the reviewer's comment thread.
+ * - Both: your message is the thread comment and the resubmit drives the state change.
+ *
+ * ### Field roles
+ *
+ * - `documents` correct requirement slots.
+ * - `attachments` are loose files (their links are added to your message).
  *
  */
 export const respondToPhoneNumberReviewer = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RespondToPhoneNumberReviewerData, ThrowOnError>) => {
@@ -9256,26 +10160,24 @@ export const getWhatsAppNumberKycForm = <ThrowOnError extends boolean = false>(o
 /**
  * @deprecated
  * Submit KYC
- * Deprecated alias of `/v1/phone-numbers/kyc`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/kyc`; same contract. New integrations should use that path.
  *
- * Submit the end customer's KYC (textual values, uploaded documents,
- * address) for a Tier 3/4 country. Documents are streamed straight to the
- * number provider and are not stored by Zernio. Builds + submits a
- * regulatory requirement group and claims a pending_regulatory slot; the
- * number is ordered + activated once the provider approves (asynchronous).
- * A customer may hold several same-country numbers in review at once; a
- * double-submit of the SAME attempt is deduped via `submissionId`.
+ * Submit the end customer's KYC (textual values, uploaded documents, address) for a Tier 3/4 country. Documents are streamed straight to the number provider and are not stored by Zernio.
  *
- * For an ID-card document requirement, carriers commonly require BOTH sides:
- * combine the front and back into a single file before uploading (the
- * dashboard does this automatically). A one-sided ID is a common decline
- * reason; fix it via POST /v1/whatsapp/phone-numbers/{id}/remediate.
+ * ### What happens on submit
  *
- * Before submitting, call GET /v1/whatsapp/phone-numbers/availability to
- * check the country has deliverable inventory and, for geographic-match
- * countries, which area the address must be in. Otherwise the submission
- * can pass review yet never be assignable a number.
+ * 1. Zernio builds and submits a regulatory requirement group and claims a pending_regulatory slot.
+ * 2. The number is ordered + activated once the provider approves (asynchronous).
+ *
+ * A customer may hold several same-country numbers in review at once. A double-submit of the SAME attempt is deduped via `submissionId`.
+ *
+ * ### ID-card documents
+ *
+ * Carriers commonly require BOTH sides: combine the front and back into a single file before uploading (the dashboard does this automatically). A one-sided ID is a common decline reason; fix it via POST /v1/whatsapp/phone-numbers/{id}/remediate.
+ *
+ * ### Check availability first
+ *
+ * Before submitting, call GET /v1/whatsapp/phone-numbers/availability to check the country has deliverable inventory and, for geographic-match countries, which area the address must be in. Otherwise the submission can pass review yet never be assignable a number.
  *
  */
 export const submitWhatsAppNumberKyc = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SubmitWhatsAppNumberKycData, ThrowOnError>) => {
@@ -9288,15 +10190,17 @@ export const submitWhatsAppNumberKyc = <ThrowOnError extends boolean = false>(op
 /**
  * @deprecated
  * Upload a KYC document
- * Deprecated alias of `/v1/phone-numbers/kyc/upload-document`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/kyc/upload-document`; same contract. New integrations should use that path.
  *
- * Upload ONE document and get back its provider document id, to reference
- * from POST /v1/whatsapp/phone-numbers/kyc via `documents[].documentId`.
- * Send the RAW file bytes as the request body (not base64); put the filename
- * in the `X-Filename` header. Uploading documents one-per-request keeps each
- * request under the ~4.5MB body limit. The document streams straight to the
- * number provider and is not stored by Zernio.
+ * Upload ONE document and get back its provider document id, to reference from POST /v1/whatsapp/phone-numbers/kyc via `documents[].documentId`.
+ *
+ * ### Request format
+ *
+ * - Send the RAW file bytes as the request body (not base64).
+ * - Put the filename in the `X-Filename` header.
+ * - Uploading documents one-per-request keeps each request under the ~4.5MB body limit.
+ *
+ * The document streams straight to the number provider and is not stored by Zernio.
  *
  */
 export const uploadWhatsAppNumberKycDocument = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadWhatsAppNumberKycDocumentData, ThrowOnError>) => {
@@ -9309,18 +10213,14 @@ export const uploadWhatsAppNumberKycDocument = <ThrowOnError extends boolean = f
 /**
  * @deprecated
  * Pre-validate KYC address
- * Deprecated alias of `/v1/phone-numbers/kyc/validate-address`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/kyc/validate-address`; same contract. New integrations should use that path.
  *
- * Optional early check for the address step of a Tier 4 (end-user identity)
- * registration: validates a postal address for deliverability BEFORE the full
- * KYC submit, so it can be corrected before any documents are uploaded. The
- * full submit (POST /v1/whatsapp/phone-numbers/kyc) re-validates the address,
- * so this call is purely a fast feedback path and skipping it is safe. Only
- * the postal address is sent (no documents, no gov-ID fields). A region
- * (`administrative_area`) is required by the validator; when it is omitted the
- * pre-check is skipped and `{ ok: true, skipped: true }` is returned (the
- * final submit still validates).
+ * Optional early check for the address step of a Tier 4 (end-user identity) registration. It validates a postal address for deliverability BEFORE the full KYC submit, so it can be corrected before any documents are uploaded.
+ *
+ * The full submit (POST /v1/whatsapp/phone-numbers/kyc) re-validates the address, so this call is purely a fast feedback path and skipping it is safe.
+ *
+ * - Only the postal address is sent (no documents, no gov-ID fields).
+ * - A region (`administrative_area`) is required by the validator. When it is omitted the pre-check is skipped and `{ ok: true, skipped: true }` is returned (the final submit still validates).
  *
  */
 export const validateWhatsAppNumberKycAddress = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ValidateWhatsAppNumberKycAddressData, ThrowOnError>) => {
@@ -9333,21 +10233,17 @@ export const validateWhatsAppNumberKycAddress = <ThrowOnError extends boolean = 
 /**
  * @deprecated
  * Create a hosted KYC link
- * Deprecated alias of `/v1/phone-numbers/kyc/share`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/kyc/share`; same contract. New integrations should use that path.
  *
- * Create a single-use, 7-day hosted KYC link that your end customer
- * completes WITHOUT a Zernio login. Useful when the person who holds the
- * ID and address is not your team. They fill the regulated verification on
- * a Zernio-hosted page; the number provisions under YOUR account once they
- * submit. Only regulated (KYC) countries are valid: a country that does not
- * require KYC returns 400.
+ * Creates a single-use, 7-day hosted KYC link that your end customer completes WITHOUT a Zernio login. Useful when the person who holds the ID and address is not your team.
  *
- * White-label the page with `branding` (your company name, logo, brand
- * color). Supply `redirect_url` to send the end customer back to your own
- * site after a successful submit (completion params are appended; see
- * below). Listen for the `whatsapp.number.kyc_submitted` webhook to react
- * when the form is completed.
+ * They fill the regulated verification on a Zernio-hosted page; the number provisions under YOUR account once they submit. Only regulated (KYC) countries are valid: a country that does not require KYC returns 400.
+ *
+ * ### Options
+ *
+ * - White-label the page with `branding` (your company name, logo, brand color).
+ * - Supply `redirect_url` to send the end customer back to your own site after a successful submit (completion params are appended; see below).
+ * - Listen for the `whatsapp.number.kyc_submitted` webhook to react when the form is completed.
  *
  */
 export const createWhatsAppNumberKycLink = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateWhatsAppNumberKycLinkData, ThrowOnError>) => {
@@ -9361,21 +10257,22 @@ export const createWhatsAppNumberKycLink = <ThrowOnError extends boolean = false
  * Move a number to another profile
  * Move a provisioned number to a different profile.
  *
- * A number is not a single record. Alongside the number itself there are
- * hidden telephony owner accounts (platform `phone`, plus `sms` when SMS is
- * enabled) and, once WhatsApp is connected, the `whatsapp` account. They all
- * carry a profileId and this endpoint moves them together.
+ * A number is not a single record. These all carry a profileId, and this endpoint moves them together:
  *
- * Use this instead of `PATCH /v1/accounts/{accountId}`: that one moves the
- * account only and leaves the number itself pinned to its original
- * profile, which splits the number across two profiles. Connecting a
- * Zernio-provisioned number from any profile but its own is rejected with a
- * `409` (`WHATSAPP_NUMBER_PINNED_TO_PROFILE`). This endpoint is how you
- * re-home the number first, so it can then be connected from the new profile.
+ * - the number itself
+ * - hidden telephony owner accounts (platform `phone`, plus `sms` when SMS is enabled)
+ * - the `whatsapp` account, once WhatsApp is connected
  *
- * `id` is the number record id from `GET /v1/phone-numbers`, not an account id.
+ * ### Why not `PATCH /v1/accounts/{accountId}`
  *
- * The destination profile may already hold other numbers.
+ * That endpoint moves the account only and leaves the number itself pinned to its original profile, which splits the number across two profiles.
+ *
+ * Connecting a Zernio-provisioned number from any profile but its own is rejected with a `409` (`WHATSAPP_NUMBER_PINNED_TO_PROFILE`). This endpoint is how you re-home the number first, so it can then be connected from the new profile.
+ *
+ * ### Notes
+ *
+ * - `id` is the number record id from `GET /v1/phone-numbers`, not an account id.
+ * - The destination profile may already hold other numbers.
  *
  */
 export const moveWhatsAppNumberToProfile = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<MoveWhatsAppNumberToProfileData, ThrowOnError>) => {
@@ -9388,14 +10285,13 @@ export const moveWhatsAppNumberToProfile = <ThrowOnError extends boolean = false
 /**
  * @deprecated
  * Get declined requirements
- * Deprecated alias of `/v1/phone-numbers/{id}/remediate`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/{id}/remediate`; same contract. New integrations should use that path.
  *
- * For a number in `regulatory_declined`, returns ONLY the requirements the
- * reviewer flagged declined, as a form spec (same shape as the KYC form GET).
- * The customer fixes only those, because Telnyx supports correcting a declined
- * requirement group and re-submitting it (no new number/group). Falls back
- * to the full spec if the provider exposes no per-requirement flags.
+ * For a number in `regulatory_declined`, returns ONLY the requirements the reviewer flagged declined, as a form spec (same shape as the KYC form GET).
+ *
+ * The customer fixes only those, because Telnyx supports correcting a declined requirement group and re-submitting it (no new number/group).
+ *
+ * Falls back to the full spec if the provider exposes no per-requirement flags.
  *
  */
 export const getWhatsAppNumberRemediation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppNumberRemediationData, ThrowOnError>) => {
@@ -9427,16 +10323,18 @@ export const remediateWhatsAppNumber = <ThrowOnError extends boolean = false>(op
 
 /**
  * Enable phone calling on a number
- * Turns on regular phone (PSTN) calling for one of your numbers and
- * configures how inbound calls are handled. Inbound calls route to
- * `forwardTo`: your own AI voice agent (Vapi/Retell), a phone, or a SIP
- * endpoint. Optional extras: voicemail, business-hours windows, an IVR
- * menu, a caller blocklist, recording, and transcription. A number can
- * also be voice-enabled with no forward (outbound-only).
+ * Turns on regular phone (PSTN) calling for one of your numbers and configures how inbound calls are handled.
  *
- * Idempotent, and doubles as the settings update: only fields present in
- * the body are written. Omitting `forwardTo` preserves the current
- * destination; sending an empty string clears it.
+ * Inbound calls route to `forwardTo`: your own AI voice agent (Vapi/Retell), a phone, or a SIP endpoint. A number can also be voice-enabled with no forward (outbound-only).
+ *
+ * Optional extras: voicemail, business-hours windows, an IVR menu, a caller blocklist, recording, and transcription.
+ *
+ * ### Updating settings
+ *
+ * Idempotent, and doubles as the settings update: only fields present in the body are written.
+ *
+ * - Omitting `forwardTo` preserves the current destination.
+ * - Sending an empty string clears it.
  *
  */
 export const enableVoiceOnNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<EnableVoiceOnNumberData, ThrowOnError>) => {
@@ -9461,22 +10359,18 @@ export const disableVoiceOnNumber = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Watch an out-of-stock country
- * Get notified the first time an out-of-stock country has deliverable
- * numbers again: an email to the account holder plus the
- * `phone_number.stock_available` webhook. Stock is re-checked every 6h.
- * One watch per country and number type; a repeat request returns the
- * existing watch (200). The watch is consumed when it fires, so re-create
- * it if you miss the stock. Up to 20 watches at once.
+ * Get notified the first time an out-of-stock country has deliverable numbers again: an email to the account holder plus the `phone_number.stock_available` webhook.
  *
- * Countries and types marked `fulfilment: request` by
- * GET /v1/phone-numbers/countries can also be watched, but anything with
- * `preOrderable: true` does not need a watch: submit KYC and the carrier
- * sources the number to order.
+ * - Stock is re-checked every 6h.
+ * - One watch per country and number type; a repeat request returns the existing watch (200).
+ * - The watch is consumed when it fires, so re-create it if you miss the stock.
+ * - Up to 20 watches at once.
  *
- * Pass `areaCode` (with `numberType`) to watch one sold-out area, for
- * example an entry of `soldOutAreas` from
- * GET /v1/phone-numbers/availability. Area stock is checked live on the
- * same 6h cadence.
+ * ### What can be watched
+ *
+ * Countries and types marked `fulfilment: request` by GET /v1/phone-numbers/countries can also be watched. Anything with `preOrderable: true` does not need a watch: submit KYC and the carrier sources the number to order.
+ *
+ * Pass `areaCode` (with `numberType`) to watch one sold-out area, for example an entry of `soldOutAreas` from GET /v1/phone-numbers/availability. Area stock is checked live on the same 6h cadence.
  *
  */
 export const createPhoneNumberStockWatch = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreatePhoneNumberStockWatchData, ThrowOnError>) => {
@@ -9576,12 +10470,11 @@ export const rotateSipTrunkCredentials = <ThrowOnError extends boolean = false>(
 
 /**
  * Attach a number to a SIP trunk
- * Routes the number's calls to the trunk: the external platform receives
- * its inbound directly and can present it as outbound caller ID. While
- * attached, Zernio-side voice features are off for this number (call
- * forwarding, IVR, voicemail, recording, the softphone, and WhatsApp
- * calling), so the number must have Calls and WhatsApp calling disabled
- * before attaching. SMS and WhatsApp messaging are unaffected.
+ * Routes the number's calls to the trunk. The external platform receives its inbound directly and can present it as outbound caller ID.
+ *
+ * While attached, Zernio-side voice features are off for this number: call forwarding, IVR, voicemail, recording, the softphone, and WhatsApp calling. So the number must have Calls and WhatsApp calling disabled before attaching.
+ *
+ * SMS and WhatsApp messaging are unaffected.
  *
  */
 export const attachNumberToSipTrunk = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AttachNumberToSipTrunkData, ThrowOnError>) => {
@@ -9606,23 +10499,22 @@ export const detachNumberFromSipTrunk = <ThrowOnError extends boolean = false>(o
 
 /**
  * Enable SMS on a number
- * Turns on SMS for one of your numbers. The number's real carrier
- * capability is checked first: some number types can't do SMS at all
- * (`smsCapable: false`), and a number still provisioning at the carrier
- * returns `notReady: true` (try again once provisioning finishes).
+ * Turns on SMS for one of your numbers. Idempotent: re-running re-attempts any carrier-side setup that failed.
  *
- * US numbers additionally need a carrier registration before messages
- * deliver; the response tells you which path applies:
- * - `alreadyRegistered: true`: a prior registration still covers this
- * number; SMS was reactivated.
- * - `reusable` set: you have an approved registration this number can
- * join in one click via
- * `POST /v1/phone-numbers/{id}/sms/reuse-registration`
- * (no new brand/campaign, no extra carrier fee).
- * - `needsRegistration: true` and no `reusable`: start one via
- * `POST /v1/sms/registrations`.
+ * ### Carrier capability check
  *
- * Idempotent: re-running re-attempts any carrier-side setup that failed.
+ * The number's real carrier capability is checked first:
+ *
+ * - `smsCapable: false`: the number type can't do SMS at all.
+ * - `notReady: true`: the number is still provisioning at the carrier; try again once provisioning finishes.
+ *
+ * ### US registration
+ *
+ * US numbers additionally need a carrier registration before messages deliver. The response tells you which path applies:
+ *
+ * - `alreadyRegistered: true`: a prior registration still covers this number; SMS was reactivated.
+ * - `reusable` set: you have an approved registration this number can join in one click via `POST /v1/phone-numbers/{id}/sms/reuse-registration` (no new brand/campaign, no extra carrier fee).
+ * - `needsRegistration: true` and no `reusable`: start one via `POST /v1/sms/registrations`.
  *
  */
 export const enableSmsOnNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<EnableSmsOnNumberData, ThrowOnError>) => {
@@ -9664,20 +10556,16 @@ export const reuseSmsRegistrationForNumber = <ThrowOnError extends boolean = fal
 
 /**
  * Request the WhatsApp verification code for a number
- * Starts (or restarts) WhatsApp verification of a Zernio-hosted number:
- * adds it to Meta's pre-verified pool when needed and asks Meta to send
- * the verification code, which Zernio captures on the number itself.
- * Used to connect WhatsApp on a number bought for calls or SMS.
- * `/v1/whatsapp/phone-numbers/{id}/request-code` is a deprecated alias
- * with the same contract.
+ * Starts (or restarts) WhatsApp verification of a Zernio-hosted number. Used to connect WhatsApp on a number bought for calls or SMS.
  *
- * When Meta refuses the number for WhatsApp (Meta error 136021):
- * a number that is already live (`active` or `suspended`) is left
- * untouched and keeps working for calls and SMS, and the call answers
- * 409 `number_not_whatsapp_eligible`; buy a new number with WhatsApp
- * enabled instead. A number that was never live (still verifying) is
- * replaced at no extra cost with a WhatsApp-eligible number on the same
- * record, answered as 200 with `replaced: true`.
+ * Zernio adds the number to Meta's pre-verified pool when needed and asks Meta to send the verification code, which Zernio captures on the number itself.
+ *
+ * `/v1/whatsapp/phone-numbers/{id}/request-code` is a deprecated alias with the same contract.
+ *
+ * ### When Meta refuses the number (Meta error 136021)
+ *
+ * - A number that is already live (`active` or `suspended`) is left untouched and keeps working for calls and SMS. The call answers 409 `number_not_whatsapp_eligible`; buy a new number with WhatsApp enabled instead.
+ * - A number that was never live (still verifying) is replaced at no extra cost with a WhatsApp-eligible number on the same record, answered as 200 with `replaced: true`.
  *
  */
 export const requestPhoneNumberWhatsAppCode = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RequestPhoneNumberWhatsAppCodeData, ThrowOnError>) => {
@@ -9689,13 +10577,11 @@ export const requestPhoneNumberWhatsAppCode = <ThrowOnError extends boolean = fa
 
 /**
  * Get calling config for a number
- * The WhatsApp Business Calling configuration of this number, keyed the
- * same way as the POST/PATCH/DELETE below (full read-write on one
- * sub-resource). Encrypted secrets are never returned; only a boolean
- * saying whether a SIP password is stored. The account-scoped read
- * (`GET /v1/whatsapp/calling?accountId=`) remains for callers that only
- * know the account id, and additionally carries account-level
- * extras (billing eligibility, current-period spend).
+ * The WhatsApp Business Calling configuration of this number, keyed the same way as the POST/PATCH/DELETE below (full read-write on one sub-resource).
+ *
+ * Encrypted secrets are never returned; only a boolean saying whether a SIP password is stored.
+ *
+ * The account-scoped read (`GET /v1/whatsapp/calling?accountId=`) remains for callers that only know the account id. It additionally carries account-level extras (billing eligibility, current-period spend).
  *
  */
 export const getWhatsAppCalling = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppCallingData, ThrowOnError>) => {
@@ -9752,11 +10638,10 @@ export const disableWhatsAppCalling = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Start caller-ID verification for a customer-brought number
- * Customer-brought (BYO) WhatsApp numbers cannot present themselves as
- * caller ID on `tel:` call forwards until verified (carrier
- * anti-spoofing); until then forwarded calls show a Zernio number
- * (`callerIdMode: platform` on the calling config). This sends a
- * one-time code to the number by SMS or voice call. Re-POST to resend.
+ * Sends a one-time code to a customer-brought (BYO) WhatsApp number by SMS or voice call, to verify it as caller ID. Re-POST to resend.
+ *
+ * BYO numbers cannot present themselves as caller ID on `tel:` call forwards until verified (carrier anti-spoofing). Until then forwarded calls show a Zernio number (`callerIdMode: platform` on the calling config).
+ *
  * Zernio-purchased numbers never need this and get a 400.
  *
  */
@@ -9784,16 +10669,16 @@ export const verifyWhatsAppCallerId = <ThrowOnError extends boolean = false>(opt
 /**
  * @deprecated
  * Get phone number
- * Deprecated alias of `/v1/phone-numbers/{id}`; same contract. New
- * integrations should use that path.
+ * Deprecated alias of `/v1/phone-numbers/{id}`; same contract. New integrations should use that path.
  *
- * Retrieve the current status of a purchased phone number. Poll this to
- * track Meta pre-verification (US sync path) and, for regulated (Tier 3/4)
- * numbers, the async lifecycle: pending_regulatory → active (or
- * regulatory_declined). When a regulated number has an Onfido ID step,
- * `onfidoVerificationUrl` appears here once the order is placed. Forward
- * it to the end user. (Or subscribe to the whatsapp.number.* webhooks
- * instead of polling.)
+ * Retrieve the current status of a purchased phone number. Poll this to track:
+ *
+ * - Meta pre-verification (US sync path)
+ * - for regulated (Tier 3/4) numbers, the async lifecycle: pending_regulatory → active (or regulatory_declined)
+ *
+ * When a regulated number has an Onfido ID step, `onfidoVerificationUrl` appears here once the order is placed. Forward it to the end user.
+ *
+ * Or subscribe to the whatsapp.number.* webhooks instead of polling.
  *
  */
 export const getWhatsAppPhoneNumber = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppPhoneNumberData, ThrowOnError>) => {
@@ -10183,13 +11068,16 @@ export const deprecateWhatsAppFlow = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Get Flows encryption key status
- * Read the RSA business public key registered on the phone number for WhatsApp Flows
- * endpoint encryption. Only one key is active per phone number at a time. Flows that
- * use flow_action: data_exchange (an endpoint-backed flow) stop working at runtime
- * until the endpoint serves the matching private key, and Meta rejects publish with
- * error code 139002 ("Missing Flows Signed Public Key") when no key is registered.
- * `registered` reflects whether a key is present, never `signatureStatus` alone:
- * Meta reports an unregistered key as MISMATCH rather than a null/absent value.
+ * Read the RSA business public key registered on the phone number for WhatsApp Flows endpoint encryption. Only one key is active per phone number at a time.
+ *
+ * ### Why the key matters
+ *
+ * - Flows that use flow_action: data_exchange (an endpoint-backed flow) stop working at runtime until the endpoint serves the matching private key.
+ * - Meta rejects publish with error code 139002 ("Missing Flows Signed Public Key") when no key is registered.
+ *
+ * ### Reading the status
+ *
+ * `registered` reflects whether a key is present, never `signatureStatus` alone. Meta reports an unregistered key as MISMATCH rather than a null/absent value.
  *
  */
 export const getWhatsAppFlowsEncryptionKey = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetWhatsAppFlowsEncryptionKeyData, ThrowOnError>) => {
@@ -10201,11 +11089,10 @@ export const getWhatsAppFlowsEncryptionKey = <ThrowOnError extends boolean = fal
 
 /**
  * Register a Flows encryption key
- * Register (or replace) the RSA business public key for WhatsApp Flows endpoint
- * encryption on the phone number. Uploading a new key replaces the previous one:
- * only one key is active per phone number. The corresponding private key must be
- * served by the flow's endpoint, or endpoint-backed flows (flow_action:
- * data_exchange) will fail at runtime even though the key is registered.
+ * Register (or replace) the RSA business public key for WhatsApp Flows endpoint encryption on the phone number.
+ *
+ * - Uploading a new key replaces the previous one: only one key is active per phone number.
+ * - The corresponding private key must be served by the flow's endpoint. Otherwise endpoint-backed flows (flow_action: data_exchange) will fail at runtime even though the key is registered.
  *
  */
 export const setWhatsAppFlowsEncryptionKey = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SetWhatsAppFlowsEncryptionKeyData, ThrowOnError>) => {
@@ -10231,11 +11118,11 @@ export const sendWhatsAppFlowMessage = <ThrowOnError extends boolean = false>(op
 
 /**
  * List flow responses
- * List the responses customers submitted when completing a flow (parsed from the
- * nfm_reply messages received via webhook), newest first. Scope to a single flow
- * with `flowId`, which matches responses whose flow_token carries the `<flowId>:`
- * prefix that Zernio stamps on auto-generated tokens at send time. Responses sent
- * with a custom integrator-supplied flow_token are not attributed to a flow.
+ * List the responses customers submitted when completing a flow (parsed from the nfm_reply messages received via webhook), newest first.
+ *
+ * Scope to a single flow with `flowId`. It matches responses whose flow_token carries the `<flowId>:` prefix that Zernio stamps on auto-generated tokens at send time.
+ *
+ * Responses sent with a custom integrator-supplied flow_token are not attributed to a flow.
  *
  */
 export const listWhatsAppFlowResponses = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListWhatsAppFlowResponsesData, ThrowOnError>) => {
@@ -10313,7 +11200,18 @@ export const getContactChannels = <ThrowOnError extends boolean = false>(options
 
 /**
  * Bulk create contacts
- * Import up to 1000 contacts at a time. Skips duplicates, merging any new tags onto the existing contact. accountId is required whenever contacts carry a platformIdentifier (or a row-level accountId); platform is always derived from the resolved account, never used to decide whether channels are created, and a mismatched platform 404s as account not found. When accountId is set, each contact must carry a platformIdentifier; a row missing it is rejected individually (reported in errors[], HTTP 200), not a 400 for the whole import. On phone platforms (whatsapp, sms) the platformIdentifier is normalized to digits and a value that is not phone-shaped is rejected per contact and reported in errors[], not imported.
+ * Import up to 1000 contacts at a time. Skips duplicates, merging any new tags onto the existing contact.
+ *
+ * ### Accounts and platform
+ *
+ * - accountId is required whenever contacts carry a platformIdentifier (or a row-level accountId).
+ * - platform is always derived from the resolved account, never used to decide whether channels are created. A mismatched platform 404s as account not found.
+ *
+ * ### Per-contact validation
+ *
+ * - When accountId is set, each contact must carry a platformIdentifier. A row missing it is rejected individually (reported in errors[], HTTP 200), not a 400 for the whole import.
+ * - On phone platforms (whatsapp, sms) the platformIdentifier is normalized to digits. A value that is not phone-shaped is rejected per contact and reported in errors[], not imported.
+ *
  */
 export const bulkCreateContacts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BulkCreateContactsData, ThrowOnError>) => {
     return (options?.client ?? client).post<BulkCreateContactsResponse, BulkCreateContactsError, ThrowOnError>({
@@ -10500,7 +11398,13 @@ export const addBroadcastRecipients = <ThrowOnError extends boolean = false>(opt
 
 /**
  * List a thread's support answers
- * Lists the runs of one thread that your team started, with each question and its answer, oldest first. Replies from the Zernio team after a support ticket arrive by email and are not included. Runs are kept for 90 days. Page through a long thread with `limit` and `cursor`: pass `nextCursor` as `cursor` until it is null.
+ * Lists the runs of one thread that your team started, with each question and its answer, oldest first.
+ *
+ * - Replies from the Zernio team after a support ticket arrive by email and are not included.
+ * - Runs are kept for 90 days.
+ *
+ * Page through a long thread with `limit` and `cursor`: pass `nextCursor` as `cursor` until it is null.
+ *
  */
 export const listSupportAnswers = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListSupportAnswersData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListSupportAnswersResponse, ListSupportAnswersError, ThrowOnError>({
@@ -10511,16 +11415,19 @@ export const listSupportAnswers = <ThrowOnError extends boolean = false>(options
 
 /**
  * Ask a support question
- * Asks the Zernio Support Assistant a question about your workspace. Each question
- * starts a run that answers asynchronously: this returns 202 with a `runId`, and the
- * answer arrives through the `support.run.completed` and `support.run.failed` webhooks.
- * `GET /v1/support/runs/{runId}` is the fallback. Pass `threadId` to continue an earlier
- * conversation, and `context` to point the assistant at a post, account, profile or a failed request (its `X-Request-Id`).
- * When the assistant finds a problem on Zernio's side it opens a support ticket with
- * the team (see `supportTicket` on the run) and the run ends as `needs_human`.
+ * Asks the Zernio Support Assistant a question about your workspace. Each question starts a run that answers asynchronously.
  *
- * **Pricing.** You pay per question, once it finishes. The exact amount charged is the
- * run's `costUsd`.
+ * ### How a run works
+ *
+ * 1. This returns 202 with a `runId`.
+ * 2. The answer arrives through the `support.run.completed` and `support.run.failed` webhooks. `GET /v1/support/runs/{runId}` is the fallback.
+ * 3. When the assistant finds a problem on Zernio's side, it opens a support ticket with the team (see `supportTicket` on the run) and the run ends as `needs_human`.
+ *
+ * Pass `threadId` to continue an earlier conversation, and `context` to point the assistant at a post, account, profile or a failed request (its `X-Request-Id`).
+ *
+ * ### Pricing
+ *
+ * You pay per question, once it finishes. The exact amount charged is the run's `costUsd`.
  *
  * | Question | You pay |
  * | --- | --- |
@@ -10530,13 +11437,13 @@ export const listSupportAnswers = <ThrowOnError extends boolean = false>(options
  * | Failed or expired | $0 |
  * | All questions in a UTC month | At most $100 per account |
  *
- * Near its `maxCostUsd` a run stops investigating and answers with what it found so far,
- * so it never charges more than the cap; with nothing to answer yet it fails and costs
- * nothing. Charges appear as "Support API" on your invoice.
+ * Near its `maxCostUsd` a run stops investigating and answers with what it found so far, so it never charges more than the cap. With nothing to answer yet, it fails and costs nothing. Charges appear as "Support API" on your invoice.
  *
- * Requires an unrestricted API key, usage-based billing and a card on file. Limits per
- * account: 3 active runs and $100 of runs per UTC month. Send an Idempotency-Key header
- * to make retries safe.
+ * ### Requirements and limits
+ *
+ * - Requires an unrestricted API key, usage-based billing and a card on file.
+ * - Limits per account: 3 active runs and $100 of runs per UTC month.
+ * - Send an Idempotency-Key header to make retries safe.
  *
  */
 export const askSupportQuestion = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AskSupportQuestionData, ThrowOnError>) => {
@@ -10548,7 +11455,12 @@ export const askSupportQuestion = <ThrowOnError extends boolean = false>(options
 
 /**
  * Get a support answer
- * Returns a run started by your team, with the answer once it is ready. Prefer the `support.run.completed` and `support.run.failed` webhooks; use this as the fallback, waiting `pollAfterSeconds` between polls. `costUsd` is the amount billed for the question, never above `maxCostUsd`, and 0 for a failed run (pricing on Ask a support question).
+ * Returns a run started by your team, with the answer once it is ready.
+ *
+ * Prefer the `support.run.completed` and `support.run.failed` webhooks. Use this as the fallback, waiting `pollAfterSeconds` between polls.
+ *
+ * `costUsd` is the amount billed for the question, never above `maxCostUsd`, and 0 for a failed run (pricing on Ask a support question).
+ *
  */
 export const getSupportAnswer = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetSupportAnswerData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetSupportAnswerResponse, GetSupportAnswerError, ThrowOnError>({
@@ -10593,7 +11505,22 @@ export const getWorkflow = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Update workflow
- * Update name, description, the graph, or reassign to a different account. The graph can be modified in any status, including `active`: a run already in progress reloads the saved graph at its next step, and a run parked on a node the edit removed completes instead of failing. Every graph edit is re-validated and an invalid graph answers 400 regardless of status. `status` is not a field of this request; use the activate and pause endpoints. Account swaps re-validate the graph against the new platform (so e.g. moving from WhatsApp to Facebook surfaces a `start_call` node as an error instead of silently saving an unrunnable graph).
+ * Update name, description, the graph, or reassign to a different account.
+ *
+ * ### Editing the graph
+ *
+ * The graph can be modified in any status, including `active`:
+ *
+ * - A run already in progress reloads the saved graph at its next step.
+ * - A run parked on a node the edit removed completes instead of failing.
+ *
+ * Every graph edit is re-validated, and an invalid graph answers 400 regardless of status.
+ *
+ * ### Status and account
+ *
+ * `status` is not a field of this request; use the activate and pause endpoints.
+ *
+ * Account swaps re-validate the graph against the new platform. For example, moving from WhatsApp to Facebook surfaces a `start_call` node as an error instead of silently saving an unrunnable graph.
  *
  */
 export const updateWorkflow = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateWorkflowData, ThrowOnError>) => {
@@ -10661,7 +11588,15 @@ export const triggerWorkflow = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Start an API-triggered workflow
- * Starts a run of an active workflow whose trigger type is `api_call`. Pass exactly one target: `conversationId` (a conversation on the workflow's account), `contactId` (resolved to that contact's conversation on the workflow's account), or `to` (WhatsApp workflows only: a phone number, whose conversation is found or created). `variables` are merged over the standard run variables, so each key is available as `{{key}}`.
+ * Starts a run of an active workflow whose trigger type is `api_call`.
+ *
+ * Pass exactly one target:
+ *
+ * - `conversationId`: a conversation on the workflow's account.
+ * - `contactId`: resolved to that contact's conversation on the workflow's account.
+ * - `to` (WhatsApp workflows only): a phone number, whose conversation is found or created.
+ *
+ * `variables` are merged over the standard run variables, so each key is available as `{{key}}`.
  *
  */
 export const triggerApiCallWorkflow = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<TriggerApiCallWorkflowData, ThrowOnError>) => {
@@ -10720,7 +11655,11 @@ export const getWorkflowVersion = <ThrowOnError extends boolean = false>(options
 
 /**
  * Restore a workflow version
- * Replace the current graph with the named version's snapshot. Before the swap, the current graph is itself snapshotted as a new version, so a restore is reversible. The workflow must not be `active`: pause it first, then restore. The returned workflow carries `restoredFromVersion` so the UI can surface which version was rolled back to.
+ * Replace the current graph with the named version's snapshot.
+ *
+ * Before the swap, the current graph is itself snapshotted as a new version, so a restore is reversible. The workflow must not be `active`: pause it first, then restore.
+ *
+ * The returned workflow carries `restoredFromVersion` so the UI can surface which version was rolled back to.
  *
  */
 export const restoreWorkflowVersion = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RestoreWorkflowVersionData, ThrowOnError>) => {
@@ -10853,95 +11792,91 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Create comment-to-DM automation
- * Create a keyword-triggered automation. On Instagram and Facebook, when someone
- * comments a matching keyword (or, with `trigger: story_reply`, replies to your
- * Instagram story with one), they automatically receive a DM.
+ * Create a keyword-triggered automation. On Instagram and Facebook, when someone comments a matching keyword (or, with `trigger: story_reply`, replies to your Instagram story with one), they automatically receive a DM.
  *
- * Platforms:
- * * `instagram`, `facebook`: the full DM automation (private reply, buttons,
- * product card, audience rules, follow gate) plus the optional public reply.
- * * `tiktok`, `threads`, `linkedin`, `youtube`: public reply only. These
- * platforms have no private reply to a comment, so the automation answers a
- * matching comment with `commentReply` and nothing else. `commentReply` is
- * required and the DM fields (`dmMessage`, `dmMessageVariations`, `buttons`,
- * `template`, `quickReplies`, `alsoMatchInDms`, `audience`, `followGate`,
- * `dmDelaySeconds`, `commentReplyDelaySeconds`) are rejected with a 400 naming the
- * field. TikTok comments arrive by webhook (TikTok business accounts only); the
- * others are read by the comment poll, so a reply follows the comment by up to the
- * poll interval (10 minutes on posts from the last 24 hours, longer on older posts).
- * `repeatPolicy` applies there too: with the default `once`, a person gets one public
- * reply per automation, and their later comments get none.
- * * X accounts are refused with a 400 (`platform_not_supported`): X comment polling is
- * off, so an X automation could never fire.
+ * ### Platforms
  *
- * To continue into a specific workflow after the recipient taps a button, use
- * `{"type":"postback","title":"Send it","payload":"zernio:workflow:<workflowId>"}`.
- * The target must be active and belong to the same account and profile. This also
- * works for product-card buttons. The tap starts that workflow directly, without
- * matching its keyword or first-message condition. A tap on a workflow that is
- * waiting on `wait_for_reply` in that conversation answers that wait and resumes
- * the run. A tap on a different active workflow starts it and exits the other
- * live runs. Stale or invalid targets still do nothing. The initial
- * comment DM alone does not start the workflow: the recipient must tap.
+ * - `instagram`, `facebook`: the full DM automation (private reply, buttons, product card, audience rules, follow gate) plus the optional public reply.
+ * - `tiktok`, `threads`, `linkedin`, `youtube`: public reply only (see below).
+ * - X accounts are refused with a 400 (`platform_not_supported`): X comment polling is off, so an X automation could never fire.
  *
- * Triggers (`trigger`):
- * * `comment` (default): fires on keyword comments on a post or reel.
- * * `story_reply`: fires when someone replies to your Instagram story with a keyword,
- * and answers them with a DM. Set `platformPostId` to a story media id to scope to
- * one story, or omit it to match replies to any story.
- * * `live_comment` (Instagram only): fires on keyword comments made during one of
- * your Instagram live broadcasts and answers them with a private reply. `comment`
- * automations never fire on live comments, and `live_comment` ones never fire on
- * post comments. Meta only accepts the private reply while the broadcast is live.
- * * `story_mention` (Instagram only): fires when someone mentions your account in
- * their story, and answers them with a DM. A mention carries no text and Meta does
- * not identify the story, so `keywords` must be empty and `platformPostId` omitted.
+ * #### Public-reply-only platforms
  *
- * Comments on Instagram and Facebook arrive by webhook. Every 10 minutes Zernio also
- * reads the latest comments and replies back (the bound post, or the 5 newest posts
- * for an account-wide automation, up to 20 Graph reads per account per run; a post not
- * fully read is picked up again on the next run) and runs any comment the webhook
- * did not deliver, so a dropped webhook still fires. A comment is answered at most
- * once whichever path sees it first.
+ * These platforms have no private reply to a comment, so the automation answers a matching comment with `commentReply` and nothing else. `commentReply` is required.
  *
- * Targeting (comment trigger):
- * * Per-post: set `platformPostId` to scope to one specific post (only one active
- * per-post automation is allowed per post).
- * * Account-wide ("any post"): omit `platformPostId` (and `postId`). The automation
- * evaluates every comment on every post on the account. You can stack unlimited
- * account-wide automations, each with its own keyword set, and they all run
- * independently. Per-post automations take priority on their post.
+ * The DM fields are rejected with a 400 naming the field: `dmMessage`, `dmMessageVariations`, `buttons`, `template`, `quickReplies`, `alsoMatchInDms`, `audience`, `followGate`, `dmDelaySeconds`, `commentReplyDelaySeconds`.
  *
- * Audience (`audience`, Instagram only): restrict the automation to followers or
- * non-followers, and/or to accounts above a follower count. Instagram only reveals the
- * follow relationship for people who have messaged the account, so `audience.whenUnknown`
- * decides what happens for everyone else - including `verify`, which sends a one-tap
- * confirmation DM (`followGate`) and then delivers the real DM automatically. People we
- * already know follow you skip the tap entirely. Set `audience.tapToUnlock: true` instead
- * to send that button DM to every commenter and deliver the real DM on the tap with no
- * follow check.
+ * TikTok comments arrive by webhook (TikTok business accounts only). The others are read by the comment poll, so a reply follows the comment by up to the poll interval (10 minutes on posts from the last 24 hours, longer on older posts).
  *
- * Set `alsoMatchInDms: true` on a `comment` automation to also answer people who send
- * a keyword as a direct message instead of commenting it. One automation then covers
- * both doors, and each door is deduplicated separately (someone who already got the DM
- * from their comment still gets it if they later DM the keyword). Requires at least one
- * keyword.
+ * `repeatPolicy` applies there too: with the default `once`, a person gets one public reply per automation, and their later comments get none.
  *
- * Links in the DM's buttons can be click-tracked (`linkTracking`, on by default) and
- * clickers optionally tagged (`clickTag`) for segmentation. Stats returned include
- * delivered, read, and link clicks.
+ * ### Continuing into a workflow
  *
- * Personalisation: `{{first_name}}`, `{{name}}` and `{{username}}` in `dmMessage`,
- * `commentReply`, their variations and button titles resolve from the commenter.
- * `{{first_name}}` is the first word of the display name and `{{name}}` the display
- * name; when the platform gives no display name both fall back to the platform
- * username (unless it is all digits). `{{username}}` is the platform username. A value
- * still unknown resolves to an empty string and the space before it is dropped.
+ * To continue into a specific workflow after the recipient taps a button, use `{"type":"postback","title":"Send it","payload":"zernio:workflow:<workflowId>"}`. The target must be active and belong to the same account and profile. This also works for product-card buttons.
  *
- * Behaviour: `repeatPolicy` decides whether a person can get the DM again,
- * `dedupeSameTextHours` stops two automations sending the same text to one person,
- * `publicReplyPolicy` decides whether the public reply waits for the DM, and `actions`
- * likes or hides the matched comment.
+ * - The tap starts that workflow directly, without matching its keyword or first-message condition.
+ * - A tap on a workflow that is waiting on `wait_for_reply` in that conversation answers that wait and resumes the run.
+ * - A tap on a different active workflow starts it and exits the other live runs.
+ * - Stale or invalid targets still do nothing.
+ *
+ * The initial comment DM alone does not start the workflow: the recipient must tap.
+ *
+ * ### Triggers (`trigger`)
+ *
+ * - `comment` (default): fires on keyword comments on a post or reel.
+ * - `story_reply`: fires when someone replies to your Instagram story with a keyword, and answers them with a DM. Set `platformPostId` to a story media id to scope to one story, or omit it to match replies to any story.
+ * - `live_comment` (Instagram only): fires on keyword comments made during one of your Instagram live broadcasts and answers them with a private reply. Meta only accepts the private reply while the broadcast is live.
+ * - `story_mention` (Instagram only): fires when someone mentions your account in their story, and answers them with a DM. A mention carries no text and Meta does not identify the story, so `keywords` must be empty and `platformPostId` omitted.
+ *
+ * `comment` automations never fire on live comments, and `live_comment` ones never fire on post comments.
+ *
+ * ### How comments are picked up
+ *
+ * Comments on Instagram and Facebook arrive by webhook. Every 10 minutes Zernio also reads the latest comments and replies back and runs any comment the webhook did not deliver, so a dropped webhook still fires.
+ *
+ * That read covers the bound post, or the 5 newest posts for an account-wide automation, up to 20 Graph reads per account per run. A post not fully read is picked up again on the next run. A comment is answered at most once, whichever path sees it first.
+ *
+ * ### Targeting (comment trigger)
+ *
+ * - Per-post: set `platformPostId` to scope to one specific post (only one active per-post automation is allowed per post).
+ * - Account-wide ("any post"): omit `platformPostId` (and `postId`). The automation evaluates every comment on every post on the account.
+ *
+ * You can stack unlimited account-wide automations, each with its own keyword set, and they all run independently. Per-post automations take priority on their post.
+ *
+ * ### Audience (`audience`, Instagram only)
+ *
+ * Restrict the automation to followers or non-followers, and/or to accounts above a follower count.
+ *
+ * Instagram only reveals the follow relationship for people who have messaged the account, so `audience.whenUnknown` decides what happens for everyone else. That includes `verify`, which sends a one-tap confirmation DM (`followGate`) and then delivers the real DM automatically. People we already know follow you skip the tap entirely.
+ *
+ * Set `audience.tapToUnlock: true` instead to send that button DM to every commenter and deliver the real DM on the tap with no follow check.
+ *
+ * ### Matching in DMs
+ *
+ * Set `alsoMatchInDms: true` on a `comment` automation to also answer people who send a keyword as a direct message instead of commenting it. Requires at least one keyword.
+ *
+ * One automation then covers both doors, and each door is deduplicated separately: someone who already got the DM from their comment still gets it if they later DM the keyword.
+ *
+ * ### Link tracking
+ *
+ * Links in the DM's buttons can be click-tracked (`linkTracking`, on by default) and clickers optionally tagged (`clickTag`) for segmentation. Stats returned include delivered, read, and link clicks.
+ *
+ * ### Personalisation
+ *
+ * `{{first_name}}`, `{{name}}` and `{{username}}` in `dmMessage`, `commentReply`, their variations and button titles resolve from the commenter.
+ *
+ * - `{{first_name}}`: the first word of the display name.
+ * - `{{name}}`: the display name.
+ * - `{{username}}`: the platform username.
+ *
+ * When the platform gives no display name, `{{first_name}}` and `{{name}}` fall back to the platform username (unless it is all digits). A value still unknown resolves to an empty string and the space before it is dropped.
+ *
+ * ### Behaviour
+ *
+ * - `repeatPolicy`: whether a person can get the DM again.
+ * - `dedupeSameTextHours`: stops two automations sending the same text to one person.
+ * - `publicReplyPolicy`: whether the public reply waits for the DM.
+ * - `actions`: likes or hides the matched comment.
  *
  */
 export const createCommentAutomation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCommentAutomationData, ThrowOnError>) => {
@@ -10965,11 +11900,18 @@ export const getCommentAutomation = <ThrowOnError extends boolean = false>(optio
 /**
  * Update automation settings
  * Update an automation's keywords, DM message, inline buttons, comment reply, post binding, or active status.
- * Pass `buttons: []` to clear all buttons. When `buttons` is non-empty, `dmMessage` (the new
- * one if you're changing it, otherwise the stored one) must be 640 characters or less.
- * On a TikTok, Threads, LinkedIn or YouTube automation (public reply only) the DM fields
- * are rejected with a 400 naming the field (`code` invalid_field_value, `param` the field),
- * and `commentReply` cannot be cleared.
+ *
+ * ### Buttons
+ *
+ * - Pass `buttons: []` to clear all buttons.
+ * - When `buttons` is non-empty, `dmMessage` (the new one if you're changing it, otherwise the stored one) must be 640 characters or less.
+ *
+ * ### Public-reply-only platforms
+ *
+ * On a TikTok, Threads, LinkedIn or YouTube automation (public reply only):
+ *
+ * - The DM fields are rejected with a 400 naming the field (`code` invalid_field_value, `param` the field).
+ * - `commentReply` cannot be cleared.
  *
  */
 export const updateCommentAutomation = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateCommentAutomationData, ThrowOnError>) => {
@@ -11005,22 +11947,24 @@ export const listCommentAutomationLogs = <ThrowOnError extends boolean = false>(
  * List ads
  * Lists your ads with their performance over a date range, including ads created directly in each platform's ads manager.
  *
- * Returns a paginated list of ads with metrics computed over an optional date range.
- * Use source=all to include externally-synced ads from platform ad managers.
- * If no date range is provided, defaults to the last 90 days. Date range is capped at 730 days max.
+ * Returns a paginated list of ads with metrics computed over an optional date range. Use source=all to include externally-synced ads from platform ad managers.
  *
- * History: when an ad account connects, Zernio imports its last 90 days of metrics, so the
- * metrics hold no data for days before that. When `accountId` or `adAccountId` resolves to a
- * Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the
- * covered part while the older days (up to 730 days back) are imported in the background;
- * repeat the request until it returns 200.
+ * If no date range is provided, it defaults to the last 90 days. The date range is capped at 730 days max.
+ *
+ * ### History
+ *
+ * When an ad account connects, Zernio imports its last 90 days of metrics, so the metrics hold no data for days before that.
+ *
+ * When `accountId` or `adAccountId` resolves to a Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the covered part. The older days (up to 730 days back) are imported in the background; repeat the request until it returns 200.
+ *
  * A request scoped to no Meta account never returns `202`.
  *
- * To find the Zernio ad behind a comment you see in Meta Business Manager, filter by
- * platformAdId (the Meta ad ID), effectiveObjectStoryId (Facebook), or
- * effectiveInstagramMediaId (Instagram). Those are the post/media the ad's engagement
- * lives on, and are also returned on each ad's `creative` object. Then call
- * GET /v1/ads/{adId}/comments with the returned ad id.
+ * ### Finding the ad behind a comment
+ *
+ * To find the Zernio ad behind a comment you see in Meta Business Manager:
+ *
+ * 1. Filter by platformAdId (the Meta ad ID), effectiveObjectStoryId (Facebook), or effectiveInstagramMediaId (Instagram). Those are the post/media the ad's engagement lives on, and are also returned on each ad's `creative` object.
+ * 2. Call GET /v1/ads/{adId}/comments with the returned ad id.
  *
  */
 export const listAds = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdsData, ThrowOnError>) => {
@@ -11034,13 +11978,15 @@ export const listAds = <ThrowOnError extends boolean = false>(options?: OptionsL
  * Google Ads search terms report
  * Shows the actual Google searches that triggered your ads, with spend and results, so you can spot wasted spend and add negative keywords.
  *
- * The actual search queries that triggered your ads, with matched-keyword
- * status and spend metrics, the raw material for wasted-spend analysis and
- * negative-keyword lists. Reads Google's `search_term_view`, cached for
- * the quota window; defaults to the last 30 days. Rows are ordered by
- * cost, descending. Draws on the shared Google Ads operations budget.
- * The response carries `cachedAt` and `stale`, set when a quota-exhausted
- * call falls back to the last-good copy instead of a live read.
+ * Each row is a search query with its matched-keyword status and spend metrics: the raw material for wasted-spend analysis and negative-keyword lists.
+ *
+ * - Reads Google's `search_term_view`, cached for the quota window.
+ * - Defaults to the last 30 days.
+ * - Rows are ordered by cost, descending.
+ * - Draws on the shared Google Ads operations budget.
+ *
+ * The response carries `cachedAt` and `stale`, set when a quota-exhausted call falls back to the last-good copy instead of a live read.
+ *
  */
 export const getAdsSearchTerms = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdsSearchTermsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdsSearchTermsResponse, GetAdsSearchTermsError, ThrowOnError>({
@@ -11053,7 +11999,16 @@ export const getAdsSearchTerms = <ThrowOnError extends boolean = false>(options:
  * List Google Ads recommendations
  * Lists Google's optimization suggestions for an ad account, with the estimated impact of each.
  *
- * Google's optimization recommendations for one ad account: type, estimated impact (base vs potential metrics, cost in account currency units), the campaign, ad group or budget they target, and the type-specific payload Google returns (`details`, in Google's own shape with micros). Filter by campaignId and types. Cached for 10 minutes and cleared by apply or dismiss; served stale when Google quota is exhausted.
+ * ### What each recommendation includes
+ *
+ * - type
+ * - estimated impact (base vs potential metrics, cost in account currency units)
+ * - the campaign, ad group or budget they target
+ * - the type-specific payload Google returns (`details`, in Google's own shape with micros)
+ *
+ * Filter by campaignId and types.
+ *
+ * Cached for 10 minutes and cleared by apply or dismiss. Served stale when Google quota is exhausted.
  *
  */
 export const listGoogleRecommendations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListGoogleRecommendationsData, ThrowOnError>) => {
@@ -11067,7 +12022,18 @@ export const listGoogleRecommendations = <ThrowOnError extends boolean = false>(
  * Apply Google Ads recommendations
  * Applies Google's optimization suggestions to an ad account, using Google's values or your own; the changes cannot be undone.
  *
- * Apply up to 100 recommendations. This changes the account (budgets, bidding, keywords, assets) and is not reversible or idempotent; Google offers no validate-only mode for it. Items run in partial-failure mode, so one stale recommendation does not block the rest. `parameters` is optional and takes exactly one key named for the recommendation type, in Google's ApplyRecommendationOperation shape (for example `campaignBudget: { newBudgetAmountMicros }` or `keyword: { matchType, cpcBidMicros }`); omit it to apply Google's suggested values.
+ * Apply up to 100 recommendations. This changes the account (budgets, bidding, keywords, assets) and is not reversible or idempotent. Google offers no validate-only mode for it.
+ *
+ * Items run in partial-failure mode, so one stale recommendation does not block the rest.
+ *
+ * ### `parameters`
+ *
+ * Optional. It takes exactly one key named for the recommendation type, in Google's ApplyRecommendationOperation shape. For example:
+ *
+ * - `campaignBudget: { newBudgetAmountMicros }`
+ * - `keyword: { matchType, cpcBidMicros }`
+ *
+ * Omit it to apply Google's suggested values.
  *
  */
 export const applyGoogleRecommendations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ApplyGoogleRecommendationsData, ThrowOnError>) => {
@@ -11095,7 +12061,14 @@ export const dismissGoogleRecommendations = <ThrowOnError extends boolean = fals
  * List portfolio bid strategies
  * Lists a Google Ads account's shared bid strategies with how many campaigns use each and how they performed.
  *
- * Bidding strategy report: type, status, campaign count, clicks, cost, cost per conversion, impressions, average CPC and conversions over the date range (default last 30 days). Reads Google's `bidding_strategy` resource, cached for the quota window. Draws on the shared Google Ads operations budget. The response carries `cachedAt` and `stale`, set when a quota-exhausted call falls back to the last-good copy instead of a live read.
+ * The bidding strategy report covers type, status, campaign count, clicks, cost, cost per conversion, impressions, average CPC and conversions over the date range (default last 30 days).
+ *
+ * ### Data source
+ *
+ * It reads Google's `bidding_strategy` resource, cached for the quota window, and draws on the shared Google Ads operations budget.
+ *
+ * The response carries `cachedAt` and `stale`, set when a quota-exhausted call falls back to the last-good copy instead of a live read.
+ *
  */
 export const listBidStrategies = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListBidStrategiesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListBidStrategiesResponse, ListBidStrategiesError, ThrowOnError>({
@@ -11122,7 +12095,16 @@ export const createBidStrategy = <ThrowOnError extends boolean = false>(options:
  * Update portfolio bid strategy
  * Renames a shared Google Ads bid strategy or changes its target CPA or ROAS.
  *
- * The strategy's status is output only on Google's side, so it cannot be changed here; remove a strategy in Google Ads. `type` is only needed alongside `targetCpa`/`targetRoas` to disambiguate the field Google writes to (TARGET_CPA and MAXIMIZE_CONVERSIONS both take a target CPA; TARGET_ROAS and MAXIMIZE_CONVERSION_VALUE both take a target ROAS); the strategy's family is otherwise immutable once created.
+ * The strategy's status is output only on Google's side, so it cannot be changed here; remove a strategy in Google Ads.
+ *
+ * ### When to send `type`
+ *
+ * `type` is only needed alongside `targetCpa`/`targetRoas`, to disambiguate the field Google writes to:
+ *
+ * - TARGET_CPA and MAXIMIZE_CONVERSIONS both take a target CPA.
+ * - TARGET_ROAS and MAXIMIZE_CONVERSION_VALUE both take a target ROAS.
+ *
+ * The strategy's family is otherwise immutable once created.
  *
  */
 export const updateBidStrategy = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateBidStrategyData, ThrowOnError>) => {
@@ -11169,12 +12151,13 @@ export const createSharedBudget = <ThrowOnError extends boolean = false>(options
  * Google Local Services Ads leads
  * Lists the calls, messages and bookings your Google Local Services Ads generated, newest first.
  *
- * Leads generated by Local Services Ads (phone calls, messages, bookings),
- * read live from Google's `local_services_lead` resource, newest first.
- * No persistence: Google is the source of truth and lead/credit statuses
- * keep changing server-side. Google never returns healthcare-category
- * leads, and `WIPED_OUT` leads arrive with contact erased (`contact` is
- * null). Draws on the shared Google Ads operations budget.
+ * Leads (phone calls, messages, bookings) are read live from Google's `local_services_lead` resource.
+ *
+ * - No persistence: Google is the source of truth, and lead/credit statuses keep changing server-side.
+ * - Google never returns healthcare-category leads.
+ * - `WIPED_OUT` leads arrive with contact erased (`contact` is null).
+ * - Draws on the shared Google Ads operations budget.
+ *
  */
 export const listLocalServicesLeads = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListLocalServicesLeadsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListLocalServicesLeadsResponse, ListLocalServicesLeadsError, ThrowOnError>({
@@ -11204,15 +12187,16 @@ export const listLocalServicesLeadConversations = <ThrowOnError extends boolean 
  * List Search keywords
  * Lists the keywords and negative keywords in your Google Search ad groups.
  *
- * Returns the Google Search keyword criteria (positive and negative) synced from
- * connected Google Ads accounts, one row per ad-group keyword. Refreshed about
- * once a day per Google Ads customer (the keyword sweep rides the ads discovery
- * pass on a slower slot), so keywords added on Google can take up to a day to
- * appear. A customer synced for the first time is populated on the next discovery
- * pass rather than waiting for its daily slot, and connecting an account or
- * triggering a manual sync refreshes it immediately.
- * Campaign-level negative keywords are not included; only ad-group-level
- * criteria are.
+ * Returns the Google Search keyword criteria (positive and negative) synced from connected Google Ads accounts, one row per ad-group keyword.
+ *
+ * Campaign-level negative keywords are not included; only ad-group-level criteria are.
+ *
+ * ### Freshness
+ *
+ * Keywords are refreshed about once a day per Google Ads customer (the keyword sweep rides the ads discovery pass on a slower slot). So keywords added on Google can take up to a day to appear.
+ *
+ * - A customer synced for the first time is populated on the next discovery pass rather than waiting for its daily slot.
+ * - Connecting an account or triggering a manual sync refreshes it immediately.
  *
  */
 export const listAdKeywords = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdKeywordsData, ThrowOnError>) => {
@@ -11283,22 +12267,31 @@ export const listAdRules = <ThrowOnError extends boolean = false>(options?: Opti
 
 /**
  * Create an ad rule
- * Creates a rule that checks the campaigns or ad sets of one ad account on a schedule and acts on
- * each one that meets every condition.
+ * Creates a rule that checks the campaigns or ad sets of one ad account on a schedule and acts on each one that meets every condition.
  *
- * Rules support Meta, Google, TikTok, LinkedIn, Pinterest, X and Reddit ads connections. Each
- * campaign or ad set is evaluated on its own, over the ad account's calendar days, from the
- * metrics Zernio syncs. A rule can notify (the `ad_rule.triggered` webhook), and take at most one of
- * `pause`, `activate` and `adjust_budget`. After acting on an object, the rule leaves that object
- * alone for `cooldownMinutes`; a rule that pauses, activates or adjusts budgets needs a cooldown at
- * least as long as its schedule.
+ * Rules support Meta, Google, TikTok, LinkedIn, Pinterest, X and Reddit ads connections. Use `POST /v1/ads/rules/{ruleId}/preview` to see what a rule would match before enabling it.
  *
- * `activate` only reactivates objects a rule paused, never ones you paused yourself, and only once
- * the cooldown has passed since that pause. If you reactivate and pause such an object yourself
- * between two runs of a rule, Zernio cannot tell your pause from the rule's, and an `activate` rule
- * may reactivate it.
+ * ### Evaluation
  *
- * Use `POST /v1/ads/rules/{ruleId}/preview` to see what a rule would match before enabling it.
+ * Each campaign or ad set is evaluated on its own, over the ad account's calendar days, from the metrics Zernio syncs.
+ *
+ * ### Actions
+ *
+ * A rule can notify (the `ad_rule.triggered` webhook), and take at most one of:
+ *
+ * - `pause`
+ * - `activate`
+ * - `adjust_budget`
+ *
+ * ### Cooldown
+ *
+ * After acting on an object, the rule leaves that object alone for `cooldownMinutes`. A rule that pauses, activates or adjusts budgets needs a cooldown at least as long as its schedule.
+ *
+ * ### How `activate` works
+ *
+ * `activate` only reactivates objects a rule paused, never ones you paused yourself, and only once the cooldown has passed since that pause.
+ *
+ * If you reactivate and pause such an object yourself between two runs of a rule, Zernio cannot tell your pause from the rule's, and an `activate` rule may reactivate it.
  *
  */
 export const createAdRule = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdRuleData, ThrowOnError>) => {
@@ -11390,27 +12383,28 @@ export const listAdRuleRuns = <ThrowOnError extends boolean = false>(options: Op
  * List campaigns
  * Lists your campaigns with spend, impressions and clicks summed across their ads, plus each campaign's status and budget.
  *
- * Returns campaigns as virtual aggregations over ad documents grouped by platform campaign ID.
- * Metrics (spend, impressions, clicks, etc.) are summed across all ads in each campaign.
- * Campaign status is derived from child ad statuses (active > pending_review > paused > error > completed > cancelled > rejected).
- * Google campaign budgets include amountMicros, explicitlyShared, resourceName and
- * deliveryMethod after the next successful sync. This endpoint does not fetch Google live.
+ * Campaigns are virtual aggregations over ad documents grouped by platform campaign ID. Metrics (spend, impressions, clicks, etc.) are summed across all ads in each campaign.
  *
- * **Status freshness.** `status`, `configuredStatus`, `platformStatus`, `platformAdSetStatus`
- * and `platformCampaignStatus` are the values Zernio last stored. Background sync refreshes
- * them, typically within 15 to 60 minutes (Google up to about 3 hours), and ended or
- * long-paused objects may be refreshed less often. Zernio's own status writes re-read the
- * switches they change. A change made in the platform's own ads manager therefore shows up
- * here only after the next sync. Controllers that act on a switch should pass `live=true`,
- * which reads the switches from the platform now, stores them, and returns `statusReadAt`
- * (null when the read failed and the stored values were returned).
- * With `live=true` (which needs `limit` of 20 or less) each returned campaign's own switch
- * (`platformCampaignStatus`) is read live. Live reads cover TikTok, Meta, Google, OpenAI and Reddit.
- * The rolled-up `status` is not re-derived by a live read.
+ * Campaign status is derived from child ad statuses: active > pending_review > paused > error > completed > cancelled > rejected.
  *
- * **Budgets here are SYNCED**, never read live, including with `live=true`. To read the
- * current budgets (and status) of every campaign and ad set of a Meta ad account live in
- * one call, for example as a pre-write spend gate, use GET /v1/ads/accounts/live.
+ * Google campaign budgets include amountMicros, explicitlyShared, resourceName and deliveryMethod after the next successful sync. This endpoint does not fetch Google live.
+ *
+ * **Status freshness.** `status`, `configuredStatus`, `platformStatus`, `platformAdSetStatus` and `platformCampaignStatus` are the values Zernio last stored.
+ *
+ * Background sync refreshes them, typically within 15 to 60 minutes (Google up to about 3 hours), and ended or long-paused objects may be refreshed less often.
+ *
+ * Zernio's own status writes re-read the switches they change. A change made in the platform's own ads manager therefore shows up here only after the next sync.
+ *
+ * ### Live status reads
+ *
+ * Controllers that act on a switch should pass `live=true`. It reads the switches from the platform now, stores them, and returns `statusReadAt` (null when the read failed and the stored values were returned).
+ *
+ * - `live=true` needs `limit` of 20 or less.
+ * - Each returned campaign's own switch (`platformCampaignStatus`) is read live.
+ * - Live reads cover TikTok, Meta, Google, OpenAI and Reddit.
+ * - The rolled-up `status` is not re-derived by a live read.
+ *
+ * **Budgets here are SYNCED**, never read live, including with `live=true`. To read the current budgets (and status) of every campaign and ad set of a Meta ad account live in one call, for example as a pre-write spend gate, use GET /v1/ads/accounts/live.
  *
  */
 export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdCampaignsData, ThrowOnError>) => {
@@ -11424,27 +12418,33 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
  * Create a standalone campaign
  * Creates an empty campaign, paused, so you can add ad sets and ads to it afterwards.
  *
- * Creates a campaign WITHOUT its first ad set / ad, on the platform of the given
- * `accountId`. Ad sets join it later via `existingCampaignId` on the create endpoints.
- * Platform notes: on Meta a budget here is campaign-level (CBO) by definition; omit it
- * for ABO (each ad set carries its own budget), and `specialAdCategories` is Meta-only
- * (400 elsewhere); `bidStrategy` is Meta and Google (400 elsewhere), and Google also
- * accepts `portfolioBidStrategyId` instead. Google, X and OpenAI require a budget
- * (422 without one; OpenAI accepts daily or lifetime, Google only
- * `budgetType: daily`). On OpenAI `goal` sets the campaign objective, and
- * `conversions` needs an active standard conversion event on the account. On Reddit
- * `goal` is one of traffic, awareness, conversions, video_views or lead_generation
- * (422 otherwise) and the budget is optional: with one, the campaign uses Reddit's
- * campaign budget optimization and carries the pixel (see `promotedObject`, which then
- * needs `customEventType` for `conversions`), daily or lifetime (a lifetime budget
- * needs `endDate`, 400 otherwise). `startDate` / `endDate` set the campaign's schedule
- * and need that campaign budget (400 without one). Without a budget, each ad set
- * carries its own budget and dates. LinkedIn creates the
- * campaign GROUP (our campaign level) and rejects a budget, which lives on the
- * campaign (ad set) level there; it comes back `status: DRAFT`. Created `PAUSED`
- * (TikTok `DISABLE`) unless `status: ACTIVE` where the platform supports it.
+ * Creates a campaign WITHOUT its first ad set / ad, on the platform of the given `accountId`. Ad sets join it later via `existingCampaignId` on the create endpoints.
+ *
+ * Created `PAUSED` (TikTok `DISABLE`) unless `status: ACTIVE` where the platform supports it.
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
+ *
+ * ### Field support
+ *
+ * - `specialAdCategories`: Meta-only (400 elsewhere).
+ * - `bidStrategy`: Meta and Google (400 elsewhere). Google also accepts `portfolioBidStrategyId` instead.
+ * - Budget: Google, X and OpenAI require one (422 without one). OpenAI accepts daily or lifetime, Google only `budgetType: daily`.
+ *
+ * ### Platform notes
+ *
+ * - Meta: a budget here is campaign-level (CBO) by definition. Omit it for ABO (each ad set carries its own budget).
+ * - OpenAI: `goal` sets the campaign objective, and `conversions` needs an active standard conversion event on the account.
+ * - Reddit: see below.
+ * - LinkedIn: creates the campaign GROUP (our campaign level) and rejects a budget, which lives on the campaign (ad set) level there. It comes back `status: DRAFT`.
+ *
+ * ### Reddit
+ *
+ * `goal` is one of traffic, awareness, conversions, video_views or lead_generation (422 otherwise). The budget is optional.
+ *
+ * - With a budget, the campaign uses Reddit's campaign budget optimization and carries the pixel (see `promotedObject`, which then needs `customEventType` for `conversions`). The budget is daily or lifetime; a lifetime budget needs `endDate` (400 otherwise).
+ * - `startDate` / `endDate` set the campaign's schedule and need that campaign budget (400 without one).
+ * - Without a budget, each ad set carries its own budget and dates.
+ *
  */
 export const createAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdCampaignData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdCampaignResponse, CreateAdCampaignError, ThrowOnError>({
@@ -11457,24 +12457,29 @@ export const createAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * Pause or resume a campaign
  * Pauses or resumes a campaign, leaving the on/off switches of its ad sets and ads as they are.
  *
- * Writes the campaign's own on/off switch and nothing else, on every platform (Meta, TikTok,
- * Google, LinkedIn campaign group, Pinterest, X, ChatGPT (OpenAI)). Its ad sets and ads keep
- * their own switches: pausing stops their delivery through the campaign, and resuming lets
- * each of them deliver again only if its own switch is on. An ad set or ad you paused
- * individually stays paused; resume it with PUT /v1/ads/ad-sets/{adSetId}/status or
- * PUT /v1/ads/{adId}/status. See the Status model in the Ad Campaigns tag.
+ * It writes the campaign's own on/off switch and nothing else, on every platform: Meta, TikTok, Google, LinkedIn campaign group, Pinterest, X, ChatGPT (OpenAI).
  *
- * **Live read, then write.** The campaign's switch is read from the platform first. When that
- * live read shows it already in the requested state nothing is written (`updated: 0`,
- * `skipped: 1`, with the reason), and when the campaign delivers in that state but some of its
- * ads are stored in the other state (for example ads switched on in the platform's own UI and
- * still stored `paused`), those ads (up to 20, at most once every 10 minutes per campaign) are
- * re-read and stored. Otherwise the switch is written (`updated: 1`), read back and
- * stored, and the delivery status of the ads under it (up to 20) is re-read and stored, so an
- * immediate GET returns what the platform now reports. A stored switch never skips a write, and
- * when the platform cannot be read the write always goes out. On Meta the check reads the
- * campaign's own `status`, so a delivery status such as `IN_PROCESS` or `WITH_ISSUES` does not
- * force a write.
+ * Its ad sets and ads keep their own switches:
+ *
+ * - Pausing stops their delivery through the campaign.
+ * - Resuming lets each of them deliver again only if its own switch is on.
+ *
+ * An ad set or ad you paused individually stays paused. Resume it with PUT /v1/ads/ad-sets/{adSetId}/status or PUT /v1/ads/{adId}/status. See the Status model in the Ad Campaigns tag.
+ *
+ * ### Live read, then write
+ *
+ * The campaign's switch is read from the platform first.
+ *
+ * - **Already in the requested state:** nothing is written (`updated: 0`, `skipped: 1`, with the reason).
+ * - **Otherwise:** the switch is written (`updated: 1`), read back and stored. The delivery status of the ads under it (up to 20) is re-read and stored, so an immediate GET returns what the platform now reports.
+ *
+ * When the campaign delivers in the requested state but some of its ads are stored in the other state, those ads are re-read and stored (up to 20, at most once every 10 minutes per campaign).
+ *
+ * An example is ads switched on in the platform's own UI and still stored `paused`.
+ *
+ * A stored switch never skips a write, and when the platform cannot be read the write always goes out.
+ *
+ * On Meta the check reads the campaign's own `status`, so a delivery status such as `IN_PROCESS` or `WITH_ISSUES` does not force a write.
  *
  */
 export const updateAdCampaignStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdCampaignStatusData, ThrowOnError>) => {
@@ -11514,24 +12519,26 @@ export const getCampaignAdSchedule = <ThrowOnError extends boolean = false>(opti
  * Replace a campaign's ad schedule (dayparting)
  * Replaces the days and hours a Google campaign runs, or clears them so it serves around the clock.
  *
- * This is a
- * REPLACE, not a merge: windows you leave out stop serving.
+ * This is a REPLACE, not a merge: windows you leave out stop serving. Send `schedule: []` to clear dayparting, which returns the campaign to serving around the clock.
  *
- * Send `schedule: []` to clear dayparting, which returns the campaign to serving around
- * the clock.
+ * ### Rules
  *
- * Google rules enforced here, so you get a named field instead of a criterion error:
- * at most 6 windows per day, a window must end after it starts, windows on the same day
- * may not overlap, `endHour` 24 is midnight and cannot carry minutes, and minutes are
- * quarter-hours only (0, 15, 30, 45). `bidModifier` is 0.1-10.0; Google's 0 means
- * "off" for devices only, so a window is switched off by leaving it out.
+ * Google rules are enforced here, so you get a named field instead of a criterion error:
  *
- * Windows are half-open (Google is exclusive of the end minute), so 09:00-12:00 and
- * 12:00-17:00 on the same day are adjacent and both valid.
+ * - at most 6 windows per day
+ * - a window must end after it starts
+ * - windows on the same day may not overlap
+ * - `endHour` 24 is midnight and cannot carry minutes
+ * - minutes are quarter-hours only (0, 15, 30, 45)
+ * - `bidModifier` is 0.1-10.0. Google's 0 means "off" for devices only, so a window is switched off by leaving it out.
  *
- * Google cannot edit an ad schedule in place (every AdScheduleInfo field is prohibited on
- * update), so this removes the live criteria and creates the new ones in a single atomic
- * mutate. The response is read back from Google and carries the new criterion ids.
+ * Windows are half-open (Google is exclusive of the end minute), so 09:00-12:00 and 12:00-17:00 on the same day are adjacent and both valid.
+ *
+ * ### How it is applied
+ *
+ * Google cannot edit an ad schedule in place (every AdScheduleInfo field is prohibited on update). So this removes the live criteria and creates the new ones in a single atomic mutate.
+ *
+ * The response is read back from Google and carries the new criterion ids.
  *
  */
 export const updateCampaignAdSchedule = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateCampaignAdScheduleData, ThrowOnError>) => {
@@ -11545,19 +12552,24 @@ export const updateCampaignAdSchedule = <ThrowOnError extends boolean = false>(o
  * Read a campaign's current bidding
  * Shows a Google campaign's current bidding strategy and targets, ready to prefill an edit.
  *
- * Read of the campaign's bidding strategy on Google, cached for the quota window, for
- * pre-filling the bid strategy block before a PUT to /v1/ads/campaigns/{campaignId}.
- * Google Ads only; `platform` is required and rejected when it is anything else, since
- * a `campaignId` is not globally unique. The response carries `cachedAt` and `stale`,
- * set when a quota-exhausted call falls back to the last-good copy instead of a live
- * read.
+ * Reads the campaign's bidding strategy on Google, cached for the quota window, for pre-filling the bid strategy block before a PUT to /v1/ads/campaigns/{campaignId}.
  *
- * Maps Google's bidding strategy onto the same triplet PUT accepts: `LOWEST_COST_WITHOUT_CAP`
- * (Maximize Conversions, no target), `COST_CAP` + `bidAmount` (Target CPA), `LOWEST_COST_WITH_MIN_ROAS`
- * + `roasAverageFloor` (Target ROAS), `LOWEST_COST_WITH_BID_CAP` + `bidAmount` (Maximize Clicks with
- * a CPC ceiling). A campaign on a portfolio strategy returns `portfolio` (id + name) and
- * `bidSpec.portfolioBidStrategyId` instead of the triplet. Anything else (Manual CPC, Target
- * Impression Share, ...) returns `bidSpec: null`; show `biddingStrategyType` as-is.
+ * Google Ads only. `platform` is required and rejected when it is anything else, since a `campaignId` is not globally unique.
+ *
+ * The response carries `cachedAt` and `stale`, set when a quota-exhausted call falls back to the last-good copy instead of a live read.
+ *
+ * ### Strategy mapping
+ *
+ * Maps Google's bidding strategy onto the same triplet PUT accepts:
+ *
+ * - `LOWEST_COST_WITHOUT_CAP`: Maximize Conversions, no target
+ * - `COST_CAP` + `bidAmount`: Target CPA
+ * - `LOWEST_COST_WITH_MIN_ROAS` + `roasAverageFloor`: Target ROAS
+ * - `LOWEST_COST_WITH_BID_CAP` + `bidAmount`: Maximize Clicks with a CPC ceiling
+ *
+ * A campaign on a portfolio strategy returns `portfolio` (id + name) and `bidSpec.portfolioBidStrategyId` instead of the triplet.
+ *
+ * Anything else (Manual CPC, Target Impression Share, ...) returns `bidSpec: null`; show `biddingStrategyType` as-is.
  *
  */
 export const getCampaignBidding = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCampaignBiddingData, ThrowOnError>) => {
@@ -11571,12 +12583,15 @@ export const getCampaignBidding = <ThrowOnError extends boolean = false>(options
  * Get live campaign details
  * Shows a Meta campaign's current settings straight from Meta, such as its objective, budget, bid strategy, schedule and delivery issues.
  *
- * Reads one campaign live from Meta, returned verbatim, so a caller that knows a
- * campaign id no longer has to page `GET /v1/ads/campaigns` to find it. The default
- * projection covers name, status, objective, buying type, bid strategy, budgets,
- * spend cap, schedule and `issues_info`. `fields` is a raw-passthrough override;
- * unknown fields return Meta's 400 verbatim. A campaign the resolved connection
- * cannot see comes back as Meta's own 400, not a 404.
+ * It reads one campaign live from Meta, returned verbatim, so a caller that knows a campaign id no longer has to page `GET /v1/ads/campaigns` to find it.
+ *
+ * The default projection covers name, status, objective, buying type, bid strategy, budgets, spend cap, schedule and `issues_info`.
+ *
+ * ### Fields and errors
+ *
+ * - `fields` is a raw-passthrough override; unknown fields return Meta's 400 verbatim.
+ * - A campaign the resolved connection cannot see comes back as Meta's own 400, not a 404.
+ *
  */
 export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdCampaignDetailsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdCampaignDetailsResponse, GetAdCampaignDetailsError, ThrowOnError>({
@@ -11589,10 +12604,7 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  * Update a campaign
  * Changes a campaign's settings, such as its name, budget, bidding or tracking URLs.
  *
- * Send at least one of `budget`, `bidStrategy`,
- * `portfolioBidStrategyId`, `targetImpressionShare`, `manualCpc`, `networkSettings`,
- * `trackingUrlTemplate`, `finalUrlSuffix`, `sharedBudgetId`, `name` or `platformSpecificData`. An unsupported
- * field is always an error, never a silent drop.
+ * Send at least one of `budget`, `bidStrategy`, `portfolioBidStrategyId`, `targetImpressionShare`, `manualCpc`, `networkSettings`, `trackingUrlTemplate`, `finalUrlSuffix`, `sharedBudgetId`, `name` or `platformSpecificData`. An unsupported field is always an error, never a silent drop.
  *
  * | Body field | Meta | Google | Others |
  * |---|---|---|---|
@@ -11609,51 +12621,56 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  * | `platformSpecificData.spendCap` | Yes | 400 | 400 |
  * | `accountId` (empty campaigns) | Yes | - | - |
  *
- * Meta budget edits check the live campaign budget, so an older local ABO stamp
- * cannot block a CBO campaign. A successful edit repairs local ad budget fields.
- * A live ABO campaign still returns 409 with the ad-set budget endpoint.
+ * ### Meta
  *
- * On Google: `LOWEST_COST_WITHOUT_CAP` = Maximize Conversions, `COST_CAP` +
- * `bidAmount` = Target CPA, `LOWEST_COST_WITH_MIN_ROAS` + `roasAverageFloor` =
- * Target ROAS, `LOWEST_COST_WITH_BID_CAP` + `bidAmount` = Maximize Clicks with a
- * CPC ceiling; `portfolioBidStrategyId` attaches a portfolio strategy instead
- * (exclusive with `bidStrategy`). `targetImpressionShare` switches the campaign to
- * Target impression share and `manualCpc: { maxCpc }` to Manual CPC (every ad group of the campaign gets `maxCpc` as its bid, in the same mutate); each is exclusive with
- * every other strategy field. `networkSettings`, `trackingUrlTemplate` and
- * `finalUrlSuffix` go out in one campaign update, each field sent written on its own
- * leaf, so an omitted one keeps its current value; an empty string clears a URL field.
- * Setting the standard triplet on a campaign that
- * is currently on a PORTFOLIO strategy is rejected: detach it in Google Ads
- * first, since it is shared across campaigns.
+ * Meta budget edits check the live campaign budget, so an older local ABO stamp cannot block a CBO campaign. A successful edit repairs local ad budget fields. A live ABO campaign still returns 409 with the ad-set budget endpoint.
  *
- * Google budget updates read the current budget before mutation. Shared budgets return
- * 409 unless allowSharedBudgetUpdate=true is explicitly supplied, because the change
- * affects every campaign using that budget. A budget counts as shared when Google flags
- * it as shared or when more than one campaign uses it (older budgets can serve several
- * campaigns without the flag). Unknown sharing state also returns 409.
+ * `accountId` forwards the update straight to Meta for a campaign with zero ads, which would otherwise 404. The response then carries `updated: 0`.
  *
- * `sharedBudgetId` (Google) moves the campaign onto a shared budget from
- * GET /v1/ads/shared-budgets, which also needs `allowSharedBudgetUpdate: true` (409
- * otherwise) because the campaign then splits that budget with every campaign on it;
- * `budget` cannot ride along. `sharedBudgetId: null` moves it back onto a new budget of its
- * own, sized by `budget` (required, daily); the new budget and the switch go out in one
- * atomic Google mutate. A campaign that already has its own budget returns 409 for null.
- * The budget a campaign leaves is not removed. The response carries the budget the
- * campaign now uses.
+ * ### Google bidding
  *
- * OpenAI Ads campaigns carry exactly one spend cap: `budget.type` daily or lifetime
- * replaces whichever cap the campaign had, with a minimum of 1 in the ad account's
- * currency (422 below it). Lifetime can switch to daily, but OpenAI never switches a
- * daily cap back to lifetime (422).
+ * - `LOWEST_COST_WITHOUT_CAP` = Maximize Conversions
+ * - `COST_CAP` + `bidAmount` = Target CPA
+ * - `LOWEST_COST_WITH_MIN_ROAS` + `roasAverageFloor` = Target ROAS
+ * - `LOWEST_COST_WITH_BID_CAP` + `bidAmount` = Maximize Clicks with a CPC ceiling
+ * - `portfolioBidStrategyId` attaches a portfolio strategy instead (exclusive with `bidStrategy`)
+ * - `targetImpressionShare` switches the campaign to Target impression share
+ * - `manualCpc: { maxCpc }` switches to Manual CPC: every ad group of the campaign gets `maxCpc` as its bid, in the same mutate
  *
- * Reddit Ads: `budget` changes the amount of a campaign budget (Reddit campaign budget
- * optimization); a campaign whose ad groups carry the budget returns 409 or 422, use
- * PUT /v1/ads/ad-sets/{adSetId} there. Reddit cannot switch a published budget between
- * daily and lifetime, so `budget.type` must match the current one (422 otherwise).
- * `bidStrategy` is set per ad group on Reddit (PUT /v1/ads/ad-sets/{adSetId}).
+ * `targetImpressionShare` and `manualCpc` are each exclusive with every other strategy field.
  *
- * `accountId` forwards the update straight to Meta for a campaign with zero ads,
- * which would otherwise 404; the response then carries `updated: 0`.
+ * Setting the standard triplet on a campaign that is currently on a PORTFOLIO strategy is rejected. Detach it in Google Ads first, since it is shared across campaigns.
+ *
+ * ### Google network and tracking URLs
+ *
+ * `networkSettings`, `trackingUrlTemplate` and `finalUrlSuffix` go out in one campaign update. Each field is sent written on its own leaf, so an omitted one keeps its current value. An empty string clears a URL field.
+ *
+ * ### Google budgets
+ *
+ * Google budget updates read the current budget before mutation. Shared budgets return 409 unless allowSharedBudgetUpdate=true is explicitly supplied, because the change affects every campaign using that budget.
+ *
+ * A budget counts as shared when Google flags it as shared or when more than one campaign uses it (older budgets can serve several campaigns without the flag). Unknown sharing state also returns 409.
+ *
+ * ### Google shared budgets (`sharedBudgetId`)
+ *
+ * - `sharedBudgetId` moves the campaign onto a shared budget from GET /v1/ads/shared-budgets. It also needs `allowSharedBudgetUpdate: true` (409 otherwise), because the campaign then splits that budget with every campaign on it. `budget` cannot ride along.
+ * - `sharedBudgetId: null` moves it back onto a new budget of its own, sized by `budget` (required, daily). The new budget and the switch go out in one atomic Google mutate.
+ * - A campaign that already has its own budget returns 409 for null.
+ *
+ * The budget a campaign leaves is not removed. The response carries the budget the campaign now uses.
+ *
+ * ### OpenAI Ads
+ *
+ * Campaigns carry exactly one spend cap. `budget.type` daily or lifetime replaces whichever cap the campaign had, with a minimum of 1 in the ad account's currency (422 below it).
+ *
+ * Lifetime can switch to daily, but OpenAI never switches a daily cap back to lifetime (422).
+ *
+ * ### Reddit Ads
+ *
+ * - `budget` changes the amount of a campaign budget (Reddit campaign budget optimization).
+ * - A campaign whose ad groups carry the budget returns 409 or 422; use PUT /v1/ads/ad-sets/{adSetId} there.
+ * - Reddit cannot switch a published budget between daily and lifetime, so `budget.type` must match the current one (422 otherwise).
+ * - `bidStrategy` is set per ad group on Reddit (PUT /v1/ads/ad-sets/{adSetId}).
  *
  */
 export const updateAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdCampaignData, ThrowOnError>) => {
@@ -11667,43 +12684,46 @@ export const updateAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * Delete a campaign
  * Deletes a campaign on its platform, including a campaign that never got any ads.
  *
- * Only the campaign itself is sent to the platform. Meta, Google, TikTok, LinkedIn
- * and X delete it; OpenAI, Reddit and Pinterest have no campaign delete and archive
- * it instead (see below). Locally, all Ad documents for this campaign are marked
- * `status: cancelled`.
+ * Only the campaign itself is sent to the platform:
  *
- * **Empty campaigns.** A campaign with zero ads has no local Ad documents
- * to resolve, so it is invisible to `/v1/ads/tree` and this endpoint would
- * 404. That state is produced by the two-step create flow (campaign, then
- * ads via `existingCampaignId`) whenever Meta rejects the ad step. To
- * delete such a shell, send `accountId` in the body or the query string:
- * we skip the local lookup entirely and forward the delete to the platform
- * of that connection. Google, TikTok, LinkedIn, Pinterest and Reddit take the
- * ad account from the synced campaign (OpenAI needs none); when the campaign
- * was never synced (or is synced under several ad accounts) the answer is 409
- * `invalid_resource_state` on `campaignId` and nothing is deleted: sync the ad
- * account and retry. Before deleting on Google, TikTok, LinkedIn, Pinterest,
- * OpenAI or Reddit, Zernio asks the platform whether the campaign still holds
- * ad groups or ads (Google asset groups count; on LinkedIn, campaigns inside
- * the campaign group). If it does, or the platform cannot confirm it has none
- * (a TikTok Smart+ campaign), the answer is 409 `invalid_resource_state` on
- * `campaignId` and nothing is deleted: sync the ad account and delete the
- * campaign again so its ads are cancelled with it, or delete them on the
- * platform first. On X the ad account comes
- * from the synced campaign, which wins over `adAccountId`; when the campaign
- * was never synced, send `adAccountId` too. Before deleting, Zernio asks X
- * whether the campaign still holds undeleted line items (ads not synced
- * yet); if it does the answer is 409 `invalid_field_value` on `campaignId`
- * and nothing is deleted. Sync the ad account and retry when those line items
- * hold promoted posts; line items without promoted posts never sync, so delete
- * them in X Ads Manager first. `accountId` is ignored when the campaign does have ads.
+ * - Meta, Google, TikTok, LinkedIn and X delete it.
+ * - OpenAI, Reddit and Pinterest have no campaign delete and archive it instead (see below).
  *
- * Reddit Ads has no delete: the campaign is archived instead (`configured_status`
- * ARCHIVED), which stops delivery for good. Its ad groups and ads keep their own
- * switches but cannot deliver under an archived campaign.
+ * Locally, all Ad documents for this campaign are marked `status: cancelled`.
  *
- * OpenAI Ads has no delete either: the campaign is archived (state `archive`).
- * Its ad groups and ads are not touched on OpenAI.
+ * ### Empty campaigns
+ *
+ * A campaign with zero ads has no local Ad documents to resolve, so it is invisible to `/v1/ads/tree` and this endpoint would 404. That state comes from the two-step create flow (campaign, then ads via `existingCampaignId`) whenever Meta rejects the ad step.
+ *
+ * To delete such a shell, send `accountId` in the body or the query string. We skip the local lookup entirely and forward the delete to the platform of that connection. `accountId` is ignored when the campaign does have ads.
+ *
+ * ### Google, TikTok, LinkedIn, Pinterest, Reddit and OpenAI
+ *
+ * Google, TikTok, LinkedIn, Pinterest and Reddit take the ad account from the synced campaign (OpenAI needs none). When the campaign was never synced (or is synced under several ad accounts), the answer is 409 `invalid_resource_state` on `campaignId` and nothing is deleted: sync the ad account and retry.
+ *
+ * Before deleting on Google, TikTok, LinkedIn, Pinterest, OpenAI or Reddit, Zernio asks the platform whether the campaign still holds ad groups or ads. Google asset groups count; on LinkedIn, campaigns inside the campaign group count.
+ *
+ * If it does, or the platform cannot confirm it has none (a TikTok Smart+ campaign), the answer is 409 `invalid_resource_state` on `campaignId` and nothing is deleted. Either:
+ *
+ * - sync the ad account and delete the campaign again so its ads are cancelled with it, or
+ * - delete them on the platform first.
+ *
+ * ### X
+ *
+ * On X the ad account comes from the synced campaign, which wins over `adAccountId`. When the campaign was never synced, send `adAccountId` too.
+ *
+ * Before deleting, Zernio asks X whether the campaign still holds undeleted line items (ads not synced yet). If it does, the answer is 409 `invalid_field_value` on `campaignId` and nothing is deleted.
+ *
+ * - Line items that hold promoted posts: sync the ad account and retry.
+ * - Line items without promoted posts never sync, so delete them in X Ads Manager first.
+ *
+ * ### Reddit Ads
+ *
+ * Reddit Ads has no delete: the campaign is archived instead (`configured_status` ARCHIVED), which stops delivery for good. Its ad groups and ads keep their own switches but cannot deliver under an archived campaign.
+ *
+ * ### OpenAI Ads
+ *
+ * OpenAI Ads has no delete either: the campaign is archived (state `archive`). Its ad groups and ads are not touched on OpenAI.
  *
  */
 export const deleteAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAdCampaignData, ThrowOnError>) => {
@@ -11717,15 +12737,17 @@ export const deleteAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * List campaign-level negative keywords
  * Lists the negative keywords set on a whole Google campaign, separate from ad group negatives.
  *
- * Returns the campaign-level negative keywords (`campaign_criterion.negative`),
- * distinct from the ad-group-level negatives under `GET /v1/ads/keywords`. Cached
- * for the quota window (not synced to Postgres), and gated by the shared Google
- * Ads operations budget like every other on-demand Google surface. The response
- * carries `cachedAt` and `stale`, set when a quota-exhausted call falls back to
- * the last-good copy instead of a live read.
+ * It returns the campaign-level negative keywords (`campaign_criterion.negative`), distinct from the ad-group-level negatives under `GET /v1/ads/keywords`.
  *
- * The platform is always discovered from the campaign itself; a non-Google
- * campaign returns 501 rather than 404, whether or not `platform` was passed.
+ * ### Caching and quota
+ *
+ * Results are cached for the quota window (not synced to Postgres) and gated by the shared Google Ads operations budget, like every other on-demand Google surface.
+ *
+ * The response carries `cachedAt` and `stale`, set when a quota-exhausted call falls back to the last-good copy instead of a live read.
+ *
+ * ### Platform
+ *
+ * The platform is always discovered from the campaign itself. A non-Google campaign returns 501 rather than 404, whether or not `platform` was passed.
  *
  */
 export const listCampaignNegativeKeywords = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCampaignNegativeKeywordsData, ThrowOnError>) => {
@@ -11759,12 +12781,11 @@ export const replaceCampaignNegativeKeywords = <ThrowOnError extends boolean = f
  * Pause or resume many campaigns
  * Pauses or resumes up to 50 campaigns in one call, with a separate result per campaign so one failure does not block the rest.
  *
- * Each campaign is updated
- * concurrently and the response contains a per-campaign result so a
- * single bad row does not fail the whole batch. Each campaign is read,
- * written and re-read exactly as PUT /v1/ads/campaigns/{campaignId}/status
- * describes: only the campaign's own switch is written, never its ad sets'
- * or ads'. `updated` / `skipped` count campaigns.
+ * Each campaign is updated concurrently, and the response contains a per-campaign result so a single bad row does not fail the whole batch.
+ *
+ * Each campaign is read, written and re-read exactly as PUT /v1/ads/campaigns/{campaignId}/status describes: only the campaign's own switch is written, never its ad sets' or ads'.
+ *
+ * `updated` / `skipped` count campaigns.
  *
  */
 export const bulkUpdateAdCampaignStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BulkUpdateAdCampaignStatusData, ThrowOnError>) => {
@@ -11778,42 +12799,42 @@ export const bulkUpdateAdCampaignStatus = <ThrowOnError extends boolean = false>
  * Duplicate a campaign
  * Copies a campaign with its ad sets, ads, creatives and targeting, created paused so you can review it before launch.
  *
- * Duplicates a campaign, including its ad sets, ads, creatives, and
- * targeting by default (`deepCopy: true`). The copy is created paused
- * so callers can review before launching.
+ * Ad sets, ads, creatives, and targeting are copied by default (`deepCopy: true`). The copy is created paused so callers can review before launching.
  *
- * Per-platform implementation:
- * - **Meta** copies one level at a time with Meta's `/copies` endpoint:
- * the campaign, then each of its ad sets (DELETED and ARCHIVED ones
- * are skipped), then each ad of every ad set, so a campaign of any
- * size copies (Meta refuses a single deep copy of 3 or more objects).
- * `statusOption` applies at every level. If any child copy fails,
- * the partial copy is deleted and the request fails with Meta's error,
- * so a retry starts clean. Each copied object takes a few seconds,
- * so a large campaign takes minutes to answer.
- * - **TikTok** has no native copy primitive; Zernio walks the source
- * graph (`/v2/campaign/get/`, `/v2/adgroup/get/`, `/v2/ad/get/`) and
- * recreates each entity via the corresponding `/create/` endpoints,
- * carrying over budget / targeting / bid_type / bid_price /
- * deep_bid_type / creative fields. Spark Ad linkage (`tiktok_item_id`)
- * is preserved.
- * - **LinkedIn** has no native copy primitive; Zernio walks the source
- * CampaignGroup → Campaigns → Creatives and recreates each entity,
- * carrying over `type` / `costType` / `unitCost` /
- * `optimizationTargetType` / `creativeSelection` / `objectiveType` /
- * `format` / `dailyBudget` / `totalBudget` / `targetingCriteria` /
- * `runSchedule` and every Creative's `content` object verbatim.
- * `statusOption: INHERITED_FROM_SOURCE` is evaluated **per entity**:
- * any Group / Campaign / Creative whose source is `ACTIVE` gets its
- * clone activated too. Duplicating an ACTIVE campaign with
- * `INHERITED_FROM_SOURCE` starts a second front of spend the moment
- * the clone activates. The safe default is `PAUSED`.
+ * ### Per-platform implementation
  *
- * The new hierarchy is asynchronous to materialize in our DB, and we
- * trigger sync discovery automatically. Set `syncAfter: false` to
- * skip and poll `/v1/ads/tree` on your own cadence.
+ * - **Meta** copies one level at a time with Meta's `/copies` endpoint. See below.
+ * - **TikTok** has no native copy primitive. See below.
+ * - **LinkedIn** has no native copy primitive. See below.
+ * - Other platforms return 501 Not Implemented.
  *
- * Other platforms return 501 Not Implemented.
+ * ### Meta
+ *
+ * Zernio copies the campaign, then each of its ad sets (DELETED and ARCHIVED ones are skipped), then each ad of every ad set. So a campaign of any size copies: Meta refuses a single deep copy of 3 or more objects.
+ *
+ * - `statusOption` applies at every level.
+ * - If any child copy fails, the partial copy is deleted and the request fails with Meta's error, so a retry starts clean.
+ * - Each copied object takes a few seconds, so a large campaign takes minutes to answer.
+ *
+ * ### TikTok
+ *
+ * Zernio walks the source graph (`/v2/campaign/get/`, `/v2/adgroup/get/`, `/v2/ad/get/`) and recreates each entity via the corresponding `/create/` endpoints. It carries over budget / targeting / bid_type / bid_price / deep_bid_type / creative fields. Spark Ad linkage (`tiktok_item_id`) is preserved.
+ *
+ * ### LinkedIn
+ *
+ * Zernio walks the source CampaignGroup → Campaigns → Creatives and recreates each entity. It carries over these fields, plus every Creative's `content` object verbatim:
+ *
+ * - `type` / `costType` / `unitCost` / `optimizationTargetType`
+ * - `creativeSelection` / `objectiveType` / `format`
+ * - `dailyBudget` / `totalBudget` / `targetingCriteria` / `runSchedule`
+ *
+ * `statusOption: INHERITED_FROM_SOURCE` is evaluated **per entity**: any Group / Campaign / Creative whose source is `ACTIVE` gets its clone activated too.
+ *
+ * Duplicating an ACTIVE campaign with `INHERITED_FROM_SOURCE` starts a second front of spend the moment the clone activates. The safe default is `PAUSED`.
+ *
+ * ### Sync
+ *
+ * The new hierarchy is asynchronous to materialize in our DB, and we trigger sync discovery automatically. Set `syncAfter: false` to skip and poll `/v1/ads/tree` on your own cadence.
  *
  */
 export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DuplicateAdCampaignData, ThrowOnError>) => {
@@ -11827,22 +12848,25 @@ export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(option
  * Read a Google campaign's device, location, excluded location, and language targeting
  * Shows a Google campaign's device, location, excluded location and language targeting so you can build an editor for it.
  *
- * Google Ads compliance requires geo, language, budget, and bidding targeting
- * set at creation to stay editable afterwards; this reads the campaign state
- * so an integrator can build an editor around it. Cached for the quota window
- * (10 minutes fresh, up to 7 days last-good), not always a live read. Google
- * only; every other platform returns 501.
+ * Google Ads compliance requires geo, language, budget, and bidding targeting set at creation to stay editable afterwards. This reads the campaign state so an integrator can build an editor around it.
  *
- * `devices` lists the device criteria the campaign carries, which depends on
- * its channel: Search campaigns have MOBILE, DESKTOP and TABLET, Display
- * campaigns also have CONNECTED_TV. `bidModifier` is Google's bid adjustment
- * for that device, `null` when it has none, and `0` when the device is
- * switched off; `included` is false for exactly that case.
+ * - Cached for the quota window (10 minutes fresh, up to 7 days last-good), not always a live read.
+ * - Google only; every other platform returns 501.
  *
- * `excludedLocations` lists the campaign's negative location criteria (the
- * places it never serves in). `locations` still lists every location criterion,
- * each flagged with `negative`, so a client reading the targeted set filters
- * `negative: false`.
+ * ### Devices
+ *
+ * `devices` lists the device criteria the campaign carries, which depends on its channel:
+ *
+ * - Search campaigns have MOBILE, DESKTOP and TABLET.
+ * - Display campaigns also have CONNECTED_TV.
+ *
+ * `bidModifier` is Google's bid adjustment for that device: `null` when it has none, and `0` when the device is switched off. `included` is false for exactly that case.
+ *
+ * ### Locations
+ *
+ * `excludedLocations` lists the campaign's negative location criteria (the places it never serves in).
+ *
+ * `locations` still lists every location criterion, each flagged with `negative`, so a client reading the targeted set filters `negative: false`.
  *
  */
 export const getCampaignTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCampaignTargetingData, ThrowOnError>) => {
@@ -11854,58 +12878,52 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Edit a Google campaign's device, location, excluded location, or language targeting
- * Changes a Google campaign's device, location, excluded location or language targeting after it was created.
+ * Changes a Google campaign's device, location, excluded location or language targeting after it was created. Google only; every other platform returns 501.
  *
- * Google Ads compliance row M.10: geo and language targeting set at
- * creation must stay editable afterwards. Send at least one of `devices`,
- * `locations`, `excludedLocations`, `languages`, `locationTargetingType`; each provided field REPLACES that field's
- * existing criteria on the campaign (a full set, not a delta). Fields left
- * out of the body are untouched. Google only; every other platform returns
- * 501.
+ * Google Ads compliance row M.10: geo and language targeting set at creation must stay editable afterwards.
  *
- * `devices` is the full set of device bid modifiers: a supported device you
- * leave out is switched off with a bid modifier of 0, since Google cannot
- * remove a device criterion. A device the campaign's channel does not carry,
- * and a set that switches every device off, both return 422.
+ * Send at least one of `devices`, `locations`, `excludedLocations`, `languages`, `locationTargetingType`. Each provided field REPLACES that field's existing criteria on the campaign (a full set, not a delta). Fields left out of the body are untouched.
  *
- * `locations` accepts the same shapes as campaign creation: a bare array of
- * ISO country codes, or an object with `countries`/`regions`/`cities`/`zips`/`metros`
- * key lists (`key` from GET /v1/ads/targeting/search?dimension=geo). Excluded
- * locations are left untouched by `locations`. An empty location list
- * returns 400 instead of removing every criterion: a Google campaign with no location
- * criteria targets every country, so omit `locations` to leave targeting alone.
+ * ### Fields
  *
- * `excludedLocations` takes the same two shapes and replaces the campaign's negative
- * location criteria (the places it never serves in), leaving the targeted `locations`
- * untouched. An empty list (or `{}`) removes every exclusion. Radius exclusions are
- * not supported. A place cannot be both targeted and excluded: a request whose result
- * would leave one on both sides returns 400 before anything is written, and moving a
- * place from one side to the other in the same request is applied atomically. Example:
- * `{ "platform": "google", "targeting": { "excludedLocations": { "countries": ["CA"], "regions": ["21137"] } } }`.
+ * - `devices`: the full set of device bid modifiers. A supported device you leave out is switched off with a bid modifier of 0, since Google cannot remove a device criterion. A device the campaign's channel does not carry, and a set that switches every device off, both return 422.
+ * - `locations`: see below.
+ * - `excludedLocations`: see below.
+ * - `languages`: an array of Google's language codes (ISO 639-1, plus variants such as `zh_CN`). An unknown code returns 400.
+ * - `locationTargetingType`: switches who the location targeting reaches. `presence` (people in or regularly in the locations) or `presence_or_interest` (also people searching for or interested in them). Example: `{ "platform": "google", "targeting": { "locationTargetingType": "presence" } }`.
  *
- * The removes and the creates go out in ONE Google `googleAds:mutate`, so a failed
- * edit leaves the campaign's previous set intact rather than a half-applied one.
+ * ### Locations
  *
- * `languages` is an array of Google's language codes (ISO 639-1, plus variants
- * such as `zh_CN`); an unknown code returns 400.
+ * `locations` accepts the same shapes as campaign creation: a bare array of ISO country codes, or an object with `countries`/`regions`/`cities`/`zips`/`metros` key lists (`key` from GET /v1/ads/targeting/search?dimension=geo).
  *
- * `locationTargetingType` switches who the location targeting reaches:
- * `presence` (people in or regularly in the locations) or `presence_or_interest`
- * (also people searching for or interested in them). Example:
- * `{ "platform": "google", "targeting": { "locationTargetingType": "presence" } }`.
+ * Excluded locations are left untouched by `locations`. An empty location list returns 400 instead of removing every criterion: a Google campaign with no location criteria targets every country, so omit `locations` to leave targeting alone.
  *
- * The response includes the refreshed `devices`/`locations`/`excludedLocations`/`languages` state
- * read back from Google after the edit, and invalidates the cached copy
- * `GET` on this campaign would otherwise keep serving.
+ * ### Excluded locations
  *
- * **Demand Gen:** Google keeps a Demand Gen campaign's locations and languages on its
- * ad groups and refuses them on the campaign. When the campaign has one ad group they are
- * written there and the response carries its `adGroupId` (the campaign-level
- * `locations`/`languages` read back then stay empty). With several ad groups the call
- * returns 400 naming them: edit each one with PUT /v1/ads/{adId} `targeting` on an ad of
- * that ad group. Campaigns migrated from Discovery that still target on the campaign keep
- * being written there. `devices` and `locationTargetingType` stay campaign-level.
- * `excludedLocations` is not available on Demand Gen yet and returns 400.
+ * `excludedLocations` takes the same two shapes and replaces the campaign's negative location criteria (the places it never serves in), leaving the targeted `locations` untouched.
+ *
+ * - An empty list (or `{}`) removes every exclusion.
+ * - Radius exclusions are not supported.
+ * - A place cannot be both targeted and excluded: a request whose result would leave one on both sides returns 400 before anything is written.
+ * - Moving a place from one side to the other in the same request is applied atomically.
+ *
+ * Example: `{ "platform": "google", "targeting": { "excludedLocations": { "countries": ["CA"], "regions": ["21137"] } } }`.
+ *
+ * ### Atomic writes and response
+ *
+ * The removes and the creates go out in ONE Google `googleAds:mutate`, so a failed edit leaves the campaign's previous set intact rather than a half-applied one.
+ *
+ * The response includes the refreshed `devices`/`locations`/`excludedLocations`/`languages` state read back from Google after the edit. It also invalidates the cached copy `GET` on this campaign would otherwise keep serving.
+ *
+ * ### Demand Gen
+ *
+ * Google keeps a Demand Gen campaign's locations and languages on its ad groups and refuses them on the campaign.
+ *
+ * - With one ad group, they are written there and the response carries its `adGroupId` (the campaign-level `locations`/`languages` read back then stay empty).
+ * - With several ad groups, the call returns 400 naming them. Edit each one with PUT /v1/ads/{adId} `targeting` on an ad of that ad group.
+ * - Campaigns migrated from Discovery that still target on the campaign keep being written there.
+ * - `devices` and `locationTargetingType` stay campaign-level.
+ * - `excludedLocations` is not available on Demand Gen yet and returns 400.
  *
  */
 export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateCampaignTargetingData, ThrowOnError>) => {
@@ -11919,45 +12937,52 @@ export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(op
  * List ad sets
  * Lists ad sets (ad groups on Google) with their targeting, bidding and optimization settings, optionally for one campaign.
  *
- * Ad sets (Google ad groups) synced for the connection, optionally
- * filtered by platform and campaignId. Reads the `ad_sets` table
- * directly, independent of the `ads` rollup GET /v1/ads/tree uses, so a
- * newly created standalone ad group with no ad yet (POST /v1/ads/ad-sets,
- * Google only) is visible here even though it is invisible in the tree
- * until an ad joins it via `adSetId` on POST /v1/ads/create. Rows come newest first
- * (by platform creation time, then id, so pages never overlap), 500 per page unless `limit`
- * says otherwise; `pagination.total` counts every matching ad set and `page` reaches the
- * rest.
+ * Returns the ad sets (Google ad groups) synced for the connection, optionally filtered by platform and campaignId.
  *
- * **This list is SYNCED, not live** (refreshed by background sync, see below). Each row also
- * carries the ad set's config (`targeting`, `bidStrategy`, `bidAmount`, `optimizationGoal`,
- * `billingEvent`, `promotedObject`), so `?accountId=...&adAccountId=act_...` returns the config of
- * every ad set of an ad account in one call, without a `campaignId`. To read
- * budgets, status, targeting, promoted object and bid strategy of every campaign and ad set of a
- * Meta ad account LIVE in one call (for example as a pre-write spend gate), use
- * GET /v1/ads/accounts/live instead.
+ * It reads the `ad_sets` table directly, independent of the `ads` rollup GET /v1/ads/tree uses. So a newly created standalone ad group with no ad yet (POST /v1/ads/ad-sets, Google only) is visible here. It stays invisible in the tree until an ad joins it via `adSetId` on POST /v1/ads/create.
  *
- * **Status freshness.** `status`, `configuredStatus`, `platformStatus`, `platformAdSetStatus`
- * and `platformCampaignStatus` are the values Zernio last stored. Background sync refreshes
- * them, typically within 15 to 60 minutes (Google up to about 3 hours), and ended or
- * long-paused objects may be refreshed less often. Zernio's own status writes re-read the
- * switches they change. A change made in the platform's own ads manager therefore shows up
- * here only after the next sync. Controllers that act on a switch should pass `live=true`,
- * which reads the switches from the platform now, stores them, and returns `statusReadAt`
- * (null when the read failed and the stored values were returned).
- * With `live=true` (which needs a `campaignId` or `adSetId` filter) each listed ad set's own
- * switch (`platformAdSetStatus`) is read live, for the first 20 rows of the page; later rows keep their
- * synced value with `statusReadAt: null`. To read more ad sets live, page with `limit=20`. Live reads cover TikTok, Meta, Google, OpenAI and Reddit.
- * The rolled-up `status` is not re-derived by a live read. On TikTok the same live read also
- * returns the ad group's applied `optimizationGoal` and `billingEvent`, as TikTok's adgroup/get
- * reports them, so you can verify the goal TikTok applied rather than the one you requested.
- * It also returns `nativeSettings`: a fixed subset of TikTok's own adgroup/get record for the ad group, with
- * TikTok's own values, read in that same call (budget, budget_mode, schedule, placements, locations, ages, gender,
- * languages, interests, actions, audiences and exclusions), plus the advertiser's currency and
- * timezone. TikTok's `schedule_start_time` / `schedule_end_time` are UTC wall clocks
- * ("YYYY-MM-DD HH:MM:SS", no offset); Ads Manager displays them in `advertiser_timezone`. `configReadAt` says when it was read; it
- * is null on every row whose native settings were not read now, so never treat a null as a match.
+ * ### Paging
+ *
+ * Rows come newest first (by platform creation time, then id, so pages never overlap), 500 per page unless `limit` says otherwise. `pagination.total` counts every matching ad set and `page` reaches the rest.
+ *
+ * ### Synced config
+ *
+ * **This list is SYNCED, not live** (refreshed by background sync, see below). Each row also carries the ad set's config: `targeting`, `bidStrategy`, `bidAmount`, `optimizationGoal`, `billingEvent`, `promotedObject`.
+ *
+ * So `?accountId=...&adAccountId=act_...` returns the config of every ad set of an ad account in one call, without a `campaignId`.
+ *
+ * To read budgets, status, targeting, promoted object and bid strategy of every campaign and ad set of a Meta ad account LIVE in one call (for example as a pre-write spend gate), use GET /v1/ads/accounts/live instead.
+ *
+ * ### Status freshness
+ *
+ * `status`, `configuredStatus`, `platformStatus`, `platformAdSetStatus` and `platformCampaignStatus` are the values Zernio last stored.
+ *
+ * Background sync refreshes them, typically within 15 to 60 minutes (Google up to about 3 hours). Ended or long-paused objects may be refreshed less often. Zernio's own status writes re-read the switches they change.
+ *
+ * A change made in the platform's own ads manager therefore shows up here only after the next sync.
+ *
+ * ### Live reads (`live=true`)
+ *
+ * Controllers that act on a switch should pass `live=true`. It reads the switches from the platform now, stores them, and returns `statusReadAt` (null when the read failed and the stored values were returned).
+ *
+ * - `live=true` needs a `campaignId` or `adSetId` filter.
+ * - Each listed ad set's own switch (`platformAdSetStatus`) is read live for the first 20 rows of the page. Later rows keep their synced value with `statusReadAt: null`.
+ * - To read more ad sets live, page with `limit=20`.
+ * - Live reads cover TikTok, Meta, Google, OpenAI and Reddit.
+ * - The rolled-up `status` is not re-derived by a live read.
+ *
+ * ### TikTok live reads
+ *
+ * On TikTok the same live read also returns the ad group's applied `optimizationGoal` and `billingEvent`, as TikTok's adgroup/get reports them. So you can verify the goal TikTok applied rather than the one you requested.
+ *
+ * It also returns `nativeSettings`: a fixed subset of TikTok's own adgroup/get record for the ad group, with TikTok's own values, read in that same call. It covers budget, budget_mode, schedule, placements, locations, ages, gender, languages, interests, actions, audiences and exclusions, plus the advertiser's currency and timezone.
+ *
+ * TikTok's `schedule_start_time` / `schedule_end_time` are UTC wall clocks ("YYYY-MM-DD HH:MM:SS", no offset); Ads Manager displays them in `advertiser_timezone`.
+ *
+ * `configReadAt` says when it was read. It is null on every row whose native settings were not read now, so never treat a null as a match.
+ *
  * These are read, not retained create payloads, and are not stored.
+ *
  */
 export const listAdSets = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdSetsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdSetsResponse, ListAdSetsError, ThrowOnError>({
@@ -11970,37 +12995,28 @@ export const listAdSets = <ThrowOnError extends boolean = false>(options?: Optio
  * Create a standalone ad group
  * Creates an empty ad group under an existing campaign, ready for ads to be added later.
  *
- * Creates an ad group WITHOUT an ad (Google Ads compliance row C.190),
- * under an existing campaign. Ads join it later via `adSetId`
- * on POST /v1/ads/create. Google Ads and Reddit Ads; every other platform returns 501.
+ * The ad group is created WITHOUT an ad (Google Ads compliance row C.190). Ads join it later via `adSetId` on POST /v1/ads/create. Supports Google Ads and Reddit Ads; every other platform returns 501.
  *
- * **Reddit Ads** (`platform: reddit`): `adAccountId` (the Reddit ad
- * account id) is required and must be a selected ad account of the
- * connection (403 otherwise). When the campaign has no campaign budget,
- * send `budgetAmount` + `budgetType` (a lifetime budget needs
- * `endDate`); the ad group is optimized for the campaign's objective
- * (`promotedObject.customEventType` is required on a conversions
- * campaign, and the pixel must have received that event, else 422),
- * and bids with `bidStrategy`/`bidAmount` like POST /v1/ads/create.
- * Under campaign budget optimization the ad group takes the
- * campaign's bid, goal type, optimization event and pixel, and bid
- * fields return 400. The ad group must start no earlier than a future
- * campaign start and end no later than the campaign end (400
- * otherwise). `targeting` takes the same targeting object as
- * the other ad endpoints (no geo defaults to the US). A campaign of
- * another ad account returns 404, a Reddit Max campaign 422.
- * `maxCpc` and `customerId` are Google only (400 on Reddit), and the
- * Reddit fields return 400 on Google.
+ * **Reddit Ads** (`platform: reddit`)
  *
- * Created `PAUSED` unless `status: ACTIVE`. The new ad group has no ad
- * yet, so it will not appear in GET /v1/ads/tree (built purely from `ads`
- * rows) until one is added; use GET /v1/ads/ad-sets to see it in the
- * meantime. It can be read, edited and deleted through
- * `/v1/ads/ad-sets/{adSetId}` right away (targeting, schedule, name,
- * `status`, `budget` and bid fields). A budget on an ad group that spends
- * its campaign budget returns 422.
+ * - `adAccountId` (the Reddit ad account id) is required and must be a selected ad account of the connection (403 otherwise).
+ * - When the campaign has no campaign budget, send `budgetAmount` + `budgetType` (a lifetime budget needs `endDate`).
+ * - The ad group is optimized for the campaign's objective. `promotedObject.customEventType` is required on a conversions campaign, and the pixel must have received that event, else 422.
+ * - It bids with `bidStrategy`/`bidAmount` like POST /v1/ads/create.
+ * - Under campaign budget optimization the ad group takes the campaign's bid, goal type, optimization event and pixel, and bid fields return 400.
+ * - The ad group must start no earlier than a future campaign start and end no later than the campaign end (400 otherwise).
+ * - `targeting` takes the same targeting object as the other ad endpoints (no geo defaults to the US).
+ * - A campaign of another ad account returns 404, a Reddit Max campaign 422.
+ * - `maxCpc` and `customerId` are Google only (400 on Reddit), and the Reddit fields return 400 on Google.
+ *
+ * ### After creation
+ *
+ * Created `PAUSED` unless `status: ACTIVE`. The new ad group has no ad yet, so it will not appear in GET /v1/ads/tree (built purely from `ads` rows) until one is added. Use GET /v1/ads/ad-sets to see it in the meantime.
+ *
+ * It can be read, edited and deleted through `/v1/ads/ad-sets/{adSetId}` right away (targeting, schedule, name, `status`, `budget` and bid fields). A budget on an ad group that spends its campaign budget returns 422.
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
+ *
  */
 export const createAdSet = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdSetData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdSetResponse, CreateAdSetError, ThrowOnError>({
@@ -12016,12 +13032,13 @@ export const createAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * The copy is created paused so callers can review before launching.
  * `campaignId` retargets the copy into another campaign; omitted = the source's own campaign.
  *
- * Meta: ads and creatives are included by default (`deepCopy: true`). The ad set is copied
- * with Meta's `/copies` endpoint, then each of its ads (DELETED and ARCHIVED ones are skipped)
- * into the new ad set, so an ad set with any number of ads copies (Meta refuses a single deep
- * copy of 3 or more objects). `statusOption` applies to the ad set and every ad. If an ad copy
- * fails, the partial ad set copy is deleted and the request fails with Meta's error. Sync
- * discovery is triggered automatically (`syncAfter: false` to skip).
+ * **Meta:** ads and creatives are included by default (`deepCopy: true`).
+ *
+ * - The ad set is copied with Meta's `/copies` endpoint, then each of its ads (DELETED and ARCHIVED ones are skipped) into the new ad set.
+ * - So an ad set with any number of ads copies: Meta refuses a single deep copy of 3 or more objects.
+ * - `statusOption` applies to the ad set and every ad.
+ * - If an ad copy fails, the partial ad set copy is deleted and the request fails with Meta's error.
+ * - Sync discovery is triggered automatically (`syncAfter: false` to skip).
  *
  * TikTok: the ad group is read and recreated under the campaign with its targeting, bidding,
  * budget and schedule (start reset to now); `deepCopy: true` recreates its ads too (default
@@ -12040,16 +13057,23 @@ export const duplicateAdSet = <ThrowOnError extends boolean = false>(options: Op
  * Duplicate an ad
  * Copies a single Meta ad, optionally into another ad set, created paused so you can review it before launch.
  *
- * Duplicates a single ad via Meta's native `POST /{ad-id}/copies`. The copy is created
- * paused. `adSetId` retargets the copy into another ad set; omitted = the source's own ad
- * set. Accepts the Zernio ad id or the platform ad id. Sync discovery is triggered
- * automatically (`syncAfter: false` to skip). Creative settings returned by Meta,
- * including explicit promotion metadata and creativeFeatures, are preserved when the
- * native copy requires a creative rebuild. Metadata Meta does not return cannot be recovered.
- * When Meta refuses the native copy with its capability error (code 3), which happens for
- * some creatives built by other tools, the ad is rebuilt instead: a new creative from the
- * source's returned spec and a new ad in the target ad set, carrying the source name,
- * status option, rename options and tracking specs.
+ * It duplicates the ad via Meta's native `POST /{ad-id}/copies`. The copy is created paused.
+ *
+ * - `adSetId` retargets the copy into another ad set; omitted = the source's own ad set.
+ * - Accepts the Zernio ad id or the platform ad id.
+ * - Sync discovery is triggered automatically (`syncAfter: false` to skip).
+ *
+ * ### Creative settings
+ *
+ * Creative settings returned by Meta, including explicit promotion metadata and creativeFeatures, are preserved when the native copy requires a creative rebuild. Metadata Meta does not return cannot be recovered.
+ *
+ * ### Fallback rebuild
+ *
+ * When Meta refuses the native copy with its capability error (code 3), which happens for some creatives built by other tools, the ad is rebuilt instead:
+ *
+ * 1. A new creative from the source's returned spec.
+ * 2. A new ad in the target ad set, carrying the source name, status option, rename options and tracking specs.
+ *
  */
 export const duplicateAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DuplicateAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<DuplicateAdResponse, DuplicateAdError, ThrowOnError>({
@@ -12062,11 +13086,15 @@ export const duplicateAd = <ThrowOnError extends boolean = false>(options: Optio
  * Get live ad-set details
  * Shows a Meta ad set's current settings straight from Meta, including its learning phase, budget, schedule and targeting.
  *
- * Reads the ad set live from Meta, returned verbatim. The default projection includes
- * `learning_stage_info` (learning-phase status: LEARNING / SUCCESS / FAIL / WAIVING; Meta
- * omits its `status` key on paused ad sets), delivery settings, budgets, schedule, dayparting
- * (`adset_schedule`, `pacing_type`) and targeting. `fields` is a raw-passthrough override; unknown fields return Meta's 400
- * verbatim.
+ * The ad set is read live from Meta and returned verbatim. The default projection includes:
+ *
+ * - `learning_stage_info`: learning-phase status, LEARNING / SUCCESS / FAIL / WAIVING. Meta omits its `status` key on paused ad sets.
+ * - delivery settings, budgets and schedule
+ * - dayparting (`adset_schedule`, `pacing_type`)
+ * - targeting
+ *
+ * `fields` is a raw-passthrough override; unknown fields return Meta's 400 verbatim.
+ *
  */
 export const getAdSetDetails = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdSetDetailsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdSetDetailsResponse, GetAdSetDetailsError, ThrowOnError>({
@@ -12077,90 +13105,94 @@ export const getAdSetDetails = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Update an ad set
- * Changes an ad set's settings, such as its budget, bid strategy, status or delivery options.
+ * Changes an ad set's settings, such as its budget, bid strategy, status or delivery options. At least one updatable field is required.
  *
- * Use this for ABO budget updates, ad-set-scoped
- * pause/resume, bid-strategy edits, Meta value-rule-set attach/detach, Meta
- * beneficiary and payer (`dsaBeneficiary` / `dsaPayor` for the EU,
- * `regionalRegulatedCategories` / `regionalRegulationIdentities` for the
- * regional regimes), and
- * Meta-only post-launch delivery settings via `platformSpecificData`. At
- * least one updatable field is required.
+ * Use it for:
  *
- * Value rule sets (Meta only, see `/v1/ads/value-rule-sets`):
- * - ATTACH or REPLACE: send `valueRuleSetId`. Attachment is driven by the id's
- * presence, so `valueRulesApplied: true` is optional. Sending a different id
- * replaces the previous association; there is no separate replace call.
+ * - ABO budget updates.
+ * - Ad-set-scoped pause/resume.
+ * - Bid-strategy edits.
+ * - Meta value-rule-set attach/detach.
+ * - Meta beneficiary and payer: `dsaBeneficiary` / `dsaPayor` for the EU, `regionalRegulatedCategories` / `regionalRegulationIdentities` for the regional regimes.
+ * - Meta-only post-launch delivery settings via `platformSpecificData`.
+ *
+ * ### Value rule sets (Meta only)
+ *
+ * See `/v1/ads/value-rule-sets`.
+ *
+ * - ATTACH or REPLACE: send `valueRuleSetId`. Attachment is driven by the id's presence, so `valueRulesApplied: true` is optional. Sending a different id replaces the previous association; there is no separate replace call.
  * - DETACH: send `valueRulesApplied: false` and OMIT `valueRuleSetId`.
- * - Sending `valueRulesApplied: false` TOGETHER with `valueRuleSetId` returns 400
- * `mutually_exclusive_fields`. This is deliberate: Meta attaches the rule set
- * whenever `value_rule_set_id` is present, even with `value_rules_applied` false,
- * so echoing stored state while asking to detach would silently keep the bid
- * adjustments live.
- * - Eligibility: only ad sets on `LOWEST_COST_WITHOUT_CAP` or `COST_CAP`. Meta
- * rejects the rest server-side.
- * - Read back with `GET /v1/ads/ad-sets/{adSetId}?fields=value_rule_set_id`. Meta
- * does not document `value_rules_applied` as a readable ad-set field, so the
- * boolean cannot be read back.
+ * - Sending `valueRulesApplied: false` TOGETHER with `valueRuleSetId` returns 400 `mutually_exclusive_fields`.
+ * - Eligibility: only ad sets on `LOWEST_COST_WITHOUT_CAP` or `COST_CAP`. Meta rejects the rest server-side.
+ * - Read back with `GET /v1/ads/ad-sets/{adSetId}?fields=value_rule_set_id`. Meta does not document `value_rules_applied` as a readable ad-set field, so the boolean cannot be read back.
  *
- * Bid strategy compatibility (per Meta's spec):
+ * The `mutually_exclusive_fields` error is deliberate. Meta attaches the rule set whenever `value_rule_set_id` is present, even with `value_rules_applied` false, so echoing stored state while asking to detach would silently keep the bid adjustments live.
+ *
+ * ### Bid strategy compatibility (per Meta's spec)
+ *
  * - `LOWEST_COST_WITHOUT_CAP`: no `bidAmount`, no `roasAverageFloor`.
  * - `LOWEST_COST_WITH_BID_CAP` / `COST_CAP`: `bidAmount` REQUIRED (whole currency units).
  * - `LOWEST_COST_WITH_MIN_ROAS`: `roasAverageFloor` REQUIRED (decimal multiplier, e.g. 2.0 = 2.0x ROAS).
- * - Meta only: send `bidAmount` WITHOUT `bidStrategy` to change the cap amount on an ad set
- * whose strategy (its own, or the campaign's under CBO) is COST_CAP / LOWEST_COST_WITH_BID_CAP,
- * leaving the strategy untouched. Send `roasAverageFloor` WITHOUT `bidStrategy` the same way
- * to change the floor of a LOWEST_COST_WITH_MIN_ROAS ad set. Either field against an
- * incompatible current strategy is a 400.
- * - Meta CBO (the campaign holds the budget): the campaign also holds the bid strategy, so only
- * `bidAmount` or `roasAverageFloor` is written on the ad set. A `bidStrategy` equal to the
- * campaign's is accepted; a different one is a 409 (change it with
- * PUT /v1/ads/campaigns/{campaignId}).
  *
- * Delivery settings are validated by Meta against the campaign objective;
- * incompatible combinations (e.g. a billingEvent the optimization goal
- * doesn't allow) surface as 400s from Meta.
+ * Meta only: send `bidAmount` WITHOUT `bidStrategy` to change the cap amount on an ad set whose strategy (its own, or the campaign's under CBO) is COST_CAP / LOWEST_COST_WITH_BID_CAP, leaving the strategy untouched.
  *
- * When updating `budget` on an ad set whose campaign holds the budget
- * (CBO), the response is 409 with code `invalid_field_value`. Send it to
- * PUT /v1/ads/campaigns/{campaignId} instead.
+ * Send `roasAverageFloor` WITHOUT `bidStrategy` the same way to change the floor of a LOWEST_COST_WITH_MIN_ROAS ad set. Either field against an incompatible current strategy is a 400.
  *
- * Reddit Ads: `budget` changes the ad group's amount; an ad group that spends its
- * campaign budget returns 422 (update the campaign instead), and Reddit cannot switch
- * a published budget between daily and lifetime, so `budget.type` must match the
- * current one (422 otherwise). `name` renames the ad group. `bidStrategy` maps to the
- * ad group's `bid_strategy`: LOWEST_COST_WITHOUT_CAP = automatic bidding (BIDLESS),
- * LOWEST_COST_WITH_BID_CAP = MANUAL_BIDDING with `bidAmount` as the bid, COST_CAP =
- * MAXIMIZE_VOLUME with `bidAmount` as the cap; LOWEST_COST_WITH_MIN_ROAS returns 422.
+ * Meta CBO (the campaign holds the budget): the campaign also holds the bid strategy, so only `bidAmount` or `roasAverageFloor` is written on the ad set. A `bidStrategy` equal to the campaign's is accepted; a different one is a 409 (change it with PUT /v1/ads/campaigns/{campaignId}).
  *
- * `status` behaves exactly as PUT /v1/ads/ad-sets/{adSetId}/status
- * describes: only the ad set's own switch is written, its ads keep
- * theirs, and `statusUpdated` / `statusSkipped` report whether that switch
- * was written or a live read showed it already in place.
+ * ### Delivery settings and budget
  *
- * Placements and targeting (Meta only): `placements` and `targeting` take the same shapes
- * as POST /v1/ads/create. Meta replaces an ad set's targeting wholesale, so Zernio reads
- * the live targeting first, changes only what the request names and writes the merged
- * spec back: custom audiences, geo, age, interest groups and `targeting_automation` you do
- * not send are kept. `placements` replaces the whole placement set, `placements: null`
- * returns the ad set to automatic placements, and omitting it leaves placements as they
- * are. Other platforms return 400 for either field before anything in the request is
- * written (use PUT /v1/ads/{adId} with `targeting` where that platform supports it). The
- * live read and the `incomeTier` lookup run before any other field is written, so a 502
- * or 422 from them leaves the ad set unchanged.
+ * Delivery settings are validated by Meta against the campaign objective. Incompatible combinations (e.g. a billingEvent the optimization goal doesn't allow) surface as 400s from Meta.
  *
- * Reddit ad group targeting and schedule: `targeting` (same shape as on create, `placements`
- * is a 400) and `startDate` / `endDate` change the ad group with one PATCH to Reddit. Zernio
- * reads the live ad group first and replaces only the targeting groups the request names:
- * the included locations (`countries`, `regions`, `metros`, `cities`, `zips`) are one list
- * on Reddit, so sending any of them replaces all included locations, and devices, platforms,
- * carriers and automated expansion set in Reddit Ads Manager are kept. Read the current
- * values with GET /v1/ads/ad-sets/{adSetId}/targeting. The schedule is checked against the
- * campaign before anything in the request is written: an ad group cannot start before a
- * campaign that starts in the future, cannot end after the campaign's end, and under
- * campaign budget optimization it must end by the campaign end (and has no end date when the
- * campaign has none); each returns 400 naming `startDate` or `endDate`. Zernio never resends
- * the PATCH on its own, so after a 5xx read the ad group back before retrying.
+ * When updating `budget` on an ad set whose campaign holds the budget (CBO), the response is 409 with code `invalid_field_value`. Send it to PUT /v1/ads/campaigns/{campaignId} instead.
+ *
+ * ### Status
+ *
+ * `status` behaves exactly as PUT /v1/ads/ad-sets/{adSetId}/status describes. Only the ad set's own switch is written and its ads keep theirs. `statusUpdated` / `statusSkipped` report whether that switch was written or a live read showed it already in place.
+ *
+ * ### Placements and targeting (Meta only)
+ *
+ * `placements` and `targeting` take the same shapes as POST /v1/ads/create. Meta replaces an ad set's targeting wholesale, so Zernio reads the live targeting first, changes only what the request names and writes the merged spec back.
+ *
+ * Custom audiences, geo, age, interest groups and `targeting_automation` you do not send are kept.
+ *
+ * - `placements` replaces the whole placement set.
+ * - `placements: null` returns the ad set to automatic placements.
+ * - Omitting it leaves placements as they are.
+ *
+ * Other platforms return 400 for either field before anything in the request is written (use PUT /v1/ads/{adId} with `targeting` where that platform supports it).
+ *
+ * The live read and the `incomeTier` lookup run before any other field is written, so a 502 or 422 from them leaves the ad set unchanged.
+ *
+ * ### Reddit Ads: budget, name and bidding
+ *
+ * - `budget` changes the ad group's amount. An ad group that spends its campaign budget returns 422 (update the campaign instead).
+ * - Reddit cannot switch a published budget between daily and lifetime, so `budget.type` must match the current one (422 otherwise).
+ * - `name` renames the ad group.
+ *
+ * `bidStrategy` maps to the ad group's `bid_strategy`:
+ *
+ * - LOWEST_COST_WITHOUT_CAP: automatic bidding (BIDLESS).
+ * - LOWEST_COST_WITH_BID_CAP: MANUAL_BIDDING with `bidAmount` as the bid.
+ * - COST_CAP: MAXIMIZE_VOLUME with `bidAmount` as the cap.
+ * - LOWEST_COST_WITH_MIN_ROAS: returns 422.
+ *
+ * ### Reddit Ads: targeting and schedule
+ *
+ * `targeting` (same shape as on create; `placements` is a 400) and `startDate` / `endDate` change the ad group with one PATCH to Reddit. Read the current values with GET /v1/ads/ad-sets/{adSetId}/targeting.
+ *
+ * Zernio reads the live ad group first and replaces only the targeting groups the request names:
+ *
+ * - The included locations (`countries`, `regions`, `metros`, `cities`, `zips`) are one list on Reddit, so sending any of them replaces all included locations.
+ * - Devices, platforms, carriers and automated expansion set in Reddit Ads Manager are kept.
+ *
+ * The schedule is checked against the campaign before anything in the request is written. Each of these returns 400 naming `startDate` or `endDate`:
+ *
+ * - The ad group starts before a campaign that starts in the future.
+ * - The ad group ends after the campaign's end.
+ * - Under campaign budget optimization, it must end by the campaign end (and has no end date when the campaign has none).
+ *
+ * Zernio never resends the PATCH on its own, so after a 5xx read the ad group back before retrying.
  *
  */
 export const updateAdSet = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdSetData, ThrowOnError>) => {
@@ -12194,13 +13226,14 @@ export const deleteAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * Read a Reddit ad group's targeting and schedule
  * Shows a Reddit ad group's live targeting and schedule in the same shape PUT /v1/ads/ad-sets/{adSetId} takes, so you can prefill an editor.
  *
- * Read live from Reddit on every call. Location and interest names are resolved with
- * Reddit's targeting taxonomy; when Reddit cannot resolve them the ids stand in as names and
- * a location that is not a two-letter country is listed under `regions`. Excluded DMAs are
- * listed under `excludedLocations.regions`, since excluded locations have no metro list.
- * Languages come back as lowercase ISO 639-1 codes. Targeting Zernio cannot edit (devices,
- * platforms, carriers, automated expansion) is left out and kept on every edit. Reddit only;
- * every other platform returns 501.
+ * It is read live from Reddit on every call. Reddit only; every other platform returns 501.
+ *
+ * ### How fields come back
+ *
+ * - Location and interest names are resolved with Reddit's targeting taxonomy. When Reddit cannot resolve them the ids stand in as names, and a location that is not a two-letter country is listed under `regions`.
+ * - Excluded DMAs are listed under `excludedLocations.regions`, since excluded locations have no metro list.
+ * - Languages come back as lowercase ISO 639-1 codes.
+ * - Targeting Zernio cannot edit (devices, platforms, carriers, automated expansion) is left out and kept on every edit.
  *
  */
 export const getAdSetTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdSetTargetingData, ThrowOnError>) => {
@@ -12214,33 +13247,36 @@ export const getAdSetTargeting = <ThrowOnError extends boolean = false>(options:
  * Pause or resume a single ad set
  * Pauses or resumes one ad set without touching its campaign, its sibling ad sets or the switches of its ads.
  *
- * Thin wrapper
- * over PUT /v1/ads/ad-sets/{adSetId} for callers that only want the
- * status toggle and prefer a symmetric URL to
- * /v1/ads/campaigns/{campaignId}/status.
+ * It is a thin wrapper over PUT /v1/ads/ad-sets/{adSetId} for callers that only want the status toggle and prefer a symmetric URL to /v1/ads/campaigns/{campaignId}/status.
  *
- * Writes the ad set's own on/off switch and nothing else, on every platform
- * (Meta `configured_status`, TikTok ad group `operation_status`, Google ad
- * group status, LinkedIn campaign, Pinterest ad group, X line item, ChatGPT
- * (OpenAI) ad group, Reddit ad group `configured_status`). Its ads keep their own switches: an ad you paused
- * individually stays paused when the ad set resumes. The campaign above is
- * not touched either, so an ad set resumed under a paused campaign reads
- * `status: paused` until the campaign is resumed too. See the Status model
- * in the Ad Campaigns tag.
+ * ### What is written
  *
- * **Live read, then write.** The ad set's switch is read from the platform
- * first. When that live read shows it already in the requested state
- * nothing is written (`updated: 0`, `skipped: 1`, with the reason), and
- * when the ad set delivers in that state but some of its ads are stored in
- * the other state, those ads (up to 20, at most once every 10 minutes per
- * ad set) are re-read and stored.
- * Otherwise the switch is written (`updated: 1`), read back and stored, and
- * the delivery status of its ads (up to 20) is re-read and stored, so an
- * immediate GET returns what the platform now reports. A stored switch
- * never skips a write, and when the platform cannot be read the write
- * always goes out. On Meta and Reddit the check reads the ad set's own
- * switch (`status` / `configured_status`), so a repeated request skips even
- * while `platformAdSetStatus` reads `CAMPAIGN_PAUSED`, `WITH_ISSUES` or `IN_PROCESS`.
+ * It writes the ad set's own on/off switch and nothing else, on every platform:
+ *
+ * - Meta: `configured_status`
+ * - TikTok: ad group `operation_status`
+ * - Google: ad group status
+ * - LinkedIn: campaign
+ * - Pinterest: ad group
+ * - X: line item
+ * - ChatGPT (OpenAI): ad group
+ * - Reddit: ad group `configured_status`
+ *
+ * Its ads keep their own switches: an ad you paused individually stays paused when the ad set resumes.
+ *
+ * The campaign above is not touched either, so an ad set resumed under a paused campaign reads `status: paused` until the campaign is resumed too. See the Status model in the Ad Campaigns tag.
+ *
+ * ### Live read, then write
+ *
+ * The ad set's switch is read from the platform first.
+ *
+ * - When that live read shows it already in the requested state, nothing is written (`updated: 0`, `skipped: 1`, with the reason).
+ * - In that case, when the ad set delivers in that state but some of its ads are stored in the other state, those ads (up to 20, at most once every 10 minutes per ad set) are re-read and stored.
+ * - Otherwise the switch is written (`updated: 1`), read back and stored. The delivery status of its ads (up to 20) is re-read and stored, so an immediate GET returns what the platform now reports.
+ *
+ * A stored switch never skips a write, and when the platform cannot be read the write always goes out.
+ *
+ * On Meta and Reddit the check reads the ad set's own switch (`status` / `configured_status`). So a repeated request skips even while `platformAdSetStatus` reads `CAMPAIGN_PAUSED`, `WITH_ISSUES` or `IN_PROCESS`.
  *
  */
 export const updateAdSetStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdSetStatusData, ThrowOnError>) => {
@@ -12254,29 +13290,33 @@ export const updateAdSetStatus = <ThrowOnError extends boolean = false>(options:
  * Get campaign tree
  * Shows your campaigns with their ad sets and ads nested inside, with spend and results rolled up at every level.
  *
- * Uses a two-stage aggregation: ads are grouped into ad sets, then ad sets into campaigns.
- * Metrics are computed over an optional date range, then rolled up from ad level to ad set
- * and campaign levels. Pagination is at the campaign level. Ads without a campaign or ad set
- * ID are grouped into synthetic "Ungrouped" buckets.
- * If no date range is provided, defaults to the last 90 days. Date range is capped at 730 days max.
+ * ### How it aggregates
  *
- * History: when an ad account connects, Zernio imports its last 90 days of metrics, so the
- * metrics hold no data for days before that. When `accountId` or `adAccountId` resolves to a
- * Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the
- * covered part while the older days (up to 730 days back) are imported in the background;
- * repeat the request until it returns 200.
- * A request scoped to no Meta account never returns `202`.
+ * Uses a two-stage aggregation: ads are grouped into ad sets, then ad sets into campaigns. Metrics are computed over an optional date range, then rolled up from ad level to ad set and campaign levels.
  *
- * Pass `timeIncrement=1` to also get a daily breakdown: each node gains a `daily[]` array of
- * per-day metrics (same fields as the aggregated `metrics`) in the same call. Use `dailyLevel`
- * (`campaign` default, or `adset` / `ad`) to choose which levels carry the series. This replaces
- * calling the tree once per day for per-campaign daily trends.
+ * - Pagination is at the campaign level.
+ * - Ads without a campaign or ad set ID are grouped into synthetic "Ungrouped" buckets.
+ * - If no date range is provided, defaults to the last 90 days. Date range is capped at 730 days max.
  *
- * **Deleted objects stay in the tree.** Deleting an ad or a campaign is a soft delete: the Ad
- * documents move to `status: cancelled` and are kept indefinitely, so their historical spend
- * still counts toward the metrics of any date range they fall in. There is no pruning job and
- * no retention window. Filter on `status` if your view should hide them, but do that after
- * reading the totals, not before.
+ * ### History
+ *
+ * When an ad account connects, Zernio imports its last 90 days of metrics, so the metrics hold no data for days before that.
+ *
+ * When `accountId` or `adAccountId` resolves to a Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the covered part.
+ *
+ * The older days (up to 730 days back) are imported in the background; repeat the request until it returns 200. A request scoped to no Meta account never returns `202`.
+ *
+ * ### Daily breakdown
+ *
+ * Pass `timeIncrement=1` to also get a daily breakdown: each node gains a `daily[]` array of per-day metrics (same fields as the aggregated `metrics`) in the same call.
+ *
+ * Use `dailyLevel` (`campaign` default, or `adset` / `ad`) to choose which levels carry the series. This replaces calling the tree once per day for per-campaign daily trends.
+ *
+ * ### Deleted objects stay in the tree
+ *
+ * Deleting an ad or a campaign is a soft delete: the Ad documents move to `status: cancelled` and are kept indefinitely. Their historical spend still counts toward the metrics of any date range they fall in. There is no pruning job and no retention window.
+ *
+ * Filter on `status` if your view should hide them, but do that after reading the totals, not before.
  *
  */
 export const getAdTree = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetAdTreeData, ThrowOnError>) => {
@@ -12290,26 +13330,23 @@ export const getAdTree = <ThrowOnError extends boolean = false>(options?: Option
  * Get daily account metrics
  * Returns an ads account's spend, results and other metrics day by day, ready for a daily performance chart.
  *
- * Returns daily aggregate metrics across all ads in a SocialAccount as a single
- * time series, one row per calendar day and currency in the requested range (one row
- * per day unless the account's ad accounts bill in different currencies). Use this for
- * dashboards that draw a daily-spend or daily-conversions chart, instead of
- * calling `/v1/ads/tree` once per day.
+ * The result is a single time series of daily aggregate metrics across all ads in a SocialAccount: one row per calendar day and currency in the requested range (one row per day unless the account's ad accounts bill in different currencies).
  *
- * `accountId` is required. The lookup is sibling-expanded so passing the `metaads`
- * ID also includes ads under the linked `facebook` / `instagram` posting account
- * (and vice-versa), the same convention as `/v1/ads/tree` and `/v1/ads`.
+ * Use this for dashboards that draw a daily-spend or daily-conversions chart, instead of calling `/v1/ads/tree` once per day.
  *
- * Date range defaults to the last 90 days. Capped at 730 days.
+ * ### Parameters
  *
- * History: when an ad account connects, Zernio imports its last 90 days of metrics, so `rows`
- * hold no data for days before that. When `accountId` or `adAccountId` resolves to a Meta ad
- * account, a range reaching further back answers `202` with `backfillPending: true` and the
- * covered part while the older days (up to 730 days back) are imported in the background;
- * repeat the request until it returns 200.
+ * - `accountId` is required. The lookup is sibling-expanded, so passing the `metaads` ID also includes ads under the linked `facebook` / `instagram` posting account (and vice-versa), the same convention as `/v1/ads/tree` and `/v1/ads`.
+ * - Date range defaults to the last 90 days. Capped at 730 days.
+ * - With adAccountId set to a Google customer id this is the customer-level performance report (clicks, cost, impressions, conversions, all conversions per day).
+ *
+ * ### History
+ *
+ * When an ad account connects, Zernio imports its last 90 days of metrics, so `rows` hold no data for days before that.
+ *
+ * When `accountId` or `adAccountId` resolves to a Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the covered part. The older days (up to 730 days back) are imported in the background; repeat the request until it returns 200.
+ *
  * Other platforms never return `202`.
- *
- * With adAccountId set to a Google customer id this is the customer-level performance report (clicks, cost, impressions, conversions, all conversions per day).
  *
  */
 export const getAdsTimeline = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdsTimelineData, ThrowOnError>) => {
@@ -12323,53 +13360,60 @@ export const getAdsTimeline = <ThrowOnError extends boolean = false>(options: Op
  * Get ad details
  * Shows one ad with its creative, targeting, status and performance metrics.
  *
- * Google Search ads include current creative.headlines, creative.descriptions and creative.finalUrls,
- * preserving pinnedField. Top-level cachedAt and stale report cache freshness. Google mutations invalidate this read.
- * RSA enrichment requires a stored advertisingChannelType of SEARCH. Ads with an unknown or other channel
- * return their stored details without a Google read. If RSA enrichment fails, the stored ad is returned
- * with HTTP 200 and without cache metadata.
+ * ### Google Search ads
+ *
+ * Google Search ads include current creative.headlines, creative.descriptions and creative.finalUrls, preserving pinnedField. Top-level cachedAt and stale report cache freshness. Google mutations invalidate this read.
+ *
+ * RSA enrichment requires a stored advertisingChannelType of SEARCH. Ads with an unknown or other channel return their stored details without a Google read. If RSA enrichment fails, the stored ad is returned with HTTP 200 and without cache metadata.
+ *
+ * ### Accepted ad ids
  *
  * The `{adId}` path segment accepts any identifier dialect Zernio indexes for the ad:
+ *
  * - the Zernio internal `_id` (24-char hex)
  * - Meta's numeric `platformAdId` (the value shipped in `comment.received` webhooks as `comment.ad.id`)
  * - the creative's `effective_object_story_id` (`{pageId}_{postId}` shape, Facebook side)
  * - the creative's `effective_instagram_media_id` (Instagram side)
+ * - an Instagram media id an ad comment arrived on (`comment.platformPostId` of a `comment.received` carrying `comment.ad.id`), including the extra media Meta creates for placement variants
  *
- * - an Instagram media id an ad comment arrived on (`comment.platformPostId` of a `comment.received`
- * carrying `comment.ad.id`), including the extra media Meta creates for placement variants
+ * Any of these resolve to the same ad, so the caller doesn't need a translation step.
  *
- * Any of these resolve to the same ad. Caller doesn't need a translation step.
- * `creative.creativeFeatures` holds the stored requested settings, which do not confirm
- * platform application.
+ * `creative.creativeFeatures` holds the stored requested settings, which do not confirm platform application.
  *
- * **Facebook ad dark posts.** Meta gives an ad with per-placement assets one extra unpublished
- * post per placement, and comments land on it. Meta exposes no link from that post to its ad.
- * When exactly one ad on the Page, created before the dark post, carries the same copy as the
- * post, the dark post id resolves to that ad. Otherwise, when the id is a dark post Zernio has
- * seen comments on and its Page is connected, the response is `ad: null` plus `darkPost`, which
- * carries the Meta Ads account and the ad accounts running ads for that Page. Read its comments
- * with GET /v1/ads/{adId}/comments using the same id.
+ * ### Facebook ad dark posts
  *
- * **Status freshness.** `status`, `configuredStatus`, `platformStatus`, `platformAdSetStatus`
- * and `platformCampaignStatus` are the values Zernio last stored. Background sync refreshes
- * them, typically within 15 to 60 minutes (Google up to about 3 hours), and ended or
- * long-paused objects may be refreshed less often. Zernio's own status writes re-read the
- * switches they change. A change made in the platform's own ads manager therefore shows up
- * here only after the next sync. Controllers that act on a switch should pass `live=true`,
- * which reads the switches from the platform now, stores them, and returns `statusReadAt`
- * (null when the read failed and the stored values were returned).
- * With `live=true` the ad's own switch (`configuredStatus`), its delivery status (`status`,
- * `platformStatus`) and its ad set and campaign switches (`platformAdSetStatus`,
- * `platformCampaignStatus`) are read live.
+ * Meta gives an ad with per-placement assets one extra unpublished post per placement, and comments land on it. Meta exposes no link from that post to its ad.
  *
- * **Meta ads that are not synced yet.** Pass `accountId` with a Meta `platformAdId` to read an ad
- * Zernio has not synced (for example one created in Ads Manager on an ad account reached only
- * through a Facebook connection). The ad is read live from Meta and mapped exactly like a synced
- * row (name, `status`, `platformStatus`, `configuredStatus`, `platformAdSetId`,
- * `platformCampaignId`, campaign and ad set names, budgets, and `creative` with its `id`, body,
- * link, image and video), with `synced: false`, no `id` (it has no Zernio row) and `statusReadAt`
- * set to the time of the read. Synced ads answer `synced: true`. Only a numeric id takes this
- * path, so dark post ids (`{pageId}_{postId}`) keep the dark post lookup above.
+ * - When exactly one ad on the Page, created before the dark post, carries the same copy as the post, the dark post id resolves to that ad.
+ * - Otherwise, when the id is a dark post Zernio has seen comments on and its Page is connected, the response is `ad: null` plus `darkPost`. It carries the Meta Ads account and the ad accounts running ads for that Page.
+ *
+ * Read its comments with GET /v1/ads/{adId}/comments using the same id.
+ *
+ * ### Status freshness
+ *
+ * `status`, `configuredStatus`, `platformStatus`, `platformAdSetStatus` and `platformCampaignStatus` are the values Zernio last stored.
+ *
+ * Background sync refreshes them, typically within 15 to 60 minutes (Google up to about 3 hours), and ended or long-paused objects may be refreshed less often.
+ *
+ * Zernio's own status writes re-read the switches they change. A change made in the platform's own ads manager therefore shows up here only after the next sync.
+ *
+ * Controllers that act on a switch should pass `live=true`. It reads the switches from the platform now, stores them, and returns `statusReadAt` (null when the read failed and the stored values were returned).
+ *
+ * With `live=true` these are read live:
+ *
+ * - the ad's own switch (`configuredStatus`)
+ * - its delivery status (`status`, `platformStatus`)
+ * - its ad set and campaign switches (`platformAdSetStatus`, `platformCampaignStatus`)
+ *
+ * ### Meta ads that are not synced yet
+ *
+ * Pass `accountId` with a Meta `platformAdId` to read an ad Zernio has not synced (for example one created in Ads Manager on an ad account reached only through a Facebook connection).
+ *
+ * The ad is read live from Meta and mapped exactly like a synced row: name, `status`, `platformStatus`, `configuredStatus`, `platformAdSetId`, `platformCampaignId`, campaign and ad set names, budgets, and `creative` with its `id`, body, link, image and video.
+ *
+ * It comes back with `synced: false`, no `id` (it has no Zernio row) and `statusReadAt` set to the time of the read. Synced ads answer `synced: true`.
+ *
+ * Only a numeric id takes this path, so dark post ids (`{pageId}_{postId}`) keep the dark post lookup above.
  *
  */
 export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdData, ThrowOnError>) => {
@@ -12383,104 +13427,91 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  * Update ad
  * Changes an ad's status, budget, targeting or creative and applies the change on the platform.
  *
- * Patch one or more fields on an ad. Status, budget, targeting, and creative changes
- * are propagated to the platform.
+ * Patch one or more fields on an ad. Status, budget, targeting, and creative changes are propagated to the platform.
  *
- * Per-platform support:
+ * ### Per-platform support
+ *
  * - **Meta** (Facebook + Instagram): all fields supported.
- * - **TikTok**: status, budget, `name` (renames the ad), targeting (via `/v2/adgroup/update/`), and creative
- * (via `/v2/ad/update/` patch-style: `headline` is ignored, `body` becomes `ad_text`).
- * - **Google**: status, budget, KEYWORD edits via `targeting.keywords` /
- * `targeting.negativeKeywords`, DEVICE bid adjustments via `targeting.devices`,
- * LOCATION edits via `targeting.locations` (or the equivalent top-level
- * `targeting.countries` / `regions` / `cities` / `zips` / `metros`), and LANGUAGE
- * edits via `targeting.languages`.
- * Each list you send becomes the FULL new set of its kind (criteria not in the
- * list are removed, except devices, which Google cannot remove and which are
- * switched off with a bid modifier of 0 instead); a kind left out is untouched.
- * Any other `targeting` field
- * returns 400: Google cannot mutate it post-create without recreating
- * the campaign. Creative edits are dispatched on the ad's `advertisingChannelType`,
- * and every supported field replaces a whole set; a field you omit is preserved.
- * - **Search**: top-level `headlines`, `descriptions` and `finalUrls`. Use 3-15 headlines
- * (1-30 characters) and 2-4 descriptions (1-90 characters). Omit an asset to remove it;
- * omit pinnedField on an included asset to unpin it. Updates do not pad or truncate text.
- * The legacy creative fields remain unsupported.
- * - **Display**: top-level `headlines` (1-5, no pinnedField, display ads have no pinned
- * positions), `descriptions` (1-5) and `finalUrls`, plus `creative.longHeadline`,
- * `creative.businessName`, `creative.imageUrl` (the landscape marketing image) and
- * `creative.squareImageUrl`. Each image URL is uploaded as a new Google asset and the ad
- * is pointed at it; Google assets are immutable, so the previous asset stays in the
- * account's asset library. A new landscape image also updates `creative.assetResourceName`
- * to the new asset, and each replaced image updates its own role in `creative.assets`.
- * - **Performance Max**: top-level `assetGroup`, which swaps asset roles on the ad's asset
- * group. The other creative fields return 422 for this channel, and `assetGroup` returns
- * 422 on any other channel.
- * - **Demand Gen**: top-level `demandGen` (see GoogleDemandGenUpdate): creative, channel
- * and audience changes in one atomic Google request. The other creative fields return
- * 422 for this channel. `targeting` takes locations, languages, `locationTargetingType`
- * and `devices`; locations and languages are written to the ad's ad group, which
- * Demand Gen requires (campaigns migrated from Discovery that still target on the
- * campaign keep being written there), so they apply to every ad in that ad group.
- * - **LinkedIn**: status, budget, targeting (countries or regions, excludedLocations (countries),
- * the B2B facets, and audience segments; applied to the LinkedIn Campaign via
- * PARTIAL_UPDATE, and REPLACES the campaign's entire targetingCriteria, not a merge),
- * and creative (uploads new media, creates a replacement inline creative on the same
- * campaign, pauses the old one).
- * - **Pinterest / X / OpenAI Ads**: status + budget only. Sending
- * `targeting` or `creative` returns 501 with code `feature_not_available`.
- * OpenAI Ads budget is the campaign's spend cap, daily or lifetime (see `budget.type` below).
- * - **Reddit Ads**: status, budget, `name` (renames the ad) and targeting. `budget` goes to
- * the ad's ad group, or to its campaign when the ad group spends a campaign budget, and
- * keeps its daily or lifetime type (422 to switch). `targeting` REPLACES the ad group's
- * whole targeting (geo, communities, conversation keywords, interests, audiences,
- * languages, gender), so it applies to every ad in the ad group. `creative` returns 501:
- * a Reddit ad runs a post, so create a new ad with the new creative instead.
+ * - **TikTok**: status, budget, `name` (renames the ad), targeting (via `/v2/adgroup/update/`), and creative (via `/v2/ad/update/` patch-style: `headline` is ignored, `body` becomes `ad_text`).
+ * - **Google**: see the Google sections below.
+ * - **LinkedIn**: status, budget, targeting and creative (details below).
+ * - **Pinterest / X / OpenAI Ads**: status + budget only. Sending `targeting` or `creative` returns 501 with code `feature_not_available`. OpenAI Ads budget is the campaign's spend cap, daily or lifetime (see `budget.type` below).
+ * - **Reddit Ads**: status, budget, `name` (renames the ad) and targeting (details below).
  *
- * **Google location and language replacement:** locations, languages and devices are
- * campaign-level criteria on Google, so these edits apply to every ad group and ad in
- * the ad's campaign. Send the complete list you want to keep. Zernio diffs it against
- * the campaign's live criteria and sends the removes and the creates in ONE
- * `googleAds:mutate`, so the campaign is never left with a half-applied set; criteria
- * already in the list keep their criterion ID and history. Excluded (negative)
- * locations are left untouched. An empty location list returns 400 (a Google campaign
- * with no location criteria targets every country, which is never what "remove my
- * locations" means, so omit the field instead). Send either `targeting.locations` or the
- * top-level geo fields, not both: mixing them returns 400.
+ * ### Google
  *
- * **Google radius targeting:** `customLocations` is editable and is replaced the same
- * way, but as its OWN set. Google models a place (LOCATION) and a point plus radius
- * (PROXIMITY) as different criterion types, so the two are independent: sending
- * `customLocations` replaces every radius and leaves the cities and countries alone,
- * and sending places replaces those and leaves the radius alone. Send
- * `customLocations: []` to drop radius targeting entirely. A circle you re-send
- * unchanged keeps its criterion ID rather than being removed and recreated.
+ * Supported: status, budget, and these targeting edits:
  *
- * **Google keyword replacement:** These edits affect the ad's entire ad group,
- * including sibling ads. Positive (`targeting.keywords`) and negative
- * (`targeting.negativeKeywords`) sets are independent: omit a field to leave
- * that set unchanged, or send `[]` to remove every keyword of that kind.
+ * - KEYWORD edits via `targeting.keywords` / `targeting.negativeKeywords`
+ * - DEVICE bid adjustments via `targeting.devices`
+ * - LOCATION edits via `targeting.locations` (or the equivalent top-level `targeting.countries` / `regions` / `cities` / `zips` / `metros`)
+ * - LANGUAGE edits via `targeting.languages`
  *
- * Zernio compares each supplied set with Google's live criteria by
- * case-insensitive keyword text and match type. A matching criterion is left
- * untouched, retaining its criterion ID, enabled/paused status, keyword-level
- * bid overrides, labels, and criterion-associated history/statistics. Zernio
- * does not reset its quality score; Google continues to calculate scores and
- * statistics normally. Text comparison does not trim whitespace.
+ * Each list you send becomes the FULL new set of its kind: criteria not in the list are removed. Devices are the exception: Google cannot remove them, so they are switched off with a bid modifier of 0 instead. A kind left out is untouched.
  *
- * A bare string or an object without `matchType` means `broad`, not the
- * existing criterion's match type. For example, resending an existing
- * `{ "text": "plumber", "matchType": "exact" }` preserves it; sending
- * `"plumber"` instead removes that EXACT criterion and requests a BROAD one.
- * Changing text or match type removes criteria no longer requested and
- * creates any missing criteria. New criteria get new IDs and do not inherit
- * removed criteria's bid overrides, labels, or history. Historical reporting
- * for a removed criterion is not transferred to its replacement.
+ * Any other `targeting` field returns 400: Google cannot mutate it post-create without recreating the campaign.
  *
- * To add keywords without replacing a set, use
- * [POST /v1/ads/keywords](https://docs.zernio.com/ad-campaigns/add-ad-keywords).
- * Use `PATCH /v1/ads/keywords/{keywordId}` to pause/enable one keyword, or
- * `DELETE /v1/ads/keywords/{keywordId}` to remove it.
+ * Creative edits are dispatched on the ad's `advertisingChannelType`. Every supported field replaces a whole set; a field you omit is preserved.
+ *
+ * - **Search**: top-level `headlines`, `descriptions` and `finalUrls`. Use 3-15 headlines (1-30 characters) and 2-4 descriptions (1-90 characters). Omit an asset to remove it; omit pinnedField on an included asset to unpin it. Updates do not pad or truncate text. The legacy creative fields remain unsupported.
+ * - **Display**: top-level `headlines` (1-5, no pinnedField, display ads have no pinned positions), `descriptions` (1-5) and `finalUrls`, plus `creative.longHeadline`, `creative.businessName`, `creative.imageUrl` (the landscape marketing image) and `creative.squareImageUrl`.
+ * - **Performance Max**: top-level `assetGroup`, which swaps asset roles on the ad's asset group. The other creative fields return 422 for this channel, and `assetGroup` returns 422 on any other channel.
+ * - **Demand Gen**: top-level `demandGen` (see GoogleDemandGenUpdate): creative, channel and audience changes in one atomic Google request. The other creative fields return 422 for this channel.
+ *
+ * For Display, each image URL is uploaded as a new Google asset and the ad is pointed at it.
+ *
+ * Google assets are immutable, so the previous asset stays in the account's asset library. A new landscape image also updates `creative.assetResourceName` to the new asset, and each replaced image updates its own role in `creative.assets`.
+ *
+ * For Demand Gen, `targeting` takes locations, languages, `locationTargetingType` and `devices`. Locations and languages are written to the ad's ad group, which Demand Gen requires, so they apply to every ad in that ad group. Campaigns migrated from Discovery that still target on the campaign keep being written there.
+ *
+ * ### LinkedIn
+ *
+ * - **Status and budget**: supported.
+ * - **Targeting**: countries or regions, excludedLocations (countries), the B2B facets, and audience segments. Applied to the LinkedIn Campaign via PARTIAL_UPDATE, and REPLACES the campaign's entire targetingCriteria, not a merge.
+ * - **Creative**: uploads new media, creates a replacement inline creative on the same campaign, and pauses the old one.
+ *
+ * ### Reddit Ads
+ *
+ * - `budget` goes to the ad's ad group, or to its campaign when the ad group spends a campaign budget. It keeps its daily or lifetime type (422 to switch).
+ * - `targeting` REPLACES the ad group's whole targeting (geo, communities, conversation keywords, interests, audiences, languages, gender), so it applies to every ad in the ad group.
+ * - `creative` returns 501: a Reddit ad runs a post, so create a new ad with the new creative instead.
+ *
+ * ### Google location and language replacement
+ *
+ * Locations, languages and devices are campaign-level criteria on Google, so these edits apply to every ad group and ad in the ad's campaign. Send the complete list you want to keep.
+ *
+ * Zernio diffs it against the campaign's live criteria and sends the removes and the creates in ONE `googleAds:mutate`, so the campaign is never left with a half-applied set. Criteria already in the list keep their criterion ID and history. Excluded (negative) locations are left untouched.
+ *
+ * - An empty location list returns 400. A Google campaign with no location criteria targets every country, which is never what "remove my locations" means, so omit the field instead.
+ * - Send either `targeting.locations` or the top-level geo fields, not both: mixing them returns 400.
+ *
+ * ### Google radius targeting
+ *
+ * `customLocations` is editable and is replaced the same way, but as its OWN set. Google models a place (LOCATION) and a point plus radius (PROXIMITY) as different criterion types, so the two are independent:
+ *
+ * - Sending `customLocations` replaces every radius and leaves the cities and countries alone.
+ * - Sending places replaces those and leaves the radius alone.
+ * - Send `customLocations: []` to drop radius targeting entirely.
+ *
+ * A circle you re-send unchanged keeps its criterion ID rather than being removed and recreated.
+ *
+ * ### Google keyword replacement
+ *
+ * These edits affect the ad's entire ad group, including sibling ads. Positive (`targeting.keywords`) and negative (`targeting.negativeKeywords`) sets are independent: omit a field to leave that set unchanged, or send `[]` to remove every keyword of that kind.
+ *
+ * Zernio compares each supplied set with Google's live criteria by case-insensitive keyword text and match type. Text comparison does not trim whitespace.
+ *
+ * A matching criterion is left untouched, retaining its criterion ID, enabled/paused status, keyword-level bid overrides, labels, and criterion-associated history/statistics. Zernio does not reset its quality score; Google continues to calculate scores and statistics normally.
+ *
+ * A bare string or an object without `matchType` means `broad`, not the existing criterion's match type. For example, resending an existing `{ "text": "plumber", "matchType": "exact" }` preserves it; sending `"plumber"` instead removes that EXACT criterion and requests a BROAD one.
+ *
+ * Changing text or match type removes criteria no longer requested and creates any missing criteria. New criteria get new IDs and do not inherit removed criteria's bid overrides, labels, or history. Historical reporting for a removed criterion is not transferred to its replacement.
+ *
+ * ### Other keyword endpoints
+ *
+ * - To add keywords without replacing a set, use [POST /v1/ads/keywords](https://docs.zernio.com/ad-campaigns/add-ad-keywords).
+ * - Use `PATCH /v1/ads/keywords/{keywordId}` to pause/enable one keyword.
+ * - Use `DELETE /v1/ads/keywords/{keywordId}` to remove it.
  *
  */
 export const updateAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdData, ThrowOnError>) => {
@@ -12494,9 +13525,40 @@ export const updateAd = <ThrowOnError extends boolean = false>(options: OptionsL
  * Cancel an ad
  * Deletes an ad on the platform while keeping its history, and removes empty parents only when they were created through this API.
  *
- * Deletes the ad on the platform and marks it as cancelled in the database. The ad is preserved for history. OpenAI Ads has no delete API; the ad is archived instead (a terminal state, the closest equivalent). Reddit Ads has no delete either: the ad is archived (`configured_status` ARCHIVED).
+ * The ad is deleted on the platform and marked as cancelled in the database. It is preserved for history.
  *
- * Only the ad is deleted; a campaign or ad set is never deleted while it still holds another ad. On Meta, when the ad set and campaign were created by Zernio (by `POST /v1/ads/create` or `POST /v1/ads/boost`) and Meta lists no other ad in the ad set (archived ads count), the emptied ad set is deleted too, then the campaign once it holds no other ad set. Parents created outside Zernio, and the parents of an ad imported from the platform, are always kept. On LinkedIn the ad is a creative inside a campaign inside a campaign group: the creative is always removed, the campaign only when Zernio created it and LinkedIn lists no other creative in it that is not archived, canceled or deleted, and the campaign group only when Zernio created it and LinkedIn lists no other campaign in it that is not canceled or deleted (archived campaigns count). If the creative itself cannot be removed the request fails and no parent is touched. On X the ad is a promoted post inside a line item inside a campaign: the promoted post is always removed, the line item only when Zernio created it (by `POST /v1/ads/create` or `POST /v1/ads/boost`) and X lists no other undeleted promoted post in it, and the campaign only when Zernio created it and X lists no other undeleted line item in it. If X refuses the promoted post delete the request fails and no parent is touched. To delete a whole campaign on purpose use `DELETE /v1/ads/campaigns/{campaignId}`.
+ * - OpenAI Ads has no delete API: the ad is archived instead (a terminal state, the closest equivalent).
+ * - Reddit Ads has no delete either: the ad is archived (`configured_status` ARCHIVED).
+ *
+ * To delete a whole campaign on purpose use `DELETE /v1/ads/campaigns/{campaignId}`.
+ *
+ * ### Parents
+ *
+ * Only the ad is deleted; a campaign or ad set is never deleted while it still holds another ad. Parents created outside Zernio, and the parents of an ad imported from the platform, are always kept.
+ *
+ * ### Meta
+ *
+ * When the ad set and campaign were created by Zernio (by `POST /v1/ads/create` or `POST /v1/ads/boost`) and Meta lists no other ad in the ad set (archived ads count), the emptied ad set is deleted too. The campaign follows once it holds no other ad set.
+ *
+ * ### LinkedIn
+ *
+ * The ad is a creative inside a campaign inside a campaign group.
+ *
+ * - The creative is always removed.
+ * - The campaign is removed only when Zernio created it and LinkedIn lists no other creative in it that is not archived, canceled or deleted.
+ * - The campaign group is removed only when Zernio created it and LinkedIn lists no other campaign in it that is not canceled or deleted (archived campaigns count).
+ *
+ * If the creative itself cannot be removed the request fails and no parent is touched.
+ *
+ * ### X
+ *
+ * The ad is a promoted post inside a line item inside a campaign.
+ *
+ * - The promoted post is always removed.
+ * - The line item is removed only when Zernio created it (by `POST /v1/ads/create` or `POST /v1/ads/boost`) and X lists no other undeleted promoted post in it.
+ * - The campaign is removed only when Zernio created it and X lists no other undeleted line item in it.
+ *
+ * If X refuses the promoted post delete the request fails and no parent is touched.
  *
  */
 export const deleteAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAdData, ThrowOnError>) => {
@@ -12510,31 +13572,44 @@ export const deleteAd = <ThrowOnError extends boolean = false>(options: OptionsL
  * Pause or resume a single ad
  * Pauses or resumes a single ad without touching its ad set, campaign or sibling ads.
  *
- * Ad-scoped pause/resume: flips ONLY this ad's own switch (Meta
- * `configured_status`, TikTok `operation_status`, Google ad group ad
- * status, LinkedIn creative, Pinterest ad, Reddit ad `configured_status`), never its parent ad set or
- * campaign, so sibling ads keep running. X is the exception: its smallest
- * switch is the line item. Thin wrapper over the `status` field of
- * PUT /v1/ads/{adId}, for callers that want a URL symmetric to
- * /v1/ads/campaigns/{campaignId}/status and /v1/ads/ad-sets/{adSetId}/status.
+ * ### What it flips
  *
- * The ad's own switch is independent of its delivery status. An ad paused
- * only because its campaign or ad set is off (`status: paused`,
- * `configuredStatus: ACTIVE`) can still be switched off here, and
- * switching an ad on under a paused campaign leaves it `paused` until the
- * campaign is resumed. After the write the switch is read back from the
- * platform and returned as `configuredStatus`, together with the
- * resulting delivery `status`.
+ * Ad-scoped pause/resume flips ONLY this ad's own switch, never its parent ad set or campaign, so sibling ads keep running:
  *
- * `{adId}` accepts the same identifier dialects as GET/PUT /v1/ads/{adId}
- * (Zernio hex `_id`, Meta numeric `platformAdId`, or the creative's
- * effective story/media IDs). `platform` is inferred from the ad, so it's
- * not required in the body. Ads in terminal statuses (rejected, completed,
- * cancelled) are skipped, and so is a request whose target already matches
- * the ad's own switch as read LIVE from the platform (a stored value is
- * never trusted alone, since the switch may have been changed in the
- * platform's own UI). A skip also returns that live read. The rolled-up
- * `status` never decides a skip.
+ * - Meta `configured_status`
+ * - TikTok `operation_status`
+ * - Google ad group ad status
+ * - LinkedIn creative
+ * - Pinterest ad
+ * - Reddit ad `configured_status`
+ *
+ * X is the exception: its smallest switch is the line item.
+ *
+ * It is a thin wrapper over the `status` field of PUT /v1/ads/{adId}, for callers that want a URL symmetric to /v1/ads/campaigns/{campaignId}/status and /v1/ads/ad-sets/{adSetId}/status.
+ *
+ * ### Own switch vs delivery status
+ *
+ * The ad's own switch is independent of its delivery status.
+ *
+ * - An ad paused only because its campaign or ad set is off (`status: paused`, `configuredStatus: ACTIVE`) can still be switched off here.
+ * - Switching an ad on under a paused campaign leaves it `paused` until the campaign is resumed.
+ *
+ * After the write the switch is read back from the platform and returned as `configuredStatus`, together with the resulting delivery `status`.
+ *
+ * ### Identifiers
+ *
+ * `{adId}` accepts the same identifier dialects as GET/PUT /v1/ads/{adId}: Zernio hex `_id`, Meta numeric `platformAdId`, or the creative's effective story/media IDs.
+ *
+ * `platform` is inferred from the ad, so it's not required in the body.
+ *
+ * ### Skips
+ *
+ * These requests are skipped:
+ *
+ * - Ads in terminal statuses (rejected, completed, cancelled).
+ * - A request whose target already matches the ad's own switch as read LIVE from the platform. A stored value is never trusted alone, since the switch may have been changed in the platform's own UI.
+ *
+ * A skip also returns that live read. The rolled-up `status` never decides a skip.
  *
  */
 export const updateAdStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdStatusData, ThrowOnError>) => {
@@ -12660,28 +13735,37 @@ export const removeAdGroupAssets = <ThrowOnError extends boolean = false>(option
  * Get campaign analytics
  * Returns a campaign's performance summary and daily timeline, with optional breakdowns by age, gender and other audience dimensions.
  *
- * Returns performance analytics for a whole campaign in one call: summary metrics, a daily
- * timeline over the requested date range (summed across the campaign's ads), and optional
- * demographic breakdowns. Breakdowns are fetched live from Meta, TikTok or LinkedIn at the campaign
- * level (one call per dimension, no per-ad fan-out), so an agency dashboard gets campaign-level
- * age/gender/placement/etc. without summing thousands of per-ad reads. `campaignId` is the platform campaign id; pass
- * `platform` when a campaign id could be ambiguous across platforms. If no date range is provided,
- * defaults to the last 90 days. Date range is capped at 730 days max.
+ * One call returns analytics for a whole campaign:
  *
- * History: when an ad account connects, Zernio imports its last 90 days of metrics. `summary`
- * and `daily` come from those synced metrics, so they hold no data for days before that.
- * Breakdowns and Google's impression share are read live from the platform over the requested
- * range, so they are not limited by the import.
- * When the campaign belongs to a Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the
- * covered part while the older days (up to 730 days back) are imported in the background;
- * repeat the request until it returns 200.
- * Other platforms never return `202`.
+ * - summary metrics
+ * - a daily timeline over the requested date range (summed across the campaign's ads)
+ * - optional demographic breakdowns
  *
- * Google adds searchImpressionShare, searchBudgetLostImpressionShare,
- * searchRankLostImpressionShare, searchTopImpressionShare and searchAbsoluteTopImpressionShare
- * under analytics.summary for the requested inclusive range. These ratios are queried
- * together without daily segmentation and cached for 10 minutes. Unavailable values are
- * null. analytics.impressionShareCache reports cachedAt and stale independently of synced metrics.
+ * Breakdowns are fetched live from Meta, TikTok or LinkedIn at the campaign level (one call per dimension, no per-ad fan-out). So an agency dashboard gets campaign-level age/gender/placement/etc. without summing thousands of per-ad reads.
+ *
+ * `campaignId` is the platform campaign id; pass `platform` when a campaign id could be ambiguous across platforms.
+ *
+ * If no date range is provided, it defaults to the last 90 days. The date range is capped at 730 days max.
+ *
+ * ### History
+ *
+ * When an ad account connects, Zernio imports its last 90 days of metrics. `summary` and `daily` come from those synced metrics, so they hold no data for days before that.
+ *
+ * Breakdowns and Google's impression share are read live from the platform over the requested range, so they are not limited by the import.
+ *
+ * When the campaign belongs to a Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the covered part. The older days (up to 730 days back) are imported in the background; repeat the request until it returns 200. Other platforms never return `202`.
+ *
+ * ### Google impression share
+ *
+ * Google adds these under analytics.summary for the requested inclusive range:
+ *
+ * - searchImpressionShare
+ * - searchBudgetLostImpressionShare
+ * - searchRankLostImpressionShare
+ * - searchTopImpressionShare
+ * - searchAbsoluteTopImpressionShare
+ *
+ * These ratios are queried together without daily segmentation and cached for 10 minutes. Unavailable values are null. analytics.impressionShareCache reports cachedAt and stale independently of synced metrics.
  *
  */
 export const getCampaignAnalytics = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCampaignAnalyticsData, ThrowOnError>) => {
@@ -12730,42 +13814,51 @@ export const getAdPreviews = <ThrowOnError extends boolean = false>(options: Opt
  * Read the platform's review verdict for an ad
  * Shows whether the platform approved an ad, where it may not deliver, and every rejection reason, without re-enabling a paused ad.
  *
- * Reads the ad's review verdict from the platform now: whether it was approved, where it may
- * not deliver, and every rejection reason with TikTok's suggestion and the piece of content it
- * refers to. Read-only, so it works on a paused ad without re-enabling it.
+ * It reads the ad's review verdict from the platform now, including every rejection reason with TikTok's suggestion and the piece of content it refers to. It is read-only, so it works on a paused ad without re-enabling it.
  *
- * **Google**: reads `ad_group_ad.policy_summary` live. `approvalStatus` and `reviewStatus` are
- * Google's verbatim (`approvalStatus`: APPROVED, APPROVED_LIMITED, AREA_OF_INTEREST_ONLY,
- * DISAPPROVED, UNKNOWN; `reviewStatus`: REVIEW_IN_PROGRESS, REVIEWED, UNDER_APPEAL,
- * ELIGIBLE_MAY_SERVE); `approved` is true for the three approved statuses, false for
- * DISAPPROVED, null otherwise. `policyTopics` carries every policy topic entry with its
- * `type` (PROHIBITED, LIMITED, ...) and Google's `evidences` and `constraints` verbatim; each
- * PROHIBITED topic is also listed in `rejections` (reason = the topic). The `forbidden*`
- * arrays are TikTok-only and always empty on Google.
+ * Supported on TikTok, Google and Meta. Other platforms return 501.
  *
- * **Meta** (Facebook and Instagram ads): reads the Ad's `ad_review_feedback`, `effective_status`
- * and `issues_info` live. `reviewStatus` is Meta's `effective_status` verbatim (ACTIVE, PAUSED,
- * PENDING_REVIEW, DISAPPROVED, PREAPPROVED, WITH_ISSUES, IN_PROCESS, ...); `approved` is true for
- * ACTIVE and PREAPPROVED, false for DISAPPROVED, null otherwise. `reviewFeedback` carries Meta's
- * feedback verbatim: `global` (reason -> explanation) and `placementSpecific` (placement ->
- * reason -> explanation). Each global reason is listed in `rejections`, and so is each
- * placement-specific reason, with that placement in its `forbiddenPlacements`; the review's
- * `forbiddenPlacements` lists every placement with feedback. When Meta returns no feedback (usually
- * an ad in review or approved everywhere), the status comes back with empty `rejections` and empty
- * `reviewFeedback` maps; an ACTIVE ad rejected on one placement still carries that placement's
- * feedback. The `effective_status` read is also stored on the ad, so `GET /v1/ads/{adId}` returns
- * it next. A deleted ad answers 404. `issues` is Meta's
- * `issues_info` verbatim. `forbiddenAges`, `forbiddenLocations` and `forbiddenOperatingSystems`
- * are always empty on Meta.
+ * ### Google
  *
- * TikTok uses `/ad/review_info/`. Platforms other than TikTok, Google and Meta return 501. On TikTok, use it alongside the ad's
- * `platformStatus`: TikTok reports `AD_STATUS_AUDIT` while the ad is in review and
- * `AD_STATUS_AD_PRE_ONLINE` once it passed and is about to deliver (both map to
- * `status: pending_review`); `AD_STATUS_AUDIT_DENY` maps to `rejected`.
+ * Reads `ad_group_ad.policy_summary` live. `approvalStatus` and `reviewStatus` are Google's verbatim:
  *
- * **Meta ads that are not synced yet.** Pass `accountId` with a Meta platform ad id that is not in
- * Zernio's store to read its review live through that connection. The response then has
- * `adId: null`, `synced: false`, and nothing is stored. Synced ads answer `synced: true`.
+ * - `approvalStatus`: APPROVED, APPROVED_LIMITED, AREA_OF_INTEREST_ONLY, DISAPPROVED, UNKNOWN.
+ * - `reviewStatus`: REVIEW_IN_PROGRESS, REVIEWED, UNDER_APPEAL, ELIGIBLE_MAY_SERVE.
+ * - `approved`: true for the three approved statuses, false for DISAPPROVED, null otherwise.
+ *
+ * `policyTopics` carries every policy topic entry with its `type` (PROHIBITED, LIMITED, ...) and Google's `evidences` and `constraints` verbatim. Each PROHIBITED topic is also listed in `rejections` (reason = the topic).
+ *
+ * The `forbidden*` arrays are TikTok-only and always empty on Google.
+ *
+ * ### Meta (Facebook and Instagram ads)
+ *
+ * Reads the Ad's `ad_review_feedback`, `effective_status` and `issues_info` live.
+ *
+ * - `reviewStatus`: Meta's `effective_status` verbatim (ACTIVE, PAUSED, PENDING_REVIEW, DISAPPROVED, PREAPPROVED, WITH_ISSUES, IN_PROCESS, ...).
+ * - `approved`: true for ACTIVE and PREAPPROVED, false for DISAPPROVED, null otherwise.
+ * - `reviewFeedback`: Meta's feedback verbatim, as `global` (reason -> explanation) and `placementSpecific` (placement -> reason -> explanation).
+ * - `issues`: Meta's `issues_info` verbatim.
+ *
+ * Each global reason is listed in `rejections`, and so is each placement-specific reason, with that placement in its `forbiddenPlacements`. The review's `forbiddenPlacements` lists every placement with feedback.
+ *
+ * `forbiddenAges`, `forbiddenLocations` and `forbiddenOperatingSystems` are always empty on Meta.
+ *
+ * When Meta returns no feedback (usually an ad in review or approved everywhere), the status comes back with empty `rejections` and empty `reviewFeedback` maps. An ACTIVE ad rejected on one placement still carries that placement's feedback.
+ *
+ * The `effective_status` read is also stored on the ad, so `GET /v1/ads/{adId}` returns it next. A deleted ad answers 404.
+ *
+ * ### Meta ads that are not synced yet
+ *
+ * Pass `accountId` with a Meta platform ad id that is not in Zernio's store to read its review live through that connection. The response then has `adId: null`, `synced: false`, and nothing is stored. Synced ads answer `synced: true`.
+ *
+ * ### TikTok
+ *
+ * TikTok uses `/ad/review_info/`. Use it alongside the ad's `platformStatus`:
+ *
+ * - `AD_STATUS_AUDIT`: the ad is in review (maps to `status: pending_review`).
+ * - `AD_STATUS_AD_PRE_ONLINE`: it passed and is about to deliver (also maps to `status: pending_review`).
+ * - `AD_STATUS_AUDIT_DENY`: maps to `rejected`.
+ *
  */
 export const getAdReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdReviewData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdReviewResponse, GetAdReviewError, ThrowOnError>({
@@ -12778,27 +13871,39 @@ export const getAdReview = <ThrowOnError extends boolean = false>(options: Optio
  * Review status of each creative in a TikTok Smart+ ad
  * Shows which Spark post, video or carousel of an Upgraded Smart+ ad TikTok approved or rejected, with every rejection reason, keyed by the TikTok post id for a Spark post.
  *
- * Reads TikTok's `/smart_plus/ad/review_info/` live (read-only, works on a paused ad) for the
- * Smart+ ad that holds `adId`, and returns the ad-level verdict plus one entry per creative.
- * `adId` may be the Smart+ ad itself or any creative of it synced as its own ad: Zernio finds
- * the Smart+ ad in the ad's ad group through `/smart_plus/ad/get/`, and uses the ad group's only
- * Smart+ ad when no creative list names the ad.
+ * It reads TikTok's `/smart_plus/ad/review_info/` live (read-only, works on a paused ad) for the Smart+ ad that holds `adId`. It returns the ad-level verdict plus one entry per creative.
  *
- * `materialType`, `tiktokItemId`, `videoId`, `name` and `operationStatus` come from the Smart+
- * ad's `creative_list`. TikTok leaves out of that list the creatives it added on its own
- * (creator content, authorized TikTok posts, Creative Library content) and lists each image of a
- * carousel under its own material id, so those entries come back with the review verdict and
- * null descriptive fields. TikTok returns no review timestamp; `readAt` is when Zernio read it.
+ * ### Which ad is read
  *
- * TikTok's review endpoint has a strict quota of its own (TikTok documents neither the quota nor its scope). One TikTok call reads the
- * review of the live Smart+ ads of the ad group up to 50 creatives in total (TikTok refuses more),
- * and each review is stored per connection, advertiser and Smart+ ad. This read serves a review read
- * in the last 10 minutes from the store, so sibling ads are answered without a TikTok call and `readAt`
- * can be up to 10 minutes old; an older one is read again. Read reviews when you need
- * them instead of sweeping every ad on a loop. When TikTok answers over quota, Zernio returns 429
- * and answers 429 for that advertiser and connection without calling TikTok for about 60 seconds, then
- * 120 and up to 240 while TikTok keeps refusing, and about 60 again after a successful call. Each pause has up to 10% of random
- * jitter, with the time left as `Retry-After`; reviews read in the last 10 minutes are still served.
+ * `adId` may be the Smart+ ad itself or any creative of it synced as its own ad. Zernio finds the Smart+ ad in the ad's ad group through `/smart_plus/ad/get/`, and uses the ad group's only Smart+ ad when no creative list names the ad.
+ *
+ * ### Creative fields
+ *
+ * `materialType`, `tiktokItemId`, `videoId`, `name` and `operationStatus` come from the Smart+ ad's `creative_list`. Some entries come back with the review verdict and null descriptive fields:
+ *
+ * - creatives TikTok added on its own, which it leaves out of that list (creator content, authorized TikTok posts, Creative Library content)
+ * - each image of a carousel, which TikTok lists under its own material id
+ *
+ * TikTok returns no review timestamp; `readAt` is when Zernio read it.
+ *
+ * ### Quota and caching
+ *
+ * TikTok's review endpoint has a strict quota of its own (TikTok documents neither the quota nor its scope). One TikTok call reads the review of the live Smart+ ads of the ad group, up to 50 creatives in total (TikTok refuses more).
+ *
+ * Each review is stored per connection, advertiser and Smart+ ad. A review read in the last 10 minutes is served from the store, so sibling ads are answered without a TikTok call and `readAt` can be up to 10 minutes old. An older one is read again.
+ *
+ * Read reviews when you need them instead of sweeping every ad on a loop.
+ *
+ * ### Over quota
+ *
+ * When TikTok answers over quota, Zernio returns 429. It then answers 429 for that advertiser and connection without calling TikTok:
+ *
+ * - for about 60 seconds at first
+ * - then 120, and up to 240, while TikTok keeps refusing
+ * - about 60 again after a successful call
+ *
+ * Each pause has up to 10% of random jitter, with the time left as `Retry-After`. Reviews read in the last 10 minutes are still served.
+ *
  */
 export const getTikTokSmartPlusAdReview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTikTokSmartPlusAdReviewData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetTikTokSmartPlusAdReviewResponse, GetTikTokSmartPlusAdReviewError, ThrowOnError>({
@@ -12811,24 +13916,29 @@ export const getTikTokSmartPlusAdReview = <ThrowOnError extends boolean = false>
  * Direct video and image URLs for an ad
  * Returns fresh, short-lived download links for every image and video a Meta ad uses, including the original media of a boosted Instagram post.
  *
- * Returns the direct signed URLs for every video and image asset used by an ad's live
- * creative, normalised across shapes: single image/video, carousel,
- * Reels/Story (`object_story_spec.video_data`) and dynamic
- * creative (`asset_feed_spec`). Video items include Meta's poster thumbnail and the
- * video's Meta id when available.
+ * The direct signed URLs cover every video and image asset used by the ad's live creative, normalised across shapes:
  *
- * Boosted Instagram posts (creatives with no image of their own) return the original
- * post's media: the image, the video with its cover as `thumbnailUrl`, or every child of a
- * carousel post with `index`. When the connection cannot read the Instagram post, the item
- * is a 1080px rendering of the creative instead.
+ * - single image/video
+ * - carousel
+ * - Reels/Story (`object_story_spec.video_data`)
+ * - dynamic creative (`asset_feed_spec`)
  *
- * Reads Meta live rather than the stored creative blob because Meta's signed fbcdn
- * URLs carry an `oe=<hex>` expiration (image_url ~24 h, video source ~12 d). Treat
- * URLs as short-lived: re-fetch this endpoint before serving or downloading assets
- * instead of caching URLs beyond that window.
+ * Video items include Meta's poster thumbnail and the video's Meta id when available.
  *
- * **Meta ads that are not synced yet.** Pass `accountId` with a Meta platform ad id that is not in
- * Zernio's store to read its media live through that connection; the response carries `synced: false`.
+ * ### Boosted Instagram posts
+ *
+ * Creatives with no image of their own return the original post's media: the image, the video with its cover as `thumbnailUrl`, or every child of a carousel post with `index`.
+ *
+ * When the connection cannot read the Instagram post, the item is a 1080px rendering of the creative instead.
+ *
+ * ### URL lifetime
+ *
+ * This endpoint reads Meta live rather than the stored creative blob, because Meta's signed fbcdn URLs carry an `oe=<hex>` expiration (image_url ~24 h, video source ~12 d).
+ *
+ * Treat URLs as short-lived: re-fetch this endpoint before serving or downloading assets instead of caching URLs beyond that window.
+ *
+ * **Meta ads that are not synced yet.** Pass `accountId` with a Meta platform ad id that is not in Zernio's store to read its media live through that connection; the response carries `synced: false`.
+ *
  */
 export const getAdMedia = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdMediaData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdMediaResponse, GetAdMediaError, ThrowOnError>({
@@ -12873,48 +13983,62 @@ export const generateKeywordHistoricalMetrics = <ThrowOnError extends boolean = 
 
 /**
  * Flexible live insights query
- * Runs a custom performance query against Meta, Google Ads or TikTok and returns the platform's rows as is, for reports the fixed endpoints don't cover.
+ * Runs a custom performance query against Meta, Google Ads or TikTok and returns the platform's rows as is, for reports the fixed endpoints don't cover. The account's platform picks the contract.
  *
- * The account's platform picks the contract:
+ * ### Meta (facebook/instagram)
  *
- * **Meta (facebook/instagram)**: forwards caller-chosen `fields`, `breakdowns` and `filtering`
- * to any Meta insights node and returns Meta's rows verbatim. `objectId` (required) selects the
- * node; `level` sets row granularity. Semantic validation is Meta's: an unknown field or invalid
- * breakdown combination returns a 400 carrying Meta's message. For long ranges or agency-scale
- * accounts prefer the async variant (POST /v1/ads/insights/reports).
+ * Forwards caller-chosen `fields`, `breakdowns` and `filtering` to any Meta insights node and returns Meta's rows verbatim.
  *
- * **Google Ads (googleads)**: raw GAQL passthrough. Send any read-only GAQL SELECT via `query`
- * (campaign/keyword/search-term/geo/demographic/asset/shopping resources, `change_event`, any
- * `segments.*`) and rows come back verbatim (camelCase, counters as strings). Results are paged
- * at a fixed 10,000 rows; follow `paging.nextPageToken` with `pageToken`. `adAccountId` (alias `customerId`) is only
- * needed when the connection has several Google Ads accounts. Semantic validation is Google's:
- * an invalid query returns a 400 carrying Google's message (note: selecting `segments.date`
- * requires a finite date filter).
+ * - `objectId` (required) selects the node.
+ * - `level` sets row granularity.
  *
- * Queries run against Google Ads API **v25**, so write GAQL against the v25 field reference.
- * One exception is translated for backward compatibility: the legacy `campaign.start_date` /
- * `campaign.end_date` (removed by Google in v23) are rewritten to `campaign.start_date_time` /
- * `campaign.end_date_time`, and rows still carry `campaign.startDate` / `campaign.endDate` as
- * `YYYY-MM-DD`. In WHERE, `=`, `<`, `<=`, `>`, `>=`, `BETWEEN` and `IS [NOT] NULL` against a
- * `'YYYY-MM-DD'` literal are translated; any other form returns Google's 400. New code should
- * select the `_date_time` fields directly.
+ * Semantic validation is Meta's: an unknown field or invalid breakdown combination returns a 400 carrying Meta's message. For long ranges or agency-scale accounts, prefer the async variant (POST /v1/ads/insights/reports).
  *
- * **TikTok (tiktok/tiktokads)**: passthrough of TikTok's synchronous report
- * (`/report/integrated/get/`). Send `adAccountId`, `dataLevel`, `dimensions`, `metrics`,
- * `fromDate`/`toDate` (TikTok caps the span at 365 days) and optionally `filtering` in the same
- * `[{"field", "operator", "value"}]` shape as Meta (operator is TikTok's `filter_type`, e.g. `IN`;
- * array values are JSON-encoded for TikTok). Rows come back verbatim as
- * `{ dimensions, metrics }` with page-number paging.
+ * ### Google Ads (googleads)
  *
- * *De-duplicated reach across a set of campaigns, ad groups or ads*: filter the set and group by
- * `country_code` instead of the entity id. TikTok then counts each person once across the whole
- * set and range, per country. Example, two campaigns for a month:
- * `dataLevel=AUCTION_CAMPAIGN&dimensions=country_code&metrics=reach,impressions,frequency&fromDate=2026-09-01&toDate=2026-09-30&filtering=[{"field":"campaign_ids","operator":"IN","value":["1876574798182050","1876575504573650"]}]`.
- * For a set of ads use `dataLevel=AUCTION_AD` with `ad_ids`. A filter on a finer entity than
- * `dataLevel` (e.g. `ad_ids` at `AUCTION_CAMPAIGN`) returns 400: TikTok would otherwise widen it to
- * every parent entity containing those ids. When the set delivers in several countries, reach is
- * per country; summing the rows counts a person reached in two countries twice.
- * `AUCTION_ADVERTISER` rejects entity filters.
+ * Raw GAQL passthrough. Send any read-only GAQL SELECT via `query` (campaign/keyword/search-term/geo/demographic/asset/shopping resources, `change_event`, any `segments.*`). Rows come back verbatim (camelCase, counters as strings).
+ *
+ * - Results are paged at a fixed 10,000 rows; follow `paging.nextPageToken` with `pageToken`.
+ * - `adAccountId` (alias `customerId`) is only needed when the connection has several Google Ads accounts.
+ *
+ * Semantic validation is Google's: an invalid query returns a 400 carrying Google's message (note: selecting `segments.date` requires a finite date filter).
+ *
+ * #### GAQL version
+ *
+ * Queries run against Google Ads API **v25**, so write GAQL against the v25 field reference. One exception is translated for backward compatibility:
+ *
+ * - The legacy `campaign.start_date` / `campaign.end_date` (removed by Google in v23) are rewritten to `campaign.start_date_time` / `campaign.end_date_time`.
+ * - Rows still carry `campaign.startDate` / `campaign.endDate` as `YYYY-MM-DD`.
+ * - In WHERE, `=`, `<`, `<=`, `>`, `>=`, `BETWEEN` and `IS [NOT] NULL` against a `'YYYY-MM-DD'` literal are translated; any other form returns Google's 400.
+ *
+ * New code should select the `_date_time` fields directly.
+ *
+ * ### TikTok (tiktok/tiktokads)
+ *
+ * Passthrough of TikTok's synchronous report (`/report/integrated/get/`). Send:
+ *
+ * - `adAccountId`
+ * - `dataLevel`
+ * - `dimensions`
+ * - `metrics`
+ * - `fromDate`/`toDate` (TikTok caps the span at 365 days)
+ * - optionally `filtering`, in the same `[{"field", "operator", "value"}]` shape as Meta (operator is TikTok's `filter_type`, e.g. `IN`; array values are JSON-encoded for TikTok)
+ *
+ * Rows come back verbatim as `{ dimensions, metrics }` with page-number paging.
+ *
+ * #### De-duplicated reach across a set of campaigns, ad groups or ads
+ *
+ * Filter the set and group by `country_code` instead of the entity id. TikTok then counts each person once across the whole set and range, per country.
+ *
+ * Example, two campaigns for a month:
+ *
+ * `dataLevel=AUCTION_CAMPAIGN&dimensions=country_code&metrics=reach,impressions,frequency&fromDate=2026-09-01&toDate=2026-09-30&filtering=[{"field":"campaign_ids","operator":"IN","value":["1876574798182050","1876575504573650"]}]`
+ *
+ * - For a set of ads use `dataLevel=AUCTION_AD` with `ad_ids`.
+ * - A filter on a finer entity than `dataLevel` (e.g. `ad_ids` at `AUCTION_CAMPAIGN`) returns 400: TikTok would otherwise widen it to every parent entity containing those ids.
+ * - `AUCTION_ADVERTISER` rejects entity filters.
+ *
+ * When the set delivers in several countries, reach is per country: summing the rows counts a person reached in two countries twice.
  *
  */
 export const queryAdInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<QueryAdInsightsData, ThrowOnError>) => {
@@ -12961,17 +14085,17 @@ export const getAdInsightsReport = <ThrowOnError extends boolean = false>(option
  * Get ad analytics
  * Returns one ad's performance summary and daily timeline, with optional audience breakdowns on Meta, TikTok and LinkedIn.
  *
- * Includes summary metrics, a daily timeline
- * over the requested date range, and optional demographic breakdowns (Meta, TikTok and LinkedIn only).
- * If no date range is provided, defaults to the last 90 days. Date range is capped at 730 days max.
+ * It includes summary metrics, a daily timeline over the requested date range, and optional demographic breakdowns (Meta, TikTok and LinkedIn only). If no date range is provided, defaults to the last 90 days. Date range is capped at 730 days max.
  *
- * History: when an ad account connects, Zernio imports its last 90 days of metrics. `summary`
- * and `daily` come from those synced metrics, so they hold no data for days before that.
- * Breakdowns are read live from the platform over the requested range, so they are not limited
- * by the import.
- * When the ad belongs to a Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the
- * covered part while the older days (up to 730 days back) are imported in the background;
- * repeat the request until it returns 200.
+ * ### History
+ *
+ * When an ad account connects, Zernio imports its last 90 days of metrics.
+ *
+ * - `summary` and `daily` come from those synced metrics, so they hold no data for days before that.
+ * - Breakdowns are read live from the platform over the requested range, so they are not limited by the import.
+ *
+ * When the ad belongs to a Meta ad account, a range reaching further back answers `202` with `backfillPending: true` and the covered part, while the older days (up to 730 days back) are imported in the background. Repeat the request until it returns 200.
+ *
  * Other platforms never return `202`.
  *
  */
@@ -13009,18 +14133,25 @@ export const getAdTrackingTags = <ThrowOnError extends boolean = false>(options:
  * Set ad tracking tags
  * Sets the tracking parameters added to an ad's click URLs, such as UTM tags, without rebuilding the rest of the ad.
  *
- * Send only the fields for the ad's platform:
- * - Meta: `urlTags` (array of {key,value}). Meta creatives are immutable, so this rebuilds the
- * creative and repoints the ad. By DEFAULT we PRESERVE the existing creative verbatim
- * (re-post its object_story_spec + the new url_tags, reusing the image), so you send `urlTags`
- * ALONE, with no need to read back headline/body/CTA. `creative` (headline, body, callToAction,
- * linkUrl, imageUrl) is OPTIONAL and only needed to rebuild explicitly, or for SHARE / page-post
- * / dark / asset_feed creatives whose object_story_spec Meta strips (those return 422 asking for
- * `creative`).
- * - Google: `trackingUrlTemplate` and/or `finalUrlSuffix` (full template strings; account quota applies).
- * Written at the CAMPAIGN level (the campaign's `tracking_url_template` / `final_url_suffix`), so
- * the change applies to every ad in the ad's campaign.
- * - LinkedIn: `dynamicValueParameters` and/or `customValueParameters` (campaign-level Dynamic UTM).
+ * Send only the fields for the ad's platform.
+ *
+ * ### Meta
+ *
+ * Send `urlTags` (array of {key,value}). Meta creatives are immutable, so this rebuilds the creative and repoints the ad.
+ *
+ * By DEFAULT we PRESERVE the existing creative verbatim (re-post its object_story_spec + the new url_tags, reusing the image). So you send `urlTags` ALONE, with no need to read back headline/body/CTA.
+ *
+ * `creative` (headline, body, callToAction, linkUrl, imageUrl) is OPTIONAL. It is only needed to rebuild explicitly, or for SHARE / page-post / dark / asset_feed creatives whose object_story_spec Meta strips (those return 422 asking for `creative`).
+ *
+ * ### Google
+ *
+ * Send `trackingUrlTemplate` and/or `finalUrlSuffix` (full template strings; account quota applies).
+ *
+ * Written at the CAMPAIGN level (the campaign's `tracking_url_template` / `final_url_suffix`), so the change applies to every ad in the ad's campaign.
+ *
+ * ### LinkedIn
+ *
+ * Send `dynamicValueParameters` and/or `customValueParameters` (campaign-level Dynamic UTM).
  *
  */
 export const updateAdTrackingTags = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdTrackingTagsData, ThrowOnError>) => {
@@ -13034,60 +14165,74 @@ export const updateAdTrackingTags = <ThrowOnError extends boolean = false>(optio
  * List comments on an ad
  * Lists the comments on an ad's post, including dark posts that never ran organically, so you can moderate ad engagement.
  *
- * Useful for moderating or analyzing
- * engagement on dark posts (ad creatives that never went live organically), which the
- * regular GET /v1/inbox/comments/{postId} endpoint cannot serve because dark posts are
- * not in Zernio's post database.
- *
- * An ad that runs on both Facebook feed and Instagram feed has two separate underlying
- * posts with separate comment threads (the creative's effective_object_story_id and
- * effective_instagram_media_id). Use the `placement` query param to pick one; with no
- * param the Instagram side is returned when it exists, otherwise Facebook. The
- * identifiers are read from the ad record (persisted during sync) with a Marketing-API
- * fallback for ads that predate the field.
- *
- * Comments can land on extra posts Meta creates for placement variants, which the creative
- * does not report. On Instagram, every media a `comment.received` for this ad arrived on is
- * read too; on Facebook, every dark post matched to this ad by its copy. They are merged
- * newest first. With more than one post, `pagination.cursor` is a Zernio cursor covering all
- * of them: pass it back unchanged.
- *
- * For Instagram-placed comments, the Instagram account that runs the ad must be connected
- * to Zernio, because those comments are read through that account's token. If no connected
- * Instagram account on the profile can read the ad's media, the call returns
- * ads_connection_required (the Facebook side, if any, is still readable via ?placement=facebook).
- *
- * TikTok uses the connected TikTok Ads advertiser token and supports both paid video
- * ads and Spark Ads. `since` and `until` select a date window of at most 30 days;
- * the default is the last 30 days. TikTok searches by ad group, so Zernio filters
- * each page to this ad. A page can be empty while `pagination.hasMore` is true.
- * Reuse `pagination.cursor` with the same `limit`; the cursor retains the date window.
- * `placement` is Meta-only and returns a 400 for TikTok.
- * Listing needs no identity or video item ID. When the ad group is stored, each
- * page makes one comment-list call and no ad-detail lookup, including for external
- * ads that TikTok no longer returns from ad details. `meta.tiktokItemId: null`
- * does not prevent listing. If the ad group is missing, Zernio fetches ad details;
- * unavailable details return 404 ad_not_found, and no ad group returns 400 ad_not_commentable.
- *
- * TikTok returns replies as separate comments with `parentId`; nested reply fetching
- * is not supported. `canReply` requires a first-level comment, comment-management
- * permission, a video item ID and a supported TT_USER or CUSTOMIZED_USER identity.
- * `canDelete` requires TikTok's own-comment deletion capability, a video item ID
- * and a supported identity. Both flags are false when identity or item is unknown.
- * Listing uses stored and comment-specific fields without fetching identity.
- * A direct reply or delete request can lazily resolve missing fields and succeed
- * even after a false flag. `canHide` is true because visibility changes need only
- * advertiser and comment IDs. `canLike` is false. Use the ad comment reply, hide
- * and delete operations below to moderate TikTok comments.
- * Other platforms return feature_not_available.
+ * Useful for moderating or analyzing engagement on dark posts (ad creatives that never went live organically). The regular GET /v1/inbox/comments/{postId} endpoint cannot serve these because dark posts are not in Zernio's post database.
  *
  * Requires the Ads add-on. Response shape matches GET /v1/inbox/comments/{postId}.
  *
- * The `{adId}` path segment accepts any identifier dialect Zernio indexes for the ad:
- * Zernio internal `_id` (24-char hex), the numeric `platformAdId` (the value shipped in
- * `comment.received` webhooks as `comment.ad.id`), or the creative's
- * `effective_object_story_id` / `effective_instagram_media_id`. Caller doesn't need a
- * translation step.
+ * ### Ad identifiers
+ *
+ * The `{adId}` path segment accepts any identifier dialect Zernio indexes for the ad, so the caller doesn't need a translation step:
+ *
+ * - Zernio internal `_id` (24-char hex)
+ * - The numeric `platformAdId` (the value shipped in `comment.received` webhooks as `comment.ad.id`)
+ * - The creative's `effective_object_story_id` / `effective_instagram_media_id`
+ *
+ * ### Meta (Facebook and Instagram)
+ *
+ * An ad that runs on both Facebook feed and Instagram feed has two separate underlying posts with separate comment threads (the creative's effective_object_story_id and effective_instagram_media_id).
+ *
+ * Use the `placement` query param to pick one. With no param the Instagram side is returned when it exists, otherwise Facebook. The identifiers are read from the ad record (persisted during sync) with a Marketing-API fallback for ads that predate the field.
+ *
+ * #### Placement variants
+ *
+ * Comments can land on extra posts Meta creates for placement variants, which the creative does not report. These are read too, merged newest first:
+ *
+ * - Instagram: every media a `comment.received` for this ad arrived on.
+ * - Facebook: every dark post matched to this ad by its copy.
+ *
+ * With more than one post, `pagination.cursor` is a Zernio cursor covering all of them: pass it back unchanged.
+ *
+ * #### Instagram account requirement
+ *
+ * For Instagram-placed comments, the Instagram account that runs the ad must be connected to Zernio, because those comments are read through that account's token.
+ *
+ * If no connected Instagram account on the profile can read the ad's media, the call returns ads_connection_required. The Facebook side, if any, is still readable via ?placement=facebook.
+ *
+ * ### TikTok
+ *
+ * TikTok uses the connected TikTok Ads advertiser token and supports both paid video ads and Spark Ads. `placement` is Meta-only and returns a 400 for TikTok.
+ *
+ * #### Date window and pagination
+ *
+ * `since` and `until` select a date window of at most 30 days; the default is the last 30 days.
+ *
+ * TikTok searches by ad group, so Zernio filters each page to this ad. A page can be empty while `pagination.hasMore` is true. Reuse `pagination.cursor` with the same `limit`; the cursor retains the date window.
+ *
+ * #### Lookups
+ *
+ * Listing needs no identity or video item ID. `meta.tiktokItemId: null` does not prevent listing.
+ *
+ * When the ad group is stored, each page makes one comment-list call and no ad-detail lookup, including for external ads that TikTok no longer returns from ad details. If the ad group is missing, Zernio fetches ad details:
+ *
+ * - 404 ad_not_found: details are unavailable
+ * - 400 ad_not_commentable: no ad group
+ *
+ * #### Replies and moderation flags
+ *
+ * TikTok returns replies as separate comments with `parentId`; nested reply fetching is not supported.
+ *
+ * - `canReply`: requires a first-level comment, comment-management permission, a video item ID and a supported TT_USER or CUSTOMIZED_USER identity.
+ * - `canDelete`: requires TikTok's own-comment deletion capability, a video item ID and a supported identity.
+ * - `canHide`: true, because visibility changes need only advertiser and comment IDs.
+ * - `canLike`: false.
+ *
+ * `canReply` and `canDelete` are both false when identity or item is unknown. Listing uses stored and comment-specific fields without fetching identity. A direct reply or delete request can lazily resolve missing fields and succeed even after a false flag.
+ *
+ * Use the ad comment reply, hide and delete operations below to moderate TikTok comments.
+ *
+ * ### Other platforms
+ *
+ * Other platforms return feature_not_available.
  *
  */
 export const getAdComments = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdCommentsData, ThrowOnError>) => {
@@ -13099,23 +14244,34 @@ export const getAdComments = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Reply to an ad comment
- * Reply to a first-level TikTok ad comment. Requires a TT_USER or CUSTOMIZED_USER identity with comment-management permission. Replies to replies are rejected. The response commentId identifies the new reply. This operation is not idempotent; do not blindly retry an uncertain response.
+ * Reply to a first-level TikTok ad comment. Replies to replies are rejected. The response commentId identifies the new reply.
  *
- * Unknown identity and video item fields are resolved only when needed for this
- * action, then persisted for reuse. Comment-specific fields take precedence.
- * If TikTok no longer returns the ad needed to resolve identity, 404 ad_not_found
- * directs you to check deletion or archival in TikTok Ads Manager. Listing can
- * still succeed. Unsupported or unavailable identity returns 403 feature_not_available.
- * Denied access to ad details returns 403 insufficient_permissions with reconnect
- * guidance and the upstream platformError.
+ * This operation is not idempotent; do not blindly retry an uncertain response.
  *
- * Requires Ads access. The ad is resolved within the caller's accessible profiles.
- * Before moderation, Zernio verifies that the comment belongs to this ad using
- * TikTok's ad-group comment listing. The default search window is the last 30 days.
- * Use since/until for older comments, with at most 30 days between the dates.
- * Lookups scan at most 2,000 ad-group comments; narrow the date window if exceeded.
- * Meta returns 501 feature_not_available with guidance to use the existing inbox
- * comment endpoints and the account/post IDs from GET /v1/ads/{adId}/comments.
+ * ### Requirements
+ *
+ * - Requires Ads access. The ad is resolved within the caller's accessible profiles.
+ * - Requires a TT_USER or CUSTOMIZED_USER identity with comment-management permission.
+ *
+ * ### Identity resolution
+ *
+ * Unknown identity and video item fields are resolved only when needed for this action, then persisted for reuse. Comment-specific fields take precedence.
+ *
+ * - 404 ad_not_found: TikTok no longer returns the ad needed to resolve identity. Check deletion or archival in TikTok Ads Manager. Listing can still succeed.
+ * - 403 feature_not_available: unsupported or unavailable identity.
+ * - 403 insufficient_permissions: denied access to ad details, with reconnect guidance and the upstream platformError.
+ *
+ * ### Comment verification
+ *
+ * Before moderation, Zernio verifies that the comment belongs to this ad using TikTok's ad-group comment listing.
+ *
+ * - The default search window is the last 30 days.
+ * - Use since/until for older comments, with at most 30 days between the dates.
+ * - Lookups scan at most 2,000 ad-group comments; narrow the date window if exceeded.
+ *
+ * ### Meta
+ *
+ * Meta returns 501 feature_not_available with guidance to use the existing inbox comment endpoints and the account/post IDs from GET /v1/ads/{adId}/comments.
  *
  */
 export const replyToAdComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyToAdCommentData, ThrowOnError>) => {
@@ -13127,15 +14283,23 @@ export const replyToAdComment = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Hide or unhide an ad comment
- * Hide or restore a TikTok ad comment. Send hidden=true to hide it or hidden=false to make it public again. Identity and video item ID are not required; no identity lookup is performed.
+ * Hide or restore a TikTok ad comment. Send hidden=true to hide it or hidden=false to make it public again.
+ *
+ * Identity and video item ID are not required; no identity lookup is performed.
  *
  * Requires Ads access. The ad is resolved within the caller's accessible profiles.
- * Before moderation, Zernio verifies that the comment belongs to this ad using
- * TikTok's ad-group comment listing. The default search window is the last 30 days.
- * Use since/until for older comments, with at most 30 days between the dates.
- * Lookups scan at most 2,000 ad-group comments; narrow the date window if exceeded.
- * Meta returns 501 feature_not_available with guidance to use the existing inbox
- * comment endpoints and the account/post IDs from GET /v1/ads/{adId}/comments.
+ *
+ * ### Comment lookup
+ *
+ * Before moderation, Zernio verifies that the comment belongs to this ad using TikTok's ad-group comment listing.
+ *
+ * - The default search window is the last 30 days.
+ * - Use since/until for older comments, with at most 30 days between the dates.
+ * - Lookups scan at most 2,000 ad-group comments; narrow the date window if exceeded.
+ *
+ * ### Meta
+ *
+ * Meta returns 501 feature_not_available with guidance to use the existing inbox comment endpoints and the account/post IDs from GET /v1/ads/{adId}/comments.
  *
  */
 export const hideAdComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<HideAdCommentData, ThrowOnError>) => {
@@ -13149,21 +14313,26 @@ export const hideAdComment = <ThrowOnError extends boolean = false>(options: Opt
  * Delete an ad comment
  * Delete your own TikTok ad comment or reply. TikTok must return can_delete=true for the comment. Other users' comments can be hidden instead.
  *
- * Unknown identity and video item fields are resolved only when needed for this
- * action, then persisted for reuse. Comment-specific fields take precedence.
- * If TikTok no longer returns the ad needed to resolve identity, 404 ad_not_found
- * directs you to check deletion or archival in TikTok Ads Manager. Listing can
- * still succeed. Unsupported or unavailable identity returns 403 feature_not_available.
- * Denied access to ad details returns 403 insufficient_permissions with reconnect
- * guidance and the upstream platformError.
- *
  * Requires Ads access. The ad is resolved within the caller's accessible profiles.
- * Before moderation, Zernio verifies that the comment belongs to this ad using
- * TikTok's ad-group comment listing. The default search window is the last 30 days.
- * Use since/until for older comments, with at most 30 days between the dates.
- * Lookups scan at most 2,000 ad-group comments; narrow the date window if exceeded.
- * Meta returns 501 feature_not_available with guidance to use the existing inbox
- * comment endpoints and the account/post IDs from GET /v1/ads/{adId}/comments.
+ *
+ * ### Identity resolution
+ *
+ * Unknown identity and video item fields are resolved only when needed for this action, then persisted for reuse. Comment-specific fields take precedence.
+ *
+ * ### Comment lookup
+ *
+ * Before moderation, Zernio verifies that the comment belongs to this ad using TikTok's ad-group comment listing.
+ *
+ * - The default search window is the last 30 days.
+ * - Use since/until for older comments, with at most 30 days between the dates.
+ * - Lookups scan at most 2,000 ad-group comments; narrow the date window if exceeded.
+ *
+ * ### Errors
+ *
+ * - 404 ad_not_found: TikTok no longer returns the ad needed to resolve identity. Check deletion or archival in TikTok Ads Manager. Listing can still succeed.
+ * - 403 feature_not_available: unsupported or unavailable identity.
+ * - 403 insufficient_permissions: denied access to ad details. Comes with reconnect guidance and the upstream platformError.
+ * - 501 feature_not_available (Meta): with guidance to use the existing inbox comment endpoints and the account/post IDs from GET /v1/ads/{adId}/comments.
  *
  */
 export const deleteAdComment = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAdCommentData, ThrowOnError>) => {
@@ -13191,13 +14360,17 @@ export const listAdsBusinessCenters = <ThrowOnError extends boolean = false>(opt
 
 /**
  * List ads that need attention
- * Lists what needs attention across your ads, most severe first: ads created in the last 90 days that were rejected, campaigns the platform reports
- * delivery issues on, Meta ad accounts with a failed or overdue payment or disabled while holding live ads,
- * campaigns that spent on 3 or more of the last 7 days without a result (conversion, lead, purchase or
- * conversation goals), and budgets spent to their daily cap yesterday.
+ * Lists what needs attention across your ads, most severe first:
  *
- * Built from stored data and the last 7 days of synced metrics, so it costs no platform call. Each alert has a
- * stable `id`; dismiss one with `POST /v1/ads/alerts/{alertId}/dismiss` to hide it for 30 days.
+ * - ads created in the last 90 days that were rejected
+ * - campaigns the platform reports delivery issues on
+ * - Meta ad accounts with a failed or overdue payment, or disabled while holding live ads
+ * - campaigns that spent on 3 or more of the last 7 days without a result (conversion, lead, purchase or conversation goals)
+ * - budgets spent to their daily cap yesterday
+ *
+ * Built from stored data and the last 7 days of synced metrics, so it costs no platform call.
+ *
+ * Each alert has a stable `id`. Dismiss one with `POST /v1/ads/alerts/{alertId}/dismiss` to hide it for 30 days.
  *
  */
 export const listAdsAlerts = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdsAlertsData, ThrowOnError>) => {
@@ -13224,24 +14397,35 @@ export const dismissAdsAlert = <ThrowOnError extends boolean = false>(options: O
  * Ad account change / audit log
  * Shows who changed what in an ad account and when, as an audit log of edits to campaigns, ad sets and ads.
  *
- * **Google**: reads the customer's `change_event` history, newest first. Google keeps 30 days
- * of it, so `since` defaults to 29 days ago and an older `since` returns 400; `until`
- * defaults to today. Each change is mapped onto the Meta row shape: `event_type` =
- * resource_change_operation (CREATE, UPDATE, REMOVE), `event_time` = change_date_time,
- * `actor_name` = user_email, `object_type` = change_resource_type, `object_id` = the last numeric id
- * of `object_resource_name`, `application_name` = client_type, `changed_fields` (array), and
- * `extra_data` = a JSON string `{ old, new }` with Google's old and new resource.
- * Pass `paging.after` back as `after` for the next page; it is null when nothing older is
- * left. A page never splits a change batch (the changes of one request share an
- * `event_time`), so a page can hold fewer rows than `limit` while more follow, or more
- * when one batch is larger than `limit`. `adAccountId` is the numeric customer id.
+ * ### Google
  *
- * **Meta**:
- * Account-level audit log from Meta's `/act_X/activities`: who changed what and when
- * (creates, edits, status flips, budget changes...) with Meta's translated event names and
- * the structured before/after in `extra_data`. Rows are returned verbatim. Meta has no
- * server-side per-object filter on this edge, so `objectId` filters the returned page
- * client-side (combine with paging to walk history for one campaign/ad set/ad).
+ * Reads the customer's `change_event` history, newest first. `adAccountId` is the numeric customer id.
+ *
+ * Google keeps 30 days of it, so `since` defaults to 29 days ago and an older `since` returns 400. `until` defaults to today.
+ *
+ * Each change is mapped onto the Meta row shape:
+ *
+ * - `event_type` = resource_change_operation (CREATE, UPDATE, REMOVE)
+ * - `event_time` = change_date_time
+ * - `actor_name` = user_email
+ * - `object_type` = change_resource_type
+ * - `object_id` = the last numeric id of `object_resource_name`
+ * - `application_name` = client_type
+ * - `changed_fields` (array)
+ * - `extra_data` = a JSON string `{ old, new }` with Google's old and new resource
+ *
+ * #### Pagination
+ *
+ * Pass `paging.after` back as `after` for the next page; it is null when nothing older is left.
+ *
+ * A page never splits a change batch (the changes of one request share an `event_time`). So a page can hold fewer rows than `limit` while more follow, or more when one batch is larger than `limit`.
+ *
+ * ### Meta
+ *
+ * Account-level audit log from Meta's `/act_X/activities`: who changed what and when (creates, edits, status flips, budget changes...). Includes Meta's translated event names and the structured before/after in `extra_data`. Rows are returned verbatim.
+ *
+ * Meta has no server-side per-object filter on this edge, so `objectId` filters the returned page client-side. Combine it with paging to walk history for one campaign/ad set/ad.
+ *
  */
 export const getAdsActivityLog = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdsActivityLogData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdsActivityLogResponse, GetAdsActivityLogError, ThrowOnError>({
@@ -13254,16 +14438,28 @@ export const getAdsActivityLog = <ThrowOnError extends boolean = false>(options:
  * Create reach-frequency prediction
  * Quotes the reach or budget for a Meta reach and frequency campaign over a date range, without buying anything.
  *
- * This is a QUOTE, nothing is bought and no ad entities are created.
- * Provide a date range plus exactly one of `budgetAmount` (Meta predicts reach) or `reach`
- * (Meta predicts the budget). The response carries the estimate and its allowed bounds
- * (min/max budget and reach). Predictions expire on their own; to buy, reserve one via
- * POST /v1/ads/rf-predictions/{predictionId}/reserve and pass the RESERVED id to
- * POST /v1/ads/create with `buyingType: "RESERVED"`.
+ * This is a QUOTE: nothing is bought and no ad entities are created. Provide a date range plus exactly one of:
  *
- * Reservation campaigns reject automatic placements. Top-level `placements` wins; when it is
- * omitted, `targeting.placements` is used; when neither is set, placements default to
- * Facebook feed (+ Instagram stream when a linked IG professional account resolves).
+ * - `budgetAmount`: Meta predicts reach
+ * - `reach`: Meta predicts the budget
+ *
+ * The response carries the estimate and its allowed bounds (min/max budget and reach).
+ *
+ * ### Buying
+ *
+ * Predictions expire on their own. To buy:
+ *
+ * 1. Reserve one via POST /v1/ads/rf-predictions/{predictionId}/reserve.
+ * 2. Pass the RESERVED id to POST /v1/ads/create with `buyingType: "RESERVED"`.
+ *
+ * ### Placements
+ *
+ * Reservation campaigns reject automatic placements.
+ *
+ * - Top-level `placements` wins.
+ * - When it is omitted, `targeting.placements` is used.
+ * - When neither is set, placements default to Facebook feed (+ Instagram stream when a linked IG professional account resolves).
+ *
  * Instagram placements require that IG account.
  *
  */
@@ -13332,7 +14528,14 @@ export const listAdStudies = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * List TikTok ad identities
- * The identities an ad on this TikTok advertiser may run as (the profile shown on the ad): the advertiser's own TikTok accounts (TT_USER), Business Center authorized accounts (BC_AUTH_TT) and custom brand identities (CUSTOMIZED_USER). Pass the chosen `identityId` on POST /v1/ads/create or POST /v1/ads/boost. Spark-post identities (AUTH_CODE) are not listed; a Spark code creates its own.
+ * Lists the identities an ad on this TikTok advertiser may run as (the profile shown on the ad):
+ *
+ * - the advertiser's own TikTok accounts (TT_USER)
+ * - Business Center authorized accounts (BC_AUTH_TT)
+ * - custom brand identities (CUSTOMIZED_USER)
+ *
+ * Pass the chosen `identityId` on POST /v1/ads/create or POST /v1/ads/boost. Spark-post identities (AUTH_CODE) are not listed; a Spark code creates its own.
+ *
  */
 export const listAdsTikTokIdentities = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdsTikTokIdentitiesData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdsTikTokIdentitiesResponse, ListAdsTikTokIdentitiesError, ThrowOnError>({
@@ -13343,7 +14546,41 @@ export const listAdsTikTokIdentities = <ThrowOnError extends boolean = false>(op
 
 /**
  * Per-creative performance inside TikTok Smart+ ads
- * Breaks a Smart+ ad (or ad group) down by creative material, one row per Spark post, video or image, from TikTok's Smart+ material report. For a Spark post `tiktokItemId` is the TikTok post id. Conversion metrics are TikTok web (pixel) events. `purchases`, `purchaseValue` and `roas` come from Complete Payment, or from Place an Order (legacy ON_WEB_ORDER pixels) when that reports more; the two are never summed. TikTok allows two dimensions per report, so rows are keyed by the Smart+ ad (`level=ad`) or by the ad group (`level=adGroup`), not both. A row is identified by `smartPlusAdId` + `materialId` at `level=ad` and by `adGroupId` + `materialId` at `level=adGroup`; each appears once across all pages. Rows are sorted by `spend` descending, then the Smart+ ad or ad group id, then `materialId`, and the full result is cached for 10 minutes per account, advertiser and query, so pages read within that window are consistent and `totalRows` counts distinct rows. When the result spans more than one TikTok page it is read per Smart+ ad (or ad group) listed on the advertiser, every status included, and those reads can return more rows than TikTok's unfiltered report declares, so `totalRows` can be larger than that count; when the unfiltered report fits one page (100 rows or fewer) it is served as is. Each TikTok read is checked against the row count it declares itself, and a short read is retried once. A shortfall of at most 2 rows (or 1% of the rows, whichever is more) is served with `missingRows` set to that number; a larger one answers 502 instead of a short result. Metrics TikTok returns empty come back as null.
+ * Breaks a Smart+ ad (or ad group) down by creative material, one row per Spark post, video or image, from TikTok's Smart+ material report. For a Spark post `tiktokItemId` is the TikTok post id.
+ *
+ * ### Metrics
+ *
+ * Conversion metrics are TikTok web (pixel) events. `purchases`, `purchaseValue` and `roas` come from Complete Payment, or from Place an Order (legacy ON_WEB_ORDER pixels) when that reports more; the two are never summed.
+ *
+ * Metrics TikTok returns empty come back as null.
+ *
+ * ### Rows
+ *
+ * TikTok allows two dimensions per report, so rows are keyed by the Smart+ ad (`level=ad`) or by the ad group (`level=adGroup`), not both.
+ *
+ * - At `level=ad` a row is identified by `smartPlusAdId` + `materialId`.
+ * - At `level=adGroup` a row is identified by `adGroupId` + `materialId`.
+ *
+ * Each row appears once across all pages.
+ *
+ * ### Sorting and paging
+ *
+ * Rows are sorted by `spend` descending, then the Smart+ ad or ad group id, then `materialId`.
+ *
+ * The full result is cached for 10 minutes per account, advertiser and query. So pages read within that window are consistent and `totalRows` counts distinct rows.
+ *
+ * ### How rows are read
+ *
+ * - When the unfiltered report fits one page (100 rows or fewer), it is served as is.
+ * - When the result spans more than one TikTok page, it is read per Smart+ ad (or ad group) listed on the advertiser, every status included. Those reads can return more rows than TikTok's unfiltered report declares, so `totalRows` can be larger than that count.
+ *
+ * ### Short reads
+ *
+ * Each TikTok read is checked against the row count it declares itself, and a short read is retried once.
+ *
+ * - A shortfall of at most 2 rows (or 1% of the rows, whichever is more) is served with `missingRows` set to that number.
+ * - A larger one answers 502 instead of a short result.
+ *
  */
 export const getTikTokSmartPlusMaterialReport = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTikTokSmartPlusMaterialReportData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetTikTokSmartPlusMaterialReportResponse, GetTikTokSmartPlusMaterialReportError, ThrowOnError>({
@@ -13354,19 +14591,94 @@ export const getTikTokSmartPlusMaterialReport = <ThrowOnError extends boolean = 
 
 /**
  * Review status of every TikTok Smart+ ad of an advertiser
- * Returns the review verdict of every Upgraded Smart+ ad of one TikTok advertiser, with each creative's verdict, in one paginated read. Use it to refresh reviews periodically: one call (plus its pages) per advertiser per refresh, instead of `GET /v1/ads/{adId}/tiktok-smart-plus-review` per ad.
+ * Returns the review verdict of every Upgraded Smart+ ad of one TikTok advertiser, with each creative's verdict, in one paginated read.
  *
- * Zernio lists the advertiser's Smart+ ads with `/smart_plus/ad/get/` (deleted ones only with `includeDeleted=true`) and reads `/smart_plus/ad/review_info/` for Smart+ ads holding up to 50 creatives in total per call (TikTok refuses more; a Smart+ ad with more than 50 creatives is read alone), across ad groups, one call after another while TikTok accepts them, for up to 20 seconds per request (the ads not reached are read by the next request, which can come right away). One request per advertiser and connection refreshes at a time: a parallel request sends no review call and answers what is stored with `refreshState: paused` and `retryAfterSeconds: 20`. A full refresh of N Smart+ ads with C creatives in total costs about `ceil(N / 100)` listing calls and `ceil(C / 50)` review calls on TikTok. When TikTok still refuses a call for its creative count, Zernio lowers the creative cap for that advertiser and reads the same ads again in smaller calls, never resending the refused size.
+ * Use it to refresh reviews periodically: one call (plus its pages) per advertiser per refresh, instead of `GET /v1/ads/{adId}/tiktok-smart-plus-review` per ad.
  *
- * Stale while refreshing: every review is stored for 24 hours per connection, advertiser and Smart+ ad (shared with the single-ad read), and `readAt` is always the time TikTok answered, never rewritten when served from the store. `maxAgeSeconds` (default 3600) is the freshness window: a review read within it is fresh and costs no TikTok call; an older one is still returned in `items` but is read again, and so is a Smart+ ad never read. Each request alternates one batch of Smart+ ads never read (live, then deleted with `includeDeleted=true`) with one batch of stale ones, oldest `readAt` first, so a quota pause starves neither, progress carries over between requests and an ad already read never goes back to pending. A stored review is replaced only by a successful read. `counts` splits the Smart+ ads on this page into `fresh`, `stale`, `pending` and `failed`, and `oldestReadAt` is the oldest `readAt` of `items`. `incomplete` is true only while some Smart+ ad of the page has never been read (`pending > 0`). Staleness is reported apart: `allFresh` is true when every item and refusal of the page is within `maxAgeSeconds` and nothing is pending. A page with stale items and nothing pending is complete (`incomplete: false`): move on, and a later read refreshes it oldest first. When Zernio could not refresh some due ads of the page because review reads are held or TikTok refused them over quota, `refreshState` is `paused` or `refused` and `retryAfterSeconds` (also in the `Retry-After` header) says when that later read can reach TikTok, even with nothing pending. On 2026-10-25 TikTok's quota allowed about 130 to 230 Smart+ ads per advertiser per hour (about 11.5 ads and 4 creatives per successful call), so a larger advertiser cannot be fully refreshed within one hour and its pages stay complete but not `allFresh`.
+ * ### How Zernio reads TikTok
  *
- * The listing is stored with the time it was read (`listing.readAt`) and listed again when it is older than `maxAgeSeconds`, so it can be up to `maxAgeSeconds` old: a Smart+ ad created on TikTok appears after at most that long (one hour by default). If that relisting fails, Zernio serves the stored listing with `listing.source: fallback` and the relist error in `listing.error`, instead of failing the request; `listing.source: fresh` means the listing was read within `maxAgeSeconds`. Only when no listing was ever stored does the listing error fail the request.
+ * 1. Zernio lists the advertiser's Smart+ ads with `/smart_plus/ad/get/` (deleted ones only with `includeDeleted=true`).
+ * 2. It reads `/smart_plus/ad/review_info/` for Smart+ ads holding up to 50 creatives in total per call (TikTok refuses more). A Smart+ ad with more than 50 creatives is read alone.
+ * 3. Calls run across ad groups, one after another while TikTok accepts them, for up to 20 seconds per request. Ads not reached are read by the next request, which can come right away.
  *
- * TikTok's review endpoint has a strict quota of its own (TikTok documents neither the quota nor its scope). One request keeps reading batches (up to 50 creatives each) while TikTok accepts them. When TikTok is over quota (or Zernio is holding review reads after an overage: about 60 seconds, then 120 and up to 240 while TikTok keeps refusing, and about 60 again after a successful call, each with up to 10% of random jitter), Zernio stops calling TikTok and answers 200 with the reviews it has: stale reviews in `items`, the Smart+ ads never read in `pendingSmartPlusAdIds`, `incomplete: true` when any are pending, and `refreshState` (`paused` or `refused`) with `retryAfterSeconds` (also in the `Retry-After` header) whenever due ads were left unread. Every Smart+ ad of the page is in `items`, `failedSmartPlusAds` or `pendingSmartPlusAdIds`. Wait `retryAfterSeconds` and read the same page again: only the stale and pending ads reach TikTok.
+ * One request per advertiser and connection refreshes at a time. A parallel request sends no review call and answers what is stored with `refreshState: paused` and `retryAfterSeconds: 20`.
  *
- * A Smart+ ad whose review TikTok refuses on its own (for example one deleted on TikTok since the listing was read) is returned in `failedSmartPlusAds` with TikTok's error and `refusedAt`, and the rest of the page is still read. Zernio finds it by splitting the refused batch in halves, at most 16 extra TikTok calls per page; ads still unresolved after that keep their stored review, or stay in `pendingSmartPlusAdIds` when they have none, and are read again by the next request, in turn with the other due ads. A refusal of a single ad is stored for 24 hours and read again once it is older than `maxAgeSeconds`; when an ad has both a stored review and a stored refusal, the more recent one is returned. When both halves of a refused batch are refused with the same TikTok error (for example a permission error), Zernio stops calling TikTok for that page: when every Smart+ ad of the page has a stored review or refusal, it serves them and returns the refusal in `reviewError`; when some ad was never read, the whole request fails with that error.
+ * A full refresh of N Smart+ ads with C creatives in total costs about `ceil(N / 100)` listing calls and `ceil(C / 50)` review calls on TikTok.
  *
- * Items are sorted by `adGroupId`, then `smartPlusAdId`, so pages are stable. Keep one page in flight per advertiser and read its pages one after another: parallel pages of one advertiser spend its review quota at the same time and come back incomplete. Production logs suggest the quota is counted per advertiser (not confirmed by TikTok), so different advertisers have been read in parallel without throttling each other.
+ * When TikTok still refuses a call for its creative count, Zernio lowers the creative cap for that advertiser and reads the same ads again in smaller calls, never resending the refused size.
+ *
+ * ### Stale while refreshing
+ *
+ * Every review is stored for 24 hours per connection, advertiser and Smart+ ad (shared with the single-ad read). `readAt` is always the time TikTok answered, never rewritten when served from the store.
+ *
+ * `maxAgeSeconds` (default 3600) is the freshness window:
+ *
+ * - A review read within it is fresh and costs no TikTok call.
+ * - An older one is still returned in `items` but is read again.
+ * - A Smart+ ad never read is also read.
+ *
+ * Each request alternates one batch of Smart+ ads never read (live, then deleted with `includeDeleted=true`) with one batch of stale ones, oldest `readAt` first.
+ *
+ * So a quota pause starves neither, progress carries over between requests, and an ad already read never goes back to pending. A stored review is replaced only by a successful read.
+ *
+ * ### Response fields
+ *
+ * - `counts`: splits the Smart+ ads on this page into `fresh`, `stale`, `pending` and `failed`.
+ * - `oldestReadAt`: the oldest `readAt` of `items`.
+ * - `incomplete`: true only while some Smart+ ad of the page has never been read (`pending > 0`).
+ * - `allFresh`: staleness is reported apart. True when every item and refusal of the page is within `maxAgeSeconds` and nothing is pending.
+ * - `refreshState`: `paused` or `refused` when Zernio could not refresh some due ads of the page because review reads are held or TikTok refused them over quota.
+ * - `retryAfterSeconds` (also in the `Retry-After` header): when that later read can reach TikTok, even with nothing pending.
+ *
+ * A page with stale items and nothing pending is complete (`incomplete: false`). Move on, and a later read refreshes it oldest first.
+ *
+ * On 2026-10-25 TikTok's quota allowed about 130 to 230 Smart+ ads per advertiser per hour (about 11.5 ads and 4 creatives per successful call). A larger advertiser cannot be fully refreshed within one hour, so its pages stay complete but not `allFresh`.
+ *
+ * ### Listing freshness
+ *
+ * The listing is stored with the time it was read (`listing.readAt`) and listed again when it is older than `maxAgeSeconds`. So it can be up to `maxAgeSeconds` old: a Smart+ ad created on TikTok appears after at most that long (one hour by default).
+ *
+ * - `listing.source: fresh`: the listing was read within `maxAgeSeconds`.
+ * - `listing.source: fallback`: relisting failed, so Zernio serves the stored listing, with the relist error in `listing.error`, instead of failing the request.
+ *
+ * Only when no listing was ever stored does the listing error fail the request.
+ *
+ * ### Review quota
+ *
+ * TikTok's review endpoint has a strict quota of its own (TikTok documents neither the quota nor its scope). One request keeps reading batches (up to 50 creatives each) while TikTok accepts them.
+ *
+ * Zernio may hold review reads after an overage: about 60 seconds, then 120 and up to 240 while TikTok keeps refusing, and about 60 again after a successful call, each with up to 10% of random jitter.
+ *
+ * When TikTok is over quota (or reads are held), Zernio stops calling TikTok and answers 200 with the reviews it has:
+ *
+ * - stale reviews in `items`
+ * - the Smart+ ads never read in `pendingSmartPlusAdIds`
+ * - `incomplete: true` when any are pending
+ * - `refreshState` (`paused` or `refused`) with `retryAfterSeconds` (also in the `Retry-After` header) whenever due ads were left unread
+ *
+ * Every Smart+ ad of the page is in `items`, `failedSmartPlusAds` or `pendingSmartPlusAdIds`. Wait `retryAfterSeconds` and read the same page again: only the stale and pending ads reach TikTok.
+ *
+ * ### Refused ads
+ *
+ * A Smart+ ad whose review TikTok refuses on its own (for example one deleted on TikTok since the listing was read) is returned in `failedSmartPlusAds` with TikTok's error and `refusedAt`. The rest of the page is still read.
+ *
+ * Zernio finds it by splitting the refused batch in halves, at most 16 extra TikTok calls per page. Ads still unresolved after that keep their stored review, or stay in `pendingSmartPlusAdIds` when they have none, and are read again by the next request, in turn with the other due ads.
+ *
+ * A refusal of a single ad is stored for 24 hours and read again once it is older than `maxAgeSeconds`. When an ad has both a stored review and a stored refusal, the more recent one is returned.
+ *
+ * When both halves of a refused batch are refused with the same TikTok error (for example a permission error), Zernio stops calling TikTok for that page:
+ *
+ * - If every Smart+ ad of the page has a stored review or refusal, it serves them and returns the refusal in `reviewError`.
+ * - If some ad was never read, the whole request fails with that error.
+ *
+ * ### Paging
+ *
+ * Items are sorted by `adGroupId`, then `smartPlusAdId`, so pages are stable.
+ *
+ * Keep one page in flight per advertiser and read its pages one after another. Parallel pages of one advertiser spend its review quota at the same time and come back incomplete.
+ *
+ * Production logs suggest the quota is counted per advertiser (not confirmed by TikTok), so different advertisers have been read in parallel without throttling each other.
+ *
  */
 export const listTikTokSmartPlusReviews = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTikTokSmartPlusReviewsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListTikTokSmartPlusReviewsResponse, ListTikTokSmartPlusReviewsError, ThrowOnError>({
@@ -13393,7 +14705,16 @@ export const listAdsInstagramAccounts = <ThrowOnError extends boolean = false>(o
  * List Instagram posts to boost
  * Lists posts from the Instagram account a Meta ad connection can reach, so you can boost one as an ad.
  *
- * Lists the media of the Instagram account this Meta connection can reach, so an existing Instagram post can be boosted without connecting the Instagram account separately. Each `posts[].id` is the existing-post id to send as `platformPostId` when creating the ad; Meta turns it into `source_instagram_media_id` on the creative. Identity resolution reuses the same resolver as `/v1/ads/instagram-accounts`. `igUserId` is always checked against the identities the connection can reach and is never trusted as sent. When no identity is reachable the endpoint fails instead of returning an empty list, and the two causes stay apart: `403 reconnect_required` means the connection predates Instagram access (Meta then omits `instagram_business_account` from the Page read rather than erroring, so it looks identical to having no data) and the account must be reconnected granting Instagram access, while `422 instagram_business_account_unresolved` means the Page genuinely has no Instagram professional account linked.
+ * An existing Instagram post can be boosted this way without connecting the Instagram account separately. Each `posts[].id` is the existing-post id to send as `platformPostId` when creating the ad; Meta turns it into `source_instagram_media_id` on the creative.
+ *
+ * Identity resolution reuses the same resolver as `/v1/ads/instagram-accounts`. `igUserId` is always checked against the identities the connection can reach and is never trusted as sent.
+ *
+ * ### When no identity is reachable
+ *
+ * The endpoint fails instead of returning an empty list, and the two causes stay apart:
+ *
+ * - `403 reconnect_required`: the connection predates Instagram access, and the account must be reconnected granting Instagram access. Meta then omits `instagram_business_account` from the Page read rather than erroring, so it looks identical to having no data.
+ * - `422 instagram_business_account_unresolved`: the Page genuinely has no Instagram professional account linked.
  *
  */
 export const listAdsInstagramPosts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdsInstagramPostsData, ThrowOnError>) => {
@@ -13480,11 +14801,11 @@ export const listPageUsers = <ThrowOnError extends boolean = false>(options: Opt
  * Assign a user to a Page
  * Gives a person in your business portfolio tasks on a Facebook Page, such as advertising, so they can run ads for it.
  *
- * Gives a person of the portfolio tasks on a Page the portfolio owns or was granted as a
- * partner. Meta does not assign partner admins automatically, so after an owner shares a
- * Page the partner calls this for the people whose tokens will advertise for it.
- * `ADVERTISE` is what ad creation needs. Assigning an already assigned user replaces
- * their task set.
+ * The Page can be one the portfolio owns or was granted as a partner. Meta does not assign partner admins automatically, so after an owner shares a Page the partner calls this for the people whose tokens will advertise for it.
+ *
+ * - `ADVERTISE` is what ad creation needs.
+ * - Assigning an already assigned user replaces their task set.
+ *
  */
 export const assignPageUser = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AssignPageUserData, ThrowOnError>) => {
     return (options?.client ?? client).post<AssignPageUserResponse, AssignPageUserError, ThrowOnError>({
@@ -13509,12 +14830,17 @@ export const removePageUser = <ThrowOnError extends boolean = false>(options: Op
  * List ad labels
  * Lists the labels used to organise campaigns and ads in an ad account.
  *
- * - **Meta**: pass `adAccountId=act_<n>`. Rows are Meta's `/act_X/adlabels` returned verbatim
- * (id, name, created/updated time), paginated with `limit` / `after`.
- * - **Google Ads**: pass the numeric customer id as `adAccountId` (optional when the
- * connection has a single customer). Returns every non-removed label as a `GoogleAdLabel`
- * in one page (`paging.after` is always null). Reads are cached for 10 minutes; when the
- * shared Google quota is exhausted the last successful result is served with `stale: true`.
+ * ### Meta
+ *
+ * Pass `adAccountId=act_<n>`. Rows are Meta's `/act_X/adlabels` returned verbatim (id, name, created/updated time), paginated with `limit` / `after`.
+ *
+ * ### Google Ads
+ *
+ * Pass the numeric customer id as `adAccountId` (optional when the connection has a single customer).
+ *
+ * - Returns every non-removed label as a `GoogleAdLabel` in one page (`paging.after` is always null).
+ * - Reads are cached for 10 minutes.
+ * - When the shared Google quota is exhausted, the last successful result is served with `stale: true`.
  *
  */
 export const listAdLabels = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdLabelsData, ThrowOnError>) => {
@@ -13572,12 +14898,17 @@ export const removeAdLabel = <ThrowOnError extends boolean = false>(options: Opt
  * Attach a Google Ads label
  * Attaches a Google Ads label to campaigns, ad groups, ads and keywords in one call, skipping any that already have it.
  *
- * Attaches the label to campaigns, ad groups, ads and keywords (Google CampaignLabel,
- * AdGroupLabel, AdGroupAdLabel and AdGroupCriterionLabel) in one mutate. Idempotent: a
- * target that already carries the label is counted in `unchanged` instead of failing the
- * call. All ids are Google's own: ads and keywords use the composite id Google puts in
- * their resource names, `{adGroupId}~{adId}` and `{adGroupId}~{criterionId}` (the keyword
- * form is the tail of `resourceName` on `GET /v1/ads/keywords`).
+ * The label goes to campaigns, ad groups, ads and keywords (Google CampaignLabel, AdGroupLabel, AdGroupAdLabel and AdGroupCriterionLabel) in one mutate.
+ *
+ * Idempotent: a target that already carries the label is counted in `unchanged` instead of failing the call.
+ *
+ * ### Ids
+ *
+ * All ids are Google's own. Ads and keywords use the composite id Google puts in their resource names:
+ *
+ * - Ads: `{adGroupId}~{adId}`
+ * - Keywords: `{adGroupId}~{criterionId}` (the tail of `resourceName` on `GET /v1/ads/keywords`)
+ *
  */
 export const attachAdLabel = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AttachAdLabelData, ThrowOnError>) => {
     return (options?.client ?? client).post<AttachAdLabelResponse, AttachAdLabelError, ThrowOnError>({
@@ -13620,14 +14951,13 @@ export const listHighDemandPeriods = <ThrowOnError extends boolean = false>(opti
  * Schedule a budget increase
  * Schedules a temporary budget increase on a Meta campaign or ad set for a busy period, like Black Friday or a launch.
  *
- * Same target rule as the GET: exactly one of
- * `campaignId` / `adSetId`.
+ * Same target rule as the GET: exactly one of `campaignId` / `adSetId`.
  *
- * Two Meta constraints worth knowing before you call it. `timeStart` / `timeEnd` must
- * fall on a 15-minute boundary, and a campaign cannot mix `ABSOLUTE` and `MULTIPLIER`
- * across its schedules; the second type is rejected with "Can't mix your budget scaling
- * selection". Window rules (must sit inside the campaign's run dates, minimum lead time,
- * no overlap) are Meta's and its message is forwarded verbatim.
+ * ### Meta constraints
+ *
+ * - `timeStart` / `timeEnd` must fall on a 15-minute boundary.
+ * - A campaign cannot mix `ABSOLUTE` and `MULTIPLIER` across its schedules. The second type is rejected with "Can't mix your budget scaling selection".
+ * - Window rules (must sit inside the campaign's run dates, minimum lead time, no overlap) are Meta's, and its message is forwarded verbatim.
  *
  */
 export const createHighDemandPeriod = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateHighDemandPeriodData, ThrowOnError>) => {
@@ -13658,12 +14988,22 @@ export const listAdCreatives = <ThrowOnError extends boolean = false>(options: O
  * Create a standalone creative
  * Creates a reusable Meta creative from an image or carousel without creating an ad, ready to attach to ads later.
  *
- * Creates a creative in the library WITHOUT an ad, reusable on the create endpoints via
- * `existingCreativeId`. Provide exactly one of `imageUrl` (uploaded server-side),
- * `imageHash` (from POST /v1/ads/images or the library list), or `carouselCards` (2-10
- * hand-built cards). The Page (and linked Instagram account, when present) is resolved
- * from `accountId` as the story actor. `creativeFeatures` configures Advantage+
- * enhancements. `promotion` is not supported and any object is rejected with 400.
+ * The creative goes in the library WITHOUT an ad, reusable on the create endpoints via `existingCreativeId`.
+ *
+ * ### Source
+ *
+ * Provide exactly one of:
+ *
+ * - `imageUrl` (uploaded server-side)
+ * - `imageHash` (from POST /v1/ads/images or the library list)
+ * - `carouselCards` (2-10 hand-built cards)
+ *
+ * ### Other fields
+ *
+ * - The Page (and linked Instagram account, when present) is resolved from `accountId` as the story actor.
+ * - `creativeFeatures` configures Advantage+ enhancements.
+ * - `promotion` is not supported and any object is rejected with 400.
+ *
  */
 export const createAdCreative = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdCreativeData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdCreativeResponse, CreateAdCreativeError, ThrowOnError>({
@@ -13750,36 +15090,43 @@ export const listValueRuleSets = <ThrowOnError extends boolean = false>(options:
  * Create a value rule set
  * Creates a Meta value rule set that raises or lowers bids for chosen audience segments, ready to attach to ad sets.
  *
- * Creates a value rule set on the ad account (Meta's `POST /act_X/value_rule_set`).
- * Attach the returned id to an ad set with `valueRuleSetId` on `POST /v1/ads/create` or
- * `PUT /v1/ads/ad-sets/{adSetId}`.
+ * Creates a value rule set on the ad account (Meta's `POST /act_X/value_rule_set`). Attach the returned id to an ad set with `valueRuleSetId` on `POST /v1/ads/create` or `PUT /v1/ads/ad-sets/{adSetId}`.
  *
- * **Rule order is semantic**: rules are evaluated in array order and only the first
- * matching rule adjusts the bid for an overlapping audience.
+ * ### Rule order is semantic
  *
- * `adjustValue` is an unsigned magnitude in percent; the direction lives in `adjustSign`.
- * `INCREASE` accepts 1-1000, `DECREASE` accepts 1-90. There is no signed field and 0 is
- * out of range.
+ * Rules are evaluated in array order and only the first matching rule adjusts the bid for an overlapping audience.
  *
- * `criteriaValueTypes` is positionally paired with `criteriaValues` (same length, same
- * order). Every type is the literal `"NONE"` except on `LOCATION`, which uses
- * `LOCATION_COUNTRY` / `LOCATION_REGION` / `LOCATION_CITY` / `LOCATION_COMSCORE_MARKET`
- * and may mix them within one criterion. Location values are Targeting-Search keys: a
- * two-letter country code for `LOCATION_COUNTRY`, a numeric key for the rest.
+ * ### Adjustment
  *
- * `LOCATION_DMA` was replaced by `LOCATION_COMSCORE_MARKET` on 2026-06-22 and rules using
- * DMAs are no longer active, so this API rejects it.
+ * `adjustValue` is an unsigned magnitude in percent; the direction lives in `adjustSign`. There is no signed field and 0 is out of range.
  *
- * `AUDIENCE_LABEL` values (e.g. `HIGH_VALUE`) are applied to a Custom Audience in Ads
- * Manager. There is no API to provision them, so label strings are passed through
- * unvalidated and a typo produces a rule that never fires.
+ * - `INCREASE` accepts 1-1000.
+ * - `DECREASE` accepts 1-90.
  *
- * Ads Manager turns a rule set read-only (this API stays editable) when a rule uses more
- * than 2 criteria, a custom age range, or the placements `FB_MARKETPLACE`, `FB_SEARCH`,
- * `FB_VIDEO` or `IG_EXPLORE`.
+ * ### Criteria
  *
- * Limits: 6 rule sets per ad account, 10 rules per set, 4 criteria per rule. The
- * per-account cap is enforced by Meta, not here.
+ * `criteriaValueTypes` is positionally paired with `criteriaValues` (same length, same order). Every type is the literal `"NONE"` except on `LOCATION`.
+ *
+ * `LOCATION` uses `LOCATION_COUNTRY` / `LOCATION_REGION` / `LOCATION_CITY` / `LOCATION_COMSCORE_MARKET` and may mix them within one criterion. Location values are Targeting-Search keys: a two-letter country code for `LOCATION_COUNTRY`, a numeric key for the rest.
+ *
+ * `LOCATION_DMA` was replaced by `LOCATION_COMSCORE_MARKET` on 2026-06-22 and rules using DMAs are no longer active, so this API rejects it.
+ *
+ * `AUDIENCE_LABEL` values (e.g. `HIGH_VALUE`) are applied to a Custom Audience in Ads Manager. There is no API to provision them, so label strings are passed through unvalidated and a typo produces a rule that never fires.
+ *
+ * ### Read-only in Ads Manager
+ *
+ * Ads Manager turns a rule set read-only (this API stays editable) when a rule uses:
+ *
+ * - more than 2 criteria
+ * - a custom age range
+ * - the placements `FB_MARKETPLACE`, `FB_SEARCH`, `FB_VIDEO` or `IG_EXPLORE`
+ *
+ * ### Limits
+ *
+ * - 6 rule sets per ad account (enforced by Meta, not here)
+ * - 10 rules per set
+ * - 4 criteria per rule
+ *
  */
 export const createValueRuleSet = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateValueRuleSetData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateValueRuleSetResponse, CreateValueRuleSetError, ThrowOnError>({
@@ -13925,7 +15272,14 @@ export const deleteAdNegativeKeywordList = <ThrowOnError extends boolean = false
  * Replace negative list keywords
  * Replaces all keywords in a shared Google Ads negative keyword list (or clears it), affecting every campaign that uses the list.
  *
- * Existing keywords are diffed by normalized text and match type; creates and removals are applied atomically in one mutation. Unchanged criteria retain their ids. Send an empty keywords array to clear the list. Changes affect every campaign using this list. Each create or removal consumes one daily operation; the entire batch must fit the remaining quota.
+ * - Existing keywords are diffed by normalized text and match type.
+ * - Creates and removals are applied atomically in one mutation. Unchanged criteria retain their ids.
+ * - Send an empty keywords array to clear the list.
+ * - Changes affect every campaign using this list.
+ *
+ * ### Quota
+ *
+ * Each create or removal consumes one daily operation; the entire batch must fit the remaining quota.
  *
  */
 export const replaceAdNegativeKeywordListKeywords = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplaceAdNegativeKeywordListKeywordsData, ThrowOnError>) => {
@@ -14135,7 +15489,24 @@ export const removeAccountStructuredSnippet = <ThrowOnError extends boolean = fa
  * Get manager account hierarchy
  * Shows the Google Ads manager (MCC) and client account tree for a connection, including pending invitations and link status.
  *
- * Live manager (MCC) and client tree for a Google Ads connection. Starts from every customer the Google user behind the connection can access directly and walks each tree to any depth with `customer_client`, then reads each manager's own client links so every client carries its direct parent, the `managerLinkId` and the link status. Invitations a manager sent that the client has not accepted yet appear as clients with `linkStatus: PENDING` (Google returns no name or currency for them). Refused, canceled and ended links are history and are omitted. `managerLinks` on a root lists the managers linked to that account, including invitations it can still accept with PATCH /v1/ads/accounts/manager-links. A directly accessible account that is also nested in another tree appears only once, inside that tree. `directCustomers` lists every account the Google user accesses directly (the ones this connection can accept or decline invitations for) with their pending invitations, including accounts that are also nested in a tree. Customers Google refuses to read (for example a cancelled account) are listed in `unavailable` with Google's reason instead of failing the call. Up to 50 roots and 50 managers per root are read; `truncated` is true when more exist. Cached for 10 minutes per connection; the response carries `cachedAt` and `stale`. When the connection is scoped to specific ad accounts, client accounts outside that scope are hidden (managers stay visible).
+ * ### How the tree is built
+ *
+ * It starts from every customer the Google user behind the connection can access directly and walks each tree to any depth with `customer_client`. It then reads each manager's own client links, so every client carries its direct parent, the `managerLinkId` and the link status.
+ *
+ * - Invitations a manager sent that the client has not accepted yet appear as clients with `linkStatus: PENDING` (Google returns no name or currency for them).
+ * - Refused, canceled and ended links are history and are omitted.
+ * - A directly accessible account that is also nested in another tree appears only once, inside that tree.
+ *
+ * ### Response fields
+ *
+ * - `managerLinks` (on a root): the managers linked to that account, including invitations it can still accept with PATCH /v1/ads/accounts/manager-links.
+ * - `directCustomers`: every account the Google user accesses directly (the ones this connection can accept or decline invitations for) with their pending invitations, including accounts that are also nested in a tree.
+ * - `unavailable`: customers Google refuses to read (for example a cancelled account), with Google's reason, instead of failing the call.
+ * - `truncated`: true when more exist than the limit. Up to 50 roots and 50 managers per root are read.
+ * - `cachedAt` and `stale`: the response is cached for 10 minutes per connection.
+ *
+ * When the connection is scoped to specific ad accounts, client accounts outside that scope are hidden (managers stay visible).
+ *
  */
 export const getAdAccountHierarchy = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdAccountHierarchyData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdAccountHierarchyResponse, GetAdAccountHierarchyError, ThrowOnError>({
@@ -14148,7 +15519,15 @@ export const getAdAccountHierarchy = <ThrowOnError extends boolean = false>(opti
  * Invite a client account to a manager
  * Invites a Google Ads account to be managed by one of your manager accounts; the link stays pending until the client accepts.
  *
- * Sends a manager-to-client link invitation from `managerCustomerId` to `clientCustomerId` (Google's CustomerClientLinkService). The manager must be one the connection's Google user reaches, directly or under another manager (see GET /v1/ads/accounts/hierarchy); the client can be any Google Ads account. The link stays `PENDING` until someone with access to the client accepts it in Google Ads or through PATCH on this path. Not idempotent: Google refuses a second invitation while one is pending. Send `validateOnly: true` to have Google check the request without sending anything.
+ * Sends a manager-to-client link invitation from `managerCustomerId` to `clientCustomerId` (Google's CustomerClientLinkService).
+ *
+ * - The manager must be one the connection's Google user reaches, directly or under another manager (see GET /v1/ads/accounts/hierarchy).
+ * - The client can be any Google Ads account.
+ *
+ * The link stays `PENDING` until someone with access to the client accepts it in Google Ads or through PATCH on this path.
+ *
+ * Not idempotent: Google refuses a second invitation while one is pending. Send `validateOnly: true` to have Google check the request without sending anything.
+ *
  */
 export const inviteAdAccountToManager = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<InviteAdAccountToManagerData, ThrowOnError>) => {
     return (options?.client ?? client).post<InviteAdAccountToManagerResponse, InviteAdAccountToManagerError, ThrowOnError>({
@@ -14161,7 +15540,16 @@ export const inviteAdAccountToManager = <ThrowOnError extends boolean = false>(o
  * Accept, decline, cancel or end a manager link
  * Accepts, declines or cancels a Google Ads manager invitation, or ends an existing manager-client link.
  *
- * Changes one manager-client link, identified by `managerCustomerId`, `clientCustomerId` and `managerLinkId` (all from GET /v1/ads/accounts/hierarchy). `accept` and `decline` answer a pending invitation as the client (CustomerManagerLinkService), so the connection's Google user needs direct access to the client account; access through a manager is not enough, because the link does not exist yet. `cancel` withdraws a pending invitation and `unlink` ends an active link, both as the manager (CustomerClientLinkService). Send `validateOnly: true` to have Google check the change without applying it.
+ * Changes one manager-client link, identified by `managerCustomerId`, `clientCustomerId` and `managerLinkId` (all from GET /v1/ads/accounts/hierarchy).
+ *
+ * ### Actions
+ *
+ * - `accept` and `decline`: answer a pending invitation as the client (CustomerManagerLinkService). The connection's Google user needs direct access to the client account; access through a manager is not enough, because the link does not exist yet.
+ * - `cancel`: withdraws a pending invitation, as the manager (CustomerClientLinkService).
+ * - `unlink`: ends an active link, as the manager (CustomerClientLinkService).
+ *
+ * Send `validateOnly: true` to have Google check the change without applying it.
+ *
  */
 export const updateAdAccountManagerLink = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdAccountManagerLinkData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateAdAccountManagerLinkResponse, UpdateAdAccountManagerLinkError, ThrowOnError>({
@@ -14174,7 +15562,16 @@ export const updateAdAccountManagerLink = <ThrowOnError extends boolean = false>
  * Get ad account billing
  * Reads the payments accounts a Google Ads account can be billed to, plus its billing setups and account budgets.
  *
- * Payments accounts come from Google's PaymentsAccountService, read as the manager above the customer: they are the monthly invoicing (consolidated billing) accounts of that manager. An empty `paymentsAccounts` means the manager has no monthly invoicing, so billing cannot be set up through the API and has to be added in Google Ads. Billing setups and account budgets are read live from Google with their status. Results are cached for 10 minutes and dropped on every setup through Zernio.
+ * ### Payments accounts
+ *
+ * Payments accounts come from Google's PaymentsAccountService, read as the manager above the customer. They are the monthly invoicing (consolidated billing) accounts of that manager.
+ *
+ * An empty `paymentsAccounts` means the manager has no monthly invoicing, so billing cannot be set up through the API and has to be added in Google Ads.
+ *
+ * ### Billing setups and budgets
+ *
+ * Billing setups and account budgets are read live from Google with their status. Results are cached for 10 minutes and dropped on every setup through Zernio.
+ *
  */
 export const getAdAccountBilling = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdAccountBillingData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdAccountBillingResponse, GetAdAccountBillingError, ThrowOnError>({
@@ -14187,11 +15584,34 @@ export const getAdAccountBilling = <ThrowOnError extends boolean = false>(option
  * Set up ad account billing (monthly invoicing)
  * Bills a Google Ads account to a monthly invoicing payments account of a manager above it, and proposes its account budget, so the account can serve without anyone opening Google Ads.
  *
- * Monthly invoicing only. Google's API cannot add a card or other payment method, so `paymentsAccountId` must be one of the manager's monthly invoicing (consolidated billing) payments accounts listed by GET /v1/ads/accounts/billing. A manager without monthly invoicing has none, and billing has to be added in Google Ads instead.
+ * ### Monthly invoicing only
  *
- * Creates a billing setup (Google's BillingSetupService) that starts now on that payments account, then an account budget proposal that starts now and never ends: unlimited by default, or capped at `spendingLimit` in the account currency. Google reviews the budget offline, usually within an hour; until then the setup reads `APPROVED_HELD` and ads do not serve. A customer whose current billing setup already has a budget is refused with 409, and so is one billed to another payments account: this call never replaces existing billing. A current setup on the same payments account without a budget (for example after a budget rejection) is reused, so resending the same request finishes it.
+ * Google's API cannot add a card or other payment method. So `paymentsAccountId` must be one of the manager's monthly invoicing (consolidated billing) payments accounts listed by GET /v1/ads/accounts/billing.
  *
- * Not idempotent and never retried: after a 502 with details.creationStatus=unknown, read GET /v1/ads/accounts/billing before retrying. Google has no dry run for billing setups, so `validateOnly: true` checks the payments account and the existing billing without creating anything (and asks Google to validate the budget when a setup would be reused).
+ * A manager without monthly invoicing has none, and billing has to be added in Google Ads instead.
+ *
+ * ### What it creates
+ *
+ * 1. A billing setup (Google's BillingSetupService) that starts now on that payments account.
+ * 2. An account budget proposal that starts now and never ends: unlimited by default, or capped at `spendingLimit` in the account currency.
+ *
+ * Google reviews the budget offline, usually within an hour. Until then the setup reads `APPROVED_HELD` and ads do not serve.
+ *
+ * ### Existing billing
+ *
+ * This call never replaces existing billing. It is refused with 409 when:
+ *
+ * - the customer's current billing setup already has a budget;
+ * - the customer is billed to another payments account.
+ *
+ * A current setup on the same payments account without a budget (for example after a budget rejection) is reused, so resending the same request finishes it.
+ *
+ * ### Retries and validation
+ *
+ * Not idempotent and never retried: after a 502 with details.creationStatus=unknown, read GET /v1/ads/accounts/billing before retrying.
+ *
+ * Google has no dry run for billing setups. So `validateOnly: true` checks the payments account and the existing billing without creating anything, and asks Google to validate the budget when a setup would be reused.
+ *
  */
 export const setUpAdAccountBilling = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SetUpAdAccountBillingData, ThrowOnError>) => {
     return (options?.client ?? client).post<SetUpAdAccountBillingResponse, SetUpAdAccountBillingError, ThrowOnError>({
@@ -14204,7 +15624,19 @@ export const setUpAdAccountBilling = <ThrowOnError extends boolean = false>(opti
  * List user access invitations
  * Lists the email invitations to a Google Ads account, with their role and status.
  *
- * Reads Google's `customer_user_access_invitation` resource for one customer: invitations that are `PENDING`, `DECLINED` or `EXPIRED` (Google expires them 20 days after sending). An accepted invitation becomes a user of the account and leaves this list, which can take Google up to 24 hours. An invitation still waiting for multi-party approval is not listed until a second admin approves it; GET /v1/ads/accounts/user-invitations/pending-approvals lists those. Results are cached for 10 minutes and dropped on every invite or revoke through Zernio.
+ * Reads Google's `customer_user_access_invitation` resource for one customer. Listed invitations are:
+ *
+ * - `PENDING`
+ * - `DECLINED`
+ * - `EXPIRED` (Google expires them 20 days after sending)
+ *
+ * ### Not listed
+ *
+ * - An accepted invitation becomes a user of the account and leaves this list, which can take Google up to 24 hours.
+ * - An invitation still waiting for multi-party approval is not listed until a second admin approves it. GET /v1/ads/accounts/user-invitations/pending-approvals lists those.
+ *
+ * Results are cached for 10 minutes and dropped on every invite or revoke through Zernio.
+ *
  */
 export const listAdAccountUserInvitations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdAccountUserInvitationsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdAccountUserInvitationsResponse, ListAdAccountUserInvitationsError, ThrowOnError>({
@@ -14217,7 +15649,24 @@ export const listAdAccountUserInvitations = <ThrowOnError extends boolean = fals
  * Invite a user to an ad account by email
  * Emails someone an invitation to a Google Ads account with the access role you choose, for example to hand a client account you created under your manager to its owner.
  *
- * Creates a user access invitation (Google's CustomerUserAccessInvitationService) on `adAccountId`. The connection's Google user needs admin access to that account, directly or through a manager above it, which is the case for an account created with POST /v1/ads/accounts. The recipient accepts from the email, possibly with another Google account. When Google requires multi-party approval, nothing is sent until a second admin of the account approves the request in Google Ads: the response then has `status: PENDING_APPROVAL` and a `multiPartyAuthReviewId` instead of an `invitationId`, which DELETE /v1/ads/accounts/user-invitations/pending-approvals withdraws. Not idempotent: Google refuses a second invitation while the email has one pending or awaiting approval. Google has no server-side check for this call, so `validateOnly: true` reads the account's invitations with the same credentials (proving the account is reachable) and fails if the email already has a pending one, without sending anything.
+ * It creates a user access invitation (Google's CustomerUserAccessInvitationService) on `adAccountId`. The recipient accepts from the email, possibly with another Google account.
+ *
+ * ### Access needed
+ *
+ * The connection's Google user needs admin access to that account, directly or through a manager above it. That is the case for an account created with POST /v1/ads/accounts.
+ *
+ * ### Multi-party approval
+ *
+ * When Google requires multi-party approval, nothing is sent until a second admin of the account approves the request in Google Ads.
+ *
+ * The response then has `status: PENDING_APPROVAL` and a `multiPartyAuthReviewId` instead of an `invitationId`. DELETE /v1/ads/accounts/user-invitations/pending-approvals withdraws it.
+ *
+ * ### Retries and validation
+ *
+ * Not idempotent: Google refuses a second invitation while the email has one pending or awaiting approval.
+ *
+ * Google has no server-side check for this call. So `validateOnly: true` reads the account's invitations with the same credentials (proving the account is reachable) and fails if the email already has a pending one, without sending anything.
+ *
  */
 export const inviteAdAccountUser = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<InviteAdAccountUserData, ThrowOnError>) => {
     return (options?.client ?? client).post<InviteAdAccountUserResponse, InviteAdAccountUserError, ThrowOnError>({
@@ -14243,7 +15692,14 @@ export const revokeAdAccountUserInvitation = <ThrowOnError extends boolean = fal
  * List invitations awaiting multi-party approval
  * Lists the email invitations to a Google Ads account that Google is holding until a second admin approves them.
  *
- * When Google requires multi-party approval, POST /v1/ads/accounts/user-invitations answers `status: PENDING_APPROVAL` and sends nothing. Those requests are not in GET /v1/ads/accounts/user-invitations; this reads Google's `multi_party_auth_review` resource for the ones still `PENDING` that target an invitation. Approved, rejected, revoked and expired reviews are not listed. Results are cached for 10 minutes and dropped on every invite or withdrawal through Zernio, but an approval or rejection made in Google Ads can take that long to show.
+ * When Google requires multi-party approval, POST /v1/ads/accounts/user-invitations answers `status: PENDING_APPROVAL` and sends nothing. Those requests are not in GET /v1/ads/accounts/user-invitations.
+ *
+ * This reads Google's `multi_party_auth_review` resource for the ones still `PENDING` that target an invitation. Approved, rejected, revoked and expired reviews are not listed.
+ *
+ * ### Caching
+ *
+ * Results are cached for 10 minutes and dropped on every invite or withdrawal through Zernio. An approval or rejection made in Google Ads can take that long to show.
+ *
  */
 export const listAdAccountUserInvitationApprovals = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdAccountUserInvitationApprovalsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdAccountUserInvitationApprovalsResponse, ListAdAccountUserInvitationApprovalsError, ThrowOnError>({
@@ -14256,7 +15712,12 @@ export const listAdAccountUserInvitationApprovals = <ThrowOnError extends boolea
  * Withdraw an invitation awaiting multi-party approval
  * Cancels an email invitation that Google is still holding for a second admin's approval, so the same address can be invited again right away.
  *
- * Resolves the review `multiPartyAuthReviewId` (from POST /v1/ads/accounts/user-invitations or GET on this path) to `REVOKED` through Google's MultiPartyAuthReviewService. Only the Google user who sent the invitation can withdraw it, and only while no admin has approved or rejected it; otherwise Google refuses and this returns a 400. Without a withdrawal, Google refuses a new invitation to the address until the review is resolved or expires.
+ * It resolves the review `multiPartyAuthReviewId` (from POST /v1/ads/accounts/user-invitations or GET on this path) to `REVOKED` through Google's MultiPartyAuthReviewService.
+ *
+ * Only the Google user who sent the invitation can withdraw it, and only while no admin has approved or rejected it. Otherwise Google refuses and this returns a 400.
+ *
+ * Without a withdrawal, Google refuses a new invitation to the address until the review is resolved or expires.
+ *
  */
 export const withdrawAdAccountUserInvitationApproval = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<WithdrawAdAccountUserInvitationApprovalData, ThrowOnError>) => {
     return (options?.client ?? client).delete<WithdrawAdAccountUserInvitationApprovalResponse, WithdrawAdAccountUserInvitationApprovalError, ThrowOnError>({
@@ -14326,15 +15787,24 @@ export const getAdAccountFinance = <ThrowOnError extends boolean = false>(option
  * Check an ad account before creating ads
  * Checks whether a Meta ad account can run ads right now, with a fix link for each problem.
  *
- * Reads the account status, the payment method, the account spending limit, the Facebook Page
- * and its Instagram account, the Page's Lead Ads terms, the newest pixel event and the WhatsApp
- * number linked to the Page. Each check reads on its own: one this connection cannot see comes
- * back `unknown` instead of failing the request.
+ * ### What is checked
  *
- * `status` is `blocked` when any check is `error` (ads will be refused), `attention` when one is
- * `warning`, else `ok`. `missing` marks an optional asset that is not set up (a pixel, a
- * WhatsApp number): only the ads that need it are affected. A `fix.url` is either a Meta page
- * or a Zernio dashboard path (starting with `/`).
+ * - the account status
+ * - the payment method
+ * - the account spending limit
+ * - the Facebook Page and its Instagram account
+ * - the Page's Lead Ads terms
+ * - the newest pixel event
+ * - the WhatsApp number linked to the Page
+ *
+ * Each check reads on its own: one this connection cannot see comes back `unknown` instead of failing the request.
+ *
+ * ### Reading the result
+ *
+ * - `status` is `blocked` when any check is `error` (ads will be refused), `attention` when one is `warning`, else `ok`.
+ * - `missing` marks an optional asset that is not set up (a pixel, a WhatsApp number): only the ads that need it are affected.
+ * - A `fix.url` is either a Meta page or a Zernio dashboard path (starting with `/`).
+ *
  */
 export const getAdAccountHealth = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdAccountHealthData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdAccountHealthResponse, GetAdAccountHealthError, ThrowOnError>({
@@ -14347,40 +15817,50 @@ export const getAdAccountHealth = <ThrowOnError extends boolean = false>(options
  * Read an ad account's campaigns and ad sets live
  * Reads an ad account's campaigns and ad sets straight from Meta or TikTok, so checks like budget limits see current values.
  *
- * Reads the campaigns and ad sets of one Meta ad account or TikTok advertiser **live from
- * the platform**, so it is cheap enough to run before every write: for example a
- * per-ad-account spend ceiling that must see the current daily / lifetime budget rather
- * than the synced copy. On Meta it is a single Graph call per request (the account's
- * `/campaigns` and `/adsets` edges, filtered by `effective_status`); on TikTok one
- * `campaign/get` and one `adgroup/get` page (TikTok ad groups are returned as `adSets`).
+ * It reads one Meta ad account or TikTok advertiser **live from the platform**, so it is cheap enough to run before every write. For example, a per-ad-account spend ceiling that must see the current daily / lifetime budget rather than the synced copy.
  *
- * **Live vs synced.** GET /v1/ads/campaigns and GET /v1/ads/ad-sets serve Zernio's synced
- * store, refreshed by background sync (typically 15 to 60 minutes behind Meta), and their
- * `live=true` re-reads only the on/off switches of at most 20 objects. This endpoint returns
- * what Meta reports at `readAt`, for every matching campaign and ad set, and stores nothing.
+ * - Meta: a single Graph call per request (the account's `/campaigns` and `/adsets` edges, filtered by `effective_status`).
+ * - TikTok: one `campaign/get` and one `adgroup/get` page (TikTok ad groups are returned as `adSets`).
  *
- * Budgets and bid amounts are in whole units of `currency`, the same units as the synced
- * rows (Meta's minor units are converted; TikTok already reports whole units). A campaign
- * with a campaign budget (Meta Advantage+ campaign budget, TikTok campaign budget
- * optimization) carries `budget`; otherwise each ad set carries its own.
+ * Other platforms answer 501 rather than serving synced data.
  *
- * Each level returns at most `limit` rows. When more match, `paging.<level>.after` is a
- * cursor: pass it back as `after` together with `level` to read the next page of that
- * level only. TikTok pages by number, so a TikTok cursor must be sent with the same
- * `limit` that produced it (another `limit` is a 400). Other platforms answer 501 rather
- * than serving synced data.
+ * ### Live vs synced
  *
- * **TikTok specifics.** `status` maps to TikTok's `primary_status` filter, which takes one
- * value: ACTIVE = delivering (`STATUS_DELIVERY_OK`), PAUSED = switched off
- * (`STATUS_DISABLE`), DELETED = `STATUS_DELETE`; omitted = every status except deleted
- * (`STATUS_NOT_DELETE`, which includes enabled entities that are not delivering, such as
- * an ad group in review). Several values, or IN_PROCESS, WITH_ISSUES, CAMPAIGN_PAUSED and
- * ARCHIVED, are a 400. `budgetRemaining` and `spendCap` are always null (TikTok reports
- * neither), campaign `bidStrategy` is null (TikTok bids per ad group), ad set `bidStrategy`
- * is normalized to the Meta vocabulary like GET /v1/ads, `promotedObject` is
- * `{ pixelId, customEventType, applicationId, customConversionId }` (the keys TikTok has
- * set, as POST /v1/ads/create takes them), and `targeting` holds TikTok's targeting
- * fields verbatim.
+ * GET /v1/ads/campaigns and GET /v1/ads/ad-sets serve Zernio's synced store, refreshed by background sync (typically 15 to 60 minutes behind Meta). Their `live=true` re-reads only the on/off switches of at most 20 objects.
+ *
+ * This endpoint returns what Meta reports at `readAt`, for every matching campaign and ad set, and stores nothing.
+ *
+ * ### Budgets
+ *
+ * Budgets and bid amounts are in whole units of `currency`, the same units as the synced rows (Meta's minor units are converted; TikTok already reports whole units).
+ *
+ * A campaign with a campaign budget (Meta Advantage+ campaign budget, TikTok campaign budget optimization) carries `budget`; otherwise each ad set carries its own.
+ *
+ * ### Paging
+ *
+ * Each level returns at most `limit` rows. When more match, `paging.<level>.after` is a cursor: pass it back as `after` together with `level` to read the next page of that level only.
+ *
+ * TikTok pages by number, so a TikTok cursor must be sent with the same `limit` that produced it (another `limit` is a 400).
+ *
+ * ### TikTok specifics
+ *
+ * `status` maps to TikTok's `primary_status` filter, which takes one value:
+ *
+ * - ACTIVE = delivering (`STATUS_DELIVERY_OK`)
+ * - PAUSED = switched off (`STATUS_DISABLE`)
+ * - DELETED = `STATUS_DELETE`
+ * - omitted = every status except deleted (`STATUS_NOT_DELETE`, which includes enabled entities that are not delivering, such as an ad group in review)
+ *
+ * Several values, or IN_PROCESS, WITH_ISSUES, CAMPAIGN_PAUSED and ARCHIVED, are a 400.
+ *
+ * Response fields on TikTok:
+ *
+ * - `budgetRemaining` and `spendCap` are always null (TikTok reports neither).
+ * - Campaign `bidStrategy` is null (TikTok bids per ad group).
+ * - Ad set `bidStrategy` is normalized to the Meta vocabulary like GET /v1/ads.
+ * - `promotedObject` is `{ pixelId, customEventType, applicationId, customConversionId }` (the keys TikTok has set, as POST /v1/ads/create takes them).
+ * - `targeting` holds TikTok's targeting fields verbatim.
+ *
  */
 export const getAdAccountLiveEntities = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdAccountLiveEntitiesData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetAdAccountLiveEntitiesResponse, GetAdAccountLiveEntitiesError, ThrowOnError>({
@@ -14395,53 +15875,61 @@ export const getAdAccountLiveEntities = <ThrowOnError extends boolean = false>(o
  *
  * **Meta** (omit `platform` or send `meta`).
  *
- * Creates a durable Meta ad account in the end user's own business portfolio using
- * their connected Meta Ads token. Requires an active metaads accountId, Ads access,
- * business_management permission and business admin access. Discover portfolios with
- * GET /v1/ads/businesses. System-user tokens may return an empty businesses list;
- * supply the known business ID in that case.
+ * Creates a durable Meta ad account in the end user's own business portfolio using their connected Meta Ads token.
  *
- * The self-serve account starts without a payment method. The user must add a payment
- * method in Ads Manager before ads can deliver. Zernio cannot add payment methods.
- * Meta may require business verification and limits how many accounts a business can
- * create. Closing an account does not guarantee more capacity. An ad account cannot
- * truly be deleted, even after closing it and removing it from a business.
+ * ### Meta requirements
  *
- * timezoneId is Meta's numeric ID, not an IANA timezone name. Select it from
- * https://developers.facebook.com/docs/marketing-api/reference/ad-account/timezone-ids/.
- * For example, 1 is America/Los_Angeles. Meta validates supported currencies and IDs.
- * endAdvertiser, mediaAgency and partner default to NONE for the self-serve flow.
+ * - An active metaads accountId
+ * - Ads access
+ * - business_management permission
+ * - Business admin access
  *
- * The new account is added atomically to an existing scoped ad-account allowlist.
- * Unrestricted connections stay unrestricted. Reconnecting the same Meta identity
- * preserves this scope unless a caller explicitly replaces it. Discovery is nudged
- * immediately. Use the returned adAccountId with the existing ads endpoints.
+ * Discover portfolios with GET /v1/ads/businesses. System-user tokens may return an empty businesses list; supply the known business ID in that case.
  *
- * This operation is not idempotent and Zernio never automatically retries it.
- * Unknown body fields are rejected. The Meta flow has no validateOnly or dry-run option.
- * After a timeout or a 502 with details.creationStatus=unknown, check the business
- * in Ads Manager before attempting another creation. A 201 with connectionUpdated=false
- * means the account exists but needs reconnecting with adAccountIds containing the returned ID and the previous
- * scoped IDs via GET /v1/connect/facebook/ads. Do not repeat the create call.
+ * ### Meta billing and limits
+ *
+ * The self-serve account starts without a payment method. The user must add a payment method in Ads Manager before ads can deliver. Zernio cannot add payment methods.
+ *
+ * Meta may require business verification and limits how many accounts a business can create. Closing an account does not guarantee more capacity. An ad account cannot truly be deleted, even after closing it and removing it from a business.
+ *
+ * ### Meta fields
+ *
+ * - timezoneId is Meta's numeric ID, not an IANA timezone name. Select it from https://developers.facebook.com/docs/marketing-api/reference/ad-account/timezone-ids/. For example, 1 is America/Los_Angeles.
+ * - Meta validates supported currencies and IDs.
+ * - endAdvertiser, mediaAgency and partner default to NONE for the self-serve flow.
+ *
+ * ### Meta connection scope
+ *
+ * The new account is added atomically to an existing scoped ad-account allowlist. Unrestricted connections stay unrestricted. Reconnecting the same Meta identity preserves this scope unless a caller explicitly replaces it.
+ *
+ * Discovery is nudged immediately. Use the returned adAccountId with the existing ads endpoints.
+ *
+ * ### Meta retries and failures
+ *
+ * This operation is not idempotent and Zernio never automatically retries it. Unknown body fields are rejected. The Meta flow has no validateOnly or dry-run option.
+ *
+ * - After a timeout or a 502 with details.creationStatus=unknown, check the business in Ads Manager before attempting another creation.
+ * - A 201 with connectionUpdated=false means the account exists but needs reconnecting via GET /v1/connect/facebook/ads, with adAccountIds containing the returned ID and the previous scoped IDs. Do not repeat the create call.
  *
  * **Google** (send `platform: google`).
  *
- * Google only creates accounts through a manager account, so the new client account
- * is created under `managerCustomerId`, which must be a manager the Google user behind
- * the googleads `accountId` reaches (directly or as a sub-manager). List them with
- * GET /v1/ads/accounts/hierarchy. Whose manager it is (the integrator's or the end
- * user's) is the caller's choice: pass the connection that reaches it.
+ * Google only creates accounts through a manager account. The new client account is created under `managerCustomerId`, which must be a manager the Google user behind the googleads `accountId` reaches (directly or as a sub-manager). List them with GET /v1/ads/accounts/hierarchy.
  *
- * `currency` (ISO 4217) and `timeZone` (IANA name, for example Europe/Madrid) cannot be
- * changed after creation. The account starts without billing: set it up in Google Ads
- * before ads can serve. Google caps how many accounts a manager can create and how
- * many active client accounts it can hold.
+ * Whose manager it is (the integrator's or the end user's) is the caller's choice: pass the connection that reaches it.
  *
- * The new customer is added to the connection (and to a scoped connection's allowlist),
- * discovery is nudged immediately, and the returned adAccountId works with every other
- * ads endpoint. `validateOnly: true` asks Google to validate the request without creating
- * anything and returns 200. A real create is not idempotent: after a 502 with
- * details.creationStatus=unknown, check the manager in Google Ads before trying again.
+ * ### Google fields and limits
+ *
+ * - `currency` (ISO 4217) and `timeZone` (IANA name, for example Europe/Madrid) cannot be changed after creation.
+ * - The account starts without billing: set it up in Google Ads before ads can serve.
+ * - Google caps how many accounts a manager can create and how many active client accounts it can hold.
+ *
+ * ### Google result and retries
+ *
+ * The new customer is added to the connection (and to a scoped connection's allowlist). Discovery is nudged immediately, and the returned adAccountId works with every other ads endpoint.
+ *
+ * `validateOnly: true` asks Google to validate the request without creating anything and returns 200.
+ *
+ * A real create is not idempotent: after a 502 with details.creationStatus=unknown, check the manager in Google Ads before trying again.
  *
  */
 export const createAdAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdAccountData, ThrowOnError>) => {
@@ -14455,31 +15943,36 @@ export const createAdAccount = <ThrowOnError extends boolean = false>(options: O
  * List ad accounts
  * Lists the ad accounts a connection can manage, such as Meta ad accounts, TikTok advertisers or Google Ads customers.
  *
- * Returns the platform ad accounts available for the given account (e.g. Meta ad
- * accounts, TikTok advertiser IDs, Google Ads customer IDs).
- * Meta business-login accounts use their own system-user token. Fresh Meta discovery
- * includes businessId and businessName from the owning Business Manager when available;
- * cached entries gain these fields after the next discovery refresh.
+ * Returns the platform ad accounts available for the given account (e.g. Meta ad accounts, TikTok advertiser IDs, Google Ads customer IDs).
  *
- * For TikTok agencies: enumerates every advertiser under every Business Center the token
- * can read (paginated server-side), then chunks the lookup against TikTok's
- * `/advertiser/info/` endpoint (which has a per-call cap of ≤100 IDs). Solo advertisers
- * without a BC fall back to the OAuth-time `advertiser_ids` list. Cached for 1h on the
- * SocialAccount; lazy-refreshed on first call after expiry.
+ * ### Meta
  *
- * For Google Ads: responds `429` when Google's API quota is temporarily exhausted
- * (instead of an empty list). Retry after a delay.
+ * Meta business-login accounts use their own system-user token.
  *
- * For Reddit Ads (`redditads`): every Reddit ad account the connected Reddit user can reach,
- * with `businessId`, `approvalStatus` (Reddit's `admin_approval`), `timezone` and `type`.
+ * Fresh Meta discovery includes businessId and businessName from the owning Business Manager when available. Cached entries gain these fields after the next discovery refresh.
  *
- * Every listed ad account carries `selected`: whether it is in the connection's ad-account
- * selection (the ad accounts picked at connect time or in the dashboard picker, the ones
- * Zernio syncs). On a connection without a selection every ad account is `selected: true`.
- * Writes through /v1/ads endpoints to an ad account with `selected: false` answer
- * `403 ad_account_not_selected`; add it to the selection first (dashboard picker, or
- * `GET /v1/connect/{platform}/ads` with `adAccountIds`). The list includes unselected ad
- * accounts by default; pass `inScopeOnly=true` to get only the ones this connection can use.
+ * ### TikTok agencies
+ *
+ * 1. Zernio enumerates every advertiser under every Business Center the token can read (paginated server-side).
+ * 2. It then chunks the lookup against TikTok's `/advertiser/info/` endpoint (which has a per-call cap of ≤100 IDs).
+ *
+ * Solo advertisers without a BC fall back to the OAuth-time `advertiser_ids` list. The result is cached for 1h on the SocialAccount and lazy-refreshed on first call after expiry.
+ *
+ * ### Google Ads
+ *
+ * Responds `429` when Google's API quota is temporarily exhausted (instead of an empty list). Retry after a delay.
+ *
+ * ### Reddit Ads (`redditads`)
+ *
+ * Every Reddit ad account the connected Reddit user can reach, with `businessId`, `approvalStatus` (Reddit's `admin_approval`), `timezone` and `type`.
+ *
+ * ### Selection (`selected`)
+ *
+ * Every listed ad account carries `selected`: whether it is in the connection's ad-account selection. That is the ad accounts picked at connect time or in the dashboard picker, the ones Zernio syncs. On a connection without a selection every ad account is `selected: true`.
+ *
+ * Writes through /v1/ads endpoints to an ad account with `selected: false` answer `403 ad_account_not_selected`. Add it to the selection first (dashboard picker, or `GET /v1/connect/{platform}/ads` with `adAccountIds`).
+ *
+ * The list includes unselected ad accounts by default. Pass `inScopeOnly=true` to get only the ones this connection can use.
  *
  */
 export const listAdAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdAccountsData, ThrowOnError>) => {
@@ -14493,38 +15986,36 @@ export const listAdAccounts = <ThrowOnError extends boolean = false>(options: Op
  * Update ad account settings
  * Changes a Meta ad account's name, spend cap or default EU DSA beneficiary and payor.
  *
- * Pass any combination of fields.
+ * Pass any combination of fields. On Google Ads, only URL tracking fields apply (see below). Other platforms return 400.
  *
- * **Spend cap.** `spendCap` is the total the account may spend before Meta pauses every
- * campaign in it, in whole units of the account currency. `spendCap: null` removes the
- * cap and `resetAmountSpent: true` restarts the amount counted against it from zero.
- * When `name`, `spendCap` or `resetAmountSpent` is passed, the response carries
- * `settings`, the account's finances re-read after the write (same shape as
- * `GET /v1/ads/accounts/finance`), so the effective cap can be confirmed in one call.
+ * ### Spend cap
  *
- * **DSA defaults.** Sets the default DSA beneficiary and payor on the ad account (EU DSA, Article 26).
- * Set them once and every EU-targeted call to `/v1/ads/create`, `/v1/ads/boost` and
- * `/v1/ads/ctwa` on that ad account can omit `dsaBeneficiary`/`dsaPayor`: Meta applies
- * the defaults automatically.
+ * `spendCap` is the total the account may spend before Meta pauses every campaign in it, in whole units of the account currency.
  *
- * The values are written to the ad account on Meta, the same setting Ads Manager edits.
- * Nothing is stored in Zernio, and defaults already set in Ads Manager work identically.
- * Zernio never guesses these values for you. Beneficiary and payor are legal disclosures
- * shown to EU users, so you must provide the entity names explicitly. Use
- * `GET /v1/ads/dsa-recommendations` to offer suggestions in your UI.
+ * - `spendCap: null` removes the cap.
+ * - `resetAmountSpent: true` restarts the amount counted against it from zero.
  *
- * If `defaultDsaPayor` is omitted, the beneficiary is also set as the payor, which
- * covers the common case where the same entity benefits from and pays for the ads.
- * Read the current values back with `GET /v1/ads/dsa-defaults`.
+ * When `name`, `spendCap` or `resetAmountSpent` is passed, the response carries `settings`: the account's finances re-read after the write (same shape as `GET /v1/ads/accounts/finance`). The effective cap can be confirmed in one call.
  *
- * **Google: account-level URL tracking.** On a Google Ads connection, `adAccountId` is the
- * customer id and only `trackingUrlTemplate` / `finalUrlSuffix` are accepted (the Meta
- * fields return 400). They write `customer.tracking_url_template` and
- * `customer.final_url_suffix`, one update mask leaf per field sent; an empty string clears
- * the field. The response carries `urlTracking` with the values written. For one campaign,
- * send the same fields to PUT /v1/ads/campaigns/{campaignId}.
+ * ### DSA defaults
  *
- * Other platforms return 400.
+ * Sets the default DSA beneficiary and payor on the ad account (EU DSA, Article 26). Set them once and every EU-targeted call to `/v1/ads/create`, `/v1/ads/boost` and `/v1/ads/ctwa` on that ad account can omit `dsaBeneficiary`/`dsaPayor`: Meta applies the defaults automatically.
+ *
+ * The values are written to the ad account on Meta, the same setting Ads Manager edits. Nothing is stored in Zernio, and defaults already set in Ads Manager work identically.
+ *
+ * Zernio never guesses these values for you. Beneficiary and payor are legal disclosures shown to EU users, so you must provide the entity names explicitly. Use `GET /v1/ads/dsa-recommendations` to offer suggestions in your UI.
+ *
+ * If `defaultDsaPayor` is omitted, the beneficiary is also set as the payor. That covers the common case where the same entity benefits from and pays for the ads. Read the current values back with `GET /v1/ads/dsa-defaults`.
+ *
+ * ### Google: account-level URL tracking
+ *
+ * On a Google Ads connection, `adAccountId` is the customer id and only `trackingUrlTemplate` / `finalUrlSuffix` are accepted (the Meta fields return 400).
+ *
+ * - They write `customer.tracking_url_template` and `customer.final_url_suffix`, one update mask leaf per field sent.
+ * - An empty string clears the field.
+ * - The response carries `urlTracking` with the values written.
+ *
+ * For one campaign, send the same fields to PUT /v1/ads/campaigns/{campaignId}.
  *
  */
 export const updateAdAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdAccountData, ThrowOnError>) => {
@@ -14575,67 +16066,84 @@ export const getDsaRecommendations = <ThrowOnError extends boolean = false>(opti
  * Boost post as ad
  * Turns an already published post into a paid ad that keeps the post's likes and comments, creating the campaign around it.
  *
- * By default it provisions the whole hierarchy (campaign, ad
- * set, ad).
+ * By default it provisions the whole hierarchy (campaign, ad set, ad).
  *
- * **Attach shape (Meta).** Send `adSetId` to put the ad under an EXISTING
- * ad set instead, so that ad set keeps its learning phase. It then owns
- * `budget`, `schedule` and `targeting`, and sending any of those alongside
- * `adSetId` is a 400 rather than a silent drop. `budget` is required only
- * without `adSetId`.
+ * ### Attach shape (Meta)
  *
- * `instagramAccountId`, `destinationType`, `whatsappPhoneNumber` and `adSetId`
- * are Meta-only and return 400 on other platforms.
+ * Send `adSetId` to put the ad under an EXISTING ad set instead, so that ad set keeps its learning phase.
  *
- * `accountId` may be a Facebook, Instagram or Meta ads (business login)
- * connection. A business-login connection has no posting account, so pass
- * the post as `platformPostId` (Facebook `pageId_postId` or an Instagram
- * media id); a Zernio `postId` is a 400 there.
+ * That ad set then owns `budget`, `schedule` and `targeting`. Sending any of those alongside `adSetId` is a 400 rather than a silent drop. `budget` is required only without `adSetId`.
  *
- * For X, `accountId` may be the posting X account or its X Ads
- * connection: either resolves the other on the same profile. A Zernio
- * `postId` on an X Ads connection resolves through its X account, and is
- * a 400 when the profile has none (pass `platformPostId` instead).
+ * `instagramAccountId`, `destinationType`, `whatsappPhoneNumber` and `adSetId` are Meta-only and return 400 on other platforms.
  *
- * **Reddit.** `accountId` is the Reddit Ads connection (platform `redditads`).
- * Pass the Reddit post as `platformPostId` (`t3_abc123` or the bare id), or a
- * Zernio `postId`, which resolves through the Reddit account connected on the
- * same profile (400 when there is none). Reddit promotes only posts made by a
- * profile of the ad account: a post by any other author returns 422. Goals are
- * traffic, awareness, conversions, video_views (the post must be a video, 422
- * otherwise) and lead_generation; conversions and lead_generation need a pixel
- * that already received the event (see `promotedObject`). `leadGenFormId` returns
- * 400: Reddit retired its native lead forms, so `lead_generation` sends people to
- * `linkUrl` and optimizes toward the pixel's Lead event. Each boost creates a
- * campaign, an ad group carrying the budget, the targeting and the bid, and the ad.
- * `bidStrategy` sets the ad group's bid: LOWEST_COST_WITHOUT_CAP (or omitted) is
- * automatic bidding (BIDLESS), LOWEST_COST_WITH_BID_CAP is MANUAL_BIDDING with
- * `bidAmount` as the bid, COST_CAP is MAXIMIZE_VOLUME with `bidAmount` as the cap; any
- * other strategy returns 422 before anything is created.
+ * ### Meta accounts
  *
- * **Messaging boosts (Meta).** Use `goal: engagement` with
- * `callToAction: WHATSAPP_MESSAGE`, `MESSAGE_PAGE`, or `INSTAGRAM_MESSAGE`.
- * The CTA implies WHATSAPP, MESSENGER, or INSTAGRAM_DIRECT respectively;
- * `destinationType` alone does not select a messaging CTA. Omit `linkUrl`
- * only for messaging CTAs. Plain link CTAs keep their goal and link behavior
- * when combined with an independent `destinationType`.
- * The campaign uses OUTCOME_ENGAGEMENT and the ad set uses CONVERSATIONS
- * with the promoted Page. Optional `whatsappPhoneNumber` selects a number
- * already paired with that Page. Conflicting CTA/destination, instant form,
- * goal, or optimizationGoal inputs return 400. Attach requires the target
- * ad set destination to match. Existing post references preserve social proof;
- * an Instagram reel rejected by Meta is not re-uploaded as a new post for
- * a messaging boost.
+ * `accountId` may be a Facebook, Instagram or Meta ads (business login) connection.
  *
- * **Retries.** Boosts are NOT idempotent and can take minutes when Meta requires re-hosting an
- * Instagram video, so do not retry on client timeout. Send an
- * Idempotency-Key header to make retries safe: same key and body replays
- * the original 201, and distinct keys always create distinct ads.
- * Without the header, an identical request is treated as a retry: while
- * one is in flight it returns 409, and within 10 minutes of a completed
- * boost it returns the already-created ad instead of creating another.
- * To intentionally duplicate an ad, send distinct Idempotency-Keys (or
- * vary the body, e.g. the name).
+ * A business-login connection has no posting account, so pass the post as `platformPostId` (Facebook `pageId_postId` or an Instagram media id). A Zernio `postId` is a 400 there.
+ *
+ * ### X
+ *
+ * `accountId` may be the posting X account or its X Ads connection: either resolves the other on the same profile.
+ *
+ * A Zernio `postId` on an X Ads connection resolves through its X account, and is a 400 when the profile has none (pass `platformPostId` instead).
+ *
+ * ### Reddit
+ *
+ * `accountId` is the Reddit Ads connection (platform `redditads`). Pass the Reddit post as either:
+ *
+ * - `platformPostId` (`t3_abc123` or the bare id)
+ * - a Zernio `postId`, which resolves through the Reddit account connected on the same profile (400 when there is none)
+ *
+ * Reddit promotes only posts made by a profile of the ad account: a post by any other author returns 422.
+ *
+ * Goals:
+ *
+ * - traffic
+ * - awareness
+ * - conversions
+ * - video_views (the post must be a video, 422 otherwise)
+ * - lead_generation
+ *
+ * conversions and lead_generation need a pixel that already received the event (see `promotedObject`).
+ *
+ * `leadGenFormId` returns 400: Reddit retired its native lead forms, so `lead_generation` sends people to `linkUrl` and optimizes toward the pixel's Lead event.
+ *
+ * Each boost creates a campaign, an ad group carrying the budget, the targeting and the bid, and the ad. `bidStrategy` sets the ad group's bid:
+ *
+ * - LOWEST_COST_WITHOUT_CAP (or omitted): automatic bidding (BIDLESS)
+ * - LOWEST_COST_WITH_BID_CAP: MANUAL_BIDDING with `bidAmount` as the bid
+ * - COST_CAP: MAXIMIZE_VOLUME with `bidAmount` as the cap
+ * - Any other strategy returns 422 before anything is created.
+ *
+ * ### Messaging boosts (Meta)
+ *
+ * Use `goal: engagement` with one of these CTAs:
+ *
+ * - `callToAction: WHATSAPP_MESSAGE`: implies WHATSAPP
+ * - `MESSAGE_PAGE`: implies MESSENGER
+ * - `INSTAGRAM_MESSAGE`: implies INSTAGRAM_DIRECT
+ *
+ * `destinationType` alone does not select a messaging CTA. Omit `linkUrl` only for messaging CTAs. Plain link CTAs keep their goal and link behavior when combined with an independent `destinationType`.
+ *
+ * The campaign uses OUTCOME_ENGAGEMENT and the ad set uses CONVERSATIONS with the promoted Page. Optional `whatsappPhoneNumber` selects a number already paired with that Page.
+ *
+ * Conflicting CTA/destination, instant form, goal, or optimizationGoal inputs return 400. Attach requires the target ad set destination to match.
+ *
+ * Existing post references preserve social proof. An Instagram reel rejected by Meta is not re-uploaded as a new post for a messaging boost.
+ *
+ * ### Retries
+ *
+ * Boosts are NOT idempotent and can take minutes when Meta requires re-hosting an Instagram video, so do not retry on client timeout.
+ *
+ * Send an Idempotency-Key header to make retries safe: same key and body replays the original 201, and distinct keys always create distinct ads.
+ *
+ * Without the header, an identical request is treated as a retry:
+ *
+ * - While one is in flight it returns 409.
+ * - Within 10 minutes of a completed boost it returns the already-created ad instead of creating another.
+ *
+ * To intentionally duplicate an ad, send distinct Idempotency-Keys (or vary the body, e.g. the name).
  *
  */
 export const boostPost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BoostPostData, ThrowOnError>) => {
@@ -14649,7 +16157,16 @@ export const boostPost = <ThrowOnError extends boolean = false>(options: Options
  * List Performance Max asset groups
  * Lists a Performance Max campaign's asset groups with their linked text, image and YouTube assets.
  *
- * campaignId is the platform campaign id returned by creation or the campaign list. The campaign must be visible to the caller. Uses a 10-minute cache, with the last successful response served as stale when Google quota is exhausted. Removed groups and asset links are excluded. Campaign-level brand assets on campaigns with brand guidelines enabled are not included.
+ * campaignId is the platform campaign id returned by creation or the campaign list. The campaign must be visible to the caller.
+ *
+ * ### Caching
+ *
+ * Uses a 10-minute cache, with the last successful response served as stale when Google quota is exhausted.
+ *
+ * ### What is left out
+ *
+ * - Removed groups and asset links are excluded.
+ * - Campaign-level brand assets on campaigns with brand guidelines enabled are not included.
  *
  */
 export const listGoogleAssetGroups = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListGoogleAssetGroupsData, ThrowOnError>) => {
@@ -14719,7 +16236,11 @@ export const removeGoogleAssetGroup = <ThrowOnError extends boolean = false>(opt
  * Link or unlink asset group assets
  * Links new or existing assets to a Performance Max asset group and unlinks others in one change, keeping unlinked assets in the account library.
  *
- * Link existing assets or new content to the asset group, and unlink assets, in one atomic request. Links are applied before unlinks, so swapping the last asset of a role does not trip Google's per-role minimum. Unlinking removes the link only; the asset stays in the account library. validateOnly: true validates without writing.
+ * Link existing assets or new content to the asset group, and unlink assets, in one atomic request.
+ *
+ * - Links are applied before unlinks, so swapping the last asset of a role does not trip Google's per-role minimum.
+ * - Unlinking removes the link only; the asset stays in the account library.
+ * - validateOnly: true validates without writing.
  *
  */
 export const editGoogleAssetGroupAssets = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<EditGoogleAssetGroupAssetsData, ThrowOnError>) => {
@@ -14733,7 +16254,10 @@ export const editGoogleAssetGroupAssets = <ThrowOnError extends boolean = false>
  * Replace an asset group's listing-group tree
  * Replaces the product targeting tree of a Performance Max retail asset group; only works on campaigns linked to Merchant Center.
  *
- * Replace the product (listing-group) tree of a Performance Max retail asset group. The current tree is removed and the new one created in one atomic request. Read the current tree with GET on the asset group. Requires a campaign linked to Merchant Center; other campaigns return 400 LISTING_SOURCE_NOT_ALLOWED from Google. validateOnly: true validates without writing.
+ * The current product (listing-group) tree is removed and the new one created in one atomic request. Read the current tree with GET on the asset group.
+ *
+ * - Requires a campaign linked to Merchant Center. Other campaigns return 400 LISTING_SOURCE_NOT_ALLOWED from Google.
+ * - validateOnly: true validates without writing.
  *
  */
 export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplaceGoogleListingGroupFiltersData, ThrowOnError>) => {
@@ -14747,76 +16271,148 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * Create standalone ad
  * Creates a paid ad with your own creative, building the campaign and ad set it needs or adding it to existing ones.
  *
- * Create a paid ad with custom creative across Meta, Google Ads, Pinterest, TikTok, X, LinkedIn, OpenAI Ads (ChatGPT Ads) and Reddit Ads.
+ * Works across Meta, Google Ads, Pinterest, TikTok, X, LinkedIn, OpenAI Ads (ChatGPT Ads) and Reddit Ads. Per-platform required fields, budget minimums, and video-ad rules are documented on each property below.
  *
- * Google Performance Max: set `campaignType: "pmax"` and supply `assetGroup` with
- * text, images by role, business name and finalUrl. Creates a daily budget, PAUSED
- * campaign and asset group atomically. `validateOnly: true` validates the complete
- * request with Google without creating or persisting resources. Read assets with
- * `GET /v1/ads/campaigns/{campaignId}/asset-groups`. The logo is required; video is
- * optional via `assetGroup.youtubeVideoId`. Brand guidelines are disabled at creation.
- * All supplied asset links are validated together against Google's minimum asset requirements.
- * PMax rejects ACTIVE creation, portfolio bidding, bid caps, legacy creative fields
- * and attach shapes. Geo and language targeting are supported; omitted geo targets
- * all locations. PMax does not require top-level goal, headline, body or linkUrl.
- * Supported bidding: omitted or LOWEST_COST_WITHOUT_CAP for Maximize Conversions,
- * COST_CAP plus bidAmount for target CPA, LOWEST_COST_WITH_MIN_ROAS plus
- * roasAverageFloor for Maximize Conversion Value with target ROAS.
+ * ### Request shapes
  *
- * Google Demand Gen: set `campaignType: "demand_gen"` and supply `demandGen`. Creates a
- * daily budget, PAUSED campaign, one ad group and one ad in a single atomic request: a
- * multi-asset image ad, a video responsive ad when `demandGen.youtubeVideoIds` is sent, or
- * a carousel ad (2 to 10 cards) when `demandGen.carouselCards` is sent.
- * Geo (countries, regions, cities, zips, metros) and languages go on the ad group, as
- * Demand Gen requires. `demandGen.channels` sets the ad group's channel controls and
- * `demandGen.audience` builds a Google Audience (user lists, interests, custom audiences,
- * age ranges, genders) attached to the ad group, or `demandGen.audienceId` attaches an
- * existing one. `validateOnly: true` validates everything with Google without creating
- * resources. Supported bidding: omitted or LOWEST_COST_WITHOUT_CAP for Maximize
- * Conversions, COST_CAP plus bidAmount for target CPA, LOWEST_COST_WITH_MIN_ROAS plus
- * roasAverageFloor for target ROAS, LOWEST_COST_WITH_BID_CAP plus bidAmount for target
- * CPC. The created ad carries the native `platformCampaignId`, `platformAdSetId` (ad
- * group) and `platformAdId`. Activate with PUT /v1/ads/campaigns/{campaignId}/status;
- * budget, bidding and name are edited with the regular campaign endpoints; creative,
- * channels, audience and ad group targeting with PUT /v1/ads/{adId} (`demandGen`, `targeting`).
- * To grow an existing Demand Gen campaign, send `existingCampaignId` (adds a PAUSED ad group,
- * with its own geo, languages, channels and audience, plus its ad) or `adSetId` (adds a
- * PAUSED ad to that ad group); neither takes budget, bidding or schedule fields, and both
- * support `validateOnly`.
- *
- * Other mutually-exclusive request shapes are selected by the body:
+ * The body selects one of these mutually exclusive shapes:
  *
  * - Legacy single-creative shape (all platforms, the default).
  * - Meta-only multi-creative shape via the creatives array: one ad set with N ads sharing budget and targeting.
- * - Attach shape via adSetId: adds one new ad to an existing ad set, inheriting its budget, targeting, and schedule (Meta, Google Ads, TikTok, and LinkedIn). On LinkedIn adSetId is the existing Campaign id, and the budget, schedule, targeting and bidding fields must be omitted. On LinkedIn `goal` may be omitted too (taken from the Campaign's objective), and the created ad's `targeting` echoes the Campaign's audience.
+ * - Attach shape via adSetId: adds one new ad to an existing ad set, inheriting its budget, targeting, and schedule (Meta, Google Ads, TikTok, and LinkedIn).
  *
- * Meta accepts `creativeFeatures` on the single and attach shapes and as defaults for
- * `creatives[]`; an item replaces the whole feature map. `promotion` is not supported on any
- * shape and any object is rejected with 400.
- * Reusing `existingCreativeId` uses the existing creative settings instead of new settings.
- * Requested settings are persisted for lists, exports, and default ad-detail reads.
+ * On LinkedIn, adSetId in the attach shape is the existing Campaign id, and the budget, schedule, targeting and bidding fields must be omitted. `goal` may be omitted too (taken from the Campaign's objective), and the created ad's `targeting` echoes the Campaign's audience.
  *
- * Per-platform required fields, budget minimums, and video-ad rules are documented on each property below.
+ * ### Google Performance Max
  *
- * **Meta required fields per shape** (a missing one is a 400 naming it in `param`):
+ * Set `campaignType: "pmax"` and supply `assetGroup` with text, images by role, business name and finalUrl. This creates a daily budget, PAUSED campaign and asset group atomically.
+ *
+ * - `validateOnly: true` validates the complete request with Google without creating or persisting resources.
+ * - Read assets with `GET /v1/ads/campaigns/{campaignId}/asset-groups`.
+ * - The logo is required; video is optional via `assetGroup.youtubeVideoId`.
+ * - Brand guidelines are disabled at creation.
+ * - All supplied asset links are validated together against Google's minimum asset requirements.
+ * - PMax rejects ACTIVE creation, portfolio bidding, bid caps, legacy creative fields and attach shapes.
+ * - Geo and language targeting are supported; omitted geo targets all locations.
+ * - PMax does not require top-level goal, headline, body or linkUrl.
+ *
+ * Supported bidding:
+ *
+ * - Omitted or LOWEST_COST_WITHOUT_CAP: Maximize Conversions.
+ * - COST_CAP plus bidAmount: target CPA.
+ * - LOWEST_COST_WITH_MIN_ROAS plus roasAverageFloor: Maximize Conversion Value with target ROAS.
+ *
+ * ### Google Demand Gen
+ *
+ * Set `campaignType: "demand_gen"` and supply `demandGen`. One atomic request creates a daily budget, PAUSED campaign, one ad group and one ad. The ad is:
+ *
+ * - a multi-asset image ad by default;
+ * - a video responsive ad when `demandGen.youtubeVideoIds` is sent;
+ * - a carousel ad (2 to 10 cards) when `demandGen.carouselCards` is sent.
+ *
+ * Targeting and validation:
+ *
+ * - Geo (countries, regions, cities, zips, metros) and languages go on the ad group, as Demand Gen requires.
+ * - `demandGen.channels` sets the ad group's channel controls.
+ * - `demandGen.audience` builds a Google Audience (user lists, interests, custom audiences, age ranges, genders) attached to the ad group, or `demandGen.audienceId` attaches an existing one.
+ * - `validateOnly: true` validates everything with Google without creating resources.
+ *
+ * Supported bidding:
+ *
+ * - Omitted or LOWEST_COST_WITHOUT_CAP: Maximize Conversions.
+ * - COST_CAP plus bidAmount: target CPA.
+ * - LOWEST_COST_WITH_MIN_ROAS plus roasAverageFloor: target ROAS.
+ * - LOWEST_COST_WITH_BID_CAP plus bidAmount: target CPC.
+ *
+ * The created ad carries the native `platformCampaignId`, `platformAdSetId` (ad group) and `platformAdId`. After creation:
+ *
+ * - Activate with PUT /v1/ads/campaigns/{campaignId}/status.
+ * - Edit budget, bidding and name with the regular campaign endpoints.
+ * - Edit creative, channels, audience and ad group targeting with PUT /v1/ads/{adId} (`demandGen`, `targeting`).
+ *
+ * To grow an existing Demand Gen campaign, send one of these (neither takes budget, bidding or schedule fields; both support `validateOnly`):
+ *
+ * - `existingCampaignId`: adds a PAUSED ad group, with its own geo, languages, channels and audience, plus its ad.
+ * - `adSetId`: adds a PAUSED ad to that ad group.
+ *
+ * ### Meta creative options
+ *
+ * Meta accepts `creativeFeatures` on the single and attach shapes and as defaults for `creatives[]`; an item replaces the whole feature map.
+ *
+ * `promotion` is not supported on any shape, and any object is rejected with 400.
+ *
+ * Reusing `existingCreativeId` uses the existing creative settings instead of new settings. Requested settings are persisted for lists, exports, and default ad-detail reads.
+ *
+ * ### Meta required fields per shape
+ *
+ * A missing field is a 400 naming it in `param`.
  *
  * - Every shape that builds a new ad set (no `adSetId`, `existingCampaignId` or `buyingType: "RESERVED"`): `budgetAmount`. `budgetType` defaults to daily, and a lifetime budget without `endDate` ends 7 days after it starts (see `appliedDefaults`).
- * - Single image or video (the default), also with `adSetId`: `headline` (max 255), `body`, `callToAction`, exactly one of `imageUrl` / `video` (none for a catalog template creative, which ignores and does not upload any sent), and `linkUrl` unless the goal is `lead_generation` or `page_visits` or `leadGenFormId` is set.
+ * - Single image or video (the default), also with `adSetId`: `headline` (max 255), `body`, `callToAction`, and exactly one of `imageUrl` / `video`. A catalog template creative takes none, and ignores and does not upload any sent.
+ * - Single image or video also needs `linkUrl`, unless the goal is `lead_generation` or `page_visits` or `leadGenFormId` is set.
  * - `bodies[]` / `headlines[]` text variations: `body`, one list with 2+ items, `callToAction`, `imageUrl` or `video`, and `linkUrl` unless the goal is `lead_generation` or `leadGenFormId` is set. `headline` is not required.
  * - `placementAssets`: `headline`, `body`, `callToAction`, and `linkUrl` with the same exemptions as the single shape; the media comes from `placementAssets`.
  * - `carouselCards`: `body`, `callToAction`, and `linkUrl` unless the goal is `lead_generation` or `leadGenFormId` is set. `headline` is not required.
  * - `creatives[]`: per entry `headline`, `body`, `callToAction`, `imageUrl` or `video`, and `linkUrl` unless the goal is `lead_generation`. Top-level `body` is not required.
  * - `dynamicCreative`: `imageUrls` or `videoUrls`, `callToActionTypes`, and `linkUrls` unless the goal is `lead_generation`. Top-level `body` is not required.
- * - `existingCreativeId`: no creative fields. Goal `page_likes`: `body` only.
+ * - `existingCreativeId`: no creative fields.
+ * - Goal `page_likes`: `body` only.
  * - Goal `lead_generation` always needs `leadGenFormId`, except with `existingCreativeId`.
  *
- * **Meta activation.** Meta builds the campaign, ad set and ads PAUSED and switches the requested levels to ACTIVE as the last step. When Meta refuses that switch, or the connection drops, after Zernio's retries, the request still answers 201 and nothing is deleted: the refused level and every level below it stay PAUSED, while levels above it that already went ACTIVE stay ACTIVE (the ad comes back with `status: paused` and its `configuredStatus` as read back from Meta). A switch Meta applied although its answer was lost counts as ACTIVE, since Zernio reads the status back first. `message` says not everything is ACTIVE, and `warnings` carries one entry starting with `activation_failed:` that quotes Meta's code, subcode and message, names what was kept PAUSED and what was switched ACTIVE, and lists the calls that switch the PAUSED ones on later (PUT /v1/ads/campaigns/{campaignId}/status, PUT /v1/ads/ad-sets/{adSetId}/status and PUT /v1/ads/{adId}/status with status `active`, in that order). On the `creatives[]` shape only the ads Meta refused stay PAUSED when the campaign and ad set went through. A Reach and Frequency ad is created ACTIVE and is never listed as kept PAUSED. With an `Idempotency-Key` a retry replays this 201.
+ * ### Meta activation
  *
- * LinkedIn creates a Single Image or Single Video Ad backed by a Direct Sponsored Content "dark post" authored by a Company Page (see `organizationId`). Supported goals are engagement, traffic, awareness, and video_views (video ads use the `video` field; video_views requires a video), and traffic ads require `linkUrl`.
+ * Meta builds the campaign, ad set and ads PAUSED and switches the requested levels to ACTIVE as the last step.
  *
- * Reddit Ads (`accountId` of a `redditads` connection, `adAccountId` like `a2_abc123`) creates a campaign, an ad group carrying the budget, schedule, targeting and pixel, and an ad running a new promoted post authored by the ad account's first profile (422 when it has none). The creative format follows the body: `carouselCards` builds a carousel, `video` a video ad, `imageUrl` an image ad, and none of them a text ad, which cannot link out (`linkUrl` is a 400 there; `body` is required). Only the legacy single-creative shape is available: `creatives[]`, `adSetId`, `existingCampaignId` and `validateOnly` are refused. Reddit throttling surfaces as 429 `rate_limited` with `platform: reddit`; retry after a delay. To promote an existing Reddit post use POST /v1/ads/boost.
+ * When Meta refuses that switch, or the connection drops, after Zernio's retries, the request still answers 201 and nothing is deleted:
  *
- * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires; use a new key to retry sooner, after checking whether the ad was created. Keys are scoped to your credential and expire after 24h.
+ * - The refused level and every level below it stay PAUSED.
+ * - Levels above it that already went ACTIVE stay ACTIVE.
+ * - The ad comes back with `status: paused` and its `configuredStatus` as read back from Meta.
+ * - A switch Meta applied although its answer was lost counts as ACTIVE, since Zernio reads the status back first.
+ *
+ * `message` says not everything is ACTIVE. `warnings` carries one entry starting with `activation_failed:` that quotes Meta's code, subcode and message, and names what was kept PAUSED and what was switched ACTIVE.
+ *
+ * That warning also lists the calls that switch the PAUSED ones on later, in this order, with status `active`:
+ *
+ * 1. PUT /v1/ads/campaigns/{campaignId}/status
+ * 2. PUT /v1/ads/ad-sets/{adSetId}/status
+ * 3. PUT /v1/ads/{adId}/status
+ *
+ * On the `creatives[]` shape, only the ads Meta refused stay PAUSED when the campaign and ad set went through. A Reach and Frequency ad is created ACTIVE and is never listed as kept PAUSED. With an `Idempotency-Key`, a retry replays this 201.
+ *
+ * ### LinkedIn
+ *
+ * LinkedIn creates a Single Image or Single Video Ad backed by a Direct Sponsored Content "dark post" authored by a Company Page (see `organizationId`).
+ *
+ * - Supported goals: engagement, traffic, awareness, and video_views.
+ * - Video ads use the `video` field; video_views requires a video.
+ * - Traffic ads require `linkUrl`.
+ *
+ * ### Reddit Ads
+ *
+ * Use the `accountId` of a `redditads` connection and an `adAccountId` like `a2_abc123`. Zernio creates a campaign, an ad group carrying the budget, schedule, targeting and pixel, and an ad running a new promoted post. The post is authored by the ad account's first profile (422 when it has none).
+ *
+ * The creative format follows the body:
+ *
+ * - `carouselCards`: a carousel.
+ * - `video`: a video ad.
+ * - `imageUrl`: an image ad.
+ * - None of them: a text ad, which cannot link out (`linkUrl` is a 400 there; `body` is required).
+ *
+ * Only the legacy single-creative shape is available: `creatives[]`, `adSetId`, `existingCampaignId` and `validateOnly` are refused.
+ *
+ * Reddit throttling surfaces as 429 `rate_limited` with `platform: reddit`; retry after a delay. To promote an existing Reddit post, use POST /v1/ads/boost.
+ *
+ * ### Idempotency
+ *
+ * This endpoint is not idempotent at the platform level: a blind retry creates a second campaign/ad set/ad. Send an `Idempotency-Key` header to make retries safe.
+ *
+ * - The first request with a given key creates the ad and we store the response.
+ * - A retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates.
+ * - Reusing a key with a different body returns 422.
+ * - A key whose first request is still in flight returns 409 (retry after a short backoff).
+ * - If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires. Use a new key to retry sooner, after checking whether the ad was created.
+ * - Keys are scoped to your credential and expire after 24h.
  *
  */
 export const createStandaloneAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateStandaloneAdData, ThrowOnError>) => {
@@ -14830,7 +16426,17 @@ export const createStandaloneAd = <ThrowOnError extends boolean = false>(options
  * List submitted leads
  * Lists the leads submitted through your Meta or LinkedIn lead forms, newest first.
  *
- * Returns submitted Lead Gen leads for your team, newest-first, with keyset pagination on `cursor`. For Meta (default) leads are served from the persisted cache, ingested in real time from the `leadgen` webhook. When `accountId` is a LinkedIn ads account, leads are fetched live from LinkedIn's `leadFormResponses` (LinkedIn has no webhook and enforces 90-day retention, so nothing is persisted) and `adAccountId` is required. Reading LinkedIn responses needs the `r_marketing_leadgen_automation` permission; accounts connected before it was added must reconnect. Requires the Ads add-on.
+ * Returns submitted Lead Gen leads for your team, newest-first, with keyset pagination on `cursor`. Requires the Ads add-on.
+ *
+ * ### Meta (default)
+ *
+ * Leads are served from the persisted cache, ingested in real time from the `leadgen` webhook.
+ *
+ * ### LinkedIn
+ *
+ * When `accountId` is a LinkedIn ads account, `adAccountId` is required. Leads are fetched live from LinkedIn's `leadFormResponses`: LinkedIn has no webhook and enforces 90-day retention, so nothing is persisted.
+ *
+ * Reading LinkedIn responses needs the `r_marketing_leadgen_automation` permission. Accounts connected before it was added must reconnect.
  *
  */
 export const listLeads = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListLeadsData, ThrowOnError>) => {
@@ -14886,7 +16492,27 @@ export const listLeadForms = <ThrowOnError extends boolean = false>(options: Opt
  * Create a lead form
  * Creates a lead form on a Facebook Page or LinkedIn Company Page to collect contact details from ads.
  *
- * The form content goes inside `platformSpecificData` for both platforms (the shape is selected by the accountId's platform). Meta: created on the connected Facebook Page (POST /{page-id}/leadgen_forms), where `accountId` may be the `metaads` ads connection (its Page comes from the Facebook account linked to the same profile), an Instagram account (the Page its ads run under: its own linked Page, else the Facebook or business-login Meta ads account on the same profile) or the Facebook account itself; the old top-level Meta fields (questions, thankYou*, contextCard, …) are DEPRECATED but still accepted while platformSpecificData is absent; mixing both shapes is a 400. thankYouEnableMessenger, isPhoneSmsVerifyEnabled and customDisclaimer are accepted only inside platformSpecificData (top-level is a 400). LinkedIn: created on the ad account's Company Page. NOT idempotent: a retry creates a second form. Meta prefilled question types (EMAIL, PHONE, FULL_NAME, …) must omit label/key; CUSTOM questions require both. LinkedIn exposes only free-text and multiple-choice questions via API (prefilled-from-profile fields are Campaign Manager UI-only). Requires the Ads add-on.
+ * The form content goes inside `platformSpecificData` for both platforms (the shape is selected by the accountId's platform). Requires the Ads add-on.
+ *
+ * NOT idempotent: a retry creates a second form.
+ *
+ * ### Meta
+ *
+ * Created on the connected Facebook Page (POST /{page-id}/leadgen_forms). `accountId` may be:
+ *
+ * - the `metaads` ads connection (its Page comes from the Facebook account linked to the same profile)
+ * - an Instagram account (the Page its ads run under: its own linked Page, else the Facebook or business-login Meta ads account on the same profile)
+ * - the Facebook account itself
+ *
+ * The old top-level Meta fields (questions, thankYou*, contextCard, …) are DEPRECATED but still accepted while platformSpecificData is absent. Mixing both shapes is a 400.
+ *
+ * thankYouEnableMessenger, isPhoneSmsVerifyEnabled and customDisclaimer are accepted only inside platformSpecificData (top-level is a 400).
+ *
+ * Meta prefilled question types (EMAIL, PHONE, FULL_NAME, …) must omit label/key; CUSTOM questions require both.
+ *
+ * ### LinkedIn
+ *
+ * Created on the ad account's Company Page. LinkedIn exposes only free-text and multiple-choice questions via API (prefilled-from-profile fields are Campaign Manager UI-only).
  *
  */
 export const createLeadForm = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateLeadFormData, ThrowOnError>) => {
@@ -14928,9 +16554,22 @@ export const archiveLeadForm = <ThrowOnError extends boolean = false>(options: O
  * List leads for a single form
  * Lists the leads submitted through one Meta lead form.
  *
- * Serves persisted leads (ingested via the leadgen webhook) when available, falling back to a live Graph read. Accepts a Facebook account or a metaads business-login account with leads_retrieval access to the form; the latter uses its system-user token without a posting parent.
+ * It serves persisted leads (ingested via the leadgen webhook) when available, falling back to a live Graph read.
  *
- * Persisted leads arrive in real time through Meta's webhook, and a background pass re-reads every Page from Meta to catch the leads the webhook misses: every 15 minutes for Pages that received a lead in the last 7 days. `meta.lastCheckedAt` says when that pass last ran, so polling this endpoint faster than that returns nothing new; subscribe to the `lead.received` webhook instead. The live Graph read is cached for 5 minutes, and `meta.lastCheckedAt` is when it was read.
+ * ### Accounts
+ *
+ * Accepts either of these with leads_retrieval access to the form:
+ *
+ * - a Facebook account
+ * - a metaads business-login account, which uses its system-user token without a posting parent
+ *
+ * ### Freshness
+ *
+ * Persisted leads arrive in real time through Meta's webhook. A background pass re-reads every Page from Meta to catch the leads the webhook misses: every 15 minutes for Pages that received a lead in the last 7 days.
+ *
+ * `meta.lastCheckedAt` says when that pass last ran, so polling this endpoint faster than that returns nothing new. Subscribe to the `lead.received` webhook instead.
+ *
+ * The live Graph read is cached for 5 minutes, and `meta.lastCheckedAt` is when it was read.
  *
  */
 export const listFormLeads = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListFormLeadsData, ThrowOnError>) => {
@@ -14958,7 +16597,10 @@ export const createTestLead = <ThrowOnError extends boolean = false>(options: Op
  * Delete a test lead
  * Deletes the test lead on a Meta lead form so you can submit a new one (Meta allows only one at a time).
  *
- * Removes a test lead created for the form (DELETE /{leadgen_id}), so a new one can be submitted: Meta keeps one test lead per form and refuses a second until the first is gone. The same test lead appears in Meta's Lead Ads Testing Tool. Meta only deletes test leads; a real lead is refused.
+ * Removes a test lead created for the form (DELETE /{leadgen_id}). Meta keeps one test lead per form and refuses a second until the first is gone.
+ *
+ * - The same test lead appears in Meta's Lead Ads Testing Tool.
+ * - Meta only deletes test leads; a real lead is refused.
  *
  */
 export const deleteTestLead = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteTestLeadData, ThrowOnError>) => {
@@ -15004,25 +16646,32 @@ export const listAdImages = <ThrowOnError extends boolean = false>(options: Opti
  * Upload an ad video
  * Uploads a video to a Meta ad account from a URL or file, so you can preview it or use it in ads before any ad exists.
  *
- * Standalone ad-video upload (parallel to POST /v1/ads/images), so a video creative can
- * be rendered via POST /v1/ads/preview or attached via `video.id` on POST /v1/ads/create
- * before an ad exists.
+ * This is a standalone ad-video upload (parallel to POST /v1/ads/images). A video creative can then be rendered via POST /v1/ads/preview or attached via `video.id` on POST /v1/ads/create before an ad exists.
  *
- * Accepts either an https `videoUrl` we download server-side (SSRF-guarded) or raw
- * `videoBase64` bytes; exactly one is required. `videoBase64` is capped by Vercel's body
- * limit, around 4.5 MB payload in practice, so larger videos must come via `videoUrl`.
+ * ### Input
  *
- * Returns the Meta `video.id` (reusable wherever `video.id` is accepted) plus Meta's
- * auto-generated poster URL when available. By default the endpoint waits until Meta
- * reports the video ready (chunked upload + transcode can take minutes; the handler runs
- * up to 800 s) and answers 201.
+ * Exactly one is required:
  *
- * **Async mode.** Send `async: true` to get a 202 as soon as Meta has accepted the bytes,
- * with `video.status: processing`. Then either poll `GET /v1/ads/videos/{videoId}` until
- * `status` is `ready`, or subscribe to the `ad.video.processed` webhook. A create call
- * that references the video while it is still processing waits up to 30 s, then answers
- * 409 `invalid_resource_state` naming the status endpoint. With `videoUrl` the download
- * and byte transfer still happen inside the request; only Meta's transcode is skipped.
+ * - `videoUrl`: an https URL we download server-side (SSRF-guarded).
+ * - `videoBase64`: raw bytes. Capped by Vercel's body limit, around 4.5 MB payload in practice, so larger videos must come via `videoUrl`.
+ *
+ * ### Response
+ *
+ * Returns the Meta `video.id` (reusable wherever `video.id` is accepted) plus Meta's auto-generated poster URL when available.
+ *
+ * By default the endpoint waits until Meta reports the video ready and answers 201. Chunked upload + transcode can take minutes; the handler runs up to 800 s.
+ *
+ * ### Async mode
+ *
+ * Send `async: true` to get a 202 as soon as Meta has accepted the bytes, with `video.status: processing`. Then either:
+ *
+ * - poll `GET /v1/ads/videos/{videoId}` until `status` is `ready`, or
+ * - subscribe to the `ad.video.processed` webhook.
+ *
+ * A create call that references the video while it is still processing waits up to 30 s, then answers 409 `invalid_resource_state` naming the status endpoint.
+ *
+ * With `videoUrl` the download and byte transfer still happen inside the request; only Meta's transcode is skipped.
+ *
  */
 export const uploadAdVideo = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadAdVideoData, ThrowOnError>) => {
     return (options?.client ?? client).post<UploadAdVideoResponse, UploadAdVideoError, ThrowOnError>({
@@ -15035,21 +16684,26 @@ export const uploadAdVideo = <ThrowOnError extends boolean = false>(options: Opt
  * Ad video library
  * Lists the videos in a Meta ad account's library, including ones uploaded elsewhere, so you can reuse one across ads.
  *
- * Lists the ad account's video library (Meta's `/act_X/advideos`), rows returned verbatim.
- * The default projection covers id, title, status, poster frames, length and `source` (the
- * playable MP4); `fields` is a raw-passthrough override. Any `id` here is reusable as
- * `video.id` on the create endpoints, so N ads that differ only in copy share one upload.
+ * It lists the ad account's video library (Meta's `/act_X/advideos`), rows returned verbatim. The default projection covers id, title, status, poster frames, length and `source` (the playable MP4). `fields` is a raw-passthrough override.
  *
- * `source` lets you PLAY a video before picking it, which a poster frame alone can't settle
- * when several videos share a first frame. It is a signed CDN URL that EXPIRES, so treat it
- * as good for preview at selection time only. Never persist it; re-list to get a fresh one.
+ * Any `id` here is reusable as `video.id` on the create endpoints, so N ads that differ only in copy share one upload.
  *
- * This is the only way to reach a video uploaded OUTSIDE Zernio (Ads Manager, another
- * tool); videos we uploaded also come back as `creative.videoId` on GET /v1/ads.
+ * ### Previewing with `source`
  *
- * Meta transcodes asynchronously, so a row is only usable once `status.video_status`
- * reads `ready`. Upload a new video via POST /v1/ads/videos, or inline via `video.url`
- * on POST /v1/ads/create.
+ * `source` lets you PLAY a video before picking it, which a poster frame alone can't settle when several videos share a first frame.
+ *
+ * It is a signed CDN URL that EXPIRES, so treat it as good for preview at selection time only. Never persist it; re-list to get a fresh one.
+ *
+ * ### Videos uploaded elsewhere
+ *
+ * This is the only way to reach a video uploaded OUTSIDE Zernio (Ads Manager, another tool). Videos we uploaded also come back as `creative.videoId` on GET /v1/ads.
+ *
+ * ### Readiness and uploads
+ *
+ * Meta transcodes asynchronously, so a row is only usable once `status.video_status` reads `ready`.
+ *
+ * Upload a new video via POST /v1/ads/videos, or inline via `video.url` on POST /v1/ads/create.
+ *
  */
 export const listAdVideos = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdVideosData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdVideosResponse, ListAdVideosError, ThrowOnError>({
@@ -15082,12 +16736,11 @@ export const getAdVideoStatus = <ThrowOnError extends boolean = false>(options: 
  * Delete an ad video
  * Removes a video from a Meta ad account's video library.
  *
- * Meta's canonical
- * `DELETE /{video_id}` fails with code 10 / subcode 1363055 for videos uploaded via
- * `/act_X/advideos` even with `ads_management`; this endpoint uses the working
- * account-scoped shape `DELETE /act_X/advideos?video_id=<id>` and returns Meta's
- * `{success: true}` verbatim. Deleting a video that lives in a different ad account,
- * or that Meta has already removed, returns Meta's error verbatim as a 4xx.
+ * Meta's canonical `DELETE /{video_id}` fails with code 10 / subcode 1363055 for videos uploaded via `/act_X/advideos`, even with `ads_management`.
+ *
+ * This endpoint uses the working account-scoped shape `DELETE /act_X/advideos?video_id=<id>` and returns Meta's `{success: true}` verbatim.
+ *
+ * Deleting a video that lives in a different ad account, or that Meta has already removed, returns Meta's error verbatim as a 4xx.
  *
  */
 export const deleteAdVideo = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAdVideoData, ThrowOnError>) => {
@@ -15117,161 +16770,171 @@ export const searchAdInterests = <ThrowOnError extends boolean = false>(options:
  * Search targeting options
  * Finds targeting options by name, such as locations, interests or behaviors, and returns the ids to use in ad targeting.
  *
- * Resolve a human-readable query into the platform's opaque targeting ids used in
- * the `TargetingSpec` (`countries`/`regions`/`cities`/`zips`/`metros` geo keys, and
- * `interests`/`behaviors` entity ids) on `POST /v1/ads/create`,
- * `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences.
+ * It resolves a human-readable query into the platform's opaque targeting ids used in the `TargetingSpec`: the `countries`/`regions`/`cities`/`zips`/`metros` geo keys and the `interests`/`behaviors` entity ids. Those ids are used on `POST /v1/ads/create`, `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences.
+ *
+ * ### Dimensions
  *
  * The `dimension` param selects what is searched:
  *
  * - `geo`: locations, further scoped by `geoType`
  * - `interest`
- * - `interestSuggestion`: Meta only. Interests related to the interest names in `q`, from Meta's
- * interest suggestions. `q` lists interest names, case sensitive, names and not ids: either
- * comma-separated (`NBA,Michael Jordan`) or, for names that contain a comma, a JSON array of
- * strings (`["Earth, Wind & Fire","Yoga"]`, URL-encoded). A `q` starting with `[` is always read as
- * JSON. A `q` with no name or malformed JSON returns 400 naming `q`. Meta also suggests behaviors
- * and demographics; Zernio keeps only interests, so every id goes in `TargetingSpec.interests`, like
- * `interest` results. Zernio classifies them with a Meta call pinned to `en_US` (ids whose `path`
- * starts with `Interests`). Without `locale` results are in English; with another `locale`, a second
- * call in that locale returns the same interests with localized names and `path`. Zernio asks Meta for three
- * times `limit` (at most 100) before filtering, so fewer than `limit` results can come back. Meta
- * weights the first name heavily: a multi-name `q` mostly returns suggestions for the first one
- * - `behavior`: Meta, TikTok and LinkedIn, matched by name; ids feed `TargetingSpec.behaviors`.
- * Meta: its fixed behaviors catalog (e.g. `Small business owners`, `Frequent Travelers`).
- * TikTok: video and creator interaction categories (e.g. `Software & Apps`), with ids like
- * `video:1913101` or `creator:24001` and `path` starting with `Video interactions` or
- * `Creator interactions` (hashtags are their own `hashtag` dimension). LinkedIn: member behaviors (e.g. `Frequent Travelers`,
- * `Job Seekers`, `Recently Promoted`), ids like `urn:li:memberBehavior:9`. Google has no
- * separate behavior catalog: its in-market and affinity segments come back from `interest`,
- * and X removed behavior targeting from its Ads API
- * - `interestKeyword`: TikTok only. The "Additional interests" of TikTok Ads Manager (e.g. `folk`
- * returns `Folk Music`), from TikTok's keyword recommendations for the seed `q`. Ids look like
- * `keyword:123456` and go in `TargetingSpec.interests`, next to interest categories. Only keywords
- * TikTok lets an ad group target come back (`status` `EFFECTIVE`). TikTok returns no audience size
- * - `hashtag`: TikTok only. Hashtags recommended for the seed `q`, to target people who viewed videos
- * with them. Ids look like `hashtag:123456` and go in `TargetingSpec.behaviors`. Only hashtags
- * TikTok reports `ONLINE` come back. Spaces in `q` are removed first, because TikTok recommends no hashtags for a multi-word seed (`acoustic guitar` searches `acousticguitar`)
- * - `income`: the household-income tiers the platform can target (Meta, TikTok, Google).
- * The id is the normalized tier (`top_5`, `top_10`, `top_10_25`, `top_25_50`) to pass as
- * `TargetingSpec.incomeTier`, never a platform segment id. Meta's tiers are US-only
- * ZIP-code percentiles (label and `audienceSize` come live from Meta), TikTok expresses all
- * four and Google only `top_10`. `q` is matched against the label, so `top` or `income`
- * lists every tier
+ * - `interestSuggestion`: Meta only. Interests related to the interest names in `q`, from Meta's interest suggestions (details below)
+ * - `behavior`: Meta, TikTok and LinkedIn, matched by name; ids feed `TargetingSpec.behaviors` (details below)
+ * - `interestKeyword`: TikTok only. The "Additional interests" of TikTok Ads Manager (e.g. `folk` returns `Folk Music`), from TikTok's keyword recommendations for the seed `q` (details below)
+ * - `hashtag`: TikTok only. Hashtags recommended for the seed `q`, to target people who viewed videos with them (details below)
+ * - `income`: the household-income tiers the platform can target (Meta, TikTok, Google) (details below)
  * - `language`: Google-only
- * - `workPosition`, `workEmployer`, `workIndustry`: the Meta-only work demographics, whose
- * ids feed `TargetingSpec.workPositions`/`workEmployers`/`workIndustries`
- * - `industry`, `jobFunction`, `seniority`, `companySize`, `skill`: the LinkedIn-only B2B facets, whose
- * URNs feed `TargetingSpec.industries`/`jobFunctions`/`seniorities`/`companySizes`/`skills`
- * - `community`: Reddit only. Subreddits matching `q`; the id is the subreddit name for
- * `TargetingSpec.communities` / `excludedCommunities`, `platformId` Reddit's own id and
- * `audienceSize` its subscriber count when Reddit reports it
- * - `conversationKeyword`: Reddit only. Reddit's keyword suggestions for the seed `q`; the id is
- * the keyword for `TargetingSpec.conversationKeywords` / `excludedConversationKeywords`
+ * - `workPosition`, `workEmployer`, `workIndustry`: the Meta-only work demographics, whose ids feed `TargetingSpec.workPositions`/`workEmployers`/`workIndustries`
+ * - `industry`, `jobFunction`, `seniority`, `companySize`, `skill`: the LinkedIn-only B2B facets, whose URNs feed `TargetingSpec.industries`/`jobFunctions`/`seniorities`/`companySizes`/`skills`
+ * - `community`: Reddit only. Subreddits matching `q`. The id is the subreddit name for `TargetingSpec.communities` / `excludedCommunities`, `platformId` is Reddit's own id, and `audienceSize` its subscriber count when Reddit reports it
+ * - `conversationKeyword`: Reddit only. Reddit's keyword suggestions for the seed `q`. The id is the keyword for `TargetingSpec.conversationKeywords` / `excludedConversationKeywords`
  *
- * Availability of each dimension varies by platform. A dimension a platform cannot search
- * returns a 400 naming `dimension`; it never falls back to another dimension, and every
- * result's `type` is the requested dimension (or the geo level for `geo`).
+ * Availability of each dimension varies by platform. A dimension a platform cannot search returns a 400 naming `dimension`. It never falls back to another dimension, and every result's `type` is the requested dimension (or the geo level for `geo`).
  *
- * TikTok `interest` searches TikTok's interest category catalog (about 700 categories over
- * four levels, `path` holds the parent categories), matched by name in Zernio. The ids are
- * what `TargetingSpec.interests` sends to TikTok as `interest_category_ids`.
- * For `interestKeyword` and `hashtag`, a `q` made only of prefixed ids (`keyword:101,keyword:102` or
- * `hashtag:201`) looks those ids up instead of searching, unavailable ones included with their `status`
- * (`INEFFECTIVE` or `OFFLINE`), so ids read back from an ad group (`interest_keyword_ids`, `actions`
- * in `nativeSettings`) resolve to names. An `interestKeyword` lookup takes at most 50 ids (more returns 400 naming `q`).
- * Work industries are a fixed ~30-entry Meta catalog with no server-side query,
- * so `workIndustry` matching, ranking and `limit` happen in Zernio. `language`
- * is likewise a fixed, checked-in table of Google's targetable
- * `language_constant` rows (id, ISO code, name) matched by name or code, capped
- * at 20, with no network call; its ids feed `TargetingSpec.languages`.
+ * Results are normalized across platforms into a single shape, so the same client code consumes Meta, TikTok, LinkedIn, X, Pinterest, Google and Reddit results.
  *
- * Results are normalized across platforms into a single shape, so the same client code
- * consumes Meta, TikTok, LinkedIn, X, Pinterest, Google and Reddit results.
+ * ### `interestSuggestion` (Meta)
  *
- * TikTok geo searches return every matching level in one list (`type` is
- * `country`, `region`, `city`, `district`, or `metro` for DMA areas), and
- * `geoType` is not applied. Results are scoped to the advertiser's targetable
- * markets (pass `adAccountId` when the connection holds several advertisers). A
- * two-letter `q` also matches a country by ISO code (`q=GB` returns the United Kingdom first). A `country` result's id is its ISO 3166-1 alpha-2 code, for
- * `targeting.countries`; every other id is TikTok's numeric location id,
- * usable in `regions`/`cities`/`metros` keys on `POST /v1/ads/create`.
+ * `q` lists interest names, case sensitive, names and not ids, in one of two forms:
  *
- * LinkedIn geo searches also return every matching level in one list, and
- * neither `geoType` nor `countryCode` is applied: LinkedIn's typeahead only
- * returns a name and a URN per result, with no level or country field to
- * filter on. A result whose URN is a country Zernio holds a code for has
- * `type: country` and its ISO 3166-1 alpha-2 code as the id, for
- * `targeting.countries`. Every other result has `type: region` and keeps
- * its `urn:li:geo:*` URN as the id, usable as a `regions[].key` on
- * `POST /v1/ads/create`, `POST /v1/ads/boost` and
- * `POST /v1/ads/targeting/reach-estimate` (LinkedIn puts countries and
- * regions in the same `locations` facet, so both target the same way).
+ * - Comma-separated: `NBA,Michael Jordan`
+ * - For names that contain a comma, a JSON array of strings (`["Earth, Wind & Fire","Yoga"]`, URL-encoded). A `q` starting with `[` is always read as JSON.
  *
- * LinkedIn B2B searches (`industry`, `jobFunction`, `seniority`, `companySize`, `skill`) return the
- * full URN to pass straight back, so no URN id fragment has to be assembled by hand:
- * `urn:li:industry:4`, `urn:li:function:8`, `urn:li:seniority:6`,
- * `urn:li:staffCountRange:(51,200)`, `urn:li:skill:1346`. Only `industry` and `skill` are server-side name searches
- * (LinkedIn's typeahead finder). LinkedIn exposes no typeahead for job functions,
- * seniorities and company sizes, so Zernio fetches each whole table (26, 10 and 9 entries),
- * caches it, and does the matching, ranking and `limit` cutoff itself. Those three never
- * carry `audienceSize`, and `countryCode` and `geoType` are not applied to any of the four.
+ * A `q` with no name or malformed JSON returns 400 naming `q`.
  *
- * Google geo searches resolve against Google's geoTargetConstants and return
- * every matching level in one list; `geoType` is not applied (Google's
- * `target_type` is an open taxonomy that does not map one-to-one onto the
- * `geoType` enum), so filter client-side on the returned `type` (`country`,
- * `region`, `city`, `zip`, `metro`, or the lowercased Google target type for
- * rarer levels). `countryCode` scopes the search to one country. A `country`
- * result's id is its ISO 3166-1 alpha-2 code, for `targeting.countries`;
- * every other id is Google's numeric criterion id, usable as a
- * `regions`/`cities`/`zips`/`metros` `key` on `POST /v1/ads/create`. Google
- * city radius is not supported (pass a `customLocations` lat/lng pin for a
- * radius); country targeting also accepts plain ISO codes via `countries`
- * with no search call.
+ * Meta also suggests behaviors and demographics. Zernio keeps only interests, so every id goes in `TargetingSpec.interests`, like `interest` results. Zernio classifies them with a Meta call pinned to `en_US` (ids whose `path` starts with `Interests`).
  *
- * Pinterest resolves against three whole-catalog endpoints (interests, locations,
- * regions) with no server-side query or pagination, so matching, ranking and the
- * `limit` cutoff all happen in Zernio; the catalog is independent of any ad account
- * and results never carry `audienceSize`. Names come back localized to the connected
- * Pinterest account's language (there is no way to force a locale), so match against
- * whatever language that account returns.
+ * Without `locale` results are in English. With another `locale`, a second call in that locale returns the same interests with localized names and `path`.
+ *
+ * Zernio asks Meta for three times `limit` (at most 100) before filtering, so fewer than `limit` results can come back. Meta weights the first name heavily: a multi-name `q` mostly returns suggestions for the first one.
+ *
+ * ### `behavior`
+ *
+ * - Meta: its fixed behaviors catalog (e.g. `Small business owners`, `Frequent Travelers`).
+ * - TikTok: video and creator interaction categories (e.g. `Software & Apps`), with ids like `video:1913101` or `creator:24001` and `path` starting with `Video interactions` or `Creator interactions`. Hashtags are their own `hashtag` dimension.
+ * - LinkedIn: member behaviors (e.g. `Frequent Travelers`, `Job Seekers`, `Recently Promoted`), ids like `urn:li:memberBehavior:9`.
+ * - Google has no separate behavior catalog: its in-market and affinity segments come back from `interest`.
+ * - X removed behavior targeting from its Ads API.
+ *
+ * ### `interestKeyword` and `hashtag` (TikTok)
+ *
+ * - `interestKeyword` ids look like `keyword:123456` and go in `TargetingSpec.interests`, next to interest categories. Only keywords TikTok lets an ad group target come back (`status` `EFFECTIVE`). TikTok returns no audience size.
+ * - `hashtag` ids look like `hashtag:123456` and go in `TargetingSpec.behaviors`. Only hashtags TikTok reports `ONLINE` come back.
+ * - For `hashtag`, spaces in `q` are removed first, because TikTok recommends no hashtags for a multi-word seed (`acoustic guitar` searches `acousticguitar`).
+ *
+ * For both, a `q` made only of prefixed ids (`keyword:101,keyword:102` or `hashtag:201`) looks those ids up instead of searching. Unavailable ones are included with their `status` (`INEFFECTIVE` or `OFFLINE`), so ids read back from an ad group (`interest_keyword_ids`, `actions` in `nativeSettings`) resolve to names.
+ *
+ * An `interestKeyword` lookup takes at most 50 ids (more returns 400 naming `q`).
+ *
+ * ### `income`
+ *
+ * The id is the normalized tier (`top_5`, `top_10`, `top_10_25`, `top_25_50`) to pass as `TargetingSpec.incomeTier`, never a platform segment id.
+ *
+ * - Meta: tiers are US-only ZIP-code percentiles (label and `audienceSize` come live from Meta).
+ * - TikTok: expresses all four.
+ * - Google: only `top_10`.
+ *
+ * `q` is matched against the label, so `top` or `income` lists every tier.
+ *
+ * ### TikTok `interest`
+ *
+ * TikTok `interest` searches TikTok's interest category catalog (about 700 categories over four levels, `path` holds the parent categories), matched by name in Zernio. The ids are what `TargetingSpec.interests` sends to TikTok as `interest_category_ids`.
+ *
+ * ### Meta `workIndustry` and Google `language`
+ *
+ * Work industries are a fixed ~30-entry Meta catalog with no server-side query, so `workIndustry` matching, ranking and `limit` happen in Zernio.
+ *
+ * `language` is likewise a fixed, checked-in table of Google's targetable `language_constant` rows (id, ISO code, name). It is matched by name or code, capped at 20, with no network call. Its ids feed `TargetingSpec.languages`.
+ *
+ * ### Geo queries
+ *
+ * For geo queries, `q` should contain only the locality name (e.g. `"Amsterdam"`, not `"Amsterdam, NL"`). Use `countryCode` to disambiguate.
+ *
+ * ### TikTok geo
+ *
+ * TikTok geo searches return every matching level in one list (`type` is `country`, `region`, `city`, `district`, or `metro` for DMA areas), and `geoType` is not applied.
+ *
+ * Results are scoped to the advertiser's targetable markets (pass `adAccountId` when the connection holds several advertisers). A two-letter `q` also matches a country by ISO code (`q=GB` returns the United Kingdom first).
+ *
+ * A `country` result's id is its ISO 3166-1 alpha-2 code, for `targeting.countries`. Every other id is TikTok's numeric location id, usable in `regions`/`cities`/`metros` keys on `POST /v1/ads/create`.
+ *
+ * ### LinkedIn geo
+ *
+ * LinkedIn geo searches also return every matching level in one list. Neither `geoType` nor `countryCode` is applied: LinkedIn's typeahead only returns a name and a URN per result, with no level or country field to filter on.
+ *
+ * - A result whose URN is a country Zernio holds a code for has `type: country` and its ISO 3166-1 alpha-2 code as the id, for `targeting.countries`.
+ * - Every other result has `type: region` and keeps its `urn:li:geo:*` URN as the id, usable as a `regions[].key` on `POST /v1/ads/create`, `POST /v1/ads/boost` and `POST /v1/ads/targeting/reach-estimate`.
+ *
+ * LinkedIn puts countries and regions in the same `locations` facet, so both target the same way.
+ *
+ * ### LinkedIn B2B
+ *
+ * LinkedIn B2B searches (`industry`, `jobFunction`, `seniority`, `companySize`, `skill`) return the full URN to pass straight back, so no URN id fragment has to be assembled by hand:
+ *
+ * - `urn:li:industry:4`
+ * - `urn:li:function:8`
+ * - `urn:li:seniority:6`
+ * - `urn:li:staffCountRange:(51,200)`
+ * - `urn:li:skill:1346`
+ *
+ * Only `industry` and `skill` are server-side name searches (LinkedIn's typeahead finder).
+ *
+ * LinkedIn exposes no typeahead for job functions, seniorities and company sizes. Zernio fetches each whole table (26, 10 and 9 entries), caches it, and does the matching, ranking and `limit` cutoff itself. Those three never carry `audienceSize`.
+ *
+ * `countryCode` and `geoType` are not applied to any of the four.
+ *
+ * ### Google geo
+ *
+ * Google geo searches resolve against Google's geoTargetConstants and return every matching level in one list.
+ *
+ * `geoType` is not applied (Google's `target_type` is an open taxonomy that does not map one-to-one onto the `geoType` enum). Filter client-side on the returned `type` (`country`, `region`, `city`, `zip`, `metro`, or the lowercased Google target type for rarer levels). `countryCode` scopes the search to one country.
+ *
+ * A `country` result's id is its ISO 3166-1 alpha-2 code, for `targeting.countries`. Every other id is Google's numeric criterion id, usable as a `regions`/`cities`/`zips`/`metros` `key` on `POST /v1/ads/create`.
+ *
+ * Google city radius is not supported (pass a `customLocations` lat/lng pin for a radius). Country targeting also accepts plain ISO codes via `countries` with no search call.
+ *
+ * ### Pinterest
+ *
+ * Pinterest resolves against three whole-catalog endpoints (interests, locations, regions) with no server-side query or pagination. Matching, ranking and the `limit` cutoff all happen in Zernio.
+ *
+ * The catalog is independent of any ad account and results never carry `audienceSize`. Names come back localized to the connected Pinterest account's language (there is no way to force a locale), so match against whatever language that account returns.
  *
  * `geoType` routes to a different Pinterest catalog:
  *
  * - `country` and `metro_area` read the locations catalog (`type` is `country` or `metro`)
- * - `region` reads the regions catalog (`type` is `region`, its id a `regions[].key` on
- * `POST /v1/ads/create`)
- * - `all` and the default `city` merge both catalogs with honest per-entry `type`s, since
- * Pinterest has no city-level catalog and `city` is an alias for `all`, not a literal
- * city search
- * - `zip`, `subcity`, `neighborhood`, `place` and `geo_market` return a 400: Pinterest
- * exposes no postal-code catalog, pass postal codes directly as
- * `targeting.zips: [{ key }]` on `POST /v1/ads/create`
+ * - `region` reads the regions catalog (`type` is `region`, its id a `regions[].key` on `POST /v1/ads/create`)
+ * - `all` and the default `city` merge both catalogs with honest per-entry `type`s, since Pinterest has no city-level catalog and `city` is an alias for `all`, not a literal city search
+ * - `zip`, `subcity`, `neighborhood`, `place` and `geo_market` return a 400: Pinterest exposes no postal-code catalog, pass postal codes directly as `targeting.zips: [{ key }]` on `POST /v1/ads/create`
  *
- * Reddit (`redditads` connection) searches `geo`, `interest`, `community` and
- * `conversationKeyword`; any other dimension returns 400. Its geo search honours `geoType`
- * `city` (the default, a server-side city search), `zip` (`q` is the postal code), `country`,
- * `region` and `metro_area` (matched in Zernio against Reddit's geolocation catalog) and
- * `all`; other values return 400. `countryCode` scopes every geo search. Each result's id is
- * Reddit's geolocation id, usable as a `regions`/`metros`/`cities`/`zips` `key` (country
- * ids go in `countries`). `interest` matches Reddit's interest catalog in Zernio, with the
- * category as `path`.
+ * ### Reddit
  *
- * For geo queries, `q` should contain only the locality name (e.g. `"Amsterdam"`,
- * not `"Amsterdam, NL"`). Use `countryCode` to disambiguate.
+ * Reddit (`redditads` connection) searches `geo`, `interest`, `community` and `conversationKeyword`. Any other dimension returns 400.
  *
- * Meta language: Meta matches `q` against names in one language and returns names and `path` in
- * that language. Pass `locale` (e.g. `pl_PL`) to choose it. Without `locale`, the `behavior` and
- * `workIndustry` catalogs and `interestSuggestion` are in `en_US`, and `interest`, `geo`, `workPosition`
- * and `workEmployer` follow the language of the Facebook user who connected the account (so a
- * Russian-language Facebook user gets Russian paths, and Polish names need `locale=pl_PL`).
- * A non-English `behavior` or `workIndustry` query without `locale` never matches, so pass the
- * locale of the names you search. Meta's `interest` search matches its own interest names and has no fuzzy or
- * synonym mode, so a phrase Meta does not use as an interest name (e.g. `dental implants`) can
- * return nothing while a shorter word (`dentistry`) does. If Meta returns an empty `behavior`,
- * `workIndustry` or `income` catalog the request fails with a 502 `platform_api_error` instead of
- * an empty `results` list.
+ * Its geo search honours these `geoType` values (other values return 400):
+ *
+ * - `city`: the default, a server-side city search
+ * - `zip`: `q` is the postal code
+ * - `country`, `region` and `metro_area`: matched in Zernio against Reddit's geolocation catalog
+ * - `all`
+ *
+ * `countryCode` scopes every geo search. Each result's id is Reddit's geolocation id, usable as a `regions`/`metros`/`cities`/`zips` `key` (country ids go in `countries`).
+ *
+ * `interest` matches Reddit's interest catalog in Zernio, with the category as `path`.
+ *
+ * ### Meta language
+ *
+ * Meta matches `q` against names in one language and returns names and `path` in that language. Pass `locale` (e.g. `pl_PL`) to choose it.
+ *
+ * Without `locale`:
+ *
+ * - The `behavior` and `workIndustry` catalogs and `interestSuggestion` are in `en_US`.
+ * - `interest`, `geo`, `workPosition` and `workEmployer` follow the language of the Facebook user who connected the account (so a Russian-language Facebook user gets Russian paths, and Polish names need `locale=pl_PL`).
+ *
+ * A non-English `behavior` or `workIndustry` query without `locale` never matches, so pass the locale of the names you search.
+ *
+ * Meta's `interest` search matches its own interest names and has no fuzzy or synonym mode. A phrase Meta does not use as an interest name (e.g. `dental implants`) can return nothing while a shorter word (`dentistry`) does.
+ *
+ * If Meta returns an empty `behavior`, `workIndustry` or `income` catalog, the request fails with a 502 `platform_api_error` instead of an empty `results` list.
  *
  */
 export const searchAdTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SearchAdTargetingData, ThrowOnError>) => {
@@ -15285,43 +16948,39 @@ export const searchAdTargeting = <ThrowOnError extends boolean = false>(options:
  * Browse targeting categories
  * Shows Meta's full tree of detailed targeting categories for an ad account, so you can browse options without a keyword.
  *
- * The whole Meta detailed-targeting category tree of one ad account (Meta's
- * `GET /act_{ad_account_id}/targetingbrowse`), as one flat list you can render as a
- * tree. Use it to show what can be targeted without a keyword; use
- * `GET /v1/ads/targeting/search` to find an entry by name.
+ * It returns the whole Meta detailed-targeting category tree of one ad account (Meta's `GET /act_{ad_account_id}/targetingbrowse`), as one flat list you can render as a tree. Use it to show what can be targeted without a keyword; use `GET /v1/ads/targeting/search` to find an entry by name.
  *
- * Every node is one of two kinds:
+ * ### Node kinds
  *
- * - **Selectable entity** (`selectable: true`): an interest, behavior or demographic Meta
- * gives an id. `id` plus `type` is what a targeting spec takes. `interests`, `behaviors`
- * and `industries` ids go in `TargetingSpec.interests`, `behaviors` and `workIndustries`
- * on `POST /v1/ads/create`; every other type goes in `rawTargeting.flexible_spec` under
- * its `type` as the key. `life_events`, `family_statuses` and `income` take objects
- * (`{ "flexible_spec": [{ "life_events": [{ "id": "6017476616183" }] }] }`), while
- * `education_statuses` and `relationship_statuses` take the bare number
- * (`{ "flexible_spec": [{ "education_statuses": [3] }] }`): Meta answers an object
- * there with a 500.
- * - **Organizational node** (`selectable: false`, `id: null`): a category such as
- * `Demographics > Financial > Income` that only groups other nodes and cannot be targeted.
- * A few carry a `type` and have no children (`Schools`, `Employers`, `Job titles`,
- * `Fields of study`, `Undergrad years`): those are open-ended categories Meta only exposes
- * through search (`dimension=workEmployer` / `workPosition` on the search endpoint).
+ * Every node is one of two kinds.
  *
- * `nodeId` identifies a node within this response and `parentNodeId` points at its parent
- * (`null` for the three roots `Demographics`, `Interests`, `Behaviors`). A selectable node's
- * `nodeId` is `{type}:{id}`, because Meta reuses small ids across types (education status 3
- * and relationship status 3 are different entities). An organizational node's `nodeId` is
- * its full path joined with ` > `. Labels are kept exactly as Meta sends them, including
- * stray leading or trailing spaces, because Meta has sibling nodes that differ only by
- * whitespace.
+ * **Selectable entity** (`selectable: true`): an interest, behavior or demographic Meta gives an id. `id` plus `type` is what a targeting spec takes.
  *
- * The interests branch is Meta's curated browse list (a few hundred entries), not every
- * interest Meta can target: search finds the long tail.
+ * - `interests`, `behaviors` and `industries` ids go in `TargetingSpec.interests`, `behaviors` and `workIndustries` on `POST /v1/ads/create`.
+ * - Every other type goes in `rawTargeting.flexible_spec` under its `type` as the key.
+ * - `life_events`, `family_statuses` and `income` take objects (`{ "flexible_spec": [{ "life_events": [{ "id": "6017476616183" }] }] }`).
+ * - `education_statuses` and `relationship_statuses` take the bare number (`{ "flexible_spec": [{ "education_statuses": [3] }] }`): Meta answers an object there with a 500.
  *
- * **No pagination.** Meta returns the whole catalog in one response (about 770 nodes) and
- * ignores `limit`, so there is no cursor. Narrow it with `type`, `parentNodeId` and
- * `selectable` instead; they are applied by Zernio. The catalog is cached for an hour per
- * ad account and connection.
+ * **Organizational node** (`selectable: false`, `id: null`): a category such as `Demographics > Financial > Income` that only groups other nodes and cannot be targeted.
+ *
+ * A few organizational nodes carry a `type` and have no children (`Schools`, `Employers`, `Job titles`, `Fields of study`, `Undergrad years`). Those are open-ended categories Meta only exposes through search (`dimension=workEmployer` / `workPosition` on the search endpoint).
+ *
+ * ### Node ids
+ *
+ * - `nodeId` identifies a node within this response.
+ * - `parentNodeId` points at its parent (`null` for the three roots `Demographics`, `Interests`, `Behaviors`).
+ * - A selectable node's `nodeId` is `{type}:{id}`, because Meta reuses small ids across types (education status 3 and relationship status 3 are different entities).
+ * - An organizational node's `nodeId` is its full path joined with ` > `.
+ *
+ * Labels are kept exactly as Meta sends them, including stray leading or trailing spaces, because Meta has sibling nodes that differ only by whitespace.
+ *
+ * The interests branch is Meta's curated browse list (a few hundred entries), not every interest Meta can target: search finds the long tail.
+ *
+ * ### No pagination
+ *
+ * Meta returns the whole catalog in one response (about 770 nodes) and ignores `limit`, so there is no cursor. Narrow it with `type`, `parentNodeId` and `selectable` instead; they are applied by Zernio.
+ *
+ * The catalog is cached for an hour per ad account and connection.
  *
  */
 export const browseAdTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BrowseAdTargetingData, ThrowOnError>) => {
@@ -15335,27 +16994,29 @@ export const browseAdTargeting = <ThrowOnError extends boolean = false>(options:
  * Search the public Ad Library
  * Searches Meta's or LinkedIn's public Ad Library to see what ads other advertisers run, for competitor and market research.
  *
- * Meta's Ad Library
- * (`GET /ads_archive`) is searched with Zernio's own developer access, so `platform=meta` needs
- * no connected account at all. LinkedIn's Ad Library (`GET /rest/adLibrary`) runs on a connected
- * `linkedin` / `linkedinads` account, passed as `accountId`. Passing a Meta account as `accountId`
- * also selects Meta. Rows are returned in the platform's raw shape under `data`; `paging.after`
- * is an opaque cursor on both (`null` when exhausted).
+ * ### Which library is searched
  *
- * **Meta coverage.** Political and social-issue ads are searchable worldwide. Every other ad is
- * in the archive only if it was delivered to the EU or UK within the last year, so a US-only
- * commercial advertiser is invisible. Spend, impressions and demographics are political-only
- * fields and are left out of the default projection; request them via `fields`. All customers
- * share Zernio's Meta quota, so a `429` means back off for a minute.
+ * - Meta's Ad Library (`GET /ads_archive`) is searched with Zernio's own developer access, so `platform=meta` needs no connected account at all.
+ * - LinkedIn's Ad Library (`GET /rest/adLibrary`) runs on a connected `linkedin` / `linkedinads` account, passed as `accountId`.
+ * - Passing a Meta account as `accountId` also selects Meta.
  *
- * **LinkedIn coverage.** Ads served after June 1 2023, worldwide, kept for a year after their
- * last impression. EU-delivered ads carry impression ranges and the disclosed targeting facets.
- * Pages are capped at 25 ads (`limit` > 25 is a 400); `after` is the next offset.
+ * Rows are returned in the platform's raw shape under `data`. `paging.after` is an opaque cursor on both (`null` when exhausted).
  *
- * Which params apply: `q`, `countries`, `limit`, `after` on both; `pageIds`, `adType`, `status`,
- * `platforms`, `mediaType`, `languages`, `searchType`, `fields`, `since`, `until` are Meta-only;
- * `advertiser` is LinkedIn-only. Passing a param the account's platform does not support is a 400
- * naming the param.
+ * **Meta coverage.** Political and social-issue ads are searchable worldwide. Every other ad is in the archive only if it was delivered to the EU or UK within the last year, so a US-only commercial advertiser is invisible.
+ *
+ * Spend, impressions and demographics are political-only fields and are left out of the default projection; request them via `fields`. All customers share Zernio's Meta quota, so a `429` means back off for a minute.
+ *
+ * **LinkedIn coverage.** Ads served after June 1 2023, worldwide, kept for a year after their last impression. EU-delivered ads carry impression ranges and the disclosed targeting facets.
+ *
+ * Pages are capped at 25 ads (`limit` > 25 is a 400). `after` is the next offset.
+ *
+ * ### Which params apply
+ *
+ * - Both: `q`, `countries`, `limit`, `after`
+ * - Meta-only: `pageIds`, `adType`, `status`, `platforms`, `mediaType`, `languages`, `searchType`, `fields`, `since`, `until`
+ * - LinkedIn-only: `advertiser`
+ *
+ * Passing a param the account's platform does not support is a 400 naming the param.
  *
  */
 export const searchAdLibrary = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<SearchAdLibraryData, ThrowOnError>) => {
@@ -15431,9 +17092,22 @@ export const getLinkedInSupplyForecast = <ThrowOnError extends boolean = false>(
  * List Meta product catalogs
  * Lists the Meta product catalogs a business portfolio owns or has been shared, for catalog and shopping ads.
  *
- * The business comes from `businessId`, else the ad account's owner (`adAccountId`), else the WhatsApp Business Account's owner when `accountId` is a WhatsApp connection, else the only business the Meta login can see.
+ * ### Which business
  *
- * Listing catalogs needs catalog_management on the Meta login. The permission is pending Meta App Review and is not requested on connect yet, so most logins get the 403 below (Meta's code 100 "This application has not been approved to use this api"); pass catalogAccountId naming a facebook, instagram or metaads connection whose Meta login already holds it. Creating a catalog_sales ad from a known product set ID does not need it (see promotedObject.productSetId on POST /v1/ads/create).
+ * The business comes from the first that applies:
+ *
+ * 1. `businessId`
+ * 2. the ad account's owner (`adAccountId`)
+ * 3. the WhatsApp Business Account's owner, when `accountId` is a WhatsApp connection
+ * 4. the only business the Meta login can see
+ *
+ * ### Permission
+ *
+ * Listing catalogs needs catalog_management on the Meta login. The permission is pending Meta App Review and is not requested on connect yet.
+ *
+ * So most logins get the 403 below (Meta's code 100 "This application has not been approved to use this api"). Pass catalogAccountId naming a facebook, instagram or metaads connection whose Meta login already holds it.
+ *
+ * Creating a catalog_sales ad from a known product set ID does not need it (see promotedObject.productSetId on POST /v1/ads/create).
  *
  */
 export const listAdCatalogs = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdCatalogsData, ThrowOnError>) => {
@@ -15700,46 +17374,45 @@ export const listAdAudiences = <ThrowOnError extends boolean = false>(options: O
  * Create custom audience
  * Creates a custom audience from a customer list, website visitors, a lookalike, or people who engaged with your content.
  *
- * `customer_list` is supported on Meta, Google, X, LinkedIn, TikTok, Pinterest, and Reddit.
- * `website` (pixel/tag visitors) is supported on Meta, TikTok, Pinterest, Google, and Reddit.
- * `lookalike` is supported on Meta, TikTok, Pinterest and Google (Reddit's API cannot create one).
- * Reddit audience names need at least 3 characters.
- * `meta_engagement` is Meta-only, `tiktok_engagement` TikTok-only, `pinterest_engagement` Pinterest-only;
- * `company_list`, `engagement` and `website_retargeting` are LinkedIn-only. A type sent to a platform
- * that does not support it is a 422 `FEATURE_NOT_AVAILABLE`.
+ * ### Audience types by platform
  *
- * Per-platform rules for `website`:
+ * - `customer_list`: Meta, Google, X, LinkedIn, TikTok, Pinterest, and Reddit.
+ * - `website` (pixel/tag visitors): Meta, TikTok, Pinterest, Google, and Reddit.
+ * - `lookalike`: Meta, TikTok, Pinterest and Google (Reddit's API cannot create one).
+ * - `meta_engagement`: Meta-only.
+ * - `tiktok_engagement`: TikTok-only.
+ * - `pinterest_engagement`: Pinterest-only.
+ * - `company_list`, `engagement` and `website_retargeting`: LinkedIn-only.
+ *
+ * A type sent to a platform that does not support it is a 422 `FEATURE_NOT_AVAILABLE`. Reddit audience names need at least 3 characters.
+ *
+ * ### Per-platform rules for `website`
  *
  * - Meta: `pixelId` required, `retentionDays` 1-180, optional `urlContains` or raw `rule`. `event` is not accepted.
- * - TikTok: `pixelId` required, `retentionDays` one of 7, 14, 30, 60, 90, 180. `event` is a TikTok pixel event
- * (default `PAGE BROWSE`; also `CLICK BUTTON`, `PIXEL SUBMIT FORM`, `CONTACT`, `DOWNLOAD`,
- * `PIXEL ADD PAYMENT INFO`, `COMPLETE PAYMENT`, `INITIATE CHECKOUT`, `COMPLETE REGISTRATION`,
- * `PRODUCT DETAIL PAGE BROWSE`, `PIXEL SEARCH`, `PIXEL ADD TO CART`, `PLACE AN ORDER`,
- * `PIXEL ADD TO WISHLIST`, `PIXEL SUBSCRIBE`), optional `urlContains`.
- * - Pinterest: `pixelId` is the Pinterest tag id, `retentionDays` 1-540, optional `event` (e.g. `checkout`, `addtocart`).
- * Pinterest matches URLs exactly, so `urlContains` is a 400 there.
- * - Google: no `pixelId` (the account's Google tag is used), `retentionDays` 1-540, `urlContains`
- * defaults to `/` (all visitors). Built as a rule-based user list with prepopulation requested.
- * - Reddit: `pixelId` is the Reddit pixel id, `retentionDays` 1-90. `event` is a Reddit conversion event
- * (`PAGE_VISIT` by default; also `VIEW_CONTENT`, `SEARCH`, `ADD_TO_CART`, `ADD_TO_WISHLIST`, `PURCHASE`,
- * `LEAD`, `SIGN_UP`); any other value is sent as a custom event name. `urlContains` and `rule` are a 400.
+ * - TikTok: `pixelId` required, `retentionDays` one of 7, 14, 30, 60, 90, 180. `event` is a TikTok pixel event (see below), optional `urlContains`.
+ * - Pinterest: `pixelId` is the Pinterest tag id, `retentionDays` 1-540, optional `event` (e.g. `checkout`, `addtocart`). Pinterest matches URLs exactly, so `urlContains` is a 400 there.
+ * - Google: no `pixelId` (the account's Google tag is used), `retentionDays` 1-540, `urlContains` defaults to `/` (all visitors). Built as a rule-based user list with prepopulation requested.
+ * - Reddit: `pixelId` is the Reddit pixel id, `retentionDays` 1-90. `event` is a Reddit conversion event (see below); any other value is sent as a custom event name. `urlContains` and `rule` are a 400.
  *
- * Per-platform rules for `lookalike`: Meta takes `ratio` (0.01-0.20); Pinterest takes `ratio` in whole
- * percents (0.01-0.10) and `country` US, CA or GB; TikTok and Google take `size` (narrow, balanced, broad)
- * instead of `ratio`. TikTok needs a seed with at least 1,000 matched people.
- * `saved_targeting` stores a reusable TargetingSpec (no member upload, no adAccountId) that you reference later via
- * `savedTargetingId` on `POST /v1/ads/create`.
+ * TikTok pixel events: `PAGE BROWSE` (default), `CLICK BUTTON`, `PIXEL SUBMIT FORM`, `CONTACT`, `DOWNLOAD`, `PIXEL ADD PAYMENT INFO`, `COMPLETE PAYMENT`, `INITIATE CHECKOUT`, `COMPLETE REGISTRATION`, `PRODUCT DETAIL PAGE BROWSE`, `PIXEL SEARCH`, `PIXEL ADD TO CART`, `PLACE AN ORDER`, `PIXEL ADD TO WISHLIST`, `PIXEL SUBSCRIBE`.
  *
- * How the audience gets filled depends on the type:
+ * Reddit conversion events: `PAGE_VISIT` (default), `VIEW_CONTENT`, `SEARCH`, `ADD_TO_CART`, `ADD_TO_WISHLIST`, `PURCHASE`, `LEAD`, `SIGN_UP`.
  *
- * - `customer_list` is created empty. Add members with `POST /v1/ads/audiences/{audienceId}/users`.
- * On TikTok and Pinterest the audience is provisioned lazily on that first upload (until then its status is `pending`).
- * - `company_list` is filled AT CREATION from the `companies` array below, which is required. To change the list
- * afterwards send the new full list to `POST /v1/ads/audiences/{audienceId}/companies` (a replace, not a merge).
- * The `/users` endpoint rejects these audiences with a 422.
- * - `website`, `website_retargeting`, `engagement`, `meta_engagement`, `tiktok_engagement`, `pinterest_engagement`
- * and `lookalike` fill themselves from the pixel,
- * engagement source or seed audience you point them at. They take no member upload at all.
+ * ### Per-platform rules for `lookalike`
+ *
+ * - Meta: `ratio` (0.01-0.20).
+ * - Pinterest: `ratio` in whole percents (0.01-0.10) and `country` US, CA or GB.
+ * - TikTok and Google: `size` (narrow, balanced, broad) instead of `ratio`. TikTok needs a seed with at least 1,000 matched people.
+ *
+ * ### Saved targeting
+ *
+ * `saved_targeting` stores a reusable TargetingSpec (no member upload, no adAccountId) that you reference later via `savedTargetingId` on `POST /v1/ads/create`.
+ *
+ * ### How the audience gets filled
+ *
+ * - `customer_list` is created empty. Add members with `POST /v1/ads/audiences/{audienceId}/users`. On TikTok and Pinterest the audience is provisioned lazily on that first upload (until then its status is `pending`).
+ * - `company_list` is filled AT CREATION from the `companies` array below, which is required. To change the list afterwards, send the new full list to `POST /v1/ads/audiences/{audienceId}/companies` (a replace, not a merge). The `/users` endpoint rejects these audiences with a 422.
+ * - `website`, `website_retargeting`, `engagement`, `meta_engagement`, `tiktok_engagement`, `pinterest_engagement` and `lookalike` fill themselves from the pixel, engagement source or seed audience you point them at. They take no member upload at all.
  *
  * Create is not idempotent, never auto-retry.
  *
@@ -15769,13 +17442,17 @@ export const getAdAudience = <ThrowOnError extends boolean = false>(options: Opt
  * Update an audience
  * Renames or redescribes an audience, or replaces a saved targeting audience's rules; platform audience rules cannot change.
  *
- * `saved_targeting` audiences accept `name`, `description`, and `spec`
- * (full replacement, no merge, Zernio-only, no platform call). Platform audiences
- * (uploaded/website/lookalike) accept `name` and `description` only, updated on the
- * platform first and then mirrored locally; their rules are immutable, so `spec` returns
- * 400 for them. Platform audience updates are Meta-only for now (other platforms return
- * 501). Ads already created from a saved_targeting audience are unaffected, they snapshot
- * the targeting at creation.
+ * ### `saved_targeting` audiences
+ *
+ * They accept `name`, `description`, and `spec`. `spec` is a full replacement (no merge), Zernio-only, with no platform call.
+ *
+ * Ads already created from a saved_targeting audience are unaffected: they snapshot the targeting at creation.
+ *
+ * ### Platform audiences (uploaded/website/lookalike)
+ *
+ * - They accept `name` and `description` only, updated on the platform first and then mirrored locally.
+ * - Their rules are immutable, so `spec` returns 400 for them.
+ * - Platform audience updates are Meta-only for now (other platforms return 501).
  *
  */
 export const updateAdAudience = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdAudienceData, ThrowOnError>) => {
@@ -15789,14 +17466,19 @@ export const updateAdAudience = <ThrowOnError extends boolean = false>(options: 
  * Delete custom audience
  * Removes a custom audience from its ad platform (archiving it where the platform does not delete).
  *
- * Removes the audience on its ad platform, then deletes the Zernio record. Meta, Google, TikTok,
- * LinkedIn list and engagement segments, X, and Reddit are deleted; Pinterest audiences and LinkedIn
- * `website_retargeting` segments are archived, which is how those platforms remove them.
- * `saved_targeting` audiences exist only on Zernio, so only the local record is removed.
+ * Removes the audience on its ad platform, then deletes the Zernio record.
  *
- * If the platform refuses, the error is returned and the Zernio record is kept, so a retry is
- * safe. An audience the platform no longer has counts as removed. Google Ads does not allow
- * removing lookalike lists through its API, so those return 422 `FEATURE_NOT_AVAILABLE`.
+ * ### By platform
+ *
+ * - Deleted: Meta, Google, TikTok, LinkedIn list and engagement segments, X, and Reddit.
+ * - Archived (how those platforms remove them): Pinterest audiences and LinkedIn `website_retargeting` segments.
+ * - Local only: `saved_targeting` audiences exist only on Zernio, so only the local record is removed.
+ *
+ * Google Ads does not allow removing lookalike lists through its API, so those return 422 `FEATURE_NOT_AVAILABLE`.
+ *
+ * ### Failures and retries
+ *
+ * If the platform refuses, the error is returned and the Zernio record is kept, so a retry is safe. An audience the platform no longer has counts as removed.
  *
  */
 export const deleteAdAudience = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteAdAudienceData, ThrowOnError>) => {
@@ -15810,15 +17492,24 @@ export const deleteAdAudience = <ThrowOnError extends boolean = false>(options: 
  * Add users to audience
  * Uploads customer emails (and phone numbers on Meta) to a customer list audience, hashed before they are sent.
  *
- * Data is SHA256-hashed server-side before sending to the platform.
- * Email is used on every platform; phone is used on Meta only (other platforms ignore it). On TikTok and Pinterest,
- * the first upload also provisions the audience (deferred create). LinkedIn uploads are full-replace. Max 10,000 users per request.
- * On Reddit, emails are lowercased and trimmed before hashing, duplicates are sent once, and the upload goes out
- * in batches of 2,500. Reddit matches by email only: rows without a valid email count in `numInvalid`, and a
- * request where no row has one is a 400. Reddit audiences need the `redditads` connection, not the Reddit posting account (422).
+ * Data is SHA256-hashed server-side before sending to the platform. Max 10,000 users per request.
  *
- * customer_list only. A LinkedIn `company_list` audience takes company rows, not people: send those to
- * `POST /v1/ads/audiences/{audienceId}/companies`. This endpoint 422s for every other audience type.
+ * ### Per-platform behavior
+ *
+ * - **All platforms**: email is used everywhere. Phone is used on Meta only (other platforms ignore it).
+ * - **TikTok and Pinterest**: the first upload also provisions the audience (deferred create).
+ * - **LinkedIn**: uploads are full-replace.
+ * - **Reddit**: see below.
+ *
+ * ### Reddit
+ *
+ * - Emails are lowercased and trimmed before hashing, duplicates are sent once, and the upload goes out in batches of 2,500.
+ * - Reddit matches by email only: rows without a valid email count in `numInvalid`, and a request where no row has one is a 400.
+ * - Reddit audiences need the `redditads` connection, not the Reddit posting account (422).
+ *
+ * ### Audience types
+ *
+ * customer_list only. A LinkedIn `company_list` audience takes company rows, not people: send those to `POST /v1/ads/audiences/{audienceId}/companies`. This endpoint 422s for every other audience type.
  *
  */
 export const addUsersToAdAudience = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddUsersToAdAudienceData, ThrowOnError>) => {
@@ -15848,26 +17539,22 @@ export const removeUsersFromAdAudience = <ThrowOnError extends boolean = false>(
 
 /**
  * Replace audience companies
- * Upload the company rows of a LinkedIn `company_list` audience (account-based marketing).
- * LinkedIn-only, every other platform returns 422.
+ * Upload the company rows of a LinkedIn `company_list` audience (account-based marketing). LinkedIn-only, every other platform returns 422.
  *
- * A LinkedIn audience segment holds exactly one uploaded list, so the list you send here
- * REPLACES the segment's list instead of being appended to it: always send the full set of
- * companies. LinkedIn returns only the identifier of the uploaded file, never its rows, so the
- * merge cannot be done for you, keep the source list on your side.
+ * The initial list is sent with `companies` on `POST /v1/ads/audiences`; this endpoint is for every change after that.
  *
- * How the matching behaves:
+ * ### Send the full list every time
+ *
+ * A LinkedIn audience segment holds exactly one uploaded list, so the list you send here REPLACES the segment's list instead of being appended to it. Always send the full set of companies.
+ *
+ * LinkedIn returns only the identifier of the uploaded file, never its rows, so the merge cannot be done for you. Keep the source list on your side.
+ *
+ * ### How the matching behaves
  *
  * - Rows are plain text (not hashed), matched against LinkedIn's own company graph.
- * - Matching is asynchronous: LinkedIn takes up to 48h for a new audience and up to 24h for a
- * later update, and the audience stays `processing` meanwhile.
- * - LinkedIn does not document how quickly companies dropped from the list stop being targeted,
- * so treat removals as eventual rather than immediate.
- * - LinkedIn recommends at least 1,000 companies for a usable match rate, and caps a list at
- * 300,000.
- *
- * The initial list is sent with `companies` on `POST /v1/ads/audiences`; this endpoint is for
- * every change after that.
+ * - Matching is asynchronous: LinkedIn takes up to 48h for a new audience and up to 24h for a later update, and the audience stays `processing` meanwhile.
+ * - LinkedIn does not document how quickly companies dropped from the list stop being targeted, so treat removals as eventual rather than immediate.
+ * - LinkedIn recommends at least 1,000 companies for a usable match rate, and caps a list at 300,000.
  *
  */
 export const replaceAdAudienceCompanies = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplaceAdAudienceCompaniesData, ThrowOnError>) => {
@@ -15902,10 +17589,9 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * Send conversion events
  * Sends conversion events, such as purchases or leads, from your server to an ad platform so it can attribute and optimize ads.
  *
- * Relay one or more conversion events to the target ad platform's native Conversions API.
- * Platform is inferred from the provided `accountId`. Requires the Ads add-on.
+ * Relays one or more events to the target ad platform's native Conversions API. The platform is inferred from the provided `accountId`. Requires the Ads add-on.
  *
- * Supported platforms:
+ * ### Supported platforms
  *
  * - Meta (`metaads`) via Graph API
  * - Google Ads (`googleads`) via Data Manager API `ingestEvents`
@@ -15915,7 +17601,7 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * - Pinterest (`pinterestads`) via `POST /v5/ad_accounts/{id}/events`
  * - Reddit (`redditads`) via the Reddit Conversions API (`POST /api/v3/pixels/{pixelId}/conversion_events`)
  *
- * `destinationId` semantics differ per platform:
+ * ### `destinationId` per platform
  *
  * - Meta: pixel (dataset) ID, e.g. `123456789012345`
  * - Google: conversion action resource name, e.g. `customers/1234567890/conversionActions/987654321`
@@ -15925,64 +17611,89 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * - Pinterest: numeric ad account id, e.g. `549755885175` (Pinterest attributes to the ad account, not to a tag)
  * - Reddit: pixel id, e.g. `a2_abc123`, as returned by `GET /v1/accounts/{accountId}/conversion-destinations` (any other shape returns 400)
  *
- * Pinterest notes: each event needs an `email`, or `ipAddress` plus `userAgent`; others are
- * listed in `failures` with code `INVALID_EVENT` and the rest are still sent. `clickIds.epik`
- * (the `_epik` cookie) is sent as `click_id`. `actionSource` `web` stays `web`, offline
- * sources become `offline`, and app events need `platformData.action_source` `app_android`
- * or `app_ios`. Pinterest answers per event, so one bad event does not fail its chunk
- * (failures carry code `PINTEREST_EVENT_FAILED`). `consent.adUserData: DENIED` sets `opt_out`.
- * The connected user needs a Business Access role on the ad account (403 otherwise).
- *
- * Reddit notes: each event needs a match key: `clickIds.rdt_cid`, `clickIds.rdt_uuid`,
- * `email`, `phone`, `externalId`, or `ipAddress` plus `userAgent`. Reddit accepts events up to
- * 7 days old, and `eventTime` is unix SECONDS (a value more than an hour in the future is
- * refused as milliseconds). Events failing these checks are listed in `failures` with code
- * `INVALID_EVENT` and the rest are still sent. Email (lowercased, dots and `+tags` stripped
- * from the local part), phone (E.164 with the leading `+`) and `externalId` are SHA-256
- * hashed; IP and user agent go plaintext. `consent.adUserData: DENIED` sends no user fields.
- * `actionSource` maps to WEBSITE (`web`), APP (`app`) or OTHER, overridable with
- * `platformData.action_source`; `platformData.order_id` is forwarded. `testCode` is sent as
- * Reddit's `test_id`. The connection must hold the `adsconversions` permission: one
- * authorized without it returns 403 `reconnect_required` (reconnect via
- * GET /v1/connect/redditads/ads), and a Reddit user with no role on the ad account that owns
- * the pixel returns 403 `insufficient_permissions`. Reddit throttling and other rejections are
- * reported per chunk in `failures` with code `REDDIT_REJECTED`.
- *
- * TikTok notes: this path sends OFFLINE conversions (in-store / CRM / call-center), not web-pixel
- * events. Each event must carry an email or phone (TikTok requires at least one). The connected
- * TikTok ads account must have granted the Offline Events permission; older grants must reconnect.
- *
- * OpenAI Ads notes: requires a tracking tag (pixel) to already exist on the account. Returns 422
- * with code `TRACKING_TAG_REQUIRED` if `POST /v1/accounts/{accountId}/tracking-tags` hasn't been
- * called yet.
- *
  * Callers can list valid destinations via `GET /v1/accounts/{accountId}/conversion-destinations`.
  *
- * All PII (email, phone, names, external IDs) is hashed with SHA-256 server-side per each
- * platform's normalization spec, including Google's Gmail-specific dot/plus-suffix stripping.
- * Send plaintext. LinkedIn `externalIds` are passed through as plaintext per LinkedIn's spec;
- * only emails and phones are hashed.
+ * ### Pinterest notes
  *
- * For LinkedIn, the connected account must have been authorized after the Conversions API
- * rollout (i.e. the OAuth grant must include `rw_conversions`). Older accounts must reconnect.
+ * - Each event needs an `email`, or `ipAddress` plus `userAgent`. Others are listed in `failures` with code `INVALID_EVENT` and the rest are still sent.
+ * - `clickIds.epik` (the `_epik` cookie) is sent as `click_id`.
+ * - `actionSource` `web` stays `web`, offline sources become `offline`, and app events need `platformData.action_source` `app_android` or `app_ios`.
+ * - Pinterest answers per event, so one bad event does not fail its chunk (failures carry code `PINTEREST_EVENT_FAILED`).
+ * - `consent.adUserData: DENIED` sets `opt_out`.
+ * - The connected user needs a Business Access role on the ad account (403 otherwise).
  *
- * Batching is handled automatically. Meta caps at 1000 events per request and rejects the
- * entire batch if any event is malformed. Google caps at 2000. LinkedIn caps at 5000 and is
- * also all-or-nothing per chunk. OpenAI Ads caps at 1000 per request; larger submissions are
- * split into 1000-event chunks, each all-or-nothing (a malformed event fails every event in
- * that chunk, not the whole request). Reddit works the same way, in chunks of 1000.
+ * ### Reddit notes
  *
- * Dedup: pass a stable `eventId` on every event. Meta and LinkedIn use it to dedupe against
- * browser-side pixel/Insight Tag events; Google maps it to `transactionId`; Reddit receives it as
- * `conversion_id`, its dedup key against Reddit Pixel events.
+ * - Each event needs a match key: `clickIds.rdt_cid`, `clickIds.rdt_uuid`, `email`, `phone`, `externalId`, or `ipAddress` plus `userAgent`.
+ * - Reddit accepts events up to 7 days old. `eventTime` is unix SECONDS (a value more than an hour in the future is refused as milliseconds).
+ * - Events failing these checks are listed in `failures` with code `INVALID_EVENT` and the rest are still sent.
+ * - Email (lowercased, dots and `+tags` stripped from the local part), phone (E.164 with the leading `+`) and `externalId` are SHA-256 hashed. IP and user agent go plaintext.
+ * - `consent.adUserData: DENIED` sends no user fields.
+ * - `actionSource` maps to WEBSITE (`web`), APP (`app`) or OTHER, overridable with `platformData.action_source`. `platformData.order_id` is forwarded.
+ * - `testCode` is sent as Reddit's `test_id`.
  *
- * Per-platform `eventName` semantics:
+ * Reddit errors:
+ *
+ * - 403 `reconnect_required`: the connection was authorized without the `adsconversions` permission (reconnect via GET /v1/connect/redditads/ads).
+ * - 403 `insufficient_permissions`: the Reddit user has no role on the ad account that owns the pixel.
+ * - `REDDIT_REJECTED`: Reddit throttling and other rejections, reported per chunk in `failures`.
+ *
+ * ### TikTok notes
+ *
+ * This path sends OFFLINE conversions (in-store / CRM / call-center), not web-pixel events. Each event must carry an email or phone (TikTok requires at least one).
+ *
+ * The connected TikTok ads account must have granted the Offline Events permission; older grants must reconnect.
+ *
+ * ### OpenAI Ads notes
+ *
+ * Requires a tracking tag (pixel) to already exist on the account. Returns 422 with code `TRACKING_TAG_REQUIRED` if `POST /v1/accounts/{accountId}/tracking-tags` hasn't been called yet.
+ *
+ * ### Hashing
+ *
+ * All PII (email, phone, names, external IDs) is hashed with SHA-256 server-side per each platform's normalization spec, including Google's Gmail-specific dot/plus-suffix stripping. Send plaintext.
+ *
+ * LinkedIn `externalIds` are passed through as plaintext per LinkedIn's spec; only emails and phones are hashed.
+ *
+ * For LinkedIn, the connected account must have been authorized after the Conversions API rollout (the OAuth grant must include `rw_conversions`). Older accounts must reconnect.
+ *
+ * ### Batching
+ *
+ * Batching is handled automatically. Per-platform caps:
+ *
+ * - Meta: 1000 events per request; rejects the entire batch if any event is malformed.
+ * - Google: 2000.
+ * - LinkedIn: 5000, all-or-nothing per chunk.
+ * - OpenAI Ads: 1000 per request. Larger submissions are split into 1000-event chunks, each all-or-nothing (a malformed event fails every event in that chunk, not the whole request).
+ * - Reddit: works the same way as OpenAI Ads, in chunks of 1000.
+ *
+ * ### Dedup
+ *
+ * Pass a stable `eventId` on every event:
+ *
+ * - Meta and LinkedIn use it to dedupe against browser-side pixel/Insight Tag events.
+ * - Google maps it to `transactionId`.
+ * - Reddit receives it as `conversion_id`, its dedup key against Reddit Pixel events.
+ *
+ * ### `eventName` per platform
  *
  * - Meta: free-form. Standard names (Purchase, Lead, ...) match Meta's built-in events; custom strings are accepted.
  * - Google: ignored. The conversion action's category determines the event type. Send the standard name closest to your action for documentation, but the platform will not branch on it.
  * - LinkedIn: ignored. The conversion rule's `type` (LEAD, PURCHASE, etc.) is locked to the destination at rule-creation time. Send the standard name for documentation; LinkedIn does not branch on it.
- * - OpenAI Ads: a fixed subset of standard names (Purchase, Lead, AddToCart, ViewContent, InitiateCheckout, CompleteRegistration, Subscribe, StartTrial, Schedule) maps 1:1 onto OpenAI's own event-type enum; any other standard name or custom string is sent as `type: custom` with the name preserved.
- * - Pinterest: standard names map onto Pinterest's (Purchase = `checkout`, AddToCart = `add_to_cart`, InitiateCheckout = `initiate_checkout`, AddPaymentInfo = `add_payment_info`, Lead = `lead`, CompleteRegistration = `signup`, Subscribe = `subscribe`, ViewContent = `view_content`, Search = `search`, PageView = `page_visit`); any other string is sent as is, so it matches an advertiser defined event of that name.
+ * - OpenAI Ads: a fixed subset of standard names maps 1:1 onto OpenAI's own event-type enum: Purchase, Lead, AddToCart, ViewContent, InitiateCheckout, CompleteRegistration, Subscribe, StartTrial, Schedule. Any other standard name or custom string is sent as `type: custom` with the name preserved.
+ * - Pinterest: standard names map onto Pinterest's (see below). Any other string is sent as is, so it matches an advertiser defined event of that name.
+ *
+ * Pinterest name mapping:
+ *
+ * - Purchase = `checkout`
+ * - AddToCart = `add_to_cart`
+ * - InitiateCheckout = `initiate_checkout`
+ * - AddPaymentInfo = `add_payment_info`
+ * - Lead = `lead`
+ * - CompleteRegistration = `signup`
+ * - Subscribe = `subscribe`
+ * - ViewContent = `view_content`
+ * - Search = `search`
+ * - PageView = `page_visit`
  *
  */
 export const sendConversions = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendConversionsData, ThrowOnError>) => {
@@ -15996,34 +17707,34 @@ export const sendConversions = <ThrowOnError extends boolean = false>(options: O
  * Adjust uploaded conversions
  * Retracts, restates the value of, or enhances conversions you already sent to Google Ads, for refunds or late customer data.
  *
- * Adjust conversions that were previously uploaded via `POST /v1/ads/conversions`:
- * retract them, restate their value, or enhance them with first-party data. Requires
- * the Ads add-on.
+ * It adjusts conversions previously uploaded via `POST /v1/ads/conversions`: retract them, restate their value, or enhance them with first-party data. Requires the Ads add-on.
  *
- * **Google Ads only.** Google handles adjustments through the classic Google Ads API
- * (`ConversionAdjustmentUploadService`); the Data Manager `ingestEvents` path used for
- * sending conversions is ingest-only. Meta and LinkedIn have no equivalent, so this
- * endpoint returns `405` for those platforms.
+ * ### Google Ads only
  *
- * Adjustment types:
+ * Google handles adjustments through the classic Google Ads API (`ConversionAdjustmentUploadService`). The Data Manager `ingestEvents` path used for sending conversions is ingest-only. Meta and LinkedIn have no equivalent, so this endpoint returns `405` for those platforms.
+ *
+ * ### Adjustment types
  *
  * - `RETRACTION`: remove the conversion entirely (refund, chargeback, cancelled order, churn).
  * - `RESTATEMENT`: change the conversion's value (upgrade / downgrade / partial refund). Send the corrected **total** value in `restatementValue` (not a delta).
  * - `ENHANCEMENT`: attach first-party identifiers (hashed email / phone) to an existing conversion (enhanced conversions applied after the fact).
  *
- * Identifying the original conversion (per adjustment):
+ * ### Identifying the original conversion
+ *
+ * Per adjustment, send one of:
  *
  * - `orderId`: the transaction ID you sent as `eventId` on the original conversion. Recommended, and **required** for `ENHANCEMENT`.
- * - or `gclid` + `conversionTime`: the click ID and the original conversion's time (unix seconds). Not available for `ENHANCEMENT`.
+ * - `gclid` + `conversionTime`: the click ID and the original conversion's time (unix seconds). Not available for `ENHANCEMENT`.
  *
- * `destinationId` is the conversion action resource name, e.g.
- * `customers/1234567890/conversionActions/987654321` (same value you send to
- * `POST /v1/ads/conversions`). PII in `user` is hashed with SHA-256 server-side
- * (Gmail-specific normalization included). Send plaintext.
+ * ### Other fields
  *
- * Times are unix seconds; we convert to Google's required
- * `yyyy-MM-dd HH:mm:ss+00:00` format. Up to 2000 adjustments per request; partial
- * failure is supported (inspect `adjustmentsFailed` / `failures[]`).
+ * - `destinationId` is the conversion action resource name, e.g. `customers/1234567890/conversionActions/987654321` (same value you send to `POST /v1/ads/conversions`).
+ * - PII in `user` is hashed with SHA-256 server-side (Gmail-specific normalization included). Send plaintext.
+ * - Times are unix seconds; we convert to Google's required `yyyy-MM-dd HH:mm:ss+00:00` format.
+ *
+ * ### Limits
+ *
+ * Up to 2000 adjustments per request. Partial failure is supported (inspect `adjustmentsFailed` / `failures[]`).
  *
  */
 export const adjustConversions = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AdjustConversionsData, ThrowOnError>) => {
@@ -16081,12 +17792,15 @@ export const createConversionAction = <ThrowOnError extends boolean = false>(opt
  * List account conversion goals
  * Lists a Google Ads account's default conversion goals, which ones are used for bidding, and the conversion actions in each.
  *
- * Google Ads account-default conversion goals (CustomerConversionGoal), one per
- * category and origin, with `biddable` (whether the goal is used for bidding and
- * reported in the Conversions column) and the conversion actions that belong to it,
- * each flagged `primaryForGoal` (primary) or not (secondary). Reads are cached for
- * 10 minutes; when the shared Google quota is exhausted the last successful result is
- * served with `stale: true`.
+ * These are Google Ads account-default conversion goals (CustomerConversionGoal), one per category and origin. Each goal carries:
+ *
+ * - `biddable`: whether the goal is used for bidding and reported in the Conversions column.
+ * - The conversion actions that belong to it, each flagged `primaryForGoal` (primary) or not (secondary).
+ *
+ * ### Caching
+ *
+ * Reads are cached for 10 minutes. When the shared Google quota is exhausted, the last successful result is served with `stale: true`.
+ *
  */
 export const listAdConversionGoals = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdConversionGoalsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdConversionGoalsResponse, ListAdConversionGoalsError, ThrowOnError>({
@@ -16208,18 +17922,21 @@ export const listEvents = <ThrowOnError extends boolean = false>(options: Option
 
 /**
  * Send events to every destination
- * Sends conversion events once and forwards them to every ad platform destination saved for the
- * profile (see `POST /v1/events/destinations`), or to the `destinations` given in the request.
- * Each destination receives the events exactly as `POST /v1/ads/conversions` would send them, so the
- * per-platform notes there (hashing, batching, `eventName` semantics, dedup on `eventId`) apply here too.
- * A destination saved with `eventNames` only receives events with those names.
+ * Sends conversion events once and forwards them to every ad platform destination saved for the profile (see `POST /v1/events/destinations`), or to the `destinations` given in the request. Requires the Ads add-on.
  *
- * Zernio also stores each event for the profile's reporting. Email, phone and `externalId` are stored
- * only as SHA-256 hashes, and `sourceUrl` keeps only its origin, path and attribution parameters
- * (`utm_*`, `gclid`, `fbclid`, `ttclid`, `li_fat_id`, `epik`, `rdt_cid`, `gbraid`, `wbraid`).
- * Events sent with `testCode` are forwarded but not stored.
+ * ### Forwarding
  *
- * One destination failing never blocks the others: each one reports its own result. Requires the Ads add-on.
+ * - Each destination receives the events exactly as `POST /v1/ads/conversions` would send them, so the per-platform notes there (hashing, batching, `eventName` semantics, dedup on `eventId`) apply here too.
+ * - A destination saved with `eventNames` only receives events with those names.
+ * - One destination failing never blocks the others: each one reports its own result.
+ *
+ * ### Storage
+ *
+ * Zernio also stores each event for the profile's reporting.
+ *
+ * - Email, phone and `externalId` are stored only as SHA-256 hashes.
+ * - `sourceUrl` keeps only its origin, path and attribution parameters (`utm_*`, `gclid`, `fbclid`, `ttclid`, `li_fat_id`, `epik`, `rdt_cid`, `gbraid`, `wbraid`).
+ * - Events sent with `testCode` are forwarded but not stored.
  *
  */
 export const sendEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendEventsData, ThrowOnError>) => {
@@ -16285,11 +18002,16 @@ export const getCampaignConversionGoals = <ThrowOnError extends boolean = false>
  * Update campaign conversion goals
  * Changes which conversions a Google campaign bids on, switching between account-default goals, its own goals or a custom goal.
  *
- * Sets `biddable` on campaign goals, switches `goalConfigLevel`, and/or points the
- * campaign at a custom conversion goal, in one mutate. `customConversionGoalId: null`
- * clears it; Google refuses that (400) while the campaign stays at CAMPAIGN level with
- * no biddable goals, so send `goalConfigLevel: CUSTOMER` with it to fall back to the
- * account goals. Returns the re-read campaign goals.
+ * In one mutate, it can:
+ *
+ * - set `biddable` on campaign goals
+ * - switch `goalConfigLevel`
+ * - point the campaign at a custom conversion goal
+ *
+ * `customConversionGoalId: null` clears it. Google refuses that (400) while the campaign stays at CAMPAIGN level with no biddable goals, so send `goalConfigLevel: CUSTOMER` with it to fall back to the account goals.
+ *
+ * Returns the re-read campaign goals.
+ *
  */
 export const updateCampaignConversionGoals = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateCampaignConversionGoalsData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateCampaignConversionGoalsResponse, UpdateCampaignConversionGoalsError, ThrowOnError>({
@@ -16333,41 +18055,34 @@ export const listConversionDestinations = <ThrowOnError extends boolean = false>
  * Create a conversion destination
  * Creates a new place to send conversion events: a Google Ads conversion action or a LinkedIn conversion rule.
  *
- * Supported for
- * LinkedIn (conversion rule) and Google Ads (conversion action). Meta
- * and OpenAI Ads pixels are created via their own tracking-tags flow
- * instead (`POST /v1/accounts/{accountId}/tracking-tags`); this endpoint
- * returns 405 for both, and for Reddit (create Reddit pixels in Reddit Ads Manager).
+ * Supported for LinkedIn (conversion rule) and Google Ads (conversion action). It returns 405 for:
  *
- * **LinkedIn:** creation is NOT idempotent. A retry creates a second
- * destination. Deduplicate before retrying.
+ * - Meta and OpenAI Ads: their pixels are created via their own tracking-tags flow instead (`POST /v1/accounts/{accountId}/tracking-tags`)
+ * - Reddit: create Reddit pixels in Reddit Ads Manager
  *
- * **Google Ads:** calling with a name that already exists reuses the
- * existing conversion action transparently (the response is identical to
- * a fresh create). Calling with the same name but a different category
- * returns a typed `IDEMPOTENCY_CONFLICT` (409) rather than silently
- * returning the mismatched action.
+ * ### LinkedIn
  *
- * **LinkedIn:** the rule is created with `conversionMethod=CONVERSIONS_API`
- * and (by default) auto-associated with all of the ad account's campaigns
- * via `autoAssociationType=ALL_CAMPAIGNS`. Pass `autoAssociationType: NONE`
- * to opt out and manage associations explicitly via the associations
- * endpoints below.
+ * Creation is NOT idempotent. A retry creates a second destination. Deduplicate before retrying.
  *
- * 365-day attribution windows are only valid for `SUBMIT_APPLICATION`,
- * `PURCHASE`, `ADD_TO_CART`, `QUALIFIED_LEAD`, and `LEAD` rule types;
- * the API rejects other combinations locally.
+ * The rule is created with `conversionMethod=CONVERSIONS_API` and (by default) auto-associated with all of the ad account's campaigns via `autoAssociationType=ALL_CAMPAIGNS`. Pass `autoAssociationType: NONE` to opt out and manage associations explicitly via the associations endpoints below.
  *
- * **Google Ads:** the conversion action is created with
- * `type=UPLOAD_CLICKS` (required for API-uploaded offline conversions,
- * immutable after creation). The `type` field carries the Google
- * `ConversionActionCategory` enum value, e.g. `PURCHASE`,
- * `SUBSCRIBE_PAID`, `SIGNUP`, `IMPORTED_LEAD`, `BOOK_APPOINTMENT`.
- * Unified standard event names (e.g. `Purchase`, `Subscribe`,
- * `CompleteRegistration`, `Lead`, `Schedule`) are resolved to their
- * Google category equivalents automatically. The action defaults to
- * secondary (non-primary) to avoid immediately steering Smart Bidding;
- * pass `primaryForGoal: true` to opt in.
+ * 365-day attribution windows are only valid for these rule types; the API rejects other combinations locally:
+ *
+ * - `SUBMIT_APPLICATION`
+ * - `PURCHASE`
+ * - `ADD_TO_CART`
+ * - `QUALIFIED_LEAD`
+ * - `LEAD`
+ *
+ * ### Google Ads
+ *
+ * Calling with a name that already exists reuses the existing conversion action transparently (the response is identical to a fresh create). Calling with the same name but a different category returns a typed `IDEMPOTENCY_CONFLICT` (409) rather than silently returning the mismatched action.
+ *
+ * The conversion action is created with `type=UPLOAD_CLICKS` (required for API-uploaded offline conversions, immutable after creation).
+ *
+ * The `type` field carries the Google `ConversionActionCategory` enum value, e.g. `PURCHASE`, `SUBSCRIBE_PAID`, `SIGNUP`, `IMPORTED_LEAD`, `BOOK_APPOINTMENT`. Unified standard event names (e.g. `Purchase`, `Subscribe`, `CompleteRegistration`, `Lead`, `Schedule`) are resolved to their Google category equivalents automatically.
+ *
+ * The action defaults to secondary (non-primary) to avoid immediately steering Smart Bidding; pass `primaryForGoal: true` to opt in.
  *
  */
 export const createConversionDestination = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateConversionDestinationData, ThrowOnError>) => {
@@ -16469,12 +18184,9 @@ export const addConversionAssociations = <ThrowOnError extends boolean = false>(
  * Remove associated campaigns
  * Unlinks campaigns from a LinkedIn conversion rule so they stop tracking it.
  *
- * Pass `adAccountId` and `campaignIds` as query parameters
- * (`campaignIds` is comma-separated). The route also accepts a JSON
- * body with the same fields for clients that prefer DELETE-with-body,
- * but the documented surface is query-only because some SDK code
- * generators (e.g. Python) collapse query + body parameters with the
- * same name into a single kwarg.
+ * Pass `adAccountId` and `campaignIds` as query parameters (`campaignIds` is comma-separated).
+ *
+ * The route also accepts a JSON body with the same fields, for clients that prefer DELETE-with-body. The documented surface is query-only because some SDK code generators (e.g. Python) collapse query + body parameters with the same name into a single kwarg.
  *
  */
 export const removeConversionAssociations = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveConversionAssociationsData, ThrowOnError>) => {
@@ -16512,17 +18224,21 @@ export const getConversionMetrics = <ThrowOnError extends boolean = false>(optio
 
 /**
  * List conversion events
- * Returns the most recent conversion events sent through
- * `POST /v1/whatsapp/conversions` for the given WhatsApp account.
- * Sourced from delivery logs (Axiom `late` dataset), so the visible
- * window is bounded by log retention (about 30 days). Useful for
- * rendering a "recent activity" panel on the conversions setup tab
- * without standing up a parallel persistence layer.
+ * Returns the most recent conversion events sent through `POST /v1/whatsapp/conversions` for the given WhatsApp account.
  *
- * Per-event payload mirrors the structured log we write on every
- * successful send: `eventName`, `conversationId`, `eventsReceived`,
- * `eventsFailed`, `traceId`, `durationMs`, and the wall-clock
- * `timestamp`.
+ * It is sourced from delivery logs (Axiom `late` dataset), so the visible window is bounded by log retention (about 30 days). Useful for rendering a "recent activity" panel on the conversions setup tab without standing up a parallel persistence layer.
+ *
+ * ### Per-event payload
+ *
+ * It mirrors the structured log we write on every successful send:
+ *
+ * - `eventName`
+ * - `conversationId`
+ * - `eventsReceived`
+ * - `eventsFailed`
+ * - `traceId`
+ * - `durationMs`
+ * - the wall-clock `timestamp`
  *
  */
 export const listWhatsAppConversions = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListWhatsAppConversionsData, ThrowOnError>) => {
@@ -16534,36 +18250,44 @@ export const listWhatsAppConversions = <ThrowOnError extends boolean = false>(op
 
 /**
  * Send WhatsApp conversion event
- * Forward a WhatsApp Business Messaging conversion event (`LeadSubmitted`,
- * `QualifiedLead`, `Purchase`, `AddToCart`, `InitiateCheckout`,
- * `ViewContent`, `OrderCreated`, `OrderCanceled`, `OrderReturned`) to
- * Meta's Conversions API with `action_source = business_messaging` and
- * `messaging_channel = whatsapp`. The endpoint looks up the originating
- * CTWA click ID (`ctwa_clid`) captured on the first inbound message of
- * the conversation and replays it on every event so Meta can attribute
- * the conversion back to the Click-to-WhatsApp ad that drove the chat.
+ * Forward a WhatsApp Business Messaging conversion event to Meta's Conversions API with `action_source = business_messaging` and `messaging_channel = whatsapp`.
  *
- * Configuration prerequisite on the WhatsApp account metadata:
- * - `metaCapiDatasetId`: the Meta dataset ID linked to the WABA.
- * Provision one with `POST /v1/whatsapp/dataset`.
+ * Supported events:
  *
- * The WABA ID (already set automatically at connect time) is forwarded as
- * `user_data.whatsapp_business_account_id`, which is the per-channel
- * attribution identifier Meta requires for WhatsApp events. No Facebook
- * Page ID is needed (that field is the Messenger-branch identifier).
+ * - `LeadSubmitted`
+ * - `QualifiedLead`
+ * - `Purchase`
+ * - `AddToCart`
+ * - `InitiateCheckout`
+ * - `ViewContent`
+ * - `OrderCreated`
+ * - `OrderCanceled`
+ * - `OrderReturned`
  *
- * Identify the conversation by either `conversationId` (preferred) or
- * `phoneE164` (digits only, no `+`). At least one is required. If the
- * conversation has no captured `ctwa_clid`, the request returns 422
- * because there is nothing to attribute.
+ * The endpoint looks up the originating CTWA click ID (`ctwa_clid`) captured on the first inbound message of the conversation. It replays it on every event so Meta can attribute the conversion back to the Click-to-WhatsApp ad that drove the chat.
  *
- * Token and dataset coupling: the WhatsApp account's accessToken must
- * have access to the configured `metaCapiDatasetId`. By default a WABA's
- * system-user token is scoped to the WABA's own Business Manager and
- * cannot post to a pixel owned by a different Business; Meta returns
- * code 100 in that case. Either share the dataset with the WhatsApp
- * app's Business in BM, or use a dataset already in the same Business
- * as the WABA.
+ * ### Configuration prerequisite
+ *
+ * On the WhatsApp account metadata:
+ *
+ * - `metaCapiDatasetId`: the Meta dataset ID linked to the WABA. Provision one with `POST /v1/whatsapp/dataset`.
+ *
+ * The WABA ID (already set automatically at connect time) is forwarded as `user_data.whatsapp_business_account_id`, the per-channel attribution identifier Meta requires for WhatsApp events. No Facebook Page ID is needed (that field is the Messenger-branch identifier).
+ *
+ * ### Identifying the conversation
+ *
+ * Identify the conversation by either `conversationId` (preferred) or `phoneE164` (digits only, no `+`). At least one is required.
+ *
+ * If the conversation has no captured `ctwa_clid`, the request returns 422 because there is nothing to attribute.
+ *
+ * ### Token and dataset coupling
+ *
+ * The WhatsApp account's accessToken must have access to the configured `metaCapiDatasetId`. By default a WABA's system-user token is scoped to the WABA's own Business Manager and cannot post to a pixel owned by a different Business; Meta returns code 100 in that case.
+ *
+ * To fix it, either:
+ *
+ * - share the dataset with the WhatsApp app's Business in BM, or
+ * - use a dataset already in the same Business as the WABA.
  *
  */
 export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendWhatsAppConversionData, ThrowOnError>) => {
@@ -16577,21 +18301,32 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
  * Create messaging ad
  * Creates a Meta ad that opens a chat with you on WhatsApp, Messenger or Instagram Direct when someone taps it.
  *
- * Creates a click-to-message ad; `destination` selects where the tapped ad opens a
- * conversation: WhatsApp, the Page's Messenger inbox or the linked Instagram account's Direct inbox.
- * `destinations` puts two or three of them on one ad set and lets Meta pick the app per viewer.
- * The ad set is created with the matching destination_type and
- * CONVERSATIONS optimization; the campaign objective defaults to OUTCOME_ENGAGEMENT.
- * Supports single-creative and multi-creative shapes. Supersedes POST /v1/ads/ctwa
- * (deprecated, equivalent to `destination: whatsapp`).
- * Existing posts and reels are supported through `platformPostId` (alias
- * `existingPostId`) or `objectStoryId`, either per creative or at the top level. Omit fresh
- * media and copy for that creative. Optional `whatsappPhoneNumber` selects
- * a number already paired with the Page (WhatsApp destination only).
- * `accountId` is a Facebook, Instagram or Meta ads (business login) connection;
- * `pageId` picks the Page when that connection was granted several.
+ * ### Destinations
  *
- * **Required fields per shape** (a missing one is a 400 naming it in `param`):
+ * `destination` selects where the tapped ad opens a conversation:
+ *
+ * - WhatsApp
+ * - the Page's Messenger inbox
+ * - the linked Instagram account's Direct inbox
+ *
+ * `destinations` puts two or three of them on one ad set and lets Meta pick the app per viewer.
+ *
+ * The ad set is created with the matching destination_type and CONVERSATIONS optimization. The campaign objective defaults to OUTCOME_ENGAGEMENT.
+ *
+ * This endpoint supersedes POST /v1/ads/ctwa (deprecated, equivalent to `destination: whatsapp`).
+ *
+ * ### Creatives and connections
+ *
+ * Supports single-creative and multi-creative shapes.
+ *
+ * - Existing posts and reels are supported through `platformPostId` (alias `existingPostId`) or `objectStoryId`, either per creative or at the top level. Omit fresh media and copy for that creative.
+ * - Optional `whatsappPhoneNumber` selects a number already paired with the Page (WhatsApp destination only).
+ * - `accountId` is a Facebook, Instagram or Meta ads (business login) connection.
+ * - `pageId` picks the Page when that connection was granted several.
+ *
+ * ### Required fields per shape
+ *
+ * A missing one is a 400 naming it in `param`.
  *
  * - Always `accountId`, `adAccountId`, `name`, and exactly one of `destination` / `destinations`.
  * - `budgetAmount` and `budgetType` unless `adSetId` or `existingCampaignId` is set, plus `endDate` for a lifetime budget.
@@ -16601,9 +18336,29 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
  * - `creatives[]`: the same rules per entry, with no top-level creative fields.
  * - `welcomeMessage`, when sent: `text` plus exactly one of `prefillText` / `quickReplies`.
  *
- * **WhatsApp number prerequisite.** For the WhatsApp destination, link the WhatsApp number to the Facebook Page used for the ad before creating it: Meta checks the pairing at creation. Link it from the WhatsApp Business app (Settings > Business tools > Facebook & Instagram) or from the Page settings (Linked accounts > WhatsApp). Linking does not affect the number's WhatsApp connection in Zernio (Cloud API or coexistence), so no reconnect or re-sync is needed. If Meta creates a new ad set without the requested `whatsappPhoneNumber`, the 201 response carries a `warnings` entry. This can happen even when the number is linked (Meta can drop a Page's second linked number).
+ * ### WhatsApp number prerequisite
  *
- * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires; use a new key to retry sooner, after checking whether the ad was created. Keys are scoped to your credential and expire after 24h.
+ * For the WhatsApp destination, link the WhatsApp number to the Facebook Page used for the ad before creating it: Meta checks the pairing at creation. Link it from either:
+ *
+ * - the WhatsApp Business app (Settings > Business tools > Facebook & Instagram)
+ * - the Page settings (Linked accounts > WhatsApp)
+ *
+ * Linking does not affect the number's WhatsApp connection in Zernio (Cloud API or coexistence), so no reconnect or re-sync is needed.
+ *
+ * If Meta creates a new ad set without the requested `whatsappPhoneNumber`, the 201 response carries a `warnings` entry. This can happen even when the number is linked (Meta can drop a Page's second linked number).
+ *
+ * ### Idempotency
+ *
+ * This endpoint is not idempotent at the platform level: a blind retry creates a second campaign/ad set/ad. Send an `Idempotency-Key` header to make retries safe.
+ *
+ * The first request with a given key creates the ad and we store the response. A retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates.
+ *
+ * - Reusing a key with a different body returns 422.
+ * - A key whose first request is still in flight returns 409 (retry after a short backoff).
+ * - If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires. Use a new key to retry sooner, after checking whether the ad was created.
+ *
+ * Keys are scoped to your credential and expire after 24h.
+ *
  */
 export const createMessagingAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateMessagingAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateMessagingAdResponse, CreateMessagingAdError, ThrowOnError>({
@@ -16616,12 +18371,23 @@ export const createMessagingAd = <ThrowOnError extends boolean = false>(options:
  * Create Click-to-Call ad
  * Creates a Meta ad with a Call Now button that dials your phone number, optimized for quality calls.
  *
- * Same shape and flow as POST /v1/ads/ctwa, but the CTA is CALL_NOW dialing `phoneNumber`
- * via a tel: link. The ad set is destination_type PHONE_CALL optimizing QUALITY_CALL
- * and the campaign objective defaults to OUTCOME_LEADS.
- * Supports the same single-creative and multi-creative shapes as CTWA.
+ * Same shape and flow as POST /v1/ads/ctwa, but the CTA is CALL_NOW dialing `phoneNumber` via a tel: link. Supports the same single-creative and multi-creative shapes as CTWA.
  *
- * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires; use a new key to retry sooner, after checking whether the ad was created. Keys are scoped to your credential and expire after 24h.
+ * - The ad set is destination_type PHONE_CALL optimizing QUALITY_CALL.
+ * - The campaign objective defaults to OUTCOME_LEADS.
+ *
+ * ### Idempotency
+ *
+ * This endpoint is not idempotent at the platform level: a blind retry creates a second campaign/ad set/ad. Send an `Idempotency-Key` header to make retries safe.
+ *
+ * The first request with a given key creates the ad and we store the response. A retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates.
+ *
+ * - Reusing a key with a different body returns 422.
+ * - A key whose first request is still in flight returns 409 (retry after a short backoff).
+ * - If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires. Use a new key to retry sooner, after checking whether the ad was created.
+ *
+ * Keys are scoped to your credential and expire after 24h.
+ *
  */
 export const createCallAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCallAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateCallAdResponse, CreateCallAdError, ThrowOnError>({
@@ -16635,25 +18401,61 @@ export const createCallAd = <ThrowOnError extends boolean = false>(options: Opti
  * Create CTWA ad (deprecated)
  * Deprecated: use POST /v1/ads/messaging with `destination: whatsapp`. This endpoint stays available for back-compat; no removal planned.
  *
- * Creates one or more Click-to-WhatsApp (CTWA) ads on Meta under a single campaign and ad set. When tapped, each ad opens a WhatsApp conversation with the business attached to the supplied Facebook Page. The full hierarchy (campaign, ad set, creative(s), ad(s)) is created and activated in one call. The CTA is locked to WHATSAPP_MESSAGE and the destination is hard-coded to api.whatsapp.com/send; Meta resolves the actual WhatsApp number from the Page-to-WA pairing configured in Page settings or Business Manager.
+ * Creates one or more Click-to-WhatsApp (CTWA) ads on Meta under a single campaign and ad set. When tapped, each ad opens a WhatsApp conversation with the business attached to the supplied Facebook Page.
  *
- * Supports two mutually-exclusive shapes:
+ * The full hierarchy (campaign, ad set, creative(s), ad(s)) is created and activated in one call. The CTA is locked to WHATSAPP_MESSAGE and the destination is hard-coded to api.whatsapp.com/send. Meta resolves the actual WhatsApp number from the Page-to-WA pairing configured in Page settings or Business Manager.
+ *
+ * ### Request shapes
+ *
+ * Two mutually exclusive shapes:
  *
  * - **Single-creative**: supply top-level `headline`, `body`, and one of `imageUrl` / `video`, or a `platformPostId` / `objectStoryId` reference. Creates 1 campaign + 1 ad set + 1 ad.
+ * - **Multi-creative**: supply a `creatives[]` array with N entries (each carrying fresh media and copy or an existing post reference). Creates 1 campaign + 1 ad set + N ads sharing budget and targeting.
  *
- * - **Multi-creative**: supply a `creatives[]` array with N entries (each carrying fresh media and copy or an existing post reference). Creates 1 campaign + 1 ad set + N ads sharing budget and targeting so Meta A/Bs the creatives inside a single auction instead of fragmenting budget across N parallel campaigns. Recommended when launching multiple creative variants for the same campaign.
+ * Multi-creative lets Meta A/B the creatives inside a single auction instead of fragmenting budget across N parallel campaigns. It is recommended when launching multiple creative variants for the same campaign.
  *
- * **Attach shape.** Send `adSetId` (with either creative shape) to add the ads to an EXISTING messaging ad set instead of building a campaign, so the ad set keeps its learning phase, the way to refresh a CTWA creative without resetting delivery. The ad set then owns budget, targeting and schedule, so `budgetAmount`, `budgetType`, `endDate`, `objective`, `countries`, `interests` and `audienceId` are rejected with a 400 alongside it rather than silently dropped. The target ad set's `destination_type` must match the ad's destination (a WhatsApp ad needs a `WHATSAPP` ad set), otherwise Meta would accept an ad that never delivers.
+ * Existing posts and reels are supported through `platformPostId` (alias `existingPostId`) or `objectStoryId`, either per creative or at the top level. Omit fresh media and copy for that creative.
  *
- * Prerequisites enforced by Meta (surfaced as platform_error on failure): the Facebook Page must be paired with a verified WhatsApp Business number, the WhatsApp Business Account must be business-verified, and the Meta access token must carry ads_management.
- * Existing posts and reels are supported through `platformPostId` (alias
- * `existingPostId`) or `objectStoryId`, either per creative or at the top level. Omit fresh
- * media and copy for that creative. Optional `whatsappPhoneNumber` selects
- * a number already paired with the Page (WhatsApp destination only).
+ * Optional `whatsappPhoneNumber` selects a number already paired with the Page (WhatsApp destination only).
  *
- * **WhatsApp number prerequisite.** Link the WhatsApp number to the Facebook Page used for the ad before creating it: Meta checks the pairing at creation. Link it from the WhatsApp Business app (Settings > Business tools > Facebook & Instagram) or from the Page settings (Linked accounts > WhatsApp). Linking does not affect the number's WhatsApp connection in Zernio (Cloud API or coexistence), so no reconnect or re-sync is needed. If Meta creates a new ad set without the requested `whatsappPhoneNumber`, the 201 response carries a `warnings` entry. This can happen even when the number is linked (Meta can drop a Page's second linked number).
+ * ### Attach shape
  *
- * **Idempotency:** this endpoint is not idempotent at the platform level (a blind retry creates a second campaign/ad set/ad). Send an `Idempotency-Key` header to make retries safe: the first request with a given key creates the ad and we store the response; a retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates. Reusing a key with a different body returns 422; a key whose first request is still in flight returns 409 (retry after a short backoff). If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires; use a new key to retry sooner, after checking whether the ad was created. Keys are scoped to your credential and expire after 24h.
+ * Send `adSetId` (with either creative shape) to add the ads to an EXISTING messaging ad set instead of building a campaign. The ad set keeps its learning phase, which makes this the way to refresh a CTWA creative without resetting delivery.
+ *
+ * The ad set then owns budget, targeting and schedule. So `budgetAmount`, `budgetType`, `endDate`, `objective`, `countries`, `interests` and `audienceId` are rejected with a 400 alongside it rather than silently dropped.
+ *
+ * The target ad set's `destination_type` must match the ad's destination (a WhatsApp ad needs a `WHATSAPP` ad set). Otherwise Meta would accept an ad that never delivers.
+ *
+ * ### Prerequisites
+ *
+ * Enforced by Meta and surfaced as platform_error on failure:
+ *
+ * - The Facebook Page must be paired with a verified WhatsApp Business number.
+ * - The WhatsApp Business Account must be business-verified.
+ * - The Meta access token must carry ads_management.
+ *
+ * ### WhatsApp number prerequisite
+ *
+ * Link the WhatsApp number to the Facebook Page used for the ad before creating it: Meta checks the pairing at creation. Link it from either:
+ *
+ * - the WhatsApp Business app (Settings > Business tools > Facebook & Instagram);
+ * - the Page settings (Linked accounts > WhatsApp).
+ *
+ * Linking does not affect the number's WhatsApp connection in Zernio (Cloud API or coexistence), so no reconnect or re-sync is needed.
+ *
+ * If Meta creates a new ad set without the requested `whatsappPhoneNumber`, the 201 response carries a `warnings` entry. This can happen even when the number is linked (Meta can drop a Page's second linked number).
+ *
+ * ### Idempotency
+ *
+ * This endpoint is not idempotent at the platform level: a blind retry creates a second campaign/ad set/ad. Send an `Idempotency-Key` header to make retries safe.
+ *
+ * - The first request with a given key creates the ad and we store the response.
+ * - A retry with the same key replays that exact response (with `Idempotent-Replayed: true`) instead of creating duplicates.
+ * - Reusing a key with a different body returns 422.
+ * - A key whose first request is still in flight returns 409 (retry after a short backoff).
+ * - If the first request is cut off mid-create (for example by a function timeout), its key can stay in progress and keep returning 409 until it expires. Use a new key to retry sooner, after checking whether the ad was created.
+ * - Keys are scoped to your credential and expire after 24h.
+ *
  */
 export const createCtwaAd = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCtwaAdData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateCtwaAdResponse, CreateCtwaAdError, ThrowOnError>({
@@ -16680,18 +18482,18 @@ export const listCustomConversions = <ThrowOnError extends boolean = false>(opti
  * Create custom conversion
  * Creates a Meta custom conversion for ads to optimise toward, reusing an existing one with the same name and pixel.
  *
- * Provision the Meta custom conversion an ads flow optimises toward, and hand back the
- * `customConversionId` for `promotedObject.customConversionId` on POST /v1/ads/create.
- * Removes the manual "create it in Ads Manager first" step.
+ * It provisions the Meta custom conversion an ads flow optimises toward, and hands back the `customConversionId` for `promotedObject.customConversionId` on POST /v1/ads/create. This removes the manual "create it in Ads Manager first" step.
  *
- * **Reuse is ours, not Meta's.** Meta's create is not idempotent, so a retried request
- * would otherwise mint a duplicate carrying none of the original's optimisation history.
- * A non-archived conversion with the same `name` on the same `pixelId` is returned
- * instead of created, with `reused: true` and a 200 rather than a 201.
+ * ### Reuse is ours, not Meta's
  *
- * `rule` is forwarded verbatim in Meta's own grammar (e.g.
- * `{"url": {"i_contains": "thank-you"}}`); Meta validates it and rejects a malformed one
- * with "A conversion rule is required at creation time".
+ * Meta's create is not idempotent, so a retried request would otherwise mint a duplicate carrying none of the original's optimisation history.
+ *
+ * A non-archived conversion with the same `name` on the same `pixelId` is returned instead of created, with `reused: true` and a 200 rather than a 201.
+ *
+ * ### Rule
+ *
+ * `rule` is forwarded verbatim in Meta's own grammar (e.g. `{"url": {"i_contains": "thank-you"}}`). Meta validates it and rejects a malformed one with "A conversion rule is required at creation time".
+ *
  */
 export const createCustomConversion = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCustomConversionData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateCustomConversionResponse, CreateCustomConversionError, ThrowOnError>({
@@ -16702,11 +18504,20 @@ export const createCustomConversion = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Get agent setup status
- * One read that says where the merchant is: whether the number is eligible, whether the
- * Meta Business Agent terms are accepted, whether an agent exists, whether it is on, and its
- * settings. `manualSteps` lists what Zernio can verify is still pending (accepting the terms
- * in WhatsApp Manager); `unverifiedSteps` lists what Meta exposes no state for (the payment
- * method in Billing Hub). Never fails for those pre-setup states; it reports them as flags.
+ * One read that says where the merchant is with the Meta Business Agent. It reports:
+ *
+ * - whether the number is eligible
+ * - whether the Meta Business Agent terms are accepted
+ * - whether an agent exists
+ * - whether it is on
+ * - its settings
+ *
+ * ### Pending steps
+ *
+ * - `manualSteps` lists what Zernio can verify is still pending (accepting the terms in WhatsApp Manager).
+ * - `unverifiedSteps` lists what Meta exposes no state for (the payment method in Billing Hub).
+ *
+ * Never fails for those pre-setup states; it reports them as flags.
  *
  */
 export const getBusinessAgentStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetBusinessAgentStatusData, ThrowOnError>) => {
@@ -16719,11 +18530,17 @@ export const getBusinessAgentStatus = <ThrowOnError extends boolean = false>(opt
 /**
  * Create the agent
  * Creates the Meta Business Agent on the number and schedules Meta's data preparation.
- * Requires the terms to be accepted; eligibility is checked first and an ineligible
- * number answers 403 `business_agent_not_eligible`. Not idempotent: call it once, then
- * configure knowledge and skills, then enable it through the settings. Configuration
- * calls made in the first minute can still answer `business_agent_not_found` while Meta
- * prepares the workspace.
+ *
+ * Requires the terms to be accepted. Eligibility is checked first, and an ineligible number answers 403 `business_agent_not_eligible`.
+ *
+ * ### Setup order
+ *
+ * Not idempotent: call it once, then:
+ *
+ * 1. Configure knowledge and skills.
+ * 2. Enable it through the settings.
+ *
+ * Configuration calls made in the first minute can still answer `business_agent_not_found` while Meta prepares the workspace.
  *
  */
 export const onboardBusinessAgent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<OnboardBusinessAgentData, ThrowOnError>) => {
@@ -16746,11 +18563,12 @@ export const listBusinessAgentSettings = <ThrowOnError extends boolean = false>(
 
 /**
  * Update agent settings
- * Partial update: fields you omit keep their value. `rollout.enabled: true` turns the agent
- * on for new conversations; `false` stops it on every thread. Turning it on for `EVERYONE`
- * needs a payment method on the Business Agent billable account (Meta accepts the call but
- * delivers nothing without one); `ALLOWLISTED_ONLY` does not, which is how you test with a
- * few numbers before billing. `never_say_phrases` replaces the whole list.
+ * Partial update: fields you omit keep their value.
+ *
+ * - `rollout.enabled: true` turns the agent on for new conversations; `false` stops it on every thread.
+ * - Turning it on for `EVERYONE` needs a payment method on the Business Agent billable account (Meta accepts the call but delivers nothing without one).
+ * - `ALLOWLISTED_ONLY` does not need one, which is how you test with a few numbers before billing.
+ * - `never_say_phrases` replaces the whole list.
  *
  */
 export const updateBusinessAgentSettings = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateBusinessAgentSettingsData, ThrowOnError>) => {
@@ -16938,13 +18756,14 @@ export const listBusinessAgentFiles = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Upload a knowledge file
- * Accepted types: pdf, doc, docx, png, jpg, jpeg, plus csv and xlsx when Meta enabled
- * extraction on the asset. Meta's limit is 100 MB. Two ways to send the file:
- * - JSON `{ url, fileName }`: Zernio downloads the file (public https URL, no redirects,
- * capped at 100 MB) and forwards it. Use this for anything above a few megabytes.
- * - multipart form-data with a `file` part (and an optional `fileName`): bounded by the
- * request body limit of about 4.5 MB; larger uploads must use the `url` form.
- * Not idempotent.
+ * Uploads a knowledge file. Not idempotent.
+ *
+ * Accepted types: pdf, doc, docx, png, jpg, jpeg, plus csv and xlsx when Meta enabled extraction on the asset. Meta's limit is 100 MB.
+ *
+ * ### Two ways to send the file
+ *
+ * - JSON `{ url, fileName }`: Zernio downloads the file (public https URL, no redirects, capped at 100 MB) and forwards it. Use this for anything above a few megabytes.
+ * - multipart form-data with a `file` part (and an optional `fileName`): bounded by the request body limit of about 4.5 MB. Larger uploads must use the `url` form.
  *
  */
 export const uploadBusinessAgentFile = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UploadBusinessAgentFileData, ThrowOnError>) => {
@@ -17310,39 +19129,49 @@ export const startBusinessAgentEvalRun = <ThrowOnError extends boolean = false>(
  * List tracking tags
  * Lists the pixels and other measurement tags an ads account can see, so you can inspect or install them.
  *
- * Returns the tracking tags (Meta Pixels, or OpenAI Ads pixels) the
- * connected ads account can see. Pass `?adAccountId=act_...` (Meta only)
- * to scope the list to a single ad account; omit it to list every pixel
- * reachable by the token (the name is then suffixed with the ad account
- * it was discovered on, for disambiguation). The list view omits `code`.
- * Call `getTrackingTag` for the install snippet and full detail.
+ * The list view omits `code`. Call `getTrackingTag` for the install snippet and full detail.
  *
- * Meta (platform `metaads`) and OpenAI Ads (platform `openaiads`); other
- * platforms return 501. The `accountId` must be the ads SocialAccount
- * created by the Ads add-on connect flow (Meta) or the OpenAI Ads
- * connect flow, not a Facebook/Instagram posting account. Get your Meta
- * `act_...` ids from `GET /v1/ads/accounts`; `adAccountId` is ignored for
- * OpenAI Ads (one API key maps to exactly one ad account).
+ * ### Meta and OpenAI Ads
  *
- * LinkedIn (`linkedinads`): lists the Insight Tag of each ad account (LinkedIn allows one
- * per ad account; a tag shared with several accounts appears once). `adAccountId` is the
- * numeric ad account id or `urn:li:sponsoredAccount:{id}`; omit it to scan every active ad
- * account the connection can see. The tag `id` IS the partner id the site embeds, so
- * `siteTagId` equals `id`. LinkedIn tags have no name; it is shown as `Insight Tag {id}`.
+ * Returns the tracking tags (Meta Pixels, or OpenAI Ads pixels) the connected ads account can see. Meta is platform `metaads` and OpenAI Ads is platform `openaiads`. Platforms without a section below return 501.
  *
- * Pinterest (platform `pinterestads`): lists Pinterest tags (conversion tags). `adAccountId`
- * is the numeric Pinterest ad account id (no prefix); omit it to walk every ad account the
- * connection can read (an ad account the user has no Business Access role on is skipped).
- * `id` equals `siteTagId`, the id the site loads with `pintrk('load', id)`.
+ * - Pass `?adAccountId=act_...` (Meta only) to scope the list to a single ad account.
+ * - Omit it to list every pixel reachable by the token. The name is then suffixed with the ad account it was discovered on, for disambiguation.
+ * - `adAccountId` is ignored for OpenAI Ads (one API key maps to exactly one ad account).
  *
- * TikTok (platform `tiktokads`): TikTok Pixels across the connection's advertisers, or one
- * advertiser with `?adAccountId=<numeric advertiser_id>`. `id` is the numeric `pixel_id`,
- * `siteTagId` the alphanumeric `pixel_code` from Events Manager. Connections authorized
- * before the Pixel Management permission (about 2026-05-28) answer 403 until reconnected.
+ * The `accountId` must be the ads SocialAccount created by the Ads add-on connect flow (Meta) or the OpenAI Ads connect flow, not a Facebook/Instagram posting account. Get your Meta `act_...` ids from `GET /v1/ads/accounts`.
  *
- * X Ads (platform `xads`): one X Pixel per X ad account, so `TrackingTag.id` is the ad
- * account id (base36, e.g. `18ce54d4x5t`) and `siteTagId` is the pixel id the site embeds.
- * Ad accounts without a pixel are left out. `adAccountId` scopes the list to one ad account.
+ * ### LinkedIn (`linkedinads`)
+ *
+ * Lists the Insight Tag of each ad account. LinkedIn allows one per ad account; a tag shared with several accounts appears once.
+ *
+ * - `adAccountId` is the numeric ad account id or `urn:li:sponsoredAccount:{id}`. Omit it to scan every active ad account the connection can see.
+ * - The tag `id` IS the partner id the site embeds, so `siteTagId` equals `id`.
+ * - LinkedIn tags have no name; it is shown as `Insight Tag {id}`.
+ *
+ * ### Pinterest (platform `pinterestads`)
+ *
+ * Lists Pinterest tags (conversion tags).
+ *
+ * - `adAccountId` is the numeric Pinterest ad account id (no prefix). Omit it to walk every ad account the connection can read (an ad account the user has no Business Access role on is skipped).
+ * - `id` equals `siteTagId`, the id the site loads with `pintrk('load', id)`.
+ *
+ * ### TikTok (platform `tiktokads`)
+ *
+ * Lists TikTok Pixels across the connection's advertisers, or one advertiser with `?adAccountId=<numeric advertiser_id>`.
+ *
+ * - `id` is the numeric `pixel_id`.
+ * - `siteTagId` is the alphanumeric `pixel_code` from Events Manager.
+ * - Connections authorized before the Pixel Management permission (about 2026-05-28) answer 403 until reconnected.
+ *
+ * ### X Ads (platform `xads`)
+ *
+ * There is one X Pixel per X ad account.
+ *
+ * - `TrackingTag.id` is the ad account id (base36, e.g. `18ce54d4x5t`).
+ * - `siteTagId` is the pixel id the site embeds.
+ * - Ad accounts without a pixel are left out.
+ * - `adAccountId` scopes the list to one ad account.
  *
  */
 export const listTrackingTags = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagsData, ThrowOnError>) => {
@@ -17356,65 +19185,72 @@ export const listTrackingTags = <ThrowOnError extends boolean = false>(options: 
  * Create a tracking tag
  * Creates a measurement pixel on an ad account and returns the snippet to install on your site.
  *
- * Meta: creates a Meta Pixel on the given ad account (`POST /act_{id}/adspixels`,
- * where `name` is the only input). Returns the created tag including its
- * install `code`. The pixel is owned by the Business Manager that owns the
- * ad account; a pixel created on a personal (non-BM) ad account ends up
- * with `ownerBusinessId: null` and can't be shared with other ad accounts.
+ * Supported platforms: Meta (`metaads`), OpenAI Ads (`openaiads`), LinkedIn (`linkedinads`), Pinterest (`pinterestads`), Google Ads (`googleads`), TikTok and X Ads (`xads`). Other platforms return 501.
  *
- * Creating a Meta pixel does NOT install it. Install the returned `code`
- * snippet on the site, or send events server-side via
- * `POST /v1/ads/conversions`. The check `installed` is derived from
- * `lastFiredTime`.
+ * ### Idempotency by platform
  *
- * OpenAI Ads: creates an OpenAI pixel AND provisions a Conversions API
- * key for it in the same call (`adAccountId` is required by this
- * endpoint but ignored: one API key maps to exactly one ad account, so
- * there's nothing to select). Returns 422 (`FEATURE_NOT_AVAILABLE`) if
- * the ad account isn't enabled for pixel management; contact your OpenAI
- * partner representative to enable it. There is no delete API for
- * OpenAI pixels. If the pixel is created but the Conversions API key
- * provisioning then fails, the pixel is left live on OpenAI (it cannot
- * be cleaned up) and the error message names the surviving pixel id and
- * warns against retrying, since a retry would create a second, orphaned
- * pixel.
+ * | Platform | Idempotent |
+ * |---|---|
+ * | Meta | No: each call creates a new pixel |
+ * | OpenAI Ads | One Zernio pixel per account (a second create answers 409); OpenAI itself makes a new pixel and Conversions API key on every call |
+ * | LinkedIn | Yes: at most one Insight Tag per ad account |
+ * | Pinterest | No |
+ * | Google Ads | Yes: exactly one Google tag per account |
+ * | TikTok | No: a duplicate name is refused (400) |
+ * | X Ads | One pixel per ad account; a second answers 409 |
  *
- * NOT idempotent on either platform: each call creates a new pixel (and,
- * for OpenAI, a new Conversions API key plus, with `defaultEventType`, a
- * new conversion event setting). Do not retry blindly on
- * timeout. Meta (platform `metaads`) and OpenAI Ads (platform
- * `openaiads`); other platforms return 501.
+ * OpenAI Ads, LinkedIn, Pinterest, TikTok and X have no API to delete a tag.
  *
- * LinkedIn (`linkedinads`): creates the ad account's Insight Tag (`POST /rest/insightTags`).
- * Idempotent: an ad account holds at most one Insight Tag, so when it already has one that
- * tag is returned and nothing is created. `name` is ignored (LinkedIn tags have no name) and
- * there is no API to delete an Insight Tag.
+ * Do not retry blindly on timeout where a call is NOT idempotent.
  *
- * Pinterest (platform `pinterestads`): creates a Pinterest tag on the numeric ad account
- * `adAccountId` (`POST /v5/ad_accounts/{id}/conversion_tags`). Returns the tag with
- * Pinterest's `code` snippet. `automaticMatchingFields` switches on automatic enhanced match
- * for those fields. NOT idempotent and Pinterest has no dry-run and no delete for tags (DELETE
- * on `conversion_tags/{id}` answers 405), so never retry blindly: list first.
+ * ### Meta
  *
- * Google Ads (`googleads`): every Google Ads account has exactly one
- * Google tag (`AW-...`), so this is idempotent. `adAccountId` is the
- * 10-digit customer id. When the account already tracks conversions
- * the existing tag is returned (201) and nothing is created. Otherwise
- * a first WEBPAGE conversion action named `name` (category DEFAULT) is
- * created, which is what switches Google's conversion tracking on, and
- * the tag is returned with it as its first event.
+ * Creates a Meta Pixel on the given ad account (`POST /act_{id}/adspixels`, where `name` is the only input). Returns the created tag including its install `code`.
  *
- * TikTok: `POST /pixel/create/` on the advertiser in `adAccountId` (numeric). Names are at
- * most 40 characters with no emoji and must be unique; TikTok refuses a duplicate name
- * (400), which is its only retry guard. TikTok has no pixel delete API.
+ * The pixel is owned by the Business Manager that owns the ad account. A pixel created on a personal (non-BM) ad account ends up with `ownerBusinessId: null` and can't be shared with other ad accounts.
  *
- * Pinterest's `code` snippet. NOT idempotent and Pinterest has no dry-run and no delete for
- * tags, so never retry blindly: list first.
+ * Creating a Meta pixel does NOT install it. Install the returned `code` snippet on the site, or send events server-side via `POST /v1/ads/conversions`. The check `installed` is derived from `lastFiredTime`.
  *
- * X Ads (platform `xads`): creates the ad account's X Pixel (its UNIVERSAL website tag) with
- * first-party cookies on. `adAccountId` is the X ad account id; `name` is not stored (X
- * pixels have no name). X allows one pixel per ad account and cannot delete one, so an
- * account that already has a pixel answers 409 without writing anything.
+ * ### OpenAI Ads
+ *
+ * Creates an OpenAI pixel AND provisions a Conversions API key for it in the same call. `adAccountId` is required by this endpoint but ignored: one API key maps to exactly one ad account, so there's nothing to select.
+ *
+ * - Returns 422 (`FEATURE_NOT_AVAILABLE`) if the ad account isn't enabled for pixel management; contact your OpenAI partner representative to enable it.
+ * - There is no delete API for OpenAI pixels.
+ * - If the pixel is created but the Conversions API key provisioning then fails, the pixel is left live on OpenAI (it cannot be cleaned up). The error message names the surviving pixel id and warns against retrying, since a retry would create a second, orphaned pixel.
+ *
+ * Each call creates a new pixel, a new Conversions API key and, with `defaultEventType`, a new conversion event setting.
+ *
+ * ### LinkedIn
+ *
+ * Creates the ad account's Insight Tag (`POST /rest/insightTags`).
+ *
+ * Idempotent: an ad account holds at most one Insight Tag, so when it already has one that tag is returned and nothing is created. `name` is ignored (LinkedIn tags have no name) and there is no API to delete an Insight Tag.
+ *
+ * ### Pinterest
+ *
+ * Creates a Pinterest tag on the numeric ad account `adAccountId` (`POST /v5/ad_accounts/{id}/conversion_tags`). Returns the tag with Pinterest's `code` snippet. `automaticMatchingFields` switches on automatic enhanced match for those fields.
+ *
+ * NOT idempotent, and Pinterest has no dry-run and no delete for tags (DELETE on `conversion_tags/{id}` answers 405). Never retry blindly: list first.
+ *
+ * ### Google Ads
+ *
+ * Every Google Ads account has exactly one Google tag (`AW-...`), so this is idempotent. `adAccountId` is the 10-digit customer id.
+ *
+ * - When the account already tracks conversions, the existing tag is returned (201) and nothing is created.
+ * - Otherwise a first WEBPAGE conversion action named `name` (category DEFAULT) is created, which is what switches Google's conversion tracking on. The tag is returned with it as its first event.
+ *
+ * ### TikTok
+ *
+ * `POST /pixel/create/` on the advertiser in `adAccountId` (numeric). Names are at most 40 characters with no emoji and must be unique.
+ *
+ * TikTok refuses a duplicate name (400), which is its only retry guard. TikTok has no pixel delete API.
+ *
+ * ### X Ads
+ *
+ * Creates the ad account's X Pixel (its UNIVERSAL website tag) with first-party cookies on. `adAccountId` is the X ad account id; `name` is not stored (X pixels have no name).
+ *
+ * X allows one pixel per ad account and cannot delete one, so an account that already has a pixel answers 409 without writing anything.
  *
  */
 export const createTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagData, ThrowOnError>) => {
@@ -17428,37 +19264,44 @@ export const createTrackingTag = <ThrowOnError extends boolean = false>(options:
  * Get a tracking tag
  * Shows one pixel or measurement tag in full, including its install snippet, when it last fired and its conversion events.
  *
- * Returns the full tag record including the base-code `code` snippet,
- * `lastFiredTime`, `ownerBusinessId`, `isUnavailable`, etc. Meta only
- * (platform `metaads`); other platforms return 501.
+ * ### Meta
  *
- * OpenAI Ads (`openaiads`): `tagId` is the pixel's API id (`cds_...`) or
- * its `pixel_id`. OpenAI documents no single-pixel read, so the tag is
- * resolved from the pixel list; the response adds `code` (the official
- * `oaiq` base code plus `page_viewed`) and `events` (the conversion
- * event settings whose source is this pixel). `siteTagId` is the
- * `pixel_id` the site and the Conversions API send; `id` is what event
- * settings reference.
+ * Meta (platform `metaads`) returns the full tag record including the base-code `code` snippet, `lastFiredTime`, `ownerBusinessId`, `isUnavailable`, etc. Platforms other than those listed here return 501.
  *
- * LinkedIn (`linkedinads`): `code` is LinkedIn's base code, `lastFiredTime` is the most
- * recent callback across the tag's domains (unix seconds, null when it never fired) and
- * `events` lists the ad account's conversion rules. `siteEvent` and `siteEventId` are set
- * only on rules a page can fire (event-specific Insight Tag rules: not Conversions API
- * rules, no URL match rules). `adAccountId` picks which ad account's rules to read; it
- * defaults to the account that created the tag.
+ * ### OpenAI Ads
  *
- * Pinterest (platform `pinterestads`): returns the tag with Pinterest's own `code` snippet
- * and `lastFiredTime`. Without `adAccountId` Zernio finds the ad account that owns the tag
- * (404 when no readable ad account holds it).
+ * OpenAI Ads (`openaiads`): `tagId` is the pixel's API id (`cds_...`) or its `pixel_id`. OpenAI documents no single-pixel read, so the tag is resolved from the pixel list.
  *
- * TikTok: read from `/pixel/list/?pixel_id=`; `code` is TikTok's `pixel_script`, `events`
- * the pixel events. `lastFiredTime` is not available on TikTok. Without `adAccountId` the
- * connection's advertisers are searched.
+ * - `code`: the official `oaiq` base code plus `page_viewed`.
+ * - `events`: the conversion event settings whose source is this pixel.
+ * - `siteTagId`: the `pixel_id` the site and the Conversions API send.
+ * - `id`: what event settings reference.
  *
- * X Ads (platform `xads`): `tagId` is the X ad account id. Returns the pixel id as
- * `siteTagId`, the X Pixel base code as `code`, and the conversion events the site can fire
- * in `events` (each with `siteEventId` = `tw-<pixel>-<event>`, also the `event_id` of the X
- * Conversions API). An ad account without a pixel answers 400.
+ * ### LinkedIn
+ *
+ * LinkedIn (`linkedinads`):
+ *
+ * - `code`: LinkedIn's base code.
+ * - `lastFiredTime`: the most recent callback across the tag's domains (unix seconds, null when it never fired).
+ * - `events`: the ad account's conversion rules.
+ * - `siteEvent` and `siteEventId`: set only on rules a page can fire (event-specific Insight Tag rules: not Conversions API rules, no URL match rules).
+ * - `adAccountId`: picks which ad account's rules to read. It defaults to the account that created the tag.
+ *
+ * ### Pinterest
+ *
+ * Pinterest (platform `pinterestads`) returns the tag with Pinterest's own `code` snippet and `lastFiredTime`. Without `adAccountId` Zernio finds the ad account that owns the tag (404 when no readable ad account holds it).
+ *
+ * ### TikTok
+ *
+ * Read from `/pixel/list/?pixel_id=`. `code` is TikTok's `pixel_script` and `events` the pixel events. `lastFiredTime` is not available on TikTok. Without `adAccountId` the connection's advertisers are searched.
+ *
+ * ### X Ads
+ *
+ * X Ads (platform `xads`): `tagId` is the X ad account id. An ad account without a pixel answers 400.
+ *
+ * - `siteTagId`: the pixel id.
+ * - `code`: the X Pixel base code.
+ * - `events`: the conversion events the site can fire, each with `siteEventId` = `tw-<pixel>-<event>` (also the `event_id` of the X Conversions API).
  *
  */
 export const getTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagData, ThrowOnError>) => {
@@ -17472,50 +19315,50 @@ export const getTrackingTag = <ThrowOnError extends boolean = false>(options: Op
  * Update a tracking tag
  * Changes a pixel's settings, such as its name or automatic matching, on platforms that allow edits.
  *
- * Partial-update a pixel. Whitelisted fields: `name` (rename),
- * `enableAutomaticMatching`, `automaticMatchingFields`,
- * `firstPartyCookieStatus`, `dataUseSetting`. At least one is required.
- * Returns the re-fetched canonical tag. Meta only (platform `metaads`);
- * other platforms return 501.
+ * Partial-update a pixel. Returns the re-fetched canonical tag. Whitelisted fields (at least one is required):
  *
- * OpenAI Ads answers 501: its API has no pixel update or delete route
- * (`POST`/`PATCH`/`PUT`/`DELETE /v1/conversions/pixels/{id}` answer 405
- * "Invalid method"); rename a pixel in OpenAI Ads Manager.
+ * - `name` (rename)
+ * - `enableAutomaticMatching`
+ * - `automaticMatchingFields`
+ * - `firstPartyCookieStatus`
+ * - `dataUseSetting`
  *
- * Google Ads (`googleads`): the only writable tag setting is
- * `autoTagging` (the account's gclid auto-tagging, without which the
- * tag cannot attribute conversions to ad clicks). Google rejects every
- * write to `conversion_tracking_setting` for our developer token
- * (`SERVICE_ACCESS_DENIED`), so the tag id and cross-account ownership
- * stay managed in the Google Ads UI.
+ * Meta only (platform `metaads`); other platforms return 501, except where noted below.
  *
- * There is no DELETE: Meta has no API to delete a pixel. To stop using
- * one, unshare it from your ad accounts (`DELETE
- * .../tracking-tags/{tagId}/shared-accounts`) or disable it in Events
- * Manager.
+ * There is no DELETE: Meta has no API to delete a pixel. To stop using one, unshare it from your ad accounts (`DELETE .../tracking-tags/{tagId}/shared-accounts`) or disable it in Events Manager.
  *
- * LinkedIn (`linkedinads`): only `firstPartyCookieStatus` (`first_party_cookie_enabled` or
- * `first_party_cookie_disabled`), which sets the tag's first-party tracking. It applies to
- * every ad account using the tag. `empty` answers 400: LinkedIn has no unset state.
+ * ### Per-platform support
  *
- * Pinterest (platform `pinterestads`): 501. Pinterest API v5 has no endpoint to edit a tag:
- * its spec lists only POST/GET on `conversion_tags` and GET on `conversion_tags/{id}`, and
- * PATCH or PUT on `conversion_tags/{id}` answer 405 "Method not allowed". Set enhanced match
- * at creation (`automaticMatchingFields`) or change it and the name in Pinterest Ads Manager.
+ * - Google Ads (`googleads`): see below.
+ * - LinkedIn (`linkedinads`): only `firstPartyCookieStatus` (`first_party_cookie_enabled` or `first_party_cookie_disabled`), which sets the tag's first-party tracking. It applies to every ad account using the tag. `empty` answers 400: LinkedIn has no unset state.
+ * - TikTok: see below.
+ * - X Ads (platform `xads`): only `firstPartyCookieStatus` (`first_party_cookie_enabled` or `first_party_cookie_disabled`), which sets the pixel's first-party cookie setting. X has no API to rename or delete a pixel.
+ * - Pinterest (platform `pinterestads`): 501, see below.
+ * - OpenAI Ads: 501, see below.
  *
- * TikTok: `name`, `enableAutomaticMatching` + `automaticMatchingFields` (folded onto
- * TikTok's five switches: em, ph, fn/ln, ct/st/zp/country, external_id; ge and db answer
- * 400), and first-party cookies via `enableFirstPartyCookies` or `firstPartyCookieStatus`
- * (enabled or disabled). TikTok has no pixel delete: the endpoint is absent from its API and
- * `POST /pixel/delete/` answers 404.
+ * ### Google Ads
  *
- * Pinterest (platform `pinterestads`): 501. Pinterest API v5 only creates, lists and reads
- * tags (no update endpoint); rename a tag or change its enhanced match settings in Pinterest
- * Ads Manager.
+ * The only writable tag setting is `autoTagging` (the account's gclid auto-tagging, without which the tag cannot attribute conversions to ad clicks).
  *
- * X Ads (platform `xads`): only `firstPartyCookieStatus` (`first_party_cookie_enabled` or
- * `first_party_cookie_disabled`), which sets the pixel's first-party cookie setting. X has
- * no API to rename or delete a pixel.
+ * Google rejects every write to `conversion_tracking_setting` for our developer token (`SERVICE_ACCESS_DENIED`), so the tag id and cross-account ownership stay managed in the Google Ads UI.
+ *
+ * ### TikTok
+ *
+ * - `name`.
+ * - `enableAutomaticMatching` + `automaticMatchingFields`, folded onto TikTok's five switches: em, ph, fn/ln, ct/st/zp/country, external_id. ge and db answer 400.
+ * - First-party cookies via `enableFirstPartyCookies` or `firstPartyCookieStatus` (enabled or disabled).
+ *
+ * TikTok has no pixel delete: the endpoint is absent from its API and `POST /pixel/delete/` answers 404.
+ *
+ * ### Pinterest
+ *
+ * Pinterest API v5 only creates, lists and reads tags; it has no endpoint to edit a tag. Its spec lists only POST/GET on `conversion_tags` and GET on `conversion_tags/{id}`, and PATCH or PUT on `conversion_tags/{id}` answer 405 "Method not allowed".
+ *
+ * Set enhanced match at creation (`automaticMatchingFields`), or rename a tag and change its enhanced match settings in Pinterest Ads Manager.
+ *
+ * ### OpenAI Ads
+ *
+ * Its API has no pixel update or delete route (`POST`/`PATCH`/`PUT`/`DELETE /v1/conversions/pixels/{id}` answer 405 "Invalid method"). Rename a pixel in OpenAI Ads Manager.
  *
  */
 export const updateTrackingTag = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingTagData, ThrowOnError>) => {
@@ -17548,22 +19391,24 @@ export const listTrackingTagSharedAccounts = <ThrowOnError extends boolean = fal
 
 /**
  * Share with an ad account
- * Shares a pixel with another ad account so its campaigns and audiences can use it.
+ * Shares a pixel with another ad account so its campaigns and audiences can use it. Meta, LinkedIn and TikTok; other platforms return 501.
  *
- * Requires that you administer both the pixel's owning
- * Business Manager and the target ad account; a pixel on a personal
- * (non-BM) ad account can't be shared (Meta will reject the call). Meta
- * and LinkedIn; other platforms return 501.
+ * ### Meta
  *
- * LinkedIn (`linkedinads`): grants `USE_ONLY` access from the ad account that created the
- * tag, so the target can use the tag and its conversions but cannot edit or reshare it.
- * `adAccountId` is the numeric LinkedIn ad account id. An ad account uses one Insight Tag at
- * a time, so a target that already has one answers 400.
+ * Requires that you administer both the pixel's owning Business Manager and the target ad account. A pixel on a personal (non-BM) ad account can't be shared (Meta will reject the call).
  *
- * TikTok: links the pixel to an advertiser through Business Center
- * (`/bc/pixel/link/update/`, `adAccountId` = numeric advertiser_id). Only a pixel that is an
- * asset of a Business Center this connection manages can be shared; otherwise the answer is
- * 400 asking to transfer it to Business Center first.
+ * ### LinkedIn
+ *
+ * LinkedIn (`linkedinads`) grants `USE_ONLY` access from the ad account that created the tag, so the target can use the tag and its conversions but cannot edit or reshare it.
+ *
+ * - `adAccountId` is the numeric LinkedIn ad account id.
+ * - An ad account uses one Insight Tag at a time, so a target that already has one answers 400.
+ *
+ * ### TikTok
+ *
+ * Links the pixel to an advertiser through Business Center (`/bc/pixel/link/update/`, `adAccountId` = numeric advertiser_id).
+ *
+ * Only a pixel that is an asset of a Business Center this connection manages can be shared. Otherwise the answer is 400 asking to transfer it to Business Center first.
  *
  */
 export const addTrackingTagSharedAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddTrackingTagSharedAccountData, ThrowOnError>) => {
@@ -17599,103 +19444,129 @@ export const removeTrackingTagSharedAccount = <ThrowOnError extends boolean = fa
  * Install on a Shopify, WordPress, Wix or Webflow site
  * Installs a pixel on a connected Shopify store or WordPress, Wix or Webflow site, so store visits and purchases are reported without editing the theme.
  *
- * Puts the Meta pixel on a connected Shopify store's storefront and checkout through
- * Zernio's Shopify web pixel (a Shopify app pixel, no theme edits). The store then sends
- * PageView, ViewContent, AddToCart, Search, InitiateCheckout, AddPaymentInfo and Purchase
- * (with value, currency, content_ids and contents) to the pixel, each with an event id.
- * Purchase uses `shopify_order_{orderId}` as its event id, so a Conversions API Purchase
- * you send for the same order with that `eventId` is deduplicated by Meta.
+ * ### Shopify (Meta pixel)
  *
- * Idempotent: a store runs one Zernio web pixel holding one tag per platform, so calling
- * it again updates the install, installing a different tag of the same platform replaces
- * the previous one (reported in `replacedTagId`), and other platforms' tags are kept.
+ * Zernio puts the Meta pixel on the store's storefront and checkout through its Shopify web pixel (a Shopify app pixel, no theme edits). The store sends these events to the pixel, each with an event id:
+ *
+ * - PageView
+ * - ViewContent
+ * - AddToCart
+ * - Search
+ * - InitiateCheckout
+ * - AddPaymentInfo
+ * - Purchase (with value, currency, content_ids and contents)
+ *
+ * Purchase uses `shopify_order_{orderId}` as its event id. A Conversions API Purchase you send for the same order with that `eventId` is deduplicated by Meta.
+ *
+ * ### Idempotency and identifiers
+ *
+ * A store runs one Zernio web pixel holding one tag per platform, so the call is idempotent:
+ *
+ * - Calling it again updates the install.
+ * - Installing a different tag of the same platform replaces the previous one (reported in `replacedTagId`).
+ * - Other platforms' tags are kept.
+ *
  * Events respect the store's customer privacy settings (marketing consent).
  *
- * `accountId` is the Meta ads account that owns the pixel (`tagId`); `storeAccountId` is the
- * Shopify account.
+ * - `accountId`: the Meta ads account that owns the pixel (`tagId`).
+ * - `storeAccountId`: the Shopify account.
  *
- * OpenAI Ads on Shopify: each event is sent through OpenAI's documented image tag
- * (`GET https://bzr.openai.com/v1/sdk/events`) as `page_viewed`, `contents_viewed`,
- * `items_added`, `checkout_started`, `order_created`, and custom events `search` and
- * `addpaymentinfo` (lowercase, so a Conversions API Search/AddPaymentInfo with the same
- * event id deduplicates). Amounts are sent in the currency's minor unit. The landing
- * page's `oppref` click id is kept in the `__oppref` cookie for 30 days and sent with
- * every event. The image tag cannot carry the `__obref` browser id (OpenAI rejects the
- * parameter), and the search text is never sent. On WordPress the widget holds the
- * official `oaiq` base code and a `page_viewed` call.
+ * ### OpenAI Ads on Shopify
  *
- * Whop (`whopads`, `tagId` = the Whop account id `biz_...`) on Shopify: events are posted
- * to Whop's conversions endpoint (`https://t.whop.tw/conversions`) the way Whop's own
- * Shopify pixel does: `page`, `view_content`, `add_to_cart`, `purchase` (with value and
- * currency) and the custom `shopify_search_submitted`, `shopify_checkout_started` and
- * `shopify_payment_info_submitted`, each with Whop's `shopify:<event>:<id>` event id so a
- * store that also runs Whop's own pixel reports each event once. The visitor id is kept
- * in Whop's `_wuid` cookie for two years. Whop records purchases itself only for checkouts
- * on Whop, so Shopify orders are reported here. On WordPress the widget holds the official
- * snippet with `whop.setScope` and `whop.track("page")`.
+ * Each event is sent through OpenAI's documented image tag (`GET https://bzr.openai.com/v1/sdk/events`) as:
  *
- * Stores connected before pixel support must re-approve the Zernio app:
- * the call then answers 409 `reconnect_required` with `details.authUrl` to send the
- * merchant to (the Shopify account id stays the same). Platforms without an install path
- * return 501.
+ * - `page_viewed`
+ * - `contents_viewed`
+ * - `items_added`
+ * - `checkout_started`
+ * - `order_created`
+ * - custom events `search` and `addpaymentinfo` (lowercase, so a Conversions API Search/AddPaymentInfo with the same event id deduplicates)
  *
- * **WordPress** (`storeAccountId` is a connected WordPress.com or self-hosted site): Zernio
- * adds a Custom HTML widget with the Meta pixel base code (fbevents.js, `init`, `PageView`)
- * to a widget area of the active theme (a footer area when there is one, else the first
- * active area; pass `sidebarId` to choose), then reads the widget back to confirm WordPress
- * kept the `<script>` tag. The widget carries a Zernio marker, so the call is idempotent
- * per pixel: repeating it updates or moves the same widget, and pixel code the site owner
- * pasted by hand is never touched. Several pixels can run side by side (one widget each).
- * When the site cannot run the pixel, nothing is left behind and the call answers 422
- * `tracking_tag_install_blocked` with `details.reason`:
+ * Amounts are sent in the currency's minor unit. The landing page's `oppref` click id is kept in the `__oppref` cookie for 30 days and sent with every event.
+ *
+ * The image tag cannot carry the `__obref` browser id (OpenAI rejects the parameter), and the search text is never sent. On WordPress the widget holds the official `oaiq` base code and a `page_viewed` call.
+ *
+ * ### Whop on Shopify
+ *
+ * For Whop (`whopads`, `tagId` = the Whop account id `biz_...`), events are posted to Whop's conversions endpoint (`https://t.whop.tw/conversions`) the way Whop's own Shopify pixel does:
+ *
+ * - `page`
+ * - `view_content`
+ * - `add_to_cart`
+ * - `purchase` (with value and currency)
+ * - custom `shopify_search_submitted`, `shopify_checkout_started` and `shopify_payment_info_submitted`
+ *
+ * Each carries Whop's `shopify:<event>:<id>` event id, so a store that also runs Whop's own pixel reports each event once. The visitor id is kept in Whop's `_wuid` cookie for two years.
+ *
+ * Whop records purchases itself only for checkouts on Whop, so Shopify orders are reported here. On WordPress the widget holds the official snippet with `whop.setScope` and `whop.track("page")`.
+ *
+ * ### Reconnect and unsupported platforms
+ *
+ * - 409 `reconnect_required`: the store was connected before pixel support and must re-approve the Zernio app. Send the merchant to `details.authUrl` (the Shopify account id stays the same).
+ * - 501: the platform has no install path.
+ *
+ * ### WordPress
+ *
+ * Here `storeAccountId` is a connected WordPress.com or self-hosted site. Zernio adds a Custom HTML widget with the Meta pixel base code (fbevents.js, `init`, `PageView`) to a widget area of the active theme.
+ *
+ * It uses a footer area when there is one, else the first active area; pass `sidebarId` to choose. It then reads the widget back to confirm WordPress kept the `<script>` tag.
+ *
+ * The widget carries a Zernio marker, so the call is idempotent per pixel: repeating it updates or moves the same widget. Pixel code the site owner pasted by hand is never touched. Several pixels can run side by side (one widget each).
+ *
+ * When the site cannot run the pixel, nothing is left behind and the call answers 422 `tracking_tag_install_blocked` with `details.reason`:
+ *
  * - `insufficient_permissions`: the connected user lacks `edit_theme_options` (needs Administrator).
  * - `scripts_stripped`: WordPress removed the script (the user lacks `unfiltered_html`, e.g. a multisite admin who is not a Super Admin, or `DISALLOW_UNFILTERED_HTML` is set).
  * - `wordpress_com_plan`: a WordPress.com plan that strips scripts (plans without plugins).
  * - `no_widget_areas`: the theme has no widget areas (block themes such as Twenty Twenty-Five).
  * - `widgets_api_unavailable`: no widgets REST API (WordPress older than 5.8, or disabled).
+ *
  * The `error` message names the manual alternative (Meta's official WordPress plugin).
- * With `verifyHomepage` (default true) the homepage is fetched afterwards and
- * `homepageCheck` says whether the pixel is visible; `not_found` can be a stale page cache,
- * the widget read-back is authoritative.
  *
- * **LinkedIn** (`linkedinads`): Shopify sends every page view to the Insight Tag, plus each
- * store event that has an enabled event-specific Insight Tag conversion rule of the matching
- * type (view_content = VIEW_CONTENT, add_to_cart = ADD_TO_CART, search = SEARCH,
- * initiate_checkout = START_CHECKOUT, add_payment_info = ADD_BILLING_INFO, purchase =
- * PURCHASE). Each conversion carries the event id; Purchase uses `shopify_order_{orderId}`,
- * so a Conversions API event sent to a separate CONVERSIONS_API rule with that `eventId` is
- * deduplicated by LinkedIn. Conversions API rules cannot be fired from a page, and no rule
- * is created for you. The `li_fat_id` click id is read from the landing URL and kept in a
- * first-party cookie for 30 days. WordPress gets LinkedIn's base code, which records page
- * views.
+ * With `verifyHomepage` (default true) the homepage is fetched afterwards and `homepageCheck` says whether the pixel is visible. `not_found` can be a stale page cache; the widget read-back is authoritative.
  *
- * **Pinterest (platform `pinterestads`)**: Shopify sends `pagevisit`, `viewcontent`,
- * `addtocart`, `search`, `initiatecheckout`, `addpaymentinfo` and `checkout` to the tag,
- * each with `event_id` (Purchase: `shopify_order_{orderId}`, for dedup with the Pinterest
- * Conversions API), value, currency, order quantity and line items, plus the `epik` click id
- * kept in the `_epik` cookie. WordPress gets Pinterest's base code (core.js, `load`, `page`)
- * with a `pagevisit` event; the manual fallback is the official Pinterest for WooCommerce
- * plugin (WooCommerce stores).
+ * ### LinkedIn
  *
- * **Wix** (`storeAccountId` is a connected Wix site): Zernio's Wix app embeds one script on
- * the site that loads each installed tag's base code (the same code WordPress gets), so on
- * Wix each tag records page views. Wix changes pages without reloading, so later page views
- * are recorded again on Wix's own page-view event for Meta, TikTok, Google, Pinterest,
- * OpenAI and Whop; LinkedIn and X count the first page of each visit. Like Shopify, the site holds one tag per platform:
- * installing a different tag of the same platform replaces it (`replacedTagId`) and other
- * platforms' tags are kept. The script is an Advertising script, so it runs only for
- * visitors who accept advertising cookies when the site shows a cookie banner. Sites
- * connected before pixel support answer 409 `reconnect_required` until the owner approves
- * the Zernio app's new permission (`details.authUrl`, or Apps > Manage Apps in the Wix
- * dashboard).
+ * For `linkedinads`, Shopify sends every page view to the Insight Tag. It also sends each store event that has an enabled event-specific Insight Tag conversion rule of the matching type:
  *
- * **Webflow** (`storeAccountId` is a Webflow site connected with "Connect with Webflow",
- * `GET /v1/connect/webflow`): Zernio applies one script to the site's custom code that
- * loads each tag's base code, one tag per platform, as on Wix. Webflow publishes custom
- * code only with the site, so the install answers `publishRequired: true` and the tags fire
- * after the site's next publish (Zernio never publishes it). A site connected with a site
- * token answers 409 `reconnect_required` with `details.authUrl` to connect it with the app
- * (the account id stays the same).
+ * - view_content = VIEW_CONTENT
+ * - add_to_cart = ADD_TO_CART
+ * - search = SEARCH
+ * - initiate_checkout = START_CHECKOUT
+ * - add_payment_info = ADD_BILLING_INFO
+ * - purchase = PURCHASE
+ *
+ * Each conversion carries the event id. Purchase uses `shopify_order_{orderId}`, so a Conversions API event sent to a separate CONVERSIONS_API rule with that `eventId` is deduplicated by LinkedIn.
+ *
+ * Conversions API rules cannot be fired from a page, and no rule is created for you. The `li_fat_id` click id is read from the landing URL and kept in a first-party cookie for 30 days. WordPress gets LinkedIn's base code, which records page views.
+ *
+ * ### Pinterest
+ *
+ * For platform `pinterestads`, Shopify sends these events to the tag: `pagevisit`, `viewcontent`, `addtocart`, `search`, `initiatecheckout`, `addpaymentinfo` and `checkout`.
+ *
+ * Each carries `event_id` (Purchase: `shopify_order_{orderId}`, for dedup with the Pinterest Conversions API), value, currency, order quantity and line items, plus the `epik` click id kept in the `_epik` cookie.
+ *
+ * WordPress gets Pinterest's base code (core.js, `load`, `page`) with a `pagevisit` event. The manual fallback is the official Pinterest for WooCommerce plugin (WooCommerce stores).
+ *
+ * ### Wix
+ *
+ * Here `storeAccountId` is a connected Wix site. Zernio's Wix app embeds one script on the site that loads each installed tag's base code (the same code WordPress gets), so on Wix each tag records page views.
+ *
+ * Wix changes pages without reloading. Later page views are recorded again on Wix's own page-view event for Meta, TikTok, Google, Pinterest, OpenAI and Whop; LinkedIn and X count the first page of each visit.
+ *
+ * Like Shopify, the site holds one tag per platform: installing a different tag of the same platform replaces it (`replacedTagId`) and other platforms' tags are kept.
+ *
+ * The script is an Advertising script, so it runs only for visitors who accept advertising cookies when the site shows a cookie banner.
+ *
+ * Sites connected before pixel support answer 409 `reconnect_required` until the owner approves the Zernio app's new permission (`details.authUrl`, or Apps > Manage Apps in the Wix dashboard).
+ *
+ * ### Webflow
+ *
+ * Here `storeAccountId` is a Webflow site connected with "Connect with Webflow" (`GET /v1/connect/webflow`). Zernio applies one script to the site's custom code that loads each tag's base code, one tag per platform, as on Wix.
+ *
+ * Webflow publishes custom code only with the site, so the install answers `publishRequired: true` and the tags fire after the site's next publish (Zernio never publishes it).
+ *
+ * A site connected with a site token answers 409 `reconnect_required` with `details.authUrl` to connect it with the app (the account id stays the same).
  *
  */
 export const installTrackingTagOnStore = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<InstallTrackingTagOnStoreData, ThrowOnError>) => {
@@ -17709,16 +19580,21 @@ export const installTrackingTagOnStore = <ThrowOnError extends boolean = false>(
  * Get store install status
  * Shows whether a tracking tag is installed on your Shopify store or WordPress, Wix or Webflow site, and whether a WordPress install would be blocked.
  *
- * Whether this tag is the one the Shopify store fires for its platform. `installedTagId`
- * names the tag of that platform the store currently fires, which can be a different tag,
- * and `tags` lists every Zernio tag on the store (all platforms).
+ * ### Shopify
  *
- * WordPress: whether the Zernio widget for this pixel is live (in an active widget area,
- * script intact), plus a read-only `preflight` with the theme's widget areas and, when an
- * install would be blocked, the `reason` POST would return. The preflight reads
- * capabilities only, so `ready: true` is not a guarantee: `DISALLOW_UNFILTERED_HTML` or a
- * multisite admin who is not a Super Admin still strips the script, which POST detects.
- * `tags` lists every Zernio widget on the site (all platforms, with `active`).
+ * Whether this tag is the one the Shopify store fires for its platform.
+ *
+ * - `installedTagId` names the tag of that platform the store currently fires, which can be a different tag.
+ * - `tags` lists every Zernio tag on the store (all platforms).
+ *
+ * ### WordPress
+ *
+ * Whether the Zernio widget for this pixel is live (in an active widget area, script intact).
+ *
+ * - A read-only `preflight` returns the theme's widget areas and, when an install would be blocked, the `reason` POST would return.
+ * - `tags` lists every Zernio widget on the site (all platforms, with `active`).
+ *
+ * The preflight reads capabilities only, so `ready: true` is not a guarantee. `DISALLOW_UNFILTERED_HTML` or a multisite admin who is not a Super Admin still strips the script, which POST detects.
  *
  */
 export const getTrackingTagStoreInstall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStoreInstallData, ThrowOnError>) => {
@@ -17732,15 +19608,17 @@ export const getTrackingTagStoreInstall = <ThrowOnError extends boolean = false>
  * Remove from a Shopify, WordPress, Wix or Webflow site
  * Removes a tracking tag from your Shopify store or WordPress, Wix or Webflow site, leaving other platforms' tags and hand-added pixel code in place.
  *
- * Idempotent: nothing installed returns 200 with
- * `installed: false`. If the store fires a different tag of the same platform, nothing is
- * removed and the call answers 409 `invalid_resource_state`. Shopify: other platforms'
- * tags stay; the web pixel itself is deleted once no tag remains. Wix works the same way,
- * and the site's Zernio script is disabled once no tag remains. Webflow too: the Zernio
- * script leaves the site's custom code once no tag remains, live after the next publish.
+ * ### Behavior
  *
- * WordPress: deletes every widget Zernio created for this pixel and reports how many in
- * `removed` (0 when nothing was installed). Pixel code added by hand is left alone.
+ * - Idempotent: nothing installed returns 200 with `installed: false`.
+ * - If the store fires a different tag of the same platform, nothing is removed and the call answers 409 `invalid_resource_state`.
+ *
+ * ### Per store
+ *
+ * - **Shopify**: other platforms' tags stay. The web pixel itself is deleted once no tag remains.
+ * - **Wix**: works the same way, and the site's Zernio script is disabled once no tag remains.
+ * - **Webflow**: the Zernio script leaves the site's custom code once no tag remains, live after the next publish.
+ * - **WordPress**: deletes every widget Zernio created for this pixel and reports how many in `removed` (0 when nothing was installed). Pixel code added by hand is left alone.
  *
  */
 export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveTrackingTagFromStoreData, ThrowOnError>) => {
@@ -17754,47 +19632,60 @@ export const removeTrackingTagFromStore = <ThrowOnError extends boolean = false>
  * List conversion events
  * Lists the conversion events tied to a tracking tag, such as Google conversion actions or Meta custom conversions.
  *
- * The tag's conversion events, on platforms where each conversion is its own object:
- * Google conversion actions, LinkedIn conversion rules, X web event tags, OpenAI event
- * settings, TikTok pixel events, Meta custom conversions, Pinterest advertiser defined
- * events.
+ * It covers platforms where each conversion is its own object:
  *
- * OpenAI Ads: the account's conversion event settings whose source is this pixel.
- * `siteEventId` is the event name the site sends (a standard event such as
- * `order_created`, or the lowercase custom event name); `clickWindowDays` is the
- * click attribution window and `viewWindowDays` the view-through window (0 = off).
+ * - Google conversion actions
+ * - LinkedIn conversion rules
+ * - X web event tags
+ * - OpenAI event settings
+ * - TikTok pixel events
+ * - Meta custom conversions
+ * - Pinterest advertiser defined events
  *
- * LinkedIn (`linkedinads`): the conversion rules of the ad account (`adAccountId`, default
- * the account that created the tag), including Conversions API and URL-match rules.
- * `siteEventId` (the rule id a page fires) is set only on event-specific Insight Tag rules;
- * `defaultValue`/`currency` come from the rule value, `clickWindowDays`/`viewWindowDays`
- * from its post-click and view-through windows.
+ * ### OpenAI Ads
  *
- * Meta: the pixel's custom conversions. Meta keeps them per AD ACCOUNT (a pixel has no
- * custom conversions edge), so the list reads `adAccountId` (default: the pixel's owner ad
- * account) and keeps the conversions whose pixel is this one. Archived conversions are
- * included with `status: archived`. `urlContains` and `siteEvent` are parsed from Meta's rule.
+ * The account's conversion event settings whose source is this pixel.
  *
- * Google Ads (`googleads`): the enabled WEBPAGE conversion actions of the account;
- * `siteEventId` is the conversion label (the part after `AW-.../` in `send_to`), and
- * value settings, lookback windows, `primary` and `countingType` are returned.
- * Archived (removed) actions are listed with status `REMOVED`; imported (GA4, upload,
- * app) actions are not events of the tag.
+ * - `siteEventId` is the event name the site sends (a standard event such as `order_created`, or the lowercase custom event name).
+ * - `clickWindowDays` is the click attribution window and `viewWindowDays` the view-through window (0 = off).
  *
- * Pinterest (platform `pinterestads`): the ad account's advertiser defined events, custom
- * event names mapped to a standard type (`type`, e.g. `SIGNUP`). They belong to the ad
- * account, so every tag on it shares them. `id`, `name` and `siteEventId` are all the event
- * name, which the site sends as `pintrk('track', '<name>')` or the Conversions API sends as
- * `event_name`. Standard events (`pagevisit`, `checkout`...) need no object and are not
- * listed.
+ * ### LinkedIn (`linkedinads`)
  *
- * TikTok: the pixel's events from `/pixel/list/`. TikTok refreshes this list every 2 to 4
- * hours, so a just-created event can be missing. `siteEventId` is the `ttq.track()` name the
- * site fires.
+ * The conversion rules of the ad account (`adAccountId`, default the account that created the tag), including Conversions API and URL-match rules.
  *
- * X Ads (platform `xads`): the ad account's web event tags the site can fire. Events X
- * auto-creates with the pixel (site visits, landing page views, one per standard type) share the
- * pixel id, cannot be fired one by one and are left out; they still appear in stats.
+ * - `siteEventId` (the rule id a page fires) is set only on event-specific Insight Tag rules.
+ * - `defaultValue`/`currency` come from the rule value.
+ * - `clickWindowDays`/`viewWindowDays` come from its post-click and view-through windows.
+ *
+ * ### Meta
+ *
+ * The pixel's custom conversions. Meta keeps them per AD ACCOUNT (a pixel has no custom conversions edge). So the list reads `adAccountId` (default: the pixel's owner ad account) and keeps the conversions whose pixel is this one.
+ *
+ * Archived conversions are included with `status: archived`. `urlContains` and `siteEvent` are parsed from Meta's rule.
+ *
+ * ### Google Ads (`googleads`)
+ *
+ * The enabled WEBPAGE conversion actions of the account. `siteEventId` is the conversion label (the part after `AW-.../` in `send_to`). Value settings, lookback windows, `primary` and `countingType` are returned.
+ *
+ * Archived (removed) actions are listed with status `REMOVED`. Imported (GA4, upload, app) actions are not events of the tag.
+ *
+ * ### Pinterest (platform `pinterestads`)
+ *
+ * The ad account's advertiser defined events: custom event names mapped to a standard type (`type`, e.g. `SIGNUP`). They belong to the ad account, so every tag on it shares them.
+ *
+ * `id`, `name` and `siteEventId` are all the event name, which the site sends as `pintrk('track', '<name>')` or the Conversions API sends as `event_name`.
+ *
+ * Standard events (`pagevisit`, `checkout`...) need no object and are not listed.
+ *
+ * ### TikTok
+ *
+ * The pixel's events from `/pixel/list/`. TikTok refreshes this list every 2 to 4 hours, so a just-created event can be missing. `siteEventId` is the `ttq.track()` name the site fires.
+ *
+ * ### X Ads (platform `xads`)
+ *
+ * The ad account's web event tags the site can fire.
+ *
+ * Events X auto-creates with the pixel (site visits, landing page views, one per standard type) share the pixel id and cannot be fired one by one, so they are left out. They still appear in stats.
  *
  */
 export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListTrackingTagEventsData, ThrowOnError>) => {
@@ -17808,75 +19699,84 @@ export const listTrackingTagEvents = <ThrowOnError extends boolean = false>(opti
  * Create a conversion event
  * Creates a conversion event on a tracking tag, such as a purchase or lead, so ads can measure and optimise toward it.
  *
- * Pass the platform's own event type in `type`
- * (e.g. Google `PURCHASE`, LinkedIn `ADD_TO_CART`, X `CHECKOUT_INITIATED`) or a neutral
- * `siteEvent` the platform maps to its closest type. Each platform stores a subset of the
- * optional fields; sending one it does not store answers 400 naming the supported fields.
+ * Pass the platform's own event type in `type` (e.g. Google `PURCHASE`, LinkedIn `ADD_TO_CART`, X `CHECKOUT_INITIATED`) or a neutral `siteEvent` the platform maps to its closest type.
+ *
+ * Each platform stores a subset of the optional fields. Sending one it does not store answers 400 naming the supported fields.
+ *
  * NOT idempotent unless noted per platform: do not retry blindly.
  *
- * OpenAI Ads: creates a conversion event setting on the pixel (`POST
- * /conversions/event_settings`, source = the pixel). Accepts `name`, `type` and
- * `siteEvent` only. `type` is a standard event (`order_created`, `lead_created`,
- * `items_added`, `contents_viewed`, `checkout_started`, `registration_completed`,
- * `subscription_created`, `trial_started`, `appointment_scheduled`, `page_viewed`,
- * `app_installed`, `app_opened`) or, for anything else, the custom event name itself
- * (1 to 64 letters, digits, underscores or dashes; stored lowercase). `siteEvent` maps
- * `search` and `add_payment_info` to the custom events `search` and `addpaymentinfo`,
- * the names Zernio's Shopify pixel sends. The click attribution window is 30 days, the
- * only value OpenAI documents. Only standard events can be a conversions campaign's
- * optimization goal.
+ * ### OpenAI Ads
  *
- * LinkedIn (`linkedinads`): creates an event-specific Insight Tag conversion rule (no URL
- * match rules), the kind a page or the Shopify pixel fires by id. `type` is a LinkedIn
- * conversion type (e.g. `PURCHASE`, `ADD_TO_CART`, `START_CHECKOUT`, `LEAD`); `siteEvent`
- * maps to `KEY_PAGE_VIEW`, `VIEW_CONTENT`, `ADD_TO_CART`, `SEARCH`, `START_CHECKOUT`,
- * `ADD_BILLING_INFO` or `PURCHASE`. `defaultValue` needs `currency` (the ad account
- * currency) and is a fallback: a value sent with the event wins. Click and view windows are
- * in days (LinkedIn validates them: the docs list 1, 7 and 30, and rules with 90 exist).
- * Stores name, type, siteEvent, enabled, defaultValue, currency, clickWindowDays,
- * viewWindowDays. Not idempotent.
+ * Creates a conversion event setting on the pixel (`POST /conversions/event_settings`, source = the pixel). Accepts `name`, `type` and `siteEvent` only.
  *
- * Meta: creates a custom conversion on `adAccountId` (default: the pixel's owner ad
- * account). Accepts `name`, `type` (Meta `custom_event_type`: `PURCHASE`, `LEAD`,
- * `ADD_TO_CART`, `COMPLETE_REGISTRATION`, `OTHER`...), `siteEvent`, `urlContains` and
- * `defaultValue` (in the ad account currency). The rule matches the standard event of
- * `siteEvent` (or of `type`), plus `urlContains` when given; `urlContains` alone matches
- * page views on that URL. `type: OTHER` needs `siteEvent` or `urlContains`. Idempotent by
- * name: an active conversion with the same name on this pixel is returned instead of a
- * duplicate. Meta caps custom conversions per ad account; the cap answers 400.
+ * `type` is a standard event or, for anything else, the custom event name itself (1 to 64 letters, digits, underscores or dashes; stored lowercase). Standard events: `order_created`, `lead_created`, `items_added`, `contents_viewed`, `checkout_started`, `registration_completed`, `subscription_created`, `trial_started`, `appointment_scheduled`, `page_viewed`, `app_installed`, `app_opened`.
  *
- * Google Ads (`googleads`): creates a WEBPAGE conversion action. `type` is a
- * ConversionActionCategory (e.g. `PURCHASE`, `SIGNUP`, `DEFAULT`); `siteEvent` maps
- * page_view, add_to_cart, initiate_checkout and purchase, while view_content, search and
- * add_payment_info answer 400 (Google has no category for them). Stored fields: name,
- * type, defaultValue, currency, alwaysUseDefaultValue, clickWindowDays (1 to 90),
- * viewWindowDays (1 to 30), primary, countingType, enabled. Actions are created enabled
- * (`enabled: false` answers 400); Google blocks the HIDDEN status on WEBPAGE actions. Names
- * are unique per account, so a replay answers 400 (DUPLICATE_NAME) instead of creating a
- * second one.
+ * `siteEvent` maps `search` and `add_payment_info` to the custom events `search` and `addpaymentinfo`, the names Zernio's Shopify pixel sends.
  *
- * Pinterest (platform `pinterestads`): creates an advertiser defined event on the tag's ad
- * account. Fields: `name` (1-100 letters, digits, `_` or `-`, case-insensitive, max 15 per
- * ad account) and `type` (one of Pinterest's optimizable types: SIGNUP, ADD_TO_CART, LEAD,
- * CHECKOUT, SUBSCRIBE, ADD_TO_WISHLIST, ADD_PAYMENT_INFO, INITIATE_CHECKOUT, CONTACT,
- * CUSTOMIZE_PRODUCT, FIND_LOCATION, SCHEDULE, SUBMIT_APPLICATION, START_TRIAL, PAGE_VISIT,
- * VIEW_CATEGORY, VIEW_CONTENT, SEARCH, WATCH_VIDEO) or `siteEvent`. A duplicate name answers
- * 400.
+ * The click attribution window is 30 days, the only value OpenAI documents. Only standard events can be a conversions campaign's optimization goal.
  *
- * TikTok: `POST /pixel/event/create/`. `type` is a TikTok pixel event type (SHOPPING,
- * ON_WEB_CART, ON_WEB_DETAIL, INITIATE_ORDER, ADD_BILLING, ON_WEB_SEARCH, PAGE_VIEW,
- * ON_WEB_REGISTER, FORM, ...), or pass `siteEvent`. Stores `name` (at most 40 characters),
- * `defaultValue` and `currency` (USD, JPY or INR only). TikTok returns no id: the new event
- * is read back from the pixel, and while TikTok's listing has not refreshed the response
- * carries an empty `id` and `status: pending`.
+ * ### LinkedIn (`linkedinads`)
  *
- * X Ads (platform `xads`): creates a web event tag. Fields: `name`, `type` (X enum:
- * ADDED_PAYMENT_INFO, ADD_TO_CART, ADD_TO_WISHLIST, CHECKOUT_INITIATED, CONTENT_VIEW,
- * CUSTOM, DOWNLOAD, INSTALL, LANDING_PAGE_VIEW, LOGIN, PRODUCT_CUSTOMIZATION, PURCHASE,
- * SEARCH, SESSION, SIGN_UP, SITE_VISIT, START_TRIAL, SUBSCRIBE) or `siteEvent`,
- * `clickWindowDays` (1, 7, 14, 30, 60 or 90; default 30) and `viewWindowDays` (0, 1, 7, 14,
- * 30, 60 or 90, at most the click window; default 1). Retargeting is enabled, as in Events
- * Manager.
+ * Creates an event-specific Insight Tag conversion rule (no URL match rules), the kind a page or the Shopify pixel fires by id.
+ *
+ * - `type` is a LinkedIn conversion type (e.g. `PURCHASE`, `ADD_TO_CART`, `START_CHECKOUT`, `LEAD`).
+ * - `siteEvent` maps to `KEY_PAGE_VIEW`, `VIEW_CONTENT`, `ADD_TO_CART`, `SEARCH`, `START_CHECKOUT`, `ADD_BILLING_INFO` or `PURCHASE`.
+ * - `defaultValue` needs `currency` (the ad account currency) and is a fallback: a value sent with the event wins.
+ * - Click and view windows are in days (LinkedIn validates them: the docs list 1, 7 and 30, and rules with 90 exist).
+ *
+ * Stores name, type, siteEvent, enabled, defaultValue, currency, clickWindowDays, viewWindowDays. Not idempotent.
+ *
+ * ### Meta
+ *
+ * Creates a custom conversion on `adAccountId` (default: the pixel's owner ad account). Accepts:
+ *
+ * - `name`
+ * - `type` (Meta `custom_event_type`: `PURCHASE`, `LEAD`, `ADD_TO_CART`, `COMPLETE_REGISTRATION`, `OTHER`...)
+ * - `siteEvent`
+ * - `urlContains`
+ * - `defaultValue` (in the ad account currency)
+ *
+ * The rule matches the standard event of `siteEvent` (or of `type`), plus `urlContains` when given. `urlContains` alone matches page views on that URL. `type: OTHER` needs `siteEvent` or `urlContains`.
+ *
+ * Idempotent by name: an active conversion with the same name on this pixel is returned instead of a duplicate. Meta caps custom conversions per ad account; the cap answers 400.
+ *
+ * ### Google Ads (`googleads`)
+ *
+ * Creates a WEBPAGE conversion action. `type` is a ConversionActionCategory (e.g. `PURCHASE`, `SIGNUP`, `DEFAULT`).
+ *
+ * `siteEvent` maps page_view, add_to_cart, initiate_checkout and purchase. view_content, search and add_payment_info answer 400 (Google has no category for them).
+ *
+ * Stored fields: name, type, defaultValue, currency, alwaysUseDefaultValue, clickWindowDays (1 to 90), viewWindowDays (1 to 30), primary, countingType, enabled.
+ *
+ * Actions are created enabled (`enabled: false` answers 400); Google blocks the HIDDEN status on WEBPAGE actions. Names are unique per account, so a replay answers 400 (DUPLICATE_NAME) instead of creating a second one.
+ *
+ * ### Pinterest (platform `pinterestads`)
+ *
+ * Creates an advertiser defined event on the tag's ad account. Fields:
+ *
+ * - `name`: 1-100 letters, digits, `_` or `-`, case-insensitive, max 15 per ad account
+ * - `type` or `siteEvent`: `type` is one of Pinterest's optimizable types: SIGNUP, ADD_TO_CART, LEAD, CHECKOUT, SUBSCRIBE, ADD_TO_WISHLIST, ADD_PAYMENT_INFO, INITIATE_CHECKOUT, CONTACT, CUSTOMIZE_PRODUCT, FIND_LOCATION, SCHEDULE, SUBMIT_APPLICATION, START_TRIAL, PAGE_VISIT, VIEW_CATEGORY, VIEW_CONTENT, SEARCH, WATCH_VIDEO
+ *
+ * A duplicate name answers 400.
+ *
+ * ### TikTok
+ *
+ * Calls `POST /pixel/event/create/`. `type` is a TikTok pixel event type (SHOPPING, ON_WEB_CART, ON_WEB_DETAIL, INITIATE_ORDER, ADD_BILLING, ON_WEB_SEARCH, PAGE_VIEW, ON_WEB_REGISTER, FORM, ...), or pass `siteEvent`.
+ *
+ * Stores `name` (at most 40 characters), `defaultValue` and `currency` (USD, JPY or INR only).
+ *
+ * TikTok returns no id: the new event is read back from the pixel. While TikTok's listing has not refreshed, the response carries an empty `id` and `status: pending`.
+ *
+ * ### X Ads (platform `xads`)
+ *
+ * Creates a web event tag. Fields:
+ *
+ * - `name`
+ * - `type` or `siteEvent`. `type` is an X enum: ADDED_PAYMENT_INFO, ADD_TO_CART, ADD_TO_WISHLIST, CHECKOUT_INITIATED, CONTENT_VIEW, CUSTOM, DOWNLOAD, INSTALL, LANDING_PAGE_VIEW, LOGIN, PRODUCT_CUSTOMIZATION, PURCHASE, SEARCH, SESSION, SIGN_UP, SITE_VISIT, START_TRIAL, SUBSCRIBE
+ * - `clickWindowDays`: 1, 7, 14, 30, 60 or 90; default 30
+ * - `viewWindowDays`: 0, 1, 7, 14, 30, 60 or 90, at most the click window; default 1
+ *
+ * Retargeting is enabled, as in Events Manager.
  *
  */
 export const createTrackingTagEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateTrackingTagEventData, ThrowOnError>) => {
@@ -18060,45 +19960,58 @@ export const getTrackingTagDiagnostics = <ThrowOnError extends boolean = false>(
  * Get aggregated event stats
  * Shows event counts or health for a tracking tag so you can confirm it is firing, where the platform reports them.
  *
- * Meta: aggregated counts (`GET /{pixel_id}/stats`), rows passed
- * through as-is; their shape depends on the `aggregation` requested.
  * Platforms without a stats API answer 501.
  *
- * OpenAI Ads: the recent-events stream (`GET /conversions/events`), the
- * latest (at most 50) events received in the last 15 minutes, one row per
- * event (`event_type`, `api_channel`, `event_timestamp_ms`, `received_at_ms`,
- * ...). Both sources appear: `api_channel` is `pixel_sdk` for the on-site
- * Pixel (including its `openai::sdk_init` load event) and `server_to_server`
- * for Conversions API events. It is
- * a fixed window: `startTime`/`endTime` answer 400. Use it to confirm an
- * install fires; attributed totals come from ads analytics. Accounts not
- * enabled for the stream answer 422 `feature_not_available`.
+ * ### Meta
  *
- * LinkedIn (`linkedinads`): health rows rather than counts, since LinkedIn exposes no per-
- * event fire counts: one row per site domain the tag has seen (`kind: domain`, `domainName`,
- * `lastFiredTime`, `creationTime`, `blocked`), capped at the 100 domains that fired most
- * recently (newest first; a tag seen on more domains drops the least recent), and one per
- * conversion rule (`kind:
- * conversion_rule`, `id`, `name`, `type`, `conversionMethod`, `status`, `lastFiredTime`).
- * Times are unix seconds; `startTime`/`endTime` are ignored.
+ * Aggregated counts (`GET /{pixel_id}/stats`), rows passed through as-is. Their shape depends on the `aggregation` requested.
  *
- * Pinterest (platform `pinterestads`): rows typed by `type`: one `tag` row (`lastFiredTime`,
- * `status`, `enhancedMatchStatus`), `event` rows for the conversion events Pinterest has
- * seen on the tag (`source` is `page_visit` or `ocpm_eligible`, the latter meaning the event
- * can be optimized for, with the neutral `siteEvent` where one maps), and `event_quality`
- * rows with the ad account's Event Quality Score for tag events over the last `1d` and `14d`
- * (ad-account level, not per tag; an account Pinterest cannot score yet carries `error`
- * instead). Pinterest has no time-bounded counts, so `startTime`/`endTime` answer 400.
+ * ### OpenAI Ads
  *
- * TikTok: per-event counts from `/pixel/event/stats/` (`total_count`,
- * `browser_event_total_count`, `server_event_total_count`, `attributed_count`,
- * `preview_count`), bucketed by UTC day. Defaults to the last 7 days; at most 30 days per
- * request. `aggregation` is not accepted.
+ * The recent-events stream (`GET /conversions/events`): the latest (at most 50) events received in the last 15 minutes, one row per event (`event_type`, `api_channel`, `event_timestamp_ms`, `received_at_ms`, ...).
  *
- * X Ads (platform `xads`): X has no event counts per pixel or event (only campaign-level
- * conversion metrics). Each row is one web event tag with its `status` (TRACKING,
- * UNVERIFIED, DORMANT), `lastTrackedTime` (unix seconds, null if never seen), `autoCreated`
- * and, for events the site can fire, `siteEventId`.
+ * Both sources appear in `api_channel`:
+ *
+ * - `pixel_sdk`: the on-site Pixel (including its `openai::sdk_init` load event)
+ * - `server_to_server`: Conversions API events
+ *
+ * It is a fixed window: `startTime`/`endTime` answer 400. Use it to confirm an install fires; attributed totals come from ads analytics.
+ *
+ * Accounts not enabled for the stream answer 422 `feature_not_available`.
+ *
+ * ### LinkedIn (`linkedinads`)
+ *
+ * Health rows rather than counts, since LinkedIn exposes no per-event fire counts:
+ *
+ * - One row per site domain the tag has seen (`kind: domain`, `domainName`, `lastFiredTime`, `creationTime`, `blocked`). Capped at the 100 domains that fired most recently (newest first; a tag seen on more domains drops the least recent).
+ * - One row per conversion rule (`kind: conversion_rule`, `id`, `name`, `type`, `conversionMethod`, `status`, `lastFiredTime`).
+ *
+ * Times are unix seconds. `startTime`/`endTime` are ignored.
+ *
+ * ### Pinterest (platform `pinterestads`)
+ *
+ * Rows typed by `type`:
+ *
+ * - One `tag` row (`lastFiredTime`, `status`, `enhancedMatchStatus`).
+ * - `event` rows for the conversion events Pinterest has seen on the tag. `source` is `page_visit` or `ocpm_eligible` (the latter means the event can be optimized for), with the neutral `siteEvent` where one maps.
+ * - `event_quality` rows with the ad account's Event Quality Score for tag events over the last `1d` and `14d`. This is ad-account level, not per tag; an account Pinterest cannot score yet carries `error` instead.
+ *
+ * Pinterest has no time-bounded counts, so `startTime`/`endTime` answer 400.
+ *
+ * ### TikTok
+ *
+ * Per-event counts from `/pixel/event/stats/` (`total_count`, `browser_event_total_count`, `server_event_total_count`, `attributed_count`, `preview_count`), bucketed by UTC day.
+ *
+ * Defaults to the last 7 days; at most 30 days per request. `aggregation` is not accepted.
+ *
+ * ### X Ads (platform `xads`)
+ *
+ * X has no event counts per pixel or event (only campaign-level conversion metrics). Each row is one web event tag with:
+ *
+ * - its `status` (TRACKING, UNVERIFIED, DORMANT)
+ * - `lastTrackedTime` (unix seconds, null if never seen)
+ * - `autoCreated`
+ * - for events the site can fire, `siteEventId`
  *
  */
 export const getTrackingTagStats = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetTrackingTagStatsData, ThrowOnError>) => {
@@ -18110,15 +20023,17 @@ export const getTrackingTagStats = <ThrowOnError extends boolean = false>(option
 
 /**
  * List blogs
- * Lists blogs on the connected account. Shopify returns its store blogs
- * with cursor pagination. A WordPress or Wix account represents one site
- * and always returns exactly that one blog with `nextCursor: null`. A
- * Webflow site returns each CMS collection that has a rich text field
- * (its blog id is the collection id), with `nextCursor: null`.
+ * Lists blogs on the connected account. Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`).
  *
- * `limit` is 1-50 (default 20). Treat `nextCursor` as opaque; pass it
- * unchanged on the next request. Supported on Shopify (`shopify`),
- * WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`).
+ * ### By platform
+ *
+ * - Shopify: returns its store blogs with cursor pagination.
+ * - WordPress or Wix: the account represents one site and always returns exactly that one blog with `nextCursor: null`.
+ * - Webflow: returns each CMS collection that has a rich text field (its blog id is the collection id), with `nextCursor: null`.
+ *
+ * ### Pagination
+ *
+ * `limit` is 1-50 (default 20). Treat `nextCursor` as opaque; pass it unchanged on the next request.
  *
  */
 export const listBlogs = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListBlogsData, ThrowOnError>) => {
@@ -18193,15 +20108,17 @@ export const deleteBlog = <ThrowOnError extends boolean = false>(options: Option
 
 /**
  * List blog articles
- * Lists the articles of a blog. Cursor-paginated: pass `limit` (1-50,
- * default 20) and the `cursor` from a previous response's `nextCursor`;
- * `nextCursor` is null when there are no more pages. Treat cursors as
- * opaque and pass them unchanged. Supported on Shopify (`shopify`),
- * WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`). WordPress and Wix results
- * include `status` and include `publishDate` only for scheduled
- * (`future`) posts. Wix lists return `bodyHtml: null`; get the article
- * for its body. Webflow results report `status` as `publish` or
- * `draft` only.
+ * Lists the articles of a blog. Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`).
+ *
+ * ### Pagination
+ *
+ * Cursor-paginated: pass `limit` (1-50, default 20) and the `cursor` from a previous response's `nextCursor`. `nextCursor` is null when there are no more pages. Treat cursors as opaque and pass them unchanged.
+ *
+ * ### Platform differences
+ *
+ * - WordPress and Wix results include `status`, and include `publishDate` only for scheduled (`future`) posts.
+ * - Wix lists return `bodyHtml: null`; get the article for its body.
+ * - Webflow results report `status` as `publish` or `draft` only.
  *
  */
 export const listBlogArticles = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListBlogArticlesData, ThrowOnError>) => {
@@ -18213,37 +20130,45 @@ export const listBlogArticles = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * Create a blog article
- * Creates an article on the blog. Publishing behavior:
+ * Creates an article on the blog. Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`).
  *
- * - WordPress, Wix and Webflow default to a draft when both publishing
- * fields are omitted.
- * - `isPublished: false` keeps the article as a draft and takes priority
- * over a future `publishDate`.
- * - A future `publishDate` schedules publication natively on the
- * platform; the platform publishes it at that time with no Zernio
- * queue involved.
- * - `isPublished: true` publishes immediately when there is no future
- * `publishDate`.
- * - `seo.title` / `seo.description` map to Shopify's global `title_tag`
- * and `description_tag` metafields (the fields Shopify themes read for
- * the page title and meta description), and on Wix to the post's SEO
- * title and meta description. WordPress and Webflow reject `seo`; SEO
- * plugin and custom-field writes are not supported.
- * - Webflow has no scheduling API: a future `publishDate` returns 400
- * unless `isPublished: false` keeps a draft. Fields map to the
- * collection's own fields by type and slug (the body to its rich text
- * field, `excerpt` to a summary field, `image` to an image field, `tags`
- * and `author` to tag and author reference fields); sending a field the
- * collection does not have returns 400, as does a collection that
- * requires a field the Blogs API cannot fill.
- * - Wix stores rich content: `bodyHtml` is converted on write (each
- * top-level HTML element must fit 30,000 characters), and images in
- * the body are imported into the site's Media Manager.
+ * ### Publishing behavior
  *
- * Send an Idempotency-Key header to make retries safe: a retry with the same key and body replays the original 201 instead of creating a second article. A retry while the first request is still running returns 409; retry after a short backoff.
+ * - WordPress, Wix and Webflow default to a draft when both publishing fields are omitted.
+ * - `isPublished: false` keeps the article as a draft and takes priority over a future `publishDate`.
+ * - A future `publishDate` schedules publication natively on the platform. The platform publishes it at that time with no Zernio queue involved.
+ * - `isPublished: true` publishes immediately when there is no future `publishDate`.
+ * - WordPress native scheduling depends on the site's scheduler/WP-Cron.
  *
- * Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`). WordPress
- * native scheduling depends on the site's scheduler/WP-Cron.
+ * ### SEO
+ *
+ * `seo.title` / `seo.description` map to:
+ *
+ * - Shopify: the global `title_tag` and `description_tag` metafields (the fields Shopify themes read for the page title and meta description).
+ * - Wix: the post's SEO title and meta description.
+ *
+ * WordPress and Webflow reject `seo`; SEO plugin and custom-field writes are not supported.
+ *
+ * ### Webflow
+ *
+ * Webflow has no scheduling API: a future `publishDate` returns 400 unless `isPublished: false` keeps a draft.
+ *
+ * Fields map to the collection's own fields by type and slug:
+ *
+ * - The body goes to its rich text field.
+ * - `excerpt` goes to a summary field.
+ * - `image` goes to an image field.
+ * - `tags` and `author` go to tag and author reference fields.
+ *
+ * Sending a field the collection does not have returns 400, as does a collection that requires a field the Blogs API cannot fill.
+ *
+ * ### Wix
+ *
+ * Wix stores rich content. `bodyHtml` is converted on write (each top-level HTML element must fit 30,000 characters), and images in the body are imported into the site's Media Manager.
+ *
+ * ### Idempotency
+ *
+ * Send an Idempotency-Key header to make retries safe. A retry with the same key and body replays the original 201 instead of creating a second article. A retry while the first request is still running returns 409; retry after a short backoff.
  *
  */
 export const createBlogArticle = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateBlogArticleData, ThrowOnError>) => {
@@ -18272,20 +20197,24 @@ export const getBlogArticle = <ThrowOnError extends boolean = false>(options: Op
 
 /**
  * Update a blog article
- * Partial-updates an article. Send any subset of the create fields
- * (`title`, `bodyHtml`, `handle`, `tags`, `author`, `excerpt`, `image`,
- * `seo`, `isPublished`, `publishDate`); at least one field is required
- * (an empty body returns 400). `isPublished` and `publishDate` behave as
- * on create: `isPublished: false` unpublishes back to a draft and a
- * future `publishDate` schedules publication natively on the platform.
- * Omitting both fields preserves the current WordPress or Wix status. Omitting
- * `image` preserves the current featured image; removal is not supported.
- * WordPress rejects `seo` and does not support SEO-plugin/custom-field,
- * category, or custom-post-type writes. On Webflow, an edit to a
- * published item goes live immediately, `isPublished: false` unpublishes
- * it, and a future `publishDate` returns 400.
+ * Partial-updates an article. Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`).
  *
- * Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`).
+ * Send any subset of the create fields: `title`, `bodyHtml`, `handle`, `tags`, `author`, `excerpt`, `image`, `seo`, `isPublished`, `publishDate`. At least one field is required (an empty body returns 400).
+ *
+ * ### Publishing
+ *
+ * `isPublished` and `publishDate` behave as on create:
+ *
+ * - `isPublished: false` unpublishes back to a draft.
+ * - A future `publishDate` schedules publication natively on the platform.
+ * - Omitting both fields preserves the current WordPress or Wix status.
+ *
+ * Omitting `image` preserves the current featured image; removal is not supported.
+ *
+ * ### Platform limits
+ *
+ * - **WordPress**: rejects `seo` and does not support SEO-plugin/custom-field, category, or custom-post-type writes.
+ * - **Webflow**: an edit to a published item goes live immediately, `isPublished: false` unpublishes it, and a future `publishDate` returns 400.
  *
  */
 export const updateBlogArticle = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateBlogArticleData, ThrowOnError>) => {
@@ -18297,13 +20226,14 @@ export const updateBlogArticle = <ThrowOnError extends boolean = false>(options:
 
 /**
  * Delete a blog article
- * Deletes the article. The delete happens on the platform and is
- * permanent; Zernio stores nothing to restore it from. On WordPress the
- * post is force-deleted, while uploaded attachments and tags remain in
- * the site's media library and taxonomy. On Webflow the item is
- * unpublished from the live site, then deleted from the collection.
+ * Deletes the article. The delete happens on the platform and is permanent; Zernio stores nothing to restore it from.
  *
  * Supported on Shopify (`shopify`), WordPress (`wordpress`), Wix (`wix`) and Webflow (`webflow`).
+ *
+ * ### Platform behavior
+ *
+ * - WordPress: the post is force-deleted, while uploaded attachments and tags remain in the site's media library and taxonomy.
+ * - Webflow: the item is unpublished from the live site, then deleted from the collection.
  *
  */
 export const deleteBlogArticle = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteBlogArticleData, ThrowOnError>) => {
@@ -18316,17 +20246,18 @@ export const deleteBlogArticle = <ThrowOnError extends boolean = false>(options:
 /**
  * @deprecated
  * List products
- * Lists the products on the connected store in the platform's default
- * order, each with its variants, options and images. Cursor-paginated:
- * pass `limit` (1-50, default 20) and the `cursor` from a previous
- * response's `nextCursor`; `nextCursor` is null when there are no more
- * pages. Filter with `status` and/or `query` (the platform's product
- * search syntax, e.g. `title:*shirt* vendor:Acme tag:summer`).
+ * Lists the products on the connected store in the platform's default order, each with its variants, options and images.
  *
- * Supported on Shopify (platform `shopify`); accounts on other
- * platforms return 400. A store connected before product access was
- * added answers 403 insufficient_permissions until the merchant
- * reconnects it through `GET /v1/connect/shopify`.
+ * ### Paging and filters
+ *
+ * - Cursor-paginated: pass `limit` (1-50, default 20) and the `cursor` from a previous response's `nextCursor`. `nextCursor` is null when there are no more pages.
+ * - Filter with `status` and/or `query` (the platform's product search syntax, e.g. `title:*shirt* vendor:Acme tag:summer`).
+ *
+ * ### Platforms
+ *
+ * Supported on Shopify (platform `shopify`); accounts on other platforms return 400.
+ *
+ * A store connected before product access was added answers 403 insufficient_permissions until the merchant reconnects it through `GET /v1/connect/shopify`.
  *
  */
 export const listProducts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListProductsData, ThrowOnError>) => {
@@ -18357,18 +20288,27 @@ export const getProduct = <ThrowOnError extends boolean = false>(options: Option
 /**
  * @deprecated
  * Update a product
- * Partial-updates a product. Send any subset of `title`,
- * `descriptionHtml`, `handle`, `vendor`, `productType`, `tags`, `status`,
- * `seo` and `variants`; at least one field is required (an empty body
- * returns 400). `tags` replaces the full tag list. `variants` updates
- * the price and compare-at price of the listed variant ids only; other
- * variants are untouched, and a variant id that does not belong to the
- * product is a 400. Responds with the product as it is after the update.
+ * Partial-updates a product. Responds with the product as it is after the update.
  *
- * Supported on Shopify (platform `shopify`); accounts on other
- * platforms return 400. A store connected before product access was
- * added answers 403 insufficient_permissions until the merchant
- * reconnects it through `GET /v1/connect/shopify`.
+ * ### Fields
+ *
+ * Send any subset of these; at least one field is required (an empty body returns 400):
+ *
+ * - `title`
+ * - `descriptionHtml`
+ * - `handle`
+ * - `vendor`
+ * - `productType`
+ * - `tags`: replaces the full tag list
+ * - `status`
+ * - `seo`
+ * - `variants`: updates the price and compare-at price of the listed variant ids only. Other variants are untouched, and a variant id that does not belong to the product is a 400.
+ *
+ * ### Platform support
+ *
+ * Supported on Shopify (platform `shopify`); accounts on other platforms return 400.
+ *
+ * A store connected before product access was added answers 403 insufficient_permissions until the merchant reconnects it through `GET /v1/connect/shopify`.
  *
  */
 export const updateProduct = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateProductData, ThrowOnError>) => {
@@ -18380,13 +20320,14 @@ export const updateProduct = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * Get a store
- * Returns the connected store with its currency, country and the
- * `capabilities` it supports, so an integration can tell up front which
- * Commerce operations the store serves. On Shopify, stock, sales
- * channels, discounts, navigation, metaobjects, markets, marketing and
- * image removal need permissions the store owner approves separately:
- * `missingCapabilities` lists what is not granted yet and
- * `grantPermissionsUrl` is the page where the owner approves it.
+ * Returns the connected store with its currency, country and the `capabilities` it supports, so an integration can tell up front which Commerce operations the store serves.
+ *
+ * ### Shopify permissions
+ *
+ * On Shopify, these need permissions the store owner approves separately: stock, sales channels, discounts, navigation, metaobjects, markets, marketing and image removal.
+ *
+ * - `missingCapabilities` lists what is not granted yet.
+ * - `grantPermissionsUrl` is the page where the owner approves it.
  *
  */
 export const getCommerceStore = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCommerceStoreData, ThrowOnError>) => {
@@ -18398,7 +20339,26 @@ export const getCommerceStore = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * List orders
- * The store's orders in one format for every platform, with what an invoice needs: line items with unit prices, discounts and tax per line, shipping and fee lines, billing details, payment status and refunds. Newest order first; with `updatedAfter`, oldest change first, so a sync can page forward from its last seen `updatedAt`. Start each sync a few minutes before the last `updatedAt` you saw and drop duplicates by `id`, since an order edited while you page can shift the list. Shopify returns at most 25 orders per page and, unless the store was granted access to all orders, only the last 60 days. Buyer fields (`customer` and addresses) are null when the store's approval does not cover buyer data. Needs orders.read.
+ * The store's orders in one format for every platform, with what an invoice needs. Needs orders.read.
+ *
+ * Each order includes:
+ *
+ * - line items with unit prices, discounts and tax per line
+ * - shipping and fee lines
+ * - billing details
+ * - payment status and refunds
+ *
+ * ### Ordering and syncing
+ *
+ * Newest order first. With `updatedAfter`, oldest change first, so a sync can page forward from its last seen `updatedAt`.
+ *
+ * Start each sync a few minutes before the last `updatedAt` you saw and drop duplicates by `id`, since an order edited while you page can shift the list.
+ *
+ * ### Limits
+ *
+ * - Shopify returns at most 25 orders per page and, unless the store was granted access to all orders, only the last 60 days.
+ * - Buyer fields (`customer` and addresses) are null when the store's approval does not cover buyer data.
+ *
  */
 export const listCommerceOrders = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCommerceOrdersData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListCommerceOrdersResponse, ListCommerceOrdersError, ThrowOnError>({
@@ -18421,11 +20381,10 @@ export const getCommerceOrder = <ThrowOnError extends boolean = false>(options: 
 /**
  * List products
  * Lists the store's products with their variants, options and images.
- * Cursor-paginated: pass `limit` (1-100, default 20) and the `cursor`
- * from a previous response's `nextCursor`, which is null on the last page.
- * Filter with `status` and/or `query` (the platform's product search
- * syntax, passed through verbatim). A status the platform has no
- * equivalent of returns an empty page.
+ *
+ * - Cursor-paginated: pass `limit` (1-100, default 20) and the `cursor` from a previous response's `nextCursor`, which is null on the last page.
+ * - Filter with `status` and/or `query` (the platform's product search syntax, passed through verbatim).
+ * - A status the platform has no equivalent of returns an empty page.
  *
  */
 export const listCommerceProducts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCommerceProductsData, ThrowOnError>) => {
@@ -18437,11 +20396,11 @@ export const listCommerceProducts = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Create a product
- * Creates a product with its options and variants. `status` defaults to
- * `draft`: no platform offers a sandbox for product writes, so nothing
- * goes on sale unless you ask for `active`. A product without `options`
- * has exactly one variant. Images are fetched by the platform from the
- * given URLs and may appear on the product a few seconds later.
+ * Creates a product with its options and variants.
+ *
+ * - `status` defaults to `draft`: no platform offers a sandbox for product writes, so nothing goes on sale unless you ask for `active`.
+ * - A product without `options` has exactly one variant.
+ * - Images are fetched by the platform from the given URLs and may appear on the product a few seconds later.
  *
  */
 export const createCommerceProduct = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCommerceProductData, ThrowOnError>) => {
@@ -19239,20 +21198,21 @@ export const listCommerceCatalogSyncs = <ThrowOnError extends boolean = false>(o
 
 /**
  * Sync a store into a Meta catalog
- * Keeps a Meta product catalog in sync with the store, for catalog ads
- * (`goal: catalog_sales`) and Shops. The first full run starts right
- * away in the background; `runStatus` and the item counts report its
- * outcome. Every active product variant that is published to the online
- * store and has an image becomes a catalog item, grouped by product
- * (`item_group_id`). After that, product changes on the store update
- * the catalog within minutes, and a daily full run removes items for
- * products or variants the store no longer has. Items are namespaced to
- * the store, so a catalog can take several stores and a run never
- * touches items it did not create.
+ * Keeps a Meta product catalog in sync with the store, for catalog ads (`goal: catalog_sales`) and Shops.
  *
- * `catalogAccountId` is a connected facebook, instagram or metaads
- * account whose Meta login can manage the catalog (the catalog_management
- * permission); find catalogs with `GET /v1/ads/catalogs`.
+ * ### How the sync runs
+ *
+ * 1. The first full run starts right away in the background; `runStatus` and the item counts report its outcome.
+ * 2. After that, product changes on the store update the catalog within minutes.
+ * 3. A daily full run removes items for products or variants the store no longer has.
+ *
+ * Every active product variant that is published to the online store and has an image becomes a catalog item, grouped by product (`item_group_id`).
+ *
+ * Items are namespaced to the store, so a catalog can take several stores and a run never touches items it did not create.
+ *
+ * ### Catalog account
+ *
+ * `catalogAccountId` is a connected facebook, instagram or metaads account whose Meta login can manage the catalog (the catalog_management permission). Find catalogs with `GET /v1/ads/catalogs`.
  *
  */
 export const createCommerceCatalogSync = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCommerceCatalogSyncData, ThrowOnError>) => {
@@ -19297,32 +21257,26 @@ export const runCommerceCatalogSync = <ThrowOnError extends boolean = false>(opt
 
 /**
  * Send a verification code
- * Generate a one-time code, deliver it to the recipient, and store only
- * its hash. Check the user-typed code with
- * POST /v1/verify/verifications/{verificationId}/check.
+ * Generate a one-time code, deliver it to the recipient, and store only its hash. Check the user-typed code with POST /v1/verify/verifications/{verificationId}/check.
  *
- * Re-POSTing for the same (channel, to) while a verification is active
- * RESENDS a fresh code on the existing verification (200 with
- * `resend: true`) instead of creating a new one; resends are limited to
- * one per 60 seconds (429 with `retryAfterSeconds` inside the cooldown).
- * The stored brandName/codeLength/ttlMinutes win on a resend.
+ * ### Resends
  *
- * Codes deliver from a number on your account (`from` optional when
- * you own exactly one number on the channel), always with a fixed
- * template:
+ * Re-POSTing for the same (channel, to) while a verification is active RESENDS a fresh code on the existing verification (200 with `resend: true`) instead of creating a new one.
  *
- * - `sms`: from an SMS-enabled number. Each accepted send bills one
- * verification fee plus the standard message rate.
- * - `whatsapp`: from a connected WhatsApp number, as a Meta
- * AUTHENTICATION template with a copy-code button. The first
- * WhatsApp verification on a WhatsApp Business Account creates the
- * `zernio_verify_code` template there and answers 422
- * `template_pending` until Meta approves it (usually minutes; retry
- * after `retryAfterSeconds`). Meta fixes the message text, so
- * `brandName` is not shown and the code's validity is not stated in
- * the message (`ttlMinutes` is still enforced). Each accepted send
- * bills one verification fee; Meta bills its authentication rate to
- * your WhatsApp Business Account.
+ * Resends are limited to one per 60 seconds (429 with `retryAfterSeconds` inside the cooldown). The stored brandName/codeLength/ttlMinutes win on a resend.
+ *
+ * ### Channels
+ *
+ * Codes deliver from a number on your account (`from` optional when you own exactly one number on the channel), always with a fixed template.
+ *
+ * - `sms`: from an SMS-enabled number. Each accepted send bills one verification fee plus the standard message rate.
+ * - `whatsapp`: from a connected WhatsApp number, as a Meta AUTHENTICATION template with a copy-code button. Each accepted send bills one verification fee; Meta bills its authentication rate to your WhatsApp Business Account.
+ *
+ * ### WhatsApp template
+ *
+ * The first WhatsApp verification on a WhatsApp Business Account creates the `zernio_verify_code` template there. It answers 422 `template_pending` until Meta approves it (usually minutes; retry after `retryAfterSeconds`).
+ *
+ * Meta fixes the message text, so `brandName` is not shown and the code's validity is not stated in the message (`ttlMinutes` is still enforced).
  *
  */
 export const createVerification = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateVerificationData, ThrowOnError>) => {
@@ -19429,13 +21383,35 @@ export const downloadTikTokVideo = <ThrowOnError extends boolean = false>(option
 
 /**
  * Prepare media for a platform
- * Turn any image or video into a version the target platform accepts, using the same per-platform processing Zernio runs before publishing. Each team can prepare up to 60 files per hour; past that the endpoint answers 429 with `retryAfterSeconds`.
+ * Turn any image or video into a version the target platform accepts, using the same per-platform processing Zernio runs before publishing.
  *
- * What each target does to a video: `instagram`, `facebook_reel` re-encode to H.264 Main 4.1, 30 fps, 1080 wide (HDR sources only get the size step, so they are not flattened to SDR). `instagram_story` re-encodes a video over 100MB to fit 60 seconds and 100MB. `facebook_story` reframes anything wider than 9:16 onto a 1080x1920 canvas with a blurred background (Facebook otherwise publishes such stories with 0 seconds of video and no error). `threads` re-encodes to the conservative H.264 Baseline profile Threads processes reliably. `bluesky` re-encodes to 1080 wide and at most 180 seconds, then compresses under 50MB if the result is still larger. `telegram` compresses to 50MB and moves the index to the start of the file. The other targets compress only when the file is over the platform limit.
+ * Each team can prepare up to 60 files per hour; past that the endpoint answers 429 with `retryAfterSeconds`.
  *
- * Images are converted to a format the platform ingests (Instagram takes only JPEG, LinkedIn and Google Business reject WebP and AVIF) and compressed under its size limit; `telegram` also fits the width plus height limit and `googlebusiness` enlarges images under its minimum size.
+ * ### Video, per target
  *
- * When the file already complies, `changed` is false and `url` is the input URL (after redirects). Otherwise `url` points to the prepared file in Zernio storage, kept under the same retention as uploaded media. The request is synchronous: a long video can take a few minutes. Videos over 200MB are refused with 413, and a video URL whose host sends no Content-Length is refused with 400.
+ * - `instagram`, `facebook_reel`: re-encode to H.264 Main 4.1, 30 fps, 1080 wide (HDR sources only get the size step, so they are not flattened to SDR).
+ * - `instagram_story`: re-encodes a video over 100MB to fit 60 seconds and 100MB.
+ * - `facebook_story`: reframes anything wider than 9:16 onto a 1080x1920 canvas with a blurred background (Facebook otherwise publishes such stories with 0 seconds of video and no error).
+ * - `threads`: re-encodes to the conservative H.264 Baseline profile Threads processes reliably.
+ * - `bluesky`: re-encodes to 1080 wide and at most 180 seconds, then compresses under 50MB if the result is still larger.
+ * - `telegram`: compresses to 50MB and moves the index to the start of the file.
+ * - Other targets compress only when the file is over the platform limit.
+ *
+ * ### Images
+ *
+ * Images are converted to a format the platform ingests (Instagram takes only JPEG; LinkedIn and Google Business reject WebP and AVIF) and compressed under its size limit.
+ *
+ * - `telegram` also fits the width plus height limit.
+ * - `googlebusiness` enlarges images under its minimum size.
+ *
+ * ### Result
+ *
+ * When the file already complies, `changed` is false and `url` is the input URL (after redirects). Otherwise `url` points to the prepared file in Zernio storage, kept under the same retention as uploaded media.
+ *
+ * The request is synchronous: a long video can take a few minutes.
+ *
+ * - Videos over 200MB are refused with 413.
+ * - A video URL whose host sends no Content-Length is refused with 400.
  *
  */
 export const prepareMedia = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PrepareMediaData, ThrowOnError>) => {
@@ -19447,7 +21423,15 @@ export const prepareMedia = <ThrowOnError extends boolean = false>(options: Opti
 
 /**
  * List API changelog entries
- * The API changelog, newest first. No API key needed; one address may make 120 requests a minute. Each entry is what the `api.changelog.published` webhook delivered: the announcement in `message`, its `impact` on existing integrations, and in `changes` the deterministic diff of the OpenAPI spec (operations and schemas added, removed and modified) for automation to act on. Page with `before` set to the previous page's `nextCursor`.
+ * The API changelog, newest first. No API key needed; one address may make 120 requests a minute.
+ *
+ * Each entry is what the `api.changelog.published` webhook delivered:
+ *
+ * - `message`: the announcement
+ * - `impact`: its impact on existing integrations
+ * - `changes`: the deterministic diff of the OpenAPI spec (operations and schemas added, removed and modified) for automation to act on
+ *
+ * Page with `before` set to the previous page's `nextCursor`.
  *
  */
 export const listChangelog = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListChangelogData, ThrowOnError>) => {
@@ -19515,11 +21499,13 @@ export const updateCreatorCampaign = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Raise creator campaign budget
- * Raises the budget of a campaign that is `draft`, `active` or `paused`. Only the budget changes; the pay
- * terms stay as creators joined them, which `PATCH` refuses to change once the campaign is live. The new
- * `budgetCents` must be above the current budget, otherwise 400 `invalid_field_value`. When it is also above what
- * the campaign has spent, `budgetExhaustedAt` is cleared and earnings that stopped at the old budget resume. A
- * closed campaign answers 409 `invalid_resource_state`.
+ * Raises the budget of a campaign that is `draft`, `active` or `paused`.
+ *
+ * Only the budget changes. The pay terms stay as creators joined them, which `PATCH` refuses to change once the campaign is live.
+ *
+ * - The new `budgetCents` must be above the current budget, otherwise 400 `invalid_field_value`.
+ * - When it is also above what the campaign has spent, `budgetExhaustedAt` is cleared and earnings that stopped at the old budget resume.
+ * - A closed campaign answers 409 `invalid_resource_state`.
  *
  */
 export const raiseCreatorCampaignBudget = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RaiseCreatorCampaignBudgetData, ThrowOnError>) => {
@@ -19558,11 +21544,11 @@ export const pauseCreatorCampaign = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Close creator campaign
- * Closes an `active` or `paused` campaign for good and fires `creator_campaign.closed`. Open
- * tracking windows are cancelled. A pool campaign is split among participants at this moment by
- * their approved eligible views, so closing a pool campaign answers 409 while any post still
- * awaits review. A campaign also closes by itself once `endsAt` passed and every tracking window
- * had its final read.
+ * Closes an `active` or `paused` campaign for good and fires `creator_campaign.closed`. Open tracking windows are cancelled.
+ *
+ * A pool campaign is split among participants at this moment by their approved eligible views. Closing a pool campaign therefore answers 409 while any post still awaits review.
+ *
+ * A campaign also closes by itself once `endsAt` passed and every tracking window had its final read.
  *
  */
 export const closeCreatorCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CloseCreatorCampaignData, ThrowOnError>) => {
@@ -19574,14 +21560,19 @@ export const closeCreatorCampaign = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Invite campaign participant
- * Invites one creator and returns their personal invite URL. Send it to the creator: on that
- * page they connect their accounts (read-only), submit posts and see their earnings. The URL is
- * returned only here; inviting again creates no second link (409 for a creator already in the
- * campaign). A creator is matched by email within your workspace, so the same person keeps one
- * identity across your campaigns.
+ * Invites one creator and returns their personal invite URL.
  *
- * Answers 409 on a closed campaign and 403 `feature_not_available` once `caps.maxParticipants`
- * is reached.
+ * Send the URL to the creator. On that page they connect their accounts (read-only), submit posts and see their earnings.
+ *
+ * ### Invite rules
+ *
+ * - The URL is returned only here; inviting again creates no second link.
+ * - A creator is matched by email within your workspace, so the same person keeps one identity across your campaigns.
+ *
+ * ### Errors
+ *
+ * - 409: the creator is already in the campaign, or the campaign is closed.
+ * - 403 `feature_not_available`: `caps.maxParticipants` is reached.
  *
  */
 export const createCampaignParticipant = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCampaignParticipantData, ThrowOnError>) => {
@@ -19655,35 +21646,39 @@ export const removeCampaignParticipant = <ThrowOnError extends boolean = false>(
 /**
  * Settle campaign participant
  * Records a payout of the participant's payable balance and fires `campaign_payout.settled`.
- * Omit `amountCents` to settle the whole payable balance; an amount above it answers 400, and
- * nothing payable answers 409.
+ *
+ * Omit `amountCents` to settle the whole payable balance. An amount above it answers 400, and nothing payable answers 409. Send an `Idempotency-Key` so a retry never records the payout twice.
+ *
+ * ### Settlement modes
  *
  * - `none` settlement: records a payout you made elsewhere.
- * - `external` settlement: pay from your own rails when `campaign_payout.payable` fires, then
- * call this with your payout id in `externalReference` (required in this mode).
- * - `treasury` settlement: transfers the amount from your Zernio balance to the creator's
- * connected Stripe account, then records it with the Stripe transfer id as `externalReference`.
- * The transfer fee (4%, $0.50 minimum) is added on top: the creator receives the full amount
- * and your balance is debited `totalCents`. The creator must have finished payout setup from
- * their campaign page (409 otherwise), and a balance that does not cover the amount plus the
- * fee answers 402. While Stripe confirms the transfer the amount sits in the participant's
- * `settling` balance: a reject in that window cannot reverse it. If Stripe refuses the transfer
- * the amount returns to payable; if Stripe does not answer, the amount stays in `settling` and
- * the next settle call for this participant finishes that payout first (even with nothing
- * payable left). A retry asking for a different `amountCents` than the payout in progress
- * answers 409 with the amount in progress, and a settle while another request is still
- * waiting on Stripe for the same payout answers 409 ("This payout is being sent to Stripe
- * right now. Try again in a minute."). A payout Stripe has not confirmed after 24 hours answers
- * 409 ("This payout is being confirmed with Stripe. Try again after the next reconciliation
- * (within 24 hours).") until the daily reconciliation finishes it: settled if Stripe made the
- * transfer, returned to payable if it did not.
- * Set `recordOnly: true` to record a payout you made yourself instead of moving money through
- * the treasury (the webhook then carries `recorded: true`).
- * A treasury payout needs an owner, admin or billing admin, signed in or through a full-access
- * key they created (403 otherwise); recording with `recordOnly` does not. A creator held by an unfinished
- * payout batch answers 409 ("This creator is in a card payout that is not finished yet.").
+ * - `external` settlement: pay from your own rails when `campaign_payout.payable` fires, then call this with your payout id in `externalReference` (required in this mode).
+ * - `treasury` settlement: transfers the amount from your Zernio balance to the creator's connected Stripe account, then records it with the Stripe transfer id as `externalReference`.
  *
- * Send an `Idempotency-Key` so a retry never records the payout twice.
+ * ### Treasury payouts
+ *
+ * The transfer fee (4%, $0.50 minimum) is added on top: the creator receives the full amount and your balance is debited `totalCents`.
+ *
+ * - The creator must have finished payout setup from their campaign page (409 otherwise).
+ * - A balance that does not cover the amount plus the fee answers 402.
+ *
+ * Set `recordOnly: true` to record a payout you made yourself instead of moving money through the treasury (the webhook then carries `recorded: true`).
+ *
+ * A treasury payout needs an owner, admin or billing admin, signed in or through a full-access key they created (403 otherwise). Recording with `recordOnly` does not.
+ *
+ * #### While Stripe confirms the transfer
+ *
+ * The amount sits in the participant's `settling` balance; a reject in that window cannot reverse it.
+ *
+ * - If Stripe refuses the transfer, the amount returns to payable.
+ * - If Stripe does not answer, the amount stays in `settling`. The next settle call for this participant finishes that payout first (even with nothing payable left).
+ *
+ * #### Conflicts (409)
+ *
+ * - A retry asking for a different `amountCents` than the payout in progress answers 409 with the amount in progress.
+ * - A settle while another request is still waiting on Stripe for the same payout answers 409 ("This payout is being sent to Stripe right now. Try again in a minute.").
+ * - A payout Stripe has not confirmed after 24 hours answers 409 ("This payout is being confirmed with Stripe. Try again after the next reconciliation (within 24 hours).") until the daily reconciliation finishes it: settled if Stripe made the transfer, returned to payable if it did not.
+ * - A creator held by an unfinished payout batch answers 409 ("This creator is in a card payout that is not finished yet.").
  *
  */
 export const settleCampaignParticipant = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SettleCampaignParticipantData, ThrowOnError>) => {
@@ -19695,18 +21690,25 @@ export const settleCampaignParticipant = <ThrowOnError extends boolean = false>(
 
 /**
  * Pay creators with one card payment
- * Pays exactly what is owed: every payable creator of a `treasury` campaign who finished payout
- * setup (or only `participantIds`, minus `excludeParticipantIds`) is held in `settling`, and the
- * response carries a Stripe Checkout `url` for the total plus the fee (4% per creator, 50 cent
- * minimum). Once the card payment completes, each creator gets a transfer funded by that charge
- * and the batch ends `paid` or `partially_failed`. A creator whose payouts were disabled before
- * the payment landed is skipped and stays payable. If the Checkout expires unpaid (24 hours),
- * every amount is payable again.
+ * Pays exactly what is owed to the creators of a `treasury` campaign, through one Stripe Checkout card payment.
  *
- * Card payouts are limited to $2,000.00 gross per rolling 30 days by default; over it the call
- * answers 402 ("Over your instant payout limit. Top up your balance to pay more this month, or
- * contact support to raise the limit."). Nothing payable answers 400 ("Nothing is payable.").
+ * ### How it works
+ *
+ * 1. Every payable creator who finished payout setup (or only `participantIds`, minus `excludeParticipantIds`) is held in `settling`.
+ * 2. The response carries a Stripe Checkout `url` for the total plus the fee (4% per creator, 50 cent minimum).
+ * 3. Once the card payment completes, each creator gets a transfer funded by that charge, and the batch ends `paid` or `partially_failed`.
+ *
+ * A creator whose payouts were disabled before the payment landed is skipped and stays payable. If the Checkout expires unpaid (24 hours), every amount is payable again.
+ *
+ * ### Limits and errors
+ *
+ * - 402: card payouts are limited to $2,000.00 gross per rolling 30 days by default. Over it the call answers "Over your instant payout limit. Top up your balance to pay more this month, or contact support to raise the limit."
+ * - 400: nothing payable ("Nothing is payable.").
+ *
+ * ### Access and retries
+ *
  * Needs an owner, admin or billing admin, signed in or through a full-access key they created.
+ *
  * Send an `Idempotency-Key` so a retry never opens a second batch.
  *
  */
@@ -19770,12 +21772,20 @@ export const getCampaignSubmission = <ThrowOnError extends boolean = false>(opti
 
 /**
  * Approve campaign submission
- * Approves a `tracking` or `pending_review` submission of an active campaign and fires
- * `campaign_submission.approved`. The Zernio dashboard offers Approve only on `pending_review`
- * (a post that needs a decision) and waits for `tracking` posts to get there; the API accepts
- * `tracking` so an integration can approve early. What the post earned so far moves to owed and is held for the
- * campaign's `holdDays`; later earnings post straight to owed. A per-post campaign pays
- * `perApprovedPostCents` here. Any other state answers 409. The same post approved in another of your campaigns also answers 409 (`invalid_resource_state`, "This post is already approved in another campaign of yours."), so one post never earns twice.
+ * Approves a `tracking` or `pending_review` submission of an active campaign and fires `campaign_submission.approved`.
+ *
+ * The Zernio dashboard offers Approve only on `pending_review` (a post that needs a decision) and waits for `tracking` posts to get there. The API accepts `tracking` so an integration can approve early.
+ *
+ * ### Earnings
+ *
+ * - What the post earned so far moves to owed and is held for the campaign's `holdDays`.
+ * - Later earnings post straight to owed.
+ * - A per-post campaign pays `perApprovedPostCents` here.
+ *
+ * ### Errors
+ *
+ * - 409: the submission is in any other state.
+ * - 409 (`invalid_resource_state`, "This post is already approved in another campaign of yours."): the same post was approved in another of your campaigns, so one post never earns twice.
  *
  */
 export const approveCampaignSubmission = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ApproveCampaignSubmissionData, ThrowOnError>) => {
@@ -19801,11 +21811,18 @@ export const rejectCampaignSubmission = <ThrowOnError extends boolean = false>(o
 
 /**
  * Reopen campaign submission
- * Puts a rejected submission back to `pending_review` so it can be decided again. Its tracking
- * window resumes, so it works only while that window has not ended; otherwise 409 `invalid_resource_state`
- * ("This post's tracking window has ended."). A post that earned money which was already paid
- * out cannot be reopened, and neither can a post of a closed campaign. Reopening a submission that is
- * already `pending_review` returns it unchanged; any other status answers 409. No webhook fires.
+ * Puts a rejected submission back to `pending_review` so it can be decided again. No webhook fires.
+ *
+ * Its tracking window resumes, so it works only while that window has not ended.
+ *
+ * ### When it can't be reopened
+ *
+ * - The tracking window has ended: 409 `invalid_resource_state` ("This post's tracking window has ended.").
+ * - A post that earned money which was already paid out cannot be reopened.
+ * - A post of a closed campaign cannot be reopened.
+ * - Any status other than rejected or `pending_review` answers 409.
+ *
+ * Reopening a submission that is already `pending_review` returns it unchanged.
  *
  */
 export const reopenCampaignSubmission = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReopenCampaignSubmissionData, ThrowOnError>) => {
@@ -19844,10 +21861,15 @@ export const createCampaignAdjustment = <ThrowOnError extends boolean = false>(o
 
 /**
  * List campaign ledger
- * Lists ledger entries, newest first. Without `participantId` it lists every entry of the campaign:
- * earnings drawn from the budget (accruals, per-post payments, pool shares, adjustments), the
- * approvals, hold releases and settlements that move money between its participants' buckets, and
- * their reversals. Pass `participantId` to narrow the list to one participant's entries.
+ * Lists ledger entries, newest first.
+ *
+ * Without `participantId` it lists every entry of the campaign:
+ *
+ * - earnings drawn from the budget (accruals, per-post payments, pool shares, adjustments)
+ * - the approvals, hold releases and settlements that move money between its participants' buckets
+ * - their reversals
+ *
+ * Pass `participantId` to narrow the list to one participant's entries.
  *
  */
 export const listCampaignLedger = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCampaignLedgerData, ThrowOnError>) => {

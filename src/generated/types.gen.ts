@@ -123,7 +123,19 @@ export type Ad = {
      */
     status?: (AdStatus);
     /**
-     * The ad's own on/off switch as configured on the platform, independent of its parents: an ACTIVE ad under a paused ad set or campaign still reads ACTIVE here while `status` reads `paused`. Sources: Meta `configured_status`, TikTok ad `operation_status` (ENABLE -> ACTIVE, DISABLE -> PAUSED), ChatGPT (OpenAI) ad `status` (ACTIVE / PAUSED, plus ARCHIVED on OpenAI), Reddit `configured_status` (ACTIVE / PAUSED / ARCHIVED). On create it is read back from the platform, not copied from the request: a `PAUSED` create pauses only the top-most object it creates, so an ad under a new paused campaign or ad set reads ACTIVE here with `status: paused`, and only an ad attached to an existing ad set reads PAUSED. Distinct from `status`, which is the ancestor-cascaded delivery status. Only present for Meta, TikTok, OpenAI and Reddit ads created or synced after the field was added for that platform; null otherwise.
+     * The ad's own on/off switch as configured on the platform, independent of its parents. An ACTIVE ad under a paused ad set or campaign still reads ACTIVE here while `status` reads `paused`.
+     *
+     * **Sources:**
+     *
+     * - Meta: `configured_status`.
+     * - TikTok: ad `operation_status` (ENABLE -> ACTIVE, DISABLE -> PAUSED).
+     * - ChatGPT (OpenAI): ad `status` (ACTIVE / PAUSED, plus ARCHIVED on OpenAI).
+     * - Reddit: `configured_status` (ACTIVE / PAUSED / ARCHIVED).
+     *
+     * On create it is read back from the platform, not copied from the request. A `PAUSED` create pauses only the top-most object it creates, so an ad under a new paused campaign or ad set reads ACTIVE with `status: paused`; only an ad attached to an existing ad set reads PAUSED.
+     *
+     * Distinct from `status`, the ancestor-cascaded delivery status. Present only for Meta, TikTok, OpenAI and Reddit ads created or synced after the field was added for that platform; null otherwise.
+     *
      */
     configuredStatus?: (string) | null;
     /**
@@ -136,7 +148,14 @@ export type Ad = {
      */
     creativeType?: ('carousel' | 'video' | 'document' | 'image') | null;
     /**
-     * Available goals vary by platform. Meta (Facebook/Instagram) supports all 11 (incl. `lead_conversion` = website pixel lead optimization, `catalog_sales` = Advantage+ catalog ads `page_likes` = Page Likes conversion location under Engagement and `page_visits` = Page visits and followers under Traffic). TikTok supports engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion. LinkedIn supports all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes / page_visits. X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest supports only engagement, traffic, awareness, video_views. Google Ads supports only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
+     * Available goals vary by platform:
+     *
+     * - **Meta (Facebook/Instagram):** all 11, including `lead_conversion` (website pixel lead optimization), `catalog_sales` (Advantage+ catalog ads), `page_likes` (Page Likes conversion location under Engagement) and `page_visits` (Page visits and followers under Traffic).
+     * - **TikTok:** engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion.
+     * - **LinkedIn:** all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes / page_visits.
+     * - **X:** engagement, traffic, awareness, video_views, app_promotion.
+     * - **Pinterest:** only engagement, traffic, awareness, video_views.
+     * - **Google Ads:** only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
      */
     goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits' | 'job_applicants';
     /**
@@ -188,41 +207,33 @@ export type Ad = {
      * What the delivery system optimizes for, at ad-set level. The value space depends on `platform`:
      *
      * - Meta: ad set `optimization_goal` (e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION, LINK_CLICKS).
-     * - LinkedIn: the campaign's EFFECTIVE `optimizationTargetType`, refreshed from LinkedIn on every
-     * sync rather than echoing what was passed on create. `NONE` means manual bidding, and it is a
-     * real value, not missing data. Auto-bid values are MAX_IMPRESSION / MAX_CLICK / MAX_CONVERSION /
-     * MAX_VIDEO_VIEW / MAX_LEAD / MAX_REACH; target-cost values are TARGET_COST_PER_CLICK /
-     * TARGET_COST_PER_IMPRESSION / TARGET_COST_PER_VIDEO_VIEW; cost-cap values are the
-     * CAP_COST_AND_MAXIMIZE_* family.
+     * - LinkedIn: the campaign's EFFECTIVE `optimizationTargetType`, refreshed from LinkedIn on every sync rather than echoing the create input. `NONE` means manual bidding: a real value, not missing data.
+     * - LinkedIn auto-bid values: MAX_IMPRESSION / MAX_CLICK / MAX_CONVERSION / MAX_VIDEO_VIEW / MAX_LEAD / MAX_REACH.
+     * - LinkedIn target-cost values: TARGET_COST_PER_CLICK / TARGET_COST_PER_IMPRESSION / TARGET_COST_PER_VIDEO_VIEW. Cost-cap values: the CAP_COST_AND_MAXIMIZE_* family.
      *
      */
     optimizationGoal?: (string) | null;
     /**
-     * LinkedIn only. The campaign's EFFECTIVE cost model (billing event) as applied by LinkedIn,
-     * refreshed on every sync rather than echoing what was passed on create. One of `CPM` (cost per
-     * thousand impressions), `CPC` (cost per click) or `CPV` (cost per video view). On LinkedIn this is
-     * the axis that pairs with `bidAmount`; there is no `bidStrategy`. For campaign type
-     * SPONSORED_INMAILS, `CPM` bills as cost-per-send x 1000. `null` for non-LinkedIn ads.
+     * LinkedIn only. The campaign's EFFECTIVE cost model (billing event) as applied by LinkedIn, refreshed on every sync rather than echoing what was passed on create. `null` for non-LinkedIn ads.
+     *
+     * - `CPM`: cost per thousand impressions. For campaign type SPONSORED_INMAILS, `CPM` bills as cost-per-send x 1000.
+     * - `CPC`: cost per click.
+     * - `CPV`: cost per video view.
+     *
+     * On LinkedIn this is the axis that pairs with `bidAmount`; there is no `bidStrategy`.
      *
      */
     costType?: (string) | null;
     /**
-     * LinkedIn only. Why the parent campaign is (or is not) delivering, verbatim from LinkedIn.
-     * A campaign can report `status: ACTIVE` and still serve nothing; this array is what says so.
+     * LinkedIn only. Why the parent campaign is (or is not) delivering, verbatim from LinkedIn. A campaign can report `status: ACTIVE` and still serve nothing; this array says so.
      *
-     * - `[]` means no serving data: a non-LinkedIn ad, or a LinkedIn ad not yet re-synced.
-     * - `["RUNNABLE"]` means the campaign is eligible to serve.
-     * - Anything else is a hold. Known values include ACCOUNT_SERVING_HOLD, ACCOUNT_TOTAL_BUDGET_HOLD,
-     * ACCOUNT_END_DATE_HOLD, CAMPAIGN_START_DATE_HOLD, CAMPAIGN_END_DATE_HOLD,
-     * CAMPAIGN_TOTAL_BUDGET_HOLD, CAMPAIGN_AUDIENCE_COUNT_HOLD, CAMPAIGN_GROUP_START_DATE_HOLD,
-     * CAMPAIGN_GROUP_END_DATE_HOLD, CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD, CAMPAIGN_GROUP_STATUS_HOLD and
-     * STOPPED. The list is open on purpose, so treat unrecognized values as holds rather than errors.
+     * - `[]`: no serving data (a non-LinkedIn ad, or a LinkedIn ad not yet re-synced).
+     * - `["RUNNABLE"]`: the campaign is eligible to serve.
+     * - Anything else is a hold. Known values: ACCOUNT_SERVING_HOLD, ACCOUNT_TOTAL_BUDGET_HOLD, ACCOUNT_END_DATE_HOLD, CAMPAIGN_START_DATE_HOLD, CAMPAIGN_END_DATE_HOLD, CAMPAIGN_TOTAL_BUDGET_HOLD, CAMPAIGN_AUDIENCE_COUNT_HOLD, CAMPAIGN_GROUP_START_DATE_HOLD, CAMPAIGN_GROUP_END_DATE_HOLD, CAMPAIGN_GROUP_TOTAL_BUDGET_HOLD, CAMPAIGN_GROUP_STATUS_HOLD, STOPPED.
      *
-     * The end-date and total-budget holds are terminal and surface as `status: completed`; the rest
-     * surface as `status: paused`. A hold is not the only cause of zero delivery: with
-     * manual, target-cost or cost-cap bidding, a `bidAmount` of 0 stops delivery while
-     * `servingStatuses` still reads `["RUNNABLE"]`. Check `costType` / `bidAmount` /
-     * `optimizationGoal` as well.
+     * The list is open on purpose: treat unrecognized values as holds, not errors. End-date and total-budget holds are terminal and surface as `status: completed`; the rest surface as `status: paused`.
+     *
+     * A hold is not the only cause of zero delivery: with manual, target-cost or cost-cap bidding, a `bidAmount` of 0 stops delivery while `servingStatuses` still reads `["RUNNABLE"]`. Check `costType` / `bidAmount` / `optimizationGoal` as well.
      *
      */
     servingStatuses?: Array<(string)>;
@@ -235,11 +246,11 @@ export type Ad = {
      */
     platformAdAccountName?: (string) | null;
     /**
-     * Platform-reported creation timestamp (Meta `created_time`, TikTok `create_time`).
-     * Distinct from `createdAt` which reflects when Zernio first synced the doc. To
-     * sort or filter by "when the ad was actually created on the platform", read this field.
-     * `null` for legacy ads synced before this field was added; aggregations fall back
-     * to `createdAt` in that case.
+     * Platform-reported creation timestamp (Meta `created_time`, TikTok `create_time`). Read this field to sort or filter by when the ad was actually created on the platform.
+     *
+     * Distinct from `createdAt`, which is when Zernio first synced the doc.
+     *
+     * `null` for legacy ads synced before this field was added; aggregations then fall back to `createdAt`.
      *
      */
     platformCreatedAt?: (string) | null;
@@ -255,17 +266,10 @@ export type Ad = {
     /**
      * Bid amount in WHOLE currency units of the ad account (USD: 5 = $5.00; JPY: 100 = ¥100).
      *
-     * - Meta source: `bid_amount` on the ad set (smallest-denomination int, decoded here). Populated
-     * when bidStrategy is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`; `null` for auto-bid
-     * (`LOWEST_COST_WITHOUT_CAP`).
-     * - TikTok source: priority order `bid_price` -> `conversion_bid_price` -> `deep_cpa_bid`
-     * (whichever is set on the ad group). TikTok stores all three in whole currency units.
-     * - LinkedIn source: the campaign's EFFECTIVE `unitCost`, refreshed on every sync rather than
-     * echoing what was passed on create. Its meaning depends on the bidding mode implied by
-     * `optimizationGoal`: bid amount (manual), target cost, or cost cap. It pairs with `costType`,
-     * NOT with `bidStrategy`, which LinkedIn does not have. A value of `0` is a real, delivery-
-     * stopping configuration and not "unset", so do not gate this field on `bidStrategy` for
-     * LinkedIn ads.
+     * - Meta: `bid_amount` on the ad set (smallest-denomination int, decoded here). Populated when bidStrategy is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`; `null` for auto-bid (`LOWEST_COST_WITHOUT_CAP`).
+     * - TikTok: priority order `bid_price` -> `conversion_bid_price` -> `deep_cpa_bid` (whichever is set on the ad group). TikTok stores all three in whole currency units.
+     * - LinkedIn: the campaign's EFFECTIVE `unitCost`, refreshed on every sync rather than echoing what was passed on create. Its meaning depends on the bidding mode implied by `optimizationGoal`: bid amount (manual), target cost, or cost cap.
+     * - LinkedIn pairing: it pairs with `costType`, NOT with `bidStrategy`, which LinkedIn does not have. A value of `0` is a real, delivery-stopping configuration, not "unset", so do not gate this field on `bidStrategy` for LinkedIn ads.
      *
      * Source: facebook-business-sdk-codegen api_specs/specs/AdSet.json (`bid_amount`).
      *
@@ -436,15 +440,11 @@ export type Ad = {
          */
         mediaUrls?: Array<(string)>;
         /**
-         * Meta only today. The carousel's cards in the order the ad shows them, one per
-         * Meta `link_data.child_attachments` entry, using the same field names as the
-         * `carouselCards` create input. On a carousel synced from Meta, `imageUrl` is resolved
-         * exactly like `mediaUrls` (the stable `/adimages` permalink first), so the cards that
-         * carry an image line up with `mediaUrls` in order; a card whose image Meta does not
-         * resolve keeps its place without `imageUrl`. On a carousel created through Zernio
-         * it starts as the cards you sent. Absent on non-carousel ads and on
-         * other platforms. Synced carousels stored before this field existed fill it in on
-         * their next sync.
+         * Meta only today. The carousel's cards in display order, one per Meta `link_data.child_attachments` entry, using the same field names as the `carouselCards` create input. Absent on non-carousel ads and other platforms.
+         *
+         * - Synced from Meta: `imageUrl` is resolved exactly like `mediaUrls` (the stable `/adimages` permalink first), so cards with an image line up with `mediaUrls` in order. A card whose image Meta does not resolve keeps its place without `imageUrl`.
+         * - Created through Zernio: starts as the cards you sent.
+         * - Synced carousels stored before this field existed fill it in on their next sync.
          *
          */
         carouselCards?: Array<{
@@ -482,17 +482,25 @@ export type Ad = {
          */
         isServing?: (boolean) | null;
         /**
-         * LinkedIn only. The LinkedIn ad format, in LinkedIn's own vocabulary: STANDARD_UPDATE, SINGLE_VIDEO, CAROUSEL, NATIVE_DOCUMENT, EVENT, TEXT_AD, SPOTLIGHT, FOLLOW_COMPANY, JOBS, SPONSORED_INMAILS and others. On an ad Zernio created this is the format it was created as; on an ad synced from Campaign Manager it is the parent campaign's raw `format`, which is what LinkedIn actually enforces on its creatives. The list is open, so treat an unrecognized value as valid. Absent on LinkedIn ads not yet re-synced, and on every other platform.
+         * LinkedIn only. The LinkedIn ad format, in LinkedIn's own vocabulary: STANDARD_UPDATE, SINGLE_VIDEO, CAROUSEL, NATIVE_DOCUMENT, EVENT, TEXT_AD, SPOTLIGHT, FOLLOW_COMPANY, JOBS, SPONSORED_INMAILS and others. The list is open, so treat an unrecognized value as valid.
+         *
+         * - On an ad Zernio created: the format it was created as.
+         * - On an ad synced from Campaign Manager: the parent campaign's raw `format`, which is what LinkedIn actually enforces on its creatives.
+         *
+         * Absent on LinkedIn ads not yet re-synced, and on every other platform.
          */
         adFormat?: (string) | null;
         /**
          * LinkedIn only. Why this specific creative is not being served. Empty when it is serving.
-         * A superset of the ad-level `servingStatuses`: it repeats the inherited campaign, campaign
-         * group and account holds AND adds creative-only causes such as UNDER_REVIEW, REJECTED,
-         * PROCESSING, PROCESSING_FAILED, FORM_HOLD (lead-gen-form creatives),
-         * REFERRED_CONTENT_QUALITY_HOLD, JOB_POSTING_ON_HOLD and JOB_POSTING_INVALID (job ads).
-         * Some values are format-specific and will never appear on other ad formats. The list is
-         * open, so treat unrecognized values as holds rather than errors.
+         *
+         * A superset of the ad-level `servingStatuses`: it repeats the inherited campaign, campaign group and account holds AND adds creative-only causes, such as:
+         *
+         * - UNDER_REVIEW, REJECTED, PROCESSING, PROCESSING_FAILED;
+         * - FORM_HOLD (lead-gen-form creatives);
+         * - REFERRED_CONTENT_QUALITY_HOLD;
+         * - JOB_POSTING_ON_HOLD and JOB_POSTING_INVALID (job ads).
+         *
+         * Some values are format-specific and will never appear on other ad formats. The list is open, so treat unrecognized values as holds rather than errors.
          *
          */
         servingHoldReasons?: Array<(string)>;
@@ -526,12 +534,11 @@ export type Ad = {
         pinterestDescription?: string;
     } | null;
     /**
-     * The ad set's targeting (age, gender, geo, interests, placements, audience inclusions/exclusions).
-     * For ads created through Zernio this is the spec you supplied. For external ads (synced from
-     * Meta Ads Manager, `isExternal: true`) targeting lives at the ad set and isn't stored at ingest,
-     * so on the first `GET /v1/ads/{adId}` Zernio resolves it live from Meta and caches it on the ad;
-     * the value is then Meta's raw `targeting` shape (snake_case, e.g. `geo_locations`, `age_min`),
-     * the same object Ads Manager shows. May be absent if the ad set exposes no targeting or the lookup fails.
+     * The ad set's targeting (age, gender, geo, interests, placements, audience inclusions/exclusions). May be absent if the ad set exposes no targeting or the lookup fails.
+     *
+     * - Ads created through Zernio: the spec you supplied.
+     * - External ads (synced from Meta Ads Manager, `isExternal: true`): targeting lives at the ad set and isn't stored at ingest. On the first `GET /v1/ads/{adId}` Zernio resolves it live from Meta and caches it on the ad.
+     * - External ads, value shape: Meta's raw `targeting` shape (snake_case, e.g. `geo_locations`, `age_min`), the same object Ads Manager shows.
      *
      */
     targeting?: {
@@ -559,7 +566,14 @@ export type adType = 'boost' | 'standalone';
 export type creativeType = 'carousel' | 'video' | 'document' | 'image';
 
 /**
- * Available goals vary by platform. Meta (Facebook/Instagram) supports all 11 (incl. `lead_conversion` = website pixel lead optimization, `catalog_sales` = Advantage+ catalog ads `page_likes` = Page Likes conversion location under Engagement and `page_visits` = Page visits and followers under Traffic). TikTok supports engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion. LinkedIn supports all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes / page_visits. X supports engagement, traffic, awareness, video_views, app_promotion. Pinterest supports only engagement, traffic, awareness, video_views. Google Ads supports only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
+ * Available goals vary by platform:
+ *
+ * - **Meta (Facebook/Instagram):** all 11, including `lead_conversion` (website pixel lead optimization), `catalog_sales` (Advantage+ catalog ads), `page_likes` (Page Likes conversion location under Engagement) and `page_visits` (Page visits and followers under Traffic).
+ * - **TikTok:** engagement, traffic, awareness, video_views, lead_generation, conversions, app_promotion.
+ * - **LinkedIn:** all Meta goals except app_promotion / lead_conversion / catalog_sales / page_likes / page_visits.
+ * - **X:** engagement, traffic, awareness, video_views, app_promotion.
+ * - **Pinterest:** only engagement, traffic, awareness, video_views.
+ * - **Google Ads:** only engagement, traffic, awareness (video_views is rejected at create with 422 FEATURE_NOT_AVAILABLE).
  */
 export type goal = 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits' | 'job_applicants';
 
@@ -648,7 +662,10 @@ export type AdAnalyticsResponse = {
             message?: string;
         }>;
         /**
-         * TikTok only: TikTok metric names TikTok refused for a breakdown, keyed by the requested breakdown (e.g. total_purchase and total_purchase_value have no relation to platform, ac or language). Every row value derived from a refused metric is null in that breakdown (purchaseValue and roas, or the matching actions and actionValues entries), never a number computed without it. Absent when no metric was refused.
+         * TikTok only: metric names TikTok refused for a breakdown, keyed by the requested breakdown (e.g. total_purchase and total_purchase_value have no relation to platform, ac or language). Absent when no metric was refused.
+         *
+         * Every row value derived from a refused metric is null in that breakdown (purchaseValue and roas, or the matching actions and actionValues entries), never a number computed without it.
+         *
          */
         breakdownDroppedMetrics?: {
             [key: string]: Array<(string)>;
@@ -672,7 +689,15 @@ export type AdAppliedDefaults = {
      */
     name?: string;
     /**
-     * Sent when `goal` was omitted. `lead_generation` with a `leadGenFormId`; `app_promotion` when `promotedObject` names an app; `conversions` with `promotedObject.pixelId` and `customEventType`; `traffic` when the ad has a link (`linkUrl`, a carousel card, `creatives[].linkUrl`, `dynamicCreative.linkUrls` or a LinkedIn carousel card); otherwise `engagement`. Each only when the platform offers it, falling back to `engagement`, then `awareness`, then the platform's first goal. Never inferred with `existingCampaignId`, `smartPlus` or the LinkedIn spotlight, follower and jobs formats: those still return 400 without `goal`.
+     * Sent when `goal` was omitted: the goal Zernio inferred.
+     *
+     * - `lead_generation`: with a `leadGenFormId`.
+     * - `app_promotion`: when `promotedObject` names an app.
+     * - `conversions`: with `promotedObject.pixelId` and `customEventType`.
+     * - `traffic`: when the ad has a link (`linkUrl`, a carousel card, `creatives[].linkUrl`, `dynamicCreative.linkUrls` or a LinkedIn carousel card).
+     * - `engagement`: otherwise.
+     *
+     * Each applies only when the platform offers it, falling back to `engagement`, then `awareness`, then the platform's first goal. Never inferred with `existingCampaignId`, `smartPlus` or the LinkedIn spotlight, follower and jobs formats: those still return 400 without `goal`.
      */
     goal?: string;
     /**
@@ -680,7 +705,11 @@ export type AdAppliedDefaults = {
      */
     budgetType?: 'daily';
     /**
-     * Sent when a lifetime budget had no `endDate`: 7 days after the start. A start with an offset (or no start) gets a UTC instant; an offset-less start gets an offset-less end, read in the ad account timezone like the start; a date-only start gets the date 6 days later, which runs to 23:59:59. A daily budget never gets one and runs until paused.
+     * Sent when a lifetime budget had no `endDate`: 7 days after the start. A daily budget never gets one and runs until paused.
+     *
+     * - A start with an offset (or no start) gets a UTC instant.
+     * - An offset-less start gets an offset-less end, read in the ad account timezone like the start.
+     * - A date-only start gets the date 6 days later, which runs to 23:59:59.
      */
     endDate?: string;
     /**
@@ -723,7 +752,14 @@ export type AdCampaign = {
      */
     statusReadAt?: (string) | null;
     /**
-     * TikTok only, only on GET /v1/ads/campaigns with `live=true` and only on campaigns read live. A fixed subset of TikTok's campaign/get record, not the whole record: campaign_id, operation_status, objective_type, budget_mode (BUDGET_MODE_INFINITE means no campaign budget, so budget lives on the ad groups), budget, and budget_optimize_on, each with TikTok's own value and present only when TikTok returns it. Plus advertiser_currency and advertiser_timezone from TikTok's advertiser/info. Whether the campaign is Upgraded Smart+ is `isSmartPlus`.
+     * TikTok only, only on GET /v1/ads/campaigns with `live=true` and only on campaigns read live. A fixed subset of TikTok's campaign/get record, not the whole record, each field with TikTok's own value and present only when TikTok returns it:
+     *
+     * - campaign_id, operation_status, objective_type
+     * - budget_mode (BUDGET_MODE_INFINITE means no campaign budget, so budget lives on the ad groups)
+     * - budget and budget_optimize_on
+     *
+     * Plus advertiser_currency and advertiser_timezone from TikTok's advertiser/info. Whether the campaign is Upgraded Smart+ is `isSmartPlus`.
+     *
      */
     nativeSettings?: {
         [key: string]: unknown;
@@ -783,7 +819,17 @@ export type AdCampaign = {
      */
     platformObjective?: (string) | null;
     /**
-     * A single string when every ad set shares one optimization goal; a JSON array of the distinct goals when ad sets differ (never a comma-joined string); array element order is not guaranteed, treat it as an unordered set; the key is absent when no ad set carries a goal. Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION. LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE); `NONE` with a manual costType is a campaign LinkedIn will not deliver.
+     * The campaign's optimization goal.
+     *
+     * - Every ad set shares one goal: a single string.
+     * - Ad sets differ: a JSON array of the distinct goals (never a comma-joined string). Element order is not guaranteed; treat it as an unordered set.
+     * - No ad set carries a goal: the key is absent.
+     *
+     * **Values:**
+     *
+     * - Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION.
+     * - LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE). `NONE` with a manual costType is a campaign LinkedIn will not deliver.
+     *
      */
     optimizationGoal?: (string | Array<(string)>);
     /**
@@ -835,16 +881,14 @@ export type AdCampaignBudget = AdBudget & {
 };
 
 /**
- * One day of metrics. Same fields as `AdMetrics` plus the `date` they
- * apply to. Returned inside a node's `daily[]` when `GET /v1/ads/tree` is
- * called with `timeIncrement=1`. Rate metrics (ctr/cpc/cpm/costPerConversion/
- * roas/videoAvgTimeWatchedActions) are recomputed per day from that day's
- * sums, so summing the additive fields across a node's `daily[]` reproduces
- * its aggregated `metrics` total. `reach` is the exception: on Meta and
- * TikTok the aggregated total is de-duplicated across the range, so daily
- * reach does not sum to it. Do NOT sum or plain-average
- * `videoAvgTimeWatchedActions` across days: the range value is the
- * play-weighted average of the daily values.
+ * One day of metrics: the same fields as `AdMetrics` plus the `date` they apply to. Returned inside a node's `daily[]` when `GET /v1/ads/tree` is called with `timeIncrement=1`.
+ *
+ * Rate metrics (ctr/cpc/cpm/costPerConversion/roas/videoAvgTimeWatchedActions) are recomputed per day from that day's sums, so summing the additive fields across a node's `daily[]` reproduces its aggregated `metrics` total.
+ *
+ * Exceptions:
+ *
+ * - `reach`: on Meta and TikTok the aggregated total is de-duplicated across the range, so daily reach does not sum to it.
+ * - `videoAvgTimeWatchedActions`: do NOT sum or plain-average it across days. The range value is the play-weighted average of the daily values.
  *
  */
 export type AdDailyMetrics = AdMetrics & {
@@ -855,22 +899,13 @@ export type AdDailyMetrics = AdMetrics & {
 };
 
 /**
- * The single `engagement` total split into the interactions behind it.
+ * The single `engagement` total, split into the interactions behind it.
  *
- * `engagement` is not the sum of these: Meta's own
- * `post_engagement` and `page_engagement` totals already contain the
- * individual interactions, and all of them are counted into `engagement`.
- * Use these fields when you need a specific interaction, and `engagement`
- * only as the coarse total it has always been.
+ * `engagement` is not the sum of these: Meta's own `post_engagement` and `page_engagement` totals already contain the individual interactions, and all of them are counted into `engagement`. Use these fields for a specific interaction, and `engagement` only as the coarse total it has always been.
  *
- * Populated for Meta and, since 2026-08, TikTok (`reactions` = paid
- * likes, `comments`, `shares`; TikTok's `follow` count lives in
- * `actions.follow`, not here). Other platforms leave these at 0.
- * TikTok history note: these splits were added in 2026-08 and only
- * the last 7 days are re-fetched on each sync (a stopped ad keeps
- * syncing until its last delivery day is 7 days old), so days
- * stored before the rollout keep 0s here. Spend, impressions,
- * clicks and conversions are not affected.
+ * **Platforms**: populated for Meta and, since 2026-08, TikTok (`reactions` = paid likes, `comments`, `shares`; TikTok's `follow` count lives in `actions.follow`, not here). Other platforms leave these at 0.
+ *
+ * **TikTok history**: these splits were added in 2026-08, and only the last 7 days are re-fetched on each sync (a stopped ad keeps syncing until its last delivery day is 7 days old). Days stored before the rollout keep 0s here. Spend, impressions, clicks and conversions are not affected.
  *
  */
 export type AdEngagementCounts = {
@@ -913,23 +948,17 @@ export type AdEngagementCounts = {
 };
 
 /**
- * Named conversion-funnel steps, resolved from the same data as `actions`
- * so you never have to parse action-type strings yourself.
+ * Named conversion-funnel steps, resolved from the same data as `actions` so you never have to parse action-type strings yourself.
  *
- * Meta reports one event under several action types at once
- * (`offsite_conversion.fb_pixel_purchase`, `omni_purchase`, `purchase`, …).
- * Each field below takes the FIRST family member present rather than
- * summing them, which is what makes these counts safe to add up. Summing
- * the raw `actions` keys yourself double or triple counts. The same
- * priority order backs `conversions`, so a purchase-optimised campaign
- * reports the identical number in `conversions` and `funnel.purchases`.
+ * Meta reports one event under several action types at once (`offsite_conversion.fb_pixel_purchase`, `omni_purchase`, `purchase`, …). Each field takes the FIRST family member present rather than summing them, which makes these counts safe to add up. Summing the raw `actions` keys yourself double or triple counts.
  *
- * Every field is 0 when that step never fired. Populated for Meta ads and,
- * from 2026-10-08, TikTok (contentViews, cartAdds, checkoutsInitiated,
- * purchases = app purchases, else website complete payments, else Place an Order, leads; the
- * other steps stay 0). Other platforms report a different action taxonomy
- * and generally leave these at 0 (read `actions` for those). At ad-set and
- * campaign level each step is summed from its per-ad values.
+ * The same priority order backs `conversions`, so a purchase-optimised campaign reports the identical number in `conversions` and `funnel.purchases`.
+ *
+ * Every field is 0 when that step never fired. At ad-set and campaign level each step is summed from its per-ad values.
+ *
+ * - Meta ads: populated.
+ * - TikTok, from 2026-10-08: contentViews, cartAdds, checkoutsInitiated, purchases (app purchases, else website complete payments, else Place an Order) and leads. The other steps stay 0.
+ * - Other platforms report a different action taxonomy and generally leave these at 0 (read `actions` for those).
  *
  */
 export type AdFunnelCounts = {
@@ -962,10 +991,13 @@ export type AdFunnelCounts = {
      */
     paymentInfoAdds?: number;
     /**
-     * Purchases. Meta reports one purchase under several action types at once, so this takes the FIRST one present, in this order, never a sum: `offsite_conversion.fb_pixel_purchase`, `omni_purchase`, `app_custom_event.fb_mobile_purchase`, `onsite_conversion.purchase`, `purchase`.
-     * It always counts purchases, whatever the ad set optimizes for. `conversions` instead follows the ad set's optimization event (PURCHASE when the ad set names none), so the two can differ on any other goal.
-     * TikTok: app purchases (`purchase`), else website complete payments (`complete_payment`), else Place an Order (`place_order`).
-     * Pair with `purchaseValue` for revenue.
+     * Purchases. Pair with `purchaseValue` for revenue.
+     *
+     * **Meta** reports one purchase under several action types, so this takes the FIRST present, in this order, never a sum: `offsite_conversion.fb_pixel_purchase`, `omni_purchase`, `app_custom_event.fb_mobile_purchase`, `onsite_conversion.purchase`, `purchase`.
+     *
+     * It always counts purchases, whatever the ad set optimizes for. `conversions` instead follows the ad set's optimization event (PURCHASE when none is named), so the two can differ on any other goal.
+     *
+     * **TikTok:** app purchases (`purchase`), else website complete payments (`complete_payment`), else Place an Order (`place_order`).
      *
      */
     purchases?: number;
@@ -1191,7 +1223,16 @@ export type AdMetrics = {
     spend?: number;
     impressions?: number;
     /**
-     * Unique people reached in the requested date range. Meta (facebook/instagram) and TikTok: the platform's own de-duplicated reach for the exact range, fetched live and cached up to ~1 hour (may lag recent delivery; on a transient platform error the value temporarily falls back to a sum of per-day reach, which overcounts people reached on multiple days or by multiple child ads). Because it is de-duplicated, reach is NOT additive on these platforms: neither daily values nor child nodes sum to the range total. LinkedIn: the campaign's `approximateMemberReach`, de-duplicated by LinkedIn per day and then summed over the range here, so it overcounts members reached on more than one day; LinkedIn withholds it below its audience privacy threshold, where it reads 0. Google, X, Pinterest and OpenAI report 0 (reach not synced). Frequency (impressions / reach) is only meaningful for Meta and TikTok.
+     * Unique people reached in the requested date range.
+     *
+     * - **Meta (facebook/instagram) and TikTok:** the platform's own de-duplicated reach for the exact range, fetched live and cached up to ~1 hour (may lag recent delivery).
+     * - **Meta and TikTok fallback:** on a transient platform error the value temporarily falls back to a sum of per-day reach, which overcounts people reached on multiple days or by multiple child ads.
+     * - **Not additive (Meta and TikTok):** because reach is de-duplicated, neither daily values nor child nodes sum to the range total.
+     * - **LinkedIn:** the campaign's `approximateMemberReach`, de-duplicated by LinkedIn per day and summed over the range here, so it overcounts members reached on more than one day. LinkedIn withholds it below its audience privacy threshold, where it reads 0.
+     * - **Google, X, Pinterest and OpenAI:** 0 (reach not synced).
+     *
+     * Frequency (impressions / reach) is only meaningful for Meta and TikTok.
+     *
      */
     reach?: number;
     clicks?: number;
@@ -1209,7 +1250,17 @@ export type AdMetrics = {
     cpm?: number;
     engagement?: number;
     /**
-     * Count of conversion events over the requested date range. FRACTIONAL: attribution splits one conversion across touchpoints and Google additionally reports modeled conversions, so values like 0.347 are normal. Meta: the ad set's Ads Manager Results, derived per ad set: the optimization goal's result (LEAD_GENERATION and QUALITY_LEAD = leads, CONVERSATIONS = messaging conversations started, APP_INSTALLS = installs, LANDING_PAGE_VIEWS = landing page views, LINK_CLICKS = link clicks, THRUPLAY = ThruPlays; REACH, IMPRESSIONS, POST_ENGAGEMENT and PAGE_LIKES report 0), otherwise the promoted_object event (custom_conversion_id when set, else custom_event_type, else PURCHASE). Google: the account's tracked conversions. X and LinkedIn: their reported website/lead conversions (added 2026-07). Reddit: key conversions (`key_conversion_total_count`, added 2026-10-23; older days read 0). 0 for non-conversion campaigns or when no events have fired.
+     * Count of conversion events over the requested date range. FRACTIONAL: attribution splits one conversion across touchpoints and Google also reports modeled conversions, so values like 0.347 are normal. 0 for non-conversion campaigns or when no events have fired.
+     *
+     * - Meta: the ad set's Ads Manager Results, derived per ad set (see below).
+     * - Google: the account's tracked conversions.
+     * - X and LinkedIn: their reported website/lead conversions (added 2026-07).
+     * - Reddit: key conversions (`key_conversion_total_count`, added 2026-10-23; older days read 0).
+     *
+     * Meta uses the optimization goal's result: LEAD_GENERATION and QUALITY_LEAD = leads, CONVERSATIONS = messaging conversations started, APP_INSTALLS = installs, LANDING_PAGE_VIEWS = landing page views, LINK_CLICKS = link clicks, THRUPLAY = ThruPlays. REACH, IMPRESSIONS, POST_ENGAGEMENT and PAGE_LIKES report 0.
+     *
+     * Otherwise Meta uses the promoted_object event: custom_conversion_id when set, else custom_event_type, else PURCHASE.
+     *
      */
     conversions?: number;
     /**
@@ -1221,19 +1272,47 @@ export type AdMetrics = {
      */
     costPerConversion?: number;
     /**
-     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...), covering both engagement and conversion events. TikTok: conversion events plus the paid-engagement family (follow, post_reaction for paid likes, comment, share). Website (pixel) events: complete_payment (TikTok's website purchase, the event a SHOPPING-optimised campaign counts in `conversions`), place_order (Place an Order, the website purchase of pixels set up with the legacy ON_WEB_ORDER event; absent from days synced before this metric was added until the ad is re-synced), initiate_checkout, add_to_cart, view_content, lead (website form submissions plus TikTok instant-form leads). App events: purchase, view_content (added to the website count). Follow is how FOLLOWERS-goal campaigns report their result. TikTok history note: website add_to_cart, initiate_checkout, complete_payment and lead counts were missing before 2026-10-08 (TikTok rejected the metric names we requested), and each sync re-fetches only the last 7 days, so older days keep them absent until the ad is re-synced from scratch. X: conversion types (purchase, sign_up, site_visit, download, custom). LinkedIn: conversion types (post_click, post_view, lead_gen) plus `video_view`, which carries LinkedIn's `videoViews` under the same key every other platform uses, so it feeds `engagementBreakdown.videoViews` too; it is an engagement, NOT a conversion, and is excluded from `conversions`. Google returns {} (its per-action names aren't synced per ad). Empty object when no actions are reported. NOTE: keys differ by platform, so branch on the ad's platform when interpreting them.
+     * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Keys differ by platform, so branch on the ad's platform when interpreting them. Empty object when no actions are reported.
+     *
+     * - Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...), covering both engagement and conversion events.
+     * - TikTok: conversion events plus the paid-engagement family (follow, post_reaction for paid likes, comment, share). Follow is how FOLLOWERS-goal campaigns report their result.
+     * - TikTok website (pixel) events: complete_payment (website purchase, counted in `conversions` by SHOPPING-optimised campaigns), place_order, initiate_checkout, add_to_cart, view_content, lead (website form submissions plus TikTok instant-form leads).
+     * - TikTok place_order is Place an Order, the website purchase of pixels set up with the legacy ON_WEB_ORDER event. It is absent from days synced before this metric was added until the ad is re-synced.
+     * - TikTok app events: purchase, view_content (added to the website count).
+     * - TikTok history: website add_to_cart, initiate_checkout, complete_payment and lead were missing before 2026-10-08 (TikTok rejected the metric names we requested). Each sync re-fetches only the last 7 days, so older days lack them until the ad is re-synced from scratch.
+     * - X: conversion types (purchase, sign_up, site_visit, download, custom).
+     * - LinkedIn: conversion types (post_click, post_view, lead_gen) plus `video_view`. It carries LinkedIn's `videoViews` under the key every other platform uses, so it feeds `engagementBreakdown.videoViews` too. It is an engagement, NOT a conversion, and is excluded from `conversions`.
+     * - Google: returns {} (its per-action names aren't synced per ad).
+     *
      */
     actions?: {
         [key: string]: (number);
     };
     /**
-     * Monetary mirror of `actions`, from Meta's Insights `action_values[]` array. Same keying: values are the revenue attributed to each action_type, in ad-account native currency (same unit as `spend`; see the campaign node's `currency` field). Use this to compute revenue-per-event (e.g. avg purchase value). Meta and TikTok; other platforms return {}. TikTok: the value TikTok attributes to each key of `actions` (purchase and view_content from app events, complete_payment, initiate_checkout, add_to_cart, view_content and lead from the website pixel), present only when the advertiser sends a value with the event. initiate_checkout and add_to_cart values are basket values, not revenue; revenue is complete_payment or place_order (website) and purchase (app). Same history note as `actions`.
+     * Monetary mirror of `actions`, from Meta's Insights `action_values[]` array. Meta and TikTok; other platforms return {}. Same history note as `actions`.
+     *
+     * Same keying as `actions`: values are the revenue attributed to each action_type, in ad-account native currency (same unit as `spend`; see the campaign node's `currency` field). Use it to compute revenue-per-event (e.g. avg purchase value).
+     *
+     * TikTok: the value TikTok attributes to each key of `actions`, present only when the advertiser sends a value with the event. Keys: purchase and view_content from app events; complete_payment, initiate_checkout, add_to_cart, view_content and lead from the website pixel.
+     *
+     * initiate_checkout and add_to_cart values are basket values, not revenue. Revenue is complete_payment or place_order (website) and purchase (app).
+     *
      */
     actionValues?: {
         [key: string]: (number);
     };
     /**
-     * Convenience sum of purchase-type action values, picked from `actionValues` for the ad set promoted_object event (custom conversion, custom_event_type, else PURCHASE). It matches `conversions` for conversion-optimized ad sets; when the optimization goal reports a different result (LINK_CLICKS, LANDING_PAGE_VIEWS, ...) it stays on the promoted event so ROAS keeps its purchase basis. In ad-account native currency. 0 when the campaign has no purchase event configured. TikTok: app purchase value plus website complete-payment value (from 2026-10-08), or the Place an Order value when that is larger (they are never summed, since a pixel can fire both for one sale); days synced before each was added carry the app value only until the ad is re-synced. Google: `conversions_value` of every primary conversion action. Pinterest: checkout value. LinkedIn: `conversionValueInLocalCurrency`, the advertiser-defined value of every conversion (days synced before 2026-10-23 report 0). Reddit: `conversion_purchase_total_value` (same history note). Other platforms report 0.
+     * Convenience sum of purchase-type action values, in ad-account native currency. 0 when the campaign has no purchase event configured.
+     *
+     * Meta: picked from `actionValues` for the ad set promoted_object event (custom conversion, custom_event_type, else PURCHASE). It matches `conversions` for conversion-optimized ad sets. When the optimization goal reports a different result (LINK_CLICKS, LANDING_PAGE_VIEWS, ...) it stays on the promoted event, so ROAS keeps its purchase basis.
+     *
+     * - TikTok: app purchase value plus website complete-payment value (from 2026-10-08), or the Place an Order value when that is larger. They are never summed, since a pixel can fire both for one sale. Days synced before each was added carry the app value only until the ad is re-synced.
+     * - Google: `conversions_value` of every primary conversion action.
+     * - Pinterest: checkout value.
+     * - LinkedIn: `conversionValueInLocalCurrency`, the advertiser-defined value of every conversion (days synced before 2026-10-23 report 0).
+     * - Reddit: `conversion_purchase_total_value` (same history note).
+     * - Other platforms report 0.
+     *
      */
     purchaseValue?: number;
     /**
@@ -1241,7 +1320,12 @@ export type AdMetrics = {
      */
     roas?: number;
     /**
-     * Derived `spend / actions[type]` for every action type with a non-zero count, in ad-account native currency. Same keys as `actions`. Rounded to 4 decimals because cheap actions cost well under a cent. Recomputed from summed spend + counts at every rollup level. Empty object when spend is 0 or no actions are reported.
+     * Derived `spend / actions[type]` for every action type with a non-zero count, in ad-account native currency. Same keys as `actions`.
+     *
+     * - Rounded to 4 decimals, because cheap actions cost well under a cent.
+     * - Recomputed from summed spend + counts at every rollup level.
+     * - Empty object when spend is 0 or no actions are reported.
+     *
      */
     costPerAction?: {
         [key: string]: (number);
@@ -1271,7 +1355,12 @@ export type AdMetrics = {
      */
     uniqueCtr?: number;
     /**
-     * Number of times the video started playing, summed over the date range and across children at ad-set/campaign level. 0 for non-video ads. Sources: Meta `video_play_actions`, TikTok `video_play_actions`, X `video_content_starts`, Reddit `video_started`, Pinterest `TOTAL_VIDEO_P0_COMBINED`. X, Reddit and Pinterest history note: added 2026-10-23, and their syncs only re-fetch recent days, so older days read 0 on every X, Reddit and Pinterest video field.
+     * Number of times the video started playing, summed over the date range and across children at ad-set/campaign level. 0 for non-video ads.
+     *
+     * Sources: Meta `video_play_actions`, TikTok `video_play_actions`, X `video_content_starts`, Reddit `video_started`, Pinterest `TOTAL_VIDEO_P0_COMBINED`.
+     *
+     * **X, Reddit and Pinterest history**: added 2026-10-23, and their syncs only re-fetch recent days, so older days read 0 on every X, Reddit and Pinterest video field.
+     *
      */
     videoPlayActions?: number;
     /**
@@ -1368,110 +1457,80 @@ export type AdNegativeKeywordListKeyword = {
 export type matchType2 = 'broad' | 'phrase' | 'exact';
 
 /**
- * What the ad optimises against. Behaviour depends on the platform.
+ * What the ad optimises against. Behaviour depends on the platform. Platforms other than Meta, TikTok, OpenAI and Reddit ignore `promotedObject` entirely.
  *
  * **Meta**: forwarded to the ad set's `promoted_object` (snake-cased).
- * For `goal: app_promotion`, it is also sent on the campaign only when
- * `isSkadnetworkAttribution: true`. Plain Android app installs keep the
- * existing campaign payload, with the promoted object only on the ad set.
- * POST /v1/ads/campaigns forwards this object on Meta only for that explicit SKAN flag.
- * Required for goals whose ad-set optimization_goal points at a specific
- * event/page/app (without it Meta rejects the ad-set create with
- * `error_subcode: 1815430` "Please select a promoted object for your ad set"):
- * - `goal: conversions` / `lead_conversion` (OFFSITE_CONVERSIONS): requires `pixelId` + `customEventType`, or `customConversionId` when optimising against a Custom Conversion (the conversion carries its own event definition). For a pixel CUSTOM event (one you named yourself in CAPI/Events Manager), send `customEventType: OTHER` + `customEventStr` with the event name.
- * - `goal: app_promotion` (APP_INSTALLS): requires `applicationId` + `objectStoreUrl`
- * - `goal: lead_generation` (LEAD_GENERATION): `pageId` is auto-filled from the connected Page when omitted
  *
- * Other Meta goals (engagement, traffic, awareness, video_views) ignore this field.
+ * - For `goal: app_promotion`, also sent on the campaign only when `isSkadnetworkAttribution: true`; plain Android app installs keep it on the ad set only. POST /v1/ads/campaigns forwards it on Meta only for that SKAN flag.
+ * - Required when the ad-set optimization_goal points at a specific event/page/app. Without it Meta rejects the ad set with `error_subcode: 1815430` "Please select a promoted object for your ad set".
+ * - `goal: conversions` / `lead_conversion` (OFFSITE_CONVERSIONS): requires `pixelId` + `customEventType`, or `customConversionId` for a Custom Conversion (it carries its own event). For a pixel CUSTOM event you named in CAPI/Events Manager, send `customEventType: OTHER` + `customEventStr` with the event name.
+ * - `goal: app_promotion` (APP_INSTALLS): requires `applicationId` + `objectStoreUrl`.
+ * - `goal: lead_generation` (LEAD_GENERATION): `pageId` is auto-filled from the connected Page when omitted.
+ * - Other Meta goals (engagement, traffic, awareness, video_views) ignore this field. The remaining `promotedObject.*` fields are Meta-only.
  *
  * **TikTok**: used by `goal: conversions` and the Smart+ goals (`smartPlus: true`).
- * - `pixelId` maps to the ad group's `pixel_id`. Required: a TikTok website-conversion
- * ad group without a pixel is rejected with `40002: Please select a pixel`.
- * - `customEventType` maps to the ad group's `optimization_event` (the pixel event to
- * optimise for). Optional on the regular conversions flow, required on Smart+.
- * See the `customEventType` field below for the valid TikTok codes.
- * - `applicationId` (Smart+ `goal: app_promotion` only) maps to the ad group's `app_id`:
- * the App ID of an app registered on the TikTok Ads account (Assets → Events →
- * App Events). Install optimization needs the app's MMP tracking configured.
  *
- * **OpenAI (ChatGPT) Ads**: `goal: conversions` only, on POST /v1/ads/create and
- * POST /v1/ads/campaigns. `customEventType` picks the conversion event the campaign
- * optimizes for (sent as the campaign's `conversion_event_setting_ids`); every other
- * `promotedObject` field is rejected with a 400. See `customEventType` below.
+ * - `pixelId` maps to the ad group's `pixel_id`. Required: a website-conversion ad group without a pixel is rejected with `40002: Please select a pixel`.
+ * - `customEventType` maps to the ad group's `optimization_event`. Optional on regular conversions, required on Smart+. See the `customEventType` field for valid codes.
+ * - `applicationId` (Smart+ `goal: app_promotion` only) maps to `app_id`: an app registered on the TikTok Ads account (Assets → Events → App Events). Install optimization needs the app's MMP tracking configured.
  *
- * **Reddit Ads**: Reddit puts a pixel on every ad group, whatever the goal. `pixelId`
- * (or `tracking.pixelId`) picks it; when omitted the ad account's first pixel is used,
- * and an ad account with no pixel returns 422 (create the pixel in Reddit Ads Manager).
- * A `pixelId` that is not a pixel of the ad account returns 400. `goal: conversions`
- * requires `customEventType` (see below). `goal: lead_generation` optimizes toward the
- * pixel's Lead event. Reddit only optimizes toward an event the pixel has already
- * received: when it never fired, the request returns 422 `invalid_resource_state`.
- * Fire it from your site or send it with POST /v1/ads/conversions first.
+ * **OpenAI (ChatGPT) Ads**: `goal: conversions` only, on POST /v1/ads/create and POST /v1/ads/campaigns. `customEventType` picks the conversion event (sent as the campaign's `conversion_event_setting_ids`); any other `promotedObject` field returns 400.
  *
- * The remaining `promotedObject.*` fields are Meta-only. Platforms other than
- * Meta, TikTok, OpenAI and Reddit ignore `promotedObject` entirely.
+ * **Reddit Ads**: every ad group gets a pixel, whatever the goal.
+ *
+ * - `pixelId` (or `tracking.pixelId`) picks it; when omitted, the ad account's first pixel is used. No pixel on the account returns 422 (create one in Reddit Ads Manager); a `pixelId` not on the account returns 400.
+ * - `goal: conversions` requires `customEventType`. `goal: lead_generation` optimizes toward the pixel's Lead event.
+ * - Reddit only optimizes toward an event the pixel has already received, otherwise 422 `invalid_resource_state`. Fire it from your site or send it with POST /v1/ads/conversions first.
  *
  */
 export type AdPromotedObject = {
     /**
-     * Pixel ID. **Meta:** Facebook Pixel ID, required for `goal: conversions`.
-     * Requires `customEventType` alongside it; Meta rejects any promoted_object
-     * carrying `pixel_id` without `custom_event_type` (error_subcode 1885014),
-     * even when `customConversionId` is also present.
-     * **TikTok:** TikTok Pixel ID, required for `goal: conversions`.
-     * **Reddit:** Reddit pixel ID (e.g. `a2_abc123`), optional on every goal (see above).
-     * To discover the pixels an ad account can use, call
-     * `GET /v1/accounts/{accountId}/tracking-tags?adAccountId=act_...` (each entry
-     * carries `kind` and `ownerAdAccountId`), or
-     * `GET /v1/accounts/{accountId}/conversion-destinations`. Note this is a
-     * different resource from `GET /v1/ads/{adId}/tracking-tags`, which reads an
-     * ad's click-URL params (`url_tags`), not pixels.
+     * Pixel ID.
+     *
+     * - **Meta:** Facebook Pixel ID, required for `goal: conversions`. Requires `customEventType` alongside it: Meta rejects any promoted_object carrying `pixel_id` without `custom_event_type` (error_subcode 1885014), even when `customConversionId` is also present.
+     * - **TikTok:** TikTok Pixel ID, required for `goal: conversions`.
+     * - **Reddit:** Reddit pixel ID (e.g. `a2_abc123`), optional on every goal (see above).
+     *
+     * To discover the pixels an ad account can use, call `GET /v1/accounts/{accountId}/tracking-tags?adAccountId=act_...` (each entry carries `kind` and `ownerAdAccountId`) or `GET /v1/accounts/{accountId}/conversion-destinations`.
+     *
+     * This differs from `GET /v1/ads/{adId}/tracking-tags`, which reads an ad's click-URL params (`url_tags`), not pixels.
      *
      */
     pixelId?: string;
     /**
      * The event the campaign/ad group optimises against.
      *
-     * **Meta:** standard event like `PURCHASE`, `LEAD`, `COMPLETE_REGISTRATION`,
-     * `ADD_TO_CART`. Uppercased internally so callers can pass any case. Required
-     * for `goal: conversions`.
+     * **Meta:** a standard event like `PURCHASE`, `LEAD`, `COMPLETE_REGISTRATION`, `ADD_TO_CART`. Uppercased internally, so any case works. Required for `goal: conversions`.
      *
-     * **TikTok:** an `optimization_event` code (UPPER_SNAKE, not Meta's vocabulary
-     * and not PascalCase), OR the exact event name shown in TikTok Events Manager
-     * (auto-resolved to its code). Must be one of the event types your TikTok
-     * Pixel tracks; custom events are not optimizable. Current taxonomy:
-     * `SHOPPING` (Purchase), `ON_WEB_CART` (Add to Cart), `INITIATE_ORDER`
-     * (Initiate Checkout), `FORM` (Lead), `ON_WEB_REGISTER` (Complete
-     * Registration), `ON_WEB_DETAIL` (View Content). `ON_WEB_ORDER` is
-     * deprecated. On rejection the error lists the event types your pixel
-     * actually tracks. Optional for `goal: conversions`.
+     * **TikTok:** an `optimization_event` code (UPPER_SNAKE, not Meta's vocabulary and not PascalCase), OR the exact event name shown in TikTok Events Manager (auto-resolved to its code). Optional for `goal: conversions`.
      *
-     * **OpenAI (ChatGPT) Ads:** a conversion event from
-     * `GET /v1/accounts/{accountId}/conversion-destinations` (`conversionEvents[]`),
-     * given as its `id` (exact), its `eventType` (e.g. `order_created`) or its `name`
-     * (e.g. `Purchase`), both case-insensitive. It must be `optimizable` (active and
-     * not custom). An unknown, archived or custom event returns a 400 listing the
-     * account's optimizable events; a type or name shared by several optimizable
-     * events returns a 400 asking for the id. `validateOnly: true` runs the same
-     * check and names the resolved event in its `message`. Optional: when omitted,
-     * the campaign optimizes for the first optimizable event in OpenAI's own list
-     * order, which is the most recently created one.
+     * It must be an event type your TikTok Pixel tracks; custom events are not optimizable. On rejection the error lists the event types your pixel tracks. Current taxonomy (`ON_WEB_ORDER` is deprecated):
      *
-     * **Reddit:** required for `goal: conversions` (400 without it). One of `PURCHASE`,
-     * `LEAD`, `COMPLETE_REGISTRATION` or `SIGN_UP` (both sent as Reddit's SIGN_UP),
-     * `ADD_TO_CART`, `PAGE_VISIT`, `VIEW_CONTENT` or `CONTENT_VIEW` (both sent as
-     * PAGE_VISIT), any case. The pixel must already have received the event (422 otherwise).
+     * - `SHOPPING`: Purchase
+     * - `ON_WEB_CART`: Add to Cart
+     * - `INITIATE_ORDER`: Initiate Checkout
+     * - `FORM`: Lead
+     * - `ON_WEB_REGISTER`: Complete Registration
+     * - `ON_WEB_DETAIL`: View Content
+     *
+     * **OpenAI (ChatGPT) Ads:** a conversion event from `GET /v1/accounts/{accountId}/conversion-destinations` (`conversionEvents[]`), given as its `id` (exact), its `eventType` (e.g. `order_created`) or its `name` (e.g. `Purchase`), both case-insensitive. It must be `optimizable` (active and not custom).
+     *
+     * An unknown, archived or custom event returns a 400 listing the account's optimizable events. A type or name shared by several optimizable events returns a 400 asking for the id. `validateOnly: true` runs the same check and names the resolved event in its `message`.
+     *
+     * Optional for OpenAI: when omitted, the campaign optimizes for the first optimizable event in OpenAI's own list order, which is the most recently created one.
+     *
+     * **Reddit:** required for `goal: conversions` (400 without it). Any case. The pixel must already have received the event (422 otherwise). Accepted values:
+     *
+     * - `PURCHASE`, `LEAD`, `ADD_TO_CART`, `PAGE_VISIT`
+     * - `COMPLETE_REGISTRATION` or `SIGN_UP` (both sent as Reddit's SIGN_UP)
+     * - `VIEW_CONTENT` or `CONTENT_VIEW` (both sent as PAGE_VISIT)
      *
      */
     customEventType?: string;
     /**
-     * Meta only. Pixel custom-event name to optimise against (Meta's
-     * `custom_event_str`), exactly as it appears in Events Manager and in your
-     * CAPI payloads (case-sensitive, not uppercased). Requires
-     * `customEventType: OTHER`, and `OTHER` requires this field (400 either way).
-     * The same as picking a custom event in Ads Manager's conversion-event
-     * dropdown. For rule-based Custom Conversions use `customConversionId`
-     * instead.
+     * Meta only. Pixel custom-event name to optimise against (Meta's `custom_event_str`), exactly as it appears in Events Manager and your CAPI payloads (case-sensitive, not uppercased). Same as picking a custom event in Ads Manager's conversion-event dropdown.
+     *
+     * Requires `customEventType: OTHER`, and `OTHER` requires this field (400 either way). For rule-based Custom Conversions use `customConversionId` instead.
      *
      */
     customEventStr?: string;
@@ -1503,7 +1562,18 @@ export type AdPromotedObject = {
      */
     productCatalogId?: string;
     /**
-     * Meta product SET ID, for example from GET /v1/ads/catalogs/{catalogId}/product-sets. Creating catalog ads needs only ads_management on the Meta login, not catalog_management. With goal catalog_sales the set goes on the ad set's promoted_object and on the template creative; with goal traffic, or with adSetId, only on the creative. Zernio reads the set before creation and returns a 400 naming promotedObject.productSetId when Meta rejects the ID outright. When Meta answers that the login lacks the permission to read it (common without catalog_management, even for a set a live ad set already uses), Zernio leaves the check to Meta's own create validation, which rejects an unusable set or a catalog ID with the same 400. When the login can also read the set's catalog (catalog_management), a mismatch with productCatalogId returns a 400 naming promotedObject.productCatalogId; otherwise Meta judges the catalog match. With validateOnly and a new campaign, Meta cannot dry-run the set inside the ad set, so the adSet result carries a reason; pass existingCampaignId to dry-run it in full.
+     * Meta product SET ID, for example from GET /v1/ads/catalogs/{catalogId}/product-sets. Creating catalog ads needs only ads_management on the Meta login, not catalog_management.
+     *
+     * **Where it goes.** With goal catalog_sales, on the ad set's promoted_object and on the template creative. With goal traffic, or with adSetId, only on the creative.
+     *
+     * **Validation:**
+     *
+     * - Zernio reads the set before creation and returns a 400 naming promotedObject.productSetId when Meta rejects the ID outright.
+     * - When Meta answers that the login lacks permission to read it (common without catalog_management, even for a set a live ad set already uses), Zernio leaves the check to Meta's own create validation, which rejects an unusable set or a catalog ID with the same 400.
+     * - When the login can also read the set's catalog (catalog_management), a mismatch with productCatalogId returns a 400 naming promotedObject.productCatalogId. Otherwise Meta judges the catalog match.
+     *
+     * With validateOnly and a new campaign, Meta cannot dry-run the set inside the ad set, so the adSet result carries a reason. Pass existingCampaignId to dry-run it in full.
+     *
      */
     productSetId?: string;
     /**
@@ -1727,7 +1797,13 @@ export type AdRuleRun = {
     id: string;
     ranAt: string;
     /**
-     * `triggered`: the rule acted on at least one object (`error` is set if the webhook could not be sent afterwards). `cooldown`: objects matched but all were in cooldown. `no_match`: nothing matched. `failed`: the metrics could not be read, every action failed, or the webhook of a notify-only rule could not be sent (see `error`).
+     * Result of the rule run:
+     *
+     * - `triggered`: the rule acted on at least one object (`error` is set if the webhook could not be sent afterwards).
+     * - `cooldown`: objects matched but all were in cooldown.
+     * - `no_match`: nothing matched.
+     * - `failed`: the metrics could not be read, every action failed, or the webhook of a notify-only rule could not be sent (see `error`).
+     *
      */
     outcome: 'triggered' | 'cooldown' | 'no_match' | 'failed';
     objectsEvaluated: number;
@@ -1764,7 +1840,11 @@ export type AdRuleRun = {
             newDailyBudget?: number;
         }>;
         /**
-         * Set when a run of a rule with a `notify` action matched objects and tried to send the webhook. A notify-only rule whose webhook fails ends with outcome `failed`. `done` once the `ad_rule.triggered` webhook is queued for the webhooks subscribed to it (with none subscribed it is still `done`, but nothing is delivered), `failed` when it could not be queued.
+         * Set when a run of a rule with a `notify` action matched objects and tried to send the webhook. A notify-only rule whose webhook fails ends with outcome `failed`.
+         *
+         * - `done`: the `ad_rule.triggered` webhook is queued for the webhooks subscribed to it (with none subscribed it is still `done`, but nothing is delivered).
+         * - `failed`: it could not be queued.
+         *
          */
         notification?: {
             status: 'done' | 'failed';
@@ -1778,7 +1858,13 @@ export type AdRuleRun = {
 };
 
 /**
- * `triggered`: the rule acted on at least one object (`error` is set if the webhook could not be sent afterwards). `cooldown`: objects matched but all were in cooldown. `no_match`: nothing matched. `failed`: the metrics could not be read, every action failed, or the webhook of a notify-only rule could not be sent (see `error`).
+ * Result of the rule run:
+ *
+ * - `triggered`: the rule acted on at least one object (`error` is set if the webhook could not be sent afterwards).
+ * - `cooldown`: objects matched but all were in cooldown.
+ * - `no_match`: nothing matched.
+ * - `failed`: the metrics could not be read, every action failed, or the webhook of a notify-only rule could not be sent (see `error`).
+ *
  */
 export type outcome = 'triggered' | 'cooldown' | 'no_match' | 'failed';
 
@@ -1901,7 +1987,9 @@ export type AdsTimelineResponse = {
     rows?: Array<{
         date?: string;
         /**
-         * ISO 4217 currency of every money field in this row (spend, cpc, cpm, costPerConversion, purchaseValue, actionValues). An account whose ad accounts bill in different currencies gets one row per currency for that day, never a sum across currencies. Null when the currency of the ad accounts in this row is unknown. Added 2026-10-23.
+         * ISO 4217 currency of every money field in this row (spend, cpc, cpm, costPerConversion, purchaseValue, actionValues). Null when the currency of the row's ad accounts is unknown. Added 2026-10-23.
+         *
+         * An account whose ad accounts bill in different currencies gets one row per currency for that day, never a sum across currencies.
          */
         currency?: (string) | null;
         /**
@@ -1960,7 +2048,19 @@ export type AdsTimelineResponse = {
 };
 
 /**
- * Meta, plus `urlTags` on ChatGPT (OpenAI) and `pixelId` on Reddit. Meta: attaches pixel measurement to the ad regardless of the optimization goal (the "Website events" tracking row in Ads Manager). `pixelId` becomes the ad's `tracking_specs` (offsite_conversion + fb_pixel); `urlTags` is stored on the new creative as `url_tags` and retained on the ad for compatibility. Applied on the legacy single-creative shape, every ad of the multi-creative shape, and the attach shape. NOTE: tracking lives on the AD object and is not inherited from the ad set, so pass it on EVERY attach call that should carry the pixel. ChatGPT (OpenAI): `urlTags` becomes the ad's `landing_page_configuration.query_string_template`, which OpenAI appends to `linkUrl` on click. Reddit: `pixelId` picks the pixel of the new ad group, like `promotedObject.pixelId` (which wins when both are sent).
+ * Ad tracking. Meta, plus `urlTags` on ChatGPT (OpenAI) and `pixelId` on Reddit.
+ *
+ * **Meta**: attaches pixel measurement to the ad regardless of the optimization goal (the "Website events" tracking row in Ads Manager).
+ *
+ * - `pixelId` becomes the ad's `tracking_specs` (offsite_conversion + fb_pixel).
+ * - `urlTags` is stored on the new creative as `url_tags` and retained on the ad for compatibility.
+ * - Applied on the legacy single-creative shape, every ad of the multi-creative shape, and the attach shape.
+ * - Tracking lives on the AD object and is not inherited from the ad set, so pass it on EVERY attach call that should carry the pixel.
+ *
+ * **ChatGPT (OpenAI)**: `urlTags` becomes the ad's `landing_page_configuration.query_string_template`, which OpenAI appends to `linkUrl` on click.
+ *
+ * **Reddit**: `pixelId` picks the pixel of the new ad group, like `promotedObject.pixelId` (which wins when both are sent).
+ *
  */
 export type AdTracking = {
     /**
@@ -1968,14 +2068,25 @@ export type AdTracking = {
      */
     pixelId?: string;
     /**
-     * Click-URL params. Meta: stored on the creative as `url_tags` and returned by GET /v1/ads/{adId}/tracking-tags. App-promotion linkUrl stays byte-identical to promotedObject.objectStoreUrl. Meta dynamic macros ({{ad.id}}, {{campaign.id}}, {{placement}}, ...) are sent through unescaped so Meta expands them; every other character is percent-encoded. ChatGPT (OpenAI): the same encoding, with OpenAI's macros `{campaign_id}`, `{ad_group_id}`, `{ad_id}` and `{oppref}` (click id) passed through raw. OpenAI expands macros here, not inside `linkUrl`.
+     * Click-URL params.
+     *
+     * - Meta: stored on the creative as `url_tags` and returned by GET /v1/ads/{adId}/tracking-tags. Dynamic macros ({{ad.id}}, {{campaign.id}}, {{placement}}, ...) are sent through unescaped so Meta expands them; every other character is percent-encoded. App-promotion linkUrl stays byte-identical to promotedObject.objectStoreUrl.
+     * - ChatGPT (OpenAI): the same encoding, with OpenAI's macros `{campaign_id}`, `{ad_group_id}`, `{ad_id}` and `{oppref}` (click id) passed through raw. OpenAI expands macros here, not inside `linkUrl`.
+     *
      */
     urlTags?: Array<{
         key: string;
         value: string;
     }>;
     /**
-     * POST /v1/ads/create on Meta and Google only. Opt-in: set `true` and the ad carries `zrn=<platform ad id>` on its landing URL so orders and events tied to the landing URL map back to the ad. Meta: `{ key: zrn, value: '{{ad.id}}' }` is appended after your `urlTags`, which are sent unchanged; a `zrn` key you send yourself is kept. Skipped for lead forms, call ads, `existingCreativeId` and app promotion. Google (Display and Search): the ad's `final_url_suffix` is set to `zrn={creative}` only when the ad inherits no suffix from its ad group, campaign or account; when one exists the ad is left untouched (your suffix keeps applying) and attribution uses the click's `gclid`. If the inherited suffix cannot be read or Google rejects the tag, the ad is created untagged. Existing ads are never changed. Omitted or `false` creates the ad with no Zernio tag.
+     * POST /v1/ads/create on Meta and Google only. Opt-in: set `true` and the ad carries `zrn=<platform ad id>` on its landing URL, so orders and events tied to the landing URL map back to the ad.
+     *
+     * - **Meta:** `{ key: zrn, value: '{{ad.id}}' }` is appended after your `urlTags`, which are sent unchanged; a `zrn` key you send yourself is kept. Skipped for lead forms, call ads, `existingCreativeId` and app promotion.
+     * - **Google (Display and Search):** the ad's `final_url_suffix` is set to `zrn={creative}` only when the ad inherits no suffix from its ad group, campaign or account. Otherwise the ad is left untouched (your suffix keeps applying) and attribution uses the click's `gclid`.
+     * - If the inherited suffix cannot be read or Google rejects the tag, the ad is created untagged.
+     *
+     * Existing ads are never changed. Omitted or `false` creates the ad with no Zernio tag.
+     *
      */
     zernioTag?: boolean;
 };
@@ -2063,11 +2174,21 @@ export type AdTreeAdSet = {
      */
     costType?: (string) | null;
     /**
-     * LinkedIn only. Why the LinkedIn campaign backing this ad set is (or is not) delivering. A LinkedIn Campaign maps to this ad-set node, so this is the level where LinkedIn's holds actually apply. Empty means no serving data, ["RUNNABLE"] means eligible to serve, anything else is a hold. See the `servingStatuses` field on `Ad` for the known values.
+     * LinkedIn only. Why the LinkedIn campaign backing this ad set is (or is not) delivering. A LinkedIn Campaign maps to this ad-set node, so this is the level where LinkedIn's holds apply.
+     *
+     * - Empty: no serving data.
+     * - ["RUNNABLE"]: eligible to serve.
+     * - Anything else: a hold. See the `servingStatuses` field on `Ad` for the known values.
+     *
      */
     servingStatuses?: Array<(string)>;
     /**
-     * Meta only. Where the ad set stands in Meta's learning phase, as of the last sync: LEARNING while delivery is still being optimized (about 50 optimization events in 7 days end it), SUCCESS once it has left learning, FAIL when it could not gather enough events (Ads Manager's "Learning limited"). Null on other platforms and for ad sets not yet synced.
+     * Meta only. Where the ad set stands in Meta's learning phase, as of the last sync. Null on other platforms and for ad sets not yet synced.
+     *
+     * - LEARNING: delivery is still being optimized (about 50 optimization events in 7 days end it).
+     * - SUCCESS: it has left learning.
+     * - FAIL: it could not gather enough events (Ads Manager's "Learning limited").
+     *
      */
     learningStatus?: ('LEARNING' | 'SUCCESS' | 'FAIL') | null;
     /**
@@ -2100,7 +2221,14 @@ export type AdTreeAdSet = {
         [key: string]: (string);
     } | null;
     /**
-     * Individual ads within this ad set (capped at 100). When the ad set has more than 100 ads these are the 100 highest-spending over the requested date range, so this array depends on `fromDate`/`toDate`; `adCount` is always the true ad set size. Returns a subset of Ad fields from the aggregation: `_id`, `name`, `platform`, `status`, `configuredStatus`, `reviewStatus`, `budget`, `metrics`, `creative`, `goal` and the `platform*` ids are always included; `targeting` and `schedule` may be absent. `configuredStatus` (the ad's own on/off toggle) and `reviewStatus` (the platform's review verdict) are part of this contract, not incidental: a rejected ad is only distinguishable from a healthy one through `reviewStatus`. When `timeIncrement=1&dailyLevel=ad`, each entry also carries a `daily[]` array of `AdDailyMetrics`.
+     * Individual ads within this ad set (capped at 100). With more than 100 ads these are the 100 highest-spending over the requested date range, so the array depends on `fromDate`/`toDate`. `adCount` is always the true ad set size.
+     *
+     * A subset of Ad fields from the aggregation. Always included: `_id`, `name`, `platform`, `status`, `configuredStatus`, `reviewStatus`, `budget`, `metrics`, `creative`, `goal` and the `platform*` ids. `targeting` and `schedule` may be absent.
+     *
+     * `configuredStatus` (the ad's own on/off toggle) and `reviewStatus` (the platform's review verdict) are part of this contract, not incidental: only `reviewStatus` distinguishes a rejected ad from a healthy one.
+     *
+     * When `timeIncrement=1&dailyLevel=ad`, each entry also carries a `daily[]` array of `AdDailyMetrics`.
+     *
      */
     ads?: Array<Ad>;
     /**
@@ -2110,7 +2238,12 @@ export type AdTreeAdSet = {
 };
 
 /**
- * Meta only. Where the ad set stands in Meta's learning phase, as of the last sync: LEARNING while delivery is still being optimized (about 50 optimization events in 7 days end it), SUCCESS once it has left learning, FAIL when it could not gather enough events (Ads Manager's "Learning limited"). Null on other platforms and for ad sets not yet synced.
+ * Meta only. Where the ad set stands in Meta's learning phase, as of the last sync. Null on other platforms and for ad sets not yet synced.
+ *
+ * - LEARNING: delivery is still being optimized (about 50 optimization events in 7 days end it).
+ * - SUCCESS: it has left learning.
+ * - FAIL: it could not gather enough events (Ads Manager's "Learning limited").
+ *
  */
 export type learningStatus = 'LEARNING' | 'SUCCESS' | 'FAIL';
 
@@ -2122,7 +2255,12 @@ export type AdTreeCampaign = {
     platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
     campaignName?: string;
     /**
-     * Earliest `platformCreatedAt` (platform ad creation time; falls back to `createdAt`, Zernio's sync time, for ads synced before that field existed) across every ad in the campaign. Not the platform campaign's own creation time (Meta's `Campaign.created_time` etc. is not synced). A campaign created empty and populated later will show its first ad's time, not the campaign's. Usable for sorting "most recently created" without the numeric-campaign-id heuristic. Same source as `AdTreeAdSet.createdTime` and `Ad.platformCreatedAt`; mirrors `AdCampaign.earliestAd`.
+     * Earliest `platformCreatedAt` across every ad in the campaign (platform ad creation time; falls back to `createdAt`, Zernio's sync time, for ads synced before that field existed).
+     *
+     * Not the platform campaign's own creation time (Meta's `Campaign.created_time` etc. is not synced). A campaign created empty and populated later shows its first ad's time, not the campaign's.
+     *
+     * Usable for sorting "most recently created" without the numeric-campaign-id heuristic. Same source as `AdTreeAdSet.createdTime` and `Ad.platformCreatedAt`; mirrors `AdCampaign.earliestAd`.
+     *
      */
     createdTime?: (string) | null;
     /**
@@ -2196,7 +2334,11 @@ export type AdTreeCampaign = {
      */
     profileId?: string;
     /**
-     * TikTok only. true when the campaign is an Upgraded Smart+ campaign (TikTok lists it on /smart_plus/campaign/get/), false when it is not. Set by ads sync, so the key is absent on other platforms and on TikTok campaigns not synced since this field shipped. On Smart+ objects Zernio can pause, resume, rename, delete and change the budget of the campaign and ad set, and pause or resume an ad; other edits answer 422 and belong in TikTok Ads Manager.
+     * TikTok only. true when the campaign is an Upgraded Smart+ campaign (TikTok lists it on /smart_plus/campaign/get/), false when it is not.
+     *
+     * Set by ads sync, so the key is absent on other platforms and on TikTok campaigns not synced since this field shipped.
+     *
+     * On Smart+ objects Zernio can pause, resume, rename, delete and change the budget of the campaign and ad set, and pause or resume an ad. Other edits answer 422 and belong in TikTok Ads Manager.
      */
     isSmartPlus?: boolean;
     /**
@@ -2208,7 +2350,14 @@ export type AdTreeCampaign = {
      */
     platformObjective?: (string) | null;
     /**
-     * A single string when every ad set shares one optimization goal; a JSON array of the distinct goals when ad sets differ (never a comma-joined string); array element order is not guaranteed, treat it as an unordered set; the key is absent when no ad set carries a goal. Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION. LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE); `NONE` with a manual costType is a campaign LinkedIn will not deliver.
+     * The ad sets' optimization goal.
+     *
+     * - A single string when every ad set shares one goal.
+     * - A JSON array of the distinct goals when ad sets differ (never a comma-joined string). Element order is not guaranteed; treat it as an unordered set.
+     * - Absent when no ad set carries a goal.
+     *
+     * Meta: e.g. OFFSITE_CONVERSIONS, VALUE, LEAD_GENERATION. LinkedIn: the campaign optimizationTargetType (e.g. MAX_CLICK, MAX_IMPRESSION, NONE); `NONE` with a manual costType is a campaign LinkedIn will not deliver.
+     *
      */
     optimizationGoal?: (string | Array<(string)>);
     /**
@@ -2339,10 +2488,9 @@ export type AnalyticsDeltaEntry = {
      */
     publishedAt: string;
     /**
-     * When the sync cycle that produced this snapshot STARTED, ISO-8601 UTC. This
-     * is NOT the order entries arrive in and it is not a resume point: a slow cycle
-     * writes its rows after a faster cycle that started later, so `syncedAt` can go
-     * backwards between consecutive entries. Use `nextCursor` to resume.
+     * When the sync cycle that produced this snapshot STARTED, ISO-8601 UTC.
+     *
+     * This is NOT the order entries arrive in and not a resume point: a slow cycle writes its rows after a faster cycle that started later, so `syncedAt` can go backwards between consecutive entries. Use `nextCursor` to resume.
      *
      */
     syncedAt: string;
@@ -2415,7 +2563,16 @@ export type AnalyticsDeltaEntry = {
          */
         replays?: number;
         /**
-         * Facebook Reels and TikTok business lane: share still watching at each second of playback, fractions 0 to 1. Facebook Reels (Meta post_video_retention_graph): the base is a subset of plays that Meta selects and does not expose: on small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays. Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. TikTok accounts connected through the TikTok for Business app also fill it from TikTok video_view_retention: share still watching at each whole second, fractions 0 to 1, at most 61 points, thinned evenly on videos longer than 60 s. Empty object for other media and platforms.
+         * Share of viewers still watching at each second of playback, as fractions 0 to 1. Filled for Facebook Reels and the TikTok business lane; an empty object for other media and platforms.
+         *
+         * **Facebook Reels** (Meta post_video_retention_graph):
+         *
+         * - The base is a subset of plays that Meta selects and does not expose. On small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays.
+         * - Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s).
+         * - Loops count as continued playback, so a short Reel's curve runs past its length (an 8 s Reel has keys "0" to "12").
+         * - Meta returns at most 41 points, so a long Reel covers only its first 40 s.
+         *
+         * **TikTok** (accounts connected through the TikTok for Business app, from TikTok video_view_retention): share still watching at each whole second, fractions 0 to 1, at most 61 points, thinned evenly on videos longer than 60 s.
          */
         retentionCurve?: {
             [key: string]: (number);
@@ -2466,7 +2623,12 @@ export type AnalyticsListResponse = {
         platformPostUrl?: string;
         isExternal?: boolean;
         /**
-         * True when this post's metrics include paid delivery, so organic reporting should exclude it. Set for LinkedIn dark posts and for TikTok posts that one of your TikTok ads promotes (Spark / boosted). TikTok exposes no ad flag of its own, so a video created by an uploaded-asset (non-Spark) TikTok ad is posted to the profile with a fresh organic id and cannot be detected: those still report as false.
+         * True when this post's metrics include paid delivery, so organic reporting should exclude it.
+         *
+         * Set for LinkedIn dark posts and for TikTok posts one of your TikTok ads promotes (Spark / boosted).
+         *
+         * TikTok exposes no ad flag of its own. A video created by an uploaded-asset (non-Spark) TikTok ad is posted to the profile with a fresh organic id and cannot be detected, so those still report false.
+         *
          */
         isAd?: boolean;
         profileId?: (string) | null;
@@ -2476,7 +2638,11 @@ export type AnalyticsListResponse = {
         thumbnailUrl?: string;
         mediaType?: 'image' | 'video' | 'gif' | 'document' | 'carousel' | 'text';
         /**
-         * All media items for this post. Carousel posts contain one entry per slide. Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring). Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
+         * All media items for this post. Carousel posts contain one entry per slide.
+         *
+         * - Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring).
+         * - Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
+         *
          */
         mediaItems?: Array<{
             type?: 'image' | 'video';
@@ -2545,7 +2711,11 @@ export type AnalyticsSinglePostResponse = {
      */
     latePostId?: (string) | null;
     /**
-     * Overall post status. "partial" when some platforms published and others failed. While any platform is still pending or processing, the post's own status is returned instead (usually scheduled or publishing), even if another platform already published. A post with no published or failed platform (for example every platform cancelled) returns its own status with syncStatus unavailable and no platformAnalytics.
+     * Overall post status. "partial" when some platforms published and others failed.
+     *
+     * While any platform is still pending or processing, the post's own status is returned instead (usually scheduled or publishing), even if another platform already published.
+     *
+     * A post with no published or failed platform (for example every platform cancelled) returns its own status with syncStatus unavailable and no platformAnalytics.
      */
     status?: 'published' | 'failed' | 'partial' | 'scheduled' | 'publishing' | 'draft' | 'cancelled';
     content?: string;
@@ -2570,7 +2740,11 @@ export type AnalyticsSinglePostResponse = {
     thumbnailUrl?: (string) | null;
     mediaType?: ('image' | 'video' | 'carousel' | 'text') | null;
     /**
-     * All media items for this post. Carousel posts contain one entry per slide. Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring). Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
+     * All media items for this post. Carousel posts have one entry per slide.
+     *
+     * - Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring).
+     * - Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
+     *
      */
     mediaItems?: Array<{
         type?: 'image' | 'video';
@@ -2614,7 +2788,11 @@ export type AnalyticsSinglePostResponse = {
 };
 
 /**
- * Overall post status. "partial" when some platforms published and others failed. While any platform is still pending or processing, the post's own status is returned instead (usually scheduled or publishing), even if another platform already published. A post with no published or failed platform (for example every platform cancelled) returns its own status with syncStatus unavailable and no platformAnalytics.
+ * Overall post status. "partial" when some platforms published and others failed.
+ *
+ * While any platform is still pending or processing, the post's own status is returned instead (usually scheduled or publishing), even if another platform already published.
+ *
+ * A post with no published or failed platform (for example every platform cancelled) returns its own status with syncStatus unavailable and no platformAnalytics.
  */
 export type status5 = 'published' | 'failed' | 'partial' | 'scheduled' | 'publishing' | 'draft' | 'cancelled';
 
@@ -2638,11 +2816,21 @@ export type ApiChangelogEntry = {
      */
     type: 'new_feature' | 'breaking_change' | 'improvement' | 'deprecation' | 'minor';
     /**
-     * What an integrator has to do, computed from the OpenAPI diff rather than from the prose. `action_required`: an existing call or parser can break (an operation, parameter or field removed, a field newly required, a type narrowed, an enum value removed, or authentication changed). `additive`: only new or looser things, existing integrations keep working. `none`: descriptions or examples only. Null on entries published before October 2026.
+     * What an integrator has to do, computed from the OpenAPI diff rather than the prose. Null on entries published before October 2026.
+     *
+     * - `action_required`: an existing call or parser can break (an operation, parameter or field removed, a field newly required, a type narrowed, an enum value removed, or authentication changed).
+     * - `additive`: only new or looser things; existing integrations keep working.
+     * - `none`: descriptions or examples only.
+     *
      */
     impact: ('none' | 'additive' | 'action_required') | null;
     /**
-     * Platform and area slugs the entry is about: a platform (`instagram`, `facebook`, `threads`, `tiktok`, `x`, `linkedin`, `youtube`, `pinterest`, `reddit`, `bluesky`, `telegram`, `snapchat`, `whatsapp`, `discord`, `slack`, `google-business`, `imessage`), an ads platform (`meta-ads`, `google-ads`, `tiktok-ads`, `linkedin-ads`, `pinterest-ads`, `x-ads`) or an area (`ads`, `publishing`, `inbox`, `telephony`, `commerce`, `analytics`, `webhooks`, `general`). Filter with the `platform` query parameter.
+     * Platform and area slugs the entry is about. Filter with the `platform` query parameter.
+     *
+     * - Platform: `instagram`, `facebook`, `threads`, `tiktok`, `x`, `linkedin`, `youtube`, `pinterest`, `reddit`, `bluesky`, `telegram`, `snapchat`, `whatsapp`, `discord`, `slack`, `google-business`, `imessage`.
+     * - Ads platform: `meta-ads`, `google-ads`, `tiktok-ads`, `linkedin-ads`, `pinterest-ads`, `x-ads`.
+     * - Area: `ads`, `publishing`, `inbox`, `telephony`, `commerce`, `analytics`, `webhooks`, `general`.
+     *
      */
     platforms: Array<(string)>;
     /**
@@ -2692,7 +2880,12 @@ export type ApiChangelogEntry = {
 export type type4 = 'new_feature' | 'breaking_change' | 'improvement' | 'deprecation' | 'minor';
 
 /**
- * What an integrator has to do, computed from the OpenAPI diff rather than from the prose. `action_required`: an existing call or parser can break (an operation, parameter or field removed, a field newly required, a type narrowed, an enum value removed, or authentication changed). `additive`: only new or looser things, existing integrations keep working. `none`: descriptions or examples only. Null on entries published before October 2026.
+ * What an integrator has to do, computed from the OpenAPI diff rather than the prose. Null on entries published before October 2026.
+ *
+ * - `action_required`: an existing call or parser can break (an operation, parameter or field removed, a field newly required, a type narrowed, an enum value removed, or authentication changed).
+ * - `additive`: only new or looser things; existing integrations keep working.
+ * - `none`: descriptions or examples only.
+ *
  */
 export type impact = 'none' | 'additive' | 'action_required';
 
@@ -2737,7 +2930,16 @@ export type ApiKey = {
      */
     permission?: 'read-write' | 'read';
     /**
-     * Resource groups this key can NOT access (opt-out denylist). Absent or empty means legacy full access. A key with any group disabled is a restricted key (zrk_ prefix) and can never manage API keys, invites, or member identity. Each operation's group is published as x-resource-group. With 'messages' disabled, the key cannot read or send direct messages through any API surface, and it cannot create or edit a webhook subscription broader than itself: it cannot subscribe to, test-fire, redeliver, or read delivery logs for message events. Subscriptions created earlier, from the dashboard, or with a full-access key keep delivering whatever their own `disabledResourceGroups` allows, so restricting an existing integration end to end means restricting the subscription too. OAuth connector tokens (AI assistants and MCP clients) resolve against the same registry, but their groups are not settable yet: treat an authorized connector as full access.
+     * Resource groups this key can NOT access (opt-out denylist). Absent or empty means legacy full access. Each operation's group is published as x-resource-group.
+     *
+     * A key with any group disabled is a restricted key (zrk_ prefix) and can never manage API keys, invites, or member identity.
+     *
+     * With 'messages' disabled, the key cannot read or send direct messages through any API surface. It also cannot create or edit a webhook subscription broader than itself: no subscribing to, test-firing, redelivering, or reading delivery logs for message events.
+     *
+     * Subscriptions created earlier, from the dashboard, or with a full-access key keep delivering whatever their own `disabledResourceGroups` allows. To restrict an existing integration end to end, restrict the subscription too.
+     *
+     * OAuth connector tokens (AI assistants and MCP clients) resolve against the same registry, but their groups are not settable yet: treat an authorized connector as full access.
+     *
      */
     disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files')>;
     /**
@@ -2940,7 +3142,11 @@ export type status6 = 'publish' | 'future' | 'draft' | 'pending' | 'private';
  */
 export type BlueskyPlatformData = {
     /**
-     * Language(s) of the post text as 1-3 BCP-47 codes (e.g. "pt", "en-US"), written to the post record's langs field. Bluesky feed generators filter on this field, so posts without it never appear in language-scoped feeds. Can only be set at creation (Bluesky has no post editing). When threadItems is used, every item in the thread carries the same langs. When omitted, the account's default (set via PATCH /v1/accounts/{accountId}/bluesky-settings) applies; with no default either, the field is absent from the record.
+     * Language(s) of the post text as 1-3 BCP-47 codes (e.g. "pt", "en-US"), written to the post record's langs field. Bluesky feed generators filter on it, so posts without it never appear in language-scoped feeds.
+     *
+     * - Can only be set at creation (Bluesky has no post editing).
+     * - With threadItems, every item in the thread carries the same langs.
+     * - When omitted, the account's default (set via PATCH /v1/accounts/{accountId}/bluesky-settings) applies. With no default either, the field is absent from the record.
      *
      */
     langs?: Array<(string)>;
@@ -3036,7 +3242,18 @@ export type BrandedCallingIdentity = {
     };
     references?: BrandedCallingReferences;
     /**
-     * requested = in Zernio review; changes_requested = answer the review (PATCH); pending_email_verification = confirm the code emailed to the authorizer; in_review = with the carrier vetting team; verified = attach numbers; rejected = fix and PATCH to resubmit; suspended = an infringement claim is open; expired = the yearly verification lapsed; permanently_rejected = terminal.
+     * Verification status:
+     *
+     * - requested: in Zernio review
+     * - changes_requested: answer the review (PATCH)
+     * - pending_email_verification: confirm the code emailed to the authorizer
+     * - in_review: with the carrier vetting team
+     * - verified: attach numbers
+     * - rejected: fix and PATCH to resubmit
+     * - suspended: an infringement claim is open
+     * - expired: the yearly verification lapsed
+     * - permanently_rejected: terminal
+     *
      */
     status?: 'requested' | 'changes_requested' | 'rejected' | 'pending_email_verification' | 'in_review' | 'verified' | 'suspended' | 'expired' | 'permanently_rejected';
     rejectionReasons?: Array<{
@@ -3078,7 +3295,18 @@ export type BrandedCallingIdentity = {
 };
 
 /**
- * requested = in Zernio review; changes_requested = answer the review (PATCH); pending_email_verification = confirm the code emailed to the authorizer; in_review = with the carrier vetting team; verified = attach numbers; rejected = fix and PATCH to resubmit; suspended = an infringement claim is open; expired = the yearly verification lapsed; permanently_rejected = terminal.
+ * Verification status:
+ *
+ * - requested: in Zernio review
+ * - changes_requested: answer the review (PATCH)
+ * - pending_email_verification: confirm the code emailed to the authorizer
+ * - in_review: with the carrier vetting team
+ * - verified: attach numbers
+ * - rejected: fix and PATCH to resubmit
+ * - suspended: an infringement claim is open
+ * - expired: the yearly verification lapsed
+ * - permanently_rejected: terminal
+ *
  */
 export type status7 = 'requested' | 'changes_requested' | 'rejected' | 'pending_email_verification' | 'in_review' | 'verified' | 'suspended' | 'expired' | 'permanently_rejected';
 
@@ -3966,7 +4194,10 @@ export type CampaignAnalyticsResponse = {
             message?: string;
         }>;
         /**
-         * TikTok only: TikTok metric names TikTok refused for a breakdown, keyed by the requested breakdown (e.g. total_purchase and total_purchase_value have no relation to platform, ac or language). Every row value derived from a refused metric is null in that breakdown (purchaseValue and roas, or the matching actions and actionValues entries), never a number computed without it. Absent when no metric was refused.
+         * TikTok only: TikTok metric names TikTok refused for a breakdown, keyed by the requested breakdown (e.g. total_purchase and total_purchase_value have no relation to platform, ac or language). Absent when no metric was refused.
+         *
+         * Every row value derived from a refused metric is null in that breakdown (purchaseValue and roas, or the matching actions and actionValues entries), never a number computed without it.
+         *
          */
         breakdownDroppedMetrics?: {
             [key: string]: Array<(string)>;
@@ -4374,23 +4605,19 @@ export type CommentAutomationAudience = {
     minFollowerCount?: number;
     /**
      * What to do when Instagram will not reveal the follow relationship.
-     * * `send` (default) - deliver the DM anyway (fails open).
-     * * `skip` - stay silent.
-     * * `verify` - send `followGate.message` with a confirm button. Tapping it is a
-     * message, which grants consent, so the re-check on the tap resolves and the
-     * real DM (or `followGate.notFollowingMessage`) follows automatically. The tap
-     * re-checks the follow relationship live, with no cached answer. A known
-     * non-follower gets `followGate.notFollowingMessage`, never the DM. If Instagram
-     * still will not reveal the relationship on the tap, or the lookup fails, the DM
-     * is delivered (fails open).
+     *
+     * - `send` (default): deliver the DM anyway (fails open).
+     * - `skip`: stay silent.
+     * - `verify`: send `followGate.message` with a confirm button. Tapping it is a message, which grants consent, so the re-check on the tap resolves and the real DM (or `followGate.notFollowingMessage`) follows automatically.
+     *
+     * With `verify`, the tap re-checks the follow relationship live, with no cached answer. A known non-follower gets `followGate.notFollowingMessage`, never the DM. If Instagram still will not reveal the relationship on the tap, or the lookup fails, the DM is delivered (fails open).
      *
      */
     whenUnknown?: 'send' | 'skip' | 'verify';
     /**
-     * Send `followGate.message` with its button to EVERY commenter and deliver the real
-     * DM when they tap it, with no follow check at any point. Cannot be combined with a
-     * `followerStatus` other than `any` or with `minFollowerCount` (400); `whenUnknown`
-     * is ignored. Instagram only. A PATCH that sends `audience` without this field clears it.
+     * Instagram only. Send `followGate.message` with its button to EVERY commenter and deliver the real DM when they tap it, with no follow check at any point.
+     *
+     * Cannot be combined with a `followerStatus` other than `any` or with `minFollowerCount` (400); `whenUnknown` is ignored. A PATCH that sends `audience` without this field clears it.
      *
      */
     tapToUnlock?: boolean;
@@ -4400,24 +4627,20 @@ export type followerStatus = 'any' | 'follower' | 'non_follower';
 
 /**
  * What to do when Instagram will not reveal the follow relationship.
- * * `send` (default) - deliver the DM anyway (fails open).
- * * `skip` - stay silent.
- * * `verify` - send `followGate.message` with a confirm button. Tapping it is a
- * message, which grants consent, so the re-check on the tap resolves and the
- * real DM (or `followGate.notFollowingMessage`) follows automatically. The tap
- * re-checks the follow relationship live, with no cached answer. A known
- * non-follower gets `followGate.notFollowingMessage`, never the DM. If Instagram
- * still will not reveal the relationship on the tap, or the lookup fails, the DM
- * is delivered (fails open).
+ *
+ * - `send` (default): deliver the DM anyway (fails open).
+ * - `skip`: stay silent.
+ * - `verify`: send `followGate.message` with a confirm button. Tapping it is a message, which grants consent, so the re-check on the tap resolves and the real DM (or `followGate.notFollowingMessage`) follows automatically.
+ *
+ * With `verify`, the tap re-checks the follow relationship live, with no cached answer. A known non-follower gets `followGate.notFollowingMessage`, never the DM. If Instagram still will not reveal the relationship on the tap, or the lookup fails, the DM is delivered (fails open).
  *
  */
 export type whenUnknown = 'send' | 'skip' | 'verify';
 
 /**
- * An image, video, audio clip or file sent right after the DM text as a second message
- * (a Meta message carries one body, so text and attachment are two sends). On the comment
- * trigger Meta may refuse the second message until the commenter replies; the DM then
- * still counts as sent and the log row carries `mediaError`.
+ * An image, video, audio clip or file sent right after the DM text as a second message (a Meta message carries one body, so text and attachment are two sends).
+ *
+ * On the comment trigger, Meta may refuse the second message until the commenter replies. The DM then still counts as sent and the log row carries `mediaError`.
  *
  */
 export type CommentAutomationDmMedia = {
@@ -4447,7 +4670,11 @@ export type CommentAutomationFollowGate = {
      */
     profileButtonLabel?: string;
     /**
-     * Sent to a commenter we know does not follow (followerStatus=follower), and after a confirm tap that does not unlock the DM. When following is what would unlock it, the message carries the confirm button so they can re-check once they follow; above 640 characters it goes out as plain text without the button. Omit to stay silent on a keyword comment; a confirm tap always gets an answer (a default message is used).
+     * Sent to a commenter we know does not follow (followerStatus=follower), and after a confirm tap that does not unlock the DM.
+     *
+     * - When following would unlock it, the message carries the confirm button so they can re-check once they follow. Above 640 characters it goes out as plain text without the button.
+     * - Omit to stay silent on a keyword comment. A confirm tap always gets an answer (a default message is used).
+     *
      */
     notFollowingMessage?: string;
 };
@@ -4464,7 +4691,11 @@ export type CommentAutomationLog = {
      */
     source?: ('comment' | 'live_comment' | 'story_reply' | 'story_mention' | 'dm') | null;
     /**
-     * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap. 'skipped' also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
+     * DM outcome:
+     *
+     * - 'pending': the automation has a dmDelaySeconds and the response is queued but not sent yet.
+     * - 'gated': the follow-gate confirmation DM went out and we are waiting for the tap. It flips to 'sent' or 'skipped' when they tap.
+     * - 'skipped': also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
      */
     status?: 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
     /**
@@ -4544,7 +4775,11 @@ export type CommentAutomationLog = {
 export type source = 'comment' | 'live_comment' | 'story_reply' | 'story_mention' | 'dm';
 
 /**
- * DM outcome. 'pending' = the automation has a dmDelaySeconds and the response is queued but not sent yet. 'gated' = the follow-gate confirmation DM went out and we are waiting for the tap; it flips to 'sent' or 'skipped' when they tap. 'skipped' also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
+ * DM outcome:
+ *
+ * - 'pending': the automation has a dmDelaySeconds and the response is queued but not sent yet.
+ * - 'gated': the follow-gate confirmation DM went out and we are waiting for the tap. It flips to 'sent' or 'skipped' when they tap.
+ * - 'skipped': also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
  */
 export type status16 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
 
@@ -4574,10 +4809,9 @@ export type CommentAutomationQuickReply = {
 
 /**
  * Whether a commenter can receive this automation's DM more than once.
- * * `once` (default) - one DM per person per door, ever.
- * * `every_comment` - every new matching comment is eligible again. One comment
- * is still answered at most once. `cooldownHours` suppresses a repeat sent to the
- * same person within that many hours.
+ *
+ * - `once` (default): one DM per person per door, ever.
+ * - `every_comment`: every new matching comment is eligible again; one comment is still answered at most once. `cooldownHours` suppresses a repeat to the same person within that many hours.
  *
  */
 export type CommentAutomationRepeatPolicy = {
@@ -4631,14 +4865,11 @@ export type CommentAutomationStats = {
 };
 
 /**
- * A Meta generic template (product card) sent as the automation's first DM.
- * It REPLACES the plain `dmMessage` bubble: a Meta message carries one body
- * shape, and a comment gets exactly one private reply, so the card and the
- * text cannot both be delivered. Put your selling copy in `subtitle`.
- * Mutually exclusive with `buttons` (sending both is a 400). Works on every
- * Instagram and Facebook trigger.
- * Up to 10 elements, rendered as a horizontally swipeable carousel.
- * Rendering confirmed on the Instagram and Messenger mobile apps.
+ * A Meta generic template (product card) sent as the automation's first DM. Works on every Instagram and Facebook trigger.
+ *
+ * It REPLACES the plain `dmMessage` bubble: a Meta message carries one body shape and a comment gets exactly one private reply, so the card and the text cannot both be delivered. Put your selling copy in `subtitle`.
+ *
+ * Mutually exclusive with `buttons` (sending both is a 400). Up to 10 elements, rendered as a horizontally swipeable carousel. Rendering confirmed on the Instagram and Messenger mobile apps.
  *
  */
 export type CommentAutomationTemplate = {
@@ -5443,24 +5674,16 @@ export type ConnectWelcomeScreen = {
 };
 
 /**
- * The ad that opened the conversation, enriched from the ads Zernio syncs for
- * the account owner. null when the conversation did not start from a Meta
- * referral (ad click or ig.me / m.me ref link).
+ * The ad that opened the conversation, enriched from the ads Zernio syncs for the account owner. null when the conversation did not start from a Meta referral (ad click or ig.me / m.me ref link).
  *
- * Meta's referral carries the ad ID but no campaign or ad set ID. When the ad
- * is in your synced ads (`GET /v1/ads`), `synced` is true and the ad name,
- * campaign, ad set and ad account come from there. Otherwise `synced` is false,
- * `name` falls back to the ad title (Instagram, Facebook) or headline (WhatsApp)
- * Meta sent with the click, and the other fields are null.
+ * Meta's referral carries the ad ID but no campaign or ad set ID.
  *
- * A team member limited to some profiles, or an API key scoped to profiles, is
- * enriched only from the ads it can list with `GET /v1/ads`; any other ad comes
- * back `synced` false.
+ * - Ad in your synced ads (`GET /v1/ads`): `synced` is true and the ad name, campaign, ad set and ad account come from there.
+ * - Otherwise: `synced` is false, `name` falls back to the ad title (Instagram, Facebook) or headline (WhatsApp) Meta sent with the click, and the other fields are null.
  *
- * A non-null object with `adId` null is a referral that is not an ad click:
- * an ig.me / m.me ref link (`name` null) or a WhatsApp click on a post
- * (`ctwa_source_type` post, `name` is Meta's headline). Nothing is looked up
- * in your ads for it and `synced` is false.
+ * A team member limited to some profiles, or a profile-scoped API key, is enriched only from ads it can list with `GET /v1/ads`; any other ad returns `synced` false.
+ *
+ * A non-null object with `adId` null is a referral that is not an ad click: an ig.me / m.me ref link (`name` null) or a WhatsApp click on a post (`ctwa_source_type` post, `name` is Meta's headline). Nothing is looked up and `synced` is false.
  *
  */
 export type ConversationAdAttribution = {
@@ -5642,18 +5865,15 @@ export type status20 = 'active' | 'inactive';
  */
 export type ConversionEvent = {
     /**
-     * Standard event name (Purchase, Lead, CompleteRegistration, AddToCart,
-     * InitiateCheckout, AddPaymentInfo, Subscribe, StartTrial, ViewContent,
-     * Search, Contact, SubmitApplication, Schedule) or a custom string
-     * (only supported on platforms that accept custom events: Meta,
-     * OpenAI Ads and Reddit).
+     * Standard event name (Purchase, Lead, CompleteRegistration, AddToCart, InitiateCheckout, AddPaymentInfo, Subscribe, StartTrial, ViewContent, Search, Contact, SubmitApplication, Schedule) or a custom string. Custom strings work only on platforms that accept custom events: Meta, OpenAI Ads and Reddit.
      *
      * Per-platform behavior:
+     *
      * - Meta: free-form; standard names match Meta's built-ins.
      * - Google: ignored. The conversion action's category determines the type.
      * - LinkedIn: ignored. The conversion rule's `type` is locked to the destination.
-     * - OpenAI Ads: a fixed subset of standard names (Purchase, Lead, AddToCart, ViewContent, InitiateCheckout, CompleteRegistration, Subscribe, StartTrial, Schedule) maps 1:1 onto OpenAI's own event-type enum; anything else is sent as a custom event with the name preserved.
-     * - Reddit: Purchase, Lead, CompleteRegistration (SIGN_UP), AddToCart, AddToWishlist, ViewContent, Search and PageView (PAGE_VISIT) map onto Reddit's tracking types; anything else is sent as a CUSTOM event with the name preserved.
+     * - OpenAI Ads: a fixed subset (Purchase, Lead, AddToCart, ViewContent, InitiateCheckout, CompleteRegistration, Subscribe, StartTrial, Schedule) maps 1:1 onto OpenAI's own event-type enum. Anything else is sent as a custom event with the name preserved.
+     * - Reddit: Purchase, Lead, CompleteRegistration (SIGN_UP), AddToCart, AddToWishlist, ViewContent, Search and PageView (PAGE_VISIT) map onto Reddit's tracking types. Anything else is sent as a CUSTOM event with the name preserved.
      *
      */
     eventName: string;
@@ -5662,12 +5882,12 @@ export type ConversionEvent = {
      */
     eventTime: number;
     /**
-     * Unique dedup key. The same eventId must be used on pixel + CAPI
-     * to prevent double-counting. Mapped to event_id on Meta,
-     * transactionId on Google, eventId on LinkedIn (LinkedIn deduplicates
-     * against Insight Tag events with the same eventId; the Insight Tag
-     * event wins when both arrive), and `metadata.conversion_id` on Reddit
-     * (Reddit's dedup key against Reddit Pixel events).
+     * Unique dedup key. Use the same eventId on pixel + CAPI to prevent double-counting. Mapped to:
+     *
+     * - Meta: event_id.
+     * - Google: transactionId.
+     * - LinkedIn: eventId. LinkedIn deduplicates against Insight Tag events with the same eventId; the Insight Tag event wins when both arrive.
+     * - Reddit: `metadata.conversion_id` (Reddit's dedup key against Reddit Pixel events).
      *
      */
     eventId: string;
@@ -5815,15 +6035,12 @@ export type ConversionEvent = {
      */
     actionSource?: 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 'system_generated' | 'business_messaging';
     /**
-     * Meta only, read when `actionSource` is `business_messaging` (Conversions API
-     * for Business Messaging). `channel` is sent as the event's `messaging_channel`
-     * (`instagram_direct` goes out as `instagram`). Each id lands in Meta's
-     * `user_data` unhashed, and an id that does not belong to `channel` is ignored.
-     * Meta accepts only its business messaging event names here (`LeadSubmitted`,
-     * `QualifiedLead`, `Purchase`, `AddToCart`, `InitiateCheckout`, `ViewContent`,
-     * `OrderCreated`, `OrderShipped`, `OrderDelivered`, `OrderCanceled`,
-     * `OrderReturned`, `CartAbandoned`, `RatingProvided`, `ReviewProvided`);
-     * `eventName` is forwarded unchanged.
+     * Meta only, read when `actionSource` is `business_messaging` (Conversions API for Business Messaging).
+     *
+     * - `channel` is sent as the event's `messaging_channel` (`instagram_direct` goes out as `instagram`).
+     * - Each id lands in Meta's `user_data` unhashed. An id that does not belong to `channel` is ignored.
+     *
+     * Meta accepts only its business messaging event names here: `LeadSubmitted`, `QualifiedLead`, `Purchase`, `AddToCart`, `InitiateCheckout`, `ViewContent`, `OrderCreated`, `OrderShipped`, `OrderDelivered`, `OrderCanceled`, `OrderReturned`, `CartAbandoned`, `RatingProvided`, `ReviewProvided`. `eventName` is forwarded unchanged.
      *
      */
     messaging?: {
@@ -6186,9 +6403,10 @@ export type CreatorCampaignCaps = {
 };
 
 /**
- * How the campaign pays, picked by `type`. Amounts are USD cents. Every type carries
- * `budgetCents`, the most the campaign can pay out in total; once earnings reach it the
- * campaign stops accruing and `creator_campaign.budget_exhausted` fires.
+ * How the campaign pays, picked by `type`. Amounts are USD cents.
+ *
+ * Every type carries `budgetCents`, the most the campaign can pay out in total. Once earnings reach it, the campaign stops accruing and `creator_campaign.budget_exhausted` fires.
+ *
  * - `cpm`: `ratePer1kCents` per 1,000 eligible views, earned from `minViewsToEarn` views on, capped per post by `maxPayoutPerClipCents`.
  * - `per_post`: `perApprovedPostCents` for each approved post, at most `maxPostsPerParticipant` per participant.
  * - `pool`: `budgetCents` is split at close among approved posts by eligible views; a post needs `minViewsToQualify` views to share.
@@ -6390,31 +6608,24 @@ export type CreatorPortalSubmission = {
 };
 
 /**
- * In addition to the `required` list, the request must use
- * EXACTLY ONE of the two shapes:
+ * Besides the `required` list, the request must use EXACTLY ONE of these shapes:
  *
- * - Single-creative: `headline`, `body`, and one of `imageUrl` / `video`,
- * OR `platformPostId` / `objectStoryId` to reuse an organic post.
- * On POST /v1/ads/messaging, `placementAssets` can replace `imageUrl` / `video`.
- * - Carousel (messaging and CTWA): `body` and `carouselCards` (2-10 image
- * cards) instead of `imageUrl` / `video`, top level or per `creatives[]` entry.
- * - Multi-creative: a non-empty `creatives[]` array. Top-level
- * creative fields must NOT be set on this shape.
+ * - Single-creative: `headline`, `body`, and one of `imageUrl` / `video`, OR `platformPostId` / `objectStoryId` to reuse an organic post. On POST /v1/ads/messaging, `placementAssets` can replace `imageUrl` / `video`.
+ * - Carousel (messaging and CTWA): `body` and `carouselCards` (2-10 image cards) instead of `imageUrl` / `video`, top level or per `creatives[]` entry.
+ * - Multi-creative: a non-empty `creatives[]` array. Top-level creative fields must NOT be set on this shape.
  *
- * Existing post references work on messaging and CTWA only (not call ads).
- * They cannot be combined with each other or with headline, body, imageUrl
- * or video. `welcomeMessage` works on them (it lives on the ad, not the post).
+ * **Existing post references** work on messaging and CTWA only (not call ads). They cannot be combined with each other or with headline, body, imageUrl or video. `welcomeMessage` works on them (it lives on the ad, not the post).
+ *
  * No media is uploaded and the organic post is retained. Fresh creatives still require headline, body, and image or video.
  *
- * The route enforces this at the Zod boundary; OpenAPI's
- * `required` cannot express the OR cleanly.
+ * The route enforces this at the Zod boundary; OpenAPI's `required` cannot express the OR cleanly.
  *
- * Campaign, ad set and targeting fields match POST /v1/ads/create on
- * Meta and run through the same builders: the full targeting set
- * (including `rawTargeting`, `languages`, `gender`, exclusions and
- * `savedTargetingId`), `budgetLevel` (campaign budget), `startDate` /
- * `endDate` in the ad account timezone, and `existingCampaignId` to add
- * a new ad set to a campaign you already have.
+ * **Campaign, ad set and targeting fields** match POST /v1/ads/create on Meta and run through the same builders:
+ *
+ * - the full targeting set (including `rawTargeting`, `languages`, `gender`, exclusions and `savedTargetingId`);
+ * - `budgetLevel` (campaign budget);
+ * - `startDate` / `endDate` in the ad account timezone;
+ * - `existingCampaignId` to add a new ad set to a campaign you already have.
  *
  */
 export type CtwaAdRequestBody = {
@@ -6448,7 +6659,11 @@ export type CtwaAdRequestBody = {
      */
     adSetName?: string;
     /**
-     * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id run as the media owner (resolved from the media on a Meta ads business-login connection, so no Instagram connection is needed). Mutually exclusive with objectStoryId and fresh creative fields.
+     * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Mutually exclusive with objectStoryId and fresh creative fields.
+     *
+     * - Facebook IDs become object_story_id.
+     * - Instagram IDs become source_instagram_media_id, run as the media owner (resolved from the media on a Meta ads business-login connection, so no Instagram connection is needed).
+     *
      */
     platformPostId?: string;
     /**
@@ -6465,7 +6680,13 @@ export type CtwaAdRequestBody = {
      */
     pageId?: string;
     /**
-     * WhatsApp only. Optional E.164 number already paired with the Facebook Page. Omit to let Meta select the paired number. Sent to the creative CTA and, when creating a new ad set, its promoted_object. Meta can accept the number yet create the ad set without it; the response then carries a `warnings` entry. Attach requests do not change the existing ad set. Stored as creative.whatsappPhoneNumber on every created ad.
+     * WhatsApp only. Optional E.164 number already paired with the Facebook Page. Omit to let Meta select the paired number.
+     *
+     * - Sent to the creative CTA and, when creating a new ad set, its promoted_object.
+     * - Meta can accept the number yet create the ad set without it; the response then carries a `warnings` entry.
+     * - Attach requests do not change the existing ad set.
+     * - Stored as creative.whatsappPhoneNumber on every created ad.
+     *
      */
     whatsappPhoneNumber?: string;
     /**
@@ -6483,13 +6704,11 @@ export type CtwaAdRequestBody = {
      */
     body?: string;
     /**
-     * Link description, independent of `headline` and `body` (Meta's
-     * `link_data.description`, `video_data.link_description` on video,
-     * and the shared description of a `placementAssets` feed). Meta
-     * shows it mainly on Facebook Feed placements, under the headline,
-     * when there is room; Instagram, Stories, Reels and Messenger
-     * placements do not display it. Also accepted per entry in
-     * `creatives[]`. Not allowed with an existing post creative.
+     * Link description, independent of `headline` and `body`: Meta's `link_data.description`, `video_data.link_description` on video, and the shared description of a `placementAssets` feed.
+     *
+     * Meta shows it mainly on Facebook Feed placements, under the headline, when there is room. Instagram, Stories, Reels and Messenger placements do not display it.
+     *
+     * Also accepted per entry in `creatives[]`. Not allowed with an existing post creative.
      *
      */
     description?: string;
@@ -6541,12 +6760,9 @@ export type CtwaAdRequestBody = {
          */
         prefillText?: string;
         /**
-         * Tappable chips under the greeting instead of a prefilled
-         * message. Exactly one of prefillText or quickReplies. Put
-         * your own campaign or ad key in each payload: the tap arrives
-         * on the messages webhook with that payload even where Meta
-         * delivers no ad referral (Pages owned by an EU business under
-         * the Europe/Japan Messenger restrictions).
+         * Tappable chips under the greeting instead of a prefilled message. Exactly one of prefillText or quickReplies.
+         *
+         * Put your own campaign or ad key in each payload. The tap arrives on the messages webhook with that payload even where Meta delivers no ad referral (Pages owned by an EU business under the Europe/Japan Messenger restrictions).
          *
          */
         quickReplies?: Array<{
@@ -6561,47 +6777,42 @@ export type CtwaAdRequestBody = {
         }>;
     };
     /**
-     * Messaging and CTWA only (a 400 on POST /v1/ads/call). A hand-built carousel
-     * of 2-10 image cards, sent to Meta in the order given as
-     * `link_data.child_attachments` (by default Meta may reorder them for performance,
-     * since `multi_share_optimized` defaults to true; `optimizeCardOrder: false` keeps
-     * the order given); every
-     * card (and the carousel itself) carries the destination's messaging call to
-     * action (WHATSAPP_MESSAGE, MESSAGE_PAGE or INSTAGRAM_MESSAGE), so a tap on any
-     * card opens the conversation. Replaces `imageUrl` / `video` (sending either is
-     * a 400). `body` is required as the primary text; `headline` is optional and
-     * only names the creative (each card has its own `headline`); a top-level
-     * `description` is a 400 (set it per card). `welcomeMessage`,
-     * `whatsappPhoneNumber` and `destinations` apply as on a single-image ad. Also a
-     * 400 with `placementAssets`, `platformPostId`, `existingPostId` or
-     * `objectStoryId`. Single-creative shape; for `creatives[]` set it per entry.
+     * Messaging and CTWA only (a 400 on POST /v1/ads/call). A hand-built carousel of 2-10 image cards, sent to Meta in the given order as `link_data.child_attachments`.
+     *
+     * - Meta may reorder cards for performance, since `multi_share_optimized` defaults to true; `optimizeCardOrder: false` keeps your order.
+     * - Every card (and the carousel) carries the destination's messaging call to action (WHATSAPP_MESSAGE, MESSAGE_PAGE or INSTAGRAM_MESSAGE), so a tap on any card opens the conversation.
+     * - Replaces `imageUrl` / `video` (sending either is a 400).
+     * - `body` is required as the primary text. `headline` is optional and only names the creative (each card has its own `headline`). A top-level `description` is a 400 (set it per card).
+     * - `welcomeMessage`, `whatsappPhoneNumber` and `destinations` apply as on a single-image ad.
+     * - Also a 400 with `placementAssets`, `platformPostId`, `existingPostId` or `objectStoryId`.
+     * - Single-creative shape; for `creatives[]` set it per entry.
      *
      */
     carouselCards?: Array<MessagingCarouselCard>;
     /**
-     * Only with `carouselCards` (a 400 without them). Sets the creative's
-     * `link_data.multi_share_optimized`. `false` keeps the cards in the order given;
-     * Meta then takes at most 5 cards, so `false` with more than 5 `carouselCards` is a
-     * 400. `true` lets Meta pick and reorder the cards for performance (up to 10).
-     * Omitted, nothing is sent and Meta's default (`true`) applies. Single-creative
-     * shape; for `creatives[]` set it per entry.
+     * Only with `carouselCards` (a 400 without them). Single-creative shape; for `creatives[]` set it per entry. Sets the creative's `link_data.multi_share_optimized`.
+     *
+     * - `false`: keeps the cards in the order given. Meta then takes at most 5 cards, so `false` with more than 5 `carouselCards` is a 400.
+     * - `true`: lets Meta pick and reorder the cards for performance (up to 10).
+     * - Omitted: nothing is sent and Meta's default (`true`) applies.
      *
      */
     optimizeCardOrder?: boolean;
     /**
-     * Multi-creative shape: N CTWA ads under one campaign + one
-     * ad set, sharing budget and targeting. Mutually exclusive
-     * with the top-level single-creative fields (`headline` /
-     * `body` / `imageUrl` / `video`): setting both is a 400,
-     * unlike `POST /v1/ads/create` where the top-level fields
-     * are silently ignored in multi-creative mode. Each entry
-     * supplies headline, body, and image/video, or a platformPostId or
-     * objectStoryId reference. Fresh and existing creatives can be mixed.
+     * Multi-creative shape: N CTWA ads under one campaign + one ad set, sharing budget and targeting. Fresh and existing creatives can be mixed.
+     *
+     * Each entry supplies headline, body, and image/video, or a platformPostId or objectStoryId reference.
+     *
+     * Mutually exclusive with the top-level single-creative fields (`headline` / `body` / `imageUrl` / `video`): setting both is a 400. This differs from `POST /v1/ads/create`, where the top-level fields are silently ignored in multi-creative mode.
      *
      */
     creatives?: Array<{
         /**
-         * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Facebook IDs become object_story_id; Instagram IDs become source_instagram_media_id run as the media owner (resolved from the media on a Meta ads business-login connection, so no Instagram connection is needed). Mutually exclusive with objectStoryId and fresh creative fields.
+         * Messaging and CTWA only. Platform post or reel ID, the same input boostPost takes as platformPostId. Mutually exclusive with objectStoryId and fresh creative fields.
+         *
+         * - Facebook IDs become object_story_id.
+         * - Instagram IDs become source_instagram_media_id, run as the media owner (resolved from the media on a Meta ads business-login connection, so no Instagram connection is needed).
+         *
          */
         platformPostId?: string;
         /**
@@ -6683,28 +6894,18 @@ export type CtwaAdRequestBody = {
         carouselCards?: Array<MessagingCarouselCard>;
     }>;
     /**
-     * Attach the creatives to this EXISTING messaging ad set instead of
-     * building a campaign, so the ad set keeps its learning phase. It then
-     * owns budget, targeting and schedule, so `budgetAmount`, `budgetType`,
-     * `budgetLevel`, `startDate`, `endDate`, `objective`, `campaignStatus`,
-     * `adSetStatus`, `existingCampaignId`, the special ad category fields and every
-     * targeting field except `ageMin`, `ageMax`, `placements` and
-     * `advantageAudience` are rejected with a 400 alongside it. Its
-     * `destination_type` must match the ad's destination.
+     * Attaches the creatives to this EXISTING messaging ad set instead of building a campaign, so the ad set keeps its learning phase. Its `destination_type` must match the ad's destination.
+     *
+     * The ad set then owns budget, targeting and schedule, so these are rejected with a 400 alongside it: `budgetAmount`, `budgetType`, `budgetLevel`, `startDate`, `endDate`, `objective`, `campaignStatus`, `adSetStatus`, `existingCampaignId`, the special ad category fields, and every targeting field except `ageMin`, `ageMax`, `placements` and `advantageAudience`.
      *
      */
     adSetId?: string;
     /**
-     * Create the new messaging ad set (and its ads) under this EXISTING
-     * Meta campaign instead of a new one, e.g. several audience ad sets
-     * under one campaign. The campaign's objective must be
-     * OUTCOME_ENGAGEMENT, OUTCOME_SALES or OUTCOME_LEADS (400 otherwise).
-     * If the campaign has a campaign budget, omit `budgetAmount` and
-     * `budgetType` (400 if sent); otherwise they are required and land
-     * on the new ad set. `objective`, `campaignName`, `campaignStatus`,
-     * `budgetLevel`, `specialAdCategories`, `specialAdCategoryCountry`
-     * and `adSetId` are rejected alongside it. To add ads to an existing
-     * ad set instead, use `adSetId`.
+     * Creates the new messaging ad set (and its ads) under this EXISTING Meta campaign instead of a new one, e.g. several audience ad sets under one campaign. To add ads to an existing ad set instead, use `adSetId`.
+     *
+     * - The campaign's objective must be OUTCOME_ENGAGEMENT, OUTCOME_SALES or OUTCOME_LEADS (400 otherwise).
+     * - If the campaign has a campaign budget, omit `budgetAmount` and `budgetType` (400 if sent). Otherwise they are required and land on the new ad set.
+     * - `objective`, `campaignName`, `campaignStatus`, `budgetLevel`, `specialAdCategories`, `specialAdCategoryCountry` and `adSetId` are rejected alongside it.
      *
      */
     existingCampaignId?: string;
@@ -6763,13 +6964,9 @@ export type CtwaAdRequestBody = {
      */
     countries?: Array<(string)>;
     /**
-     * City-level geo targeting for local CTWA campaigns. Each entry maps to Meta's
-     * TargetingGeoLocationCity. `key` is Meta's city ID. `radius`
-     * and `distance_unit` are coupled: set both or neither.
-     * Meta enforces a minimum city radius (~17 km / 10 mi);
-     * smaller values resolve to a 0-size audience and the ad
-     * fails at launch. For a tighter catchment use customLocations
-     * (lat/lng).
+     * City-level geo targeting for local CTWA campaigns. Each entry maps to Meta's TargetingGeoLocationCity; `key` is Meta's city ID.
+     *
+     * `radius` and `distance_unit` are coupled: set both or neither. Meta enforces a minimum city radius (~17 km / 10 mi); smaller values resolve to a 0-size audience and the ad fails at launch. For a tighter catchment use customLocations (lat/lng).
      *
      */
     cities?: Array<{
@@ -6837,14 +7034,11 @@ export type CtwaAdRequestBody = {
      */
     audienceId?: string;
     /**
-     * Manual ad placements on the shared ad set. Omit
-     * for automatic placements. When set, restricts delivery to the chosen surfaces,
-     * mapped onto the ad set's `targeting.{publisher_platforms, facebook_positions, instagram_positions,
-     * messenger_positions, audience_network_positions, threads_positions,
-     * whatsapp_positions, device_platforms}`. Enum membership is validated here; Meta
-     * additionally enforces co-selection rules and restricts which
-     * placements are eligible for click-to-WhatsApp ads, returning an actionable
-     * error which we surface.
+     * Manual ad placements on the shared ad set. Omit for automatic placements.
+     *
+     * When set, restricts delivery to the chosen surfaces, mapped onto the ad set's `targeting.{publisher_platforms, facebook_positions, instagram_positions, messenger_positions, audience_network_positions, threads_positions, whatsapp_positions, device_platforms}`.
+     *
+     * Enum membership is validated here. Meta additionally enforces co-selection rules and restricts which placements are eligible for click-to-WhatsApp ads, returning an actionable error which we surface.
      *
      */
     placements?: {
@@ -6937,14 +7131,11 @@ export type CtwaAdRequestBody = {
      */
     targeting?: TargetingSpec;
     /**
-     * Meta targeting spec sent as the BASE layer of the ad set's
-     * `targeting`, exactly as POST /v1/ads/create does: use it for
-     * anything the flat fields cannot express, such as a layered
-     * `flexible_spec` (entries AND together, ids inside one entry OR).
+     * Meta targeting spec sent as the BASE layer of the ad set's `targeting`, exactly as POST /v1/ads/create does. Use it for anything the flat fields cannot express, such as a layered `flexible_spec` (entries AND together, ids inside one entry OR).
+     *
      * Flat fields you also send are layered on top and win per key.
-     * With rawTargeting present the US geo and `advantage_audience: 0`
-     * defaults are not injected, so include `targeting_automation` in
-     * it (or send `advantageAudience`), as Meta requires it on create.
+     *
+     * With rawTargeting present the US geo and `advantage_audience: 0` defaults are not injected, so include `targeting_automation` in it (or send `advantageAudience`), as Meta requires it on create.
      *
      */
     rawTargeting?: {
@@ -6981,23 +7172,21 @@ export type CtwaAdRequestBody = {
      */
     status?: 'ACTIVE' | 'PAUSED';
     /**
-     * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
-     * to `status`. `PAUSED` holds the new campaign off while the ad set and
-     * ads switch on (one resume call brings the whole hierarchy live);
-     * `ACTIVE` with `status: PAUSED` switches the campaign on and pauses the
-     * new ad set instead. Only meaningful when a new campaign is being
-     * created; rejected with a 400 alongside `adSetId` (the attach shape
-     * reuses an existing campaign).
+     * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults to `status`.
+     *
+     * - `PAUSED`: holds the new campaign off while the ad set and ads switch on (one resume call brings the whole hierarchy live).
+     * - `ACTIVE` with `status: PAUSED`: switches the campaign on and pauses the new ad set instead.
+     *
+     * Only meaningful when a new campaign is created. Rejected with a 400 alongside `adSetId` (the attach shape reuses an existing campaign).
      *
      */
     campaignStatus?: 'ACTIVE' | 'PAUSED';
     /**
-     * Ad-set-level status, same semantics as `POST /v1/ads/create`. Sets
-     * the new ad set's switch alone and overrides `status` for it. A
-     * level status (`campaignStatus`, `adSetStatus`, `adStatus`) always
-     * wins for its level, and `status: PAUSED` adds a hold of its own
-     * only when none of them is PAUSED. Rejected with a 400 alongside
-     * `adSetId` (that ad set already exists).
+     * Ad-set-level status, same semantics as `POST /v1/ads/create`. Sets the new ad set's switch alone and overrides `status` for it.
+     *
+     * A level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level, and `status: PAUSED` adds a hold of its own only when none of them is PAUSED.
+     *
+     * Rejected with a 400 alongside `adSetId` (that ad set already exists).
      *
      */
     adSetStatus?: 'ACTIVE' | 'PAUSED';
@@ -7055,26 +7244,24 @@ export type CtwaAdRequestBody = {
      */
     regionalRegulatedCategories?: Array<(string)>;
     /**
-     * Meta only. Verified identity IDs of the beneficiary and payer for each declared
-     * regionalRegulatedCategories value. Meta may require them on ad sets created through
-     * the API even when a default beneficiary and payer are set in Ads Manager advertising
-     * settings (seen on AUSTRALIA_FINSERV), so sending them explicitly is the reliable path.
-     * The value is the Verified identity ID (Meta Business Settings > Verified identities),
-     * not a Page or Business ID, and beneficiary and payer may be the same ID.
-     * Send each ID as a string of digits: Verified identity IDs can have 17 digits, more than a
-     * JSON number holds exactly, and a number that arrives rounded is rejected. Numbers up to
-     * 9007199254740991 are still accepted. The IDs reach Meta unchanged.
-     * Keys by category: AUSTRALIA_FINSERV uses australia_finserv_beneficiary /
-     * australia_finserv_payer; TAIWAN_FINSERV uses taiwan_finserv_beneficiary /
-     * taiwan_finserv_payer; INDIA_FINSERV uses india_finserv_beneficiary / india_finserv_payer;
-     * TAIWAN_UNIVERSAL uses taiwan_universal_beneficiary / taiwan_universal_payer;
-     * SINGAPORE_UNIVERSAL uses singapore_universal_beneficiary / singapore_universal_payer;
-     * AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL use
-     * universal_beneficiary / universal_payer. When Meta rejects the ad set for a missing verified
-     * advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys
-     * (the keys the declared categories expect), details.suggestedCategories (the markets Meta
-     * ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
-     * Ignored when adSetId adds the ad to an existing ad set.
+     * Meta only. Verified identity IDs of the beneficiary and payer for each declared regionalRegulatedCategories value. Ignored when adSetId adds the ad to an existing ad set.
+     *
+     * Meta may require them on API-created ad sets even when a default beneficiary and payer are set in Ads Manager (seen on AUSTRALIA_FINSERV), so sending them explicitly is the reliable path.
+     *
+     * **Value:** the Verified identity ID (Meta Business Settings > Verified identities), not a Page or Business ID. Beneficiary and payer may be the same ID. The IDs reach Meta unchanged.
+     *
+     * Send each ID as a string of digits: IDs can have 17 digits, more than a JSON number holds exactly, and a rounded number is rejected. Numbers up to 9007199254740991 are still accepted.
+     *
+     * **Keys by category:**
+     *
+     * - AUSTRALIA_FINSERV: australia_finserv_beneficiary / australia_finserv_payer
+     * - TAIWAN_FINSERV: taiwan_finserv_beneficiary / taiwan_finserv_payer
+     * - INDIA_FINSERV: india_finserv_beneficiary / india_finserv_payer
+     * - TAIWAN_UNIVERSAL: taiwan_universal_beneficiary / taiwan_universal_payer
+     * - SINGAPORE_UNIVERSAL: singapore_universal_beneficiary / singapore_universal_payer
+     * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL: universal_beneficiary / universal_payer
+     *
+     * When Meta rejects the ad set for a missing verified advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys (keys the declared categories expect), details.suggestedCategories (markets Meta ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
      *
      */
     regionalRegulationIdentities?: {
@@ -7123,24 +7310,22 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
 export type status23 = 'ACTIVE' | 'PAUSED';
 
 /**
- * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults
- * to `status`. `PAUSED` holds the new campaign off while the ad set and
- * ads switch on (one resume call brings the whole hierarchy live);
- * `ACTIVE` with `status: PAUSED` switches the campaign on and pauses the
- * new ad set instead. Only meaningful when a new campaign is being
- * created; rejected with a 400 alongside `adSetId` (the attach shape
- * reuses an existing campaign).
+ * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults to `status`.
+ *
+ * - `PAUSED`: holds the new campaign off while the ad set and ads switch on (one resume call brings the whole hierarchy live).
+ * - `ACTIVE` with `status: PAUSED`: switches the campaign on and pauses the new ad set instead.
+ *
+ * Only meaningful when a new campaign is created. Rejected with a 400 alongside `adSetId` (the attach shape reuses an existing campaign).
  *
  */
 export type campaignStatus = 'ACTIVE' | 'PAUSED';
 
 /**
- * Ad-set-level status, same semantics as `POST /v1/ads/create`. Sets
- * the new ad set's switch alone and overrides `status` for it. A
- * level status (`campaignStatus`, `adSetStatus`, `adStatus`) always
- * wins for its level, and `status: PAUSED` adds a hold of its own
- * only when none of them is PAUSED. Rejected with a 400 alongside
- * `adSetId` (that ad set already exists).
+ * Ad-set-level status, same semantics as `POST /v1/ads/create`. Sets the new ad set's switch alone and overrides `status` for it.
+ *
+ * A level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level, and `status: PAUSED` adds a hold of its own only when none of them is PAUSED.
+ *
+ * Rejected with a 400 alongside `adSetId` (that ad set already exists).
  *
  */
 export type adSetStatus = 'ACTIVE' | 'PAUSED';
@@ -7177,7 +7362,12 @@ export type CtwaMultiResponse = {
     platformAdSetId: string;
     message: string;
     /**
-     * Present when Meta created the ad set differently from the request: a multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change (a WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button), or the ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy` or a `roasAverageFloor` that strategy cannot take was not applied. Also present, as an entry starting with `activation_failed:`, when Meta refused the final switch to ACTIVE: nothing was deleted, and the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     * Present when Meta created the ad set differently from the request:
+     *
+     * - A multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change. A WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button.
+     * - The ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy`, or a `roasAverageFloor` that strategy cannot take, was not applied.
+     * - An entry starting with `activation_failed:` when Meta refused the final switch to ACTIVE. Nothing was deleted; the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     *
      */
     warnings?: Array<(string)>;
 };
@@ -7200,7 +7390,12 @@ export type CtwaSingleResponse = {
     };
     message: string;
     /**
-     * Present when Meta created the ad set differently from the request: a multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change (a WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button), or the ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy` or a `roasAverageFloor` that strategy cannot take was not applied. Also present, as an entry starting with `activation_failed:`, when Meta refused the final switch to ACTIVE: nothing was deleted, and the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     * Present when Meta created the ad set differently from the request:
+     *
+     * - Multi-destination ad set (`destinations` including whatsapp) that Meta kept without the requested `whatsappPhoneNumber` in its promoted_object, which an existing ad set cannot change. A WhatsApp-only ad set returns no such warning, because every ad routes conversations by the number on its WhatsApp button.
+     * - The ad set joined a CBO campaign (`existingCampaignId`) whose own bid strategy applies, so a different `bidStrategy` or a `roasAverageFloor` that strategy cannot take was not applied.
+     * - An entry starting with `activation_failed:`: Meta refused the final switch to ACTIVE. Nothing was deleted. The entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     *
      */
     warnings?: Array<(string)>;
 };
@@ -7282,7 +7477,11 @@ export type DiscordGuildMember = {
 };
 
 /**
- * Discord message settings. Supports plain text (2,000 chars), rich embeds (up to 10), native polls, forum posts, threads, and announcement crossposts. Media attachments support images (JPEG, PNG, GIF, WebP), videos (MP4), and documents (up to 10 files, 25 MB each). Webhook identity (username + avatar) can be customized per-account via PATCH /v1/connect/discord or per-post via webhookUsername/webhookAvatarUrl.
+ * Discord message settings.
+ *
+ * - Content: plain text (2,000 chars), rich embeds (up to 10), native polls, forum posts, threads, and announcement crossposts.
+ * - Media: images (JPEG, PNG, GIF, WebP), videos (MP4), and documents (up to 10 files, 25 MB each).
+ * - Webhook identity (username + avatar): customize per account via PATCH /v1/connect/discord, or per post via webhookUsername/webhookAvatarUrl.
  *
  */
 export type DiscordPlatformData = {
@@ -7698,65 +7897,67 @@ export type ErrorResponse = {
         [key: string]: unknown;
     };
     /**
-     * Meta ads refusals customers hit most come back with their own `code` instead of
-     * `platform_api_error`, the field to fix in `param`, and `details.fix` ({ label, url }) pointing at
-     * the Meta page that resolves it: `ad_account_payment_required`, `ad_account_policy_not_accepted`,
-     * `meta_security_check_required`, `meta_action_blocked`,
-     * `whatsapp_number_not_linked` and `invalid_targeting`. Meta's own error stays in the message
-     * and in `platformError`.
-     * Additional structured context (e.g. field-level validation errors), for example
-     * `privateReplyConsumed` on the private-reply endpoint's 400 when the comment's
-     * single reply is already spent, and `privateReplyOutcome: "unknown"` on its 502 when Meta
-     * answered a server error and the reply may have been delivered.
+     * Additional structured context for the error (for example field-level validation errors). What it carries depends on the endpoint and platform.
      *
-     * On a Google Ads or YouTube Analytics 429 it carries `quotaExhausted: true`, which marks
-     * the failure as Google's own quota rather than a Zernio rate limit, so you can keep
-     * calling other platforms instead of backing off everywhere. When Google names the scope
-     * it also carries `quotaScope`: `DEVELOPER` means the shared budget (the developer token
-     * for Google Ads, the Google Cloud project for YouTube Analytics; every account on
-     * Zernio is affected and there is nothing to change on your side), `ACCOUNT` means your
-     * own ad account (Google Ads only). A Meta 429 carries neither field.
+     * **Meta ads refusals.** The ones customers hit most come back with their own `code` instead of `platform_api_error`, the field to fix in `param`, and `details.fix` ({ label, url }) pointing at the Meta page that resolves it:
      *
-     * A Zernio Google Ads burst-limit 429 carries `budgetScope` instead, and never
-     * `quotaExhausted`: these are Zernio's own limits, applied before the call
-     * reaches Google, and both clear within a minute. `account` is the limit of 15
-     * requests per minute per connected Google Ads account; `user` is the ceiling of
-     * 120 requests per minute per Zernio user across all their Google Ads accounts.
-     * Both are separate axes from `quotaScope`, not the same pool named twice.
+     * - `ad_account_payment_required`
+     * - `ad_account_policy_not_accepted`
+     * - `meta_security_check_required`
+     * - `meta_action_blocked`
+     * - `whatsapp_number_not_linked`
+     * - `invalid_targeting`
      *
-     * A failed Meta ad create (`POST /v1/ads/create`, `POST /v1/ads/boost`,
-     * `POST /v1/ads/ctwa`) carries `stage`, `adAccountId` and `createdObjects`: where
-     * it failed, on which ad account, and every object this request had already
-     * created with what cleanup did to it. `left_behind` objects still exist on the
-     * ad account (Meta refused the delete, typically on a held account, or the delete hit a network error), so delete
-     * them yourself or reuse them. `unconfirmedWrite` is set when Meta answered a
-     * create with a 5xx or dropped the connection and Zernio could not confirm
-     * whether the object exists: check that parent before creating it again.
+     * Meta's own error stays in the message and in `platformError`.
      *
-     * When Meta refuses a write because the ad account's status is ineligible to manage
-     * ads (Meta subcode 2490592 or 4841021, on the write itself or on a cleanup delete),
-     * any Meta ads write (create, boost, CTWA, campaign / ad set / ad updates and status
-     * changes) answers 422 `ad_account_unusable`. The message names the ad account when
-     * known, links Meta's fix (https://www.facebook.com/business/help/422289316306981),
-     * lists the objects left behind and ends with Meta's original error, which also stays
-     * verbatim in `platformError`. Meta often reports the first failure under an
-     * unrelated code (e.g. 1487194 on the creative), so branch on `code`, not on
-     * `platformError`.
+     * **Private replies.** `privateReplyConsumed` appears on the private-reply endpoint's 400 when the comment's single reply is already spent. `privateReplyOutcome: "unknown"` appears on its 502 when Meta answered a server error and the reply may have been delivered.
      *
-     * When Meta refuses a write because the Facebook user behind the connection's token
-     * lacks the Advertise permission on the ad account (Meta subcode 2490585, 2490591 or 4841020 on
-     * the write, or a code 200 refusal such as 1487194 whose cleanup deletes Meta refused
-     * with 2490591 or 4841020), any Meta ads write answers 403 `insufficient_permissions`.
-     * Meta may still accept the campaign and ad set and refuse only the ad. The message
-     * names the ad account, asks for the Advertise or Manage permission on it (or a token
-     * granted `ads_management`, by reconnecting), lists the objects left behind and ends
-     * with Meta's `error_user_title`, `error_user_msg` and subcode; the raw error stays in
-     * `platformError`.
+     * **Google quota 429.** On a Google Ads or YouTube Analytics 429, `quotaExhausted: true` marks the failure as Google's own quota, not a Zernio rate limit, so you can keep calling other platforms instead of backing off everywhere. When Google names the scope, `quotaScope` is also set:
+     *
+     * - `DEVELOPER`: the shared budget (the developer token for Google Ads, the Google Cloud project for YouTube Analytics). Every account on Zernio is affected and there is nothing to change on your side.
+     * - `ACCOUNT`: your own ad account (Google Ads only).
+     *
+     * A Meta 429 carries neither field.
+     *
+     * **Zernio Google Ads burst-limit 429.** Carries `budgetScope` instead, never `quotaExhausted`. These are Zernio's own limits, applied before the call reaches Google, and both clear within a minute. They are separate axes from `quotaScope`, not the same pool named twice.
+     *
+     * - `account`: the limit of 15 requests per minute per connected Google Ads account.
+     * - `user`: the ceiling of 120 requests per minute per Zernio user across all their Google Ads accounts.
+     *
+     * **Failed Meta ad create** (`POST /v1/ads/create`, `POST /v1/ads/boost`, `POST /v1/ads/ctwa`). Carries `stage` (where it failed), `adAccountId` (on which ad account) and `createdObjects` (every object this request had already created, with what cleanup did to it).
+     *
+     * - `left_behind` objects still exist on the ad account (Meta refused the delete, typically on a held account, or the delete hit a network error). Delete them yourself or reuse them.
+     * - `unconfirmedWrite` is set when Meta answered a create with a 5xx or dropped the connection and Zernio could not confirm whether the object exists. Check that parent before creating it again.
+     *
+     * **Ineligible ad account: 422 `ad_account_unusable`.** When Meta refuses a write because the ad account's status is ineligible to manage ads (Meta subcode 2490592 or 4841021, on the write itself or on a cleanup delete), any Meta ads write answers it.
+     *
+     * That covers create, boost, CTWA, campaign / ad set / ad updates and status changes.
+     *
+     * The message names the ad account when known, links Meta's fix (https://www.facebook.com/business/help/422289316306981), lists the objects left behind and ends with Meta's original error, which also stays verbatim in `platformError`.
+     *
+     * Meta often reports the first failure under an unrelated code (e.g. 1487194 on the creative), so branch on `code`, not on `platformError`.
+     *
+     * **Missing Advertise permission: 403 `insufficient_permissions`.** When the Facebook user behind the connection's token lacks the Advertise permission on the ad account, any Meta ads write answers it.
+     *
+     * Triggers: Meta subcode 2490585, 2490591 or 4841020 on the write, or a code 200 refusal such as 1487194 whose cleanup deletes Meta refused with 2490591 or 4841020.
+     *
+     * Meta may still accept the campaign and ad set and refuse only the ad. The message names the ad account, asks for the Advertise or Manage permission on it (or a token granted `ads_management`, by reconnecting) and lists the objects left behind.
+     *
+     * It ends with Meta's `error_user_title`, `error_user_msg` and subcode; the raw error stays in `platformError`.
      *
      */
     details?: {
         /**
-         * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on; no longer returned, since a refused switch to ACTIVE now answers 201 with an `activation_failed:` warning and the objects kept PAUSED), or `other` (a read or check before any write).
+         * Meta ad create failures only. The step that failed:
+         *
+         * - `media`: image/video download or upload.
+         * - `campaign`
+         * - `adset`
+         * - `creative`
+         * - `ad`: the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land.
+         * - `activation`: switching the created objects on. No longer returned: a refused switch to ACTIVE now answers 201 with an `activation_failed:` warning and the objects kept PAUSED.
+         * - `other`: a read or check before any write.
+         *
          */
         stage?: 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activation' | 'other';
         /**
@@ -7809,7 +8010,16 @@ export type ErrorResponse = {
 export type type12 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
- * Meta ad create failures only. The step that failed: `media` (image/video download or upload), `campaign`, `adset`, `creative`, `ad` (the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land), `activation` (switching the created objects on; no longer returned, since a refused switch to ACTIVE now answers 201 with an `activation_failed:` warning and the objects kept PAUSED), or `other` (a read or check before any write).
+ * Meta ad create failures only. The step that failed:
+ *
+ * - `media`: image/video download or upload.
+ * - `campaign`
+ * - `adset`
+ * - `creative`
+ * - `ad`: the ad POST itself, where Meta's code 31 / 3858385 hold and 100 / 1359188 payment rejections land.
+ * - `activation`: switching the created objects on. No longer returned: a refused switch to ACTIVE now answers 201 with an `activation_failed:` warning and the objects kept PAUSED.
+ * - `other`: a read or check before any write.
+ *
  */
 export type stage = 'media' | 'campaign' | 'adset' | 'creative' | 'ad' | 'activation' | 'other';
 
@@ -7848,7 +8058,11 @@ export type EventDestination = {
 export type ExternalPostMediaItem = {
     type: 'image' | 'video';
     /**
-     * 'Direct URL to the media file. Null when the platform withholds it: check mediaStatus before downloading. Instagram omits the video file for Reels it flags as containing copyrighted material (its docs name audio as the usual cause), so type stays "video" while the file is permanently unreachable. For LinkedIn videos where the platform returns no file, url falls back to the cover image and the item carries mediaStatus: unavailable.'
+     * Direct URL to the media file. Null when the platform withholds it: check mediaStatus before downloading.
+     *
+     * - Instagram omits the video file for Reels it flags as containing copyrighted material (its docs name audio as the usual cause). type stays "video" while the file is permanently unreachable.
+     * - LinkedIn videos with no file returned: url falls back to the cover image and the item carries mediaStatus: unavailable.
+     *
      */
     url: (string) | null;
     /**
@@ -8047,7 +8261,14 @@ export type FacebookPageInfo = {
 };
 
 /**
- * Feed posts support up to 10 images (no mixed video+image). Stories require single media (24h, no captions). Reels require a single vertical video (9:16). The Zernio API does not preflight Reel duration. Meta's Reels publishing guide documents 3-90 seconds. Geo-restriction is a hard visibility restriction: users outside the specified countries cannot see the post. Not supported for stories. Draft, carousel, and colored-background text options live under facebookSettings, see FacebookSettings.
+ * Facebook post settings.
+ *
+ * - Feed posts: up to 10 images (no mixed video+image).
+ * - Stories: single media (24h, no captions).
+ * - Reels: a single vertical video (9:16). The Zernio API does not preflight Reel duration; Meta's Reels publishing guide documents 3-90 seconds.
+ * - Geo-restriction: a hard visibility restriction (users outside the specified countries cannot see the post). Not supported for stories.
+ *
+ * Draft, carousel and colored-background text options live under facebookSettings, see FacebookSettings.
  *
  */
 export type FacebookPlatformData = {
@@ -8139,13 +8360,15 @@ export type FacebookPostEarningsResponse = {
          */
         metric?: string;
         /**
-         * "not_enrolled": the account is not enrolled in the program behind this metric.
-         * "permission_missing": the connected user lacks access to this metric.
-         * "unsupported_metric": Meta does not accept this metric name on the API version Zernio uses.
-         * "no_data": Meta returned no bucket for this metric.
-         * "unreadable_value": Meta returned a value shape Zernio cannot read, so no total is reported.
-         * "mixed_currency": readable values disagree on currency or unit.
-         * "upstream_error": any other platform failure.
+         * Why the metric is unavailable:
+         *
+         * - "not_enrolled": the account is not enrolled in the program behind this metric.
+         * - "permission_missing": the connected user lacks access to this metric.
+         * - "unsupported_metric": Meta does not accept this metric name on the API version Zernio uses.
+         * - "no_data": Meta returned no bucket for this metric.
+         * - "unreadable_value": Meta returned a value shape Zernio cannot read, so no total is reported.
+         * - "mixed_currency": readable values disagree on currency or unit.
+         * - "upstream_error": any other platform failure.
          *
          * "no_data" is the common case in practice; the others are defensive.
          *
@@ -8176,7 +8399,11 @@ export type FacebookSettings = {
      */
     draft?: boolean;
     /**
-     * Renders the post as a multi-link carousel (organic Page post). When set, mediaItems must be provided with the same length and all items must be images (no videos). Each cards[i] adds the click-through link and headline for the image at mediaItems[i]. Mutually exclusive with contentType=story|reel. Facebook display truncates name at ~35 chars and description at ~30 chars; longer strings are accepted but get truncated on render.
+     * Renders the post as a multi-link carousel (organic Page post). Mutually exclusive with contentType=story|reel.
+     *
+     * - mediaItems must be provided with the same length, and all items must be images (no videos).
+     * - Each cards[i] adds the click-through link and headline for the image at mediaItems[i].
+     * - Facebook truncates name at ~35 chars and description at ~30 chars on render; longer strings are accepted.
      *
      */
     carouselCards?: Array<{
@@ -8199,7 +8426,13 @@ export type FacebookSettings = {
      */
     carouselLink?: string;
     /**
-     * Facebook-defined preset ID that renders the post as large text on a colored background (Graph `text_format_preset_id`). Supply the raw numeric ID from Meta; we do not publish a catalog of presets and Facebook may change the available set. Pages only (ignored on personal profiles and groups) and text-only feed posts only: the request is rejected with 400 when mediaItems or carouselCards are present, when contentType is story or reel, or when content is empty. An attachment makes Facebook drop the background silently, so those are rejected up front. Length is NOT rejected: Facebook's composer stops offering a background at around 130 characters, but Meta documents no API limit, so longer content publishes and returns a warning instead. A URL detected in the content is NOT attached as a link preview while a preset is set, because a link attachment also makes Facebook drop the background.
+     * Facebook-defined preset ID that renders the post as large text on a colored background (Graph `text_format_preset_id`). Supply the raw numeric ID from Meta; we do not publish a catalog of presets and Facebook may change the available set.
+     *
+     * Pages only (ignored on personal profiles and groups), and text-only feed posts only. Rejected with 400 when mediaItems or carouselCards are present, when contentType is story or reel, or when content is empty. An attachment makes Facebook drop the background silently, so those are rejected up front.
+     *
+     * Length is NOT rejected: Facebook's composer stops offering a background at around 130 characters, but Meta documents no API limit, so longer content publishes and returns a warning instead.
+     *
+     * A URL detected in the content is NOT attached as a link preview while a preset is set, because a link attachment also makes Facebook drop the background.
      *
      */
     textFormatPresetId?: string;
@@ -9072,7 +9305,10 @@ export type GoogleDemandGenInput = {
      */
     youtubeVideoIds?: Array<(string)>;
     /**
-     * Makes the ad a carousel ad. Each card needs its own image (no two cards may share one); use the same image shape on every card. Card images are uploaded to the account's asset library before the campaign is created, validateOnly included (Google checks cards against existing images; identical images are reused, not duplicated).
+     * Makes the ad a carousel ad. Each card needs its own image (no two cards may share one); use the same image shape on every card.
+     *
+     * Card images are uploaded to the account's asset library before the campaign is created, validateOnly included. Google checks cards against existing images; identical images are reused, not duplicated.
+     *
      */
     carouselCards?: Array<{
         headline: string;
@@ -9108,21 +9344,19 @@ export type GoogleDemandGenInput = {
 };
 
 /**
- * Partial edit of a Google Demand Gen ad, sent in one atomic Google request. Every field
- * you send replaces that whole field; fields you omit are kept. Which creative fields
- * apply depends on the ad (read from Google): image ads take headlines, descriptions,
- * businessName, callToAction and images (landscape, square, portrait, logo); video ads
- * take headlines, longHeadlines, descriptions, businessName, youtubeVideoIds and exactly
- * one images.logo; carousel ads take exactly one headline, one description, one logo,
- * businessName and callToAction (their cards cannot be edited: create a new carousel ad).
- * A field the ad does not take returns 422. New images are uploaded as new Google assets;
- * the previous ones stay in the account's asset library.
+ * Partial edit of a Google Demand Gen ad, sent in one atomic Google request. Every field you send replaces that whole field; fields you omit are kept.
  *
- * `channels`, `audience` and `audienceId` change the ad's ad group, so they apply to every
- * ad in it. `audience` builds a new Google Audience and attaches it in place of the current
- * one (the previous audience is detached, not deleted); `audienceId` attaches an existing
- * one. Ad groups of campaigns migrated from Discovery use ungrouped audience segments,
- * and Google refuses an Audience on them.
+ * Which creative fields apply depends on the ad (read from Google). A field the ad does not take returns 422.
+ *
+ * - Image ads: headlines, descriptions, businessName, callToAction and images (landscape, square, portrait, logo).
+ * - Video ads: headlines, longHeadlines, descriptions, businessName, youtubeVideoIds and exactly one images.logo.
+ * - Carousel ads: exactly one headline, one description, one logo, businessName and callToAction. Their cards cannot be edited: create a new carousel ad.
+ *
+ * New images are uploaded as new Google assets; the previous ones stay in the account's asset library.
+ *
+ * **Ad group fields.** `channels`, `audience` and `audienceId` change the ad's ad group, so they apply to every ad in it. `audience` builds a new Google Audience and attaches it in place of the current one (the previous one is detached, not deleted); `audienceId` attaches an existing one.
+ *
+ * Ad groups of campaigns migrated from Discovery use ungrouped audience segments, and Google refuses an Audience on them.
  *
  */
 export type GoogleDemandGenUpdate = {
@@ -9242,13 +9476,12 @@ export type GoogleListingGroupTree = {
 };
 
 /**
- * Google only. Who a campaign's location targeting reaches (Google's
- * `campaign.geo_target_type_setting.positive_geo_target_type`).
- * `presence`: people in, or regularly in, the targeted locations.
- * `presence_or_interest`: also people searching for or showing interest in them.
- * Omitted leaves Google's default, `presence_or_interest`. Accepted on Search,
- * Display and Performance Max campaigns. Excluded locations always use presence
- * (Google refuses presence_or_interest for exclusions on these campaign types).
+ * Google only. Who a campaign's location targeting reaches (Google's `campaign.geo_target_type_setting.positive_geo_target_type`).
+ *
+ * - `presence`: people in, or regularly in, the targeted locations.
+ * - `presence_or_interest`: also people searching for or showing interest in them. Google's default when omitted.
+ *
+ * Accepted on Search, Display and Performance Max campaigns. Excluded locations always use presence (Google refuses presence_or_interest for exclusions on these campaign types).
  *
  */
 export type GoogleLocationTargetingType = 'presence' | 'presence_or_interest';
@@ -9368,12 +9601,12 @@ export type GooglePmaxAssetGroupInput = {
 };
 
 /**
- * Replacement assets for an existing Performance Max asset group, sent on PUT /v1/ads/{adId}.
- * Google assets are immutable (AssetService only creates), so each field you send becomes new
- * assets linked to the asset group, and the assets that role held are unlinked in the same
- * atomic request. Send one field or many; a field you omit is left untouched. Re-sending a
- * value the asset group already carries is a no-op for that asset, not a re-upload.
+ * Replacement assets for an existing Performance Max asset group, sent on PUT /v1/ads/{adId}. Send one field or many; a field you omit is left untouched.
+ *
+ * Google assets are immutable (AssetService only creates), so each field you send becomes new assets linked to the asset group, and the assets that role held are unlinked in the same atomic request. Re-sending a value the asset group already carries is a no-op for that asset, not a re-upload.
+ *
  * Unlinked assets stay in the account's asset library: Google has no asset delete.
+ *
  * At least one description must be 60 characters or fewer. Texts within each list must be distinct.
  *
  */
@@ -9692,43 +9925,22 @@ export type region = 'US' | 'GB';
 export type status32 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
- * Click attribution for a conversation that started from a Meta ad or
- * a ref-tagged ig.me / m.me link, as Meta sent it. Absent when the
- * conversation did not originate from an attributable click. For the ad
- * name, campaign and ad set read `adAttribution` instead.
+ * Click attribution for a conversation that started from a Meta ad or a ref-tagged ig.me / m.me link, as Meta sent it. Absent when the conversation did not come from an attributable click. For the ad name, campaign and ad set, read `adAttribution`.
  *
- * Captured from the referral Meta delivers for the click. If the same
- * person later arrives through a different ad or link, the original
- * values are kept, so the first referral wins; read the fresh referral
- * per click on the `message.received` / `referral.received` webhooks
- * instead. On Instagram Click-to-Direct Meta usually delivers the ad post
- * first as an attachment-only `share` / `ig_post` message with no
- * referral, then attaches the referral to the next message. One exception
- * on WhatsApp: when Meta omits `ctwa_clid` from that referral, a later
- * Meta automatic event can supply it and refresh `ctwa_captured_at`, so
- * treat `ctwa_captured_at` as the time Zernio stored the value, not the
- * time of the click.
+ * **First referral wins.** Values come from the referral Meta delivers for the click. If the same person later arrives through another ad or link, the original values are kept. For the fresh referral per click, read the `message.received` / `referral.received` webhooks.
  *
- * Two families of keys, one per surface. They never appear together:
+ * On Instagram Click-to-Direct, Meta usually delivers the ad post first as an attachment-only `share` / `ig_post` message with no referral, then attaches the referral to the next message.
  *
- * - `ctwa_*` is WhatsApp Click-to-WhatsApp. The ad ID is
- * `ctwa_source_id`. There is no `meta_ad_id` on WhatsApp.
- * - `meta_ad_*` is Instagram Click-to-Direct, Facebook Messenger
- * Click-to-Message, and ig.me / m.me ref links. The ad ID is
- * `meta_ad_id` (ad clicks only; a link capture carries
- * `meta_ad_ref` without it). `ctwa_clid` never appears on these
- * platforms.
+ * WhatsApp exception: when Meta omits `ctwa_clid` from the referral, a later Meta automatic event can supply it and refresh `ctwa_captured_at`. Treat `ctwa_captured_at` as when Zernio stored the value, not when the click happened.
  *
- * Every key is optional and only the keys Meta supplied are returned, so
- * read defensively. Meta does not send a campaign or ad set ID; they are
- * resolved from your synced ads in `adAttribution`. More keys may be added
- * over time. Treat any key you do not recognise as an opaque string.
+ * **Two key families, one per surface, never together:**
  *
- * Key names differ from the `message.received` webhook on purpose. The
- * webhook forwards Meta's referral verbatim (`ad_id`, `source`, `type`)
- * while the stored conversation record uses the prefixed names below.
- * Renaming either side would break existing integrations, so both
- * spellings are kept.
+ * - `ctwa_*`: WhatsApp Click-to-WhatsApp. The ad ID is `ctwa_source_id`. There is no `meta_ad_id` on WhatsApp.
+ * - `meta_ad_*`: Instagram Click-to-Direct, Facebook Messenger Click-to-Message, and ig.me / m.me ref links. The ad ID is `meta_ad_id` (ad clicks only; a link capture carries `meta_ad_ref` without it). `ctwa_clid` never appears here.
+ *
+ * Every key is optional and only keys Meta supplied are returned, so read defensively. Meta sends no campaign or ad set ID; those are resolved from your synced ads in `adAttribution`. More keys may be added; treat unknown keys as opaque strings.
+ *
+ * Key names differ from the `message.received` webhook on purpose. The webhook forwards Meta's referral verbatim (`ad_id`, `source`, `type`), while the stored conversation uses the prefixed names. Renaming either side would break existing integrations, so both spellings stay.
  *
  */
 export type InboxConversationAdMetadata = {
@@ -9855,7 +10067,10 @@ export type InboxWebhookAccount = {
      */
     accountId?: string;
     /**
-     * Zernio profile ID this account belongs to. Use it to route or filter inbox webhooks by profile. This is the profile ID only, not its name (resolve the name via the API with this ID). Optional; omitted on the shared WhatsApp sandbox account and when the account has no resolvable profile.
+     * Zernio profile ID this account belongs to. Use it to route or filter inbox webhooks by profile.
+     *
+     * This is the profile ID only, not its name (resolve the name via the API with this ID). Optional: omitted on the shared WhatsApp sandbox account and when the account has no resolvable profile.
+     *
      */
     profileId?: string;
     platform: string;
@@ -9881,12 +10096,9 @@ export type InboxWebhookConversation = {
     participantPicture?: string;
     status: 'active' | 'archived';
     /**
-     * Zernio CRM Contact ID for the participant, when one exists. Resolved by
-     * joining `participantId` to the ContactChannel collection. Best-effort:
-     * omitted when no channel matches or `participantId` is absent. Lets
-     * integrators join any inbox webhook back to the CRM Contact without
-     * needing to look at the sender, which matters for outgoing and
-     * delivery-status events whose sender is the business.
+     * Zernio CRM Contact ID for the participant, when one exists. Resolved by joining `participantId` to the ContactChannel collection. Best-effort: omitted when no channel matches or `participantId` is absent.
+     *
+     * Lets integrators join any inbox webhook back to the CRM Contact without looking at the sender, which matters for outgoing and delivery-status events whose sender is the business.
      *
      */
     contactId?: string;
@@ -9919,12 +10131,9 @@ export type InboxWebhookConversationDetail = {
     participantPicture?: string;
     status: 'active' | 'archived';
     /**
-     * Zernio CRM Contact ID for the participant, when one exists. Resolved by
-     * joining `participantId` to the ContactChannel collection (same join
-     * used by message.*, reaction.received, and call.* webhooks). Best-effort:
-     * omitted when no channel matches or `participantId` is absent. Lets
-     * integrators seed the CRM straight from `conversation.started` without
-     * waiting for the first `message.*` event.
+     * Zernio CRM Contact ID for the participant, when one exists. Lets integrators seed the CRM straight from `conversation.started` without waiting for the first `message.*` event.
+     *
+     * Resolved by joining `participantId` to the ContactChannel collection (the same join used by message.*, reaction.received, and call.* webhooks). Best-effort: omitted when no channel matches or `participantId` is absent.
      *
      */
     contactId?: string;
@@ -9988,12 +10197,9 @@ export type InboxWebhookMessage = {
          */
         id: string;
         /**
-         * Zernio CRM Contact id for this sender, when one exists (joined via
-         * the ContactChannel mapping). Lets integrators link a message straight
-         * to a Contact without a follow-up Contacts API call. Omitted when the
-         * sender isn't a tracked contact (e.g. outgoing messages where the
-         * sender is the business, or first-touch messages before the contact
-         * is created).
+         * Zernio CRM Contact id for this sender, when one exists (joined via the ContactChannel mapping). Lets integrators link a message straight to a Contact without a follow-up Contacts API call.
+         *
+         * Omitted when the sender isn't a tracked contact (e.g. outgoing messages where the sender is the business, or first-touch messages before the contact is created).
          *
          */
         contactId?: string;
@@ -10043,7 +10249,10 @@ export type InboxWebhookMessage = {
         };
     };
     /**
-     * When the message was sent, as reported by the platform and passed through unmodified. Full ISO 8601 date-time: Instagram and Facebook carry millisecond precision, while some platforms (for example WhatsApp and Telegram) report whole seconds. Use this field as the chronological ordering key. If two messages share the same value, fetch the conversation messages with sortOrder=desc for the deterministic order.
+     * When the message was sent, as reported by the platform and passed through unmodified. Use it as the chronological ordering key.
+     *
+     * Full ISO 8601 date-time: Instagram and Facebook carry millisecond precision, while some platforms (for example WhatsApp and Telegram) report whole seconds. If two messages share the same value, fetch the conversation messages with sortOrder=desc for the deterministic order.
+     *
      */
     sentAt: string;
     isRead: boolean;
@@ -10081,16 +10290,16 @@ export type InstagramAccountInsightsResponse = {
      */
     breakdown?: string;
     /**
-     * Object keyed by metric name. For time_series: each metric has "total" (number) and "values" (array of {date, value}).
-     * For total_value: each metric has "total" (number) and optionally "breakdowns" (array of {dimension, value}).
+     * Object keyed by metric name.
      *
-     * Monetary metrics additionally carry "unit" and "currency". Zernio never rescales money:
-     * "total" and every "values[].value" are the platform's raw numbers in the stated unit.
-     * Monetary metrics also keep "values" on metricType=total_value, because their "total" is the
-     * sum of the daily buckets the platform returned over the range: keep the series so you can
-     * reconcile that sum against the platform's own reporting before invoicing on it.
-     * A metric that could not be served is absent from this object and listed in
-     * "unavailableMetrics" instead, so an unavailable metric is never reported as a zero.
+     * - For time_series: each metric has "total" (number) and "values" (array of {date, value}).
+     * - For total_value: each metric has "total" (number) and optionally "breakdowns" (array of {dimension, value}).
+     *
+     * **Monetary metrics** also carry "unit" and "currency". Zernio never rescales money: "total" and every "values[].value" are the platform's raw numbers in the stated unit.
+     *
+     * Monetary metrics keep "values" even on metricType=total_value, because their "total" is the sum of the daily buckets the platform returned over the range. Keep the series to reconcile that sum against the platform's own reporting before invoicing on it.
+     *
+     * A metric that could not be served is absent from this object and listed in "unavailableMetrics" instead, so an unavailable metric is never reported as a zero.
      *
      */
     metrics?: {
@@ -10114,18 +10323,10 @@ export type InstagramAccountInsightsResponse = {
                 value?: number;
             }>;
             /**
-             * Present on monetary metrics only. The scale of "total" and of every "values[].value",
-             * exactly as the platform returned them.
+             * Present on monetary metrics only. The scale of "total" and of every "values[].value", exactly as the platform returned them.
              *
-             * "micro_amount": the platform returned an object shape carrying a micro amount, and the
-             * values are that integer, summed, unconverted. Zernio does not publish a divisor because
-             * Meta does not document one; divide by the scale you have verified against the Page's own
-             * Meta Business Suite export. On Facebook Page insights this is always
-             * content_monetization_earnings.
-             *
-             * "unspecified": the platform returned a bare number with no unit metadata. It is passed
-             * through as-is; the platform does not state whether it is major or minor currency units.
-             * On Facebook Page insights this is always monetization_approximate_earnings.
+             * - "micro_amount": the platform returned an object carrying a micro amount; values are that integer, summed, unconverted. Zernio publishes no divisor because Meta documents none: divide by the scale you verified against the Page's own Meta Business Suite export. On Facebook Page insights this is always content_monetization_earnings.
+             * - "unspecified": the platform returned a bare number with no unit metadata, passed through as-is; the platform does not state whether it is major or minor currency units. On Facebook Page insights this is always monetization_approximate_earnings.
              *
              */
             unit?: 'micro_amount' | 'unspecified';
@@ -10139,10 +10340,9 @@ export type InstagramAccountInsightsResponse = {
         };
     };
     /**
-     * Requested metrics that could not be served. Present only when at least one metric is
-     * unavailable, and absent otherwise. Each listed metric is OMITTED from "metrics" rather than
-     * reported as 0, which is how an unavailable metric is distinguished from a genuine zero.
-     * The request itself still succeeds with HTTP 200.
+     * Requested metrics that could not be served. Present only when at least one metric is unavailable, absent otherwise.
+     *
+     * Each listed metric is OMITTED from "metrics" rather than reported as 0, which is how an unavailable metric is distinguished from a genuine zero. The request itself still succeeds with HTTP 200.
      *
      */
     unavailableMetrics?: Array<{
@@ -10151,18 +10351,17 @@ export type InstagramAccountInsightsResponse = {
          */
         metric?: string;
         /**
-         * "not_enrolled": the account is not enrolled in the program behind this metric.
-         * "permission_missing": the connected user lacks access to this metric.
-         * "unsupported_metric": the platform does not accept this metric name on the API version Zernio uses.
-         * "no_data": the platform returned no bucket for this metric over the requested range.
-         * "unreadable_value": the platform returned a value shape Zernio cannot read, so no total is reported.
-         * "mixed_currency": readable values disagree on currency or unit within the range.
-         * "upstream_error": any other platform failure.
+         * Why the metric is unavailable:
          *
-         * "no_data" is the common case in practice. The others are defensive: "not_enrolled" and
-         * "unsupported_metric" in particular have not been observed on live Facebook traffic, since
-         * a non-enrolled Page returns zeros rather than an error and metric names are validated
-         * before any platform call.
+         * - "not_enrolled": the account is not enrolled in the program behind this metric.
+         * - "permission_missing": the connected user lacks access to this metric.
+         * - "unsupported_metric": the platform does not accept this metric name on the API version Zernio uses.
+         * - "no_data": the platform returned no bucket for this metric over the requested range.
+         * - "unreadable_value": the platform returned a value shape Zernio cannot read, so no total is reported.
+         * - "mixed_currency": readable values disagree on currency or unit within the range.
+         * - "upstream_error": any other platform failure.
+         *
+         * "no_data" is the common case in practice. The others are defensive: "not_enrolled" and "unsupported_metric" in particular have not been observed on live Facebook traffic, since a non-enrolled Page returns zeros rather than an error and metric names are validated before any platform call.
          *
          */
         reason?: 'not_enrolled' | 'permission_missing' | 'unsupported_metric' | 'no_data' | 'unreadable_value' | 'mixed_currency' | 'upstream_error';
@@ -10468,7 +10667,13 @@ export type InstagramPlatformData = {
         graduationStrategy?: 'MANUAL' | 'SS_PERFORMANCE';
     };
     /**
-     * Tag Instagram users by username. The tag shape depends on the media: photos require x/y coordinates, Reels and videos take username only (coordinates are ignored), stories accept optional coordinates. For carousels, use mediaIndex to target specific slides (defaults to 0); video slides take username-only tags. Photo tags without valid coordinates are skipped.
+     * Tag Instagram users by username. The tag shape depends on the media:
+     *
+     * - Photos: require x/y coordinates. Photo tags without valid coordinates are skipped.
+     * - Reels and videos: username only (coordinates are ignored).
+     * - Stories: optional coordinates.
+     * - Carousels: use mediaIndex to target specific slides (defaults to 0); video slides take username-only tags.
+     *
      */
     userTags?: Array<{
         /**
@@ -10493,7 +10698,12 @@ export type InstagramPlatformData = {
      */
     audioName?: string;
     /**
-     * Attach a licensed music track or original sound from the Instagram audio catalog to a Reel. Reels only (single video post, not a story or image). Requires an Instagram account connected via Facebook Login; classic Instagram Login accounts get a 400 (instagram_audio_requires_facebook_login). Get audio IDs from GET /v1/accounts/{accountId}/instagram/audio. If the track becomes unavailable by publish time (removed, region-blocked, licensing change), the post fails with a user-error; it is not published without the audio.
+     * Attach a licensed music track or original sound from the Instagram audio catalog to a Reel. Reels only (single video post, not a story or image).
+     *
+     * - Requires an Instagram account connected via Facebook Login. Classic Instagram Login accounts get a 400 (instagram_audio_requires_facebook_login).
+     * - Get audio IDs from GET /v1/accounts/{accountId}/instagram/audio.
+     * - If the track becomes unavailable by publish time (removed, region-blocked, licensing change), the post fails with a user-error. It is not published without the audio.
+     *
      */
     audioConfiguration?: {
         /**
@@ -10510,7 +10720,15 @@ export type InstagramPlatformData = {
         videoVolume?: number;
     };
     /**
-     * Publish the video without sound. Applies to Reels, Stories, and video carousel slides; ignored for images. Instagram has no mute parameter, so we strip the audio track from the file before handing it to Instagram: the published video is permanently silent and the original audio cannot be restored from Instagram. If the audio cannot be stripped the post fails rather than publishing with sound; videos above 200MB cannot be muted at all, so mute them before uploading. Unrelated to audioConfiguration.videoVolume, which only lowers the original sound when a catalog track is attached.
+     * Publish the video without sound. Applies to Reels, Stories, and video carousel slides; ignored for images.
+     *
+     * Instagram has no mute parameter, so we strip the audio track from the file before handing it to Instagram. The published video is permanently silent, and the original audio cannot be restored from Instagram.
+     *
+     * - If the audio cannot be stripped, the post fails rather than publishing with sound.
+     * - Videos above 200MB cannot be muted at all, so mute them before uploading.
+     *
+     * Unrelated to audioConfiguration.videoVolume, which only lowers the original sound when a catalog track is attached.
+     *
      */
     muteAudio?: boolean;
     /**
@@ -10534,15 +10752,31 @@ export type InstagramPlatformData = {
      */
     isPaidPartnership?: boolean;
     /**
-     * Up to 2 brands to tag as sponsors, each an Instagram username (leading @ optional) or a numeric Instagram user ID. Usernames are resolved at publish time via the Business Discovery API on the publishing account; a sponsor that cannot be resolved (private, personal, or nonexistent account) fails the post with a user error naming it. Sponsors must be professional (Business or Creator) accounts. A brand that has pre-approved the creator shows as "Paid partnership with @brand" immediately; otherwise the plain label shows and the brand receives an approval request. Sets isPaidPartnership. Same login and content-type rules as isPaidPartnership.
+     * Up to 2 brands to tag as sponsors, each an Instagram username (leading @ optional) or a numeric Instagram user ID. Sponsors must be professional (Business or Creator) accounts.
+     *
+     * - Usernames are resolved at publish time via the Business Discovery API on the publishing account. A sponsor that cannot be resolved (private, personal, or nonexistent account) fails the post with a user error naming it.
+     * - A brand that has pre-approved the creator shows as "Paid partnership with @brand" immediately; otherwise the plain label shows and the brand receives an approval request.
+     *
+     * Sets isPaidPartnership. Same login and content-type rules as isPaidPartnership.
+     *
      */
     brandedContentSponsors?: Array<(string)>;
     /**
-     * When false, comments are turned off on the post right after it is published (Meta exposes this as comment_enabled on the media object). Applies to feed posts, Reels, and carousels; ignored for Stories, which have no comments. Works with both Instagram connection methods. Best-effort: if the toggle fails after a successful publish, the post still succeeds and stays live with comments on.
+     * When false, comments are turned off on the post right after it is published (Meta's comment_enabled on the media object).
+     *
+     * - Applies to feed posts, Reels and carousels; ignored for Stories, which have no comments.
+     * - Works with both Instagram connection methods.
+     * - Best-effort: if the toggle fails after a successful publish, the post still succeeds and stays live with comments on.
+     *
      */
     commentsEnabled?: boolean;
     /**
-     * Tags the post with a location. The ID of a Facebook Page that has location data (digits only); it is sent to Instagram as location_id. Applies to feed posts, Reels, and the carousel as a whole; Stories and individual carousel slides are unsupported (a Story with locationId is rejected with a 400). A Page without location data or that does not exist fails the post with a user error at publish time.
+     * Tags the post with a location: the ID of a Facebook Page that has location data (digits only), sent to Instagram as location_id.
+     *
+     * - Applies to feed posts, Reels, and the carousel as a whole.
+     * - Stories and individual carousel slides are unsupported (a Story with locationId is rejected with a 400).
+     * - A Page without location data, or that does not exist, fails the post with a user error at publish time.
+     *
      */
     locationId?: string;
 };
@@ -10599,7 +10833,13 @@ export type InstagramTaggedMedia = {
 };
 
 /**
- * Meta only. Present when Meta refused an existing Instagram video as the boosted ad (code 100, subcode 1815279: upload it to Facebook first) and Zernio created the ad another way. `instagram_video_reuploaded`: the video was copied into the ad account and the ad still references the original post. `instagram_video_rehosted_copy`: the video was uploaded as a new Facebook video in a new Page post, so the ad does not show the original post's likes and comments. Send `rehostOnInstagramVideoRejection: false` on the boost to get Meta's error instead.
+ * Meta only. Present when Meta refused an existing Instagram video as the boosted ad (code 100, subcode 1815279: upload it to Facebook first) and Zernio created the ad another way:
+ *
+ * - `instagram_video_reuploaded`: the video was copied into the ad account, and the ad still references the original post.
+ * - `instagram_video_rehosted_copy`: the video was uploaded as a new Facebook video in a new Page post, so the ad does not show the original post's likes and comments.
+ *
+ * Send `rehostOnInstagramVideoRejection: false` on the boost to get Meta's error instead.
+ *
  */
 export type InstagramVideoFallback = {
     kind: 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
@@ -10608,7 +10848,10 @@ export type InstagramVideoFallback = {
      */
     linkedToOriginalPost: boolean;
     /**
-     * The Facebook-side ad video Zernio made. With instagram_video_reuploaded it is the copy in the ad account video library (possibly one made by an earlier boost of the same media, reused); the creative carries it as video_id unless Meta accepted the plain post reference once the copy existed, in which case the copy is kept for that reference. With instagram_video_rehosted_copy it is the new upload the creative uses (an unused copy made by this request is deleted).
+     * The Facebook-side ad video Zernio made.
+     *
+     * - instagram_video_reuploaded: the copy in the ad account video library (possibly one made by an earlier boost of the same media, reused). The creative carries it as video_id, unless Meta accepted the plain post reference once the copy existed; then the copy is kept for that reference.
+     * - instagram_video_rehosted_copy: the new upload the creative uses (an unused copy made by this request is deleted).
      */
     videoId: string;
     /**
@@ -10660,18 +10903,17 @@ export type LinkedInAdsPlatformData = {
      */
     unitCost?: number;
     /**
-     * Campaign `optimizationTargetType` (e.g. `MAX_CLICK`, `TARGET_COST_PER_CLICK`,
-     * `MAX_IMPRESSION`). Forwarded verbatim, LinkedIn validates compatibility with
-     * the objective and `costType`. Omit for the objective-derived default:
-     * `awareness` gets `MAX_IMPRESSION`, `video_views` gets `MAX_VIDEO_VIEW`, and
-     * every other goal gets `MAX_CLICK`. `lead_generation` and `conversions` also
-     * get `MAX_CLICK`, because `MAX_LEAD` and `MAX_CONVERSION` need a lead gen form
-     * or a conversion rule that neither creation flow attaches. The default applies
-     * only to `SPONSORED_UPDATES` campaigns (every boost, and the image, video and
-     * carousel standalone ads), never to the `TEXT_AD`, `DYNAMIC` and
-     * `SPONSORED_INMAILS` campaigns the other creative formats produce. It is also
-     * skipped when `unitCost` or a non-`CPM` `costType` is set, since those select
-     * manual bidding and the bid is then yours to choose.
+     * Campaign `optimizationTargetType` (e.g. `MAX_CLICK`, `TARGET_COST_PER_CLICK`, `MAX_IMPRESSION`). Forwarded verbatim; LinkedIn validates compatibility with the objective and `costType`.
+     *
+     * **Default** when omitted, derived from the objective:
+     *
+     * - `awareness`: `MAX_IMPRESSION`.
+     * - `video_views`: `MAX_VIDEO_VIEW`.
+     * - Every other goal: `MAX_CLICK`. That includes `lead_generation` and `conversions`, because `MAX_LEAD` and `MAX_CONVERSION` need a lead gen form or a conversion rule that neither creation flow attaches.
+     *
+     * The default applies only to `SPONSORED_UPDATES` campaigns (every boost, and the image, video and carousel standalone ads), never to the `TEXT_AD`, `DYNAMIC` and `SPONSORED_INMAILS` campaigns the other creative formats produce.
+     *
+     * It is also skipped when `unitCost` or a non-`CPM` `costType` is set, since those select manual bidding and the bid is then yours to choose.
      *
      */
     optimizationTargetType?: string;
@@ -10791,12 +11033,11 @@ export type LinkedInAdsPlatformData = {
         showMemberProfilePhoto?: boolean;
     };
     /**
-     * POST /v1/ads/create only. Dynamic Jobs Ad promoting your open roles,
-     * personalized with the viewer's profile photo. Requires goal
-     * job_applicants and a Company Page with active job postings.
-     * headline and buttonLabel take exactly one of
-     * preApproved or custom. logoUrl and organizationName default to the
-     * Company Page's. Mutually exclusive with the other creative sources.
+     * POST /v1/ads/create only. Dynamic Jobs Ad promoting your open roles, personalized with the viewer's profile photo. Mutually exclusive with the other creative sources.
+     *
+     * - Requires goal job_applicants and a Company Page with active job postings.
+     * - headline and buttonLabel take exactly one of preApproved or custom.
+     * - logoUrl and organizationName default to the Company Page's.
      *
      */
     jobs?: {
@@ -10843,12 +11084,12 @@ export type LinkedInAdsPlatformData = {
         imageUrl?: string;
     };
     /**
-     * POST /v1/ads/create only. Conversation Ad: a choose-your-path message
-     * tree delivered to the member's LinkedIn inbox. Messages are flat
-     * nodes wired by local ids; each button either opens a url or leads to
-     * nextMessageId. Cycles, unknown ids and a missing firstMessageId
-     * return a 400. LinkedIn does not deliver message ads to EU members.
-     * Mutually exclusive with the other creative sources.
+     * POST /v1/ads/create only. Conversation Ad: a choose-your-path message tree delivered to the member's LinkedIn inbox.
+     *
+     * - Messages are flat nodes wired by local ids. Each button either opens a url or leads to nextMessageId.
+     * - Cycles, unknown ids and a missing firstMessageId return a 400.
+     * - LinkedIn does not deliver message ads to EU members.
+     * - Mutually exclusive with the other creative sources.
      *
      */
     conversation?: {
@@ -10905,23 +11146,24 @@ export type LinkedInAdsPlatformData = {
         urn: string;
     };
     /**
-     * POST /v1/ads/create only. Sponsors an existing LinkedIn post
-     * (a share or ugcPost authored by your organization's Company
-     * Page) as the creative, keeping its commentary, author and
-     * engagement. Unlike boostPost, which provisions its own
-     * CampaignGroup + Campaign around the post, this variant
-     * attaches the reference under the campaign /v1/ads/create
-     * builds, the same shape as every other format, so the caller can
-     * pick bidding / targeting / schedule freely. No headline, body,
-     * imageUrl or organization are needed; the referenced post
-     * carries its own commentary and author. Mutually exclusive
-     * with the other creative sources. Posts from personal profiles
-     * (Thought Leader Ads) are NOT supported (see postUrn).
+     * POST /v1/ads/create only. Sponsors an existing LinkedIn post (a share or ugcPost authored by your organization's Company Page) as the creative, keeping its commentary, author and engagement.
+     *
+     * Unlike boostPost, which provisions its own CampaignGroup + Campaign around the post, this attaches the reference under the campaign /v1/ads/create builds, like every other format. You pick bidding / targeting / schedule freely.
+     *
+     * No headline, body, imageUrl or organization are needed; the referenced post carries its own commentary and author. Mutually exclusive with the other creative sources.
+     *
+     * Posts from personal profiles (Thought Leader Ads) are NOT supported (see postUrn).
      *
      */
     thoughtLeader?: {
         /**
-         * LinkedIn share or ugcPost URN, urn:li:share:N or urn:li:ugcPost:N. Get it via "Copy link to post" on the target LinkedIn post (the URL contains -share- for a share or -ugcPost- for a ugcPost, then the numeric id). The post must be authored by an organization (Company Page). Member (personal profile) posts, i.e. Thought Leader Ads proper, are rejected by LinkedIn's public Marketing API regardless of sponsorship approval and of post type (a LinkedIn limitation; their Campaign Manager creates those through a private API). Referencing a member post returns a 422 with a clear error.
+         * LinkedIn share or ugcPost URN: urn:li:share:N or urn:li:ugcPost:N.
+         *
+         * Get it via "Copy link to post" on the target LinkedIn post. The URL contains -share- (share) or -ugcPost- (ugcPost), then the numeric id.
+         *
+         * The post must be authored by an organization (Company Page). Member (personal profile) posts, i.e. Thought Leader Ads proper, are rejected by LinkedIn's public Marketing API regardless of sponsorship approval and post type.
+         *
+         * This is a LinkedIn limitation (Campaign Manager creates those through a private API). Referencing a member post returns a 422 with a clear error.
          *
          */
         postUrn: string;
@@ -11043,7 +11285,9 @@ export type LinkedInAggregateAnalyticsTotalResponse = {
          */
         sends?: number;
         /**
-         * Overall engagement rate, as a percentage rounded to 2 decimals: (reactions + comments + shares + saves + sends) / impressions * 100. Clicks are not counted, and there is no fallback denominator, so this is 0 whenever impressions is 0. This is NOT the same formula as PostAnalytics.engagementRate on GET /v1/analytics.
+         * Overall engagement rate, as a percentage rounded to 2 decimals: (reactions + comments + shares + saves + sends) / impressions * 100.
+         *
+         * Clicks are not counted and there is no fallback denominator, so this is 0 whenever impressions is 0. NOT the same formula as PostAnalytics.engagementRate on GET /v1/analytics.
          */
         engagementRate?: number;
     };
@@ -11077,7 +11321,12 @@ export type LinkedInMentionIssue = {
 export type code2 = 'linkedin_mention_unresolvable' | 'linkedin_mention_requires_page_admin' | 'linkedin_mention_name_unavailable' | 'linkedin_mentions_limit_exceeded' | 'rate_limited' | 'reconnect_required' | 'temporarily_unavailable';
 
 /**
- * Up to 20 images, no multi-video. Single PDF supported (max 100MB). Link previews auto-generated when no media attached. Use organizationUrn for multi-org posting. Geo-restriction only works for organization pages (not personal profiles) and requires the targeted audience to exceed 300 followers. Polls are supported via the poll object: 2-4 options, cannot be combined with media or reshareUrl, cannot be edited after publishing, and API-created polls are non-sponsored only.
+ * LinkedIn post options.
+ *
+ * - Media: up to 20 images, no multi-video. A single PDF is supported (max 100MB). Link previews are auto-generated when no media is attached.
+ * - Use organizationUrn for multi-org posting.
+ * - Geo-restriction only works for organization pages (not personal profiles) and requires the targeted audience to exceed 300 followers.
+ * - Polls, via the poll object: 2-4 options, cannot be combined with media or reshareUrl, cannot be edited after publishing. API-created polls are non-sponsored only.
  *
  */
 export type LinkedInPlatformData = {
@@ -11098,7 +11347,12 @@ export type LinkedInPlatformData = {
      */
     disableLinkPreview?: boolean;
     /**
-     * Organization pages only. Audience targeting for the post (Ads Manager's "Targeted audience"), sent as LinkedIn's distribution.targetEntities: OR inside a facet, AND across facets. LinkedIn rejects the post when the targeted audience is under 300 members, and Zernio rejects it on a personal profile. URN facets accept a full urn:li:<type>:<id> or the bare numeric id; find ids with GET /v1/ads/targeting/search?platform=linkedin (types country, region, industry, jobFunction, seniority, companySize).
+     * Organization pages only (Zernio rejects it on a personal profile). Audience targeting for the post (Ads Manager's "Targeted audience"), sent as LinkedIn's distribution.targetEntities: OR inside a facet, AND across facets.
+     *
+     * LinkedIn rejects the post when the targeted audience is under 300 members.
+     *
+     * URN facets accept a full urn:li:<type>:<id> or the bare numeric id. Find ids with GET /v1/ads/targeting/search?platform=linkedin (types country, region, industry, jobFunction, seniority, companySize).
+     *
      */
     audience?: {
         /**
@@ -11152,7 +11406,12 @@ export type LinkedInPlatformData = {
         organizations?: Array<(string)>;
     };
     /**
-     * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. The published post is always a reshare authored by your account with the original embedded underneath: with content your text is the commentary (LinkedIn's "repost with your thoughts"), and with no content it publishes as a text-free reshare. A text-free reshare is NOT LinkedIn's one-click "Repost" (the feed treatment where the original author stays the author); LinkedIn's API exposes no way to create that, so the post still appears authored by you with the original embedded. Mutually exclusive with media. Works on personal profiles and organization pages.
+     * LinkedIn post link to repost (use the post's "Copy link to post" action), or a urn:li:share / urn:li:ugcPost / urn:li:groupPost URN. Mutually exclusive with media. Works on personal profiles and organization pages.
+     *
+     * The published post is always a reshare authored by your account with the original embedded underneath. With content, your text is the commentary (LinkedIn's "repost with your thoughts"); with no content it publishes as a text-free reshare.
+     *
+     * A text-free reshare is NOT LinkedIn's one-click "Repost" (the feed treatment where the original author stays the author). LinkedIn's API exposes no way to create that, so the post still appears authored by you with the original embedded.
+     *
      */
     reshareUrl?: string;
     geoRestriction?: GeoRestriction;
@@ -11198,7 +11457,10 @@ export type MediaItem = {
      */
     url?: string;
     /**
-     * A file of a connected Google Drive or OneDrive account (see the Files endpoints). The file is copied into Zernio media storage when the post is created and the item is stored as a plain `url`; a folder, an undownloadable file or an unknown id fails the request with a 4xx naming `mediaItems[i].fileId`. Requires `accountId`.
+     * A file of a connected Google Drive or OneDrive account (see the Files endpoints). Requires `accountId`.
+     *
+     * The file is copied into Zernio media storage when the post is created, and the item is stored as a plain `url`. A folder, an undownloadable file or an unknown id fails the request with a 4xx naming `mediaItems[i].fileId`.
+     *
      */
     fileId?: string;
     /**
@@ -11210,7 +11472,11 @@ export type MediaItem = {
      */
     title?: string;
     /**
-     * Accessibility alternative text for an image, applied on every platform that supports it: Instagram (feed images only, not Reels/Stories), Facebook, Threads, X (max 1000 chars), LinkedIn, Bluesky, and Pinterest (max 500 chars). Ignored on platforms without alt-text support (TikTok, YouTube, Snapchat, Telegram, Reddit, Google Business Profile, WhatsApp) and on video items where the platform does not accept it. Set once per image; the same value is sent to each selected platform.
+     * Accessibility alternative text for an image. Set once per image; the same value is sent to each selected platform.
+     *
+     * - Applied on: Instagram (feed images only, not Reels/Stories), Facebook, Threads, X (max 1000 chars), LinkedIn, Bluesky, Pinterest (max 500 chars).
+     * - Ignored on platforms without alt-text support (TikTok, YouTube, Snapchat, Telegram, Reddit, Google Business Profile, WhatsApp) and on video items where the platform does not accept it.
+     *
      */
     altText?: string;
     filename?: string;
@@ -11231,7 +11497,20 @@ export type MediaItem = {
      */
     instagramThumbnail?: string;
     /**
-     * Subtitle (closed caption) files for a video item, in SRT or WebVTT. Each language may appear once per video. Sent to YouTube, Facebook videos, LinkedIn, X and Bluesky; ignored with a warning on every other platform. Zernio downloads each file when the post is created or updated and converts it to the format each platform requires. Per-platform rules: YouTube takes every track; Facebook takes every track, up to 200 KB each; Bluesky takes every track, up to 20 KB each after conversion to WebVTT; X takes the first track only (one subtitle per video); LinkedIn takes the first English track only. Tracks a platform cannot take are skipped and reported in the response warnings. A file that is unreachable, redirects, exceeds 1 MB, is not valid SRT or WebVTT, or is over a platform limit is rejected with a 400 (code INVALID_SUBTITLES). If a platform rejects a file at publish time, the post is still published, without subtitles.
+     * Subtitle (closed caption) files for a video item, in SRT or WebVTT. Each language may appear once per video. Zernio downloads each file when the post is created or updated and converts it to the format each platform requires.
+     *
+     * Sent to YouTube, Facebook videos, LinkedIn, X and Bluesky; ignored with a warning elsewhere. Per platform:
+     *
+     * - YouTube: every track.
+     * - Facebook: every track, up to 200 KB each.
+     * - Bluesky: every track, up to 20 KB each after conversion to WebVTT.
+     * - X: the first track only (one subtitle per video).
+     * - LinkedIn: the first English track only.
+     *
+     * Tracks a platform cannot take are skipped and reported in the response warnings.
+     *
+     * A file that is unreachable, redirects, exceeds 1 MB, is not valid SRT or WebVTT, or is over a platform limit is rejected with a 400 (code INVALID_SUBTITLES). If a platform rejects a file at publish time, the post still publishes, without subtitles.
+     *
      */
     subtitles?: Array<MediaSubtitle>;
     /**
@@ -11309,11 +11588,13 @@ export type MessengerIceBreakerLocale = {
 };
 
 /**
- * Meta ad set dayparting: the hours the ad set delivers, in whole hours. Same `dayOfWeek` /
- * `startHour` / `endHour` naming as the Google `PUT /v1/ads/campaigns/{campaignId}/ad-schedule`,
- * but Meta has no minutes and no bid modifiers. Windows on one day must not overlap (adjacent is
- * fine) and every window must use the same `timezoneType`. Invalid windows are a 400 on
- * `platformSpecificData.adSchedule`.
+ * Meta ad set dayparting: the hours the ad set delivers, in whole hours.
+ *
+ * Same `dayOfWeek` / `startHour` / `endHour` naming as the Google `PUT /v1/ads/campaigns/{campaignId}/ad-schedule`, but Meta has no minutes and no bid modifiers.
+ *
+ * - Windows on one day must not overlap (adjacent is fine).
+ * - Every window must use the same `timezoneType`.
+ * - Invalid windows are a 400 on `platformSpecificData.adSchedule`.
  *
  */
 export type MetaAdSchedule = Array<{
@@ -11335,7 +11616,12 @@ export type MetaAdSchedule = Array<{
 export type MetaAdsPlatformData = {
     bidStrategy?: BidStrategy;
     /**
-     * Whole currency units (USD: 5 = $5.00). Required when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP. May also be sent alone, WITHOUT bidStrategy, to set the cap on an ad set joining a COST_CAP / LOWEST_COST_WITH_BID_CAP campaign (the strategy is inherited from the campaign). On POST /v1/ads/create that shape requires existingCampaignId and is a 400 otherwise; on POST /v1/ads/boost it is promoted to LOWEST_COST_WITH_BID_CAP.
+     * Whole currency units (USD: 5 = $5.00). Required when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP.
+     *
+     * May also be sent alone, WITHOUT bidStrategy, to set the cap on an ad set joining a COST_CAP / LOWEST_COST_WITH_BID_CAP campaign (the strategy is inherited from the campaign):
+     *
+     * - POST /v1/ads/create: that shape requires existingCampaignId and is a 400 otherwise.
+     * - POST /v1/ads/boost: it is promoted to LOWEST_COST_WITH_BID_CAP.
      */
     bidAmount?: number;
     /**
@@ -11343,7 +11629,11 @@ export type MetaAdsPlatformData = {
      */
     roasAverageFloor?: number;
     /**
-     * Meta daily_min_spend_target on the ad set being created: the least it should spend per day, in whole currency units. It reserves a share of a CAMPAIGN budget, so it requires budgetLevel campaign or an existingCampaignId whose campaign has the budget (Advantage campaign budget / CBO); with an ad-set budget it is a 400, because Meta rejects a spend limit on an ad set that owns its budget. A target, not a guarantee. Mutually exclusive with lifetimeMinSpendTarget: the flavour must match the campaign budget type. Rejected with 400 on POST /v1/ads/boost and in adSetId attach mode: use PUT /v1/ads/ad-sets/{adSetId} for an ad set that already exists.
+     * Meta daily_min_spend_target on the ad set being created: the least it should spend per day, in whole currency units. A target, not a guarantee.
+     *
+     * - It reserves a share of a CAMPAIGN budget, so it requires budgetLevel campaign or an existingCampaignId whose campaign has the budget (Advantage campaign budget / CBO). With an ad-set budget it is a 400 (Meta rejects a spend limit on an ad set that owns its budget).
+     * - Mutually exclusive with lifetimeMinSpendTarget: the flavour must match the campaign budget type.
+     * - Rejected with 400 on POST /v1/ads/boost and in adSetId attach mode: use PUT /v1/ads/ad-sets/{adSetId} for an existing ad set.
      */
     dailyMinSpendTarget?: number;
     /**
@@ -11352,11 +11642,14 @@ export type MetaAdsPlatformData = {
     lifetimeMinSpendTarget?: number;
     customerLifecycle?: MetaCustomerLifecycle;
     /**
-     * Dayparting on the ad set being created (Meta `adset_schedule` with `pacing_type: ["day_parting"]`).
-     * Meta runs a schedule only on a LIFETIME budget, so a daily budget (on the ad set, or on the
-     * campaign joined with `existingCampaignId`) is a 400 with `param: platformSpecificData.adSchedule`.
-     * Also a 400 when empty, in adSetId attach mode and with `buyingType: RESERVED`. Change it later with
-     * `PUT /v1/ads/ad-sets/{adSetId}`.
+     * Dayparting on the ad set being created (Meta `adset_schedule` with `pacing_type: ["day_parting"]`). Change it later with `PUT /v1/ads/ad-sets/{adSetId}`.
+     *
+     * A 400 with `param: platformSpecificData.adSchedule` when:
+     *
+     * - the budget is daily (on the ad set, or on the campaign joined with `existingCampaignId`): Meta runs a schedule only on a LIFETIME budget.
+     * - the value is empty.
+     * - in adSetId attach mode.
+     * - with `buyingType: RESERVED`.
      *
      */
     adSchedule?: (MetaAdSchedule);
@@ -11555,7 +11848,11 @@ export type MetaInstagramIdentityRef = {
 };
 
 /**
- * A Meta Lead Gen form as Graph returns it, in Meta's own snake_case. Read through GET /v1/ads/lead-forms/{formId}. Every setting POST /v1/ads/lead-forms writes is present here, so a form can be diffed against what was created and drift from edits made in Meta's form builder is detectable. A compound field is omitted entirely when the form has no value for it, and `fields` narrows the selection.
+ * A Meta Lead Gen form as Graph returns it, in Meta's own snake_case. Read through GET /v1/ads/lead-forms/{formId}.
+ *
+ * Every setting POST /v1/ads/lead-forms writes is present here, so you can diff a form against what was created and detect drift from edits made in Meta's form builder.
+ *
+ * A compound field is omitted entirely when the form has no value for it, and `fields` narrows the selection.
  *
  */
 export type MetaLeadForm = {
@@ -11703,23 +12000,19 @@ export type MetaPagePartner = {
 };
 
 /**
- * Meta placement asset customization: pin a SPECIFIC asset (image OR video) to each
- * placement group on a SINGLE ad (e.g. a 4:5 image on Feed and a 9:16 image on
- * Stories/Reels), the same thing Meta Ads Manager produces with "different creative per
- * placement". Mapped to the creative's `asset_feed_spec` (`optimization_type: PLACEMENT`)
- * + `asset_customization_rules`. Each rule can pin one `headline`, `body` and `description`;
- * omitted fields and unmatched placements use the request's top-level copy. Each rule's
- * `placements` accepts the same fields as the top-level `placements` object; Meta enforces
- * co-selection rules and returns an actionable error.
+ * Meta placement asset customization: pin a SPECIFIC asset (image OR video) to each placement group on a SINGLE ad (e.g. a 4:5 image on Feed and a 9:16 image on Stories/Reels). This is what Meta Ads Manager produces with "different creative per placement".
  *
- * A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad
- * format). Image mode: `defaultImageUrl` + `rules[].imageUrl`. Video mode:
- * `defaultVideoUrl` + `rules[].videoUrl` (optional `thumbnailUrl`/`defaultThumbnailUrl`
- * posters; Meta auto-generates when omitted). Exactly one catch-all default is required.
+ * Mapped to the creative's `asset_feed_spec` (`optimization_type: PLACEMENT`) + `asset_customization_rules`.
  *
- * Meta controls text rendering by placement and format. Validation accepts these fields
- * but does not prove that every field appears in delivery. Preview the ad; put copy that
- * must always be visible into the image or video itself.
+ * - Each rule can pin one `headline`, `body` and `description`; omitted fields and unmatched placements use the request's top-level copy.
+ * - Each rule's `placements` accepts the same fields as the top-level `placements` object. Meta enforces co-selection rules and returns an actionable error.
+ *
+ * A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad format). Exactly one catch-all default is required.
+ *
+ * - Image mode: `defaultImageUrl` + `rules[].imageUrl`.
+ * - Video mode: `defaultVideoUrl` + `rules[].videoUrl`, with optional `thumbnailUrl`/`defaultThumbnailUrl` posters (Meta auto-generates them when omitted).
+ *
+ * Meta controls text rendering by placement and format. Validation accepts these fields but does not prove every field appears in delivery. Preview the ad, and put copy that must always be visible into the image or video itself.
  *
  */
 export type MetaPlacementAssets = {
@@ -11814,7 +12107,10 @@ export type MetaProductSet = {
 };
 
 /**
- * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+ * Not supported. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Any object is rejected with 400 invalid_field_value.
+ *
+ * Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+ *
  */
 export type MetaPromotion = {
     [key: string]: unknown;
@@ -11879,7 +12175,10 @@ export type OAuthApp = {
      */
     redirectUri: string;
     /**
-     * Facebook and Instagram only: Meta delivers comments and messages to your app's own webhook, so set it to this callback URL and verify token on the app's webhook product (Page for Facebook, Instagram for Instagram) and subscribe the listed fields. Zernio checks each delivery against your app secret. Null on platforms with nothing to set up.
+     * Facebook and Instagram only; null on platforms with nothing to set up. Meta delivers comments and messages to your app's own webhook.
+     *
+     * Set this callback URL and verify token on the app's webhook product (Page for Facebook, Instagram for Instagram) and subscribe the listed fields. Zernio checks each delivery against your app secret.
+     *
      */
     webhook?: {
         callbackUrl: string;
@@ -12166,12 +12465,29 @@ export type ParameterCreatorPortalToken = string;
 export type ParameterEmailAccountId = string;
 
 /**
- * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+ * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+ *
+ * - Same key + same body: replays the original response.
+ * - Same key + different body: 422.
+ * - Key still processing: 409.
+ *
+ * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+ *
  */
 export type ParameterIdempotencyKeyHeader = string;
 
 /**
- * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description. On X the budget is read live in the same read: on GET /v1/ads/{adId} `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches); on the ad set and campaign listings `budget` is the one that line item or campaign holds now (returned, not stored); a row whose budget the other level holds keeps its synced `budget`.
+ * Read the on/off switches live from the platform instead of returning synced values. See "Status freshness" in the operation description.
+ *
+ * - The fresh values are stored (later reads return them too), and the response carries `statusReadAt`, the time of the read.
+ * - At most 20 platform objects are read per request.
+ * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
+ *
+ * **On X** the budget is read live too:
+ *
+ * - GET /v1/ads/{adId}: `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches).
+ * - Ad set and campaign listings: `budget` is what that line item or campaign holds now (returned, not stored). A row whose budget the other level holds keeps its synced `budget`.
+ *
  */
 export type ParameterLiveStatusRead = boolean;
 
@@ -12181,7 +12497,19 @@ export type ParameterLiveStatusRead = boolean;
 export type ParameterPageParam = number;
 
 /**
- * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+ * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad not in Zernio's synced store, e.g. an Ads Manager ad on an ad account reached only through a Facebook connection.
+ *
+ * The ad is then read live from Meta through that connection, and the response carries `synced: false`. Ads Meta reports as DELETED are returned too, with their status.
+ *
+ * Same rules as GET /v1/ads/campaigns/{campaignId}:
+ *
+ * - Connection on a profile the API key cannot access: 404.
+ * - Ad on an ad account outside the connection's selected ad accounts: 403 `ad_account_not_selected`.
+ * - Id Meta cannot read through the connection, or not an ad (e.g. a campaign or ad set id): 404 `ad_not_found`.
+ * - Connection that is not Meta: 501.
+ *
+ * Ignored when the ad is in the store (its own connection is used). Without it, an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+ *
  */
 export type ParameterUnsyncedMetaAdAccountId = string;
 
@@ -12349,11 +12677,20 @@ export type PlatformAnalytics = {
     syncStatus?: 'synced' | 'pending' | 'unavailable';
     platformPostUrl?: (string) | null;
     /**
-     * Failure detail. On failed entries, why the post failed to publish. On unavailable entries, why analytics cannot be synced (e.g. Google Business Profile, a TikTok upload that never received a video id). On pending entries, the most recent analytics sync error for the account (null while no sync has failed), cleared after the next successful sync.
+     * Failure detail:
+     *
+     * - Failed entries: why the post failed to publish.
+     * - Unavailable entries: why analytics cannot be synced (e.g. Google Business Profile, a TikTok upload that never received a video id).
+     * - Pending entries: the most recent analytics sync error for the account (null while no sync has failed), cleared after the next successful sync.
      */
     errorMessage?: (string) | null;
     /**
-     * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. not_post_owner: the post is owned by another Page or user (collab or visitor post); its analytics cannot be read with this Page's token. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
+     * Stable machine-readable reason for errorMessage. New values may be added.
+     *
+     * - post_not_found: the post was deleted or is no longer visible to the account.
+     * - not_post_owner: the post is owned by another Page or user (collab or visitor post); its analytics cannot be read with this Page's token.
+     * - permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only).
+     * - null: no stable code; read errorMessage.
      */
     errorCode?: ('post_not_found' | 'not_post_owner' | 'permission_missing') | null;
     /**
@@ -12370,7 +12707,12 @@ export type status38 = 'published' | 'failed';
 export type syncStatus2 = 'synced' | 'pending' | 'unavailable';
 
 /**
- * Stable machine-readable reason for errorMessage. post_not_found: the post was deleted or is no longer visible to the account. not_post_owner: the post is owned by another Page or user (collab or visitor post); its analytics cannot be read with this Page's token. permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only). null: no stable code, read errorMessage. New values may be added.
+ * Stable machine-readable reason for errorMessage. New values may be added.
+ *
+ * - post_not_found: the post was deleted or is no longer visible to the account.
+ * - not_post_owner: the post is owned by another Page or user (collab or visitor post); its analytics cannot be read with this Page's token.
+ * - permission_missing: the last analytics sync of the Facebook account failed because the Page no longer grants pages_read_engagement (pending entries only).
+ * - null: no stable code; read errorMessage.
  */
 export type errorCode = 'post_not_found' | 'not_post_owner' | 'permission_missing';
 
@@ -12390,7 +12732,12 @@ export type PlatformTarget = {
      */
     scheduledFor?: string;
     /**
-     * The platform-specific options stored on this target, echoed back as they were sent. Typed per platform on the way in (see the *PlatformData schemas on the request body); free-form on the way out, because a response is not guaranteed to match exactly one of those variants and generated clients that pick a variant by structure reject the entire response when it doesn't. Zernio's internal publishing state (snapshots, container ids, publish stage) is never returned here, and the key is omitted rather than sent as an empty object.
+     * The platform-specific options stored on this target, echoed back as sent.
+     *
+     * Typed per platform on the way in (see the *PlatformData schemas on the request body); free-form on the way out. A response is not guaranteed to match exactly one variant, and generated clients that pick a variant by structure reject the entire response when it doesn't.
+     *
+     * Zernio's internal publishing state (snapshots, container ids, publish stage) is never returned here. The key is omitted rather than sent as an empty object.
+     *
      */
     platformSpecificData?: {
         [key: string]: unknown;
@@ -12404,7 +12751,10 @@ export type PlatformTarget = {
      */
     platformPostId?: string;
     /**
-     * Public URL of the published post. Included in the response for immediate posts; for scheduled posts, fetch via GET /v1/posts/{postId} after publish time. Empty when the platform confirmed the publish without returning an id a permalink can be built from (TikTok returns a publish id for some uploads); the TikTok reconcile cron backfills it later. If TikTok never returns one, /v1/analytics reports that entry as syncStatus unavailable.
+     * Public URL of the published post. Included in the response for immediate posts; for scheduled posts, fetch via GET /v1/posts/{postId} after publish time.
+     *
+     * Empty when the platform confirmed the publish without returning an id a permalink can be built from (TikTok returns a publish id for some uploads). The TikTok reconcile cron backfills it later. If TikTok never returns one, /v1/analytics reports that entry as syncStatus unavailable.
+     *
      */
     platformPostUrl?: (string) | null;
     /**
@@ -12412,11 +12762,17 @@ export type PlatformTarget = {
      */
     publishedAt?: string;
     /**
-     * Set when a post that was successfully published later disappears from the platform (deleted on-platform or taken down by the platform). status stays "published" (it reflects the publish outcome); poll this field to detect post-publish removals. Absent while the post is live, and cleared if the post reappears. Detection runs with the analytics sync, so expect up to a few hours of lag.
+     * Set when a successfully published post later disappears from the platform (deleted on-platform or taken down by the platform). Absent while the post is live, and cleared if it reappears.
+     *
+     * status stays "published" (it reflects the publish outcome), so poll this field to detect post-publish removals. Detection runs with the analytics sync: expect up to a few hours of lag.
+     *
      */
     removedFromPlatformAt?: (string) | null;
     /**
-     * Present and true only when this Instagram reel was launched as a Trial through Zernio (created with platformSpecificData.trialParams). Use it to segment trial reels in analytics. Note: Instagram's Graph API exposes no readable trial field, so this reflects creation-time intent only. It indicates the reel STARTED as a trial, not whether or when it graduated.
+     * Present and true only when this Instagram reel was launched as a Trial through Zernio (created with platformSpecificData.trialParams). Use it to segment trial reels in analytics.
+     *
+     * Instagram's Graph API exposes no readable trial field, so this reflects creation-time intent only: the reel STARTED as a trial, not whether or when it graduated.
+     *
      */
     isTrialReel?: boolean;
     /**
@@ -12428,7 +12784,10 @@ export type PlatformTarget = {
      */
     publishAttempts?: number;
     /**
-     * Instagram only. Automatic re-sends of media_publish on the same container that Zernio scheduled after Meta answered a transient error (30 min, 2 h and 6 h after each failure, at most 3). While the target is still processing, the latest one may not have been sent yet. Not reset by a manual retry. Independent of publishAttempts, which counts publish-leg claims. Absent when none was scheduled.
+     * Instagram only. Automatic re-sends of media_publish on the same container that Zernio scheduled after Meta answered a transient error: 30 min, 2 h and 6 h after each failure, at most 3. Absent when none was scheduled.
+     *
+     * While the target is still processing, the latest one may not have been sent yet. Not reset by a manual retry. Independent of publishAttempts, which counts publish-leg claims.
+     *
      */
     publishRetries?: number;
     /**
@@ -12436,7 +12795,19 @@ export type PlatformTarget = {
      */
     errorMessage?: string;
     /**
-     * Error category for programmatic handling: auth_expired (token expired/revoked), user_content (wrong format/too long), user_abuse (rate limits/spam), account_issue (config problems), platform_rejected (policy violation), platform_error (5xx/maintenance), platform_rate_limit (platform throttling, retried automatically), quota_exhausted (a shared quota pool the integration draws on is empty, including our own capacity gate in front of one; not caused by your content or account, and safe to retry once the pool frees up), system_error (Zernio infra), unknown
+     * Error category for programmatic handling:
+     *
+     * - `auth_expired`: token expired/revoked
+     * - `user_content`: wrong format/too long
+     * - `user_abuse`: rate limits/spam
+     * - `account_issue`: config problems
+     * - `platform_rejected`: policy violation
+     * - `platform_error`: 5xx/maintenance
+     * - `platform_rate_limit`: platform throttling, retried automatically
+     * - `quota_exhausted`: a shared quota pool the integration draws on is empty, including our own capacity gate in front of one. Not caused by your content or account, and safe to retry once the pool frees up.
+     * - `system_error`: Zernio infra
+     * - `unknown`
+     *
      */
     errorCategory?: 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'platform_rate_limit' | 'quota_exhausted' | 'system_error' | 'unknown';
     /**
@@ -12452,7 +12823,19 @@ export type PlatformTarget = {
 export type trialGraduationStrategy = 'MANUAL' | 'SS_PERFORMANCE';
 
 /**
- * Error category for programmatic handling: auth_expired (token expired/revoked), user_content (wrong format/too long), user_abuse (rate limits/spam), account_issue (config problems), platform_rejected (policy violation), platform_error (5xx/maintenance), platform_rate_limit (platform throttling, retried automatically), quota_exhausted (a shared quota pool the integration draws on is empty, including our own capacity gate in front of one; not caused by your content or account, and safe to retry once the pool frees up), system_error (Zernio infra), unknown
+ * Error category for programmatic handling:
+ *
+ * - `auth_expired`: token expired/revoked
+ * - `user_content`: wrong format/too long
+ * - `user_abuse`: rate limits/spam
+ * - `account_issue`: config problems
+ * - `platform_rejected`: policy violation
+ * - `platform_error`: 5xx/maintenance
+ * - `platform_rate_limit`: platform throttling, retried automatically
+ * - `quota_exhausted`: a shared quota pool the integration draws on is empty, including our own capacity gate in front of one. Not caused by your content or account, and safe to retry once the pool frees up.
+ * - `system_error`: Zernio infra
+ * - `unknown`
+ *
  */
 export type errorCategory = 'auth_expired' | 'user_content' | 'user_abuse' | 'account_issue' | 'platform_rejected' | 'platform_error' | 'platform_rate_limit' | 'quota_exhausted' | 'system_error' | 'unknown';
 
@@ -12585,7 +12968,11 @@ export type PostAnalytics = {
     clicks?: number;
     views?: number;
     /**
-     * Accounts that started following from this post. Instagram feed posts and stories (organic follows), Facebook Reels (Meta post_video_followers) and the TikTok business lane. Null on Instagram Reels and non-Reels video and on Facebook posts that are not Reels, where Meta does not expose this metric for the media. 0 for other platforms.
+     * Accounts that started following from this post.
+     *
+     * - Reported for Instagram feed posts and stories (organic follows), Facebook Reels (Meta post_video_followers) and the TikTok business lane.
+     * - Null on Instagram Reels and non-Reels video, and on Facebook posts that are not Reels, where Meta does not expose this metric for the media.
+     * - 0 for other platforms.
      */
     follows?: (number) | null;
     /**
@@ -12597,11 +12984,19 @@ export type PostAnalytics = {
      */
     igReelsVideoViewTotalTime?: number;
     /**
-     * Instagram Reels only: percentage (0-100) of initial views that skipped the reel within its first 3 seconds, as reported by Meta. Meta labels the metric estimated and in development, so it can move between syncs. 0 for non-Reels media and other platforms. When a post is published to several accounts, the aggregate is weighted by views.
+     * Instagram Reels only: percentage (0-100) of initial views that skipped the reel within its first 3 seconds, as reported by Meta.
+     *
+     * - Meta labels the metric estimated and in development, so it can move between syncs.
+     * - 0 for non-Reels media and other platforms.
+     * - For a post published to several accounts, the aggregate is weighted by views.
      */
     reelsSkipRate?: number;
     /**
-     * TikTok accounts connected through the TikTok for Business app only: share of viewers who watched the video to the end, 0 to 1, as TikTok reports it (T+24-48h, only for posts active in the last 7 days). 0 for other platforms. When a post is published to several accounts, the aggregate is weighted by views.
+     * Share of viewers who watched the video to the end, 0 to 1, as TikTok reports it. Only for TikTok accounts connected through the TikTok for Business app.
+     *
+     * - Delayed T+24-48h, and only for posts active in the last 7 days.
+     * - 0 for other platforms.
+     * - For a post published to several accounts, the aggregate is weighted by views.
      */
     completionRate?: number;
     /**
@@ -12613,19 +13008,34 @@ export type PostAnalytics = {
      */
     websiteClicks?: number;
     /**
-     * TikTok accounts connected through the TikTok for Business app only: share of views by surface, as fractions 0 to 1 (T+24-48h, only for posts active in the last 7 days). Keys: `forYou`, `follow`, `search`, `personalProfile`, `sound`, `directMessage`, `other`; a surface TikTok adds later appears under a camelCase key derived from its name. Empty object when TikTok reports nothing, and for other platforms. When a post is published to several accounts, each share is weighted by views.
+     * Share of views by surface, as fractions 0 to 1. Only for TikTok accounts connected through the TikTok for Business app (T+24-48h, only for posts active in the last 7 days).
+     *
+     * - Keys: `forYou`, `follow`, `search`, `personalProfile`, `sound`, `directMessage`, `other`. A surface TikTok adds later appears under a camelCase key derived from its name.
+     * - Empty object when TikTok reports nothing, and for other platforms.
+     * - When a post is published to several accounts, each share is weighted by views.
+     *
      */
     impressionSources?: {
         [key: string]: (number);
     };
     /**
-     * TikTok accounts connected through the TikTok for Business app only: two viewer splits as fractions 0 to 1 (T+24-48h). Each pair sums to 1 when present, `follower` + `nonFollower` and `newViewer` + `returnViewer`; TikTok can report one pair without the other. Empty object when TikTok reports nothing, and for other platforms. Views-weighted across accounts like impressionSources.
+     * TikTok accounts connected through the TikTok for Business app only: two viewer splits as fractions 0 to 1 (T+24-48h).
+     *
+     * - Each pair sums to 1 when present: `follower` + `nonFollower`, and `newViewer` + `returnViewer`. TikTok can report one pair without the other.
+     * - Empty object when TikTok reports nothing, and for other platforms.
+     * - Views-weighted across accounts, like impressionSources.
+     *
      */
     audienceTypes?: {
         [key: string]: (number);
     };
     /**
-     * TikTok accounts connected through the TikTok for Business app only: share of views by viewer country as fractions 0 to 1, keyed by upper-case ISO-3166 alpha-2 code (T+24-48h, only for posts active in the last 7 days). At most 20 country keys plus `other`: the catch-all bucket TikTok sends, any country below 0.001 and anything past the twentieth all sum into `other`, so the values still add up to 1. Empty object when TikTok reports nothing, and for other platforms. Views-weighted across accounts like impressionSources.
+     * TikTok accounts connected through the TikTok for Business app only: share of views by viewer country, as fractions 0 to 1, keyed by upper-case ISO-3166 alpha-2 code. Available T+24-48h, only for posts active in the last 7 days.
+     *
+     * At most 20 country keys plus `other`. The catch-all bucket TikTok sends, any country below 0.001 and anything past the twentieth all sum into `other`, so the values still add up to 1.
+     *
+     * Empty object when TikTok reports nothing, and for other platforms. Views-weighted across accounts like impressionSources.
+     *
      */
     audienceCountries?: {
         [key: string]: (number);
@@ -12635,21 +13045,40 @@ export type PostAnalytics = {
      */
     replays?: number;
     /**
-     * Facebook Reels and TikTok business lane: share still watching at each second of playback, fractions 0 to 1. Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Facebook Reels (Meta post_video_retention_graph): the base is a subset of plays that Meta selects and does not expose, on small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays; loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. TikTok accounts connected through the TikTok for Business app (TikTok video_view_retention): one point per whole second, at most 61 points, thinned evenly on videos longer than 60 s. Empty object for other media and platforms. On a cross-posted post this is the curve of the account with the most views among those reporting one, never a blend: curves from different platforms and accounts measure different audiences and different seconds. Each platformAnalytics entry keeps its own curve.
+     * Facebook Reels and TikTok business lane: share of viewers still watching at each second of playback, as fractions 0 to 1. Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Empty object for other media and platforms.
+     *
+     * - Facebook Reels (Meta post_video_retention_graph): the base is a subset of plays that Meta selects and does not expose. On small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays.
+     * - Facebook Reels length: loops count as continued playback, so a short Reel's curve runs past its length (an 8 s Reel has keys "0" to "12"). Meta returns at most 41 points, so a long Reel covers only its first 40 s.
+     * - TikTok accounts connected through the TikTok for Business app (TikTok video_view_retention): one point per whole second, at most 61 points, thinned evenly on videos longer than 60 s.
+     *
+     * On a cross-posted post this is the curve of the account with the most views among those reporting one, never a blend: curves from different platforms and accounts measure different audiences and different seconds. Each platformAnalytics entry keeps its own curve.
+     *
      */
     retentionCurve?: {
         [key: string]: (number);
     };
     /**
-     * Instagram accounts connected with Facebook Login only: reposts of the media by other users, minus deleted reposts, on feed posts, reels and stories. Meta does not expose this metric for accounts connected with Instagram Login, so those always report 0. 0 for other platforms, including Threads, where reposts are counted in shares instead.
+     * Reposts of the media by other users, minus deleted reposts, on feed posts, reels and stories. Instagram accounts connected with Facebook Login only.
+     *
+     * - Instagram Login accounts: always 0 (Meta does not expose this metric for them).
+     * - Other platforms: 0, including Threads, where reposts are counted in shares instead.
      */
     reposts?: number;
     /**
-     * Video length in seconds. Filled for public YouTube videos once their analytics next refresh (from the Data API; live streams may report null). The YouTube Data API has no Shorts flag: a video over 180 seconds cannot be a Short, but a shorter one may be a regular upload. Also filled for Instagram Reels (combine with igReelsAvgWatchTime (ms) to estimate retention). Null when unknown: platforms that do not report a length, non-video media, or when Instagram does not expose the media URL, e.g. reels with copyrighted audio.
+     * Video length in seconds. Null when unknown: platforms that do not report a length, non-video media, or when Instagram does not expose the media URL (e.g. reels with copyrighted audio).
+     *
+     * - YouTube: filled for public videos once their analytics next refresh (from the Data API; live streams may report null). The Data API has no Shorts flag: a video over 180 seconds cannot be a Short, but a shorter one may be a regular upload.
+     * - Instagram Reels: also filled. Combine with igReelsAvgWatchTime (ms) to estimate retention.
      */
     videoDurationSeconds?: (number) | null;
     /**
-     * Percentage, rounded to 2 decimals: (likes + comments + shares + saves) / (impressions or reach or views) * 100. Clicks and follows are never counted. The denominator is the FIRST of impressions, reach, views that is non-zero, so it is not the same basis on every post: a post with impressions divides by impressions, one without falls back to reach, then to views. If you need a single consistent basis (e.g. interactions / reach), compute it from the raw fields above. When this object is the post-level roll-up of a cross-posted post, the denominator is the SUM of the denominators resolved per platform entry: an entry reporting none of impressions, reach or views is excluded from both sides of the ratio. Each platformAnalytics entry below keeps its own single denominator. The engagementRate on the LinkedIn account endpoints is a different formula.
+     * Percentage, rounded to 2 decimals: (likes + comments + shares + saves) / (impressions or reach or views) * 100. Clicks and follows are never counted.
+     *
+     * The denominator is the FIRST of impressions, reach, views that is non-zero, so the basis varies by post: impressions if present, else reach, else views. For a single consistent basis (e.g. interactions / reach), compute it from the raw fields above.
+     *
+     * On the post-level roll-up of a cross-posted post, the denominator is the SUM of the denominators resolved per platform entry. An entry reporting none of impressions, reach or views is excluded from both sides of the ratio. Each platformAnalytics entry below keeps its own single denominator.
+     *
+     * The engagementRate on the LinkedIn account endpoints uses a different formula.
      */
     engagementRate?: number;
     lastUpdated?: string;
@@ -12707,7 +13136,15 @@ export type PostGetResponse = {
 };
 
 /**
- * The platform's own error for this target, so you can see what the platform said (access tokens are redacted). Set when the last attempt failed with an error the platform described (currently Instagram and Facebook), and kept while an automatic retry of that failure is pending or running; cleared when the target publishes or is retried manually. errorMessage stays the human-readable summary; this block is for diagnostics and support tickets. Instagram media processing failures carry no code or subcode, only Meta's status text in message. On an Instagram publish whose outcome is uncertain (for example errorMessage starting "Instagram did not confirm"), carries the last media_publish error Meta returned, when it returned one; errorMessage stays the verdict, so do not read this block as a confirmed failure.
+ * The platform's own error for this target, so you can see what the platform said (access tokens are redacted). errorMessage stays the human-readable summary; this block is for diagnostics and support tickets.
+ *
+ * **Lifecycle**: set when the last attempt failed with an error the platform described (currently Instagram and Facebook). Kept while an automatic retry of that failure is pending or running; cleared when the target publishes or is retried manually.
+ *
+ * **Instagram**:
+ *
+ * - Media processing failures carry no code or subcode, only Meta's status text in message.
+ * - On a publish whose outcome is uncertain (for example errorMessage starting "Instagram did not confirm"), carries the last media_publish error Meta returned, when it returned one. errorMessage stays the verdict, so do not read this block as a confirmed failure.
+ *
  */
 export type PostPlatformError = {
     /**
@@ -13380,12 +13817,12 @@ export type RcsTestDevice = {
 export type inviteStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
 
 /**
- * Configure automatic post recycling (reposting at regular intervals).
- * After the post is published, the system creates new scheduled copies at the
- * specified interval until expiration conditions are met. Supports weekly or
- * monthly intervals. Maximum 10 active recycling posts per account.
- * YouTube and TikTok platforms are excluded from recycling.
- * Content variations are recommended for X and Pinterest to avoid duplicate flags.
+ * Automatic post recycling (reposting at regular intervals). After the post is published, the system creates new scheduled copies at the specified interval until expiration conditions are met.
+ *
+ * - Weekly or monthly intervals.
+ * - Maximum 10 active recycling posts per account.
+ * - YouTube and TikTok are excluded.
+ * - Content variations are recommended for X and Pinterest to avoid duplicate flags.
  *
  */
 export type RecyclingConfig = {
@@ -13414,12 +13851,12 @@ export type RecyclingConfig = {
      */
     expireDate?: (string) | null;
     /**
-     * Array of content variations for recycled copies. On each recycle, the next
-     * variation is used in round-robin order. Recommended for X and Pinterest
-     * to avoid duplicate content flags. If omitted, the original post content is
-     * used for all recycled copies. Send an empty array [] to clear existing
-     * variations. Must have 2+ entries when setting variations. Platform-level
-     * customContent still overrides the base content per platform.
+     * Content variations for recycled copies. Each recycle uses the next variation, in round-robin order. Recommended for X and Pinterest to avoid duplicate content flags.
+     *
+     * - If omitted, the original post content is used for all recycled copies.
+     * - Send an empty array [] to clear existing variations.
+     * - Must have 2+ entries when setting variations.
+     * - Platform-level customContent still overrides the base content per platform.
      *
      */
     contentVariations?: Array<(string)>;
@@ -13565,7 +14002,11 @@ export type RedditPlatformData = {
      */
     sendreplies?: boolean;
     /**
-     * Controls Reddit's native video upload flow. When true (default for video mediaItems), the video is uploaded to Reddit's CDN and submitted with kind=video so it renders as an embedded Reddit video player. Reddit transcodes server-side (1080p/30fps cap). Set to false to explicitly publish an external link instead. The post content (or Reddit customContent override) is included as Markdown body text on the native video. When body text is present, upload failures or subreddit video restrictions fail the post without falling back to a link. Automatic link fallback applies only without body text.
+     * Controls Reddit's native video upload flow. When true (default for video mediaItems), the video is uploaded to Reddit's CDN and submitted with kind=video, so it renders as an embedded Reddit video player. Reddit transcodes server-side (1080p/30fps cap). Set to false to explicitly publish an external link instead.
+     *
+     * The post content (or Reddit customContent override) is included as Markdown body text on the native video.
+     *
+     * When body text is present, upload failures or subreddit video restrictions fail the post without falling back to a link. Automatic link fallback applies only without body text.
      *
      */
     nativeVideo?: boolean;
@@ -13787,7 +14228,11 @@ export type SharedAdAccount = {
 };
 
 /**
- * Slack message settings. Posts mrkdwn text (up to 40,000 chars; Slack truncates beyond that) to the channel fixed by the connected account, with up to 10 media files per post uploaded via Slack's file API (the text becomes the caption). The target channel is chosen at connect time (one connected account per channel), so channelId is NOT accepted here (a 400 is returned); connect the desired channel via /v1/connect/slack and target its accountId. Messages over 4,000 characters cannot be edited later (Slack's edit limit is stricter than its post limit).
+ * Slack message settings. Posts mrkdwn text (up to 40,000 chars; Slack truncates beyond that) to the channel fixed by the connected account. Up to 10 media files per post are uploaded via Slack's file API (the text becomes the caption).
+ *
+ * The channel is chosen at connect time (one connected account per channel), so channelId is NOT accepted here (400). Connect the desired channel via /v1/connect/slack and target its accountId.
+ *
+ * Messages over 4,000 characters cannot be edited later (Slack's edit limit is stricter than its post limit).
  *
  */
 export type SlackPlatformData = {
@@ -13861,7 +14306,14 @@ export type SocialAccount = {
     username?: string;
     displayName?: string;
     /**
-     * The account's id on its platform as the platform reports it to Zernio; stable across reconnects, so it is the key to match an account against your own records. Instagram: the app-scoped user id on Instagram Login accounts (the professional account id is in `metadata.instagramScopedId`), the professional account id (`17841...`) on Facebook Login accounts. TikTok: the open_id of Zernio's TikTok app, which differs from the open_id any other app sees for the same user. Either value can be passed back as `expectedPlatformUserId` on GET /v1/connect/{platform}.
+     * The account's id on its platform, as the platform reports it to Zernio. Stable across reconnects, so use it to match an account against your own records.
+     *
+     * - **Instagram Login accounts:** the app-scoped user id (the professional account id is in `metadata.instagramScopedId`).
+     * - **Instagram via Facebook Login:** the professional account id (`17841...`).
+     * - **TikTok:** the open_id of Zernio's TikTok app, which differs from the open_id any other app sees for the same user.
+     *
+     * Either value can be passed back as `expectedPlatformUserId` on GET /v1/connect/{platform}.
+     *
      */
     platformUserId?: string;
     /**
@@ -13873,7 +14325,12 @@ export type SocialAccount = {
      */
     oauthAppId?: (string) | null;
     /**
-     * TikTok accounts only. The account type TikTok reported when the account was connected. `personal` accounts cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts): skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect. `business` is the prerequisite, not a guarantee; messaging also needs the messaging scopes granted and TikTok's regional availability. `unknown` on accounts connected before this was captured or whose grant left out the account-type scope.
+     * TikTok accounts only. The account type TikTok reported when the account was connected.
+     *
+     * - `personal`: cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts). Skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect.
+     * - `business`: the prerequisite, not a guarantee. Messaging also needs the messaging scopes granted and TikTok's regional availability.
+     * - `unknown`: accounts connected before this was captured, or whose grant left out the account-type scope.
+     *
      */
     tiktokAccountType?: 'business' | 'personal' | 'unknown';
     /**
@@ -13910,63 +14367,67 @@ export type SocialAccount = {
      */
     parentAccountId?: (string) | null;
     /**
-     * Whether the user explicitly activated this account. false means the account was
-     * created as a side effect (e.g., posting account auto-created when user connected
-     * ads first). GET /v1/accounts still returns such accounts unless `excludeHidden=true`
-     * is passed. They cannot be posted to (`ACCOUNT_NOT_ENABLED_FOR_POSTING`) and are not
-     * billed as connected accounts. On an ads account (`metaads`, `googleads`, ...) the value
-     * does not hide the connection: ads accounts are listed whatever their `enabled` value and
-     * keep working for ads.
+     * Whether the user explicitly activated this account. false means the account was created as a side effect (e.g., a posting account auto-created when the user connected ads first).
+     *
+     * - GET /v1/accounts still returns such accounts unless `excludeHidden=true` is passed.
+     * - They cannot be posted to (`ACCOUNT_NOT_ENABLED_FOR_POSTING`) and are not billed as connected accounts.
+     * - On an ads account (`metaads`, `googleads`, ...) the value does not hide the connection: ads accounts are listed whatever their `enabled` value and keep working for ads.
      *
      */
     enabled?: boolean;
     /**
-     * End of the account's publishing cooldown. Compare it with the current time: a value
-     * in the past means the cooldown has ended (the field is cleared on the next successful
-     * publish), null means no cooldown since the last successful publish. A cooldown starts
-     * when a post to the account fails with `errorCategory` `user_abuse` (spam, abuse or
-     * rate-limit errors), or when 10 or more posts to it fail within an hour with
-     * `user_content`, `platform_error`, `platform_rate_limit` or `unknown`. It doubles with
-     * each start inside a 24-hour window that opens at the first one (10, 20, 40, 80 minutes
-     * and so on, capped at 24 hours). On a YouTube account with a recorded successful upload
-     * it instead runs until 24 hours after that upload, or 1 hour when that upload is older
-     * than 24 hours. While it is in the future, POST /v1/posts (drafts excepted) and
-     * POST /v1/posts/{postId}/retry return 429 for this account, and this account's pending
-     * targets on posts scheduled before the cooldown ends are failed when it starts.
+     * End of the account's publishing cooldown. Compare it with the current time: a value in the past means the cooldown has ended (the field is cleared on the next successful publish); null means no cooldown since the last successful publish.
+     *
+     * **When it starts.** A post to the account fails with `errorCategory` `user_abuse` (spam, abuse or rate-limit errors), or 10 or more posts to it fail within an hour with `user_content`, `platform_error`, `platform_rate_limit` or `unknown`.
+     *
+     * **How long.** It doubles with each start inside a 24-hour window that opens at the first one (10, 20, 40, 80 minutes and so on, capped at 24 hours).
+     *
+     * On a YouTube account with a recorded successful upload, it instead runs until 24 hours after that upload, or 1 hour when that upload is older than 24 hours.
+     *
+     * **Effect.** While it is in the future, POST /v1/posts (drafts excepted) and POST /v1/posts/{postId}/retry return 429 for this account. When it starts, this account's pending targets on posts scheduled before the cooldown ends are failed.
      *
      */
     rateLimitedUntil?: (string) | null;
     /**
-     * Platform-specific metadata. Fields vary by platform. For WhatsApp accounts, includes:
-     * - qualityRating: Phone number quality rating from Meta (GREEN, YELLOW, RED, or UNKNOWN)
-     * - nameStatus: Display name review status (APPROVED, PENDING_REVIEW, DECLINED, or NONE). A declined or pending display name does not by itself block sending; sendability is reported separately via health_status (can_send_message).
-     * - messagingLimitTier: Maximum unique business-initiated conversations per 24h rolling window (TIER_250, TIER_1K, TIER_10K, TIER_100K, or TIER_UNLIMITED). Scales automatically as quality rating improves.
-     * - verifiedName: Meta-verified business display name
-     * - displayPhoneNumber: Formatted phone number (e.g., "+1 555-123-4567")
-     * - wabaId: WhatsApp Business Account ID
-     * - phoneNumberId: Meta phone number ID
+     * Platform-specific metadata. Fields vary by platform.
      *
-     * For Meta ads business-login accounts:
-     * - tokenType: system-user
-     * - businessId: The owning Business Manager ID when there is one owner; null for multiple owners.
-     * - businessIds: Owning Business Manager IDs discovered from granted ad accounts.
-     * - grantedAdAccountIds: Ad-account IDs granted to the token.
-     * - adAccountBusinesses: Map from ad-account ID to its owning business ID or null.
-     * - availablePages: Granted Page IDs and names. No Page tokens are exposed.
-     * - selectedPageId: The Page selected for creatives and lead forms, or null.
-     * - scopedAdAccountIds: Existing sync scope preserved on reconnect.
+     * **WhatsApp accounts:**
+     *
+     * - qualityRating: phone number quality rating from Meta (GREEN, YELLOW, RED, or UNKNOWN).
+     * - nameStatus: display name review status (APPROVED, PENDING_REVIEW, DECLINED, or NONE). A declined or pending name does not by itself block sending; sendability is reported separately via health_status (can_send_message).
+     * - messagingLimitTier: maximum unique business-initiated conversations per 24h rolling window (TIER_250, TIER_1K, TIER_10K, TIER_100K, or TIER_UNLIMITED). Scales automatically as quality rating improves.
+     * - verifiedName: Meta-verified business display name.
+     * - displayPhoneNumber: formatted phone number (e.g., "+1 555-123-4567").
+     * - wabaId: WhatsApp Business Account ID.
+     * - phoneNumberId: Meta phone number ID.
+     *
+     * **Meta ads business-login accounts:**
+     *
+     * - tokenType: system-user.
+     * - businessId: the owning Business Manager ID when there is one owner; null for multiple owners.
+     * - businessIds: owning Business Manager IDs discovered from granted ad accounts.
+     * - grantedAdAccountIds: ad-account IDs granted to the token.
+     * - adAccountBusinesses: map from ad-account ID to its owning business ID or null.
+     * - availablePages: granted Page IDs and names. No Page tokens are exposed.
+     * - selectedPageId: the Page selected for creatives and lead forms, or null.
+     * - scopedAdAccountIds: existing sync scope preserved on reconnect.
+     *
      * Non-expiring tokens have no tokenExpiresAt field. Parent posting reconnects do not replace this token.
      *
-     * For LinkedIn accounts, profileData carries the profile details refreshed on each daily snapshot:
-     * - profileData.bio: The member's headline for personal accounts, or the organization description for organization accounts. null when the member has not set one.
-     * - profileData.extraData.vanityName: The member's profile slug, i.e. the /in/{vanityName} segment of profileUrl. Personal accounts only; an organization's own slug is in metadata.organizationInfo.vanityName.
+     * **LinkedIn accounts:** profileData carries profile details refreshed on each daily snapshot.
      *
-     * For Instagram accounts:
-     * - loginMethod: "facebook_login" when the account was connected through Facebook Login. Absent on accounts connected with Instagram Login. On facebook_login accounts, comment reads leave hidden comments out entirely instead of returning them with isHidden true.
-     * - instagramScopedId: the Instagram professional account id (`17841...`). On Instagram Login accounts this is the id that is the same whichever app connected the account, while platformUserId is app-scoped; Facebook Login accounts hold this id as platformUserId.
+     * - profileData.bio: the member's headline (personal accounts) or the organization description (organization accounts). null when not set.
+     * - profileData.extraData.vanityName: the member's profile slug, the /in/{vanityName} segment of profileUrl. Personal accounts only; an organization's slug is in metadata.organizationInfo.vanityName.
      *
-     * For X (Twitter) accounts:
-     * - profileData.extraData.isPremium: Whether X reports a paid subscription (Basic, Premium, Premium+, or a blue verified badge), which raises the post length limit from 280 to 25,000 characters. Read live at connect and reconnect and refreshed by the daily follower snapshot; because X intermittently reports no subscription for subscribed accounts, a cancellation is stored on the fourth consecutive daily snapshot that reports it (about four days). Accounts connected before the extraData layout carry the same flag at profileData.isPremium.
+     * **Instagram accounts:**
+     *
+     * - loginMethod: "facebook_login" when connected through Facebook Login; absent for Instagram Login. On facebook_login accounts, comment reads leave hidden comments out entirely instead of returning them with isHidden true.
+     * - instagramScopedId: the Instagram professional account id (`17841...`). On Instagram Login accounts it is the same whichever app connected the account, while platformUserId is app-scoped. Facebook Login accounts hold this id as platformUserId.
+     *
+     * **X (Twitter) accounts:**
+     *
+     * - profileData.extraData.isPremium: whether X reports a paid subscription (Basic, Premium, Premium+, or a blue verified badge), which raises the post length limit from 280 to 25,000 characters. Read live at connect and reconnect, refreshed by the daily follower snapshot.
+     * - Because X intermittently reports no subscription for subscribed accounts, a cancellation is stored on the fourth consecutive daily snapshot reporting it (about four days). Accounts connected before the extraData layout carry the flag at profileData.isPremium.
      *
      */
     metadata?: {
@@ -13977,7 +14438,12 @@ export type SocialAccount = {
 export type platform14 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics';
 
 /**
- * TikTok accounts only. The account type TikTok reported when the account was connected. `personal` accounts cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts): skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect. `business` is the prerequisite, not a guarantee; messaging also needs the messaging scopes granted and TikTok's regional availability. `unknown` on accounts connected before this was captured or whose grant left out the account-type scope.
+ * TikTok accounts only. The account type TikTok reported when the account was connected.
+ *
+ * - `personal`: cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts). Skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect.
+ * - `business`: the prerequisite, not a guarantee. Messaging also needs the messaging scopes granted and TikTok's regional availability.
+ * - `unknown`: accounts connected before this was captured, or whose grant left out the account-type scope.
+ *
  */
 export type tiktokAccountType = 'business' | 'personal' | 'unknown';
 
@@ -14164,20 +14630,15 @@ export type SupportRunUsage = {
 };
 
 /**
- * Normalized, platform-agnostic ad-targeting spec. Every field is optional, an
- * empty object targets the platform's default broadest audience. Field names are
- * camelCase and identical across `POST /v1/ads/create` (the `targeting` object),
- * `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences, so a
- * spec resolved once can be reused verbatim.
+ * Normalized, platform-agnostic ad-targeting spec. Every field is optional; an empty object targets the platform's default broadest audience.
  *
- * Entity ids (`regions[].key`, `cities[].key`, `zips[].key`, `metros[].key`,
- * `interests[].id`, `behaviors[].id`) are the platform's opaque identifiers
- * resolved via `GET /v1/ads/targeting/search`. A spec is therefore meaningful only
- * for the platform it was built against, except the portable fields (`countries`,
- * `ageMin`/`ageMax`, `gender`, `incomeTier`, `languages`) which carry across
- * platforms. Fields a platform cannot honour are rejected on create, boost and
- * targeting update with `INVALID_FIELD_VALUE` naming the offending field (never
- * silently dropped).
+ * Field names are camelCase and identical across `POST /v1/ads/create` (the `targeting` object), `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences, so a spec resolved once can be reused verbatim.
+ *
+ * **Entity ids** (`regions[].key`, `cities[].key`, `zips[].key`, `metros[].key`, `interests[].id`, `behaviors[].id`) are the platform's opaque identifiers resolved via `GET /v1/ads/targeting/search`. A spec is therefore meaningful only for the platform it was built against.
+ *
+ * **Portable fields** carry across platforms: `countries`, `ageMin`/`ageMax`, `gender`, `incomeTier`, `languages`.
+ *
+ * Fields a platform cannot honour are rejected on create, boost and targeting update with `INVALID_FIELD_VALUE` naming the offending field (never silently dropped).
  *
  */
 export type TargetingSpec = {
@@ -14256,7 +14717,12 @@ export type TargetingSpec = {
         address?: string;
     }>;
     /**
-     * Geo to exclude from the audience. Mirrors the inclusion geo shape: excluded cities can carry a radius catchment and excluded custom (lat/lng) pins are supported, both on Meta (excluded_geo_locations). Google (Search, Display, Performance Max) excludes countries, regions, cities and zips as negative location criteria; countryGroups, places, neighborhoods, customLocations and a city radius return 400 there, and Demand Gen returns 400 for any exclusion.
+     * Geo to exclude from the audience. Mirrors the inclusion geo shape.
+     *
+     * - Meta (excluded_geo_locations): excluded cities can carry a radius catchment, and excluded custom (lat/lng) pins are supported.
+     * - Google (Search, Display, Performance Max): excludes countries, regions, cities and zips as negative location criteria. countryGroups, places, neighborhoods, customLocations and a city radius return 400.
+     * - Google Demand Gen: returns 400 for any exclusion.
+     *
      */
     excludedLocations?: {
         countries?: Array<(string)>;
@@ -14317,7 +14783,18 @@ export type TargetingSpec = {
         }>;
     };
     /**
-     * Minimum age. Applied on Meta, TikTok, Pinterest, LinkedIn, X and Google Search/Display (Google excludes the age ranges outside the request); rejected with 400 on OpenAI, Reddit and on Google Performance Max / Demand Gen. Each platform clamps to its own range: Meta and Pinterest effectively cap at 65 (65 = 65+), TikTok maps up to 100. LinkedIn rounds out to its buckets (18-24, 25-34, 35-54, 55+) and has no under-18 audience; X rounds out to the narrowest of its fixed ranges (e.g. 25-34 becomes 25-49, 18-65 becomes 18+). Pinterest has no under-18 bucket, so an ageMin below 18 starts at 18 there.
+     * Minimum age.
+     *
+     * - Applied on Meta, TikTok, Pinterest, LinkedIn, X and Google Search/Display (Google excludes the age ranges outside the request).
+     * - Rejected with 400 on OpenAI, Reddit and Google Performance Max / Demand Gen.
+     *
+     * Each platform clamps to its own range:
+     *
+     * - Meta and Pinterest: effectively cap at 65 (65 = 65+).
+     * - Pinterest: no under-18 bucket, so an ageMin below 18 starts at 18.
+     * - TikTok: maps up to 100.
+     * - LinkedIn: rounds out to its buckets (18-24, 25-34, 35-54, 55+) and has no under-18 audience.
+     * - X: rounds out to the narrowest of its fixed ranges (e.g. 25-34 becomes 25-49, 18-65 becomes 18+).
      */
     ageMin?: number;
     /**
@@ -14338,18 +14815,36 @@ export type TargetingSpec = {
      */
     incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
     /**
-     * Language codes restricting the audience by language. Applied on Meta, Google, TikTok, LinkedIn, X, Pinterest and Reddit; rejected with 400 on OpenAI. A code the platform cannot target returns 400 listing the ones it can. On Meta, ISO 639-1 codes (e.g. ['en']); a bare code targets all regional variants ("en" = all English), or use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
+     * Language codes restricting the audience by language. Applied on Meta, Google, TikTok, LinkedIn, X, Pinterest and Reddit; rejected with 400 on OpenAI. A code the platform cannot target returns 400 listing the ones it can.
+     *
+     * On Meta: ISO 639-1 codes (e.g. ['en']). A bare code targets all regional variants ("en" = all English); use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
      */
     languages?: Array<(string)>;
     /**
-     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id. On Google, applied as ad-group interest criteria (affinity and in-market categories) on Display and Search ad groups the request creates; rejected with 400 on Performance Max, on Demand Gen (use the Demand Gen audience `userInterests` there), when attaching to an existing ad group (`adSetId`), and on OpenAI. On Google, interests are create-only. On TikTok, bare numeric ids are interest categories (`interest_category_ids`) and ids like `keyword:123456` from `dimension=interestKeyword` are additional interests (`interest_keyword_ids`); any other id returns 422 naming `targeting.interests`. TikTok matches people who fit ANY selected interest, additional interest or behavior (one OR'd group), and that group is ANDed with location, age, gender and the other dimensions.
+     * Interest entities from /v1/ads/targeting/search?dimension=interest. Each carries the platform's opaque id.
+     *
+     * - Google: applied as ad-group interest criteria (affinity and in-market categories) on Display and Search ad groups the request creates. Interests are create-only.
+     * - Google rejections (400): on Performance Max, on Demand Gen (use the Demand Gen audience `userInterests` there), and when attaching to an existing ad group (`adSetId`).
+     * - OpenAI: rejected with 400.
+     * - TikTok: bare numeric ids are interest categories (`interest_category_ids`); ids like `keyword:123456` from `dimension=interestKeyword` are additional interests (`interest_keyword_ids`). Any other id returns 422 naming `targeting.interests`.
+     * - TikTok matching: people who fit ANY selected interest, additional interest or behavior (one OR'd group). That group is ANDed with location, age, gender and the other dimensions.
+     *
      */
     interests?: Array<{
         id: string;
         name?: string;
     }>;
     /**
-     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, or who viewed videos with a picked hashtag (`hashtag:<id>` ids from `dimension=hashtag`, sent as a `HASHTAG_RELATED` action with `VIEW_HASHTAG`), and the ad group uses the TikTok placement only. On TikTok, behaviors are OR'd with interests and additional interests.
+     * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn).
+     *
+     * **On TikTok** they target people who, in the picked categories:
+     *
+     * - interacted with videos (watched to the end, liked, commented or shared, last 15 days);
+     * - interacted with creators (followed or viewed the profile);
+     * - or viewed videos with a picked hashtag (`hashtag:<id>` ids from `dimension=hashtag`, sent as a `HASHTAG_RELATED` action with `VIEW_HASHTAG`).
+     *
+     * The ad group then uses the TikTok placement only. Behaviors are OR'd with interests and additional interests.
+     *
      */
     behaviors?: Array<{
         id: string;
@@ -14397,7 +14892,16 @@ export type TargetingSpec = {
      */
     skills?: Array<(string)>;
     /**
-     * Platform audience IDs to include, as returned by GET /v1/ads/audiences (Meta custom audience ids, TikTok audience ids, Pinterest customer list ids, LinkedIn segment ids (the platformAudienceId from GET /v1/ads/audiences; Zernio resolves it to the targetable LinkedIn ad segment, an unknown id returns 400), Google user list ids, X custom audience ids). On Reddit, the ids of custom audiences built in Reddit Ads Manager (GET /v1/ads/audiences does not list Reddit audiences). Not supported on OpenAI (400).
+     * Platform audience IDs to include, as returned by GET /v1/ads/audiences:
+     *
+     * - Meta: custom audience ids.
+     * - TikTok: audience ids.
+     * - Pinterest: customer list ids.
+     * - LinkedIn: segment ids (the platformAudienceId from GET /v1/ads/audiences). Zernio resolves it to the targetable LinkedIn ad segment; an unknown id returns 400.
+     * - Google: user list ids.
+     * - X: custom audience ids.
+     * - Reddit: ids of custom audiences built in Reddit Ads Manager (GET /v1/ads/audiences does not list Reddit audiences).
+     * - OpenAI: not supported (400).
      */
     audienceInclude?: Array<(string)>;
     /**
@@ -14458,7 +14962,10 @@ export type ThreadsPlatformData = {
      */
     topic_tag?: string;
     /**
-     * Optional first comment to post immediately after publishing, as a reply to the published post. With threadItems, it replies to the root post. Up to 500 characters (the Threads post limit). The reply is itself a Threads post, so it consumes one of the 250 posts a profile may publish per 24 hours.
+     * Optional first comment, posted right after publishing as a reply to the published post. With threadItems, it replies to the root post.
+     *
+     * Up to 500 characters (the Threads post limit). The reply is itself a Threads post, so it uses one of the 250 posts a profile may publish per 24 hours.
+     *
      */
     firstComment?: string;
     /**
@@ -14517,11 +15024,12 @@ export type TikTokDryRunVerdict = {
  */
 export type TikTokPlatformData = {
     /**
-     * When true, sends the post to the TikTok Creator Inbox as a draft instead of publishing
-     * immediately. The creator receives an inbox notification to complete posting via TikTok's
-     * editing flow. Maps to TikTok API post_mode: "MEDIA_UPLOAD" (photos) or the dedicated
-     * inbox endpoint (videos). When false or omitted, publishes directly via post_mode: "DIRECT_POST".
-     * Note: publish_type is not a supported field. Use this field instead.
+     * When true, sends the post to the TikTok Creator Inbox as a draft instead of publishing immediately. The creator gets an inbox notification to complete posting via TikTok's editing flow.
+     *
+     * - true: maps to TikTok API post_mode: "MEDIA_UPLOAD" (photos) or the dedicated inbox endpoint (videos).
+     * - false or omitted: publishes directly via post_mode: "DIRECT_POST".
+     *
+     * publish_type is not a supported field; use this field instead.
      *
      */
     draft?: boolean;
@@ -14582,7 +15090,10 @@ export type TikTokPlatformData = {
      */
     videoCoverTimestampMs?: number;
     /**
-     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). Any downloadable URL works: we rehost it ourselves. The image is stitched as a single frame at the start of the video to serve as the cover. Accounts connected through the TikTok for Business app hand it to TikTok as the cover instead, with no stitching, falling back to videoCoverTimestampMs without it. Overrides videoCoverTimestampMs when provided.
+     * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). Any downloadable URL works: we rehost it ourselves. Overrides videoCoverTimestampMs when provided.
+     *
+     * The image is stitched as a single frame at the start of the video to serve as the cover. Accounts connected through the TikTok for Business app instead hand it to TikTok as the cover, with no stitching, falling back to videoCoverTimestampMs without it.
+     *
      */
     videoCoverImageUrl?: string;
     /**
@@ -14619,11 +15130,22 @@ export type TikTokPlatformData = {
      */
     videoOriginalSoundVolume?: number;
     /**
-     * Set true to disclose AI-generated content. Accounts connected through the TikTok for Business app carry the disclosure on video posts only: the business photo endpoint has no AI disclosure field, so true on a direct photo post is rejected at creation rather than published undisclosed. Send draft true to publish such a photo post and set the disclosure in the TikTok app.
+     * Set true to disclose AI-generated content.
+     *
+     * Accounts connected through the TikTok for Business app carry the disclosure on video posts only. The business photo endpoint has no AI disclosure field, so true on a direct photo post is rejected at creation rather than published undisclosed.
+     *
+     * To publish such a photo post, send draft true and set the disclosure in the TikTok app.
+     *
      */
     videoMadeWithAi?: boolean;
     /**
-     * Location tag to attach, as the id of a result from GET /v1/accounts/{accountId}/tiktok/locations. Accounts connected through the TikTok for Business app and video posts only: a developer-app account rejects the post at publish time with a message that says so, and a direct photo post is rejected at creation since the business photo endpoint has no location field. Requires locationName. Ignored on drafts, where TikTok ignores every post_info field.
+     * Location tag to attach, as the id of a result from GET /v1/accounts/{accountId}/tiktok/locations. Requires locationName. Ignored on drafts, where TikTok ignores every post_info field.
+     *
+     * Accounts connected through the TikTok for Business app and video posts only:
+     *
+     * - A developer-app account rejects the post at publish time with a message that says so.
+     * - A direct photo post is rejected at creation, since the business photo endpoint has no location field.
+     *
      */
     locationId?: string;
     /**
@@ -14753,13 +15275,11 @@ export type materialType = 'spark_post' | 'video' | 'carousel' | 'catalog_carous
 export type TikTokSmartPlusReviewStatus = 'approved' | 'partially_approved' | 'rejected' | 'unknown';
 
 /**
- * A platform measurement tag: the thing you create, install on a
- * website, send events to, and target ads against. On Meta this is a
- * Pixel (`kind: pixel`). The shape is platform-neutral so other platforms
- * (Pinterest Tag, LinkedIn Insight Tag, etc.) can be added without
- * changing the contract; platform-specific fields are absent where
- * a platform has no equivalent. Returned by `listTrackingTags`,
- * `createTrackingTag`, `getTrackingTag`, and `updateTrackingTag`.
+ * A platform measurement tag: the thing you create, install on a website, send events to, and target ads against. On Meta this is a Pixel (`kind: pixel`).
+ *
+ * The shape is platform-neutral so other platforms (Pinterest Tag, LinkedIn Insight Tag, etc.) can be added without changing the contract. Platform-specific fields are absent where a platform has no equivalent.
+ *
+ * Returned by `listTrackingTags`, `createTrackingTag`, `getTrackingTag`, and `updateTrackingTag`.
  *
  */
 export type TrackingTag = {
@@ -15141,11 +15661,19 @@ export type status47 = 'pending' | 'paid' | 'failed' | 'reversed';
 export type TwitterPlatformData = {
     article?: XArticle;
     /**
-     * ID of an existing tweet to reply to. The published tweet will appear as a reply in that tweet's thread. For threads, only the first tweet replies to the target; subsequent tweets chain normally. X only permits replying to your own posts or posts you are mentioned in; replying to an arbitrary other account's post is rejected by X.
+     * ID of an existing tweet to reply to. The published tweet appears as a reply in that tweet's thread. For threads, only the first tweet replies to the target; subsequent tweets chain normally.
+     *
+     * X only permits replying to your own posts or posts you are mentioned in; replying to an arbitrary other account's post is rejected by X.
+     *
      */
     replyToTweetId?: string;
     /**
-     * ID (or full status URL) of an existing tweet to quote-repost. The published tweet becomes a quote tweet of the target. Mutually exclusive with media and poll. X only permits quoting your own posts or posts you are mentioned in / part of the conversation thread of; quoting an arbitrary other account's post is rejected by X. Billed at the standard create rate ($0.015), unlike pasting a tweet URL into the text which is billed at the URL rate ($0.20). For threads, applies to the first tweet only.
+     * ID (or full status URL) of an existing tweet to quote-repost. The published tweet becomes a quote tweet of the target. For threads, applies to the first tweet only.
+     *
+     * - Mutually exclusive with media and poll.
+     * - X only permits quoting your own posts, or posts you are mentioned in or part of the conversation thread of. Quoting an arbitrary other account's post is rejected by X.
+     * - Billed at the standard create rate ($0.015), unlike pasting a tweet URL into the text, which is billed at the URL rate ($0.20).
+     *
      */
     quoteTweetId?: string;
     /**
@@ -15174,7 +15702,12 @@ export type TwitterPlatformData = {
         duration_minutes: number;
     };
     /**
-     * Uploads the video with X's amplify_video media category instead of the standard tweet_video. Applied only when the connected X account has a paid X subscription; on other accounts the flag is accepted and ignored. It is not required to post long videos. The standard tweet_video path already publishes videos well past 140 seconds on free accounts, and maximum duration is set by X per account, not by Zernio. Zernio enforces only the 512 MB file-size limit. Some accounts additionally require X's long-video API allowlisting, without which X rejects an amplify_video upload.
+     * Uploads the video with X's amplify_video media category instead of the standard tweet_video. Applied only when the connected X account has a paid X subscription; on other accounts the flag is accepted and ignored.
+     *
+     * It is not required to post long videos. The standard tweet_video path already publishes videos well past 140 seconds on free accounts, and maximum duration is set by X per account, not by Zernio. Zernio enforces only the 512 MB file-size limit.
+     *
+     * Some accounts additionally require X's long-video API allowlisting, without which X rejects an amplify_video upload.
+     *
      */
     longVideo?: boolean;
     geoRestriction?: GeoRestriction;
@@ -15392,11 +15925,9 @@ export type UsageMetering = {
         source?: 'cycle' | 'window';
     };
     /**
-     * Estimated tax on the window's net `totals.total`, computed with
-     * Stripe Tax against the billing address (the same engine the real
-     * invoice uses; invoices apply exclusive tax, so the card is charged
-     * total + tax). Null when the account has no billing address on
-     * file, the total is zero or negative, or the estimate failed.
+     * Estimated tax on the window's net `totals.total`, computed with Stripe Tax against the billing address (the same engine the real invoice uses). Invoices apply exclusive tax, so the card is charged total + tax.
+     *
+     * Null when the account has no billing address on file, the total is zero or negative, or the estimate failed.
      *
      */
     tax?: {
@@ -15457,11 +15988,9 @@ export type groupBy = 'profile' | 'account';
 
 /**
  * Plan and usage stats. The response shape depends on `billingSystem`:
- * * Stripe users (default): per-period counters like `usage.uploads` and
- * `usage.profiles` are returned, scoped by the plan's `limits`.
- * * Usage-based billing users: `limits` are unlimited (-1). The
- * `usage` block carries connected-account and per-X-operation counts,
- * and the `spend` block carries current-period costs plus the X cap.
+ *
+ * - Stripe users (default): per-period counters like `usage.uploads` and `usage.profiles`, scoped by the plan's `limits`.
+ * - Usage-based billing users: `limits` are unlimited (-1). The `usage` block carries connected-account and per-X-operation counts; the `spend` block carries current-period costs plus the X cap.
  *
  */
 export type UsageStats = {
@@ -15680,13 +16209,11 @@ export type ValueRuleCriterion = {
      */
     operator: 'CONTAINS';
     /**
-     * The values to match. `AGE` takes ranges such as `18-24`, `18+` or a custom `18-26`;
-     * a range whose upper bound is 65 is NOT allowed (use `18+` instead of `18-65`).
-     * `LOCATION` takes Targeting-Search keys: a two-letter country code for
-     * `LOCATION_COUNTRY`, a numeric key for region / city / comScore market.
-     * `AUDIENCE_LABEL` takes labels such as `HIGH_VALUE`, which are applied to a Custom
-     * Audience in Ads Manager: there is no API to provision them, so they are passed
-     * through unvalidated.
+     * The values to match.
+     *
+     * - `AGE`: ranges such as `18-24`, `18+` or a custom `18-26`. A range whose upper bound is 65 is NOT allowed (use `18+` instead of `18-65`).
+     * - `LOCATION`: Targeting-Search keys. A two-letter country code for `LOCATION_COUNTRY`, a numeric key for region / city / comScore market.
+     * - `AUDIENCE_LABEL`: labels such as `HIGH_VALUE`, which are applied to a Custom Audience in Ads Manager. There is no API to provision them, so they are passed through unvalidated.
      *
      */
     criteriaValues: Array<(string)>;
@@ -15747,7 +16274,11 @@ export type Verification = {
     sendCount?: number;
     lastSentAt?: (string) | null;
     /**
-     * WhatsApp only, returned by GET /v1/verify/verifications/{verificationId} (null on create and check responses): what Meta reported for the latest send, null until it reports. A code that never reached the recipient (for example a number not on WhatsApp) reads failed, with the Meta error in deliveryErrorCode. failed does not settle the verification: Meta can report failed and later deliver the same message. Reported for at least an hour after the send, well past any code's expiry.
+     * WhatsApp only. What Meta reported for the latest send, null until it reports. Returned by GET /v1/verify/verifications/{verificationId} (null on create and check responses).
+     *
+     * A code that never reached the recipient (for example a number not on WhatsApp) reads failed, with the Meta error in deliveryErrorCode. failed does not settle the verification: Meta can report failed and later deliver the same message.
+     *
+     * Reported for at least an hour after the send, well past any code's expiry.
      */
     deliveryStatus?: ('delivered' | 'read' | 'failed') | null;
     /**
@@ -15766,7 +16297,11 @@ export type status49 = 'pending' | 'approved' | 'expired' | 'max_attempts_reache
 export type channel5 = 'sms' | 'whatsapp';
 
 /**
- * WhatsApp only, returned by GET /v1/verify/verifications/{verificationId} (null on create and check responses): what Meta reported for the latest send, null until it reports. A code that never reached the recipient (for example a number not on WhatsApp) reads failed, with the Meta error in deliveryErrorCode. failed does not settle the verification: Meta can report failed and later deliver the same message. Reported for at least an hour after the send, well past any code's expiry.
+ * WhatsApp only. What Meta reported for the latest send, null until it reports. Returned by GET /v1/verify/verifications/{verificationId} (null on create and check responses).
+ *
+ * A code that never reached the recipient (for example a number not on WhatsApp) reads failed, with the Meta error in deliveryErrorCode. failed does not settle the verification: Meta can report failed and later deliver the same message.
+ *
+ * Reported for at least an hour after the send, well past any code's expiry.
  */
 export type deliveryStatus = 'delivered' | 'read' | 'failed';
 
@@ -15803,7 +16338,10 @@ export type Webhook = {
      */
     lastFiredAt?: string;
     /**
-     * Consecutive terminal delivery failures (resets to 0 on any successful delivery). Auto-disable only triggers when the endpoint has had no successful delivery within a 3-day window AND either reaches 20 consecutive terminal failures or has been failing continuously for 3 days; any success within that window keeps the endpoint enabled regardless of the count.
+     * Consecutive terminal delivery failures. Resets to 0 on any successful delivery.
+     *
+     * Auto-disable triggers only when the endpoint has had no successful delivery within a 3-day window AND either reaches 20 consecutive terminal failures or has been failing continuously for 3 days. Any success within that window keeps the endpoint enabled, regardless of the count.
+     *
      */
     failureCount?: number;
     /**
@@ -15813,15 +16351,34 @@ export type Webhook = {
         [key: string]: (string);
     };
     /**
-     * Resource groups this subscription does not receive (opt-out denylist, same vocabulary and same semantics as the field on API keys). Absent or empty means the subscription receives every event listed in `events`, which is how every subscription created before this field existed behaves. An event whose group is listed here is dropped before delivery even when it is still present in `events`, and the same check runs on every replay path (test fire, redelivery, dead-letter requeue). Editing the denylist applies to every event emitted afterwards; events already queued when the edit landed can still be delivered for up to five minutes after they were enqueued.
+     * Resource groups this subscription does not receive (opt-out denylist, same vocabulary and semantics as the field on API keys).
+     *
+     * - Absent or empty: the subscription receives every event in `events` (how subscriptions created before this field behave).
+     * - An event whose group is listed is dropped before delivery, even when still in `events`. The same check runs on every replay path (test fire, redelivery, dead-letter requeue).
+     * - Edits apply to every event emitted afterwards. Events already queued when the edit landed can still be delivered for up to five minutes after they were enqueued.
+     *
      */
     disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files')>;
     /**
-     * Profiles this subscription receives events for (allowlist). Absent or empty means every profile, which is how every subscription created before this field existed behaves. A scoped subscription is only sent events attributable to a listed profile. An aggregate `post.*` event is attributed to the profile of every account the post targets, so a post spanning two scoped endpoints' profiles reaches both. Events with no profile behind them (`verification.*`, `phone_number.*`, a legacy post whose accounts were deleted) are not delivered to it. Applied when the event is emitted: a redelivery replays a delivery already made to this endpoint, and a test fire ignores the list.
+     * Profiles this subscription receives events for (allowlist). Absent or empty means every profile, which is how every subscription created before this field existed behaves.
+     *
+     * - A scoped subscription only gets events attributable to a listed profile.
+     * - An aggregate `post.*` event is attributed to the profile of every account the post targets, so a post spanning two scoped endpoints' profiles reaches both.
+     * - Events with no profile behind them (`verification.*`, `phone_number.*`, a legacy post whose accounts were deleted) are not delivered to it.
+     *
+     * Applied when the event is emitted: a redelivery replays a delivery already made to this endpoint, and a test fire ignores the list.
+     *
      */
     profileIds?: Array<(string)>;
     /**
-     * Connected accounts this subscription receives events for (allowlist). Absent or empty means every account. Same semantics as `profileIds`, keyed on the account: an aggregate `post.*` event is attributed to every account the post targets. Events that name no connected account (`verification.*`, `phone_number.*`, and `whatsapp.number.*`, which carry the phone number) are not delivered to an account-scoped subscription. A subscription with both lists must be satisfied on both. Applied when the event is emitted; a redelivery replays a delivery already made to this endpoint and a test fire ignores the list. The shared WhatsApp sandbox account id (listed by `GET /v1/accounts?includeSandbox=true`) is accepted so a subscription can receive sandbox traffic only.
+     * Connected accounts this subscription receives events for (allowlist). Absent or empty means every account.
+     *
+     * - Same semantics as `profileIds`, keyed on the account: an aggregate `post.*` event is attributed to every account the post targets.
+     * - Events that name no connected account (`verification.*`, `phone_number.*`, and `whatsapp.number.*`, which carry the phone number) are not delivered to an account-scoped subscription.
+     * - A subscription with both lists must be satisfied on both.
+     * - Applied when the event is emitted. A redelivery replays a delivery already made to this endpoint, and a test fire ignores the list.
+     * - The shared WhatsApp sandbox account id (listed by `GET /v1/accounts?includeSandbox=true`) is accepted, so a subscription can receive sandbox traffic only.
+     *
      */
     accountIds?: Array<(string)>;
 };
@@ -16030,17 +16587,14 @@ export type WebhookPayloadAccountAdsInitialSyncCompleted = {
          */
         errorSubcode?: string;
         /**
-         * Stable category for UX branching. New values may be added; existing ones are
-         * stable. Mapping:
+         * Stable category for UX branching. New values may be added; existing ones are stable.
+         *
          * - `token_invalid`: access token is expired or revoked. Reconnect.
-         * - `permission_denied`: token lacks required scope, or the user has no role
-         * on the Business Manager that owns the ad account. Reconnect with full
-         * permissions, or have an admin grant access.
-         * - `no_ad_accounts`: token is valid but sees zero ad accounts. The user
-         * needs to connect a Business Manager that owns ad accounts.
-         * - `rate_limited`: platform throttled us. Sync will retry automatically.
+         * - `permission_denied`: token lacks a required scope, or the user has no role on the Business Manager that owns the ad account. Reconnect with full permissions, or have an admin grant access.
+         * - `no_ad_accounts`: token is valid but sees zero ad accounts. The user needs to connect a Business Manager that owns ad accounts.
+         * - `rate_limited`: the platform throttled us. Sync retries automatically.
          * - `discovery_failed`: any other platform-side failure. Inspect `error`.
-         * - `unknown`: classifier could not categorize the failure.
+         * - `unknown`: the classifier could not categorize the failure.
          *
          */
         errorCategory?: 'token_invalid' | 'permission_denied' | 'no_ad_accounts' | 'rate_limited' | 'discovery_failed' | 'unknown';
@@ -16059,26 +16613,22 @@ export type event = 'account.ads.initial_sync_completed';
 export type status51 = 'success' | 'failure';
 
 /**
- * Stable category for UX branching. New values may be added; existing ones are
- * stable. Mapping:
+ * Stable category for UX branching. New values may be added; existing ones are stable.
+ *
  * - `token_invalid`: access token is expired or revoked. Reconnect.
- * - `permission_denied`: token lacks required scope, or the user has no role
- * on the Business Manager that owns the ad account. Reconnect with full
- * permissions, or have an admin grant access.
- * - `no_ad_accounts`: token is valid but sees zero ad accounts. The user
- * needs to connect a Business Manager that owns ad accounts.
- * - `rate_limited`: platform throttled us. Sync will retry automatically.
+ * - `permission_denied`: token lacks a required scope, or the user has no role on the Business Manager that owns the ad account. Reconnect with full permissions, or have an admin grant access.
+ * - `no_ad_accounts`: token is valid but sees zero ad accounts. The user needs to connect a Business Manager that owns ad accounts.
+ * - `rate_limited`: the platform throttled us. Sync retries automatically.
  * - `discovery_failed`: any other platform-side failure. Inspect `error`.
- * - `unknown`: classifier could not categorize the failure.
+ * - `unknown`: the classifier could not categorize the failure.
  *
  */
 export type errorCategory2 = 'token_invalid' | 'permission_denied' | 'no_ad_accounts' | 'rate_limited' | 'discovery_failed' | 'unknown';
 
 /**
- * Webhook payload for `account.ads.sync_failed` events. Fired once per ad account
- * when its ads stop syncing: no successful sync for 24 hours, or every live ad in it
- * at the retry cap. It does not fire again for the same ad account until
- * `account.ads.sync_recovered`. Metrics for the ad account are stale meanwhile.
+ * Webhook payload for `account.ads.sync_failed` events. Fired once per ad account when its ads stop syncing: no successful sync for 24 hours, or every live ad in it at the retry cap.
+ *
+ * It does not fire again for the same ad account until `account.ads.sync_recovered`. Metrics for the ad account are stale meanwhile.
  *
  */
 export type WebhookPayloadAccountAdsSyncFailed = {
@@ -16313,16 +16863,11 @@ export type event7 = 'account.rate_limited';
 export type reason = 'recipient_burst' | 'provider_rejection' | 'bounces' | 'daily_cap';
 
 /**
- * Webhook payload for the `ad_account.status_changed` event. Fires when an ad
- * account Zernio already tracked moves between `active`, `restricted`, `disabled`
- * and `closed`, as read by Zernio's ad account discovery (Meta, Google, TikTok, X).
- * An account seen for the first time, an account not seen in the last 48 hours,
- * or a platform status Zernio does not recognize, never fires it.
+ * Webhook payload for the `ad_account.status_changed` event. Fires when an ad account Zernio already tracked moves between `active`, `restricted`, `disabled` and `closed`, as read by Zernio's ad account discovery (Meta, Google, TikTok, X).
  *
- * `restricted` means the account exists but cannot run ads normally until
- * something is settled (Meta unpaid balance or risk review, TikTok limits or
- * pending verification, X review). Each new status fires at most once per
- * account per 24 hours.
+ * Never fires for an account seen for the first time, an account not seen in the last 48 hours, or a platform status Zernio does not recognize. Each new status fires at most once per account per 24 hours.
+ *
+ * `restricted` means the account exists but cannot run ads normally until something is settled (Meta unpaid balance or risk review, TikTok limits or pending verification, X review).
  *
  */
 export type WebhookPayloadAdAccountStatusChanged = {
@@ -16365,15 +16910,16 @@ export type previous = 'active' | 'restricted' | 'disabled' | 'closed';
 export type current = 'active' | 'restricted' | 'disabled' | 'closed';
 
 /**
- * Webhook payload for the `ad.delivery_issue` event. Fires when an ad Zernio
- * already tracked moves into the platform's error state: Meta `WITH_ISSUES`
- * (payment, policy and account problems), TikTok account punishment or missing
- * balance, LinkedIn removals, and any platform status Zernio does not recognize
- * yet (check `issue.raw`). Ads seen for the first time by a sync never fire it.
+ * Webhook payload for the `ad.delivery_issue` event. Fires when an ad Zernio already tracked moves into the platform's error state:
  *
- * Detected by Zernio's own ad sync, so it arrives within one sync cycle. Each
- * ad fires at most once per 24 hours. On Meta, `ad.status_changed` with
- * `WITH_ISSUES` can also fire for the same problem, straight from Meta's webhook.
+ * - Meta `WITH_ISSUES` (payment, policy and account problems)
+ * - TikTok account punishment or missing balance
+ * - LinkedIn removals
+ * - any platform status Zernio does not recognize yet (check `issue.raw`)
+ *
+ * Ads seen for the first time by a sync never fire it.
+ *
+ * Detected by Zernio's own ad sync, so it arrives within one sync cycle. Each ad fires at most once per 24 hours. On Meta, `ad.status_changed` with `WITH_ISSUES` can also fire for the same problem, straight from Meta's webhook.
  *
  */
 export type WebhookPayloadAdDeliveryIssue = {
@@ -16433,20 +16979,16 @@ export type event9 = 'ad.delivery_issue';
 export type level4 = 'AD';
 
 /**
- * Webhook payload for the `ad.review.approved` and `ad.review.rejected` events.
- * Emitted for every ad network Zernio syncs (Meta, Google, TikTok, LinkedIn,
- * Pinterest, X and the rest).
+ * Webhook payload for the `ad.review.approved` and `ad.review.rejected` events. Emitted for every ad network Zernio syncs (Meta, Google, TikTok, LinkedIn, Pinterest, X and the rest).
  *
- * Fires when an ad Zernio already tracked changes review outcome: it leaves
- * review as deliverable (`approved`), a rejection is overturned (`approved`), or
- * the platform rejects it (`rejected`). Ads seen for the first time by a sync,
- * including the history loaded when an account is connected, never fire it.
- * An ad that leaves review paused (for example its ad set is paused) sends no
- * `approved` event.
+ * Fires when an ad Zernio already tracked changes review outcome:
  *
- * Detected by Zernio's own ad sync (and, for Meta, the review poll), so it
- * arrives within one sync cycle of the platform's decision, not instantly.
- * Each outcome is delivered at most once per ad per 24 hours.
+ * - `approved`: it leaves review as deliverable, or a rejection is overturned.
+ * - `rejected`: the platform rejects it.
+ *
+ * Ads seen for the first time by a sync, including the history loaded when an account is connected, never fire it. An ad that leaves review paused (for example its ad set is paused) sends no `approved` event.
+ *
+ * Detected by Zernio's own ad sync (and, for Meta, the review poll), so it arrives within one sync cycle of the platform's decision, not instantly. Each outcome is delivered at most once per ad per 24 hours.
  *
  */
 export type WebhookPayloadAdReview = {
@@ -16506,11 +17048,11 @@ export type status52 = 'approved' | 'rejected';
 /**
  * Webhook payload for the `ad_rule.triggered` event.
  *
- * Fires when a scheduled run of a rule with a `notify` action finds campaigns or ad sets
- * that meet every condition of the rule. Each object is announced at most once per rule
- * cooldown, so `objects` lists only the objects the run acted on, never the ones still in
- * cooldown. A run where every matching object is still in cooldown sends nothing. An object
- * whose action failed gets no cooldown: the next run retries it and reports it again.
+ * Fires when a scheduled run of a rule with a `notify` action finds campaigns or ad sets that meet every condition of the rule.
+ *
+ * Each object is announced at most once per rule cooldown, so `objects` lists only the objects the run acted on, never the ones still in cooldown. A run where every matching object is still in cooldown sends nothing.
+ *
+ * An object whose action failed gets no cooldown: the next run retries it and reports it again.
  *
  */
 export type WebhookPayloadAdRuleTriggered = {
@@ -16610,7 +17152,10 @@ export type WebhookPayloadAdRuleTriggered = {
         actions: Array<{
             type: 'pause' | 'activate' | 'adjust_budget';
             /**
-             * `skipped` when the action could not or need not apply (already paused or active, budget at its limit, a budget that is unknown, not daily or set at another level, no live ads, or a permanent refusal from the platform), `failed` when it errored and will be retried on the next run.
+             * Action result.
+             *
+             * - `skipped`: the action could not or need not apply (already paused or active, budget at its limit, a budget that is unknown, not daily or set at another level, no live ads, or a permanent refusal from the platform).
+             * - `failed`: it errored and will be retried on the next run.
              */
             status: 'done' | 'skipped' | 'failed';
             /**
@@ -16839,30 +17384,15 @@ export type event13 = 'ad.video.processed';
 export type status53 = 'ready' | 'error';
 
 /**
- * Webhook payload for `analytics.synced`. Fired once per connected account each
- * time its analytics sync cycle completes successfully. Poll-driven (roughly
- * hourly per account), not real-time, and never fired for a skipped or failed
- * cycle.
+ * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
  *
- * A TRIGGER, not a transport: it deliberately carries no metrics and no cursor.
- * When it arrives, call `GET /v1/analytics/delta` with YOUR OWN last `nextCursor`
- * to read what changed, across every account, in one paginated stream.
+ * A TRIGGER, not a transport: it deliberately carries no metrics and no cursor. When it arrives, call `GET /v1/analytics/delta` with YOUR OWN last `nextCursor` to read what changed, across every account, in one paginated stream.
  *
- * The absent cursor is deliberate. The feed's ordering position is assigned inside
- * the analytics store when the row is materialized, which normally has not
- * happened yet at the moment this event fires, so a cursor minted here could sit
- * ahead of the very rows the event announces and make you skip them. Your own
- * `nextCursor` is always in the feed's own ordering and can never do that.
+ * **Why there is no cursor.** The feed's ordering position is assigned inside the analytics store when the row is materialized, which normally happens after this event fires. A cursor minted here could sit ahead of the rows the event announces and make you skip them. Your own `nextCursor` never can.
  *
- * Because of that same lag, a delta read issued the instant this event lands can
- * legitimately come back empty. That is not "nothing changed": poll again with the
- * same cursor you last used rather than treating the account as done.
+ * Because of the same lag, a delta read issued the instant this event lands can legitimately come back empty. That is not "nothing changed": poll again with the same cursor you last used rather than treating the account as done.
  *
- * Subscribe to this event on a DEDICATED webhook endpoint. It is high volume
- * (roughly one delivery per connected account per hour) and a subscription's
- * consecutive-failure count is shared across all of its events, so an outage while
- * this event is flowing can suppress the low-volume publishing events that share
- * the same subscription.
+ * **Use a DEDICATED webhook endpoint.** This event is high volume (roughly one delivery per connected account per hour), and a subscription's consecutive-failure count is shared across all its events. An outage while it flows can suppress the low-volume publishing events on the same subscription.
  *
  */
 export type WebhookPayloadAnalyticsSynced = {
@@ -17005,7 +17535,13 @@ export type WebhookPayloadCallEnded = {
          */
         isVoicemail?: boolean;
         /**
-         * Failures recorded on the call up to hangup (bridge failed, dial failed, recording error). Empty on a clean call. `message` is free-form diagnostic text and is not stable, do not parse it. `code` is 0 unless a provider code is known. Errors the carrier reports after hangup appear only on GET /v1/calls/{id}.
+         * Failures recorded on the call up to hangup (bridge failed, dial failed, recording error). Empty on a clean call.
+         *
+         * - `message` is free-form diagnostic text and is not stable; do not parse it.
+         * - `code` is 0 unless a provider code is known.
+         *
+         * Errors the carrier reports after hangup appear only on GET /v1/calls/{id}.
+         *
          */
         callErrors?: Array<{
             code?: number;
@@ -17275,11 +17811,10 @@ export type event22 = 'campaign_participant.joined' | 'campaign_participant.susp
 
 /**
  * Webhook payload for `campaign_payout.payable` and `campaign_payout.settled`.
- * `payable` fires when a participant's held earnings mature; `payout.payableCents` is the
- * participant's whole payable balance, so a partner paying from its own rails pays that
- * amount and records it with `POST /v1/creator-campaigns/{campaignId}/participants/{participantId}/settle`.
- * `settled` fires when a settlement is recorded and carries `payout.settlement`.
- * `failed` fires when a treasury payout is refused, unconfirmed or reversed; the amount returns to payable (minus anything a rejection claws back) and `payout.failure` says why.
+ *
+ * - `payable`: fires when a participant's held earnings mature. `payout.payableCents` is the participant's whole payable balance, so a partner paying from its own rails pays that amount and records it with `POST /v1/creator-campaigns/{campaignId}/participants/{participantId}/settle`.
+ * - `settled`: fires when a settlement is recorded and carries `payout.settlement`.
+ * - `failed`: fires when a treasury payout is refused, unconfirmed or reversed. The amount returns to payable (minus anything a rejection claws back) and `payout.failure` says why.
  *
  */
 export type WebhookPayloadCampaignPayout = {
@@ -17369,13 +17904,12 @@ export type event23 = 'campaign_payout.payable' | 'campaign_payout.settled' | 'c
 export type reason2 = 'returned' | 'stale' | 'reversed';
 
 /**
- * Webhook payload for `campaign_submission.received`, `campaign_submission.flagged`,
- * `campaign_submission.pending_review`, `campaign_submission.approved` and
- * `campaign_submission.rejected`. `received` fires for every accepted submission;
- * `flagged` fires when a submission gains a flag it did not carry before (at submission or
- * on a later sync), and `submission.flags` lists every flag it carries; `pending_review`
- * fires when the submission becomes ready for the operator's review; `approved` and
- * `rejected` fire on the operator's decision.
+ * Webhook payload for campaign submission events:
+ *
+ * - `campaign_submission.received`: fires for every accepted submission.
+ * - `campaign_submission.flagged`: fires when a submission gains a flag it did not carry before (at submission or on a later sync). `submission.flags` lists every flag it carries.
+ * - `campaign_submission.pending_review`: fires when the submission becomes ready for the operator's review.
+ * - `campaign_submission.approved` and `campaign_submission.rejected`: fire on the operator's decision.
  *
  */
 export type WebhookPayloadCampaignSubmission = {
@@ -17461,7 +17995,11 @@ export type WebhookPayloadComment = {
             name?: string;
             picture?: (string) | null;
             /**
-             * True when this comment was authored by the connected account itself. Populated on the Instagram and Facebook realtime webhooks (Meta re-delivers the account's own replies as comments events) and on TikTok, where it is inferred: comments created through this API are always flagged, and once the account's own author identifier is known (from one of those or from a comments listing) every author is compared against it. Absent means not evaluated, never "not the account".
+             * True when this comment was authored by the connected account itself. Absent means not evaluated, never "not the account".
+             *
+             * - Instagram and Facebook realtime webhooks: populated (Meta re-delivers the account's own replies as comments events).
+             * - TikTok: inferred. Comments created through this API are always flagged, and once the account's own author identifier is known (from one of those or from a comments listing), every author is compared against it.
+             *
              */
             isOwnAccount?: boolean;
             /**
@@ -17499,14 +18037,13 @@ export type WebhookPayloadComment = {
          */
         isLive?: boolean;
         /**
-         * Ad context. Present only when the comment was made on paid content.
-         * Instagram: populated from the webhook payload's value.media.ad_id, value.media.ad_title and value.media.original_media_id, each only when Meta includes it.
-         * Facebook: populated from a Graph API lookup of the parent post. Present when the post is an
-         * ad dark post (isDarkPost true, whatever its promotionStatus) or an organic post that is or was
-         * boosted (promotionStatus "active", "extendable" or "finished"). Meta does not link a dark post
-         * back to its ad, so on Facebook id is set only when exactly one ad on the Page, created before the
-         * dark post, carries the same copy as the post. title is never set on Facebook.
-         * Absent for comments on organic posts that are not promoted.
+         * Ad context. Present only when the comment was made on paid content; absent for comments on organic posts that are not promoted.
+         *
+         * **Instagram**: populated from the webhook payload's value.media.ad_id, value.media.ad_title and value.media.original_media_id, each only when Meta includes it.
+         *
+         * **Facebook**: populated from a Graph API lookup of the parent post. Present when the post is an ad dark post (isDarkPost true, whatever its promotionStatus) or an organic post that is or was boosted (promotionStatus "active", "extendable" or "finished").
+         *
+         * Meta does not link a dark post back to its ad, so on Facebook id is set only when exactly one ad on the Page, created before the dark post, carries the same copy as the post. title is never set on Facebook.
          *
          */
         ad?: {
@@ -17844,24 +18381,14 @@ export type owner = 'app' | 'ai_agent' | 'other';
 export type previousOwner = 'app' | 'ai_agent' | 'other';
 
 /**
- * Fired once when a new conversation begins, in either direction. A conversation
- * starts the first time an account and a contact exchange a message on any DM
- * platform (Instagram, Messenger/Facebook, Telegram, WhatsApp, X, Reddit,
- * Bluesky, SMS, TikTok). Platform-agnostic: one subscription covers every DM platform.
+ * Fired once when a new conversation begins, in either direction: the first time an account and a contact exchange a message on any DM platform (Instagram, Messenger/Facebook, Telegram, WhatsApp, X, Reddit, Bluesky, SMS, TikTok). One subscription covers every DM platform.
  *
- * `conversation.metadata` (the referral as Meta sent it) and
- * `conversation.adAttribution` (the ad, campaign and ad set from your synced
- * ads) are filled only when the message that created the conversation carried
- * Meta's referral. That holds for WhatsApp Click-to-WhatsApp and Facebook
- * Messenger Click-to-Message, and for ig.me / m.me ref links. On Instagram
- * Click-to-Direct it usually does NOT: Meta creates the thread with the ad post
- * itself, an attachment-only `share` / `ig_post` message with no referral, and
- * attaches the referral to the next message. That conversation.started then
- * has `adAttribution` null and no `metadata`. Read the click from `metadata.ad`
- * and `metadata.referral` on the `message.received` that follows, or from
- * `adAttribution` on `GET /v1/inbox/conversations` and
- * `GET /v1/inbox/conversations/{conversationId}`, which carry it once the
- * referral is stored.
+ * **Ad attribution**: `conversation.metadata` (the referral as Meta sent it) and `conversation.adAttribution` (the ad, campaign and ad set from your synced ads) are filled only when the message that created the conversation carried Meta's referral.
+ *
+ * - WhatsApp Click-to-WhatsApp, Facebook Messenger Click-to-Message, and ig.me / m.me ref links: it does.
+ * - Instagram Click-to-Direct: it usually does NOT. Meta creates the thread with the ad post itself (an attachment-only `share` / `ig_post` message with no referral) and attaches the referral to the next message, so this event has `adAttribution` null and no `metadata`.
+ *
+ * For Instagram, read the click from `metadata.ad` and `metadata.referral` on the following `message.received`, or from `adAttribution` on `GET /v1/inbox/conversations` and `GET /v1/inbox/conversations/{conversationId}`, which carry it once the referral is stored.
  *
  */
 export type WebhookPayloadConversationStarted = {
@@ -18149,12 +18676,9 @@ export type WebhookPayloadMessage = {
             /**
              * Attachment type (image, video, file, sticker, audio, share).
              *
-             * Instagram and Facebook deliver a shared reel, post or ad with no
-             * type of its own (Meta's `unsupported_type`). Zernio resolves it
-             * from the media's Content-Type at ingest, so it arrives as `image`,
-             * `video`, `audio` or `file` with `originalType: "unsupported_type"`.
-             * `type: "unsupported_type"` itself is emitted only when the CDN
-             * could not be classified in time; the `url` still works.
+             * Instagram and Facebook deliver a shared reel, post or ad with no type of its own (Meta's `unsupported_type`). Zernio resolves it from the media's Content-Type at ingest, so it arrives as `image`, `video`, `audio` or `file` with `originalType: "unsupported_type"`.
+             *
+             * `type: "unsupported_type"` itself is emitted only when the CDN could not be classified in time; the `url` still works.
              *
              */
             type: string;
@@ -18188,28 +18712,14 @@ export type WebhookPayloadMessage = {
             /**
              * Where to fetch the attachment. **The contract differs by platform.**
              *
-             * - **WhatsApp**: points at `GET /v1/whatsapp/media/{mediaId}`, an
-             * authenticated Zernio endpoint. You MUST send
-             * `Authorization: Bearer <your API key>`; fetching it without that
-             * header returns `401`. Download and store the bytes when this
-             * webhook arrives: Meta drops inbound media after a limited
-             * retention window, after which the endpoint answers `400`
-             * permanently and the media is unrecoverable.
-             * - **Instagram / Facebook / Telegram**: a direct platform CDN link
-             * that needs no authentication and expires on the platform's own
-             * schedule.
+             * - **WhatsApp**: points at `GET /v1/whatsapp/media/{mediaId}`, an authenticated Zernio endpoint. You MUST send `Authorization: Bearer <your API key>`; without it you get `401`. Download the bytes when this webhook arrives: Meta drops inbound media after a limited retention window, then the endpoint answers `400` permanently.
+             * - **Instagram / Facebook / Telegram**: a direct platform CDN link that needs no authentication and expires on the platform's own schedule.
              *
-             * **Webhook attachments carry no `refreshUrl`.** That field is
-             * stamped only when you read a message back over REST
-             * (`GET /v1/inbox/conversations/{conversationId}/messages`). On
-             * Instagram and Facebook the url above is a signed Meta CDN link
-             * that expires, so do not persist it: store the message id and
-             * resolve the media through
-             * `GET /v1/inbox/conversations/{conversationId}/messages/{messageId}/attachments/{index}?accountId={accountId}`,
-             * which re-mints it on demand. Every value that URL needs is
-             * already in this payload: `message.conversationId`,
-             * `message.platformMessageId`, `account.accountId`, and the
-             * attachment's zero-based position in this array.
+             * **Webhook attachments carry no `refreshUrl`.** It is stamped only when you read a message over REST (`GET /v1/inbox/conversations/{conversationId}/messages`).
+             *
+             * On Instagram and Facebook the url is a signed, expiring Meta CDN link, so do not persist it. Store the message id and resolve media through `GET /v1/inbox/conversations/{conversationId}/messages/{messageId}/attachments/{index}?accountId={accountId}`, which re-mints it on demand.
+             *
+             * Every value that URL needs is in this payload: `message.conversationId`, `message.platformMessageId`, `account.accountId`, and the attachment's zero-based position in this array.
              *
              */
             url: string;
@@ -18295,7 +18805,10 @@ export type WebhookPayloadMessage = {
             };
         };
         /**
-         * When the message was sent, as reported by the platform and passed through unmodified. Full ISO 8601 date-time: Instagram and Facebook carry millisecond precision, while some platforms (for example WhatsApp and Telegram) report whole seconds. Use this field as the chronological ordering key. If two messages share the same value, fetch the conversation messages with sortOrder=desc for the deterministic order.
+         * When the message was sent, as reported by the platform and passed through unmodified. Full ISO 8601 date-time: Instagram and Facebook carry millisecond precision; some platforms (e.g. WhatsApp and Telegram) report whole seconds.
+         *
+         * Use it as the chronological ordering key. If two messages share a value, fetch the conversation messages with sortOrder=desc for the deterministic order.
+         *
          */
         sentAt: string;
         isRead: boolean;
@@ -18335,7 +18848,14 @@ export type WebhookPayloadMessage = {
      */
     metadata?: {
         /**
-         * true when this inbound arrived on Meta's standby path because another app owned the conversation: Meta Business Agent on WhatsApp, another handover receiver (such as Page Inbox) on Facebook and Instagram. That app answers it, Zernio only observes, and no automation runs. On WhatsApp sending a reply takes control back; on Facebook, and on Instagram accounts connected through a Facebook Page, take control first with POST /v1/inbox/conversations/{conversationId}/thread-control; an Instagram Login connection cannot take or request and waits for the owner to pass it. See conversation.control_changed.
+         * true when this inbound arrived on Meta's standby path because another app owned the conversation: Meta Business Agent on WhatsApp, or another handover receiver (such as Page Inbox) on Facebook and Instagram. That app answers it; Zernio only observes and no automation runs. See conversation.control_changed.
+         *
+         * To take control back:
+         *
+         * - WhatsApp: sending a reply takes control back.
+         * - Facebook, and Instagram accounts connected through a Facebook Page: take control first with POST /v1/inbox/conversations/{conversationId}/thread-control.
+         * - Instagram Login connections: cannot take or request control; wait for the owner to pass it.
+         *
          */
         standby?: boolean;
         /**
@@ -18407,12 +18927,9 @@ export type WebhookPayloadMessage = {
          */
         flowResponseJson?: string;
         /**
-         * WhatsApp only. Parsed Flow response JSON. Populated when
-         * `flowResponseJson` is valid JSON; otherwise omitted. Keys and
-         * value types depend on the specific Flow that was submitted. An
-         * `address_message` submission (`nfmReplyName: address_message`) carries
-         * the address fields (`name`, `address`, `city`, `state`, `in_pin_code`,
-         * ...), either at the top level or nested under `values`; read both.
+         * WhatsApp only. Parsed Flow response JSON, populated when `flowResponseJson` is valid JSON (otherwise omitted). Keys and value types depend on the Flow submitted.
+         *
+         * An `address_message` submission (`nfmReplyName: address_message`) carries the address fields (`name`, `address`, `city`, `state`, `in_pin_code`, ...), either at the top level or nested under `values`; read both.
          *
          */
         flowResponseData?: {
@@ -18518,12 +19035,10 @@ export type WebhookPayloadMessage = {
             [key: string]: unknown;
         }>;
         /**
-         * WhatsApp only. How the contact card was shared.
-         * `contact_request` means the user tapped a `request_contact_info`
-         * button, so the number is their own and consented. `other` means
-         * they picked a card from their address book: it may be anyone's,
-         * and must NOT be stored as the sender's identity. Omitted when
-         * Meta sends no origin.
+         * WhatsApp only. How the contact card was shared. Omitted when Meta sends no origin.
+         *
+         * - `contact_request`: the user tapped a `request_contact_info` button, so the number is their own and consented.
+         * - `other`: they picked a card from their address book. It may be anyone's and must NOT be stored as the sender's identity.
          *
          */
         contactsOrigin?: 'contact_request' | 'other';
@@ -18554,34 +19069,19 @@ export type WebhookPayloadMessage = {
          */
         isStoryMention?: boolean;
         /**
-         * Click attribution forwarded verbatim from Meta. Populated only on
-         * the first inbound message Meta attaches it to, and absent on the
-         * other messages of the same conversation. That is not always the
-         * first message after the click: on Instagram Click-to-Direct Meta
-         * usually delivers the ad post itself first, as an attachment-only
-         * `share` / `ig_post` message with no referral, and attaches the
-         * referral to the message right after it. The first referral of a
-         * conversation is also stored on the conversation as
-         * `metadata.meta_ad_*` (`GET /v1/inbox/conversations/{conversationId}`),
-         * so read it there instead of matching webhooks. On Instagram and Messenger a
-         * RETURNING click also attaches it to the first message that
-         * follows, so read it on every `message.received` for per-click
-         * attribution; a click that opens an existing thread WITHOUT a
-         * message arrives as the separate `referral.received` event.
+         * Click attribution forwarded verbatim from Meta. Present only on the first inbound message Meta attaches it to; absent on later messages of the same conversation.
+         *
+         * That is not always the first message after the click. On Instagram Click-to-Direct, Meta usually delivers the ad post first as an attachment-only `share` / `ig_post` message with no referral, and attaches the referral to the next message.
+         *
+         * The conversation's first referral is also stored as `metadata.meta_ad_*` (`GET /v1/inbox/conversations/{conversationId}`); read it there instead of matching webhooks.
+         *
+         * On Instagram and Messenger, a RETURNING click also attaches it to the next message, so read it on every `message.received` for per-click attribution. A click that opens an existing thread WITHOUT a message arrives as a separate `referral.received` event.
          *
          * The populated subset identifies the source:
-         * - `ctwa_clid` and `source_*` fields: WhatsApp CTWA
-         * (Click-to-WhatsApp). Attribution window is 7 days from click.
-         * Forward to Meta Conversions API for Business Messaging replay.
-         * - `ad_id` and `ads_context_data`: Facebook Messenger CTM
-         * (Click-to-Message) or Instagram CTD (Click-to-Direct). Use
-         * `ad_id` to attribute the conversation to a specific ad.
-         * - `ref` without `ad_id`: an ig.me / m.me link carrying a
-         * `?ref=` parameter (`source` is `SHORTLINK`, `SHORTLINKS` or
-         * `IGME-SOURCE-LINK` depending on surface - treat it as
-         * opaque). Instagram delivers ig.me refs on new threads only
-         * when the account has at least one Ice Breaker configured
-         * (`PUT /v1/accounts/{accountId}/instagram-ice-breakers`).
+         *
+         * - `ctwa_clid` and `source_*` fields: WhatsApp CTWA (Click-to-WhatsApp). Attribution window is 7 days from click. Forward to Meta Conversions API for Business Messaging replay.
+         * - `ad_id` and `ads_context_data`: Facebook Messenger CTM (Click-to-Message) or Instagram CTD (Click-to-Direct). Use `ad_id` to attribute the conversation to a specific ad.
+         * - `ref` without `ad_id`: an ig.me / m.me link with a `?ref=` parameter (`source` is `SHORTLINK`, `SHORTLINKS` or `IGME-SOURCE-LINK` depending on surface; treat it as opaque). Instagram delivers ig.me refs on new threads only when the account has at least one Ice Breaker (`PUT /v1/accounts/{accountId}/instagram-ice-breakers`).
          *
          */
         referral?: {
@@ -18651,14 +19151,14 @@ export type WebhookPayloadMessage = {
             };
         } | null;
         /**
-         * Present with `referral` whenever the referral is attributable: on
-         * Instagram and Facebook every forwarded referral (an `ad_id` or a
-         * `ref`), on WhatsApp a referral carrying `ctwa_clid`, `source_id`,
-         * `source_url` or `headline`. The same click enriched from your
-         * synced ads: the ad name, campaign, ad set and ad account Zernio
-         * holds for this ad ID. Built from this message's referral, so it
-         * follows a returning click, while the conversation's
-         * `adAttribution` keeps the first one.
+         * The click enriched from your synced ads: the ad name, campaign, ad set and ad account Zernio holds for this ad ID.
+         *
+         * **Present with `referral`** whenever the referral is attributable:
+         *
+         * - Instagram and Facebook: every forwarded referral (an `ad_id` or a `ref`).
+         * - WhatsApp: a referral carrying `ctwa_clid`, `source_id`, `source_url` or `headline`.
+         *
+         * Built from this message's referral, so it follows a returning click, while the conversation's `adAttribution` keeps the first one.
          *
          */
         ad?: (ConversationAdAttribution);
@@ -18690,18 +19190,22 @@ export type WebhookPayloadMessage = {
             type?: string;
         };
         /**
-         * Instagram / Facebook Messenger only. Set when the message
-         * carries nothing an integrator can render (a `template`
-         * attachment with no text and no parseable content, or Meta's
-         * own `is_unsupported` flag). Sibling of `unsupported` above
-         * (WhatsApp only, carries Meta's error code/title/details and unsupported type): this
-         * field has no error envelope, only the boolean. Absence means
-         * "not flagged", never "checked and renderable".
+         * Instagram / Facebook Messenger only. Set when the message carries nothing an integrator can render: a `template` attachment with no text and no parseable content, or Meta's own `is_unsupported` flag.
+         *
+         * Sibling of `unsupported` above (WhatsApp only, carries Meta's error code/title/details and unsupported type); this field has no error envelope, only the boolean.
+         *
+         * Absence means "not flagged", never "checked and renderable".
          *
          */
         noRenderableContent?: boolean;
         /**
-         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image, video, share_post, sticker and emoji, an attachment (share_post as type share with the embed url and payload.videoId; sticker/emoji as type sticker, url signed and expiring).
+         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template).
+         *
+         * Present on every TikTok DM that is not plain text. Those arrive with text empty and, for image, video, share_post, sticker and emoji, an attachment:
+         *
+         * - share_post: type share, with the embed url and payload.videoId.
+         * - sticker/emoji: type sticker, url signed and expiring.
+         *
          */
         tiktokMessageType?: string;
     } | null;
@@ -18732,28 +19236,21 @@ export type sentVia = 'human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 
 export type interactiveType = 'button_reply' | 'list_reply' | 'nfm_reply';
 
 /**
- * WhatsApp only. How the contact card was shared.
- * `contact_request` means the user tapped a `request_contact_info`
- * button, so the number is their own and consented. `other` means
- * they picked a card from their address book: it may be anyone's,
- * and must NOT be stored as the sender's identity. Omitted when
- * Meta sends no origin.
+ * WhatsApp only. How the contact card was shared. Omitted when Meta sends no origin.
+ *
+ * - `contact_request`: the user tapped a `request_contact_info` button, so the number is their own and consented.
+ * - `other`: they picked a card from their address book. It may be anyone's and must NOT be stored as the sender's identity.
  *
  */
 export type contactsOrigin = 'contact_request' | 'other';
 
 /**
- * Webhook payload for message.deleted events. Fires when the sender
- * deletes (unsends) a message. Supported platforms: Instagram (incoming
- * unsend) and WhatsApp, in both directions: an outgoing message the
- * business deleted (via the Cloud API, or from the WhatsApp Business app
- * on a Coexistence number) and an incoming message the customer deleted.
- * Read `message.direction` to tell the two apart.
+ * Webhook payload for message.deleted events. Fires when the sender deletes (unsends) a message. Read `message.direction` to tell the directions apart.
  *
- * The message.text and message.attachments fields retain the content
- * that existed before the delete. The Zernio dashboard UI does not show
- * this content, but authorized API consumers may access it for
- * moderation, compliance, or archival use cases.
+ * - Instagram: incoming unsend.
+ * - WhatsApp, both directions: an outgoing message the business deleted (via the Cloud API, or from the WhatsApp Business app on a Coexistence number), and an incoming message the customer deleted.
+ *
+ * message.text and message.attachments retain the content from before the delete. The Zernio dashboard does not show it, but authorized API consumers may access it for moderation, compliance, or archival use.
  *
  */
 export type WebhookPayloadMessageDeleted = {
@@ -18780,18 +19277,14 @@ export type WebhookPayloadMessageDeleted = {
 export type event39 = 'message.deleted';
 
 /**
- * Shared payload for message.delivered, message.read, message.played and
- * message.failed events. Fires when the platform reports a new
- * delivery state for an outgoing message.
+ * Shared payload for message.delivered, message.read, message.played and message.failed events. Fires when the platform reports a new delivery state for an outgoing message.
  *
- * Platform support:
- * * message.delivered: WhatsApp, Facebook Messenger, SMS, RCS.
- * * message.read: WhatsApp, Facebook Messenger, Instagram, RCS. Not SMS
- * (carriers report delivery, never read).
- * * message.played: WhatsApp only, voice messages.
- * * message.failed: WhatsApp, SMS and RCS (other platforms don't expose
- * per-message failure via webhook). On SMS, `error.code` is the
- * carrier's numeric code and `error.message` its reason.
+ * **Platform support:**
+ *
+ * - message.delivered: WhatsApp, Facebook Messenger, SMS, RCS.
+ * - message.read: WhatsApp, Facebook Messenger, Instagram, RCS. Not SMS (carriers report delivery, never read).
+ * - message.played: WhatsApp only, voice messages.
+ * - message.failed: WhatsApp, SMS and RCS (other platforms don't expose per-message failure via webhook). On SMS, `error.code` is the carrier's numeric code and `error.message` its reason.
  *
  */
 export type WebhookPayloadMessageDeliveryStatus = {
@@ -18936,17 +19429,11 @@ export type WebhookPayloadMessageSent = {
              */
             originalType?: string;
             /**
-             * Where to fetch the attachment. For outgoing messages this is the
-             * media URL as sent, so for WhatsApp it is the URL you supplied when
-             * publishing (WhatsApp sends media by link), not a Zernio endpoint,
-             * and it needs no Zernio credentials. Contrast the inbound direction:
-             * `message.received` attachment URLs on WhatsApp point at the
-             * authenticated `GET /v1/whatsapp/media/{mediaId}`.
+             * Where to fetch the attachment. For outgoing messages this is the media URL as sent. On WhatsApp it is the URL you supplied when publishing (WhatsApp sends media by link), not a Zernio endpoint, and it needs no Zernio credentials.
              *
-             * As on `message.received`, webhook attachments carry no
-             * `refreshUrl`: that field is stamped only on the REST read. Resolve
-             * Instagram and Facebook media through
-             * `GET /v1/inbox/conversations/{conversationId}/messages/{messageId}/attachments/{index}?accountId={accountId}`.
+             * Contrast the inbound direction: `message.received` attachment URLs on WhatsApp point at the authenticated `GET /v1/whatsapp/media/{mediaId}`.
+             *
+             * As on `message.received`, webhook attachments carry no `refreshUrl`: that field is stamped only on the REST read. Resolve Instagram and Facebook media through `GET /v1/inbox/conversations/{conversationId}/messages/{messageId}/attachments/{index}?accountId={accountId}`.
              *
              */
             url: string;
@@ -18991,30 +19478,41 @@ export type WebhookPayloadMessageSent = {
             picture?: string;
         };
         /**
-         * When the message was sent, as reported by the platform and passed through unmodified. Full ISO 8601 date-time: Instagram and Facebook carry millisecond precision, while some platforms (for example WhatsApp and Telegram) report whole seconds. Use this field as the chronological ordering key. If two messages share the same value, fetch the conversation messages with sortOrder=desc for the deterministic order.
+         * When the message was sent, as reported by the platform and passed through unmodified. Full ISO 8601 date-time: Instagram and Facebook carry millisecond precision; some platforms (for example WhatsApp and Telegram) report whole seconds.
+         *
+         * Use it as the chronological ordering key. If two messages share the same value, fetch the conversation messages with sortOrder=desc for the deterministic order.
+         *
          */
         sentAt: string;
         isRead: boolean;
         /**
-         * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts); meta_business_agent when Meta Business Agent answered on the number. Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
+         * WhatsApp send origin. Absent on non-WhatsApp platforms.
+         *
+         * - whatsapp_business_app: sent from the WhatsApp Business phone app on a Coexistence number.
+         * - cloud_api: sent through Zernio (dashboard, API, or broadcasts).
+         * - meta_business_agent: Meta Business Agent answered on the number.
+         *
+         * Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
+         *
          */
         source?: 'whatsapp_business_app' | 'cloud_api' | 'meta_business_agent';
         /**
-         * Which Zernio surface produced this message: `human` (an operator
-         * in the Zernio inbox), `api` (a call to this API), `broadcast`,
-         * `sequence`, `workflow`, `comment_automation`, or `bulk-api`
-         * (POST /v1/whatsapp/bulk). Same vocabulary as the `source` filter
-         * on the inbox analytics endpoints, and the same value a later
-         * GET on this message returns.
+         * Which Zernio surface produced this message. Same vocabulary as the `source` filter on the inbox analytics endpoints, and the same value a later GET on this message returns.
          *
-         * Always present, and `null` whenever the lineage is unknown: any
-         * outgoing message not sent through Zernio (one typed in the
-         * platform's own app, a Meta automated reply such as an instant
-         * reply or away message, the echo of a click-to-message ad's
-         * greeting), and every message stored before this field shipped
-         * (2026-08). Existing messages
-         * are NOT backfilled, so treat `null` as "unknown", never as
-         * "sent by a human".
+         * - `human`: an operator in the Zernio inbox
+         * - `api`: a call to this API
+         * - `broadcast`
+         * - `sequence`
+         * - `workflow`
+         * - `comment_automation`
+         * - `bulk-api`: POST /v1/whatsapp/bulk
+         *
+         * Always present, and `null` whenever the lineage is unknown:
+         *
+         * - any outgoing message not sent through Zernio (one typed in the platform's own app, a Meta automated reply such as an instant reply or away message, the echo of a click-to-message ad's greeting)
+         * - every message stored before this field shipped (2026-08)
+         *
+         * Existing messages are NOT backfilled, so treat `null` as "unknown", never as "sent by a human".
          *
          */
         sentVia?: ('human' | 'api' | 'broadcast' | 'sequence' | 'workflow' | 'comment_automation' | 'bulk-api') | null;
@@ -19044,7 +19542,10 @@ export type WebhookPayloadMessageSent = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template. The key is present only when the send carried some context, and absent otherwise: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
+     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template.
+     *
+     * The key is present only when the send carried some context: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
+     *
      */
     metadata?: {
         /**
@@ -19054,11 +19555,11 @@ export type WebhookPayloadMessageSent = {
             [key: string]: unknown;
         };
         /**
-         * WhatsApp only. The location pin this message carries, in the same
-         * shape the inbox send API accepts. Present on API sends that passed
-         * `location`, and on Coexistence echoes of a pin shared from the
-         * WhatsApp Business app. The message `text` is only the emoji
-         * preview (`📍 <name>`); the pin itself lives here.
+         * WhatsApp only. The location pin this message carries, in the same shape the inbox send API accepts.
+         *
+         * Present on API sends that passed `location`, and on Coexistence echoes of a pin shared from the WhatsApp Business app.
+         *
+         * The message `text` is only the emoji preview (`📍 <name>`); the pin itself lives here.
          *
          */
         location?: {
@@ -19080,40 +19581,24 @@ export type WebhookPayloadMessageSent = {
             address?: string;
         };
         /**
-         * WhatsApp only. The contact cards this message carries. On API
-         * sends this is the `contacts` array exactly as given to the inbox
-         * send API (`name`, `phones[].phone` / `type`, `emails[]`); on
-         * Coexistence echoes of a card shared from the WhatsApp Business
-         * app it is Meta's shape (`phones[].wa_id`, `vcard`). The message
-         * `text` is only the emoji preview (`👤 <name>`); the cards live
-         * here.
+         * WhatsApp only. The contact cards this message carries. The message `text` is only the emoji preview (`👤 <name>`); the cards live here.
+         *
+         * - API sends: the `contacts` array exactly as given to the inbox send API (`name`, `phones[].phone` / `type`, `emails[]`).
+         * - Coexistence echoes of a card shared from the WhatsApp Business app: Meta's shape (`phones[].wa_id`, `vcard`).
          *
          */
         contacts?: Array<{
             [key: string]: unknown;
         }>;
         /**
-         * `platformMessageId` of the message this send is a quote-reply to.
+         * `platformMessageId` of the message this send quote-replies to.
          *
-         * Present when the reply was sent through Zernio with `replyTo` on
-         * the inbox send API (WhatsApp and Telegram). A WhatsApp API send
-         * fires its `message.sent` off the delivery status, and the quote
-         * reference is forwarded from the stored send there, so it arrives
-         * on the same `message.sent` as any other WhatsApp send.
+         * - **WhatsApp and Telegram:** present when the reply was sent through Zernio with `replyTo` on the inbox send API. A WhatsApp API send fires `message.sent` off the delivery status, with the quote reference forwarded from the stored send, so it arrives on the same `message.sent` as any WhatsApp send.
+         * - **Instagram echoes:** not delivered. Zernio forwards `reply_to.mid` whenever Meta puts it on an echo, but on Instagram Meta does not send it, so a reply the operator quoted in the Instagram app arrives with no `quotedMessageId`.
+         * - **Facebook Messenger:** uses a separate subscription (`message_echoes`) that has not been measured. Treat it as unverified, not supported.
+         * - **WhatsApp Coexistence echoes:** absent. Meta omits the quote context from `smb_message_echoes`, so a reply the operator sent from the WhatsApp Business app has no `quotedMessageId` even though WhatsApp shows it as a quote-reply.
          *
-         * Not delivered on Instagram echoes. Zernio forwards
-         * `reply_to.mid` whenever Meta puts it on an echo, but on
-         * Instagram Meta does not send it, so a reply the operator quoted
-         * in the Instagram app arrives with no `quotedMessageId`.
-         * Facebook Messenger rides a separate subscription
-         * (`message_echoes`) and has not been measured, so treat it as
-         * unverified rather than supported.
-         *
-         * Absent on WhatsApp Coexistence echoes. Meta omits the quote
-         * context from `smb_message_echoes`, so a reply the operator sent
-         * from the WhatsApp Business app arrives with no `quotedMessageId`
-         * even though WhatsApp shows it as a quote-reply. Do not read the
-         * absence of this field as "not a reply".
+         * Do not read the absence of this field as "not a reply".
          *
          */
         quotedMessageId?: string;
@@ -19124,7 +19609,15 @@ export type WebhookPayloadMessageSent = {
          */
         threadTs?: string;
         /**
-         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template). Present on every TikTok DM that is not plain text; those arrive with text empty and, for image, video, share_post, sticker and emoji, an attachment (share_post as type share with the embed url and payload.videoId; sticker/emoji as type sticker, url signed and expiring). Absent on image sends made through the Zernio API, which carry the image in attachments.
+         * TikTok only. The message type as TikTok reports it, forwarded verbatim (for example image, video, sticker, share_post, emoji, reaction, template).
+         *
+         * Present on every TikTok DM that is not plain text. Those arrive with text empty and, for image, video, share_post, sticker and emoji, an attachment:
+         *
+         * - share_post: type share, with the embed url and payload.videoId.
+         * - sticker/emoji: type sticker, url signed and expiring.
+         *
+         * Absent on image sends made through the Zernio API, which carry the image in attachments.
+         *
          */
         tiktokMessageType?: string;
     };
@@ -19142,7 +19635,14 @@ export type event42 = 'message.sent';
 export type platform18 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
 
 /**
- * WhatsApp send origin. whatsapp_business_app when sent from the WhatsApp Business phone app on a Coexistence number; cloud_api when sent through Zernio (dashboard, API, or broadcasts); meta_business_agent when Meta Business Agent answered on the number. Absent on non-WhatsApp platforms. Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
+ * WhatsApp send origin. Absent on non-WhatsApp platforms.
+ *
+ * - whatsapp_business_app: sent from the WhatsApp Business phone app on a Coexistence number.
+ * - cloud_api: sent through Zernio (dashboard, API, or broadcasts).
+ * - meta_business_agent: Meta Business Agent answered on the number.
+ *
+ * Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
+ *
  */
 export type source5 = 'whatsapp_business_app' | 'cloud_api' | 'meta_business_agent';
 
@@ -19314,23 +19814,15 @@ export type WebhookPayloadPostAuthenticityChanged = {
 export type event45 = 'post.authenticity_changed';
 
 /**
- * Webhook payload for the per-platform terminal events
- * `post.platform.published` and `post.platform.failed`, for
- * `post.platform.deleted` (same shape, fired when Zernio's background
- * sync detects that a platform target published through Zernio was
- * later deleted on the platform; poll-driven ~hourly, not real-time),
- * and for `post.tiktok.url_resolved` (same shape, fired when a
- * published TikTok post's public URL is backfilled). Terminal events
- * fire once per platform target inside a post as that platform
- * reaches a terminal state (published or permanent failure), except
- * that a target which later fails background reconciliation emits
- * `post.platform.failed` a second time, after its own
- * `post.platform.published`. The `post` envelope mirrors the shape
- * of `WebhookPayloadPost` so
- * consumers can reuse rendering logic; the `platform` block
- * identifies which specific platform transitioned; the `account`
- * block identifies the connected account behind that
- * platform-write.
+ * Webhook payload for these per-platform events:
+ *
+ * - `post.platform.published` and `post.platform.failed`: terminal events.
+ * - `post.platform.deleted`: same shape, fired when Zernio's background sync detects that a platform target published through Zernio was later deleted on the platform (poll-driven ~hourly, not real-time).
+ * - `post.tiktok.url_resolved`: same shape, fired when a published TikTok post's public URL is backfilled.
+ *
+ * Terminal events fire once per platform target inside a post as that platform reaches a terminal state (published or permanent failure). Exception: a target that later fails background reconciliation emits `post.platform.failed` a second time, after its own `post.platform.published`.
+ *
+ * **Blocks**: the `post` envelope mirrors `WebhookPayloadPost` so consumers can reuse rendering logic; `platform` identifies which specific platform transitioned; `account` identifies the connected account behind that platform-write.
  *
  */
 export type WebhookPayloadPostPlatform = {
@@ -19443,12 +19935,15 @@ export type event46 = 'post.platform.published' | 'post.platform.failed' | 'post
 export type status54 = 'published' | 'failed' | 'deleted';
 
 /**
- * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking
- * window ends and its final analytics read has run. `final` holds the closing
- * metrics, or is null when no sample could be read. `window.completionReason` says
- * how the window closed: `final_read` (read succeeded), `unreachable` (the sync
- * failed or no sample exists) or `post_deleted` (the post is gone from the platform;
- * `final` is then the last sample we held, if any).
+ * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
+ *
+ * `final` holds the closing metrics, or null when no sample could be read.
+ *
+ * `window.completionReason` says how the window closed:
+ *
+ * - `final_read`: the read succeeded.
+ * - `unreachable`: the sync failed or no sample exists.
+ * - `post_deleted`: the post is gone from the platform; `final` is then the last sample we held, if any.
  *
  */
 export type WebhookPayloadPostTrackingCompleted = {
@@ -19681,12 +20176,13 @@ export type WebhookPayloadReviewNew = {
 export type event50 = 'review.new';
 
 /**
- * Webhook payload for the review.updated event. Fired when the reviewer edits their
- * text or rating, or when a reply is posted through POST /v1/inbox/reviews/{reviewId}/reply.
- * A reply written
- * directly in Google's own interface does NOT fire this event: Google emits no
- * notification when a reviewReply is written. Same shape as review.new. When a reply
- * is present, review.hasReply is true and review.reply is populated.
+ * Webhook payload for the review.updated event. Same shape as review.new.
+ *
+ * Fired when the reviewer edits their text or rating, or when a reply is posted through POST /v1/inbox/reviews/{reviewId}/reply.
+ *
+ * A reply written directly in Google's own interface does NOT fire it: Google emits no notification when a reviewReply is written.
+ *
+ * When a reply is present, review.hasReply is true and review.reply is populated.
  *
  */
 export type WebhookPayloadReviewUpdated = {
@@ -19848,13 +20344,9 @@ export type event55 = 'whatsapp.account.alert_received';
 export type platform19 = 'whatsapp';
 
 /**
- * Webhook payload for the `whatsapp.account.name_status_updated` event.
- * Fired when Meta finishes reviewing a WhatsApp display-name change on a
- * connected number. Maps Meta's `phone_number_name_update` WABA webhook
- * field onto our event envelope. Fires only for a review outcome
- * (APPROVED, DECLINED, PENDING_REVIEW); a name applied without review
- * reports `name_status: AVAILABLE_WITHOUT_REVIEW` on the phone node
- * instead, and Meta never sends this webhook field for that case.
+ * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.
+ *
+ * Fires only for a review outcome (APPROVED, DECLINED, PENDING_REVIEW). A name applied without review reports `name_status: AVAILABLE_WITHOUT_REVIEW` on the phone node instead; Meta never sends this webhook field for that case.
  *
  */
 export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
@@ -20321,7 +20813,10 @@ export type event62 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 export type status58 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
- * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Present on every event tied to a profile and absent on events that belong to none. Events spanning several profiles (a post published to accounts of different profiles) list each once. Use it to route the event to your tenant without storing Zernio profile ids.
+ * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
+ *
+ * Present on every event tied to a profile, absent on events that belong to none. Events spanning several profiles (a post published to accounts of different profiles) list each once.
+ *
  */
 export type WebhookProfiles = Array<{
     id: string;
@@ -20659,8 +21154,7 @@ export type WorkflowEdge = {
      * - **wait_for_reply**: `'reply'` (contact replied) | `'timeout'` (no reply in window)
      * - **webhook**: `'success'` (2xx) | `'error'` (non-2xx / fetch failed)
      * - **hubspot_upsert_contact**: `'success'` | `'error'` (not connected / HubSpot refused)
-     * - **ai**: `'success'` (text/JSON response) | `'tool:<toolName>'` (model invoked
-     * that tool) | `'error'` (upstream failure / non-JSON in JSON mode)
+     * - **ai**: `'success'` (text/JSON response) | `'tool:<toolName>'` (model invoked that tool) | `'error'` (upstream failure / non-JSON in JSON mode)
      * - **start_call**: `'success'` | `'permission_required'` | `'failed'`
      * - **a_b_split**: `'a'` | `'b'`
      * - **enroll_sequence**: `'success'` | `'error'`
@@ -20736,36 +21230,100 @@ export type WorkflowNode = {
      */
     type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
     /**
-     * Type-specific settings. All string fields support `{{variable}}` interpolation against the run's variable bag (resolved at execution time).
+     * Type-specific settings. Every string field supports `{{variable}}` interpolation against the run's variable bag, resolved at execution time.
      *
-     * **trigger**: `{ triggerType: inbound_message|api_call|whatsapp_event|referral|story_mention|comment|reaction|lead_received, keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean, eventType: message_sent|message_delivered|message_read|message_failed|reaction, referral:{ ref, matchType: exact|prefix|any }, reaction:{ emojis:[string] }, comment:{ keywords:[string], matchType: any|contains|exact|regex, platformPostId }, leadReceived:{ formIds:[string], pageAccountIds:[string], consentCheckboxKey, defaultCountry, allowCrossProfile:boolean }, cooldownHours:int (1-720) }`. Default `triggerType` is `inbound_message` for legacy nodes. A workflow starts only on events of its own trigger type: `inbound_message` on a message, `referral` on an ig.me / m.me / click-to-message ad referral (standalone, or the first message carrying one; the two are deduplicated per conversation within 60 seconds), `story_mention` on an Instagram story mention, `reaction` on a reaction (Instagram, Facebook, WhatsApp, Telegram groups), `comment` on an Instagram or Facebook comment (the run starts with no conversation and its first `send_message`, which must be text (with optional buttons or quick replies) or cards and must follow the trigger directly (checked on save; on some Instagram accounts Meta refuses buttons and cards to commenters who do not follow the account), is sent as a private reply to the comment; the run then continues in the conversation that reply opens; when an active comment automation's keywords match the comment, the automation answers and the workflow does not start), `whatsapp_event` on a WhatsApp status of a message we sent (filtered by `eventType`), `api_call` only via `POST /v1/workflows/{workflowId}/trigger`, and `lead_received` (WhatsApp workflows only) when a Meta lead ad form is submitted. A `lead_received` trigger needs `leadReceived.consentCheckboxKey` and at least one of `formIds` or `pageAccountIds`; a form scope wins over a Page scope, then the earliest activated workflow. It starts only for leads submitted in the last hour and after the workflow was activated, whose consent checkbox (the form's custom disclaimer, see `POST /v1/ads/lead-forms`) is ticked, and whose phone number parses to a valid international number (`defaultCountry`, ISO 3166 alpha-2, defaults to the country of the workflow's WhatsApp number); otherwise the lead is marked `unreachable`. The Page and the WhatsApp number must be in the same profile unless `allowCrossProfile` is true. Every send or call reached first from the trigger must be a WhatsApp template (checked on save). `referral.matchType` defaults to `any`. `cooldownHours` (inbound_message, referral, story_mention, reaction, whatsapp_event and lead_received, where it defaults to 24) stops the same contact from starting the workflow again inside the window. A `whatsapp_event` workflow never starts on the status of a message a workflow, sequence or comment automation sent. A redelivered platform event never starts the same workflow twice.
+     * **trigger**: `{ triggerType: inbound_message|api_call|whatsapp_event|referral|story_mention|comment|reaction|lead_received, keywords:[string], matchType: any|contains|exact|regex, onlyFirstMessage:boolean, eventType: message_sent|message_delivered|message_read|message_failed|reaction, referral:{ ref, matchType: exact|prefix|any }, reaction:{ emojis:[string] }, comment:{ keywords:[string], matchType: any|contains|exact|regex, platformPostId }, leadReceived:{ formIds:[string], pageAccountIds:[string], consentCheckboxKey, defaultCountry, allowCrossProfile:boolean }, cooldownHours:int (1-720) }`.
      *
-     * **Variables** available from the start of every run (absent values are `''`): `lastMessage`, `inboundText`, `triggerText`, `conversationId`, `contact.name`, `contact.phone`, `contact.handle`, `contact.tags` (array), `contact.fields` (the contact's custom fields object), `contact.lastInteractionAt` (ISO date), `contact.lastInteractionHoursAgo` (number), `contact.isFollower` (Instagram, from the stored profile: true, false or `''` when unknown), `referral.ref`, `referral.source`, `referral.type`, `referral.adId`, `referral.adTitle` (the ad title or headline Meta sent), `referral.adName` (the synced ad's name, else `referral.adTitle`), `referral.campaignName` (the synced ad's campaign), `postback.payload`, `postback.title`, `quickReply.payload`, `quickReply.title`, `story.id`, `story.url`, `comment.id`, `comment.text`, `comment.platformPostId`, `reaction.emoji`, `reaction.action` (added|removed). `api_call` runs also get the request's `variables`, merged over these. `lead_received` runs also get `lead.id`, `lead.leadgenId`, `lead.formId`, `lead.formName`, `lead.adId`, `lead.adsetId`, `lead.campaignId` and every form answer by its key (`lead.full_name`, `lead.email`, `lead.phone_number`). Template `variableMapping` entries with `field: custom` interpolate `{{...}}` in `customValue`. An array or object interpolated into text renders as JSON.
+     * Default `triggerType` is `inbound_message` for legacy nodes. A workflow starts only on events of its own trigger type:
      *
-     * **send_message**: `{ messageType: text|template|media|interactive|cards, text, template, media:{mediaType:image|video|audio|document, url,caption}, interactive, buttons, quickReplies, messageTag }`. `template` is `{name,language,variableMapping}` for `messageType: template` and `{ type: generic, elements:[{ title, subtitle, imageUrl, buttons }] }` (1 to 10 cards) for `messageType: cards`. `template` and `interactive` are WhatsApp-only. `interactive.type` is inferred from the payload shape when omitted; payloads with neither `type` nor an inferable shape are rejected.
-     * Facebook and Instagram only (rejected with a 400 on other platforms; WhatsApp keeps `interactive`): `cards`, plus `buttons` on `text` (cards carry their own buttons) and `quickReplies` / `messageTag` on `text`, `media` and `cards`. `media` takes no `buttons` (a 400 at save). `buttons:[{ type: url|postback|phone, title, url, payload, phone, workflowId }]` (1 to 3, text only and the text then 640 characters at most, sent as Meta's button_template, `phone` Facebook-only, not inside cards), `quickReplies:[{ title, payload, imageUrl, workflowId }]` (1 to 13, not combined with `buttons`). `messageTag` is not available: a workflow only sends within the 24h window, and `HUMAN_AGENT` is rejected with a 400 because it is only for replies typed by a person. Titles are capped at 20 characters (80 for card titles and subtitles). A postback button or quick reply with no `payload` gets `zernio:workflow:<this workflow id>`, so a tap answers this workflow's pending `wait_for_reply` or restarts it; with `workflowId` (a 24-hex workflow id, not combined with `payload`) the tap starts that workflow instead.
+     * - `inbound_message`: a message.
+     * - `referral`: an ig.me / m.me / click-to-message ad referral (standalone, or the first message carrying one). The two are deduplicated per conversation within 60 seconds.
+     * - `story_mention`: an Instagram story mention.
+     * - `reaction`: a reaction (Instagram, Facebook, WhatsApp, Telegram groups).
+     * - `comment`: an Instagram or Facebook comment (see below).
+     * - `whatsapp_event`: a WhatsApp status of a message we sent, filtered by `eventType`.
+     * - `api_call`: only via `POST /v1/workflows/{workflowId}/trigger`.
+     * - `lead_received` (WhatsApp workflows only): a Meta lead ad form is submitted.
      *
-     * **wait_for_reply**: `{ timeoutMinutes:int (max 43200), saveAs:string }`. Resume via the `'reply'` edge on inbound, or `'timeout'` edge after `timeoutMinutes` of silence. On Facebook and Instagram a button tap sets `{{postback.payload}}` / `{{postback.title}}` and a quick reply tap sets `{{quickReply.payload}}` / `{{quickReply.title}}`; each reply clears the previous tap.
+     * **`comment` runs** start with no conversation. The first `send_message` is sent as a private reply to the comment, and the run continues in the conversation that reply opens.
      *
-     * **condition**: `{ rules:[{ id, variable, operator: equals|not_equals|contains|not_contains|starts_with|ends_with|exists|not_exists|matches|greater_than|less_than|greater_or_equal|less_or_equal|before|after|has_tag|not_has_tag|is_true|is_false, value }] }`. First matching rule takes its `id` as the sourceHandle; otherwise `'default'`. Text operators compare case-insensitively. `greater_than`, `less_than`, `greater_or_equal` and `less_or_equal` compare numbers (a non-numeric side is false); `before` and `after` compare ISO dates; `has_tag` and `not_has_tag` test whether an array variable (such as `contact.tags`) contains `value`; `is_true` and `is_false` take no value.
+     * That first `send_message` must follow the trigger directly and be text (optionally with buttons or quick replies) or cards (checked on save). On some Instagram accounts Meta refuses buttons and cards to commenters who do not follow the account.
      *
-     * **set_variable**: `{ assignments:[{ name, value }] }`. Run-scoped (lives only for this execution; use `set_field` for persistent values).
+     * When an active comment automation's keywords match the comment, the automation answers and the workflow does not start.
+     *
+     * **`lead_received`** needs `leadReceived.consentCheckboxKey` and at least one of `formIds` or `pageAccountIds`. A form scope wins over a Page scope, then the earliest activated workflow. It starts only for leads that:
+     *
+     * - were submitted in the last hour and after the workflow was activated;
+     * - have the consent checkbox ticked (the form's custom disclaimer, see `POST /v1/ads/lead-forms`);
+     * - have a phone number that parses to a valid international number (`defaultCountry`, ISO 3166 alpha-2, defaults to the country of the workflow's WhatsApp number).
+     *
+     * Otherwise the lead is marked `unreachable`. The Page and the WhatsApp number must be in the same profile unless `allowCrossProfile` is true. Every send or call reached first from the trigger must be a WhatsApp template (checked on save).
+     *
+     * **Other trigger rules**:
+     *
+     * - `referral.matchType` defaults to `any`.
+     * - `cooldownHours` stops the same contact from starting the workflow again inside the window. It applies to inbound_message, referral, story_mention, reaction, whatsapp_event and lead_received, where it defaults to 24.
+     * - A `whatsapp_event` workflow never starts on the status of a message a workflow, sequence or comment automation sent.
+     * - A redelivered platform event never starts the same workflow twice.
+     *
+     * **Variables** available from the start of every run (absent values are `''`):
+     *
+     * - Message: `lastMessage`, `inboundText`, `triggerText`, `conversationId`.
+     * - Contact: `contact.name`, `contact.phone`, `contact.handle`, `contact.tags` (array), `contact.fields` (the contact's custom fields object), `contact.lastInteractionAt` (ISO date), `contact.lastInteractionHoursAgo` (number), `contact.isFollower` (Instagram, from the stored profile: true, false or `''` when unknown).
+     * - Referral: `referral.ref`, `referral.source`, `referral.type`, `referral.adId`, `referral.adTitle` (the ad title or headline Meta sent), `referral.adName` (the synced ad's name, else `referral.adTitle`), `referral.campaignName` (the synced ad's campaign).
+     * - Taps: `postback.payload`, `postback.title`, `quickReply.payload`, `quickReply.title`.
+     * - Story and comment: `story.id`, `story.url`, `comment.id`, `comment.text`, `comment.platformPostId`.
+     * - Reaction: `reaction.emoji`, `reaction.action` (added|removed).
+     *
+     * `api_call` runs also get the request's `variables`, merged over these. `lead_received` runs also get `lead.id`, `lead.leadgenId`, `lead.formId`, `lead.formName`, `lead.adId`, `lead.adsetId`, `lead.campaignId` and every form answer by its key (`lead.full_name`, `lead.email`, `lead.phone_number`).
+     *
+     * Template `variableMapping` entries with `field: custom` interpolate `{{...}}` in `customValue`. An array or object interpolated into text renders as JSON.
+     *
+     * **send_message**: `{ messageType: text|template|media|interactive|cards, text, template, media:{mediaType:image|video|audio|document, url,caption}, interactive, buttons, quickReplies, messageTag }`.
+     *
+     * - `template` is `{name,language,variableMapping}` for `messageType: template`, and `{ type: generic, elements:[{ title, subtitle, imageUrl, buttons }] }` (1 to 10 cards) for `messageType: cards`.
+     * - `template` and `interactive` are WhatsApp-only. `interactive.type` is inferred from the payload shape when omitted; payloads with neither `type` nor an inferable shape are rejected.
+     * - Facebook and Instagram only (a 400 on other platforms; WhatsApp keeps `interactive`): `cards`, `buttons` on `text` (cards carry their own buttons), and `quickReplies` / `messageTag` on `text`, `media` and `cards`.
+     * - `media` takes no `buttons` (a 400 at save).
+     * - `buttons:[{ type: url|postback|phone, title, url, payload, phone, workflowId }]`: 1 to 3, text only (the text then 640 characters at most), sent as Meta's button_template, not inside cards. `phone` is Facebook-only.
+     * - `quickReplies:[{ title, payload, imageUrl, workflowId }]`: 1 to 13, not combined with `buttons`.
+     * - `messageTag` is not available: a workflow only sends within the 24h window, and `HUMAN_AGENT` is rejected with a 400 because it is only for replies typed by a person.
+     * - Titles are capped at 20 characters (80 for card titles and subtitles).
+     * - A postback button or quick reply with no `payload` gets `zernio:workflow:<this workflow id>`, so a tap answers this workflow's pending `wait_for_reply` or restarts it. With `workflowId` (a 24-hex workflow id, not combined with `payload`) the tap starts that workflow instead.
+     *
+     * **wait_for_reply**: `{ timeoutMinutes:int (max 43200), saveAs:string }`. Resumes via the `'reply'` edge on inbound, or the `'timeout'` edge after `timeoutMinutes` of silence. On Facebook and Instagram a button tap sets `{{postback.payload}}` / `{{postback.title}}` and a quick reply tap sets `{{quickReply.payload}}` / `{{quickReply.title}}`. Each reply clears the previous tap.
+     *
+     * **condition**: `{ rules:[{ id, variable, operator: equals|not_equals|contains|not_contains|starts_with|ends_with|exists|not_exists|matches|greater_than|less_than|greater_or_equal|less_or_equal|before|after|has_tag|not_has_tag|is_true|is_false, value }] }`. The first matching rule takes its `id` as the sourceHandle; otherwise `'default'`.
+     *
+     * - Text operators compare case-insensitively.
+     * - `greater_than`, `less_than`, `greater_or_equal` and `less_or_equal` compare numbers (a non-numeric side is false).
+     * - `before` and `after` compare ISO dates.
+     * - `has_tag` and `not_has_tag` test whether an array variable (such as `contact.tags`) contains `value`.
+     * - `is_true` and `is_false` take no value.
+     *
+     * **set_variable**: `{ assignments:[{ name, value }] }`. Run-scoped: lives only for this execution (use `set_field` for persistent values).
      *
      * **delay**: `{ delayMinutes:int (max 43200) }`. Suspends the run, resumes via timer.
      *
-     * **webhook**: `{ url, method: GET|POST|PUT|PATCH|DELETE, headers, bodyTemplate, saveAs }`. SSRF-guarded (private/loopback/metadata IPs rejected). Response saved as `{ status, ok, body }` to `vars[saveAs]`. Edge: `'success'` on 2xx, `'error'` otherwise.
+     * **webhook**: `{ url, method: GET|POST|PUT|PATCH|DELETE, headers, bodyTemplate, saveAs }`. SSRF-guarded (private/loopback/metadata IPs rejected). The response is saved as `{ status, ok, body }` to `vars[saveAs]`. Edges: `'success'` on 2xx, `'error'` otherwise.
      *
-     * **hubspot_upsert_contact**: `{ email, phone, firstName, lastName, properties, saveAs }`. Creates or updates the run contact in the profile's connected HubSpot portal: the contact already linked by inbox sync, else one matching by email, then phone, is updated; otherwise one is created. An existing contact gets only the fields the node sets (a value that resolves to an empty string is skipped); a new one also takes the Zernio contact's name, email and phone for anything left out. `properties` maps HubSpot internal property names to values (at most 50). Saves `{ id, created }` (or `{ error }`) to `vars[saveAs]` (default `hubspotContact`). Edges: `'success'` | `'error'` (HubSpot not connected, or HubSpot refused the write).
+     * **hubspot_upsert_contact**: `{ email, phone, firstName, lastName, properties, saveAs }`. Creates or updates the run contact in the profile's connected HubSpot portal.
+     *
+     * - Updates the contact already linked by inbox sync, else one matching by email, then phone; otherwise creates one.
+     * - An existing contact gets only the fields the node sets (a value that resolves to an empty string is skipped). A new one also takes the Zernio contact's name, email and phone for anything left out.
+     * - `properties` maps HubSpot internal property names to values (at most 50).
+     * - Saves `{ id, created }` (or `{ error }`) to `vars[saveAs]` (default `hubspotContact`).
+     * - Edges: `'success'` | `'error'` (HubSpot not connected, or HubSpot refused the write).
      *
      * **ai**: `{ provider: anthropic|openai|google|mistral|groq|openrouter, model, preset: smart|tools|cheap, systemPrompt, userPromptTemplate, saveAs, temperature, maxTokens, outputType: text|json, tools:[{ name, description, parameters }] }`. Set `provider` + `model` for BYOK (uses your stored API key); omit `provider` for the legacy Telnyx path. Edges: `'success'`, `'tool:<name>'` (model picked a tool), `'error'`.
      *
-     * **handoff**: `{ note, assignTo }`. Terminates the run as `exited`, flags the conversation for a human operator.
+     * **handoff**: `{ note, assignTo }`. Terminates the run as `exited` and flags the conversation for a human operator.
      *
      * **start_call**: `{ to, forwardTo, requirePermissionFirst, recordingEnabled, saveAs }`. WhatsApp-only. `forwardTo` can be `tel:+E164`, `sip:user@host`, or `wss://…` (AI voice agent). Edges: `'success'`, `'permission_required'`, `'failed'`.
      *
      * **a_b_split**: `{ percentage: number 0-100 (default 50) }`. Random branch picker. Edges: `'a'` (with probability `percentage/100`), `'b'`.
      *
-     * **set_field**: `{ field, value }`. Persistent custom field on the Contact (vs `set_variable` which is run-scoped). Field name is sanitized to `[A-Za-z0-9_]`. No-op on `api_call` runs (no contact).
+     * **set_field**: `{ field, value }`. Persistent custom field on the Contact (unlike `set_variable`, which is run-scoped). The field name is sanitized to `[A-Za-z0-9_]`. No-op on `api_call` runs (no contact).
      *
      * **enroll_sequence**: `{ sequenceId, saveAs }`. Enrolls the run's contact into a Sequence. Edges: `'success'`, `'error'`.
      *
@@ -20890,13 +21448,13 @@ export type XApiPricing = {
 };
 
 /**
- * Long-form X Article payload. X Articles require an eligible X Premium+ account.
- * Articles are mutually exclusive with top-level/custom tweet media and with threadItems,
- * poll, quoteTweetId, replyToTweetId, inReplyToTweetId, replySettings, sensitiveMedia,
- * paidPartnership, and madeWithAi. Publishing normally performs two billable X API
- * requests at $0.010 each (draft + publish, $0.020 total); mode `draft` performs only
- * the $0.010 draft request. `articleDraftId` is an internal recovery checkpoint and
- * must not be supplied by API clients.
+ * Long-form X Article payload. Requires an eligible X Premium+ account.
+ *
+ * Mutually exclusive with top-level/custom tweet media and with threadItems, poll, quoteTweetId, replyToTweetId, inReplyToTweetId, replySettings, sensitiveMedia, paidPartnership, and madeWithAi.
+ *
+ * Publishing normally performs two billable X API requests at $0.010 each (draft + publish, $0.020 total). Mode `draft` performs only the $0.010 draft request.
+ *
+ * `articleDraftId` is an internal recovery checkpoint and must not be supplied by API clients.
  *
  */
 export type XArticle = {
@@ -21148,7 +21706,13 @@ export type YouTubeDemographicsResponse = {
 };
 
 /**
- * Videos under 3 min auto-detected as Shorts. Custom thumbnails for regular videos only. Scheduled videos are uploaded immediately with the specified visibility. There is no description field here: the video description comes from the post content, or from customContent on this platform target when set, and is truncated to 5000 characters.
+ * YouTube video settings.
+ *
+ * - Videos under 3 min are auto-detected as Shorts.
+ * - Custom thumbnails work for regular videos only.
+ * - Scheduled videos are uploaded immediately with the specified visibility.
+ * - There is no description field here: the description comes from the post content, or from customContent on this platform target when set, truncated to 5000 characters.
+ *
  */
 export type YouTubePlatformData = {
     /**
@@ -21715,11 +22279,9 @@ export type GetYouTubeDailyViewsData = {
          */
         startDate?: string;
         /**
-         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day
-         * (YouTube finalizes analytics with a ~3-day delay). An explicit toDate is honored
-         * up to today: days inside the delay window are provisional and may still be revised
-         * by YouTube (see provisionalSince in the response), and days YouTube has not
-         * processed yet are omitted from dailyViews.
+         * End date (YYYY-MM-DD). Defaults to 3 days ago, the newest fully finalized day (YouTube finalizes analytics with a ~3-day delay).
+         *
+         * An explicit toDate is honored up to today. Days inside the delay window are provisional and may still be revised by YouTube (see provisionalSince in the response); days YouTube has not processed yet are omitted from dailyViews.
          *
          */
         toDate?: string;
@@ -21805,46 +22367,38 @@ export type GetFacebookPageInsightsData = {
          */
         fromDate?: string;
         /**
-         * Comma-separated list of metrics. Defaults to
-         * "page_media_view,page_post_engagements,page_follows,followers_gained,followers_lost".
+         * Comma-separated list of metrics. Defaults to "page_media_view,page_post_engagements,page_follows,followers_gained,followers_lost".
          *
-         * Live Meta metrics (current names, post-Nov-2025):
-         * - page_media_view       (replaces deprecated page_impressions)
+         * **Live Meta metrics** (current names, post-Nov-2025):
+         *
+         * - page_media_view (replaces deprecated page_impressions)
          * - page_views_total
          * - page_post_engagements
          * - page_video_views
          * - page_video_view_time
-         * - page_follows          (replaces deprecated page_fans)
+         * - page_follows (replaces deprecated page_fans)
          *
-         * Zernio-synthesized from daily follower snapshots (filling the Nov-2025 gap
-         * left by the page_fan_adds / page_fan_removes deprecation):
+         * **Zernio-synthesized** from daily follower snapshots (filling the Nov-2025 gap left by the page_fan_adds / page_fan_removes deprecation):
+         *
          * - followers_gained
          * - followers_lost
          *
-         * Monetization (opt-in, not in the defaults):
-         * - content_monetization_earnings
-         * - monetization_approximate_earnings
+         * **Monetization** (opt-in, not in the defaults):
          *
-         * Each monetization metric is fetched with its own separate Graph call, so requesting both
-         * adds two calls. Values are approximate and Meta restates them after the fact.
+         * - content_monetization_earnings: an object per day, always with unit "micro_amount" and an ISO 4217 "currency".
+         * - monetization_approximate_earnings: a bare number per day; unit is always "unspecified" and "currency" always null.
          *
-         * content_monetization_earnings returns an object per day and always carries unit
-         * "micro_amount" plus an ISO 4217 "currency". monetization_approximate_earnings returns a bare
-         * number per day, so its unit is always "unspecified" and its "currency" is always null. The two
-         * are on different scales and are not comparable to each other. Both keep their daily "values"
-         * on every metricType and are never rescaled by Zernio.
+         * Each monetization metric costs its own Graph call, so requesting both adds two calls. Values are approximate and Meta restates them later. The two are on different scales and not comparable. Both keep daily "values" on every metricType and are never rescaled by Zernio.
          *
-         * Earnings here are Page-level daily buckets and "total" is their sum. Meta does not
-         * document whether a bucket carries that day's earnings or a running total, and every
-         * Page measured so far earned exactly 0, so reconcile "total" against the Page's own Meta
-         * export before relying on it; the daily "values" are always returned for that purpose.
-         * Per-post lifetime earnings are served by GET /v1/analytics/facebook/post-earnings.
+         * Earnings are Page-level daily buckets and "total" is their sum. Meta does not document whether a bucket is that day's earnings or a running total, and every Page measured so far earned exactly 0.
          *
-         * A Page that is not enrolled in monetization, or that earned nothing, returns normal daily
-         * buckets of 0 in "metrics": Meta does not distinguish the two, so a 0 total here does NOT mean
-         * the Page is enrolled. "unavailableMetrics" covers the narrower case where Meta returned no
-         * bucket for the metric at all ("no_data") or rejected the request outright, and the metric is
-         * then omitted from "metrics" rather than reported as 0.
+         * Reconcile "total" against the Page's Meta export before relying on it (daily "values" are always returned for this).
+         *
+         * Per-post lifetime earnings: GET /v1/analytics/facebook/post-earnings.
+         *
+         * A Page not enrolled in monetization, or that earned nothing, returns normal daily buckets of 0 in "metrics" (Meta does not distinguish them), so a 0 total does NOT mean the Page is enrolled.
+         *
+         * "unavailableMetrics" covers the narrower case where Meta returned no bucket at all ("no_data") or rejected the request; the metric is then omitted from "metrics" rather than reported as 0.
          *
          */
         metrics?: string;
@@ -21924,11 +22478,11 @@ export type GetInstagramAccountInsightsData = {
         fromDate?: string;
         /**
          * Comma-separated list of metrics. Defaults to "reach,views,accounts_engaged,total_interactions".
-         * Valid metrics: reach, views, accounts_engaged, total_interactions, comments, likes, saves, shares,
-         * replies, reposts, follows_and_unfollows, profile_links_taps, profile_views, website_clicks.
-         * Note: only "reach" supports metricType=time_series. All other metrics (including
-         * follows_and_unfollows, profile_views and website_clicks) are total_value only. This is an Instagram Graph API limitation,
-         * not a Zernio limitation - the IG API does not return time-series data for these metrics.
+         *
+         * Valid metrics: reach, views, accounts_engaged, total_interactions, comments, likes, saves, shares, replies, reposts, follows_and_unfollows, profile_links_taps, profile_views, website_clicks.
+         *
+         * Only "reach" supports metricType=time_series. All other metrics (including follows_and_unfollows, profile_views and website_clicks) are total_value only. This is an Instagram Graph API limitation, not a Zernio one: the IG API returns no time-series data for these metrics.
+         *
          * For a daily running follower count, use /v1/analytics/instagram/follower-history instead.
          *
          */
@@ -22256,8 +22810,9 @@ export type GetDailyMetricsData = {
         accountId?: string;
         /**
          * How each post's engagement is attributed to a day.
-         * "publish" (default) sums each post's lifetime total on its publish date.
-         * "received" buckets the per-day increase in engagement by the day it actually arrived (engagement-over-time), so engagement on older posts appears on the day it was gained rather than the post's publish date.
+         *
+         * - "publish" (default): sums each post's lifetime total on its publish date.
+         * - "received": buckets the per-day increase in engagement by the day it actually arrived (engagement-over-time), so engagement on older posts appears on the day it was gained rather than the post's publish date.
          *
          */
         attribution?: 'publish' | 'received';
@@ -22722,7 +23277,14 @@ export type CreateTopupData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -23107,7 +23669,14 @@ export type CreateTransferData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -23626,7 +24195,16 @@ export type GetPostTimelineResponse = ({
          */
         replays?: number;
         /**
-         * Facebook Reels and TikTok business lane: share still watching at each second of playback, fractions 0 to 1. Facebook Reels (Meta post_video_retention_graph): the base is a subset of plays that Meta selects and does not expose: on small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays. Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s). Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12"); Meta returns at most 41 points, so a long Reel covers only its first 40 s. TikTok accounts connected through the TikTok for Business app also fill it from TikTok video_view_retention: share still watching at each whole second, fractions 0 to 1, at most 61 points, thinned evenly on videos longer than 60 s. Values are as of this date; empty object for other media and platforms.
+         * Share of viewers still watching at each second of playback, as fractions 0 to 1. Filled for Facebook Reels and the TikTok business lane; empty object for other media and platforms. Values are as of this date.
+         *
+         * **Facebook Reels** (Meta post_video_retention_graph):
+         *
+         * - The base is a subset of plays that Meta selects and does not expose. On small Reels it can be far below views (6 of 51 measured), so a value is a share of that subset, not of all plays.
+         * - Keys are whole seconds from the start of a play ("3" is the share still watching at 3 s).
+         * - Loops count as continued playback, so a short Reels curve runs past its length (an 8 s Reel has keys "0" to "12").
+         * - Meta returns at most 41 points, so a long Reel covers only its first 40 s.
+         *
+         * **TikTok** accounts connected through the TikTok for Business app: from TikTok video_view_retention, at each whole second, at most 61 points, thinned evenly on videos longer than 60 s.
          */
         retentionCurve?: {
             [key: string]: (number);
@@ -24758,7 +25336,13 @@ export type ListPostsData = {
          */
         createdBy?: string;
         /**
-         * Opaque cursor from a previous response's `pagination.nextCursor`. Returns the page that follows it in the same `sortBy` order, and takes precedence over `page` and `offset`. Each cursor page costs the same however deep it is, unlike `page`/`offset`, which get slower the further you go; prefer it to walk a long history. Send the same filters and `sortBy` as the request that issued it: a cursor from another `sortBy` returns 400. Not available with `sortBy=status` or `sortBy=platform`, or with `source=external`.
+         * Opaque cursor from a previous response's `pagination.nextCursor`. Returns the next page in the same `sortBy` order and takes precedence over `page` and `offset`.
+         *
+         * Each cursor page costs the same however deep it is, unlike `page`/`offset`, which get slower the further you go. Prefer it to walk a long history.
+         *
+         * - Send the same filters and `sortBy` as the request that issued it. A cursor from another `sortBy` returns 400.
+         * - Not available with `sortBy=status` or `sortBy=platform`, or with `source=external`.
+         *
          */
         cursor?: string;
         /**
@@ -24772,7 +25356,12 @@ export type ListPostsData = {
          */
         dateTo?: string;
         /**
-         * Comma-separated list of post fields to return. Each post then carries `_id` plus only these fields, which makes large pages much cheaper: leave out `platforms`, `content`, `mediaItems` or `metadata` when you do not need them. Accepted: `userId`, `title`, `content`, `mediaItems`, `platforms`, `scheduledFor`, `timezone`, `status`, `tags`, `hashtags`, `mentions`, `visibility`, `metadata`, `recycling`, `recycledFromPostId`, `queuedFromProfile`, `queueId`, `createdAt`, `updatedAt`. An unknown field returns 400 naming it. `fields=_id` returns ids only. Omit it (or send it empty) for the full post. Not available with `source=external`.
+         * Comma-separated list of post fields to return. Each post then carries `_id` plus only these fields, which makes large pages much cheaper: leave out `platforms`, `content`, `mediaItems` or `metadata` when you do not need them.
+         *
+         * Accepted: `userId`, `title`, `content`, `mediaItems`, `platforms`, `scheduledFor`, `timezone`, `status`, `tags`, `hashtags`, `mentions`, `visibility`, `metadata`, `recycling`, `recycledFromPostId`, `queuedFromProfile`, `queueId`, `createdAt`, `updatedAt`.
+         *
+         * An unknown field returns 400 naming it. `fields=_id` returns ids only. Omit it (or send it empty) for the full post. Not available with `source=external`.
+         *
          */
         fields?: string;
         /**
@@ -24819,7 +25408,12 @@ export type ListPostsData = {
          */
         toDate?: string;
         /**
-         * Only posts whose `updatedAt` is at or after this ISO 8601 timestamp, an offset or `Z` required. `updatedAt` moves when the post or any of its platforms changes (an edit, a status change, a platform publishing or failing), so to keep a copy in sync, send the time of your previous sync instead of reading every page again. Combines with the other filters and with `cursor`. Deleted posts are not returned. Not available with `source=external`.
+         * Only posts whose `updatedAt` is at or after this ISO 8601 timestamp (an offset or `Z` required).
+         *
+         * `updatedAt` moves when the post or any of its platforms changes (an edit, a status change, a platform publishing or failing). To keep a copy in sync, send the time of your previous sync instead of reading every page again.
+         *
+         * Combines with the other filters and with `cursor`. Deleted posts are not returned. Not available with `source=external`.
+         *
          */
         updatedSince?: string;
     };
@@ -24840,7 +25434,13 @@ export type CreatePostData = {
          */
         content?: string;
         /**
-         * Media attached to every platform in the request (a platform entry can override it with `customMedia`). Each entry needs a publicly reachable HTTPS `url`; `type` (image, video, gif, document) is inferred from the URL extension when omitted and a `type` that contradicts the extension is rejected with 400. Upload files with `POST /v1/media/presign` first; per-platform size, duration and format limits are listed on each platform schema.
+         * Media attached to every platform in the request (a platform entry can override it with `customMedia`).
+         *
+         * - Each entry needs a publicly reachable HTTPS `url`.
+         * - `type` (image, video, gif, document) is inferred from the URL extension when omitted; a `type` that contradicts the extension is rejected with 400.
+         * - Upload files with `POST /v1/media/presign` first.
+         * - Per-platform size, duration and format limits are listed on each platform schema.
+         *
          */
         mediaItems?: Array<MediaItem>;
         /**
@@ -24861,7 +25461,15 @@ export type CreatePostData = {
             platformSpecificData?: (TwitterPlatformData | ThreadsPlatformData | FacebookPlatformData | InstagramPlatformData | LinkedInPlatformData | PinterestPlatformData | YouTubePlatformData | GoogleBusinessPlatformData | TikTokPlatformData | TelegramPlatformData | SnapchatPlatformData | RedditPlatformData | BlueskyPlatformData | DiscordPlatformData | SlackPlatformData);
         }>;
         /**
-         * When to publish. Required unless `publishNow` is true, `queuedFromProfile` is set, or the post is a draft. An ISO 8601 value with a `Z` or offset (`2026-01-15T10:00:00Z`, `2026-01-15T11:00:00+01:00`) is taken as-is; a value without one (`2026-01-15T10:00:00` or `2026-01-15 10:00`) is read as local time in `timezone`. A value already in the past is published synchronously in the same request. Ignored when `publishNow` is true.
+         * When to publish. Required unless `publishNow` is true, `queuedFromProfile` is set, or the post is a draft. Ignored when `publishNow` is true.
+         *
+         * An ISO 8601 value:
+         *
+         * - With a `Z` or offset (`2026-01-15T10:00:00Z`, `2026-01-15T11:00:00+01:00`): taken as-is.
+         * - Without one (`2026-01-15T10:00:00` or `2026-01-15 10:00`): read as local time in `timezone`.
+         *
+         * A value already in the past is published synchronously in the same request.
+         *
          */
         scheduledFor?: string;
         /**
@@ -24877,11 +25485,26 @@ export type CreatePostData = {
          */
         requiresApproval?: boolean;
         /**
-         * TikTok only. Preview whether each `tiktok` entry in `platforms` could publish right now under the TikTok Direct Post daily limits, without creating, scheduling or publishing anything: no post is persisted and no upload slot is claimed, so it can be repeated freely. The request still goes through auth, the payment gate and body validation, and runs the same account access checks as a real create (it can return 400 or 403), then returns HTTP 200 with `{ dryRun: true, canPublish, tiktok: [...] }` instead of 201. Only `tiktok` entries are evaluated; other platforms in the body are ignored, and a body with no `tiktok` entry is rejected with 400 `invalid_field_value` on `platforms`. An entry with `platformSpecificData.tiktokSettings.draft: true` (Creator Inbox upload) is not subject to the limit and always reports `canPublish: true`. Accounts connected through the TikTok for Business app do not go through these limits at all and also always report `canPublish: true`, so on those accounts a dry run confirms the request is well-formed rather than gating it.
+         * TikTok only. Preview whether each `tiktok` entry in `platforms` could publish right now under the TikTok Direct Post daily limits, without creating, scheduling or publishing anything.
+         *
+         * No post is persisted and no upload slot is claimed, so it can be repeated freely. The request still goes through auth, the payment gate, body validation and the same account access checks as a real create (it can return 400 or 403).
+         *
+         * Returns HTTP 200 with `{ dryRun: true, canPublish, tiktok: [...] }` instead of 201. Only `tiktok` entries are evaluated; other platforms are ignored. A body with no `tiktok` entry is rejected with 400 `invalid_field_value` on `platforms`.
+         *
+         * Always `canPublish: true` (not subject to the limit):
+         *
+         * - Entries with `platformSpecificData.tiktokSettings.draft: true` (Creator Inbox upload).
+         * - Accounts connected through the TikTok for Business app. On those, a dry run confirms the request is well-formed rather than gating it.
+         *
          */
         dryRun?: boolean;
         /**
-         * IANA timezone (`Europe/Madrid`, `America/New_York`) used to interpret a `scheduledFor` (root or per-platform) that carries no `Z` or offset, and stored on the post. Has no effect on values that already carry one. When omitted, the post takes its profile's `timezone` (the queue's profile for a queued post, else the profile its accounts share), and UTC when there is none or the accounts sit on profiles with different timezones. An unknown name returns 400 when `scheduledFor` is set.
+         * IANA timezone (`Europe/Madrid`, `America/New_York`) used to interpret a `scheduledFor` (root or per-platform) that carries no `Z` or offset. Stored on the post. No effect on values that already carry one.
+         *
+         * **When omitted:** the post takes its profile's `timezone` (the queue's profile for a queued post, else the profile its accounts share). UTC when there is none, or the accounts sit on profiles with different timezones.
+         *
+         * An unknown name returns 400 when `scheduledFor` is set.
+         *
          */
         timezone?: string;
         /**
@@ -24929,12 +25552,22 @@ export type CreatePostData = {
     };
     headers?: {
         /**
-         * Optional client-generated key (a UUID per logical post) that makes retries safe. Reuse it on every retry of the same post, especially after a 5xx or a timeout. A retry with the same key within 24 hours returns the original post (HTTP 200) whatever its body; while the original is still being processed it returns 409 `idempotency_conflict` with `Retry-After`. Longer than 255 characters returns 400. Takes precedence over `x-request-id`. See the operation description for the full contract.
+         * Optional client-generated key (a UUID per logical post) that makes retries safe. Reuse it on every retry of the same post, especially after a 5xx or a timeout.
+         *
+         * - A retry with the same key within 24 hours returns the original post (HTTP 200), whatever its body.
+         * - While the original is still processing, it returns 409 `idempotency_conflict` with `Retry-After`.
+         * - Longer than 255 characters returns 400.
+         *
+         * Takes precedence over `x-request-id`. See the operation description for the full contract.
          *
          */
         'Idempotency-Key'?: string;
         /**
-         * Optional client-generated request identifier. A request with the same value as an earlier one within 24 hours that also matches its content fingerprint (same account, content and media URLs) returns the original post (HTTP 200) instead of a duplicate-content 409. It does not protect a retry whose body differs; use `Idempotency-Key` for that. SDKs set it automatically. See the operation description for the full idempotency contract.
+         * Optional client-generated request identifier. SDKs set it automatically.
+         *
+         * A request with the same value as an earlier one within 24 hours that also matches its content fingerprint (same account, content and media URLs) returns the original post (HTTP 200) instead of a duplicate-content 409.
+         *
+         * It does not protect a retry whose body differs; use `Idempotency-Key` for that. See the operation description for the full idempotency contract.
          *
          */
         'x-request-id'?: string;
@@ -25313,7 +25946,14 @@ export type UpdatePostMetadataData = {
          */
         privacyStatus?: 'public' | 'private' | 'unlisted';
         /**
-         * Public URL of a custom thumbnail image (JPEG, PNG, or GIF, max 50 MB, recommended 1280x720). Works on any video you own, including existing videos not published through Zernio. The channel must be verified (phone verification) to set custom thumbnails. If the thumbnail cannot be set (YouTube refuses it, for example a channel without the custom-thumbnail permission or a video not owned by the connected channel, or the image URL cannot be fetched or is not a supported format or size), the request answers 400 with the reason and no field is updated. A YouTube thumbnail rate limit (uploadRateLimitExceeded) answers 429; retry later, not immediately, because retries keep the channel over its limit. Any other temporary YouTube or network failure answers 500 and can be retried.
+         * Public URL of a custom thumbnail image (JPEG, PNG, or GIF, max 50 MB, recommended 1280x720). Works on any video you own, including videos not published through Zernio. The channel must be verified (phone verification) to set custom thumbnails.
+         *
+         * **Errors:**
+         *
+         * - 400 with the reason, no field updated: YouTube refuses the thumbnail (e.g. channel without the custom-thumbnail permission, video not owned by the connected channel), or the image URL cannot be fetched or has an unsupported format or size.
+         * - 429: YouTube thumbnail rate limit (uploadRateLimitExceeded). Retry later, not immediately, because retries keep the channel over its limit.
+         * - 500: any other temporary YouTube or network failure; can be retried.
+         *
          */
         thumbnailUrl?: string;
         /**
@@ -25436,7 +26076,14 @@ export type CreateProfileData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -25565,21 +26212,19 @@ export type ListAccountsData = {
          */
         cursor?: string;
         /**
-         * When true, leaves out accounts the dashboard does not show as connections: posting
-         * accounts with `enabled: false` (ads accounts are always kept, whatever their `enabled`
-         * value) and the internal `sms` and `phone` accounts behind each phone number. Applied
-         * before pagination, so page totals and `statusCounts` count only the remaining accounts.
-         * Sandbox accounts added by `includeSandbox` are appended after this filter. Accepts
-         * `true` or `false` in any letter case; any other value returns 400.
+         * When true, leaves out accounts the dashboard does not show as connections:
+         *
+         * - posting accounts with `enabled: false` (ads accounts are always kept, whatever their `enabled` value);
+         * - the internal `sms` and `phone` accounts behind each phone number.
+         *
+         * Applied before pagination, so page totals and `statusCounts` count only the remaining accounts. Sandbox accounts added by `includeSandbox` are appended after this filter. Accepts `true` or `false` in any letter case; any other value returns 400.
          *
          */
         excludeHidden?: boolean;
         /**
-         * When true, also lists the accounts creators connected to your creator campaigns. They
-         * sit on creator profiles, which `GET /v1/profiles` does not list, and are left out by
-         * default. Asking for one creator profile by `profileId` lists its accounts either way.
-         * Applied before pagination. Accepts `true` or `false` in any letter case; any other value
-         * returns 400.
+         * When true, also lists the accounts creators connected to your creator campaigns. They sit on creator profiles, which `GET /v1/profiles` does not list, and are left out by default.
+         *
+         * Asking for one creator profile by `profileId` lists its accounts either way. Applied before pagination. Accepts `true` or `false` in any letter case; any other value returns 400.
          *
          */
         includeCreatorAccounts?: boolean;
@@ -25588,10 +26233,9 @@ export type ListAccountsData = {
          */
         includeOverLimit?: boolean;
         /**
-         * When true, appends the shared WhatsApp sandbox account and the iMessage sandbox account
-         * to the list when they are active, honouring `platform` but no other filter. Ignored on
-         * a paginated request (page, limit or cursor) and together with `perProfile`. Accepts `true` or
-         * `false` in any letter case; any other value returns 400.
+         * When true, appends the shared WhatsApp sandbox account and the iMessage sandbox account to the list when they are active, honouring `platform` but no other filter.
+         *
+         * Ignored on a paginated request (page, limit or cursor) and together with `perProfile`. Accepts `true` or `false` in any letter case; any other value returns 400.
          *
          */
         includeSandbox?: boolean;
@@ -25848,7 +26492,13 @@ export type GetAllAccountsHealthResponse = ({
             lastSyncedAt?: (string) | null;
         };
         /**
-         * Observed from Meta's own errors on our own sends, not a live probe. Facebook/Instagram: error subcodes 2534122, 1893063, 2534029, set on the first refused send and cleared when a later send succeeds. WhatsApp: Cloud API error codes 131042 (payment or eligibility issue), 131031 (Business Account locked) and 368 (policy block), set when a send or a delivery status fails with one and cleared when a later message is delivered. It lags reality by one message in each direction. After subcode 1893063 (Meta refusing the Page's messages), comment automation DMs are held and one is retried at `pausedUntil`: 30 minutes, doubling per refused retry up to 4 hours; held DMs stay pending and are sent once Meta accepts again, within the 7-day private-reply window.
+         * Observed from Meta's own errors on our sends, not a live probe. It lags reality by one message in each direction.
+         *
+         * - Facebook/Instagram: error subcodes 2534122, 1893063, 2534029. Set on the first refused send, cleared when a later send succeeds.
+         * - WhatsApp: Cloud API error codes 131042 (payment or eligibility issue), 131031 (Business Account locked) and 368 (policy block). Set when a send or delivery status fails with one, cleared when a later message is delivered.
+         *
+         * After subcode 1893063 (Meta refusing the Page's messages), comment automation DMs are held and one is retried at `pausedUntil`: 30 minutes, doubling per refused retry up to 4 hours. Held DMs stay pending and are sent once Meta accepts again, within the 7-day private-reply window.
+         *
          */
         messagingRestriction?: {
             /**
@@ -26036,7 +26686,13 @@ export type GetAccountHealthResponse = ({
         lastSyncedAt?: (string) | null;
     };
     /**
-     * Observed from Meta's own errors on our own sends, not a live probe. Facebook/Instagram: error subcodes 2534122, 1893063, 2534029, set on the first refused send and cleared when a later send succeeds. WhatsApp: Cloud API error codes 131042 (payment or eligibility issue), 131031 (Business Account locked) and 368 (policy block), set when a send or a delivery status fails with one and cleared when a later message is delivered. It lags reality by one message in each direction. After subcode 1893063 (Meta refusing the Page's messages), comment automation DMs are held and one is retried at `pausedUntil`: 30 minutes, doubling per refused retry up to 4 hours; held DMs stay pending and are sent once Meta accepts again, within the 7-day private-reply window.
+     * Observed from Meta's own errors on our sends, not a live probe. It lags reality by one message in each direction.
+     *
+     * - **Facebook/Instagram:** error subcodes 2534122, 1893063, 2534029. Set on the first refused send, cleared when a later send succeeds.
+     * - **WhatsApp:** Cloud API error codes 131042 (payment or eligibility issue), 131031 (Business Account locked) and 368 (policy block). Set when a send or delivery status fails with one, cleared when a later message is delivered.
+     *
+     * After subcode 1893063 (Meta refusing the Page's messages), comment automation DMs are held and one is retried at `pausedUntil`: 30 minutes, doubling per refused retry up to 4 hours. Held DMs stay pending and are sent once Meta accepts again, within the 7-day private-reply window.
+     *
      */
     messagingRestriction?: {
         /**
@@ -26086,7 +26742,13 @@ export type GetAccountHealthResponse = ({
             message?: string;
         } | null;
         /**
-         * From the phone number's Meta health_status. `false` = Meta says Zernio is not subscribed to the message webhook for this number, so inbound messages are not delivered even though the number is CONNECTED and can still send. Fix by re-subscribing (reconnect the number); if it stays `false`, the number is routed to a different WhatsApp Business Account (typically after linking it to a Facebook Page). `true` = Meta reports no such problem. `null` = Meta did not report it (read failed or no health_status), not evidence either way.
+         * From the phone number's Meta health_status.
+         *
+         * - `false`: Meta says Zernio is not subscribed to the message webhook for this number, so inbound messages are not delivered, though the number is CONNECTED and can still send.
+         * - `false`, fix: re-subscribe (reconnect the number). If it stays `false`, the number is routed to a different WhatsApp Business Account (typically after linking it to a Facebook Page).
+         * - `true`: Meta reports no such problem.
+         * - `null`: Meta did not report it (read failed or no health_status); not evidence either way.
+         *
          */
         inboundWebhookSubscribed?: (boolean) | null;
     };
@@ -26534,7 +27196,18 @@ export type CreateApiKeyData = {
          */
         permission?: 'read-write' | 'read';
         /**
-         * Resource groups to DISABLE on this key (opt-out denylist). Omit for a legacy full-access key. A key with any group disabled mints with the zrk_ prefix, gets 403 with code=insufficient_permissions and required_group on operations in disabled groups (each operation's group is published as x-resource-group), and can never manage API keys, invites, or member identity. With 'messages' disabled, the key cannot read or send direct messages through any API surface and cannot create or edit a webhook subscription broader than itself. Subscriptions that already exist are governed by their own `disabledResourceGroups`, not by this key's. OAuth connector tokens resolve against the same registry, but their groups are not settable yet.
+         * Resource groups to DISABLE on this key (opt-out denylist). Omit for a legacy full-access key.
+         *
+         * A key with any group disabled:
+         *
+         * - mints with the zrk_ prefix;
+         * - gets 403 with code=insufficient_permissions and required_group on operations in disabled groups (each operation's group is published as x-resource-group);
+         * - can never manage API keys, invites, or member identity.
+         *
+         * With 'messages' disabled, the key cannot read or send direct messages through any API surface, and cannot create or edit a webhook subscription broader than itself. Existing subscriptions are governed by their own `disabledResourceGroups`, not this key's.
+         *
+         * OAuth connector tokens resolve against the same registry, but their groups are not settable yet.
+         *
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files')>;
     };
@@ -26630,11 +27303,19 @@ export type CreateInviteTokenData = {
          */
         profileIds?: Array<(string)>;
         /**
-         * Org role granted to the invitee. Defaults to 'member'. 'admin' can manage the team (invite/remove members, change roles and access) and billing, but not ownership transfer or account deletion. 'billing_admin' (displayed as Billing Manager) manages billing only. 'viewer' creates a read-only member who can view everything in their profile scope but cannot perform any content mutation (publish, edit, delete, connect accounts).
+         * Org role granted to the invitee. Defaults to 'member'.
+         *
+         * - 'admin': manages the team (invite/remove members, change roles and access) and billing, but not ownership transfer or account deletion.
+         * - 'billing_admin' (displayed as Billing Manager): manages billing only.
+         * - 'viewer': a read-only member who can view everything in their profile scope but cannot perform any content mutation (publish, edit, delete, connect accounts).
+         *
          */
         role?: 'admin' | 'member' | 'billing_admin' | 'viewer';
         /**
-         * Resource groups the invitee may not use once they join (the same groups as restricted API keys). Their dashboard hides those sections and every API request into a disabled group, with any credential they hold, is refused with 403. Omitted or empty means full access. Groups the caller lacks themselves are always added.
+         * Resource groups the invitee may not use once they join (the same groups as restricted API keys). Omitted or empty means full access.
+         *
+         * Their dashboard hides those sections, and every API request into a disabled group, with any credential they hold, is refused with 403. Groups the caller lacks themselves are always added.
+         *
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce')>;
         /**
@@ -26672,23 +27353,55 @@ export type GetConnectUrlData = {
     };
     query: {
         /**
-         * Your product name, for the two branded pages. With `signup=hosted` (WhatsApp) it replaces Zernio in the page title ("Connect your WhatsApp number to <brandName>"). With `welcome=true` it fills the heading ("<brandName> wants to connect to your <platform>"); without it the screen shows Zernio and the Zernio mark. Both pages keep a Zernio mark: they are co-branded, not white-label. Trimmed; 1 to 60 characters. Rejected with 400 `INVALID_FIELD_VALUE` without `signup=hosted` or `welcome=true`. Sealed into the page link at issue time, so editing the URL cannot change it.
+         * Your product name, for the two branded pages. Trimmed; 1 to 60 characters.
+         *
+         * - With `signup=hosted` (WhatsApp): replaces Zernio in the page title ("Connect your WhatsApp number to <brandName>").
+         * - With `welcome=true`: fills the heading ("<brandName> wants to connect to your <platform>"). Without it the screen shows Zernio and the Zernio mark.
+         *
+         * Both pages keep a Zernio mark: they are co-branded, not white-label. Rejected with 400 `INVALID_FIELD_VALUE` without `signup=hosted` or `welcome=true`. Sealed into the page link at issue time, so editing the URL cannot change it.
+         *
          */
         brandName?: string;
         /**
-         * Only connect if the login lands on this platform account; any other account ends the flow with `error=account_mismatch` (a 409 `account_mismatch` on POST /v1/connect/instagram/select-account) and nothing is written. Compared with every id the platform reports for the authorized account: the `platformUserId` of a Zernio account on this platform, or on Instagram either the app-scoped id or the professional account id (`metadata.instagramScopedId`, the `17841...` id that Facebook Login accounts hold as platformUserId). TikTok open_ids are app-scoped, so an id from your own TikTok app never matches; use expectedUsername there. Honoured by the OAuth callback (every platform that connects without a selection step, Instagram Login included) and by the Instagram selection step; on the other selection endpoints you choose the destination yourself. In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged. On X it counts toward the OAuth state limit described under redirect_url.
+         * Only connect if the login lands on this platform account. Any other account ends the flow with `error=account_mismatch` (a 409 `account_mismatch` on POST /v1/connect/instagram/select-account) and nothing is written.
+         *
+         * Compared with every id the platform reports for the authorized account:
+         *
+         * - Any platform: the `platformUserId` of a Zernio account on this platform.
+         * - Instagram: either the app-scoped id or the professional account id (`metadata.instagramScopedId`, the `17841...` id that Facebook Login accounts hold as platformUserId).
+         * - TikTok: open_ids are app-scoped, so an id from your own TikTok app never matches. Use expectedUsername there.
+         *
+         * Honoured by the OAuth callback (every platform that connects without a selection step, Instagram Login included) and by the Instagram selection step. On the other selection endpoints you choose the destination yourself.
+         *
+         * In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged. On X it counts toward the OAuth state limit described under redirect_url.
+         *
          */
         expectedPlatformUserId?: string;
         /**
-         * Only connect if the authorized account's handle is this one (case-insensitive, a leading @ is ignored); otherwise the flow ends with `error=account_mismatch`, `error_message` naming the handle that was authorized, and nothing is written. Same coverage and transport as expectedPlatformUserId; when both are sent both must match. Use this on a first connection, where you hold the handle the user typed but no Zernio id yet.
+         * Only connect if the authorized account's handle is this one (case-insensitive, a leading @ is ignored). Otherwise the flow ends with `error=account_mismatch` and `error_message` naming the handle that was authorized, and nothing is written.
+         *
+         * Same coverage and transport as expectedPlatformUserId; when both are sent, both must match. Use this on a first connection, where you hold the handle the user typed but no Zernio id yet.
+         *
          */
         expectedUsername?: string;
         /**
-         * Instagram Login only (the default loginMethod); ignored elsewhere. Makes Instagram show its login page and ask for the credentials of the account to connect even when another Instagram account is logged in on the device or in the app, and hides the Facebook login option on that page. Use it when the person connecting manages several Instagram accounts on one phone: Instagram otherwise logs in, and converts to a professional account, whichever account is active, before any consent screen. Pair it with expectedUsername to also refuse a wrong account at the end.
+         * Instagram Login only (the default loginMethod); ignored elsewhere. Makes Instagram show its login page and ask for the credentials of the account to connect, even when another Instagram account is logged in on the device or app. Also hides the Facebook login option on that page.
+         *
+         * Use it when the person connecting manages several Instagram accounts on one phone: otherwise Instagram logs in, and converts to a professional account, whichever account is active, before any consent screen. Pair it with expectedUsername to also refuse a wrong account at the end.
+         *
          */
         forceReauth?: boolean;
         /**
-         * Let the user finish on their phone. When `true`, the response also carries `handoff`: show `handoff.url` as a QR code in your app (any QR library), the user scans it and the welcome screen opens on the phone, already carrying this connect, so they log in to the platform there without signing in to anything else. The phone ends on a Zernio result screen telling them to go back to their computer. Learn the outcome by polling `GET /v1/connect/handoffs/{handoffId}` (every 2 to 5 seconds is fine) or from the `account.connected` webhook. Shows the welcome screen with your branding parameters or saved settings. Cannot be combined with `welcome=false`, `headless=true`, `signup`, `redirect=true` or `redirect_url` (400 `INVALID_FIELD_VALUE`). `handoff.url` works for 30 minutes. When the account is re-enabled straight away the response carries `account` instead, as without `handoff`.
+         * Let the user finish on their phone. When `true`, the response also carries `handoff`. Show `handoff.url` as a QR code in your app (any QR library); the user scans it and the welcome screen opens on the phone, already carrying this connect.
+         *
+         * They log in to the platform there without signing in to anything else. The phone ends on a Zernio result screen telling them to go back to their computer.
+         *
+         * - Learn the outcome by polling `GET /v1/connect/handoffs/{handoffId}` (every 2 to 5 seconds is fine) or from the `account.connected` webhook.
+         * - Shows the welcome screen with your branding parameters or saved settings.
+         * - Cannot be combined with `welcome=false`, `headless=true`, `signup`, `redirect=true` or `redirect_url` (400 `INVALID_FIELD_VALUE`).
+         * - `handoff.url` works for 30 minutes.
+         * - When the account is re-enabled straight away, the response carries `account` instead, as without `handoff`.
+         *
          */
         handoff?: boolean;
         /**
@@ -26704,13 +27417,16 @@ export type GetConnectUrlData = {
          */
         loginHint?: string;
         /**
-         * Instagram only. Which of the two Instagram connection methods to use. Ignored for every other platform.
+         * Instagram only: which of the two Instagram connection methods to use. Ignored for every other platform.
          *
-         * `instagram_login` (the default, and what you get if you omit this): the Instagram Login dialog. The user authorizes their Instagram professional account directly, no Facebook Page required. Exception: when you omit it and `reconnectAccountId` names an account connected with `facebook_login`, the reconnect keeps that method and opens the Facebook Login dialog.
+         * - `instagram_login` (default when omitted): the Instagram Login dialog. The user authorizes their Instagram professional account directly, no Facebook Page required. Exception: if omitted and `reconnectAccountId` names an account connected with `facebook_login`, the reconnect keeps that method.
+         * - `facebook_login`: the Facebook Login dialog ("Instagram API with Facebook Login"). The user authorizes a Facebook Page with a linked Instagram professional account, and every API call for that account runs through the Page. Use it when the customer manages Instagram through a Page and expects the Facebook consent screen.
          *
-         * `facebook_login`: the Facebook Login dialog, i.e. "Instagram API with Facebook Login". The user authorizes a Facebook Page that has a linked Instagram professional account, and every API call for that account then runs through the Page. Use this when the customer manages Instagram through a Page and expects the Facebook consent screen. Because the user has to pick which Page to connect, the callback continues at the account-selection step, `/v1/connect/instagram/select-account`.
+         * With `facebook_login` the user picks a Page, so the callback continues at the account-selection step, `/v1/connect/instagram/select-account`. The default `instagram_login` has no selection step and connects directly.
          *
-         * `facebook_login` supports `headless=true` like the other selection platforms: the callback redirects to your `redirect_url` with `profileId`, `tempToken`, `platform=instagram`, `step=select_account`, `userProfile` (the Facebook user's profile, same shape and encoding as the Facebook `step=select_page` redirect) and `connect_token`. Pass `profileId`, `tempToken` and `connect_token` into the select-account endpoints to finish. The default `instagram_login` has no selection step, so it connects the account directly.
+         * `facebook_login` supports `headless=true` like the other selection platforms. The callback redirects to your `redirect_url` with `profileId`, `tempToken`, `platform=instagram`, `step=select_account`, `userProfile` and `connect_token`.
+         *
+         * `userProfile` is the Facebook user's profile, same shape and encoding as the Facebook `step=select_page` redirect. Pass `profileId`, `tempToken` and `connect_token` into the select-account endpoints to finish.
          *
          */
         loginMethod?: 'instagram_login' | 'facebook_login';
@@ -26719,7 +27435,16 @@ export type GetConnectUrlData = {
          */
         logoUrl?: string;
         /**
-         * Connect through one of your own OAuth apps (see /v1/connect/oauth-apps), so the consent screen shows your app and the platform's limits are your app's. Without it the connect runs on Zernio's app, whatever apps the workspace has saved. Only platforms listed in `platforms` of GET /v1/connect/oauth-apps accept an app; any other returns 400, and so do ads connects (`adsConnect=true` in the redirect URL) and connects that end on a destination picker other than Facebook Pages (Instagram through Facebook Login, for example). A LinkedIn connect through an app saves the member's own profile: organization pages, and mention lookups, stay on Zernio's app. The connect requests the app's `scopeAreas`; `scopes` may narrow them but not add an area the app does not enable (400). If the user does not grant every requested area, the account still connects and the redirect carries `missing_permissions=<areas>` (the headless POST returns `missingPermissions`). If the platform refuses a permission your app is not approved for, the redirect carries `error=oauth_app_scope_not_allowed`. The account remembers the app, and token refresh, publishing and inbox run on it; reconnecting through another app, or without one, moves the account to that app.
+         * Connect through one of your own OAuth apps (see /v1/connect/oauth-apps), so the consent screen shows your app and the platform's limits are your app's. Without it the connect runs on Zernio's app, whatever apps the workspace has saved.
+         *
+         * - Only platforms listed in `platforms` of GET /v1/connect/oauth-apps accept an app. Any other returns 400, and so do ads connects (`adsConnect=true` in the redirect URL) and connects that end on a destination picker other than Facebook Pages (Instagram through Facebook Login, for example).
+         * - A LinkedIn connect through an app saves the member's own profile: organization pages, and mention lookups, stay on Zernio's app.
+         * - The connect requests the app's `scopeAreas`. `scopes` may narrow them but not add an area the app does not enable (400).
+         * - If the user does not grant every requested area, the account still connects and the redirect carries `missing_permissions=<areas>` (the headless POST returns `missingPermissions`).
+         * - If the platform refuses a permission your app is not approved for, the redirect carries `error=oauth_app_scope_not_allowed`.
+         *
+         * The account remembers the app, and token refresh, publishing and inbox run on it. Reconnecting through another app, or without one, moves the account to that app.
+         *
          */
         oauthAppId?: string;
         /**
@@ -26742,138 +27467,97 @@ export type GetConnectUrlData = {
          */
         profileId: string;
         /**
-         * Refresh this existing account (a Zernio account id of the same platform on this profile; otherwise 400). The OAuth callback and the selection endpoints (select-page, select-organization, select-board, select-location, Instagram and Snapchat selection) refuse, with `reconnect_account_mismatch`, a login that would write to a different account of the platform on this profile instead of this one. In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged to the selection endpoint. On X it counts toward the OAuth state limit described under redirect_url.
+         * Refresh this existing account: a Zernio account id of the same platform on this profile (otherwise 400).
+         *
+         * The OAuth callback and the selection endpoints (select-page, select-organization, select-board, select-location, Instagram and Snapchat selection) refuse with `reconnect_account_mismatch` a login that would write to a different account of the platform on this profile instead of this one.
+         *
+         * In headless mode the marker travels in the redirect_url we hand you, so pass that URL back unchanged to the selection endpoint. On X it counts toward the OAuth state limit described under redirect_url.
+         *
          */
         reconnectAccountId?: string;
         /**
-         * Your custom redirect URL after connection completes. MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is rejected with 400 INVALID_REDIRECT_URL.
+         * Your custom redirect URL after the connection completes. It MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback). A relative path is rejected with 400 `INVALID_REDIRECT_URL`.
          *
-         * Exit notice: when `redirect_url` is an http(s) URL on another site (anything but zernio.com), the user is not sent there directly. Every redirect of the flow lands first on a Zernio page, `https://zernio.com/connect/continue?to=<your URL>`, that names your site and continues to it with one click. All the params described below arrive on your URL unchanged; the notice page moves them over. A custom app scheme (myapp://...) is never routed through the notice. In headless mode the redirects we hand you (and the `redirect_url` returned by the selection endpoints) are notice URLs, so pass them back or navigate to them as they are.
+         * **Exit notice:** when `redirect_url` is an http(s) URL on another site (anything but zernio.com), every redirect of the flow lands first on `https://zernio.com/connect/continue?to=<your URL>`, a Zernio page that names your site and continues to it with one click. All params below reach your URL unchanged.
          *
-         * X (twitter) caps the OAuth `state` at 500 characters and the redirect is carried inside it (for an http(s) URL on another site, wrapped in the notice URL), so the URL-encoded form must be at most 258 characters for API callers (310 for dashboard sessions; in headless mode the appended `headless=true` counts toward it). For a plain https URL on another site that leaves about 165 to 190 characters of your own URL, depending on how many characters need encoding; a longer one is rejected with 400 INVALID_REDIRECT_URL, and the error says by how much. Result params are appended with the URL API, so an existing query string is preserved. Standard mode appends connected={platform}&profileId=X&accountId=Y&username=Z. Headless mode appends OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
+         * A custom app scheme (myapp://...) never goes through the notice. In headless mode the redirects we hand you (and the `redirect_url` returned by the selection endpoints) are notice URLs: pass them back or navigate to them as they are.
          *
-         * On failure, the browser is sent to the same redirect_url with `error` and `platform` appended.
-         * `error` and `platform` are always present. `error_message`, `is_user_fixable`, `reason`,
-         * `dashboard_url`, `missing_scopes`, `error_reason` and the `platform_error*` params are
-         * conditional and must be treated as optional. Your own query params are kept on every
-         * redirect, but ours overwrite a param of yours with the same name. On an error redirect the
-         * internal `headless`, `adsConnect`, `adsScope`, `reconnectAccountId`, `expectedPlatformUserId` and `expectedUsername` markers we add during the flow are removed.
+         * **X (twitter) length limit:** X caps the OAuth `state` at 500 characters and the redirect travels inside it (wrapped in the notice URL for an http(s) URL on another site). The URL-encoded form must be at most 258 characters for API callers, 310 for dashboard sessions.
          *
-         * Correlation (every redirect from an OAuth callback, success and failure, and the
-         * `redirect_url` returned by the selection endpoints such as POST /v1/connect/facebook/select-page):
+         * In headless mode the appended `headless=true` counts toward that limit. A plain https URL on another site leaves about 165 to 190 characters of your own URL, depending on encoding. A longer one is rejected with 400 `INVALID_REDIRECT_URL`, and the error says by how much.
+         *
+         * **Success params** are appended with the URL API, so an existing query string is preserved:
+         *
+         * - Standard mode: connected={platform}&profileId=X&accountId=Y&username=Z.
+         * - Headless mode: OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
+         *
+         * **Failure params:** the browser goes to the same redirect_url with `error` and `platform` appended (always present). `error_message`, `is_user_fixable`, `reason`, `dashboard_url`, `missing_scopes`, `error_reason` and the `platform_error*` params are conditional: treat them as optional.
+         *
+         * Your own query params are kept on every redirect, but ours overwrite one of yours with the same name. On an error redirect we remove the internal `headless`, `adsConnect`, `adsScope`, `reconnectAccountId`, `expectedPlatformUserId` and `expectedUsername` markers added during the flow.
+         *
+         * **Correlation** params appear on every redirect from an OAuth callback (success and failure) and on the `redirect_url` returned by the selection endpoints such as POST /v1/connect/facebook/select-page:
+         *
          * - `request_id`: the id we log that request under. Quote it when reporting a problem.
-         * - `stage`: where the flow ended. `authorize` = the platform's consent dialog returned an
-         * error or denial instead of a code. `callback` = we processed the returned code (success,
-         * a selection step, or a failure). `select_page` = the destination-selection endpoint
-         * (page, account, organization, board, location, profile or phone number) completed it.
+         * - `stage`: where the flow ended. `authorize` = the platform's consent dialog returned an error or denial instead of a code. `callback` = we processed the returned code (success, a selection step, or a failure).
+         * - `stage` = `select_page`: the destination-selection endpoint (page, account, organization, board, location, profile or phone number) completed it.
          *
-         * `oauth_denied` carries `error_message` and, when the platform sent them, its own values as
-         * `platform_error` (e.g. `access_denied`), `platform_error_reason` (e.g. `user_denied`) and
-         * `platform_error_description` (truncated to 500 characters). `is_user_fixable=true` is set when
-         * the platform reported that the user cancelled or declined.
+         * **Error details:**
          *
-         * `no_facebook_pages` comes with `is_user_fixable=true`, an `error_message` telling the user to
-         * click "Edit previous settings" in Meta's dialog and tick the Page (or create one), and, when
-         * Meta's token debug answered, `error_reason`:
+         * - `oauth_denied`: carries `error_message` and, when the platform sent them, its own `platform_error` (e.g. `access_denied`), `platform_error_reason` (e.g. `user_denied`) and `platform_error_description` (truncated to 500 characters). `is_user_fixable=true` when the platform reported that the user cancelled or declined.
+         * - `no_facebook_pages`: comes with `is_user_fixable=true`, an `error_message` telling the user to click "Edit previous settings" in Meta's dialog and tick the Page (or create one), and `error_reason` when Meta's token debug answered (values below).
+         * - `code_already_redeemed`: the same authorization code arrived more than once and an earlier request already processed it (the code is never sent to the platform twice). Not a failure: check GET /v1/accounts or wait for the `account.connected` webhook.
+         * - `missing_google_permissions` (YouTube, Google Business and Google Ads): the user unchecked permissions on Google's consent screen. Always with `is_user_fixable=true`. When Google reported granted scopes, `missing_scopes` lists the requested scopes not granted (comma-separated). Ask the user to connect again keeping every permission checked.
+         * - `no_youtube_channel`: Google authorized the account but it has no YouTube channel we can connect. Always with `is_user_fixable=true` and an `error_message`.
+         *
+         * Usual causes of `no_youtube_channel`: the user picked their personal Google identity instead of the Brand Account in Google's account chooser, they only have YouTube Studio access (not Brand Account owner or manager), or the account has no channel yet.
+         *
+         * `error_reason` values for `no_facebook_pages`:
+         *
          * - `pages_permission_declined`: the user declined the pages_show_list permission.
-         * - `no_pages_granted`: the permission was granted with no Page ticked. Meta reports a user who
-         * manages no Page the same way, so this covers both.
-         * - `granted_pages_not_listed`: Pages were ticked but Meta listed none the user can manage, and a
-         * direct read of each ticked Page returned no access token.
+         * - `no_pages_granted`: the permission was granted with no Page ticked. Meta reports a user who manages no Page the same way, so this covers both.
+         * - `granted_pages_not_listed`: Pages were ticked but Meta listed none the user can manage, and a direct read of each ticked Page returned no access token.
          *
-         * Headless Facebook success (`step=select_page`) and headless Instagram `facebook_login` success
-         * (`step=select_account`): `userProfile` is JSON that was
-         * percent-encoded once before being set as a query param, so it is encoded twice on the wire.
-         * After your framework decodes the query string once, run one more decodeURIComponent (or
-         * equivalent) and then JSON.parse it. `tempToken` and `connect_token` are plain values.
+         * **Headless `userProfile`:** on headless Facebook success (`step=select_page`) and headless Instagram `facebook_login` success (`step=select_account`), `userProfile` is JSON percent-encoded once before being set as a query param, so it is encoded twice on the wire.
          *
-         * `code_already_redeemed` means the same authorization code arrived more than once and an earlier
-         * request already processed it (the code is never sent to the platform twice). It is not a
-         * failure: check GET /v1/accounts or wait for the `account.connected` webhook.
+         * After your framework decodes the query string once, run one more decodeURIComponent (or equivalent), then JSON.parse it. `tempToken` and `connect_token` are plain values.
          *
-         * `missing_google_permissions` (YouTube, Google Business and Google Ads) means the user unchecked one or more
-         * permissions on Google's consent screen. It always comes with `is_user_fixable=true`. When Google
-         * reported the granted scopes, `missing_scopes` is also present: a comma-separated list of the
-         * requested Google scopes that were not granted. Ask the user to connect again and keep every
-         * permission checked.
+         * **Error values.** This list is NOT exhaustive and new values may be added at any time: treat an unrecognized value as a generic failure rather than matching exhaustively. Existing values are not renamed or removed without notice.
          *
-         * `no_youtube_channel` means Google authorized the account but it has no YouTube channel we can
-         * connect. It always comes with `is_user_fixable=true` and an `error_message`. The usual causes: the
-         * user picked their personal Google identity instead of the Brand Account in Google's account
-         * chooser, they only have YouTube Studio access (not Brand Account owner or manager), or the
-         * account has no channel yet.
+         * - OAuth and callback: `oauth_denied`, `invalid_callback`, `invalid_state`, `unsupported_platform`, `connection_failed`, `internal_error`, `token_exchange_failed`, `byok_config_error`, `personal_account_not_supported`, `missing_google_permissions`, `missing_tiktok_permissions`, `platform_requires_destination`, `reconnect_account_mismatch`, `account_mismatch`, `instagram_login_method_mismatch`, `invalid_request`, `code_already_redeemed`.
+         * - Access and limits: `profile_not_found`, `invalid_profile_id`, `access_denied`, `account_limit_exceeded`, `profile_limit_exceeded`, `payment_required`.
+         * - Destination selection: `no_facebook_pages`, `facebook_pages_error`, `no_google_locations`, `google_locations_error`, `google_permission_denied`, `no_snapchat_public_profiles`, `snapchat_profiles_error`, `no_youtube_channel`, `discord_no_guild`, `slack_no_team`.
+         * - WhatsApp: `whatsapp_error`, `one_whatsapp_per_profile`, `whatsapp_number_already_connected`, `whatsapp_number_pinned_to_profile`, `whatsapp_coexistence_not_registered`, `connection_cancelled`.
+         * - Google Ads (platform=googleads): `google_ads_auth_failed`, `google_ads_invalid_state`, `google_ads_config_error`, `google_ads_token_failed`, `google_ads_quota_exhausted`, `google_ads_callback_error`.
+         * - TikTok Ads (platform=tiktokads): `tiktok_ads_auth_failed`, `tiktok_ads_invalid_state`, `tiktok_ads_access_denied`, `tiktok_ads_config_error`, `tiktok_ads_token_failed`, `tiktok_ads_account_not_found`, `tiktok_ads_callback_error`.
+         * - X Ads (platform=xads): `x_ads_denied`, `x_ads_auth_failed`, `x_ads_config_error`, `x_ads_account_not_found`, `x_ads_state_error`, `x_ads_token_failed`, `x_ads_token_missing`, `x_ads_callback_error`.
+         * - Reddit Ads (platform=redditads): `reddit_ads_auth_failed`, `reddit_ads_invalid_state`, `reddit_ads_access_denied`, `reddit_ads_scope_not_granted`, `reddit_ads_no_ad_accounts`, `reddit_ads_callback_error`.
+         * - Shopify (platform=shopify): `shopify_auth_failed`, `shopify_config_error`, `shopify_invalid_state`, `shopify_invalid_hmac`, `shopify_invalid_shop`, `shopify_missing_scopes`, `shopify_callback_error`.
          *
-         * This list is NOT exhaustive and new values may be added at any time. Treat an unrecognized
-         * value as a generic failure rather than matching it exhaustively. Existing values are not
-         * renamed or removed without notice.
+         * Notes:
          *
-         * OAuth and callback:
-         * oauth_denied, invalid_callback, invalid_state, unsupported_platform, connection_failed,
-         * internal_error, token_exchange_failed, byok_config_error, personal_account_not_supported,
-         * missing_google_permissions, missing_tiktok_permissions, platform_requires_destination,
-         * reconnect_account_mismatch, account_mismatch, instagram_login_method_mismatch, invalid_request,
-         * code_already_redeemed
-         *
-         * Access and limits:
-         * profile_not_found, invalid_profile_id, access_denied, account_limit_exceeded,
-         * profile_limit_exceeded, payment_required
-         *
-         * Destination selection:
-         * no_facebook_pages, facebook_pages_error, no_google_locations, google_locations_error,
-         * google_permission_denied, no_snapchat_public_profiles, snapchat_profiles_error,
-         * no_youtube_channel, discord_no_guild, slack_no_team
-         *
-         * WhatsApp:
-         * whatsapp_error, one_whatsapp_per_profile, whatsapp_number_already_connected,
-         * whatsapp_number_pinned_to_profile, whatsapp_coexistence_not_registered, connection_cancelled
-         *
-         * Google Ads (platform=googleads):
-         * google_ads_auth_failed, google_ads_invalid_state, google_ads_config_error,
-         * google_ads_token_failed, google_ads_quota_exhausted, google_ads_callback_error
-         *
-         * TikTok Ads (platform=tiktokads):
-         * tiktok_ads_auth_failed, tiktok_ads_invalid_state, tiktok_ads_access_denied,
-         * tiktok_ads_config_error, tiktok_ads_token_failed, tiktok_ads_account_not_found,
-         * tiktok_ads_callback_error
-         *
-         * X Ads (platform=xads):
-         * x_ads_denied, x_ads_auth_failed, x_ads_config_error, x_ads_account_not_found,
-         * x_ads_state_error, x_ads_token_failed, x_ads_token_missing, x_ads_callback_error
-         *
-         * Reddit Ads (platform=redditads):
-         * reddit_ads_auth_failed, reddit_ads_invalid_state, reddit_ads_access_denied,
-         * reddit_ads_scope_not_granted, reddit_ads_no_ad_accounts, reddit_ads_callback_error
-         *
-         * Shopify (platform=shopify):
-         * shopify_auth_failed, shopify_config_error, shopify_invalid_state, shopify_invalid_hmac,
-         * shopify_invalid_shop, shopify_missing_scopes, shopify_callback_error
-         *
-         * 1. On this endpoint every upstream OAuth error is collapsed into `oauth_denied`, with the
-         * provider's own values in the `platform_error*` params described above. The dedicated
-         * ads flows below are different: they use their own denial slugs and `google_ads_auth_failed`
-         * and `tiktok_ads_auth_failed` may carry the provider's raw error string in `error_message`.
-         *
-         * 2. On the tiktok and twitter ads flows `platform` carries the ads platform id
-         * (`tiktokads`, `xads`), not the value used in the request path. The googleads, redditads and
-         * shopify flows report `googleads`, `redditads` and `shopify`.
-         *
-         * 3. `missing_tiktok_permissions` means the TikTok authorization left out a permission the
-         * already-connected account needs, so nothing was changed and it keeps working as before.
-         * It is user-fixable: connect again and accept every permission on TikTok's screen.
-         *
-         * 4. `instagram_login_method_mismatch` means an Instagram Login authorization landed on a
-         * profile whose Instagram account is connected through Facebook Login, so nothing was
-         * changed and it keeps working as before. To refresh it, connect again with
-         * `loginMethod=facebook_login`. To move it to Instagram Login, disconnect it first.
+         * 1. On this endpoint every upstream OAuth error collapses into `oauth_denied`, with the provider's values in the `platform_error*` params. The dedicated ads flows differ: they use their own denial slugs, and `google_ads_auth_failed` and `tiktok_ads_auth_failed` may carry the provider's raw error string in `error_message`.
+         * 2. On the tiktok and twitter ads flows `platform` carries the ads platform id (`tiktokads`, `xads`), not the value in the request path. The googleads, redditads and shopify flows report `googleads`, `redditads` and `shopify`.
+         * 3. `missing_tiktok_permissions`: the TikTok authorization left out a permission the already-connected account needs, so nothing changed and it keeps working as before. User-fixable: connect again and accept every permission on TikTok's screen.
+         * 4. `instagram_login_method_mismatch`: an Instagram Login authorization landed on a profile whose Instagram account is connected through Facebook Login, so nothing changed. To refresh it, connect again with `loginMethod=facebook_login`. To move it to Instagram Login, disconnect it first.
          *
          */
         redirect_url?: string;
         /**
-         * Comma-separated permission areas to request instead of the platform's full permission set. Values: `posting`, `analytics`, `comments`, `messaging`, `ads`, and on google and microsoft `email`, `calendar`, `files`, `contacts`. Omit it (the default, and what the dashboard does) to request everything the platform supports; google and microsoft REQUIRE it (400 `INVALID_FIELD_VALUE` when absent) because their consent screens are reviewed per area.
+         * Comma-separated permission areas to request instead of the platform's full permission set.
          *
-         * When present, the consent dialog asks only for the platform scopes behind those areas plus the scopes every connection needs (identity, token refresh, and listing the pages, organizations or channels the user picks from). Scopes the user was never asked for are absent from the account's `permissions`, and the health endpoints report them as not granted, so a `posting`-only account cannot read analytics or the inbox until it is connected again with more areas. First comments need `comments`: a `posting`-only account publishes the post and skips the first comment. Scopes the platform lists under none of the areas (X likes, bookmarks and follows, Pinterest ads-only extras) are requested only when the parameter is omitted.
+         * **Values:** `posting`, `analytics`, `comments`, `messaging`, `ads`; on google and microsoft, `email`, `calendar`, `files`, `contacts`.
          *
-         * Supported on facebook, instagram (both login methods), linkedin, twitter, tiktok, youtube, threads, reddit, pinterest, googlebusiness and slack (via `GET /v1/connect/slack`). Rejected with 400 `INVALID_FIELD_VALUE` (`param: scopes`) on bluesky, telegram, discord, snapchat and whatsapp, whose dialog cannot be reduced, and for an empty list or an unknown area.
+         * **Default:** omit it (what the dashboard does) to request everything the platform supports. Google and microsoft REQUIRE it (400 `INVALID_FIELD_VALUE` when absent) because their consent screens are reviewed per area.
+         *
+         * When present, the consent dialog asks only for the scopes behind those areas, plus the scopes every connection needs (identity, token refresh, listing the pages, organizations or channels the user picks from).
+         *
+         * - Scopes never asked for are absent from the account's `permissions`, and the health endpoints report them as not granted. A `posting`-only account cannot read analytics or the inbox until reconnected with more areas.
+         * - First comments need `comments`: a `posting`-only account publishes the post and skips the first comment.
+         * - Scopes in none of the areas (X likes, bookmarks and follows, Pinterest ads-only extras) are requested only when the parameter is omitted.
+         *
+         * **Supported on** facebook, instagram (both login methods), linkedin, twitter, tiktok, youtube, threads, reddit, pinterest, googlebusiness and slack (via `GET /v1/connect/slack`).
+         *
+         * **Rejected** with 400 `INVALID_FIELD_VALUE` (`param: scopes`) on bluesky, telegram, discord, snapchat and whatsapp (their dialog cannot be reduced), and for an empty list or an unknown area.
          *
          * What each area asks for, per platform (Google scopes shortened to their last path segment):
          *
@@ -26899,45 +27583,72 @@ export type GetConnectUrlData = {
          * | google | `gmail.modify` | `calendar` | `drive.file` (only files Zernio created or the user picked, see the Files tag) | `contacts.readonly` | `openid`, `userinfo.email`, `userinfo.profile` |
          * | microsoft | `Mail.ReadWrite`, `Mail.Send` | `Calendars.ReadWrite` | `Files.ReadWrite` | `Contacts.Read` | `openid`, `profile`, `email`, `offline_access`, `User.Read` |
          *
-         * Areas accumulate: reconnecting with more areas widens the grant and `GET /v1/accounts/{accountId}/health` reports the result.
+         * Areas accumulate: reconnecting with more areas widens the grant, and `GET /v1/accounts/{accountId}/health` reports the result.
          *
          */
         scopes?: string;
         /**
          * WhatsApp only. Rejected with 400 `INVALID_FIELD_VALUE` on any other platform.
          *
-         * `hosted`: `authUrl` points at a Zernio-hosted page on zernio.com instead of Meta's OAuth dialog, and
-         * the response carries `authUrl` only (no `state`). That page opens Meta's Embedded Signup popup itself,
-         * so it learns which WhatsApp Business Account and number the user picked inside the popup and connects
-         * exactly that one. Use it when your users' Facebook logins manage several WhatsApp accounts: on the
-         * default redirect flow Meta only returns an authorization code, so when that login can see more than
-         * one number the user lands on Zernio's number picker and has to choose again. Nothing to embed on your
-         * side and no domain setup: send the user to `authUrl`, and they come back to `redirect_url` with the
-         * same params as the redirect flow. Success: `connected=whatsapp`, `profileId`, `accountId`, `username`
-         * (plus `connect_token` for API-key callers). Failure: `error` and `platform=whatsapp`, with the same
-         * values and extras as the redirect flow (`one_whatsapp_per_profile`, `whatsapp_number_already_connected`,
-         * `whatsapp_number_pinned_to_profile` and `whatsapp_coexistence_not_registered` with `is_user_fixable=true`; `payment_required` with `reason`
-         * and `dashboard_url`; `whatsapp_error` with `error_message` when Meta reported one), plus two of its own:
-         * `connection_cancelled` when the popup was closed before finishing (`error_message` carries Meta's last
-         * reported step or error when there is one) and `session_expired` when the user took longer than the
-         * 60 minute window the hosted page is valid for; restart the flow with a new call in that case.
-         * `onboarding` is carried through and a pre-verified Zernio-provisioned number is attached like on the
-         * redirect flow. `headless` has no effect here because there is no selection step left to hand you.
-         * When a previously disconnected account for this profile can simply be re-enabled, this endpoint
-         * re-enables it and returns the account directly instead of a URL, exactly like the redirect flow.
-         * The page shows the same guidance as the Zernio dashboard: a pre-verified Zernio-provisioned number is
-         * called out by name ("choose it in Meta's list, no code will be asked"), coexistence and standard signups
-         * get their explainer video, and a step-by-step follow-along checklist stays visible while Meta's popup is
-         * open. Skin it with `brandName`, `primaryColor` and `language` below.
+         * `hosted`: `authUrl` points at a Zernio-hosted page on zernio.com instead of Meta's OAuth dialog, and the response carries `authUrl` only (no `state`). That page opens Meta's Embedded Signup popup itself, so it connects exactly the WhatsApp Business Account and number the user picked in the popup.
+         *
+         * **When to use it**: your users' Facebook logins manage several WhatsApp accounts. On the default redirect flow Meta only returns an authorization code, so when that login can see more than one number the user lands on Zernio's number picker and has to choose again.
+         *
+         * **Flow**: nothing to embed and no domain setup. Send the user to `authUrl`; they come back to `redirect_url` with the same params as the redirect flow.
+         *
+         * - Success: `connected=whatsapp`, `profileId`, `accountId`, `username` (plus `connect_token` for API-key callers).
+         * - Failure: `error` and `platform=whatsapp`, with the same values and extras as the redirect flow (see below), plus two of its own.
+         *
+         * Redirect-flow failures: `one_whatsapp_per_profile`, `whatsapp_number_already_connected`, `whatsapp_number_pinned_to_profile` and `whatsapp_coexistence_not_registered` with `is_user_fixable=true`; `payment_required` with `reason` and `dashboard_url`; `whatsapp_error` with `error_message` when Meta reported one.
+         *
+         * Hosted-only failures:
+         *
+         * - `connection_cancelled`: the popup was closed before finishing (`error_message` carries Meta's last reported step or error when there is one).
+         * - `session_expired`: the user took longer than the 60 minute window the hosted page is valid for. Restart the flow with a new call.
+         *
+         * **Same as the redirect flow**: `onboarding` is carried through, and a pre-verified Zernio-provisioned number is attached.
+         *
+         * When a previously disconnected account for this profile can simply be re-enabled, this endpoint re-enables it and returns the account directly instead of a URL. `headless` has no effect, because there is no selection step left to hand you.
+         *
+         * **The page** shows the same guidance as the Zernio dashboard: a pre-verified Zernio-provisioned number is called out by name ("choose it in Meta's list, no code will be asked").
+         *
+         * Coexistence and standard signups get their explainer video, and a step-by-step checklist stays visible while Meta's popup is open. Skin it with `brandName`, `primaryColor` and `language` below.
          *
          */
         signup?: 'hosted';
         /**
-         * Any platform. When `true`, `authUrl` points to a Zernio-hosted welcome screen that shows your brand next to the platform ("<brandName> wants to connect to your <platform>") whose button reads Connecting for about a second and then sends the user on to the platform's own authorization screen, with no click; the rest of the flow is unchanged. `brandName`, `logoUrl`, `primaryColor` and `welcomeTheme` are optional and default to Zernio's own name, mark and look. The link is valid for 30 minutes, after which the page asks the user to start again. The brand also carries to the account and channel pickers Zernio shows after authorization, and when you pass no `redirect_url` the flow ends on a branded Zernio-hosted page saying whether the account connected, instead of the Zernio dashboard. Cannot be combined with `headless=true` or `signup=hosted` (400 `INVALID_FIELD_VALUE`). The platform's authorization screen still names the Zernio app. Recommended. When left out, the screen is shown if the workspace saved it as on by default (`PUT /v1/connect/welcome-screen`), except with `headless=true` or `signup=hosted`; pass `false` to skip it. Branding you leave out of the call comes from those saved settings, and a `welcomeTheme` you send is merged key by key over the saved theme.
+         * Any platform. When `true`, `authUrl` points to a Zernio-hosted welcome screen showing your brand next to the platform ("<brandName> wants to connect to your <platform>"). Its button reads Connecting for about a second, then sends the user to the platform's authorization screen with no click.
+         *
+         * The rest of the flow is unchanged.
+         *
+         * - `brandName`, `logoUrl`, `primaryColor` and `welcomeTheme` are optional and default to Zernio's own name, mark and look.
+         * - The link is valid for 30 minutes; after that the page asks the user to start again.
+         * - The brand also carries to the account and channel pickers Zernio shows after authorization.
+         * - With no `redirect_url`, the flow ends on a branded Zernio-hosted page saying whether the account connected, instead of the Zernio dashboard.
+         * - Cannot be combined with `headless=true` or `signup=hosted` (400 `INVALID_FIELD_VALUE`).
+         * - The platform's authorization screen still names the Zernio app.
+         *
+         * Recommended. When left out, the screen is shown if the workspace saved it as on by default (`PUT /v1/connect/welcome-screen`), except with `headless=true` or `signup=hosted`. Pass `false` to skip it.
+         *
+         * Branding you leave out of the call comes from those saved settings, and a `welcomeTheme` you send is merged key by key over the saved theme.
+         *
          */
         welcome?: boolean;
         /**
-         * Welcome screen only (`welcome=true`): a URL-encoded JSON object that restyles and rewords the screen. All keys are optional. Copy: `heading` (up to 120 characters), `trustLine`, `consentLine` and `statusLine` (up to 200 each, `statusLine` being the line above the button), `buttonLabel` (up to 30, the label of the link the button becomes if the redirect stalls), and for the closing page shown when there is no `redirect_url`, `successHeading` and `errorHeading` (up to 120) and `successBody` and `errorBody` (up to 200); each may contain the placeholders `{brand}` and `{platform}`. Style: `primaryColor` (the button), `accentColor` (the header gradient, built as a scale of that colour, and the icons), `pageColor`, `cardColor` and `textColor` as `#RRGGBB`, `cornerRadius` as an integer from 0 to 24 (pixels), `font` as `sans`, `serif` or `mono`, `bannerStyle` as `halftone` (default), `solid` (a flat tint of `accentColor`) or `plain` (no banner fill). Icons: `trustLineIcon` (default `shield`) and `consentLineIcon` (default `link`), each one of `shield`, `lock`, `link`, `check`, `user`, `sparkles` or `none`. Visibility: `hide`, an array of any of `heading`, `trustLine`, `consentLine`, `statusLine`, `successBody` and `errorBody`, removes those lines from the screens. Links: `termsUrl` and `privacyUrl` (https, up to 2048 characters) add small Terms and Privacy links at the bottom of every hosted screen. A `primaryColor` here wins over the `primaryColor` parameter. Unknown keys, invalid JSON or an invalid value are a 400 `INVALID_FIELD_VALUE`. Rejected when the welcome screen is not shown. Example: `{"heading":"Link your {platform} to {brand}","cardColor":"#FFF7ED","cornerRadius":12}`.
+         * Welcome screen only (`welcome=true`). A URL-encoded JSON object that restyles and rewords the screen. All keys are optional.
+         *
+         * - **Copy**: `heading` (up to 120 characters); `trustLine`, `consentLine` and `statusLine` (up to 200 each, `statusLine` being the line above the button); `buttonLabel` (up to 30, the label of the link the button becomes if the redirect stalls).
+         * - **Closing page** (shown when there is no `redirect_url`): `successHeading` and `errorHeading` (up to 120), `successBody` and `errorBody` (up to 200). All copy may contain the placeholders `{brand}` and `{platform}`.
+         * - **Colors**: `primaryColor` (the button), `accentColor` (the header gradient, built as a scale of that colour, and the icons), `pageColor`, `cardColor` and `textColor`, all as `#RRGGBB`.
+         * - **Style**: `cornerRadius` as an integer from 0 to 24 (pixels); `font` as `sans`, `serif` or `mono`; `bannerStyle` as `halftone` (default), `solid` (a flat tint of `accentColor`) or `plain` (no banner fill).
+         * - **Icons**: `trustLineIcon` (default `shield`) and `consentLineIcon` (default `link`), each one of `shield`, `lock`, `link`, `check`, `user`, `sparkles` or `none`.
+         * - **Visibility**: `hide`, an array of any of `heading`, `trustLine`, `consentLine`, `statusLine`, `successBody` and `errorBody`, removes those lines from the screens.
+         * - **Links**: `termsUrl` and `privacyUrl` (https, up to 2048 characters) add small Terms and Privacy links at the bottom of every hosted screen.
+         *
+         * A `primaryColor` here wins over the `primaryColor` parameter. Unknown keys, invalid JSON or an invalid value are a 400 `INVALID_FIELD_VALUE`. Rejected when the welcome screen is not shown.
+         *
+         * Example: `{"heading":"Link your {platform} to {brand}","cardColor":"#FFF7ED","cornerRadius":12}`.
+         *
          */
         welcomeTheme?: string;
     };
@@ -27104,76 +27815,65 @@ export type ConnectAdsData = {
     };
     query: {
         /**
-         * Existing SocialAccount ID. Required for `twitter` (X Ads). Optional for `tiktok`:
-         * omit to enter ads-only mode (no TikTok posting account linked; ad creation uses
-         * a Brand Identity instead of a TT_USER). For same-token platforms (`facebook`,
-         * `instagram`, `linkedin`, `pinterest`) it picks which posting account the ads
-         * connection uses when the profile holds several of that platform; with one it can
-         * be omitted, and an id that names no active account of the platform on the profile
-         * is ignored, except with `force=true` when it names the posting account the
-         * profile's ads connection hangs off: that account is no longer connected, so the
-         * call returns 409 `reconnect_required` instead of reconnecting another account.
-         * Reconnect it via GET /v1/connect/{platform} first. Ignored for standalone
-         * platforms (`googleads`, `redditads`).
+         * Existing SocialAccount ID.
+         *
+         * - `twitter` (X Ads): required.
+         * - `tiktok`: optional. Omit it for ads-only mode (no TikTok posting account linked; ad creation uses a Brand Identity instead of a TT_USER).
+         * - Same-token platforms (`facebook`, `instagram`, `linkedin`, `pinterest`): picks which posting account the ads connection uses when the profile holds several of that platform. With one, it can be omitted.
+         * - Standalone platforms (`googleads`, `redditads`): ignored.
+         *
+         * On same-token platforms, an id that names no active account of the platform on the profile is ignored. Exception: with `force=true`, when it names the posting account the profile's ads connection hangs off, that account is no longer connected.
+         *
+         * In that case the call returns 409 `reconnect_required` instead of reconnecting another account. Reconnect it via GET /v1/connect/{platform} first.
          *
          */
         accountId?: string;
         /**
-         * Scope ad sync to a single platform ad account. Without this param,
-         * sync covers every ad account the connected token can see. Business-login reconnects
-         * preserve the existing scope; supplied IDs are checked against the new grant. To change
-         * that scope after migration, call this endpoint with the IDs and omit loginMode. Supported
-         * on `facebook`/`instagram` (Meta, `act_<digits>`), `linkedin` (bare
-         * numeric sponsored-account id), `googleads` (bare customer id digits),
-         * `redditads` (Reddit ad account id, `a2_<id>` or `t2_<id>`)
-         * and `twitter` (X Ads, base36 account id). `tiktok` scopes advertisers
-         * at OAuth and `pinterest` has no ads discovery, so both ignore it.
-         * Meta ids are additionally validated against the connected token:
-         * an id the token cannot see returns 400 `invalid_field_value`, and an
-         * id it can see but that Meta marks unusable for ads (disabled, closed,
-         * under risk review, settlement pending) returns 400 `ad_account_unusable`
-         * with `details.accountStatus` (Meta's `account_status`) and, when Meta
-         * gives one, `details.disableReason`. Unsettled and in-grace accounts
-         * are accepted, matching the `selectable` flag of `GET /v1/ads/accounts`.
-         * Setting a scope also removes already synced ads, campaigns, ad sets
-         * and keywords from de-scoped ad accounts. On Meta the scope also decides
-         * which ad accounts Zernio subscribes to ad-account webhooks: only the
-         * scoped ones, instead of every ad account the login can reach. The scope
-         * is kept when this call returns an `authUrl`, so the Meta Ads account
-         * created after OAuth is scoped (and only its scoped ad accounts synced and
-         * subscribed) from the start. On `googleads` and `redditads` the scope is kept through
-         * OAuth when `redirect_url` is set, so the connection created after OAuth
-         * syncs only its scoped ad accounts from the first sync.
-         * For multiple accounts use `adAccountIds` instead.
+         * Scopes ad sync to a single platform ad account. Without it, sync covers every ad account the connected token can see. For multiple accounts use `adAccountIds` instead.
+         *
+         * Supported on:
+         *
+         * - `facebook`/`instagram` (Meta): `act_<digits>`.
+         * - `linkedin`: bare numeric sponsored-account id.
+         * - `googleads`: bare customer id digits.
+         * - `redditads`: Reddit ad account id, `a2_<id>` or `t2_<id>`.
+         * - `twitter` (X Ads): base36 account id.
+         *
+         * `tiktok` scopes advertisers at OAuth and `pinterest` has no ads discovery, so both ignore it.
+         *
+         * **Meta validation** against the connected token:
+         *
+         * - An id the token cannot see returns 400 `invalid_field_value`.
+         * - An id it can see but that Meta marks unusable for ads (disabled, closed, under risk review, settlement pending) returns 400 `ad_account_unusable` with `details.accountStatus` (Meta's `account_status`) and, when Meta gives one, `details.disableReason`.
+         * - Unsettled and in-grace accounts are accepted, matching the `selectable` flag of `GET /v1/ads/accounts`.
+         *
+         * **Effects**: setting a scope removes already synced ads, campaigns, ad sets and keywords from de-scoped ad accounts. On Meta it also decides which ad accounts Zernio subscribes to ad-account webhooks: only the scoped ones, instead of every ad account the login can reach.
+         *
+         * **Through OAuth**: on Meta the scope is kept when this call returns an `authUrl`, so the Meta Ads account created after OAuth is scoped (only its scoped ad accounts synced and subscribed) from the start.
+         *
+         * On `googleads` and `redditads` it is kept through OAuth when `redirect_url` is set, so the new connection syncs only scoped ad accounts from the first sync.
+         *
+         * **Reconnects**: business-login reconnects preserve the existing scope; supplied IDs are checked against the new grant. To change the scope after migration, call this endpoint with the IDs and omit loginMode.
          *
          */
         adAccountId?: string;
         /**
-         * Scope ad sync to multiple platform ad accounts (same platform
-         * support and id shapes as `adAccountId`). Repeat the param
-         * (`?adAccountIds=act_1&adAccountIds=act_2`) or comma-separate
-         * (`?adAccountIds=act_1,act_2`). Persisted server-side; latest call
-         * wins, and de-scoped ad accounts have their synced ads, campaigns,
-         * ad sets and keywords removed.
-         * On Meta only the scoped ad accounts get webhook subscriptions,
-         * including when the call starts a fresh OAuth.
-         * Omitting both `adAccountId` and `adAccountIds` keeps any previously
-         * persisted scope unchanged (no scope means every reachable ad account).
+         * Scope ad sync to multiple platform ad accounts (same platform support and id shapes as `adAccountId`). Repeat the param (`?adAccountIds=act_1&adAccountIds=act_2`) or comma-separate (`?adAccountIds=act_1,act_2`).
+         *
+         * - Persisted server-side; the latest call wins. De-scoped ad accounts have their synced ads, campaigns, ad sets and keywords removed.
+         * - On Meta only the scoped ad accounts get webhook subscriptions, including when the call starts a fresh OAuth.
+         * - Omitting both `adAccountId` and `adAccountIds` keeps any previously persisted scope unchanged (no scope means every reachable ad account).
          *
          */
         adAccountIds?: Array<(string)>;
         /**
-         * Force a fresh OAuth even when an account already exists. Normally the
-         * endpoint returns `alreadyConnected: true` whenever a connected account
-         * is found, keying off its active state rather than token liveness.
-         * Set `force=true` to bypass that and always receivean `authUrl`.
-         * Completing the returned OAuth refreshes the stored token
-         * on the existing posting and ads accounts in place.
-         * An `alreadyConnected` response re-runs ad discovery and webhook
-         * subscriptions in the background at most once every 15 minutes per ads
-         * account (always when the call changes the ad-account scope), so it is not
-         * a sync trigger. To check the connection's health, read
-         * GET /v1/ads/accounts?accountId=<ads account ID>.
+         * Force a fresh OAuth even when an account already exists.
+         *
+         * Normally the endpoint returns `alreadyConnected: true` whenever a connected account is found, keyed off its active state rather than token liveness. Set `force=true` to bypass that and always receive an `authUrl`. Completing the returned OAuth refreshes the stored token on the existing posting and ads accounts in place.
+         *
+         * An `alreadyConnected` response re-runs ad discovery and webhook subscriptions in the background at most once every 15 minutes per ads account (always when the call changes the ad-account scope), so it is not a sync trigger.
+         *
+         * To check the connection's health, read GET /v1/ads/accounts?accountId=<ads account ID>.
          *
          */
         force?: boolean;
@@ -27190,7 +27890,13 @@ export type ConnectAdsData = {
          */
         pageId?: string;
         /**
-         * Business login only. Ad-account permission the connection's system user will hold. `full` asks the owner for Full control (MANAGE; required to create pixels and other account-level assets through Zernio). `advertise` asks for Manage campaigns (ADVERTISE), enough for campaigns, ad sets, creatives, ads, media and reporting, for owners who will not grant billing-level control to an integration. Either way Meta only lets a business admin complete the grant. 503 if the advertise configuration is not set up.
+         * Business login only. Ad-account permission the connection's system user will hold.
+         *
+         * - `full`: asks the owner for Full control (MANAGE). Required to create pixels and other account-level assets through Zernio.
+         * - `advertise`: asks for Manage campaigns (ADVERTISE), enough for campaigns, ad sets, creatives, ads, media and reporting. For owners who will not grant billing-level control to an integration.
+         *
+         * Either way, Meta only lets a business admin complete the grant. 503 if the advertise configuration is not set up.
+         *
          */
         permissionLevel?: 'full' | 'advertise';
         /**
@@ -27198,23 +27904,19 @@ export type ConnectAdsData = {
          */
         profileId: string;
         /**
-         * Custom URL the browser is sent to once the OAuth flow finishes. Honored on
-         * every ads platform, including the separate-token (`tiktok`, `twitter`) and
-         * standalone (`googleads`, `redditads`) flows. MUST be an absolute http(s) URL or a custom
-         * app scheme for mobile deeplinks (e.g. myapp://callback); a relative path is
-         * rejected with 400 INVALID_REDIRECT_URL. On success
-         * `tiktok` lands on the URL unchanged; `twitter`, `googleads` and `redditads`
-         * append `connected` (the ads platform id: `xads`, `googleads` or `redditads`),
-         * `profileId`, `accountId` (the ads connection) and `username`; and the
-         * same-token platforms (`facebook`, `instagram`, `linkedin`, `pinterest`)
-         * append `connected`, `profileId`, `accountId`, `username` and, on API-key
-         * calls, `connect_token`. On failure the same error contract applies as on
-         * GET /v1/connect/{platform}: `error` and `platform` are always appended,
-         * other params are optional, and the value list there is not exhaustive.
-         * On the tiktok, twitter, googleads and redditads flows `platform` carries
-         * the ads platform id (`tiktokads`, `xads`, `googleads`, `redditads`), not the value
-         * used in the request path. When omitted, the browser lands on
-         * the Zernio dashboard.
+         * Custom URL the browser is sent to once the OAuth flow finishes. When omitted, the browser lands on the Zernio dashboard. Honored on every ads platform, including the separate-token (`tiktok`, `twitter`) and standalone (`googleads`, `redditads`) flows.
+         *
+         * MUST be an absolute http(s) URL or a custom app scheme for mobile deeplinks (e.g. myapp://callback). A relative path is rejected with 400 INVALID_REDIRECT_URL.
+         *
+         * On success:
+         *
+         * - `tiktok`: lands on the URL unchanged.
+         * - `twitter`, `googleads` and `redditads`: append `connected` (the ads platform id: `xads`, `googleads` or `redditads`), `profileId`, `accountId` (the ads connection) and `username`.
+         * - Same-token platforms (`facebook`, `instagram`, `linkedin`, `pinterest`): append `connected`, `profileId`, `accountId`, `username` and, on API-key calls, `connect_token`.
+         *
+         * On failure the same error contract applies as on GET /v1/connect/{platform}: `error` and `platform` are always appended, other params are optional, and the value list there is not exhaustive.
+         *
+         * On the tiktok, twitter, googleads and redditads flows, `platform` carries the ads platform id (`tiktokads`, `xads`, `googleads`, `redditads`), not the value used in the request path.
          *
          */
         redirect_url?: string;
@@ -28182,7 +28884,13 @@ export type SelectFacebookPageData = {
      */
     pageId?: string;
     /**
-     * Several Page IDs to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect or an ads connect, which pick exactly one Page. A single distinct ID behaves exactly like pageId.
+     * Several Page IDs to connect from one sign-in, each as its own account. A single distinct ID behaves exactly like pageId.
+     *
+     * With two or more distinct IDs:
+     *
+     * - the response lists `accounts` and `failed` instead of `account`;
+     * - the request is refused with 400 on a reconnect or an ads connect, which pick exactly one Page.
+     *
      */
     pageIds?: Array<(string)>;
     /**
@@ -28328,7 +29036,11 @@ export type SelectInstagramAccountData = {
          */
         pageId?: string;
         /**
-         * Several Page IDs whose linked Instagram accounts to connect from one sign-in, each as its own account. With two or more distinct IDs the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect or an ads connect. A single distinct ID behaves exactly like pageId.
+         * Several Page IDs whose linked Instagram accounts to connect from one sign-in, each as its own account.
+         *
+         * - Two or more distinct IDs: the response lists `accounts` and `failed` instead of `account`. Refused with 400 on a reconnect or an ads connect.
+         * - A single distinct ID behaves exactly like pageId.
+         *
          */
         pageIds?: Array<(string)>;
         /**
@@ -28527,7 +29239,10 @@ export type SelectGoogleBusinessLocationData = {
          */
         locationId?: string;
         /**
-         * Several locations to connect from one sign-in, each as its own account. The sign-in is used once for the whole batch and handed back only if none connected. With two or more distinct locations the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect. A single location behaves exactly like locationId.
+         * Several locations to connect from one sign-in, each as its own account. A single location behaves exactly like locationId.
+         *
+         * The sign-in is used once for the whole batch and handed back only if none connected. With two or more distinct locations, the response lists `accounts` and `failed` instead of `account`, and the request is refused with 400 on a reconnect.
+         *
          */
         locations?: Array<{
             locationId: string;
@@ -28926,8 +29641,10 @@ export type GetGoogleBusinessLocationDetailsData = {
         locationId?: string;
         /**
          * Comma-separated fields to return. Available: name, title, phoneNumbers, categories, storefrontAddress, websiteUri, regularHours, specialHours, serviceArea, serviceItems, profile, openInfo, metadata, moreHours.
+         *
          * `title` and `metadata` are always included in the response so the `location` summary block can be populated, even if you omit them here.
-         * Note: `location` is a derived response field, not a Google readMask value, passing it returns 400.
+         *
+         * `location` is a derived response field, not a Google readMask value: passing it returns 400.
          *
          */
         readMask?: string;
@@ -30870,7 +31587,10 @@ export type ConnectWhatsAppEmbeddedSignupData = {
          */
         expectedPhoneNumber?: string;
         /**
-         * Hosted signup page only. When present, the response also carries `redirectUrl`, the URL the user should land on, with the outcome mapped exactly like the redirect flow (success params, or `error` and `platform` with the same values). Must be an absolute http(s) URL or a custom app scheme. The legacy spelling `redirectUrl` remains accepted as an alias.
+         * Hosted signup page only. When present, the response also carries `redirectUrl`, the URL the user should land on, with the outcome mapped exactly like the redirect flow (success params, or `error` and `platform` with the same values).
+         *
+         * Must be an absolute http(s) URL or a custom app scheme. The legacy spelling `redirectUrl` remains accepted as an alias.
+         *
          */
         redirect_url?: string;
         /**
@@ -31095,7 +31815,12 @@ export type ListSlackChannelsData = {
          */
         redirect_url?: string;
         /**
-         * Start-OAuth mode only. Comma-separated permission areas to request instead of the full Slack scope set, with the same semantics as `scopes` on `GET /v1/connect/{platform}`: `posting` installs the bot with the channel scopes it needs to post, `messaging` adds the history, DM and reaction scopes the inbox reads; `analytics`, `comments` and `ads` add nothing on Slack. Omit it to request everything.
+         * Start-OAuth mode only. Comma-separated permission areas to request instead of the full Slack scope set, same semantics as `scopes` on `GET /v1/connect/{platform}`. Omit it to request everything.
+         *
+         * - `posting`: installs the bot with the channel scopes it needs to post.
+         * - `messaging`: adds the history, DM and reaction scopes the inbox reads.
+         * - `analytics`, `comments`, `ads`: add nothing on Slack.
+         *
          */
         scopes?: string;
     };
@@ -31682,7 +32407,11 @@ export type GetLinkedInPostAnalyticsResponse = ({
          */
         views?: number;
         /**
-         * Engagement rate, as a percentage rounded to 2 decimals: (likes + comments + shares + clicks + saves + sends) / impressions * 100. Unlike PostAnalytics.engagementRate on GET /v1/analytics, this one DOES count clicks and has no fallback denominator, so it is 0 whenever impressions is 0. For organization accounts the value is the rate LinkedIn returns, not one computed here.
+         * Engagement rate, as a percentage rounded to 2 decimals: (likes + comments + shares + clicks + saves + sends) / impressions * 100.
+         *
+         * Unlike PostAnalytics.engagementRate on GET /v1/analytics, this one DOES count clicks and has no fallback denominator, so it is 0 whenever impressions is 0.
+         *
+         * For organization accounts the value is the rate LinkedIn returns, not one computed here.
          */
         engagementRate?: number;
     };
@@ -31813,7 +32542,10 @@ export type GetLinkedInMentionsData = {
     };
     query: {
         /**
-         * Deprecated: omit it. When sent for a person it overrides the mention text, and LinkedIn renders the mention only if it is exactly the person's first name, last name or full name (case-sensitive). When omitted the real name is read from LinkedIn. Ignored for org mentions, which always use the organization's LinkedIn name.
+         * Deprecated: omit it. When omitted, the real name is read from LinkedIn. Ignored for org mentions, which always use the organization's LinkedIn name.
+         *
+         * When sent for a person, it overrides the mention text, and LinkedIn renders the mention only if it is exactly the person's first name, last name or full name (case-sensitive).
+         *
          * @deprecated
          */
         displayName?: string;
@@ -32409,7 +33141,11 @@ export type UpdateGmbLocationData = {
     body: {
         selectedLocationId: string;
         /**
-         * Optional but recommended. The Google Business Profile Account resource name ("accounts/123") that owns the new location (from GET gmb-locations). When provided, the location is resolved directly instead of by enumerating the account, which is required for accounts with many locations. Named `googleAccountId` to disambiguate from the path `accountId` (the Zernio account). The legacy field name `accountId` is still accepted for backwards compatibility.
+         * Optional but recommended. The Google Business Profile Account resource name ("accounts/123") that owns the new location (from GET gmb-locations).
+         *
+         * When provided, the location is resolved directly instead of by enumerating the account, which is required for accounts with many locations.
+         *
+         * Named `googleAccountId` to disambiguate from the path `accountId` (the Zernio account). The legacy field name `accountId` is still accepted for backwards compatibility.
          *
          */
         googleAccountId?: string;
@@ -33819,7 +34555,13 @@ export type CreateWebhookSettingsData = {
             [key: string]: (string);
         };
         /**
-         * Resource groups this subscription does not receive (opt-out denylist). Omit or send an empty array to receive every event in `events`. Listing a group here drops its events before delivery and on every replay path. Set at creation it applies to everything this subscription ever receives; changed later via PUT it applies to events emitted after the change, with a five-minute tail for events already queued (see that operation). When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned into whatever you send here, so a restricted key can never create a subscription wider than itself.
+         * Resource groups this subscription does not receive (opt-out denylist). Omit or send an empty array to receive every event in `events`.
+         *
+         * - Listing a group here drops its events before delivery and on every replay path.
+         * - Set at creation, it applies to everything this subscription ever receives.
+         * - Changed later via PUT, it applies to events emitted after the change, with a five-minute tail for events already queued (see that operation).
+         * - For a restricted (zrk_) key, that key's own disabled groups are unioned into whatever you send here, so a restricted key can never create a subscription wider than itself.
+         *
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files')>;
         /**
@@ -33885,15 +34627,34 @@ export type UpdateWebhookSettingsData = {
             [key: string]: (string);
         };
         /**
-         * Replaces the subscription's denylist. Send an empty array to clear it and receive every event in `events` again. Omitting the field leaves the current denylist untouched. Applies to events emitted after the update; already-queued events can still deliver for up to five minutes after they were enqueued. When the caller is a restricted (zrk_) key, that key's own disabled groups are unioned back in either way, so a restricted key can neither clear nor widen a subscription past its own groups.
+         * Replaces the subscription's denylist.
+         *
+         * - Send an empty array to clear it and receive every event in `events` again.
+         * - Omit the field to leave the current denylist untouched.
+         * - Applies to events emitted after the update; already-queued events can still deliver for up to five minutes after they were enqueued.
+         * - With a restricted (zrk_) key, that key's own disabled groups are unioned back in either way, so it can neither clear nor widen a subscription past its own groups.
+         *
          */
         disabledResourceGroups?: Array<('publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files')>;
         /**
-         * Replaces the subscription's profile allowlist. Send an empty array to receive every profile again. Omitting the field leaves the current list untouched. Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing changes. Applies to events emitted after the update. Sending the stored list back unchanged is accepted without re-validation, so an endpoint stays editable after a listed profile is deleted.
+         * Replaces the subscription's profile allowlist. Applies to events emitted after the update.
+         *
+         * - Empty array: receive every profile again.
+         * - Omitted: the current list is left untouched.
+         * - Every id must be a profile in your team, otherwise the request fails with 404 `profile_not_found` and nothing changes.
+         *
+         * Sending the stored list back unchanged is accepted without re-validation, so an endpoint stays editable after a listed profile is deleted.
+         *
          */
         profileIds?: Array<(string)>;
         /**
-         * Replaces the subscription's account allowlist. Send an empty array to receive every account again. Omitting the field leaves the current list untouched. Every id must be an account in your team, otherwise the request fails with 404 `account_not_found` and nothing changes. Sending the stored list back unchanged is accepted without re-validation.
+         * Replaces the subscription's account allowlist.
+         *
+         * - Send an empty array to receive every account again.
+         * - Omit the field to leave the current list untouched.
+         * - Every id must be an account in your team, otherwise the request fails with 404 `account_not_found` and nothing changes.
+         * - Sending the stored list back unchanged is accepted without re-validation.
+         *
          */
         accountIds?: Array<(string)>;
     };
@@ -35028,7 +35789,15 @@ export type ListInboxConversationsData = {
          */
         cursor?: string;
         /**
-         * requests lists Facebook Page Message Requests (threads from people the account has not accepted) live from Meta, each item with `folder: requests`. Meta has no accept call: replying moves a thread to the inbox, which is what POST /v1/inbox/conversations/{conversationId}/accept does. When Meta will not list the folder for the one account asked (`accountId`), the call answers 400 PLATFORM_LIMITATION; across several accounts the refusal is reported per account in meta.failedAccounts. Instagram accounts (Instagram Login and Facebook Login) answer PLATFORM_LIMITATION, because Meta does not separate the folder on Instagram; only Facebook Pages are served. One page of up to `limit` threads; `pagination.hasMore` is true when threads past `limit` were cut (narrow with `accountId`), `pagination.nextCursor` is always null and a `cursor` answers 400.
+         * `requests` lists Facebook Page Message Requests (threads from people the account has not accepted) live from Meta, each item with `folder: requests`.
+         *
+         * Meta has no accept call: replying moves a thread to the inbox, which is what POST /v1/inbox/conversations/{conversationId}/accept does.
+         *
+         * - When Meta will not list the folder for the one account asked (`accountId`), the call answers 400 PLATFORM_LIMITATION. Across several accounts, the refusal is reported per account in meta.failedAccounts.
+         * - Instagram accounts (Instagram Login and Facebook Login) answer PLATFORM_LIMITATION, because Meta does not separate the folder on Instagram. Only Facebook Pages are served.
+         *
+         * One page of up to `limit` threads. `pagination.hasMore` is true when threads past `limit` were cut (narrow with `accountId`). `pagination.nextCursor` is always null and a `cursor` answers 400.
+         *
          */
         folder?: 'inbox' | 'requests';
         /**
@@ -35170,7 +35939,13 @@ export type CreateInboxConversationData = {
          */
         accountId: string;
         /**
-         * Recipient identifier. For X this is the numeric user ID; for WhatsApp and SMS, the recipient phone number in international format (digits, country code included); for Slack, the workspace member id (e.g. U01ABCDEF); for iMessage, a phone number in international format with the leading + or an iMessage email. Provide either this or participantUsername.
+         * Recipient identifier. Provide either this or participantUsername.
+         *
+         * - X: the numeric user ID.
+         * - WhatsApp and SMS: the recipient phone number in international format (digits, country code included).
+         * - Slack: the workspace member id (e.g. U01ABCDEF).
+         * - iMessage: a phone number in international format with the leading +, or an iMessage email.
+         *
          */
         participantId?: string;
         /**
@@ -35198,11 +35973,20 @@ export type CreateInboxConversationData = {
          */
         templateName?: string;
         /**
-         * WhatsApp only (Meta Direct Send). Combined with message and without templateName, starts the conversation with a business-initiated UTILITY message and no pre-approved template; Meta matches or auto-creates a template asynchronously. The WhatsApp Business Account must be eligible for Direct Send, otherwise the send fails with an error telling you to use an approved message template instead. Cannot be combined with templateName (templates are already categorized at creation). Utility messages only; marketing content is not allowed under this category. Accepted on the JSON body only, not on multipart requests.
+         * WhatsApp only (Meta Direct Send). Combined with message and without templateName, starts the conversation with a business-initiated UTILITY message and no pre-approved template. Meta matches or auto-creates a template asynchronously.
+         *
+         * - The WhatsApp Business Account must be eligible for Direct Send; otherwise the send fails with an error telling you to use an approved message template instead.
+         * - Cannot be combined with templateName (templates are already categorized at creation).
+         * - Utility messages only: marketing content is not allowed under this category.
+         * - Accepted on the JSON body only, not on multipart requests.
+         *
          */
         category?: 'utility';
         /**
-         * WhatsApp only. Set false to send the Direct Send (category: 'utility') text message without a link-preview thumbnail for the first URL in the text. Defaults to true, which is how every WhatsApp text has been sent to date. Does not apply to template sends. Accepted on the JSON body only, not on multipart requests.
+         * WhatsApp only. Set false to send the Direct Send (category: 'utility') text message without a link-preview thumbnail for the first URL in the text.
+         *
+         * Defaults to true, which is how every WhatsApp text has been sent to date. Does not apply to template sends. Accepted on the JSON body only, not on multipart requests.
+         *
          */
         linkPreview?: boolean;
         /**
@@ -35210,11 +35994,32 @@ export type CreateInboxConversationData = {
          */
         templateLanguage?: string;
         /**
-         * WhatsApp only. Template variable values as one flat array, in the order the variables appear across the whole template: text-header variables first, then body variables, then one value per dynamic URL button (in button order). Works with positional placeholders ({{1}}, {{2}}, ...) and with named placeholders ({{name}}, {{company}} - how Meta Business Manager creates templates), where values fill the named slots in order of appearance. Example - a body with {{1}}, {{2}} plus a URL button https://example.com/{{1}} takes three values: [body1, body2, buttonSuffix]. For positional templates the list must cover every slot: supplying fewer values than the template's header + body + dynamic URL-button count is rejected with a 400 (code INVALID_TEMPLATE_PARAMS) naming the expected split, rather than delivering a template whose button URL was filled from the wrong value. A dynamic URL button covered by templateButtonParams needs no value here unless another uncovered dynamic URL button follows it, since the override applies after slot numbering. Media headers (image, video, document) are filled automatically from the approved template and take no value here (use headerMedia to override the header asset per send). Buttons that are not dynamic-URL buttons (copy-code, flow) take no value here either; use templateButtonParams.
+         * WhatsApp only. Template variable values as one flat array, in order of appearance across the whole template: text-header variables, then body variables, then one value per dynamic URL button (in button order).
+         *
+         * Works with positional placeholders ({{1}}, {{2}}, ...) and named placeholders ({{name}}, {{company}}, as Meta Business Manager creates them); values fill named slots in order of appearance.
+         *
+         * Example: a body with {{1}}, {{2}} plus a URL button https://example.com/{{1}} takes three values: [body1, body2, buttonSuffix].
+         *
+         * For positional templates the list must cover every slot. Fewer values than the header + body + dynamic URL-button count is rejected with 400 (code INVALID_TEMPLATE_PARAMS) naming the expected split, rather than filling a button URL from the wrong value.
+         *
+         * A dynamic URL button covered by templateButtonParams needs no value here, unless another uncovered dynamic URL button follows it (the override applies after slot numbering).
+         *
+         * Take no value here:
+         *
+         * - Media headers (image, video, document): filled automatically from the approved template. Use headerMedia to override the header asset per send.
+         * - Non-dynamic-URL buttons (copy-code, flow): use templateButtonParams.
+         *
          */
         templateParams?: Array<(string)>;
         /**
-         * WhatsApp only. Values for template buttons that carry one at send time, each addressed by the button's position in the approved template. This is the only way to send a copy-code button's payload (a Pix payment code, a coupon) or a flow token, because templateParams is a flat array of text variables and covers dynamic URL buttons only. Supplying a button here overrides whatever templateParams would have derived for that same index, so the send never carries one button twice; repeating an index within this array is rejected with 400. Each index must name a button of the matching kind on the approved template, which is also checked before the send and returns 400 (INVALID_TEMPLATE_BUTTON_PARAM) rather than a Meta rejection.
+         * WhatsApp only. Values for template buttons that take one at send time, each addressed by the button's position in the approved template.
+         *
+         * This is the only way to send a copy-code button's payload (a Pix payment code, a coupon) or a flow token, since templateParams is a flat array of text variables covering dynamic URL buttons only.
+         *
+         * - A button here overrides what templateParams would derive for that index, so no button is sent twice.
+         * - Repeating an index within this array is rejected with 400.
+         * - Each index must name a button of the matching kind on the approved template. This is checked before the send and returns 400 (INVALID_TEMPLATE_BUTTON_PARAM) rather than a Meta rejection.
+         *
          */
         templateButtonParams?: Array<{
             /**
@@ -35231,7 +36036,12 @@ export type CreateInboxConversationData = {
             value: string;
         }>;
         /**
-         * WhatsApp only. Per-card overrides for a CAROUSEL template, each addressed by the card's card_index. Carousel card body variables restart at {{1}} per card, so they cannot be expressed in the flat templateParams slot order; use this instead. A cardIndex naming a card the approved template does not have, a duplicate cardIndex, or a params count that does not match the card body's token count is rejected with 400 (INVALID_TEMPLATE_CARD_PARAM).
+         * WhatsApp only. Per-card overrides for a CAROUSEL template, each addressed by the card's card_index.
+         *
+         * Carousel card body variables restart at {{1}} per card, so they cannot be expressed in the flat templateParams slot order; use this instead.
+         *
+         * Rejected with 400 (INVALID_TEMPLATE_CARD_PARAM): a cardIndex naming a card the approved template lacks, a duplicate cardIndex, or a params count that does not match the card body's token count.
+         *
          */
         templateCards?: Array<{
             /**
@@ -35649,13 +36459,11 @@ export type GetInboxConversationMessagesResponse = ({
     sortOrderApplied?: 'asc' | 'desc';
     messages?: Array<{
         /**
-         * The platform's own message id: the `wamid` on WhatsApp, the
-         * `mid` on Instagram and Facebook Messenger. This is what
-         * `metadata.quotedMessageId` points at, the value to pass as
-         * `replyTo` on the platforms that support quote-replies, and the
-         * `{messageId}` segment of the attachment-resolve URL. Webhooks
-         * deliver the same value as `message.platformMessageId`; this
-         * response has no field by that name.
+         * The platform's own message id: the `wamid` on WhatsApp, the `mid` on Instagram and Facebook Messenger.
+         *
+         * It is what `metadata.quotedMessageId` points at, the value to pass as `replyTo` on platforms that support quote-replies, and the `{messageId}` segment of the attachment-resolve URL.
+         *
+         * Webhooks deliver the same value as `message.platformMessageId`; this response has no field by that name.
          *
          */
         id?: string;
@@ -35678,7 +36486,15 @@ export type GetInboxConversationMessagesResponse = ({
              */
             type?: 'image' | 'video' | 'audio' | 'file' | 'sticker' | 'share' | 'template' | 'unsupported_type';
             /**
-             * Instagram and Facebook only, and present only when it differs from `type`. Meta's own type before normalization: `ig_reel` and `reel` become `video`, while `ig_post`, `post`, `ig_story` and `story_mention` become `share`. A story mention is `type: "share"` with `originalType: "story_mention"`; render on this field, since `share` alone is ambiguous. `originalType: "unsupported_type"` marks a share Meta did not classify, resolved by content type: `refreshUrl` cannot re-mint it (Meta answers `is_unsupported` with no attachments for the message node), so download it when the `message.received` webhook arrives.
+             * Instagram and Facebook only, and present only when it differs from `type`. Meta's own type before normalization:
+             *
+             * - `ig_reel` and `reel` become `video`.
+             * - `ig_post`, `post`, `ig_story` and `story_mention` become `share`.
+             *
+             * A story mention is `type: "share"` with `originalType: "story_mention"`. Render on this field, since `share` alone is ambiguous.
+             *
+             * `originalType: "unsupported_type"` marks a share Meta did not classify, resolved by content type. `refreshUrl` cannot re-mint it (Meta answers `is_unsupported` with no attachments for the message node), so download it when the `message.received` webhook arrives.
+             *
              */
             originalType?: string;
             /**
@@ -35690,7 +36506,10 @@ export type GetInboxConversationMessagesResponse = ({
              */
             url?: string;
             /**
-             * Instagram and Facebook only. Endpoint that resolves this attachment to a working url every time, re-minting it from Meta when the stored one has expired. Safe to store and render indefinitely, except for an attachment with `originalType: "unsupported_type"`: Meta cannot re-serve those, so the endpoint answers 404 once the url has expired.
+             * Instagram and Facebook only. Endpoint that resolves this attachment to a working url every time, re-minting it from Meta when the stored one has expired. Safe to store and render indefinitely.
+             *
+             * Exception: an attachment with `originalType: "unsupported_type"`. Meta cannot re-serve those, so the endpoint answers 404 once the url has expired.
+             *
              */
             refreshUrl?: (string) | null;
             filename?: (string) | null;
@@ -35724,7 +36543,10 @@ export type GetInboxConversationMessagesResponse = ({
          */
         isStoryMention?: boolean;
         /**
-         * Instagram and Facebook Messenger only. True when Meta withholds the content of this message from the API (its `is_unsupported` flag): `message` is empty, `attachments` is empty, and there is nothing to fetch, now or later. Distinguishes such a message from an ordinary empty one such as a story reply with no text. Absent on other platforms.
+         * Instagram and Facebook Messenger only; absent on other platforms. True when Meta withholds the content of this message from the API (its `is_unsupported` flag): `message` is empty, `attachments` is empty, and there is nothing to fetch, now or later.
+         *
+         * Distinguishes such a message from an ordinary empty one, such as a story reply with no text.
+         *
          */
         noRenderableContent?: boolean;
         /**
@@ -35787,17 +36609,12 @@ export type GetInboxConversationMessagesResponse = ({
         }>;
         /**
          * Platform-specific extras. Free-form, but commonly includes:
-         * `quotedMessageId` (the `id` of the message this one replies to,
-         * delivered as `message.platformMessageId` on webhooks),
-         * `waInteractive` (a compact descriptor of WhatsApp interactive
-         * content sent: buttons / list / cta_url / flow / location_request),
-         * `metaInteractive` (outgoing Instagram/Facebook buttons, quickReplies
-         * and template, as sent), and for inbound interactive taps
-         * `interactiveType` / `interactiveId`. It can also carry `source`
-         * (`whatsapp_business_app` / `coexistence_history` on a WhatsApp
-         * Coexistence number, `bulk-api` on a POST /v1/whatsapp/bulk send),
-         * which is where the message reached us from rather than who produced
-         * it: read `sentVia` for that.
+         *
+         * - `quotedMessageId`: the `id` of the message this one replies to (delivered as `message.platformMessageId` on webhooks).
+         * - `waInteractive`: a compact descriptor of WhatsApp interactive content sent (buttons / list / cta_url / flow / location_request).
+         * - `metaInteractive`: outgoing Instagram/Facebook buttons, quickReplies and template, as sent.
+         * - `interactiveType` / `interactiveId`: for inbound interactive taps.
+         * - `source`: where the message reached us from, not who produced it (read `sentVia` for that). `whatsapp_business_app` / `coexistence_history` on a WhatsApp Coexistence number, `bulk-api` on a POST /v1/whatsapp/bulk send.
          *
          */
         metadata?: {
@@ -35835,15 +36652,30 @@ export type SendInboxMessageData = {
          */
         message?: string;
         /**
-         * URL of the attachment to send (image, video, audio, or file). The URL must be publicly accessible. For binary file uploads, use multipart/form-data instead. On WhatsApp, combining an image, video, or file with `buttons` renders the media as the header of one interactive reply-button message; audio cannot be combined with buttons.
+         * URL of the attachment to send (image, video, audio, or file). Must be publicly accessible. For binary file uploads, use multipart/form-data instead.
+         *
+         * On WhatsApp, an image, video, or file combined with `buttons` renders as the header of one interactive reply-button message. Audio cannot be combined with buttons.
          */
         attachmentUrl?: string;
         /**
-         * WhatsApp only (Meta Direct Send). Sends this message as a business-initiated UTILITY message without an approved template, for example outside the 24-hour customer service window; Meta matches or auto-creates a template asynchronously. The WhatsApp Business Account must be eligible for Direct Send, otherwise the send fails with an error telling you to use an approved message template instead. Supported only for text messages (link preview ok) and interactive messages (reply buttons, CTA URL buttons, voice-call button, header of text/image/video/document). Cannot be combined with template, attachments, location, or contacts. Utility messages only; marketing content is not allowed under this category. Accepted on the JSON body only, not on multipart requests.
+         * WhatsApp only (Meta Direct Send). Sends a business-initiated UTILITY message without an approved template, e.g. outside the 24-hour customer service window. Meta matches or auto-creates a template asynchronously.
+         *
+         * - The WhatsApp Business Account must be eligible for Direct Send; otherwise the send fails, telling you to use an approved message template.
+         * - Supported only for text messages (link preview ok) and interactive messages (reply buttons, CTA URL buttons, voice-call button, header of text/image/video/document).
+         * - Cannot be combined with template, attachments, location, or contacts.
+         * - Utility messages only; marketing content is not allowed.
+         * - Accepted on the JSON body only, not on multipart requests.
+         *
          */
         category?: 'utility';
         /**
-         * WhatsApp and iMessage. Set false to send the message without a link-preview thumbnail (WhatsApp: the first URL; iMessage: every link renders as plain text). Defaults to true, which is how every WhatsApp text has been sent to date. Ignored on other platforms. Accepted on the JSON body only, not on multipart requests.
+         * WhatsApp and iMessage. Set false to send the message without a link-preview thumbnail. Ignored on other platforms.
+         *
+         * - WhatsApp: affects the first URL.
+         * - iMessage: every link renders as plain text.
+         *
+         * Defaults to true, which is how every WhatsApp text has been sent to date. Accepted on the JSON body only, not on multipart requests.
+         *
          */
         linkPreview?: boolean;
         /**
@@ -35855,11 +36687,9 @@ export type SendInboxMessageData = {
          */
         attachmentName?: string;
         /**
-         * WhatsApp only. When `true` on an audio attachment, the message is sent
-         * as a voice message (PTT): the recipient sees the waveform + voice-note
-         * UI instead of a basic audio attachment. The audio file MUST be `.ogg`
-         * encoded with the OPUS codec (mono) per Meta's voice-message contract;
-         * other formats are rejected by WhatsApp. Ignored for non-audio attachments.
+         * WhatsApp only. When `true` on an audio attachment, the message is sent as a voice message (PTT): the recipient sees the waveform + voice-note UI instead of a basic audio attachment. Ignored for non-audio attachments.
+         *
+         * The audio file MUST be `.ogg` encoded with the OPUS codec (mono), per Meta's voice-message contract; other formats are rejected by WhatsApp.
          *
          */
         voiceNote?: boolean;
@@ -35884,7 +36714,10 @@ export type SendInboxMessageData = {
          */
         channel?: 'imessage' | 'sms' | 'rcs' | 'whatsapp';
         /**
-         * Instagram only (JSON body only). Shares one of the account's own published posts in the DM, by its Instagram media id (the `id` returned by the media endpoints, not a permalink). Meta only accepts media the account owns. Sent on its own: cannot be combined with `message`, attachments, `quickReplies`, `buttons`, `template` or `sticker` (400). `messageTag: HUMAN_AGENT` is allowed. Rejected with 400 on other platforms. Works on accounts connected with Instagram Login and with Facebook Login.
+         * Instagram only (JSON body only; 400 on other platforms). Shares one of the account's own published posts in the DM, by its Instagram media id (the `id` returned by the media endpoints, not a permalink). Meta only accepts media the account owns.
+         *
+         * Sent on its own: cannot be combined with `message`, attachments, `quickReplies`, `buttons`, `template` or `sticker` (400). `messageTag: HUMAN_AGENT` is allowed. Works on accounts connected with Instagram Login and with Facebook Login.
+         *
          */
         sharedMediaId?: string;
         /**
@@ -35909,30 +36742,17 @@ export type SendInboxMessageData = {
             imageUrl?: string;
         }>;
         /**
-         * Action buttons. Mutually exclusive with quickReplies. Max 3 items.
+         * Action buttons. Max 3 items. Mutually exclusive with quickReplies.
          *
-         * Instagram / Facebook: also mutually exclusive with `template`.
-         * A Meta message carries one body shape, so sending both is a 400
-         * rather than a silent drop of the buttons.
-         * The buttons and `message` render as Meta's button_template (one
-         * bubble with the text and the buttons below it), so `message` must
-         * be 640 characters or less when buttons are attached (400 otherwise).
+         * **Instagram / Facebook.** Also mutually exclusive with `template`: a Meta message carries one body shape, so sending both is a 400 rather than a silent drop of the buttons.
          *
-         * WhatsApp: buttons always render as interactive reply buttons.
-         * Only `title` and `payload` are used; `type`, `url`, and `phone`
-         * are ignored (WhatsApp has no URL/phone button in this field; use
-         * the `interactive` field with `type: cta_url` for a link button).
-         * `payload` becomes the button reply ID delivered on the
-         * `message.received` webhook when the user taps. To send a simple
-         * reply-button message, provide `title` + `payload` and set
-         * `type: postback`, e.g.
-         * `{ "type": "postback", "title": "Yes", "payload": "yes" }`.
+         * The buttons and `message` render as Meta's button_template (one bubble with the text and the buttons below it), so `message` must be 640 characters or less when buttons are attached (400 otherwise).
          *
-         * Combine `buttons` with `attachmentUrl` and `attachmentType`
-         * `image`, `video`, or `file` to render one WhatsApp message with
-         * a media header, body text, and reply buttons. Audio is not a
-         * supported interactive header and returns 400 when combined
-         * with buttons.
+         * **WhatsApp.** Buttons always render as interactive reply buttons. Only `title` and `payload` are used; `type`, `url`, and `phone` are ignored. WhatsApp has no URL/phone button in this field: use the `interactive` field with `type: cta_url` for a link button.
+         *
+         * `payload` becomes the button reply ID delivered on the `message.received` webhook when the user taps. For a simple reply-button message, provide `title` + `payload` and set `type: postback`, e.g. `{ "type": "postback", "title": "Yes", "payload": "yes" }`.
+         *
+         * Combine `buttons` with `attachmentUrl` and `attachmentType` `image`, `video`, or `file` to render one WhatsApp message with a media header, body text and reply buttons. Audio is not a supported interactive header and returns 400 when combined with buttons.
          *
          */
         buttons?: Array<{
@@ -35960,27 +36780,18 @@ export type SendInboxMessageData = {
         /**
          * Platform-dependent template payload. Ignored on Telegram.
          *
-         * Instagram / Facebook: a generic template (carousel). Set `type: generic`
-         * and provide up to 10 `elements`, each with a `title` (required) and
-         * optional `subtitle`, `imageUrl`, and `buttons`. Mutually exclusive with
-         * the top-level `buttons` field (sending both is a 400); put the card's
-         * buttons on its `elements` instead. On Facebook, `imageAspectRatio`
-         * (`horizontal`, the default, or `square`) sets how Messenger renders the
-         * element images; Instagram has no such setting and rejects it.
+         * **Instagram / Facebook:** a generic template (carousel). Set `type: generic` and provide up to 10 `elements`, each with a `title` (required) and optional `subtitle`, `imageUrl`, and `buttons`.
          *
-         * WhatsApp: sends an approved WhatsApp template message, the only message
-         * type WhatsApp accepts when the 24-hour customer-service window is closed.
-         * Provide exactly one element carrying the template reference:
+         * - Mutually exclusive with the top-level `buttons` field (sending both is a 400); put card buttons on its `elements`.
+         * - On Facebook, `imageAspectRatio` (`horizontal`, the default, or `square`) sets how Messenger renders element images. Instagram has no such setting and rejects it.
+         *
+         * **WhatsApp:** sends an approved template message, the only type WhatsApp accepts when the 24-hour customer-service window is closed. Provide exactly one element with the template reference (`type` is ignored):
+         *
          * `{ "elements": [{ "name": "order_update", "language": "en_US", "components": [...] }] }`
-         * (`type` is ignored on WhatsApp). `components` is optional and is forwarded
-         * unchanged as the `template.components` array of Meta's Cloud API send
-         * payload; use it to fill body/header variables and button parameters, e.g.
-         * `[{ "type": "body", "parameters": [{ "type": "text", "text": "John" }] }]`.
-         * Templates with media headers (image, video, document) must include the
-         * header component with its media link here at send time. To send a template
-         * to a phone number with no existing conversation, or to have media headers
-         * filled in automatically from the template definition, use the
-         * create-conversation endpoint (POST /v1/inbox/conversations) instead.
+         *
+         * `components` is optional and forwarded unchanged as the `template.components` array of Meta's Cloud API send payload. Use it to fill body/header variables and button parameters, e.g. `[{ "type": "body", "parameters": [{ "type": "text", "text": "John" }] }]`.
+         *
+         * Templates with media headers (image, video, document) must include the header component with its media link at send time. To message a phone number with no conversation, or have media headers filled automatically, use the create-conversation endpoint (POST /v1/inbox/conversations).
          *
          */
         template?: {
@@ -36031,73 +36842,29 @@ export type SendInboxMessageData = {
             }>;
         };
         /**
-         * WhatsApp-only. Rich interactive payload for list messages, CTA URL
-         * buttons, Flow prompts, location requests, voice-call buttons, and
-         * commerce messages (single product, product list, catalog, and
-         * carousel). When set, takes priority over `buttons` and
-         * `quickReplies`. The shape mirrors Meta's Cloud API `interactive`
-         * object for the types in the enum below.
+         * WhatsApp only. Rich interactive payload for list messages, CTA URL buttons, Flow prompts, location requests, voice-call buttons and commerce messages (single product, product list, catalog, carousel). The shape mirrors Meta's Cloud API `interactive` object for the types in the enum below.
          *
-         * Use `buttons` / `quickReplies` for simple button replies
-         * (WhatsApp's `interactive.type: "button"`): the abstraction caps at
-         * 3 buttons and handles the auto-conversion for you. Use this field
-         * only for the types listed in the enum below.
+         * When set, it takes priority over `buttons` and `quickReplies`. For simple button replies (WhatsApp's `interactive.type: "button"`) use `buttons` / `quickReplies` instead: that abstraction caps at 3 buttons and handles the auto-conversion for you. Use this field only for the enum types.
          *
-         * All interactive messages are session messages: they can only be
-         * sent inside the 24-hour customer service window opened by the
-         * user's last inbound message.
+         * All interactive messages are session messages: they can only be sent inside the 24-hour customer service window opened by the user's last inbound message.
          *
-         * Commerce types (`product`, `product_list`, `catalog_message`, and
-         * product carousels) require a Meta catalog connected to the
-         * WhatsApp Business Account in Commerce Manager. Media carousels
-         * (image/video cards) do not need a catalog.
+         * Commerce types (`product`, `product_list`, `catalog_message`, and product carousels) require a Meta catalog connected to the WhatsApp Business Account in Commerce Manager. Media carousels (image/video cards) do not need a catalog.
          *
-         * For `product`, `body` is optional (WhatsApp renders the product
-         * card itself) and `header` is not allowed (the product image is
-         * the header). For `product_list`, a `header` with `type: "text"`
-         * is required. For `carousel`, top-level `header`/`footer` are not
-         * supported; media goes on each card instead.
+         * Rules per type:
          *
-         * For `voice_call`, the message renders WhatsApp's native call
-         * button; tapping it starts a voice call to your business number.
-         * Requires WhatsApp Business Calling to be enabled on the sending
-         * number. The optional `parameters.payload` string is echoed back on
-         * the `calls` webhook (as `cta_payload`) for attribution.
+         * - `product`: `body` is optional (WhatsApp renders the product card itself) and `header` is not allowed (the product image is the header).
+         * - `product_list`: a `header` with `type: "text"` is required.
+         * - `carousel`: top-level `header`/`footer` are not supported; media goes on each card instead.
+         * - `voice_call`: renders WhatsApp's native call button; tapping it starts a voice call to your business number. Requires WhatsApp Business Calling on the sending number. The optional `parameters.payload` string is echoed back on the `calls` webhook (as `cta_payload`) for attribution.
+         * - `location_request_message`: `action` may be omitted (we default it to `{ "name": "send_location" }`). WhatsApp renders a localized "Send location" button; the reply arrives as a regular location message in the conversation.
+         * - `request_contact_info`: `action` may be omitted (we default it to `{ "name": "request_contact_info" }`). The localized share button cannot be relabelled, so put the reason for asking in `body.text`: this is a consent prompt, and a bare request converts badly.
+         * - `request_contact_info` reply: arrives as an inbound `contacts` message with `metadata.contactsOrigin` set to `contact_request`, and we fold the shared number back into the contact automatically. A `contacts` message with origin `other` is a card picked from the address book, NOT proof of the user's own number.
+         * - `catalog_message`: `action` may also be omitted (we default it to `{ "name": "catalog_message" }`).
+         * - `address_message`: `parameters.country` is required (Meta rejects the whole send without it); everything else in `parameters` (`values`, `saved_addresses`, `validation_errors`) is forwarded to Meta as-is.
+         * - `address_message` availability: Meta's native structured shipping-address capture, generally available in India as of 2026-08. Check Meta's documentation for current country availability before relying on it elsewhere.
+         * - `address_message` reply: the submitted address arrives as an `nfm_reply` on the `message.received` webhook, like a Flow submission, but with `metadata.nfmReplyName` set to `address_message` so you can tell the two apart.
          *
-         * For `location_request_message`, `action` may be omitted (we default
-         * it to `{ "name": "send_location" }`). WhatsApp renders a localized
-         * "Send location" button; the user's reply arrives as a regular
-         * location message in the conversation.
-         *
-         * For `request_contact_info`, `action` may be omitted (we default it
-         * to `{ "name": "request_contact_info" }`). WhatsApp renders a
-         * localized share button that cannot be relabelled, so put the reason
-         * for asking in `body.text`: this is a consent prompt, and a bare
-         * request converts badly. The reply arrives as an inbound `contacts`
-         * message with `metadata.contactsOrigin` set to `contact_request`,
-         * and we fold the shared number back into the contact automatically.
-         * A `contacts` message with origin `other` is a card the user picked
-         * from their address book and is NOT proof of their own number.
-         *
-         * For `catalog_message`, `action` may also be omitted (we default it
-         * to `{ "name": "catalog_message" }`).
-         *
-         * For `address_message`, `parameters.country` is required (Meta
-         * rejects the whole send without it); everything else in
-         * `parameters` (`values`, `saved_addresses`, `validation_errors`)
-         * is forwarded to Meta as-is. This is Meta's native structured
-         * shipping-address capture, generally available in India as of
-         * 2026-08; check Meta's documentation for current country
-         * availability before relying on it elsewhere. The submitted
-         * address arrives as an `nfm_reply` on the `message.received`
-         * webhook, same as a Flow submission, but with
-         * `metadata.nfmReplyName` set to `address_message` so you can
-         * tell the two apart.
-         *
-         * Tap events come back via the `message.received` webhook with
-         * `metadata.interactiveType` set to `list_reply` or `nfm_reply`.
-         * Carts submitted from commerce messages arrive as `metadata.order`;
-         * product inquiries arrive as `metadata.referredProduct`.
+         * Tap events come back via the `message.received` webhook with `metadata.interactiveType` set to `list_reply` or `nfm_reply`. Carts submitted from commerce messages arrive as `metadata.order`; product inquiries arrive as `metadata.referredProduct`.
          *
          */
         interactive?: {
@@ -36382,7 +37149,14 @@ export type SendInboxMessageData = {
          */
         messageTag?: 'CONFIRMED_EVENT_UPDATE' | 'POST_PURCHASE_UPDATE' | 'ACCOUNT_UPDATE' | 'HUMAN_AGENT';
         /**
-         * Platform message ID to quote-reply to. For WhatsApp, pass the wamid; for Telegram, the Telegram message ID (delivered as message.platformMessageId on webhooks, and as `id` on each entry of the list-messages endpoint). On Slack it threads the reply (thread_ts) instead of quoting. Instagram and Facebook Messenger do not support send-side quote replies: the message is sent without a quote and the successful response includes a warnings entry with code ignored_field and param replyTo. Other platforms without send-side reply support ignore this field.
+         * Platform message ID to quote-reply to.
+         *
+         * - WhatsApp: the wamid.
+         * - Telegram: the Telegram message ID (message.platformMessageId on webhooks, and `id` on each entry of the list-messages endpoint).
+         * - Slack: threads the reply (thread_ts) instead of quoting.
+         * - Instagram and Facebook Messenger: no send-side quote replies. The message is sent without a quote and the successful response includes a warnings entry with code ignored_field and param replyTo.
+         * - Other platforms without send-side reply support ignore this field.
+         *
          */
         replyTo?: string;
         /**
@@ -36433,7 +37207,14 @@ export type SendInboxMessageData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -36464,7 +37245,12 @@ export type SendInboxMessageResponse = ({
          */
         messageId?: string;
         /**
-         * Zernio conversation id, echoed so the thread can be read back or replied to. It equals the id the list-conversations endpoint returns for Telegram, WhatsApp, SMS and Slack; for Facebook, Instagram, Bluesky and Reddit that endpoint returns the platform thread id instead, so do not correlate the two by equality. For X, when the request addressed the conversation by its Twitter dm_conversation_id, that platform id is echoed back instead. Omitted when the send succeeded but the conversation could not be resolved to a stored record.
+         * Zernio conversation id, echoed so the thread can be read back or replied to. Omitted when the send succeeded but the conversation could not be resolved to a stored record.
+         *
+         * - Telegram, WhatsApp, SMS and Slack: equals the id the list-conversations endpoint returns.
+         * - Facebook, Instagram, Bluesky and Reddit: that endpoint returns the platform thread id instead, so do not correlate the two by equality.
+         * - X: when the request addressed the conversation by its Twitter dm_conversation_id, that platform id is echoed back instead.
+         *
          */
         conversationId?: string;
         /**
@@ -36516,7 +37302,14 @@ export type SendInboxMessageError = ({
      */
     type?: 'platform_error' | 'invalid_request_error';
     /**
-     * Stable machine-readable reason. PLATFORM_LIMITATION covers a capability the platform does not offer (e.g. Bluesky and Reddit DMs reject media); MISSING_PARTICIPANT means the stored conversation has no recipient to send to; DIRECT_SEND_NOT_ELIGIBLE and DIRECT_SEND_BLOCKED mean the WhatsApp Business Account needs Meta to grant or restore Direct Send access; DIRECT_SEND_LIMITED is temporary, Meta lifts it on its own; platform_api_error means the platform itself rejected the send (see platformError).
+     * Stable machine-readable reason.
+     *
+     * - PLATFORM_LIMITATION: a capability the platform does not offer (e.g. Bluesky and Reddit DMs reject media).
+     * - MISSING_PARTICIPANT: the stored conversation has no recipient to send to.
+     * - DIRECT_SEND_NOT_ELIGIBLE and DIRECT_SEND_BLOCKED: the WhatsApp Business Account needs Meta to grant or restore Direct Send access.
+     * - DIRECT_SEND_LIMITED: temporary; Meta lifts it on its own.
+     * - platform_api_error: the platform itself rejected the send (see platformError).
+     *
      */
     code?: 'PLATFORM_LIMITATION' | 'MISSING_PARTICIPANT' | 'INVALID_TEMPLATE_HEADER' | 'DIRECT_SEND_NOT_ELIGIBLE' | 'DIRECT_SEND_LIMITED' | 'DIRECT_SEND_BLOCKED' | 'platform_api_error';
     /**
@@ -37329,7 +38122,12 @@ export type GetMessageAttachmentError = (unknown | ErrorResponse);
 export type ListInboxCommentsData = {
     query?: {
         /**
-         * Filter by specific account ID. With `platform=metaads` it takes the Meta Ads account ID, or the Facebook or Instagram account ID the Meta Ads connection belongs to, which returns that Meta Ads connection's ad rows. A Facebook or Instagram account with no Meta Ads connection returns no rows; an account on any other platform returns 400.
+         * Filter by specific account ID.
+         *
+         * With `platform=metaads` it takes the Meta Ads account ID, or the Facebook or Instagram account ID the Meta Ads connection belongs to, which returns that connection's ad rows.
+         *
+         * A Facebook or Instagram account with no Meta Ads connection returns no rows. An account on any other platform returns 400.
+         *
          */
         accountId?: string;
         cursor?: string;
@@ -37443,7 +38241,11 @@ export type ListInboxCommentsError = (ErrorResponse | unknown);
 export type GetInboxPostCommentsData = {
     path: {
         /**
-         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved. On LinkedIn, pass the post id exactly as the feed returns it (urn:li:share:<id> or urn:li:ugcPost:<id>). A bare number is read as an activity id (urn:li:activity:<n>, the number in a linkedin.com/feed/update URL); a share or ugcPost number passed bare returns an empty list. On Facebook, a comment ID is also accepted here and returns that comment's replies, kept for backwards compatibility; prefer the `commentId` query parameter, which also works on Instagram.
+         * Zernio post ID or platform-specific post ID. Zernio IDs are auto-resolved.
+         *
+         * - **LinkedIn:** pass the post id exactly as the feed returns it (urn:li:share:<id> or urn:li:ugcPost:<id>). A bare number is read as an activity id (urn:li:activity:<n>, the number in a linkedin.com/feed/update URL), so a share or ugcPost number passed bare returns an empty list.
+         * - **Facebook:** a comment ID is also accepted and returns that comment's replies (kept for backwards compatibility). Prefer the `commentId` query parameter, which also works on Instagram.
+         *
          */
         postId: string;
     };
@@ -37502,7 +38304,12 @@ export type GetInboxPostCommentsResponse = ({
             [key: string]: unknown;
         }>;
         /**
-         * Facebook only. True when replies[] (capped at 10) does not hold the comment's full reply thread; fetch the rest by passing the comment id as the `commentId` query parameter to GET /v1/inbox/comments/{postId} (or, for backwards compatibility, as `postId`). Absent (not false) on every other platform, including Instagram, which has no equivalent signal.
+         * Facebook only. True when replies[] (capped at 10) does not hold the comment's full reply thread.
+         *
+         * Fetch the rest by passing the comment id as the `commentId` query parameter to GET /v1/inbox/comments/{postId} (or, for backwards compatibility, as `postId`).
+         *
+         * Absent (not false) on every other platform, including Instagram, which has no equivalent signal.
+         *
          */
         repliesHasMore?: boolean;
         canReply?: boolean;
@@ -37532,7 +38339,13 @@ export type GetInboxPostCommentsResponse = ({
          */
         cid?: (string) | null;
         /**
-         * ID of the parent comment. Present on entries inside replies[] for Facebook, Instagram and X. On X it is also present on top-level entries, where it holds the ID of the post replied to. Omitted entirely (key absent, not null) on top-level Facebook and Instagram entries and on every other platform, which express the parent relationship only through replies[] nesting.
+         * ID of the parent comment.
+         *
+         * - Facebook and Instagram: present on entries inside replies[]; omitted on top-level entries.
+         * - X: present inside replies[] and on top-level entries, where it holds the ID of the post replied to.
+         * - Every other platform: omitted; the parent relationship is expressed only through replies[] nesting.
+         *
+         * When omitted, the key is absent, not null.
          */
         parentId?: (string) | null;
         /**
@@ -37545,18 +38358,15 @@ export type GetInboxPostCommentsResponse = ({
         rootCid?: (string) | null;
     }>;
     /**
-     * (Reddit, Facebook and Instagram) Metadata for the target post, returned alongside the comments
-     * so integrators can render a preview of the post being commented on without an additional request.
+     * (Reddit, Facebook and Instagram) Metadata for the target post, returned with the comments so you can render a preview without another request.
      *
-     * Facebook and Instagram return the Meta shape: the post thumbnail, text and permalink, for any post
-     * the account can read, including the hidden dark posts Meta publishes for each variant of an ad
-     * (dynamic creative, placement asset customization, Advantage+). Facebook posts need the Facebook
-     * Page connection and Instagram media the Instagram connection. `thumbnailUrl` and `mediaUrl` are
-     * Meta CDN URLs that expire: store a copy if you render them later. On Instagram, `productType`
-     * tells an ad (`AD`) from organic media (`FEED`, `REELS`, `STORY`).
+     * **Facebook and Instagram** return the Meta shape: post thumbnail, text and permalink, for any post the account can read, including hidden dark posts Meta publishes per ad variant (dynamic creative, placement asset customization, Advantage+).
      *
-     * Absent on other platforms, when the post cannot be read with the connection's token, and on Reddit
-     * when the upstream response is missing the post listing (deleted post, malformed response).
+     * - Facebook posts need the Facebook Page connection; Instagram media the Instagram connection.
+     * - `thumbnailUrl` and `mediaUrl` are expiring Meta CDN URLs: store a copy to render them later.
+     * - On Instagram, `productType` tells an ad (`AD`) from organic media (`FEED`, `REELS`, `STORY`).
+     *
+     * **Absent** on other platforms, when the connection's token cannot read the post, and on Reddit when the upstream response lacks the post listing (deleted post, malformed response).
      *
      */
     post?: ({
@@ -37713,7 +38523,14 @@ export type ReplyToInboxPostData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -38636,7 +39453,14 @@ export type ReplyToInboxReviewData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -38773,7 +39597,14 @@ export type CreateWhatsAppTemplateData = {
             phone_number?: string;
         }>;
         /**
-         * Delivery validity window in seconds: a message not delivered within it is dropped. Range depends on category: AUTHENTICATION 30 to 900, UTILITY 30 to 43200 (12h), MARKETING 43200 to 2592000 (30 days); -1 (create only) keeps the 30-day default on AUTHENTICATION and UTILITY. Meta defaults to 600 for AUTHENTICATION and 30 days otherwise. If Meta later recategorises the template, it clears the TTL (read it back to check).
+         * Delivery validity window in seconds: a message not delivered within it is dropped. Range by category:
+         *
+         * - AUTHENTICATION: 30 to 900.
+         * - UTILITY: 30 to 43200 (12h).
+         * - MARKETING: 43200 to 2592000 (30 days).
+         *
+         * -1 (create only) keeps the 30-day default on AUTHENTICATION and UTILITY. Meta defaults to 600 for AUTHENTICATION and 30 days otherwise. If Meta later recategorises the template, it clears the TTL (read it back to check).
+         *
          */
         message_send_ttl_seconds?: number;
     };
@@ -38877,7 +39708,16 @@ export type UpdateWhatsAppTemplateData = {
          */
         components?: Array<WhatsAppTemplateComponent>;
         /**
-         * Delivery validity window in seconds: a message not delivered within it is dropped. Range depends on category: AUTHENTICATION 30 to 900, UTILITY 30 to 43200 (12h), MARKETING 43200 to 2592000 (30 days); -1 is not accepted here (Meta treats it as an empty edit); send a value in range. A TTL-only edit keeps an APPROVED template approved, no re-review. Meta defaults to 600 for AUTHENTICATION and 30 days otherwise. If Meta later recategorises the template, it clears the TTL (read it back to check).
+         * Delivery validity window in seconds: a message not delivered within it is dropped. Range by category:
+         *
+         * - AUTHENTICATION: 30 to 900.
+         * - UTILITY: 30 to 43200 (12h).
+         * - MARKETING: 43200 to 2592000 (30 days).
+         *
+         * -1 is not accepted here (Meta treats it as an empty edit); send a value in range. Meta defaults to 600 for AUTHENTICATION and 30 days otherwise.
+         *
+         * A TTL-only edit keeps an APPROVED template approved, no re-review. If Meta later recategorises the template, it clears the TTL (read it back to check).
+         *
          */
         message_send_ttl_seconds?: number;
     };
@@ -39022,7 +39862,18 @@ export type UpdateWhatsAppTemplateByIdData = {
          */
         components?: Array<WhatsAppTemplateComponent>;
         /**
-         * Delivery validity window in seconds: a message not delivered within it is dropped. Range depends on category: AUTHENTICATION 30 to 900, UTILITY 30 to 43200 (12h), MARKETING 43200 to 2592000 (30 days); -1 is not accepted here (Meta treats it as an empty edit); send a value in range. A TTL-only edit keeps an APPROVED template approved, no re-review. Meta defaults to 600 for AUTHENTICATION and 30 days otherwise. If Meta later recategorises the template, it clears the TTL (read it back to check).
+         * Delivery validity window in seconds: a message not delivered within it is dropped.
+         *
+         * **Range by category:**
+         *
+         * - AUTHENTICATION: 30 to 900.
+         * - UTILITY: 30 to 43200 (12h).
+         * - MARKETING: 43200 to 2592000 (30 days).
+         *
+         * The value -1 is not accepted here (Meta treats it as an empty edit); send a value in range. Meta defaults to 600 for AUTHENTICATION and 30 days otherwise.
+         *
+         * A TTL-only edit keeps an APPROVED template approved, with no re-review. If Meta later recategorises the template, it clears the TTL (read it back to check).
+         *
          */
         message_send_ttl_seconds?: number;
     };
@@ -39262,7 +40113,14 @@ export type InitiateWhatsAppCallData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -39525,7 +40383,14 @@ export type CreateVoiceCallData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -40203,7 +41068,14 @@ export type SendSmsData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -40262,7 +41134,14 @@ export type CreateRcsAgentData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -40406,7 +41285,14 @@ export type SendRcsMessageData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -40610,7 +41496,14 @@ export type CreateBrandedCallingEnterpriseData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -40706,7 +41599,14 @@ export type CreateBrandedCallingIdentityData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -40957,13 +41857,10 @@ export type StartSmsRegistrationData = {
         };
         /**
          * Required for 10DLC. What you'll send and how recipients opt in/out.
-         * The opt-in/opt-out/help auto-responses (`optinMessage`,
-         * `optoutMessage`, `helpMessage`) are optional: when omitted, a
-         * compliant, brand-named template with the carrier-required
-         * disclosures is generated for you. If you do send them, they must
-         * name the registered brand and carry the disclosures. Submissions
-         * that don't are rewritten to the compliant template before the
-         * campaign is filed.
+         *
+         * The opt-in/opt-out/help auto-responses (`optinMessage`, `optoutMessage`, `helpMessage`) are optional. When omitted, a compliant, brand-named template with the carrier-required disclosures is generated for you.
+         *
+         * If you send them, they must name the registered brand and carry the disclosures. Submissions that don't are rewritten to the compliant template before the campaign is filed.
          *
          */
         campaign?: {
@@ -41943,10 +42840,9 @@ export type GetWhatsAppPricingAnalyticsData = {
          */
         end: string;
         /**
-         * Size of each data point. Meta refuses MONTHLY when the range is too short for a
-         * monthly bucket (for example a range that starts at the beginning of the current
-         * month and ends today); that is a 400 with `param: granularity` and Meta's reason
-         * in `error`. Use DAILY for short or month-to-date ranges.
+         * Size of each data point. Use DAILY for short or month-to-date ranges.
+         *
+         * Meta refuses MONTHLY when the range is too short for a monthly bucket (for example a range that starts at the beginning of the current month and ends today). That is a 400 with `param: granularity` and Meta's reason in `error`.
          *
          */
         granularity: 'HALF_HOUR' | 'DAILY' | 'MONTHLY';
@@ -42220,15 +43116,10 @@ export type ListPhoneNumbersData = {
          */
         profileId?: string;
         /**
-         * Filter by status (by default excludes released numbers). NOTE:
-         * `status=pending_regulatory` returns the "provisioning" view: numbers
-         * still in review PLUS recently-declined (last 30 days) ones, so a
-         * failed registration surfaces (with `regulatoryDeclineReason`) instead
-         * of silently disappearing. Declined numbers can be re-submitted via
-         * POST /v1/phone-numbers/{id}/remediate. `verifying` is the
-         * short-lived state after the number is provisioned on our side while
-         * WhatsApp confirms the activation code; the number is not billed until
-         * it reaches `active`.
+         * Filter by status. By default excludes released numbers.
+         *
+         * - `status=pending_regulatory` returns the "provisioning" view: numbers still in review PLUS recently-declined (last 30 days) ones, so a failed registration surfaces (with `regulatoryDeclineReason`) instead of silently disappearing. Declined numbers can be re-submitted via POST /v1/phone-numbers/{id}/remediate.
+         * - `verifying` is the short-lived state after the number is provisioned on our side while WhatsApp confirms the activation code. The number is not billed until it reaches `active`.
          *
          */
         status?: 'provisioning' | 'verifying' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'active' | 'suspended' | 'releasing' | 'released';
@@ -42364,12 +43255,19 @@ export type PurchasePhoneNumberData = {
          */
         country?: string;
         /**
-         * Which of the country's offered number types to order (see `types[]` on GET /v1/phone-numbers/countries). Omitted = the country's default type, which is always the WhatsApp-safe choice. Capabilities, price, and KYC requirements are per (country, type): toll_free can never connect WhatsApp (400 when combined with connectWhatsapp:true), and wantsSms:true requires an SMS-capable type.
+         * Which of the country's offered number types to order (see `types[]` on GET /v1/phone-numbers/countries). Omitted = the country's default type, always the WhatsApp-safe choice.
+         *
+         * Capabilities, price and KYC requirements are per (country, type):
+         *
+         * - toll_free can never connect WhatsApp (400 when combined with connectWhatsapp:true).
+         * - wantsSms:true requires an SMS-capable type.
          *
          */
         numberType?: 'local' | 'mobile' | 'national' | 'toll_free';
         /**
-         * Area code (national destination code, e.g. 11 for Sao Paulo) the number must be in. Hard constraint: when the area has no deliverable inventory the purchase fails with 409 code AREA_CODE_UNAVAILABLE instead of assigning a number from another area, and later replacements stay in this area too. Omit for any area. Get live options from GET /v1/phone-numbers/availability (areaOptions).
+         * Area code (national destination code, e.g. 11 for Sao Paulo) the number must be in. Omit for any area. Get live options from GET /v1/phone-numbers/availability (areaOptions).
+         *
+         * Hard constraint: when the area has no deliverable inventory, the purchase fails with 409 code AREA_CODE_UNAVAILABLE instead of assigning a number from another area. Later replacements stay in this area too.
          *
          */
         areaCode?: string;
@@ -42379,12 +43277,18 @@ export type PurchasePhoneNumberData = {
          */
         claimId?: string;
         /**
-         * One exact number to buy, in E.164, taken from GET /v1/phone-numbers/available. Hard constraint: when it is no longer available (bought by someone else, or WhatsApp's buy-time check rejects it) the purchase fails with 409 code PHONE_NUMBER_UNAVAILABLE instead of assigning another number; search again and pick another. Only for countries and types that activate instantly: a regulated one (202 kyc_required) returns 400 when phoneNumber is set.
+         * One exact number to buy, in E.164, taken from GET /v1/phone-numbers/available.
+         *
+         * Hard constraint: when it is no longer available (bought by someone else, or WhatsApp's buy-time check rejects it), the purchase fails with 409 code PHONE_NUMBER_UNAVAILABLE instead of assigning another number. Search again and pick another.
+         *
+         * Only for countries and types that activate instantly: a regulated one (202 kyc_required) returns 400 when phoneNumber is set.
          *
          */
         phoneNumber?: string;
         /**
-         * A phone number is the unit; WhatsApp is one optional feature. Pass false to buy a STANDALONE number (Calls/SMS only): provisioning skips the Meta pre-verify/OTP steps and the number activates immediately. Omitted defaults to the WhatsApp provisioning path. WhatsApp can be connected to a standalone number later from the connect flow.
+         * A phone number is the unit; WhatsApp is one optional feature. Omitted defaults to the WhatsApp provisioning path.
+         *
+         * Pass false to buy a STANDALONE number (Calls/SMS only): provisioning skips the Meta pre-verify/OTP steps and the number activates immediately. WhatsApp can be connected to a standalone number later from the connect flow.
          *
          */
         connectWhatsapp?: boolean;
@@ -42394,7 +43298,11 @@ export type PurchasePhoneNumberData = {
          */
         wantsSms?: boolean;
         /**
-         * Declare WhatsApp intent on a STANDALONE purchase (connectWhatsapp:false). The number still activates and bills immediately, but if WhatsApp's buy-time check rejects the assigned number, it is automatically swapped for a WhatsApp-eligible one during the purchase instead of being delivered with WhatsApp unavailable. Ignored on the WhatsApp provisioning path (connectWhatsapp omitted or true), which always delivers a WhatsApp-verified number.
+         * Declare WhatsApp intent on a STANDALONE purchase (connectWhatsapp:false). The number still activates and bills immediately.
+         *
+         * If WhatsApp's buy-time check rejects the assigned number, it is automatically swapped for a WhatsApp-eligible one during the purchase, instead of being delivered with WhatsApp unavailable.
+         *
+         * Ignored on the WhatsApp provisioning path (connectWhatsapp omitted or true), which always delivers a WhatsApp-verified number.
          *
          */
         wantsWhatsapp?: boolean;
@@ -42707,7 +43615,12 @@ export type CheckPhoneNumberAvailabilityResponse = ({
      */
     areas?: Array<(string)>;
     /**
-     * Live inventory grouped by area code. For US and CA this is the full country inventory (every area code with stock, recognizable metros listed first, then alphabetical); other countries are ordered largest stock first; they list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area. Equal to `areaAvailability.inStock`.
+     * Live inventory grouped by area code. Empty when out of stock (or the area lookup failed). Equal to `areaAvailability.inStock`.
+     *
+     * - US and CA: the full country inventory (every area code with stock), recognizable metros first, then alphabetical.
+     * - Other countries: largest stock first, listing the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool).
+     *
+     * Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
      *
      */
     areaOptions?: Array<{
@@ -42743,7 +43656,11 @@ export type CheckPhoneNumberAvailabilityResponse = ({
         preOrderable?: boolean;
     }>;
     /**
-     * Every area of the country's numbering plan (Google libphonenumber geocoding, one row per city: Madrid covers 910 to 919), in one of three states, refreshed every 6 hours from the carrier's own inventory counts. The same answer the dashboard picker and the public country pages show. Empty lists mean the pair has no cached coverage yet, not that the country has no areas.
+     * Every area of the country's numbering plan (Google libphonenumber geocoding, one row per city: Madrid covers 910 to 919), each in one of three states.
+     *
+     * Refreshed every 6 hours from the carrier's own inventory counts. The same answer the dashboard picker and the public country pages show.
+     *
+     * Empty lists mean the pair has no cached coverage yet, not that the country has no areas.
      *
      */
     areaAvailability?: {
@@ -42809,15 +43726,10 @@ export type GetWhatsAppPhoneNumbersData = {
          */
         profileId?: string;
         /**
-         * Filter by status (by default excludes released numbers). NOTE:
-         * `status=pending_regulatory` returns the "provisioning" view: numbers
-         * still in review PLUS recently-declined (last 30 days) ones, so a
-         * failed registration surfaces (with `regulatoryDeclineReason`) instead
-         * of silently disappearing. Declined numbers can be re-submitted via
-         * POST /v1/whatsapp/phone-numbers/{id}/remediate. `verifying` is the
-         * short-lived state after the number is provisioned on our side while
-         * WhatsApp confirms the activation code; the number is not billed until
-         * it reaches `active`.
+         * Filter by status. By default, released numbers are excluded.
+         *
+         * - `status=pending_regulatory` returns the "provisioning" view: numbers still in review PLUS ones declined in the last 30 days, so a failed registration surfaces (with `regulatoryDeclineReason`) instead of disappearing. Re-submit declined numbers via POST /v1/whatsapp/phone-numbers/{id}/remediate.
+         * - `verifying`: the short-lived state after the number is provisioned on our side while WhatsApp confirms the activation code. Not billed until it reaches `active`.
          *
          */
         status?: 'provisioning' | 'verifying' | 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'active' | 'suspended' | 'releasing' | 'released';
@@ -43037,7 +43949,12 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
      */
     areas?: Array<(string)>;
     /**
-     * Live inventory grouped by area code. For US and CA this is the full country inventory (every area code with stock, recognizable metros listed first, then alphabetical); other countries are ordered largest stock first; they list the areas in the latest inventory page (up to 500 numbers, which for most countries is the entire pool). Empty when out of stock (or the area lookup failed). Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area. Equal to `areaAvailability.inStock`.
+     * Live inventory grouped by area code. Equal to `areaAvailability.inStock`. Empty when out of stock (or the area lookup failed).
+     *
+     * - **US and CA:** the full country inventory (every area code with stock, recognizable metros first, then alphabetical).
+     * - **Other countries:** largest stock first, listing the areas in the latest inventory page (up to 500 numbers, for most countries the entire pool).
+     *
+     * Pass a chosen `ndc` as `areaCode` on POST /v1/phone-numbers/purchase (or on the KYC submit for regulated countries) to require that area.
      *
      */
     areaOptions?: Array<{
@@ -43073,7 +43990,9 @@ export type CheckWhatsAppNumberAvailabilityResponse = ({
         preOrderable?: boolean;
     }>;
     /**
-     * Every area of the country's numbering plan (Google libphonenumber geocoding, one row per city: Madrid covers 910 to 919), in one of three states, refreshed every 6 hours from the carrier's own inventory counts. The same answer the dashboard picker and the public country pages show. Empty lists mean the pair has no cached coverage yet, not that the country has no areas.
+     * Every area of the country's numbering plan (Google libphonenumber geocoding, one row per city: Madrid covers 910 to 919), in one of three states.
+     *
+     * Refreshed every 6 hours from the carrier's own inventory counts. The same answer the dashboard picker and the public country pages show. Empty lists mean the pair has no cached coverage yet, not that the country has no areas.
      *
      */
     areaAvailability?: {
@@ -43166,7 +44085,12 @@ export type GetPhoneNumberKycFormResponse = ({
         localTo?: (string) | null;
     }>;
     /**
-     * Present when this account already has a reusable verification for the country (skip the form). `fromPhoneNumber`/`details` mirror the first option; `options` lists ALL reusable verifications (agencies hold one per end client), approved-first. Pass the chosen option's `id` as `reuseOptionId` on POST. Each option's `instant` says whether it activates in minutes (group-approved) or still queues for carrier review (1-3 days).
+     * Present when this account already has a reusable verification for the country (skip the form).
+     *
+     * - `fromPhoneNumber`/`details` mirror the first option.
+     * - `options` lists ALL reusable verifications (agencies hold one per end client), approved-first. Pass the chosen option's `id` as `reuseOptionId` on POST.
+     * - Each option's `instant` says whether it activates in minutes (group-approved) or still queues for carrier review (1-3 days).
+     *
      */
     reusable?: {
         available?: boolean;
@@ -43205,7 +44129,12 @@ export type GetPhoneNumberKycFormResponse = ({
         }>;
     } | null;
     /**
-     * true when this account already has a number for this country in regulatory review (status pending_regulatory). Scope is the whole account across all profiles, and the country only (any number type), so it is not a per-end-client signal on a multi-tenant setup. Informational only: it never blocks a submission, and several same-country numbers may sit in review at once. For a per-end-client view, call GET /v1/phone-numbers with `profileId` and `status=pending_regulatory`; that view also lists numbers declined in the last 30 days.
+     * true when this account already has a number for this country in regulatory review (status pending_regulatory).
+     *
+     * - Scope is the whole account across all profiles, and the country only (any number type), so it is not a per-end-client signal on a multi-tenant setup.
+     * - Informational only: it never blocks a submission, and several same-country numbers may sit in review at once.
+     *
+     * For a per-end-client view, call GET /v1/phone-numbers with `profileId` and `status=pending_regulatory`; that view also lists numbers declined in the last 30 days.
      */
     pendingReview?: boolean;
 });
@@ -43217,7 +44146,10 @@ export type SubmitPhoneNumberKycData = {
         profileId: string;
         country: string;
         /**
-         * Idempotency token for this submission attempt. Once the number has been ordered, a retry with the same token returns that same number instead of ordering another. A submission that fails before the number is ordered releases the token, so you can correct your details and re-submit with it. Omit it and every call provisions a new number.
+         * Idempotency token for this submission attempt. Omit it and every call provisions a new number.
+         *
+         * - Once the number has been ordered, a retry with the same token returns that number instead of ordering another.
+         * - A submission that fails before the number is ordered releases the token, so you can correct your details and re-submit with it.
          */
         submissionId?: string;
         /**
@@ -43237,7 +44169,11 @@ export type SubmitPhoneNumberKycData = {
          */
         reuseFrom?: string;
         /**
-         * Area code (NDC) the number must be in. Hard constraint: an empty area pool fails with 409 code AREA_CODE_UNAVAILABLE instead of ordering from another area. Omit for any area. Options come from GET /v1/phone-numbers/availability (areaOptions); the purchase 202 kycUrl echoes the areaCode picked at purchase time so it can be passed here.
+         * Area code (NDC) the number must be in. Omit for any area.
+         *
+         * Hard constraint: an empty area pool fails with 409 code AREA_CODE_UNAVAILABLE instead of ordering from another area.
+         *
+         * Options come from GET /v1/phone-numbers/availability (areaOptions). The purchase 202 kycUrl echoes the areaCode picked at purchase time so it can be passed here.
          */
         areaCode?: string;
         /**
@@ -43245,7 +44181,12 @@ export type SubmitPhoneNumberKycData = {
          */
         phoneNumber?: string;
         /**
-         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area. Without areaCode it accepts the pre-order a previous submit offered with 409 code area_pre_order_available (a geographic-match country whose address area has no stock): resend the same body with preOrder true and the order is placed for that area. A whole pair with no stock is pre-ordered without either flag.
+         * Pre-order a number when the requested area has no stock.
+         *
+         * - With areaCode: pre-order that area when it has no stock (listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area.
+         * - Without areaCode: accepts the pre-order a previous submit offered with 409 code area_pre_order_available (a geographic-match country whose address area has no stock). Resend the same body with preOrder true and the order is placed for that area.
+         *
+         * A whole pair with no stock is pre-ordered without either flag.
          */
         preOrder?: boolean;
         /**
@@ -43301,7 +44242,15 @@ export type SubmitPhoneNumberKycData = {
 export type SubmitPhoneNumberKycResponse = ({
     status?: 'kyc_submitted' | 'kyc_reused' | 'kyc_already_submitted';
     /**
-     * True when this submission placed a pre-order instead of an order from stock: the country and type had nothing deliverable, the picked areaCode was sold out (preOrder: true sent), or the country requires the number's area to cover the registered address, that area has no stock, and the caller accepted the offer (preOrder true after a 409 area_pre_order_available; the carrier is then asked for a number in exactly that area). The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks, never guaranteed), and is not billed until active. Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
+     * True when this submission placed a pre-order instead of an order from stock. That happens when:
+     *
+     * - the country and type had nothing deliverable;
+     * - the picked areaCode was sold out (preOrder: true sent); or
+     * - the country requires the number's area to cover the registered address, that area has no stock, and the caller accepted the offer (preOrder true after a 409 area_pre_order_available). The carrier is then asked for a number in exactly that area.
+     *
+     * The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks, never guaranteed). It is not billed until active.
+     *
+     * Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
      */
     preOrder?: boolean;
     /**
@@ -43417,7 +44366,10 @@ export type CreatePhoneNumberKycLinkData = {
          */
         areaCode?: string;
         /**
-         * Language of the hosted page: its copy, the carrier requirement texts (translated once per country and cached), the pre-submit review notes and the status emails to the end customer. Omitted: the browser language of the end customer, falling back to English. The end customer can also switch with `?lang=` on the page.
+         * Language of the hosted page: its copy, the carrier requirement texts (translated once per country and cached), the pre-submit review notes and the status emails to the end customer.
+         *
+         * Omitted: the browser language of the end customer, falling back to English. The end customer can also switch with `?lang=` on the page.
+         *
          */
         language?: 'en' | 'es' | 'pt-BR';
         /**
@@ -44005,12 +44957,21 @@ export type GetWhatsAppNumberKycFormResponse = ({
          */
         localTo?: (string) | null;
         /**
-         * When set, the requirement applies ONLY to this end-user type: provide it for that type and OMIT it for the other (e.g. Brazil: "Cartão CNPJ" is business-only, "CPF" and "ID/Passport Copy" are personal-only). Submitting both sets makes the regulator ask whether the number is for personal or business use and stalls the review. Pass `entityType` on POST so the server drops the inapplicable set.
+         * When set, the requirement applies ONLY to this end-user type: provide it for that type and OMIT it for the other.
+         *
+         * Example (Brazil): "Cartão CNPJ" is business-only; "CPF" and "ID/Passport Copy" are personal-only.
+         *
+         * Submitting both sets makes the regulator ask whether the number is for personal or business use, which stalls the review. Pass `entityType` on POST so the server drops the inapplicable set.
          */
         audience?: ('business' | 'individual') | null;
     }>;
     /**
-     * Present when this account already has a reusable verification for the country (skip the form). `fromPhoneNumber`/`details` mirror the first option; `options` lists ALL reusable verifications (agencies hold one per end client), approved-first. Pass the chosen option's `id` as `reuseOptionId` on POST. Each option's `instant` says whether it activates in minutes (group-approved) or still queues for carrier review (1-3 days).
+     * Present when this account already has a reusable verification for the country (skip the form).
+     *
+     * - `fromPhoneNumber`/`details` mirror the first option.
+     * - `options` lists ALL reusable verifications (agencies hold one per end client), approved-first. Pass the chosen option's `id` as `reuseOptionId` on POST.
+     * - Each option's `instant` says whether it activates in minutes (group-approved) or still queues for carrier review (1-3 days).
+     *
      */
     reusable?: {
         available?: boolean;
@@ -44049,7 +45010,11 @@ export type GetWhatsAppNumberKycFormResponse = ({
         }>;
     } | null;
     /**
-     * true when this account already has a number for this country in regulatory review (status pending_regulatory). Scope is the whole account across all profiles, and the country only (any number type), so it is not a per-end-client signal on a multi-tenant setup. Informational only: it never blocks a submission, and several same-country numbers may sit in review at once. For a per-end-client view, call GET /v1/phone-numbers with `profileId` and `status=pending_regulatory`; that view also lists numbers declined in the last 30 days.
+     * true when this account already has a number for this country in regulatory review (status pending_regulatory).
+     *
+     * Scope is the whole account across all profiles, and the country only (any number type), so it is not a per-end-client signal on a multi-tenant setup. Informational only: it never blocks a submission, and several same-country numbers may sit in review at once.
+     *
+     * For a per-end-client view, call GET /v1/phone-numbers with `profileId` and `status=pending_regulatory`; it also lists numbers declined in the last 30 days.
      */
     pendingReview?: boolean;
 });
@@ -44061,7 +45026,10 @@ export type SubmitWhatsAppNumberKycData = {
         profileId: string;
         country: string;
         /**
-         * Idempotency token for this submission attempt. Once the number has been ordered, a retry with the same token returns that same number instead of ordering another. A submission that fails before the number is ordered releases the token, so you can correct your details and re-submit with it. Omit it and every call provisions a new number.
+         * Idempotency token for this submission attempt. Omit it and every call provisions a new number.
+         *
+         * - Once the number has been ordered, a retry with the same token returns that same number instead of ordering another.
+         * - A submission that fails before the number is ordered releases the token, so you can correct your details and re-submit with it.
          */
         submissionId?: string;
         /**
@@ -44081,7 +45049,11 @@ export type SubmitWhatsAppNumberKycData = {
          */
         reuseFrom?: string;
         /**
-         * Area code (NDC) the number must be in. Hard constraint: an empty area pool fails with 409 code AREA_CODE_UNAVAILABLE instead of ordering from another area. Omit for any area. Options come from GET /v1/phone-numbers/availability (areaOptions); the purchase 202 kycUrl echoes the areaCode picked at purchase time so it can be passed here.
+         * Area code (NDC) the number must be in. Omit for any area.
+         *
+         * Hard constraint: an empty area pool fails with 409 code AREA_CODE_UNAVAILABLE instead of ordering from another area.
+         *
+         * Options come from GET /v1/phone-numbers/availability (areaOptions). The purchase 202 kycUrl echoes the areaCode picked at purchase time so it can be passed here.
          */
         areaCode?: string;
         /**
@@ -44089,7 +45061,12 @@ export type SubmitWhatsAppNumberKycData = {
          */
         phoneNumber?: string;
         /**
-         * With areaCode: pre-order that area when it has no stock (an area listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area. Without areaCode it accepts the pre-order a previous submit offered with 409 code area_pre_order_available (a geographic-match country whose address area has no stock): resend the same body with preOrder true and the order is placed for that area. A whole pair with no stock is pre-ordered without either flag.
+         * Pre-order a number when the area has no stock.
+         *
+         * - **With areaCode:** pre-order that area when it has no stock (listed in soldOutAreas with preOrderable true) instead of failing with AREA_CODE_UNAVAILABLE. The carrier sources a number in that area.
+         * - **Without areaCode:** accepts the pre-order a previous submit offered with 409 code area_pre_order_available (a geographic-match country whose address area has no stock). Resend the same body with preOrder true and the order is placed for that area.
+         *
+         * A whole pair with no stock is pre-ordered without either flag.
          */
         preOrder?: boolean;
         /**
@@ -44141,7 +45118,15 @@ export type SubmitWhatsAppNumberKycData = {
 export type SubmitWhatsAppNumberKycResponse = ({
     status?: 'kyc_submitted' | 'kyc_reused' | 'kyc_already_submitted';
     /**
-     * True when this submission placed a pre-order instead of an order from stock: the country and type had nothing deliverable, the picked areaCode was sold out (preOrder: true sent), or the country requires the number's area to cover the registered address, that area has no stock, and the caller accepted the offer (preOrder true after a 409 area_pre_order_available; the carrier is then asked for a number in exactly that area). The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks, never guaranteed), and is not billed until active. Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
+     * True when this submission placed a pre-order instead of an order from stock. That happens when:
+     *
+     * - the country and type had nothing deliverable;
+     * - the picked areaCode was sold out (preOrder: true sent); or
+     * - the country requires the number's area to cover the registered address, that area has no stock, and the caller accepted the offer (preOrder true after a 409 area_pre_order_available). The carrier is then asked for a number in exactly that area.
+     *
+     * The number stays `pending_regulatory` until we get it, from regular stock the moment it returns or sourced by the carrier (usually 2 to 4 weeks, never guaranteed). It is not billed until active.
+     *
+     * Releasing it (DELETE /v1/phone-numbers/{id}) cancels the pre-order. A pre-order is one number: `quantity` above 1 is rejected with 400.
      */
     preOrder?: boolean;
     /**
@@ -44244,7 +45229,10 @@ export type CreateWhatsAppNumberKycLinkData = {
          */
         areaCode?: string;
         /**
-         * Language of the hosted page: its copy, the carrier requirement texts (translated once per country and cached), the pre-submit review notes and the status emails to the end customer. Omitted: the browser language of the end customer, falling back to English. The end customer can also switch with `?lang=` on the page.
+         * Language of the hosted page: its copy, the carrier requirement texts (translated once per country and cached), the pre-submit review notes and the status emails to the end customer.
+         *
+         * Omitted: the end customer's browser language, falling back to English. The end customer can also switch with `?lang=` on the page.
+         *
          */
         language?: 'en' | 'es' | 'pt-BR';
         /**
@@ -46828,7 +47816,14 @@ export type AskSupportQuestionData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -46965,7 +47960,9 @@ export type UpdateWorkflowData = {
         edges?: Array<WorkflowEdge>;
         entryNodeId?: (string) | null;
         /**
-         * Reassign the workflow to a different `SocialAccount`. `platform` and `profileId` are derived server-side from the new account (the client never sends them directly). The account must belong to the caller's team and be on a workflow-supported platform (whatsapp, instagram, facebook, telegram, twitter, bluesky, reddit, tiktok). Changing this triggers a graph revalidation against the new platform.
+         * Reassign the workflow to a different `SocialAccount`. Changing this triggers a graph revalidation against the new platform.
+         *
+         * `platform` and `profileId` are derived server-side from the new account (the client never sends them directly). The account must belong to the caller's team and be on a workflow-supported platform (whatsapp, instagram, facebook, telegram, twitter, bluesky, reddit, tiktok).
          *
          */
         accountId?: string;
@@ -47737,7 +48734,14 @@ export type CreateCommentAutomationData = {
          */
         accountId: string;
         /**
-         * What fires the automation. 'comment' (keyword comment on a post), 'live_comment' (keyword comment on an Instagram live broadcast), 'story_reply' (keyword reply to an Instagram story) or 'story_mention' (a story mentioning the Instagram account). For 'story_reply', platformPostId is the story media id (omit for any story). Every trigger but 'comment' is Instagram only; reply-only platforms accept 'comment' only.
+         * What fires the automation:
+         *
+         * - 'comment': keyword comment on a post.
+         * - 'live_comment': keyword comment on an Instagram live broadcast.
+         * - 'story_reply': keyword reply to an Instagram story. platformPostId is the story media id (omit for any story).
+         * - 'story_mention': a story mentioning the Instagram account.
+         *
+         * Every trigger but 'comment' is Instagram only; reply-only platforms accept 'comment' only.
          */
         trigger?: 'comment' | 'live_comment' | 'story_reply' | 'story_mention';
         /**
@@ -47745,7 +48749,9 @@ export type CreateCommentAutomationData = {
          */
         platformPostId?: string;
         /**
-         * Zernio post ID (24 hexadecimal characters); platform IDs return 400. Optional and never required. Use it INSTEAD of platformPostId to bind a per-post automation to a not-yet-published Zernio post: the automation stays pending and arms itself when that post publishes. For a post already live on the platform, pass platformPostId alone and omit this.
+         * Zernio post ID (24 hexadecimal characters); platform IDs return 400. Optional and never required.
+         *
+         * Use it INSTEAD of platformPostId to bind a per-post automation to a not-yet-published Zernio post: the automation stays pending and arms itself when that post publishes. For a post already live on the platform, pass platformPostId alone and omit this.
          */
         postId?: string;
         /**
@@ -47813,7 +48819,11 @@ export type CreateCommentAutomationData = {
          */
         commentReplyDelaySeconds?: number;
         /**
-         * Also fire these keywords on a plain inbound DM, so the automation answers people who message the keyword instead of commenting it. Requires at least one keyword (an empty keyword list means 'match anything', which would answer every inbound message) and is rejected on story_reply automations, which already trigger on DMs. Dedup is per door: a contact who already received the DM from their comment can still receive it from a DM.
+         * Also fire these keywords on a plain inbound DM, so the automation answers people who message the keyword instead of commenting it.
+         *
+         * - Requires at least one keyword (an empty list means 'match anything', which would answer every inbound message).
+         * - Rejected on story_reply automations, which already trigger on DMs.
+         * - Dedup is per door: a contact who already received the DM from their comment can still receive it from a DM.
          */
         alsoMatchInDms?: boolean;
         audience?: CommentAutomationAudience;
@@ -48021,7 +49031,13 @@ export type UpdateCommentAutomationData = {
          */
         typoTolerance?: boolean;
         /**
-         * Re-binds the automation to another post: the platform media/post ID (or story media id when trigger=story_reply). postId, platformPostId and postTitle move as a unit: sending any of them replaces all three, and an omitted one is cleared. Send all three as null (or empty) to make it account-wide (any post / any story). Omit all three to keep the current binding. 409 when another active automation already owns the new post.
+         * Re-binds the automation to another post: the platform media/post ID (or story media id when trigger=story_reply). 409 when another active automation already owns the new post.
+         *
+         * postId, platformPostId and postTitle move as a unit:
+         *
+         * - Sending any of them replaces all three; an omitted one is cleared.
+         * - All three null (or empty): account-wide (any post / any story).
+         * - All three omitted: keeps the current binding.
          */
         platformPostId?: (string) | null;
         /**
@@ -49150,16 +50166,33 @@ export type ListAdCampaignsData = {
          */
         fromDate?: string;
         /**
-         * Return only campaigns that delivered between `fromDate` and `toDate`: spend above zero, or impressions served at zero spend. Unlike `status`, which reads a campaign's CURRENT state, this filters on what happened inside the window. Filters the campaign set itself, so `pagination.total` counts only matching campaigns. Mirrors the same filter on /v1/ads/tree.
+         * Return only campaigns that delivered between `fromDate` and `toDate`: spend above zero, or impressions served at zero spend.
+         *
+         * Unlike `status`, which reads a campaign's CURRENT state, this filters on what happened inside the window. It filters the campaign set itself, so `pagination.total` counts only matching campaigns. Mirrors the same filter on /v1/ads/tree.
          */
         hasDelivery?: boolean;
         /**
-         * Meta only. Campaign reads aggregate over ad documents, so a campaign with ZERO ads is normally invisible here, the state the two-step create (campaign, then ads via `existingCampaignId`) leaves behind whenever Meta rejects the ad step. Set true to list those too, with `adCount: 0` and zeroed metrics. Requires `accountId` and `adAccountId`, since an empty campaign has no ad row to resolve a token or ad account from.
+         * Meta only. Set true to also list campaigns with ZERO ads, with `adCount: 0` and zeroed metrics.
+         *
+         * Campaign reads aggregate over ad documents, so such campaigns are normally invisible. The two-step create (campaign, then ads via `existingCampaignId`) leaves one behind whenever Meta rejects the ad step.
+         *
+         * Requires `accountId` and `adAccountId`, since an empty campaign has no ad row to resolve a token or ad account from.
+         *
          */
         includeEmpty?: boolean;
         limit?: number;
         /**
-         * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description. On X the budget is read live in the same read: on GET /v1/ads/{adId} `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches); on the ad set and campaign listings `budget` is the one that line item or campaign holds now (returned, not stored); a row whose budget the other level holds keeps its synced `budget`.
+         * Read the on/off switches live from the platform instead of returning synced values. See "Status freshness" in the operation description.
+         *
+         * - The fresh values are stored (later reads return them too), and the response carries `statusReadAt`, the time of the read.
+         * - At most 20 platform objects are read per request.
+         * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
+         *
+         * **On X** the budget is read live too:
+         *
+         * - GET /v1/ads/{adId}: `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches).
+         * - Ad set and campaign listings: `budget` is what that line item or campaign holds now (returned, not stored). A row whose budget the other level holds keeps its synced `budget`.
+         *
          */
         live?: boolean;
         /**
@@ -49226,7 +50259,10 @@ export type CreateAdCampaignData = {
          */
         buyingType?: 'AUCTION' | 'RESERVED';
         /**
-         * Meta and ChatGPT (OpenAI). Runs campaign validation without creating or persisting a campaign; Idempotency-Key storage is bypassed. Returns HTTP 200 with validateOnly true and status VALIDATED. OpenAI has no dry-run, so there Zernio checks the budget, goal and conversion event itself. `true` on any other platform returns 501 `feature_not_available` (same as POST /v1/ads/create); `false` is ignored.
+         * Meta and ChatGPT (OpenAI). Runs campaign validation without creating or persisting a campaign; Idempotency-Key storage is bypassed. Returns HTTP 200 with validateOnly true and status VALIDATED.
+         *
+         * OpenAI has no dry-run, so Zernio checks the budget, goal and conversion event itself. `true` on any other platform returns 501 `feature_not_available` (same as POST /v1/ads/create); `false` is ignored.
+         *
          */
         validateOnly?: boolean;
         specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'ISSUES_ELECTIONS_POLITICS' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ONLINE_GAMBLING_AND_GAMING')>;
@@ -49249,11 +50285,27 @@ export type CreateAdCampaignData = {
          */
         locationTargetingType?: (GoogleLocationTargetingType);
         /**
-         * Campaign bid strategy. Meta stores `bid_strategy` alongside the budget, so this REQUIRES `budgetAmount` + `budgetType` on the same request; sending it without a campaign budget is a 400. A campaign carrying a strategy without its `bid_amount` makes every ad set created under it fail with an error that names the ad set (code 100, subcode 1815857), so the bad state is rejected up front rather than accepted. To bid at ad-set level on Meta, set the strategy there instead. On Google: LOWEST_COST_WITHOUT_CAP = Maximize Conversions, COST_CAP + bidAmount = Target CPA, LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS, LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling; portfolioBidStrategyId attaches a portfolio strategy instead.
+         * Campaign bid strategy.
+         *
+         * **Meta** stores `bid_strategy` alongside the budget, so this REQUIRES `budgetAmount` + `budgetType` on the same request (400 without a campaign budget).
+         *
+         * A campaign carrying a strategy without its `bid_amount` makes every ad set under it fail (code 100, subcode 1815857), so that state is rejected up front. To bid at ad-set level, set the strategy there instead.
+         *
+         * **Google:**
+         *
+         * - LOWEST_COST_WITHOUT_CAP = Maximize Conversions
+         * - COST_CAP + bidAmount = Target CPA
+         * - LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS
+         * - LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling
+         * - portfolioBidStrategyId attaches a portfolio strategy instead.
+         *
          */
         bidStrategy?: 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
         /**
-         * Whole currency units (USD: 5 = $5.00). Required for LOWEST_COST_WITH_BID_CAP and COST_CAP; ignored otherwise. On Meta, validated here but NOT stored: the campaign object has no bid_amount field, only bid_strategy lives on it, and the amount takes effect once an ad set joins this campaign (existingCampaignId on POST /v1/ads/create) and supplies its own bidAmount there. On Google, stored directly on the campaign's bidding strategy.
+         * Whole currency units (USD: 5 = $5.00). Required for LOWEST_COST_WITH_BID_CAP and COST_CAP; ignored otherwise.
+         *
+         * - Meta: validated here but NOT stored, since the campaign object only has bid_strategy. The amount takes effect once an ad set joins this campaign (existingCampaignId on POST /v1/ads/create) and supplies its own bidAmount there.
+         * - Google: stored directly on the campaign's bidding strategy.
          */
         bidAmount?: number;
         /**
@@ -49273,7 +50325,14 @@ export type CreateAdCampaignData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -49325,7 +50384,9 @@ export type UpdateAdCampaignStatusResponse = ({
      */
     status?: 'active' | 'paused';
     /**
-     * The campaign's own switch as read back from the platform, in the raw platform vocabulary (Meta effective_status, TikTok ENABLE / DISABLE, Google ENABLED / PAUSED, ChatGPT (OpenAI) status, Reddit configured_status). Null when the platform could not be read, which is always the case on Pinterest, LinkedIn and X (no single-campaign read).
+     * The campaign's own switch as read back from the platform, in the raw platform vocabulary: Meta effective_status, TikTok ENABLE / DISABLE, Google ENABLED / PAUSED, ChatGPT (OpenAI) status, Reddit configured_status.
+     *
+     * Null when the platform could not be read, which is always the case on Pinterest, LinkedIn and X (no single-campaign read).
      */
     platformCampaignStatus?: (string) | null;
     /**
@@ -49547,7 +50608,12 @@ export type UpdateAdCampaignData = {
          */
         accountId?: string;
         /**
-         * **Meta + Google.** On Meta, the campaign default that ad sets inherit unless they override it. On Google, the campaign's own bidding strategy. On Google: LOWEST_COST_WITHOUT_CAP = Maximize Conversions, COST_CAP + bidAmount = Target CPA, LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS, LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling; portfolioBidStrategyId attaches a portfolio strategy instead.
+         * **Meta + Google.**
+         *
+         * - Meta: the campaign default that ad sets inherit unless they override it.
+         * - Google: the campaign's own bidding strategy. LOWEST_COST_WITHOUT_CAP = Maximize Conversions, COST_CAP + bidAmount = Target CPA, LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS, LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling.
+         * - Google: portfolioBidStrategyId attaches a portfolio strategy instead.
+         *
          */
         bidStrategy?: (BidStrategy);
         /**
@@ -49797,7 +50863,10 @@ export type DuplicateAdCampaignData = {
          */
         statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
         /**
-         * Reschedule the copied hierarchy's start (ISO 8601). On Meta and TikTok a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone; LinkedIn ad accounts carry no timezone, so there it is read as UTC. TikTok defaults to a start a few minutes after the copy.
+         * Reschedule the copied hierarchy's start (ISO 8601). TikTok defaults to a start a few minutes after the copy.
+         *
+         * - Meta and TikTok: a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone.
+         * - LinkedIn: ad accounts carry no timezone, so it is read as UTC.
          */
         startTime?: string;
         /**
@@ -49805,7 +50874,14 @@ export type DuplicateAdCampaignData = {
          */
         endTime?: string;
         /**
-         * Meta's native `rename_strategy` values. `DEEP_RENAME` renames the copied campaign and every copied child (ad sets, ads) with `renamePrefix` / `renameSuffix`. `ONLY_TOP_LEVEL_RENAME` renames only the copied campaign; children keep their source names. `NO_RENAME` keeps every source name. With no rename option at all, Meta appends its own ` - Copy` suffix; LinkedIn defaults to `DEEP_RENAME` (its campaign group and campaigns are renamed). Ignored on TikTok, where `renamePrefix` / `renameSuffix` apply to every copied object.
+         * Meta's native `rename_strategy` values:
+         *
+         * - `DEEP_RENAME`: renames the copied campaign and every copied child (ad sets, ads) with `renamePrefix` / `renameSuffix`.
+         * - `ONLY_TOP_LEVEL_RENAME`: renames only the copied campaign; children keep their source names.
+         * - `NO_RENAME`: keeps every source name.
+         *
+         * With no rename option at all, Meta appends its own ` - Copy` suffix; LinkedIn defaults to `DEEP_RENAME` (its campaign group and campaigns are renamed). Ignored on TikTok, where `renamePrefix` / `renameSuffix` apply to every copied object.
+         *
          */
         renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
         /**
@@ -49823,7 +50899,14 @@ export type DuplicateAdCampaignData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -50122,7 +51205,17 @@ export type ListAdSetsData = {
         campaignId?: string;
         limit?: number;
         /**
-         * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description. On X the budget is read live in the same read: on GET /v1/ads/{adId} `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches); on the ad set and campaign listings `budget` is the one that line item or campaign holds now (returned, not stored); a row whose budget the other level holds keeps its synced `budget`.
+         * Read the on/off switches live from the platform instead of returning synced values. See "Status freshness" in the operation description.
+         *
+         * - The fresh values are stored (later reads return them too), and the response carries `statusReadAt`, the time of the read.
+         * - At most 20 platform objects are read per request.
+         * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
+         *
+         * **On X** the budget is read live too:
+         *
+         * - GET /v1/ads/{adId}: `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches).
+         * - Ad set and campaign listings: `budget` is what that line item or campaign holds now (returned, not stored). A row whose budget the other level holds keeps its synced `budget`.
+         *
          */
         live?: boolean;
         page?: number;
@@ -50182,32 +51275,16 @@ export type ListAdSetsResponse = ({
             endDate?: string;
         } | null;
         /**
-         * The audience this ad set delivers to, as the platform reports it at the last sync,
-         * in the platform's own shape. Every platform; null only for an ad set not re-synced
-         * yet, or when the platform's targeting read failed on every sync so far (a failed read
-         * keeps the last stored value).
+         * The ad set's audience as the platform reported it at the last sync, in the platform's own shape. Every platform. null only for an ad set not re-synced yet, or when the targeting read failed on every sync so far (a failed read keeps the last stored value).
          *
-         * - Meta: the ad set's `targeting` verbatim (snake_case: geo_locations, age_min,
-         * custom_audiences, flexible_spec, ...), so it can be read, edited and sent back as is.
-         * - LinkedIn: `include` and `exclude` (below) are the campaign's `targetingCriteria`
-         * verbatim, without reconstructing them from our normalized targeting spec.
-         * - TikTok: the ad group's targeting fields from adgroup/get, verbatim (placement_type,
-         * placements, location_ids, age_groups, gender, languages, interest_category_ids,
-         * actions, audience_ids, excluded_audience_ids, operating_systems, ...). Only fields
-         * TikTok returned are present.
-         * - Google: `campaignCriteria` (LOCATION, LANGUAGE, PROXIMITY, DEVICE, AGE_RANGE, GENDER,
-         * USER_LIST, INCOME_RANGE, PARENTAL_STATUS) and `adGroupCriteria` (AGE_RANGE, GENDER,
-         * USER_LIST, USER_INTEREST, INCOME_RANGE, PARENTAL_STATUS), each a Google criterion
-         * verbatim (camelCase: resourceName, type, negative, bidModifier and the payload its type sets, for
-         * example `location.geoTargetConstant`). Most Google targeting lives on the campaign,
-         * so every ad group of a campaign carries the same `campaignCriteria`. Keywords are
-         * not included (they have their own endpoints). Synced on Google's slower keyword cycle.
-         * - Pinterest: the ad group's `targeting_spec` verbatim (GEO, AGE_BUCKET, GENDER,
-         * INTEREST, AUDIENCE_INCLUDE, LOCALE, ...).
-         * - X: `targeting_criteria`, the line item's criteria as X lists them (targeting_type,
-         * targeting_value, operator_type, name), the same shape X's batch create takes.
-         * - OpenAI: the campaign's `targeting` (OpenAI targets at the campaign), plus the ad
-         * group's `context_hints` when it has any.
+         * - Meta: the ad set's `targeting` verbatim (snake_case: geo_locations, age_min, custom_audiences, flexible_spec, ...), so it can be read, edited and sent back as is.
+         * - LinkedIn: `include` and `exclude` (below) are the campaign's `targetingCriteria` verbatim, not reconstructed from our normalized targeting spec.
+         * - TikTok: the ad group's targeting fields from adgroup/get, verbatim (placement_type, placements, location_ids, age_groups, gender, languages, interest_category_ids, actions, audience_ids, excluded_audience_ids, operating_systems, ...). Only fields TikTok returned are present.
+         * - Google: `campaignCriteria` (LOCATION, LANGUAGE, PROXIMITY, DEVICE, AGE_RANGE, GENDER, USER_LIST, INCOME_RANGE, PARENTAL_STATUS) and `adGroupCriteria` (AGE_RANGE, GENDER, USER_LIST, USER_INTEREST, INCOME_RANGE, PARENTAL_STATUS), each a Google criterion verbatim.
+         * - Google criteria are camelCase: resourceName, type, negative, bidModifier and the payload its type sets (for example `location.geoTargetConstant`). Most targeting lives on the campaign, so every ad group of a campaign carries the same `campaignCriteria`. Keywords are excluded (own endpoints). Synced on Google's slower keyword cycle.
+         * - Pinterest: the ad group's `targeting_spec` verbatim (GEO, AGE_BUCKET, GENDER, INTEREST, AUDIENCE_INCLUDE, LOCALE, ...).
+         * - X: `targeting_criteria`, the line item's criteria as X lists them (targeting_type, targeting_value, operator_type, name), the same shape X's batch create takes.
+         * - OpenAI: the campaign's `targeting` (OpenAI targets at the campaign), plus the ad group's `context_hints` when it has any.
          *
          */
         targeting?: {
@@ -50240,15 +51317,30 @@ export type ListAdSetsResponse = ({
          */
         statusReadAt?: (string) | null;
         /**
-         * The ad set's optimization goal as last synced, in the platform's own enum (Meta `optimization_goal`, for example OFFSITE_CONVERSIONS or LINK_CLICKS; TikTok `optimization_goal`; Pinterest the conversion event of `optimization_goal_metadata`, for example CHECKOUT; X the line item `goal`; OpenAI the campaign `bidding_type`). Always null on Google, which has no per-ad-group optimization goal. On TikTok with `live=true`, rows read live carry the ad group's `optimization_goal` exactly as TikTok's adgroup/get returns it now (for example ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, CLICK, CONVERT).
+         * The ad set's optimization goal as last synced, in the platform's own enum:
+         *
+         * - Meta: `optimization_goal` (for example OFFSITE_CONVERSIONS or LINK_CLICKS).
+         * - TikTok: `optimization_goal`. With `live=true`, rows read live carry it exactly as TikTok's adgroup/get returns it now (for example ENGAGED_VIEW, ENGAGED_VIEW_FIFTEEN, CLICK, CONVERT).
+         * - Pinterest: the conversion event of `optimization_goal_metadata` (for example CHECKOUT).
+         * - X: the line item `goal`.
+         * - OpenAI: the campaign `bidding_type`.
+         * - Google: always null (no per-ad-group optimization goal).
          */
         optimizationGoal?: (string) | null;
         /**
-         * The ad set's billing event as last synced, in the platform's own enum (Meta `billing_event`, TikTok `billing_event`, Pinterest `billable_event`, X `pay_by`, OpenAI `bidding_config.billing_event_type`). Always null on Google, which reports none per ad group. On TikTok with `live=true`, rows read live carry the ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
+         * The ad set's billing event as last synced, in the platform's own enum: Meta `billing_event`, TikTok `billing_event`, Pinterest `billable_event`, X `pay_by`, OpenAI `bidding_config.billing_event_type`.
+         *
+         * - Google: always null (it reports none per ad group).
+         * - TikTok with `live=true`: rows read live carry the ad group's `billing_event` exactly as TikTok's adgroup/get returns it now (for example CPV, CPC, OCPM).
          */
         billingEvent?: (string) | null;
         /**
-         * The bid strategy as last synced, in Meta's vocabulary (LOWEST_COST_WITHOUT_CAP, LOWEST_COST_WITH_BID_CAP, COST_CAP, LOWEST_COST_WITH_MIN_ROAS) on every platform that has an equivalent. On Meta under a campaign budget this is the campaign's strategy. TikTok maps bid_type / deep_bid_type, Pinterest AUTOMATIC_BID / MAX_BID / TARGET_AVG, X AUTO / MAX / TARGET, OpenAI Maximize Results / a max bid. Google bids at the campaign, so an ad group carries its campaign's strategy; one without a Meta equivalent (MANUAL_CPC, TARGET_IMPRESSION_SHARE, or a portfolio strategy's type such as TARGET_CPA) keeps Google's own name. Null on LinkedIn.
+         * The bid strategy as last synced, in Meta's vocabulary (LOWEST_COST_WITHOUT_CAP, LOWEST_COST_WITH_BID_CAP, COST_CAP, LOWEST_COST_WITH_MIN_ROAS) on every platform that has an equivalent.
+         *
+         * - **Meta:** under a campaign budget, this is the campaign's strategy.
+         * - **Mapped from:** TikTok bid_type / deep_bid_type, Pinterest AUTOMATIC_BID / MAX_BID / TARGET_AVG, X AUTO / MAX / TARGET, OpenAI Maximize Results / a max bid.
+         * - **Google:** bids at the campaign, so an ad group carries its campaign's strategy. One without a Meta equivalent (MANUAL_CPC, TARGET_IMPRESSION_SHARE, or a portfolio strategy's type such as TARGET_CPA) keeps Google's own name.
+         * - **LinkedIn:** null.
          */
         bidStrategy?: (string) | null;
         /**
@@ -50262,7 +51354,14 @@ export type ListAdSetsResponse = ({
             [key: string]: unknown;
         } | null;
         /**
-         * TikTok only, only with `live=true` and only on rows read live. A fixed subset of TikTok's adgroup/get record, not the whole record (snake_case, TikTok's own names, enums and values): adgroup_id, campaign_id, operation_status, optimization_goal, optimization_event, billing_event, bid_type, bid_price, budget, budget_mode, pacing, schedule_type, schedule_start_time, schedule_end_time, dayparting, placement_type, placements, location_ids, age_groups, gender, languages, interest_category_ids, interest_keyword_ids, actions, audience_ids, excluded_audience_ids, operating_systems, frequency, frequency_schedule, smart_audience_enabled, smart_interest_behavior_enabled. schedule_start_time and schedule_end_time are UTC wall clocks (YYYY-MM-DD HH:MM:SS). location_ids holds TikTok's native location ids (GeoNames ids for countries); GET /v1/ads/targeting/search?dimension=geo returns them as `platformId` on country results. Plus advertiser_currency and advertiser_timezone from TikTok's advertiser/info. A field TikTok does not return is absent.
+         * TikTok only, only with `live=true` and only on rows read live. A fixed subset of TikTok's adgroup/get record, not the whole record (snake_case, with TikTok's own names, enums and values). A field TikTok does not return is absent.
+         *
+         * **Fields**: adgroup_id, campaign_id, operation_status, optimization_goal, optimization_event, billing_event, bid_type, bid_price, budget, budget_mode, pacing, schedule_type, schedule_start_time, schedule_end_time, dayparting, placement_type, placements, location_ids, age_groups, gender, languages, interest_category_ids, interest_keyword_ids, actions, audience_ids, excluded_audience_ids, operating_systems, frequency, frequency_schedule, smart_audience_enabled, smart_interest_behavior_enabled.
+         *
+         * Plus advertiser_currency and advertiser_timezone from TikTok's advertiser/info.
+         *
+         * - schedule_start_time and schedule_end_time are UTC wall clocks (YYYY-MM-DD HH:MM:SS).
+         * - location_ids holds TikTok's native location ids (GeoNames ids for countries). GET /v1/ads/targeting/search?dimension=geo returns them as `platformId` on country results.
          */
         nativeSettings?: {
             [key: string]: unknown;
@@ -50351,7 +51450,14 @@ export type CreateAdSetData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -50388,7 +51494,14 @@ export type DuplicateAdSetData = {
          */
         endTime?: string;
         /**
-         * Meta's native `rename_strategy` values. `DEEP_RENAME` renames the copied ad set and its copied ads with `renamePrefix` / `renameSuffix`. `ONLY_TOP_LEVEL_RENAME` renames only the copied ad set; its ads keep their source names. `NO_RENAME` keeps every source name. With no rename option at all, Meta appends its own ` - Copy` suffix. Ignored on TikTok, where `renamePrefix` / `renameSuffix` still apply.
+         * Meta's native `rename_strategy` values:
+         *
+         * - `DEEP_RENAME`: renames the copied ad set and its copied ads with `renamePrefix` / `renameSuffix`.
+         * - `ONLY_TOP_LEVEL_RENAME`: renames only the copied ad set; its ads keep their source names.
+         * - `NO_RENAME`: keeps every source name.
+         *
+         * With no rename option at all, Meta appends its own ` - Copy` suffix. Ignored on TikTok, where `renamePrefix` / `renameSuffix` still apply.
+         *
          */
         renameStrategy?: 'DEEP_RENAME' | 'ONLY_TOP_LEVEL_RENAME' | 'NO_RENAME';
         /**
@@ -50403,7 +51516,14 @@ export type DuplicateAdSetData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -50462,13 +51582,25 @@ export type DuplicateAdData = {
         renameSuffix?: string;
         syncAfter?: boolean;
         /**
-         * Point the copy at the source ad's creative object instead of copying it, so the copy keeps the same Facebook post, the same Instagram media, their existing likes, comments and shares, and the full creative setup (text variations included). This is what Ads Manager's "show existing reactions, comments and shares" does. Meta's native copy always publishes new posts. A creative belongs to one ad account, so `adSetId` must be in the source ad's account. 400 when the source ad has no creative yet.
+         * Point the copy at the source ad's creative object instead of copying it. The copy keeps the same Facebook post and Instagram media, their existing likes, comments and shares, and the full creative setup (text variations included).
+         *
+         * This is what Ads Manager's "show existing reactions, comments and shares" does; Meta's native copy always publishes new posts.
+         *
+         * A creative belongs to one ad account, so `adSetId` must be in the source ad's account. 400 when the source ad has no creative yet.
+         *
          */
         reuseSourceCreative?: boolean;
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * Only 2xx responses are stored, so a request that failed with a 4xx can be retried with a corrected body under the SAME key.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -50538,35 +51670,32 @@ export type UpdateAdSetData = {
          */
         status?: 'active' | 'paused';
         /**
-         * Rename the ad set on any supported platform: Meta, Google (the ad group), TikTok, LinkedIn (the campaign), Pinterest, X (the line item `name`), OpenAI and Reddit; platforms without a rename return 501. The new name is stored right away, so GET /v1/ads/ad-sets and GET /v1/ads/tree return it without a sync. At least one of budget/status/bidStrategy/name is required.
+         * Rename the ad set. At least one of budget/status/bidStrategy/name is required.
+         *
+         * Supported on Meta, Google (the ad group), TikTok, LinkedIn (the campaign), Pinterest, X (the line item `name`), OpenAI and Reddit. Platforms without a rename return 501.
+         *
+         * The new name is stored right away, so GET /v1/ads/ad-sets and GET /v1/ads/tree return it without a sync.
          */
         name?: string;
         /**
          * Ad-set-level bid strategy. Overrides the campaign-level default.
-         * Supported on Meta (facebook, instagram), TikTok, and OpenAI. On TikTok the
-         * Meta-style enum is mapped to bid_type / bid_price / deep_bid_type
-         * automatically. On OpenAI, LOWEST_COST_WITH_BID_CAP and COST_CAP both map to
-         * the ad group's `bidding_config.max_bid_micros` (one knob covers both);
-         * LOWEST_COST_WITH_MIN_ROAS is rejected with 422 (OpenAI has no ROAS-based
-         * bidding). On X it writes the line item's `bid_strategy`:
-         * LOWEST_COST_WITHOUT_CAP = AUTO, LOWEST_COST_WITH_BID_CAP = MAX and
-         * COST_CAP = TARGET, with `bidAmount` as `bid_amount_local_micro`;
-         * LOWEST_COST_WITH_MIN_ROAS is rejected with 422. X decides which strategy
-         * the line item's objective allows (TARGET only on REACH, FOLLOWERS and
-         * WEBSITE_CLICKS, MAX not on REACH or FOLLOWERS). On Reddit, see the mapping in the
-         * description above (LOWEST_COST_WITH_MIN_ROAS returns 422). Other platforms
-         * (linkedin, pinterest, google) return 501 Not Implemented when bidStrategy is set.
+         *
+         * - **Meta** (facebook, instagram): supported.
+         * - **TikTok:** the Meta-style enum is mapped to bid_type / bid_price / deep_bid_type automatically.
+         * - **OpenAI:** LOWEST_COST_WITH_BID_CAP and COST_CAP both map to the ad group's `bidding_config.max_bid_micros` (one knob covers both). LOWEST_COST_WITH_MIN_ROAS is rejected with 422 (no ROAS-based bidding).
+         * - **X:** writes the line item's `bid_strategy`: LOWEST_COST_WITHOUT_CAP = AUTO, LOWEST_COST_WITH_BID_CAP = MAX, COST_CAP = TARGET, with `bidAmount` as `bid_amount_local_micro`. LOWEST_COST_WITH_MIN_ROAS is rejected with 422.
+         * - **X objectives:** X decides which strategy the objective allows (TARGET only on REACH, FOLLOWERS and WEBSITE_CLICKS; MAX not on REACH or FOLLOWERS).
+         * - **Reddit:** see the mapping in the description above (LOWEST_COST_WITH_MIN_ROAS returns 422).
+         * - **Others** (linkedin, pinterest, google): 501 Not Implemented when bidStrategy is set.
          *
          */
         bidStrategy?: (BidStrategy);
         /**
-         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad
-         * set's `dsa_beneficiary`, the legal entity that benefits from its ads, same field and
-         * limits as `dsaBeneficiary` on POST /v1/ads/create. Only the fields you send are
-         * written. It is the EU DSA field; for the regional regimes (Brazil, Malaysia,
-         * Thailand, Australia, Singapore, Taiwan, India) use `regionalRegulatedCategories` and
-         * `regionalRegulationIdentities` instead. Read it back with
-         * GET /v1/ads/ad-sets/{adSetId}?accountId={accountId}&fields=dsa_beneficiary,dsa_payor.
+         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad set's `dsa_beneficiary`, the legal entity that benefits from its ads. Same field and limits as `dsaBeneficiary` on POST /v1/ads/create. Only the fields you send are written.
+         *
+         * This is the EU DSA field. For regional regimes (Brazil, Malaysia, Thailand, Australia, Singapore, Taiwan, India) use `regionalRegulatedCategories` and `regionalRegulationIdentities` instead.
+         *
+         * Read it back with GET /v1/ads/ad-sets/{adSetId}?accountId={accountId}&fields=dsa_beneficiary,dsa_payor.
          *
          */
         dsaBeneficiary?: string;
@@ -50587,28 +51716,24 @@ export type UpdateAdSetData = {
          */
         regionalRegulatedCategories?: Array<(string)>;
         /**
-         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad
-         * set's `regional_regulation_identities`: the Verified identity IDs of the beneficiary
-         * and payer for each declared category, same keys and validation as on
-         * POST /v1/ads/create (for example `universal_beneficiary` / `universal_payer` for
-         * BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL). Send each ID as a
-         * string of digits; an empty object is a 400. When Meta refuses the ad set for a missing
-         * verified advertiser, the 400 `platform_api_error` names the keys the declared categories
-         * expect in `details.expectedIdentityKeys`, as on create. Read both back with
-         * GET /v1/ads/ad-sets/{adSetId}?accountId={accountId}&fields=regional_regulated_categories,regional_regulation_identities.
+         * Meta only (400 elsewhere, before anything in the request is written). Writes the ad set's `regional_regulation_identities`: the Verified identity IDs of the beneficiary and payer for each declared category.
+         *
+         * - Same keys and validation as on POST /v1/ads/create (for example `universal_beneficiary` / `universal_payer` for BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL).
+         * - Send each ID as a string of digits; an empty object is a 400.
+         * - When Meta refuses the ad set for a missing verified advertiser, the 400 `platform_api_error` names the expected keys in `details.expectedIdentityKeys`, as on create.
+         *
+         * Read both back with GET /v1/ads/ad-sets/{adSetId}?accountId={accountId}&fields=regional_regulated_categories,regional_regulation_identities.
          *
          */
         regionalRegulationIdentities?: {
             [key: string]: (string | number);
         };
         /**
-         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is
-         * TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`.
-         * When on, TikTok may deliver beyond the selected audiences or interests. Available on
-         * Video views, Traffic, Lead generation, App install, Web conversion and Community interaction.
-         * Only the flags you send are written; an unwritten flag reads back null in
-         * `nativeSettings`, so send `false` explicitly to be able to verify it is off.
-         * Applied with TikTok's adgroup/update; read it back with GET /v1/ads/ad-sets?adSetId=...&live=true.
+         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`. When on, TikTok may deliver beyond the selected audiences or interests.
+         *
+         * Available on Video views, Traffic, Lead generation, App install, Web conversion and Community interaction.
+         *
+         * Only the flags you send are written. An unwritten flag reads back null in `nativeSettings`, so send `false` explicitly to be able to verify it is off. Applied with TikTok's adgroup/update; read it back with GET /v1/ads/ad-sets?adSetId=...&live=true.
          *
          */
         smartTargeting?: {
@@ -50622,16 +51747,15 @@ export type UpdateAdSetData = {
             interestsBehaviors?: boolean;
         };
         /**
-         * Meta only (400 elsewhere). Manual placements, same object and enums as `placements` on
-         * POST /v1/ads/create. Sending an object REPLACES the ad set's current placement set
-         * (`publisher_platforms`, every `*_positions` list and `device_platforms`); a position
-         * list you leave out is removed. `null` removes every placement key so Meta returns to
-         * automatic (Advantage+) placements. Omit to leave placements untouched. Meta enforces
-         * co-selection rules (e.g. a position needs its publisher platform) and its error is
-         * returned as is. Meta may also reject `null` or a narrower set when an ad's creative
-         * uses per-placement asset customization (`placementAssets`). An object with no
-         * non-empty list is a 400 (send `null` instead). Cannot be combined with
-         * `targeting.placements` (400).
+         * Meta only (400 elsewhere). Manual placements, with the same object and enums as `placements` on POST /v1/ads/create.
+         *
+         * - **Object:** REPLACES the ad set's current placement set (`publisher_platforms`, every `*_positions` list and `device_platforms`). A position list you leave out is removed. An object with no non-empty list is a 400 (send `null` instead).
+         * - **`null`:** removes every placement key, so Meta returns to automatic (Advantage+) placements.
+         * - **Omitted:** placements are left untouched.
+         *
+         * Meta enforces co-selection rules (e.g. a position needs its publisher platform) and its error is returned as is. Meta may also reject `null` or a narrower set when an ad's creative uses per-placement asset customization (`placementAssets`).
+         *
+         * Cannot be combined with `targeting.placements` (400).
          *
          */
         placements?: {
@@ -50645,64 +51769,62 @@ export type UpdateAdSetData = {
             devicePlatforms?: Array<('mobile' | 'desktop')>;
         } | null;
         /**
-         * Reddit only. Every other platform ignores it (nothing is written and no error is returned,
-         * so a body that also sends `status` still applies it); Meta takes it in
-         * `platformSpecificData.startDate`. The ad group's new start_time, ISO 8601. A value
-         * without an offset (`YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account
-         * timezone. It cannot be earlier than the start of a campaign that starts in the future,
-         * nor at or after the ad group's end (400, `param: startDate`).
+         * Reddit only: the ad group's new start_time, ISO 8601. A value without an offset (`YYYY-MM-DD` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone.
+         *
+         * It cannot be earlier than the start of a campaign that starts in the future, nor at or after the ad group's end (400, `param: startDate`).
+         *
+         * Every other platform ignores it (nothing is written and no error is returned, so a body that also sends `status` still applies it). Meta takes it in `platformSpecificData.startDate`.
          *
          */
         startDate?: string;
         /**
-         * Reddit only. Every other platform ignores it (nothing is written and no error is returned,
-         * so a body that also sends `status` still applies it); Meta takes it in
-         * `platformSpecificData.endDate`. The ad group's new end_time, ISO 8601, read in the ad
-         * account timezone when it has no offset; a date alone means the end of that day. `null`
-         * removes the end date so the ad group runs continuously. Returns 400 with
-         * `param: endDate` when it is not after the start, when it falls after the campaign's
-         * end, when the campaign uses campaign budget optimization with no end date (Reddit then
-         * takes no end date on its ad groups), when `null` would outlive a campaign budget
-         * campaign that ends, or when `null` is sent for an ad group with a lifetime budget.
+         * Reddit only. The ad group's new end_time, ISO 8601, read in the ad account timezone when it has no offset; a date alone means the end of that day. `null` removes the end date so the ad group runs continuously.
+         *
+         * Every other platform ignores it: nothing is written and no error is returned, so a body that also sends `status` still applies it. Meta takes it in `platformSpecificData.endDate`.
+         *
+         * Returns 400 with `param: endDate` when:
+         *
+         * - it is not after the start
+         * - it falls after the campaign's end
+         * - the campaign uses campaign budget optimization with no end date (Reddit then takes no end date on its ad groups)
+         * - `null` would outlive a campaign budget campaign that ends
+         * - `null` is sent for an ad group with a lifetime budget
          *
          */
         endDate?: (string) | null;
         /**
-         * Meta and Reddit (400 elsewhere). On Reddit, see the description above: `languages`
-         * must be among Reddit's ISO 639-1 codes (AR, CS, DA, DE, EL, EN, ES, FI, FR, HU, IT, JA,
-         * KO, NL, NO, PL, PT, RO, SV, VI, ZH, any case), emptying every included location is a
-         * 400 with `param: targeting.countries`, and fields Reddit ad groups cannot take (age,
-         * income, devices, behaviors, B2B, `places`) return 400 with `param: targeting.<field>`.
-         * On Meta: targeting fields to change, same shape as the `targeting`
-         * object on POST /v1/ads/create. Only the keys you send change: Zernio reads the ad set's
-         * live targeting from Meta, merges these keys over it and writes the full spec back, so
-         * everything you do not send (custom audiences, geo, age, interest groups,
-         * `targeting_automation`) is kept. Setting any location replaces every location list.
-         * An empty list or `gender: all` clears that key. `incomeTier` is resolved to Meta's
-         * income segment first (422 when Meta has none). Fields Meta cannot target (LinkedIn
-         * B2B, Google `devices`, Reddit communities and keywords) return 400 with
-         * `param: targeting.<field>`. An empty object is a 400, and so is a
-         * `targeting.placements` object with no non-empty list (`param: targeting.placements`). When the live targeting cannot be
-         * read the request returns 502 and nothing is written.
+         * Targeting fields to change. Meta and Reddit (400 elsewhere).
+         *
+         * **Reddit** (see the description above):
+         *
+         * - `languages` must be among Reddit's ISO 639-1 codes (AR, CS, DA, DE, EL, EN, ES, FI, FR, HU, IT, JA, KO, NL, NO, PL, PT, RO, SV, VI, ZH, any case).
+         * - Emptying every included location is a 400 with `param: targeting.countries`.
+         * - Fields Reddit ad groups cannot take (age, income, devices, behaviors, B2B, `places`) return 400 with `param: targeting.<field>`.
+         *
+         * **Meta**: same shape as the `targeting` object on POST /v1/ads/create.
+         *
+         * - Only the keys you send change. Zernio reads the ad set's live targeting, merges your keys over it and writes the full spec back, so everything else (custom audiences, geo, age, interest groups, `targeting_automation`) is kept.
+         * - Setting any location replaces every location list. An empty list or `gender: all` clears that key.
+         * - `incomeTier` is resolved to Meta's income segment first (422 when Meta has none).
+         * - Fields Meta cannot target (LinkedIn B2B, Google `devices`, Reddit communities and keywords) return 400 with `param: targeting.<field>`.
+         * - An empty object is a 400, as is a `targeting.placements` object with no non-empty list (`param: targeting.placements`).
+         * - When the live targeting cannot be read, the request returns 502 and nothing is written.
          *
          */
         targeting?: (TargetingSpec);
         /**
-         * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when
-         * bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP. Internally converted to Meta's
-         * smallest-denomination integer, or (on OpenAI and X) to micros (× 1,000,000). Meta only:
-         * may be sent alone, WITHOUT bidStrategy, to update the cap amount on an ad set whose
-         * parent campaign is COST_CAP or LOWEST_COST_WITH_BID_CAP (the strategy is inherited
-         * from the campaign and is left untouched).
+         * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when bidStrategy is LOWEST_COST_WITH_BID_CAP or COST_CAP.
+         *
+         * Internally converted to Meta's smallest-denomination integer, or (on OpenAI and X) to micros (× 1,000,000).
+         *
+         * Meta only: may be sent alone, WITHOUT bidStrategy, to update the cap amount on an ad set whose parent campaign is COST_CAP or LOWEST_COST_WITH_BID_CAP. The strategy is inherited from the campaign and left untouched.
          *
          */
         bidAmount?: number;
         /**
-         * Minimum ROAS as a decimal multiplier (2.0 = 2.0x). Required when bidStrategy is
-         * LOWEST_COST_WITH_MIN_ROAS. Sent to Meta as `bid_constraints.roas_average_floor` × 10000.
-         * Meta only: may be sent alone, WITHOUT bidStrategy, to update the floor on an ad set
-         * whose strategy (its own, or the campaign's under CBO) is LOWEST_COST_WITH_MIN_ROAS.
-         * Not supported on OpenAI (422).
+         * Minimum ROAS as a decimal multiplier (2.0 = 2.0x). Required when bidStrategy is LOWEST_COST_WITH_MIN_ROAS. Sent to Meta as `bid_constraints.roas_average_floor` × 10000. Not supported on OpenAI (422).
+         *
+         * Meta only: may be sent alone, WITHOUT bidStrategy, to update the floor on an ad set whose strategy (its own, or the campaign's under CBO) is LOWEST_COST_WITH_MIN_ROAS.
          *
          */
         roasAverageFloor?: number;
@@ -50745,15 +51867,14 @@ export type UpdateAdSetData = {
              */
             endDate?: string;
             /**
-             * Meta `daily_min_spend_target`: the least this ad set should spend per day, in whole
-             * currency units of the ad account. It reserves a share of a CAMPAIGN budget for one ad
-             * set, so it requires a campaign using Advantage campaign budget (CBO). On an ad set
-             * that owns its budget (ABO) this returns 409. Move the budget to the campaign with
-             * `PUT /v1/ads/campaigns/{campaignId}` first. Meta treats it as a target, not a
-             * guarantee, and rejects the combined minimum of a campaign's ad sets going over the
-             * campaign budget.
-             * Mutually exclusive with `lifetimeMinSpendTarget` (400): the flavour must match the
-             * campaign budget type, a daily budget takes a daily target.
+             * Meta `daily_min_spend_target`: the least this ad set should spend per day, in whole currency units of the ad account.
+             *
+             * It reserves a share of a CAMPAIGN budget for one ad set, so the campaign must use Advantage campaign budget (CBO). On an ad set that owns its budget (ABO) it returns 409; move the budget to the campaign with `PUT /v1/ads/campaigns/{campaignId}` first.
+             *
+             * Meta treats it as a target, not a guarantee, and rejects a combined minimum of a campaign's ad sets above the campaign budget.
+             *
+             * Mutually exclusive with `lifetimeMinSpendTarget` (400): the flavour must match the campaign budget type, so a daily budget takes a daily target.
+             *
              * Read it back with `GET /v1/ads/ad-sets/{adSetId}?fields=daily_min_spend_target`.
              *
              */
@@ -50767,18 +51888,21 @@ export type UpdateAdSetData = {
             lifetimeMinSpendTarget?: number;
             customerLifecycle?: MetaCustomerLifecycle;
             /**
-             * Replaces the ad set's dayparting (Meta `adset_schedule`, `pacing_type: ["day_parting"]`).
-             * Meta runs a schedule only on a lifetime budget. Before anything in the request is written,
-             * Zernio takes `budget.type` from the same request or reads the ad set's budget (or its
-             * campaign's under Advantage campaign budget), and a daily one is a 400 with
-             * `param: platformSpecificData.adSchedule`. An empty array removes the schedule
-             * (`pacing_type: ["standard"]`). Read it back with `GET /v1/ads/ad-sets/{adSetId}`
-             * (`adset_schedule`, `pacing_type`) or as `adSchedule` on `GET /v1/ads/accounts/live`.
+             * Replaces the ad set's dayparting (Meta `adset_schedule`, `pacing_type: ["day_parting"]`). An empty array removes the schedule (`pacing_type: ["standard"]`).
+             *
+             * Meta runs a schedule only on a lifetime budget. Before writing anything, Zernio takes `budget.type` from the same request or reads the ad set's budget (or its campaign's under Advantage campaign budget). A daily one is a 400 with `param: platformSpecificData.adSchedule`.
+             *
+             * Read it back with `GET /v1/ads/ad-sets/{adSetId}` (`adset_schedule`, `pacing_type`) or as `adSchedule` on `GET /v1/ads/accounts/live`.
              *
              */
             adSchedule?: (MetaAdSchedule);
             /**
-             * Meta ad-set promoted_object (same shape as /v1/ads/create). Meta makes promoted_object immutable once the ad set exists, so only `pixelId`, `customEventType`, `customEventStr` (with `customEventType` OTHER), `applicationId` and `productCatalogId` can be sent here. Any other key (`pageId`, `whatsappPhoneNumber`, `customConversionId`, `objectStoreUrl`, `productSetId`, `offlineConversionDataSetId`) is a 400 with `param: platformSpecificData.promotedObject` and nothing is written; changing them needs a new ad set (POST /v1/ads/create). Unknown keys are rejected with 400.
+             * Meta ad-set promoted_object (same shape as /v1/ads/create). Meta makes promoted_object immutable once the ad set exists, so only `pixelId`, `customEventType`, `customEventStr` (with `customEventType` OTHER), `applicationId` and `productCatalogId` can be sent here.
+             *
+             * Any other key (`pageId`, `whatsappPhoneNumber`, `customConversionId`, `objectStoreUrl`, `productSetId`, `offlineConversionDataSetId`) is a 400 with `param: platformSpecificData.promotedObject` and nothing is written. Changing them needs a new ad set (POST /v1/ads/create).
+             *
+             * Unknown keys are rejected with 400.
+             *
              */
             promotedObject?: {
                 pixelId?: string;
@@ -50835,7 +51959,10 @@ export type UpdateAdSetResponse = ({
         [key: string]: unknown;
     };
     /**
-     * Present when `placements` or `targeting` was sent. The ad set's full targeting as written, in the platform's own vocabulary (Meta or Reddit snake_case). Stored as the ad set's `targeting`. Meta stores the same object on its ads; Reddit stores it on its ads in the create vocabulary (`countries`, `communities`, ...), as GET /v1/ads/ad-sets/{adSetId}/targeting returns it.
+     * Present when `placements` or `targeting` was sent. The ad set's full targeting as written, in the platform's own vocabulary (Meta or Reddit snake_case). Stored as the ad set's `targeting`.
+     *
+     * - Meta stores the same object on its ads.
+     * - Reddit stores it on its ads in the create vocabulary (`countries`, `communities`, ...), as GET /v1/ads/ad-sets/{adSetId}/targeting returns it.
      */
     targeting?: {
         [key: string]: unknown;
@@ -50923,7 +52050,14 @@ export type UpdateAdSetStatusResponse = ({
      */
     status?: 'active' | 'paused';
     /**
-     * The ad set's own switch as read back from the platform, in the raw platform vocabulary (Meta effective_status, TikTok ENABLE / DISABLE, Google ENABLED / PAUSED, LinkedIn and Pinterest ACTIVE / PAUSED, ChatGPT (OpenAI) status, Reddit effective_status such as CAMPAIGN_PAUSED, as GET /v1/ads/ad-sets returns it). Null when the platform could not be read, which is always the case on X.
+     * The ad set's own switch as read back from the platform (as GET /v1/ads/ad-sets returns it), in raw platform vocabulary. Null when the platform could not be read, which is always the case on X.
+     *
+     * - Meta: effective_status.
+     * - TikTok: ENABLE / DISABLE.
+     * - Google: ENABLED / PAUSED.
+     * - LinkedIn and Pinterest: ACTIVE / PAUSED.
+     * - ChatGPT (OpenAI): status.
+     * - Reddit: effective_status, such as CAMPAIGN_PAUSED.
      */
     platformAdSetStatus?: (string) | null;
     /**
@@ -50957,11 +52091,17 @@ export type GetAdTreeData = {
          */
         accountId?: string;
         /**
-         * One or more platform ad account IDs to scope the tree to (agency profiles connect a whole Business Manager but a team usually cares about a subset). Comma-separate for multiple (`?adAccountId=act_1,act_2,act_3`); single value keeps its old shape. Max 50 accounts per request; the plural aliases `adAccountIds` and `platformAdAccountIds` are rejected with a 400 to stop them from silently returning the unfiltered fleet.
+         * One or more platform ad account IDs to scope the tree to (agency profiles connect a whole Business Manager, but a team usually cares about a subset).
+         *
+         * - Comma-separate for multiple (`?adAccountId=act_1,act_2,act_3`); a single value keeps its old shape.
+         * - Max 50 accounts per request.
+         * - The plural aliases `adAccountIds` and `platformAdAccountIds` are rejected with a 400, so they cannot silently return the unfiltered fleet.
          */
         adAccountId?: string;
         /**
-         * Restrict the tree to one or more campaigns by platform campaign id (the id the platform assigns, e.g. Meta's numeric campaign id). Comma-separate up to 100 ids (`?campaignId=123,456`). Filters the campaign set itself, so it works regardless of account size and pagination. Pass this when you already hold campaign ids (for example from an `ad.status_changed` webhook) instead of paging the whole tree.
+         * Restrict the tree to one or more campaigns by platform campaign id (the id the platform assigns, e.g. Meta's numeric campaign id). Comma-separate up to 100 ids (`?campaignId=123,456`).
+         *
+         * Filters the campaign set itself, so it works regardless of account size and pagination. Use it when you already hold campaign ids (e.g. from an `ad.status_changed` webhook) instead of paging the whole tree.
          */
         campaignId?: string;
         /**
@@ -50969,7 +52109,11 @@ export type GetAdTreeData = {
          */
         compare?: 'previous';
         /**
-         * Which tree levels get the `daily[]` series when `timeIncrement=1`. `campaign` (default) attaches it on campaign nodes only: the common per-campaign-trend case, and the smallest payload. `adset` adds it on ad sets too; `ad` adds it on every ad in `ads[]` as well (heaviest: a long range × up to 100 ads per ad set). Scope with `campaignId` to keep `ad`-level responses small. Ignored when `timeIncrement` is unset.
+         * Which tree levels get the `daily[]` series when `timeIncrement=1`. Ignored when `timeIncrement` is unset.
+         *
+         * - `campaign` (default): on campaign nodes only. The common per-campaign-trend case, and the smallest payload.
+         * - `adset`: on ad sets too.
+         * - `ad`: on every ad in `ads[]` as well. Heaviest (a long range × up to 100 ads per ad set); scope with `campaignId` to keep responses small.
          */
         dailyLevel?: 'campaign' | 'adset' | 'ad';
         /**
@@ -50977,7 +52121,9 @@ export type GetAdTreeData = {
          */
         fromDate?: string;
         /**
-         * Return only campaigns that delivered between `fromDate` and `toDate`: spend above zero, or impressions served at zero spend. Unlike `status`, which reads a campaign's CURRENT state, this filters on what happened inside the window, so a campaign that spent then and is paused today is still returned. Filters the campaign set itself, so `pagination.total` counts only matching campaigns.
+         * Return only campaigns that delivered between `fromDate` and `toDate`: spend above zero, or impressions served at zero spend.
+         *
+         * Unlike `status`, which reads a campaign's CURRENT state, this filters on what happened inside the window, so a campaign that spent then and is paused today is still returned. It filters the campaign set itself, so `pagination.total` counts only matching campaigns.
          */
         hasDelivery?: boolean;
         /**
@@ -51002,7 +52148,11 @@ export type GetAdTreeData = {
          */
         profileId?: string;
         /**
-         * Case-insensitive substring match on campaign, ad set and ad names (`_`, `%` and spaces match literally), or an exact platform campaign, ad set or ad id. A campaign whose name matches returns with all its ad sets and ads; a match on an ad set or ad name returns only the matching branch. Filters the campaign set itself, so `pagination.total` counts only matching campaigns.
+         * Case-insensitive substring match on campaign, ad set and ad names (`_`, `%` and spaces match literally), or an exact platform campaign, ad set or ad id.
+         *
+         * - A campaign whose name matches returns with all its ad sets and ads.
+         * - A match on an ad set or ad name returns only the matching branch.
+         * - Filters the campaign set itself, so `pagination.total` counts only matching campaigns.
          */
         search?: string;
         /**
@@ -51018,7 +52168,11 @@ export type GetAdTreeData = {
          */
         status?: AdStatus;
         /**
-         * Set to `1` to also return a daily breakdown. Mirrors Meta Insights' `time_increment=1`: each node gains a `daily[]` array of per-day metrics (same fields as the aggregated `metrics`) alongside the range total, so you get per-entity daily trends in ONE call instead of calling the tree once per day. Only `1` (daily) is supported. The daily series covers the same date range and uses the same source data as `metrics`, except `reach` on Meta and TikTok: the range total is the platform's de-duplicated value, so daily reach does not sum to it. See `dailyLevel` to control which levels carry it.
+         * Set to `1` to also return a daily breakdown (mirrors Meta Insights' `time_increment=1`). Only `1` (daily) is supported. See `dailyLevel` to control which levels carry it.
+         *
+         * Each node gains a `daily[]` array of per-day metrics (same fields as the aggregated `metrics`) next to the range total, so you get per-entity daily trends in ONE call instead of one tree call per day.
+         *
+         * The daily series covers the same date range and source data as `metrics`, except `reach` on Meta and TikTok: the range total is the platform's de-duplicated value, so daily reach does not sum to it.
          */
         timeIncrement?: 1;
         /**
@@ -51026,7 +52180,11 @@ export type GetAdTreeData = {
          */
         toDate?: string;
         /**
-         * Return only campaigns with a change stored since this time (ISO 8601 with offset, e.g. `2026-09-30T10:00:00Z`): a new ad, or a change to any ad's status, review status, name, budget or creative. Each matching campaign comes back whole (every ad set and ad). Metrics are not a change: to refresh numbers, filter with `hasDelivery=true` and a date range instead. Combines with every other filter (with `hasDelivery`/`minSpend` a campaign must match both).
+         * Returns only campaigns with a change stored since this time (ISO 8601 with offset, e.g. `2026-09-30T10:00:00Z`). Each matching campaign comes back whole (every ad set and ad).
+         *
+         * - A change is a new ad, or a change to any ad's status, review status, name, budget or creative.
+         * - Metrics are not a change: to refresh numbers, filter with `hasDelivery=true` and a date range instead.
+         * - Combines with every other filter (with `hasDelivery`/`minSpend` a campaign must match both).
          */
         updatedSince?: string;
     };
@@ -51089,11 +52247,33 @@ export type GetAdData = {
     };
     query?: {
         /**
-         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad not in Zernio's synced store, e.g. an Ads Manager ad on an ad account reached only through a Facebook connection.
+         *
+         * The ad is then read live from Meta through that connection, and the response carries `synced: false`. Ads Meta reports as DELETED are returned too, with their status.
+         *
+         * Same rules as GET /v1/ads/campaigns/{campaignId}:
+         *
+         * - Connection on a profile the API key cannot access: 404.
+         * - Ad on an ad account outside the connection's selected ad accounts: 403 `ad_account_not_selected`.
+         * - Id Meta cannot read through the connection, or not an ad (e.g. a campaign or ad set id): 404 `ad_not_found`.
+         * - Connection that is not Meta: 501.
+         *
+         * Ignored when the ad is in the store (its own connection is used). Without it, an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         *
          */
         accountId?: string;
         /**
-         * Read the on/off switches live from the platform instead of returning the synced values. The fresh values are stored (so later reads return them too) and the response carries `statusReadAt`, the time of the read. At most 20 platform objects are read per request. Where a read fails (credentials, platform error, no reader on that platform), the stored values come back with `statusReadAt: null`. See "Status freshness" in the operation description. On X the budget is read live in the same read: on GET /v1/ads/{adId} `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches); on the ad set and campaign listings `budget` is the one that line item or campaign holds now (returned, not stored); a row whose budget the other level holds keeps its synced `budget`.
+         * Read the on/off switches live from the platform instead of returning synced values. See "Status freshness" in the operation description.
+         *
+         * - The fresh values are stored (later reads return them too), and the response carries `statusReadAt`, the time of the read.
+         * - At most 20 platform objects are read per request.
+         * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
+         *
+         * **On X** the budget is read live too:
+         *
+         * - GET /v1/ads/{adId}: `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches).
+         * - Ad set and campaign listings: `budget` is what that line item or campaign holds now (returned, not stored). A row whose budget the other level holds keeps its synced `budget`.
+         *
          */
         live?: boolean;
     };
@@ -51186,31 +52366,33 @@ export type UpdateAdData = {
             type?: 'daily' | 'lifetime';
         };
         /**
-         * Meta + TikTok (demographics/interests), Google (keyword and device
-         * bid adjustment edits only), and LinkedIn (locations, B2B facets, audiences).
-         * Pinterest / X return 501.
+         * Targeting update.
          *
-         * On Meta, TikTok and LinkedIn this is a partial update: every targeting setting
-         * you do not send is preserved (on Meta: Advantage+ audience, placements, custom
-         * audiences, exclusions, interests, languages; on TikTok: languages, interest
-         * keywords, devices, behaviours; on LinkedIn: skills, member traits, interface
-         * locales, and any facet set in Campaign Manager). A field you send replaces its
-         * platform counterpart, and an empty or null value (for example `audienceInclude: []`,
-         * `industries: []` or `gender: "all"`) clears only that field. Any location field
-         * (countries, regions, cities, zips, ...) replaces the whole included location set;
-         * an update with no location keeps the current locations.
+         * - Meta + TikTok: demographics/interests.
+         * - Google: keyword and device bid adjustment edits only.
+         * - LinkedIn: locations, B2B facets, audiences.
+         * - Pinterest / X: return 501.
+         *
+         * **Partial update** on Meta, TikTok and LinkedIn: every targeting setting you do not send is preserved.
+         *
+         * - Meta: Advantage+ audience, placements, custom audiences, exclusions, interests, languages.
+         * - TikTok: languages, interest keywords, devices, behaviours.
+         * - LinkedIn: skills, member traits, interface locales, and any facet set in Campaign Manager.
+         *
+         * A field you send replaces its platform counterpart, and an empty or null value (for example `audienceInclude: []`, `industries: []` or `gender: "all"`) clears only that field.
+         *
+         * Any location field (countries, regions, cities, zips, ...) replaces the whole included location set; an update with no location keeps the current locations.
          *
          */
         targeting?: {
             /**
-             * Google only. The FULL desired set of positive keywords for the entire ad group.
-             * Omit to leave positives unchanged; [] removes all positives. Negatives are independent.
-             * Entries are strings (BROAD) or { text, matchType } with matchType exact | phrase | broad;
-             * an omitted matchType also defaults to BROAD. Matching case-insensitive text AND match type
-             * retains the existing criterion ID, status, bid overrides, labels and history without a mutation.
-             * A changed text or match type uses remove/create, without transferring the old criterion's
-             * attributes or history. See Google keyword replacement above for an EXACT-to-BROAD example.
-             * Mirrored to GET /v1/ads/keywords immediately.
+             * Google only. The FULL desired set of positive keywords for the entire ad group. Omit to leave positives unchanged; [] removes all positives. Negatives are independent.
+             *
+             * - Entries are strings (BROAD) or { text, matchType } with matchType exact | phrase | broad. An omitted matchType also defaults to BROAD.
+             * - Matching case-insensitive text AND match type keeps the existing criterion ID, status, bid overrides, labels and history, with no mutation.
+             * - A changed text or match type uses remove/create, without carrying over the old criterion's attributes or history.
+             *
+             * See Google keyword replacement above for an EXACT-to-BROAD example. Mirrored to GET /v1/ads/keywords immediately.
              *
              */
             keywords?: Array<(string | {
@@ -51218,12 +52400,12 @@ export type UpdateAdData = {
     matchType?: 'exact' | 'phrase' | 'broad';
 })>;
             /**
-             * Google only. The FULL desired set of negative keywords for the entire ad group,
-             * independent of positives. Omit to leave negatives unchanged; [] removes all negatives.
-             * Uses the same text/match-type identity and preservation contract as keywords above.
-             * Strings and objects without matchType default to BROAD, so resending an EXACT or PHRASE
-             * negative as a bare string requests a different criterion. Campaign negatives are separate:
-             * use /v1/ads/campaigns/{campaignId}/negative-keywords to manage those.
+             * Google only. The FULL desired set of negative keywords for the entire ad group, independent of positives.
+             *
+             * - Omit to leave negatives unchanged; [] removes all negatives.
+             * - Same text/match-type identity and preservation contract as keywords above.
+             * - Strings and objects without matchType default to BROAD, so resending an EXACT or PHRASE negative as a bare string requests a different criterion.
+             * - Campaign negatives are separate: manage them with /v1/ads/campaigns/{campaignId}/negative-keywords.
              *
              */
             negativeKeywords?: Array<(string | {
@@ -51231,7 +52413,12 @@ export type UpdateAdData = {
     matchType?: 'exact' | 'phrase' | 'broad';
 })>;
             /**
-             * Google only. The FULL new set of device bid modifiers for the campaign. Entries are a device name alone (targeted, bid modifier reset to 1) or { device, bidModifier }. A supported device you leave out is switched off, written as a bid modifier of 0. Google never removes a device criterion, so an excluded device reads back as bidModifier 0 rather than disappearing, and a set that switches every device off returns 422. Which devices a campaign carries depends on its channel: Search campaigns have MOBILE, DESKTOP and TABLET, Display campaigns also have CONNECTED_TV, and sending a device the campaign does not carry returns 422.
+             * Google only. The FULL new set of device bid modifiers for the campaign. Entries are a device name alone (targeted, bid modifier reset to 1) or { device, bidModifier }.
+             *
+             * - A supported device you leave out is switched off, written as a bid modifier of 0. Google never removes a device criterion, so an excluded device reads back as bidModifier 0 rather than disappearing.
+             * - A set that switches every device off returns 422.
+             * - Devices depend on the channel: Search campaigns have MOBILE, DESKTOP and TABLET; Display campaigns also have CONNECTED_TV. Sending a device the campaign does not carry returns 422.
+             *
              */
             devices?: Array<('MOBILE' | 'DESKTOP' | 'TABLET' | 'CONNECTED_TV' | {
     device: 'MOBILE' | 'DESKTOP' | 'TABLET' | 'CONNECTED_TV';
@@ -51287,34 +52474,32 @@ export type UpdateAdData = {
         /**
          * Replace or patch the ad's creative. Meta, TikTok, and LinkedIn.
          *
-         * - **Meta**: patch-style. Pass any subset: fields you omit are preserved from the
-         * live creative, including media (`image_hash`/`video_id` are reused, no re-upload)
-         * and `url_tags`. Sending the full set (`headline`, `body`, `callToAction`,
-         * `linkUrl`, `imageUrl`) rebuilds the creative from scratch instead. Partial
-         * patching reads the live `object_story_spec`, which Meta strips on SHARE /
-         * page-post / dark / asset_feed creatives. Those return 422 asking for the full
-         * set. A `videoUrl`/`videoId` on an image creative is a type change and also
-         * needs the full set. `existingCreativeId` repoints the ad at a creative from
-         * GET /v1/ads/creatives and ignores every other field. Meta creatives are
-         * immutable, so any change creates a new creative and repoints the ad; the old
-         * creative is retained on the ad account for historical reporting.
-         * `creativeFeatures` is Meta-only. Omitted settings are preserved from the
-         * live creative, including full rebuilds. A supplied creativeFeatures map
-         * overrides individual existing keys.
-         * - **TikTok**: patch-style. Pass any subset; `headline` is ignored (TikTok creatives
-         * have no headline slot). `body` becomes the in-feed `ad_text`; `linkUrl` becomes
-         * `landing_page_url`; `videoUrl` triggers a fresh upload. `description`, `videoId`
-         * and `existingCreativeId` are Meta-only and return 400.
-         * - **LinkedIn**: requires new media (image via `imageUrl` or video via `videoUrl`);
-         * a text-only creative update returns 400. Uploads the media, creates a new inline
-         * media creative on the same campaign, and pauses the old creative (best-effort).
-         * The old creative is retained for historical reporting. `videoId` and
-         * `existingCreativeId` are Meta-only and return 400.
+         * **Meta**: patch-style.
+         *
+         * - Pass any subset: omitted fields are preserved from the live creative, including media (`image_hash`/`video_id` reused, no re-upload) and `url_tags`. Sending the full set (`headline`, `body`, `callToAction`, `linkUrl`, `imageUrl`) rebuilds the creative from scratch.
+         * - Partial patching reads the live `object_story_spec`, which Meta strips on SHARE / page-post / dark / asset_feed creatives; those return 422 asking for the full set. A `videoUrl`/`videoId` on an image creative is a type change and also needs the full set.
+         * - `existingCreativeId` repoints the ad at a creative from GET /v1/ads/creatives and ignores every other field.
+         * - Meta creatives are immutable: any change creates a new creative and repoints the ad. The old creative stays on the ad account for historical reporting.
+         * - `creativeFeatures` is Meta-only. Omitted settings are preserved from the live creative, including on full rebuilds; a supplied creativeFeatures map overrides individual existing keys.
+         *
+         * **TikTok**: patch-style. Pass any subset.
+         *
+         * - `headline` is ignored (no headline slot).
+         * - `body` becomes the in-feed `ad_text`; `linkUrl` becomes `landing_page_url`; `videoUrl` triggers a fresh upload.
+         * - `description`, `videoId` and `existingCreativeId` are Meta-only and return 400.
+         *
+         * **LinkedIn**: requires new media (image via `imageUrl` or video via `videoUrl`); a text-only update returns 400.
+         *
+         * - Uploads the media, creates a new inline media creative on the same campaign, and pauses the old creative (best-effort). The old creative is kept for historical reporting.
+         * - `videoId` and `existingCreativeId` are Meta-only and return 400.
          *
          */
         creative?: {
             /**
-             * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+             * Not supported. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Any object is rejected with 400 invalid_field_value.
+             *
+             * Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+             *
              */
             promotion?: MetaPromotion;
             creativeFeatures?: MetaCreativeFeatures;
@@ -51773,25 +52958,16 @@ export type GetCampaignAnalyticsData = {
         /**
          * Comma-separated breakdown dimensions.
          *
-         * **Meta**: age, gender, country, publisher_platform, device_platform, region,
-         * platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         * - **Meta**: age, gender, country, publisher_platform, device_platform, region, platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         * - **TikTok**: gender, age, country (or country_code), publisher_platform (or platform), ac, language, placement. TikTok serves at most 365 days per breakdown, so a longer range is read over its last 365 days and `analytics.breakdownsRange` says which window.
+         * - **LinkedIn** (firmographics): job_title, job_function, seniority, industry, company, company_size, country, region. Rows carry the raw pivot `value` plus a resolved `name`. Aggregated over the whole range, delayed 12-24h, omitting segments with fewer than 3 events.
          *
-         * **TikTok**: gender, age, country (or country_code), publisher_platform (or platform),
-         * ac, language, placement. TikTok serves at most 365 days per breakdown, so a longer
-         * range is read over its last 365 days and `analytics.breakdownsRange` says which window.
+         * **Errors and gaps:**
          *
-         * **LinkedIn** (firmographics): job_title, job_function, seniority, industry,
-         * company, company_size, country, region. Rows carry the raw pivot `value`
-         * plus a resolved `name`. LinkedIn serves these aggregated over the whole
-         * range, delays the data 12-24h, and omits segments with fewer than 3 events.
-         *
-         * A known dimension the platform cannot break down by is listed in
-         * `analytics.unsupportedBreakdowns` instead of being dropped (with guidance in
-         * `analytics.breakdownHints` where there is an alternative); the rest of the response
-         * is unchanged. An unknown name returns 400. A TikTok dimension that fails is listed
-         * in `analytics.breakdownErrors` and the response stays 200.
-         * Metrics TikTok refuses for a dimension are listed in `analytics.breakdownDroppedMetrics`,
-         * and the row values derived from them are null.
+         * - A known dimension the platform cannot break down by is listed in `analytics.unsupportedBreakdowns` instead of dropped (with guidance in `analytics.breakdownHints` where an alternative exists); the rest of the response is unchanged.
+         * - An unknown name returns 400.
+         * - A TikTok dimension that fails is listed in `analytics.breakdownErrors` and the response stays 200.
+         * - Metrics TikTok refuses for a dimension are listed in `analytics.breakdownDroppedMetrics`, and row values derived from them are null.
          *
          */
         breakdowns?: string;
@@ -51869,7 +53045,19 @@ export type GetAdPreviewsData = {
     };
     query?: {
         /**
-         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad not in Zernio's synced store, e.g. an Ads Manager ad on an ad account reached only through a Facebook connection.
+         *
+         * The ad is then read live from Meta through that connection, and the response carries `synced: false`. Ads Meta reports as DELETED are returned too, with their status.
+         *
+         * Same rules as GET /v1/ads/campaigns/{campaignId}:
+         *
+         * - Connection on a profile the API key cannot access: 404.
+         * - Ad on an ad account outside the connection's selected ad accounts: 403 `ad_account_not_selected`.
+         * - Id Meta cannot read through the connection, or not an ad (e.g. a campaign or ad set id): 404 `ad_not_found`.
+         * - Connection that is not Meta: 501.
+         *
+         * Ignored when the ad is in the store (its own connection is used). Without it, an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         *
          */
         accountId?: string;
         /**
@@ -51905,7 +53093,19 @@ export type GetAdReviewData = {
     };
     query?: {
         /**
-         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad not in Zernio's synced store, e.g. an Ads Manager ad on an ad account reached only through a Facebook connection.
+         *
+         * The ad is then read live from Meta through that connection, and the response carries `synced: false`. Ads Meta reports as DELETED are returned too, with their status.
+         *
+         * Same rules as GET /v1/ads/campaigns/{campaignId}:
+         *
+         * - Connection on a profile the API key cannot access: 404.
+         * - Ad on an ad account outside the connection's selected ad accounts: 403 `ad_account_not_selected`.
+         * - Id Meta cannot read through the connection, or not an ad (e.g. a campaign or ad set id): 404 `ad_not_found`.
+         * - Connection that is not Meta: 501.
+         *
+         * Ignored when the ad is in the store (its own connection is used). Without it, an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         *
          */
         accountId?: string;
     };
@@ -52060,7 +53260,19 @@ export type GetAdMediaData = {
     };
     query?: {
         /**
-         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad id that is not in Zernio's synced store, for example an ad created in Ads Manager on an ad account reached only through a Facebook connection. The ad is then read live from Meta through that connection and the response carries `synced: false`. The same rules as GET /v1/ads/campaigns/{campaignId} apply: a connection on a profile the API key cannot access answers 404, and an ad on an ad account outside the connection's selected ad accounts answers 403 `ad_account_not_selected`. An id Meta cannot read through the connection, or that is not an ad (a campaign or ad set id, for example), answers 404 `ad_not_found`, and a connection that is not Meta answers 501. Ads Meta reports as DELETED are returned too, with their status. Ignored when the ad is in the store (the stored ad's own connection is used). Without it an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         * Meta only. A Zernio connection id (Meta Ads or Facebook connection) used when `{adId}` is a Meta ad not in Zernio's synced store, e.g. an Ads Manager ad on an ad account reached only through a Facebook connection.
+         *
+         * The ad is then read live from Meta through that connection, and the response carries `synced: false`. Ads Meta reports as DELETED are returned too, with their status.
+         *
+         * Same rules as GET /v1/ads/campaigns/{campaignId}:
+         *
+         * - Connection on a profile the API key cannot access: 404.
+         * - Ad on an ad account outside the connection's selected ad accounts: 403 `ad_account_not_selected`.
+         * - Id Meta cannot read through the connection, or not an ad (e.g. a campaign or ad set id): 404 `ad_not_found`.
+         * - Connection that is not Meta: 501.
+         *
+         * Ignored when the ad is in the store (its own connection is used). Without it, an unsynced ad answers 404 `ad_not_found`. Writes (PUT, DELETE, status) still need the ad in the store.
+         *
          */
         accountId?: string;
     };
@@ -52477,25 +53689,16 @@ export type GetAdAnalyticsData = {
         /**
          * Comma-separated breakdown dimensions.
          *
-         * **Meta**: age, gender, country, publisher_platform, device_platform, region,
-         * platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         * - **Meta**: age, gender, country, publisher_platform, device_platform, region, platform_position, impression_device, video_asset, image_asset, body_asset, title_asset.
+         * - **TikTok**: gender, age, country (or country_code), publisher_platform (or platform), ac, language, placement. TikTok serves at most 365 days per breakdown, so a longer range is read over its last 365 days and `analytics.breakdownsRange` says which window.
+         * - **LinkedIn** (firmographics): job_title, job_function, seniority, industry, company, company_size, country, region. Rows carry the raw pivot `value` plus a resolved `name`. Data is aggregated over the whole range, delayed 12-24h, and omits segments with fewer than 3 events.
          *
-         * **TikTok**: gender, age, country (or country_code), publisher_platform (or platform),
-         * ac, language, placement. TikTok serves at most 365 days per breakdown, so a longer
-         * range is read over its last 365 days and `analytics.breakdownsRange` says which window.
+         * **Errors:**
          *
-         * **LinkedIn** (firmographics): job_title, job_function, seniority, industry,
-         * company, company_size, country, region. Rows carry the raw pivot `value`
-         * plus a resolved `name`. LinkedIn serves these aggregated over the whole
-         * range, delays the data 12-24h, and omits segments with fewer than 3 events.
-         *
-         * A known dimension the platform cannot break down by is listed in
-         * `analytics.unsupportedBreakdowns` instead of being dropped (with guidance in
-         * `analytics.breakdownHints` where there is an alternative); the rest of the response
-         * is unchanged. An unknown name returns 400. A TikTok dimension that fails is listed
-         * in `analytics.breakdownErrors` and the response stays 200.
-         * Metrics TikTok refuses for a dimension are listed in `analytics.breakdownDroppedMetrics`,
-         * and the row values derived from them are null.
+         * - A known dimension the platform cannot break down by is listed in `analytics.unsupportedBreakdowns` instead of being dropped (with guidance in `analytics.breakdownHints` where there is an alternative); the rest of the response is unchanged.
+         * - An unknown name returns 400.
+         * - A TikTok dimension that fails is listed in `analytics.breakdownErrors` and the response stays 200.
+         * - Metrics TikTok refuses for a dimension are listed in `analytics.breakdownDroppedMetrics`, and the row values derived from them are null.
          *
          */
         breakdowns?: string;
@@ -53303,7 +54506,10 @@ export type ListTikTokSmartPlusReviewsResponse = ({
         readAt?: string;
     }>;
     /**
-     * Smart+ ads of this page whose review TikTok refused on its own (for example an ad deleted on TikTok since the listing was read). Zernio splits a refused batch in halves (at most 16 extra calls per page), so the other ads of the batch are still read; ads left unresolved by that cap stay in `items` with their stored review or in `pendingSmartPlusAdIds`. Empty when none.
+     * Smart+ ads of this page whose review TikTok refused on its own (e.g. an ad deleted on TikTok since the listing was read). Empty when none.
+     *
+     * Zernio splits a refused batch in halves (at most 16 extra calls per page), so the batch's other ads are still read. Ads left unresolved by that cap stay in `items` with their stored review, or in `pendingSmartPlusAdIds`.
+     *
      */
     failedSmartPlusAds?: Array<{
         smartPlusAdId?: string;
@@ -53337,11 +54543,21 @@ export type ListTikTokSmartPlusReviewsResponse = ({
      */
     pendingSmartPlusAdIds?: Array<(string)>;
     /**
-     * Seconds until Zernio calls TikTok's review endpoint for this advertiser and connection again (the stored pause with its jitter), set exactly when `refreshState` is `paused` or `refused`, stale items with nothing pending included. Always the same value as the `Retry-After` header, which is sent exactly when this is not null. Client rule: present, wait that long before reading the page again; null with stale or pending ads, a retry is not blocked (read again now or on your `maxAgeSeconds` schedule; with `refreshState: error` check `reviewError` first).
+     * Seconds until Zernio calls TikTok's review endpoint for this advertiser and connection again (the stored pause with its jitter). Set exactly when `refreshState` is `paused` or `refused`, including stale items with nothing pending. Always equals the `Retry-After` header, which is sent exactly when this is not null.
+     *
+     * Client rule:
+     *
+     * - Present: wait that long before reading the page again.
+     * - null with stale or pending ads: a retry is not blocked. Read again now or on your `maxAgeSeconds` schedule; with `refreshState: error`, check `reviewError` first.
      */
     retryAfterSeconds?: (number) | null;
     /**
-     * Whether this request could refresh the due (stale or pending) Smart+ ads of the page. `refused`: TikTok refused a review call of this request over quota (40002 `OVER_QPS_LIMIT` or 40100) and Zernio paused. `paused`: no call was sent for the due ads because a pause from an earlier refusal is still running, or another request is refreshing the same advertiser (then `retryAfterSeconds` is 20). Both carry `retryAfterSeconds`. `error`: TikTok refused the batch for another reason (both halves the same way), the page is served from stored reviews and `reviewError` holds TikTok's error; `retryAfterSeconds` is null because retrying soon repeats the refusal. `ok`: nothing blocks a retry (every due ad was read, none was due, or the split cap or the 20-second request budget left some for the next read, which can come right away).
+     * Whether this request could refresh the due (stale or pending) Smart+ ads of the page.
+     *
+     * - `refused`: TikTok refused a review call of this request over quota (40002 `OVER_QPS_LIMIT` or 40100) and Zernio paused. Carries `retryAfterSeconds`.
+     * - `paused`: no call was sent for the due ads, because a pause from an earlier refusal is still running or another request is refreshing the same advertiser (then `retryAfterSeconds` is 20). Carries `retryAfterSeconds`.
+     * - `error`: TikTok refused the batch for another reason (both halves the same way). The page is served from stored reviews and `reviewError` holds TikTok's error. `retryAfterSeconds` is null because retrying soon repeats the refusal.
+     * - `ok`: nothing blocks a retry. Every due ad was read, none was due, or the split cap or the 20-second request budget left some for the next read, which can come right away.
      */
     refreshState?: 'ok' | 'paused' | 'refused' | 'error';
 });
@@ -54101,7 +55317,12 @@ export type CreateAdCreativeData = {
             callToAction?: string;
         }>;
         /**
-         * Only with `carouselCards` (a 400 without them). Sets `link_data.multi_share_optimized`: `false` keeps the cards in the order given, and Meta then takes at most 5 cards, so `false` with more than 5 cards is a 400; `true` lets Meta reorder them for performance. Omitted, nothing is sent and Meta's default (`true`) applies.
+         * Only with `carouselCards` (a 400 without them). Sets `link_data.multi_share_optimized`:
+         *
+         * - `false`: keeps the cards in the order given. Meta then takes at most 5 cards, so `false` with more than 5 cards is a 400.
+         * - `true`: lets Meta reorder them for performance.
+         * - Omitted: nothing is sent and Meta's default (`true`) applies.
+         *
          */
         optimizeCardOrder?: boolean;
         /**
@@ -54109,7 +55330,10 @@ export type CreateAdCreativeData = {
          */
         urlTags?: string;
         /**
-         * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+         * Not supported. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager.
+         *
+         * Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+         *
          */
         promotion?: MetaPromotion;
         /**
@@ -54121,7 +55345,14 @@ export type CreateAdCreativeData = {
          */
         multiAdvertiser?: 'OPT_IN' | 'OPT_OUT';
         /**
-         * Meta only. Meta's "Ad includes media created or edited with AI" disclosure, the checkbox in Ads Manager, stored on the creative as `generative_asset_spec.transparency_metadata.self_disclosure`. OPT_IN checks it, OPT_OUT explicitly declares no AI media, omitted leaves Meta's default. Applied to each new creative, including standalone, creatives[] and attach shapes, and preserved when a creative is rebuilt. This sets the disclosure on the ad; whether and when the viewer-facing label renders is Meta's decision.
+         * Meta only. Meta's "Ad includes media created or edited with AI" disclosure (the Ads Manager checkbox), stored on the creative as `generative_asset_spec.transparency_metadata.self_disclosure`.
+         *
+         * - OPT_IN: checks it.
+         * - OPT_OUT: explicitly declares no AI media.
+         * - Omitted: leaves Meta's default.
+         *
+         * Applied to each new creative (standalone, creatives[] and attach shapes) and preserved when a creative is rebuilt. This sets the disclosure on the ad; whether and when the viewer-facing label renders is Meta's decision.
+         *
          */
         aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
     };
@@ -55788,7 +57019,11 @@ export type ListAdAccountsData = {
          */
         adAccountId?: string;
         /**
-         * `true` returns only the ad accounts this connection accepts as `adAccountId` on the other /v1/ads endpoints, i.e. those inside its ad-account selection (every item then has `selected: true`). Without it, every ad account the login can reach is listed and `selected` flags selection membership. On Meta, LinkedIn, X and Reddit it drops the ad accounts with `selected: false`; a connection without a selection keeps them all. On Google Ads it also drops customers the login reaches that are not on this connection (for example ones selected on another connection of the same login), which those endpoints answer with a 400. TikTok and Pinterest have no selection, so the list is unchanged.
+         * `true` returns only the ad accounts this connection accepts as `adAccountId` on the other /v1/ads endpoints, i.e. those inside its ad-account selection (every item then has `selected: true`). Without it, every ad account the login can reach is listed and `selected` flags selection membership.
+         *
+         * - Meta, LinkedIn, X and Reddit: drops the ad accounts with `selected: false`; a connection without a selection keeps them all.
+         * - Google Ads: also drops customers the login reaches that are not on this connection (for example ones selected on another connection of the same login), which those endpoints answer with a 400.
+         * - TikTok and Pinterest: no selection, so the list is unchanged.
          */
         inScopeOnly?: boolean;
         /**
@@ -55819,27 +57054,18 @@ export type ListAdAccountsResponse = ({
          */
         status?: string;
         /**
-         * The platform's own account status, forwarded unchanged. No JSON type is
-         * declared because the type differs per platform: Meta sends an integer,
-         * Google, TikTok and Pinterest send a string. Absent on LinkedIn (reports
-         * `status`) and on X (reports `approvalStatus`).
+         * The platform's own account status, forwarded unchanged. No JSON type is declared because it differs per platform: Meta sends an integer; Google, TikTok and Pinterest send a string. Absent on LinkedIn (reports `status`) and X (reports `approvalStatus`).
          *
-         * If all you need is whether the account can run ads right now, read
-         * `selectable` and skip this field. Read this one when you need to tell
-         * the states apart, because they call for different responses:
+         * To know only whether the account can run ads now, read `selectable` instead. Read this field to tell the states apart, since they need different responses:
          *
-         * - `1` ACTIVE. Running normally.
-         * - `2` DISABLED. Disabled by Meta. Read `disableReason` to tell a policy
-         * action apart from a billing one; they need very different follow-ups.
-         * - `3` UNSETTLED. There is an unpaid balance, but the account still runs
-         * ads. Not a ban.
-         * - `7` PENDING_RISK_REVIEW. Meta is reviewing the account. Wait for the
-         * outcome.
-         * - `8` PENDING_SETTLEMENT. Meta blocks new ads until an outstanding
-         * balance clears. Settle it and the account runs again.
-         * - `9` IN_GRACE_PERIOD. Still running, on a deadline.
-         * - `100` PENDING_CLOSURE. Scheduled to close.
-         * - `101` CLOSED. Terminal.
+         * - `1` ACTIVE: running normally.
+         * - `2` DISABLED: disabled by Meta. Read `disableReason` to tell a policy action from a billing one; they need very different follow-ups.
+         * - `3` UNSETTLED: unpaid balance, but the account still runs ads. Not a ban.
+         * - `7` PENDING_RISK_REVIEW: Meta is reviewing the account. Wait for the outcome.
+         * - `8` PENDING_SETTLEMENT: Meta blocks new ads until an outstanding balance clears. Settle it and the account runs again.
+         * - `9` IN_GRACE_PERIOD: still running, on a deadline.
+         * - `100` PENDING_CLOSURE: scheduled to close.
+         * - `101` CLOSED: terminal.
          *
          */
         accountStatus?: unknown;
@@ -55856,11 +57082,17 @@ export type ListAdAccountsResponse = ({
          */
         type?: string;
         /**
-         * Meta only. Meta's `disable_reason` code, forwarded unchanged. Present when `accountStatus` is `2` (DISABLED) and Meta gives a reason, which is what separates a policy action from a payment problem. Meta does not publish a stable list of values for this field, so none are enumerated here: resolve the code against Meta's own ad account reference. Absent when Meta reports no reason, or when the connected token cannot read the field.
+         * Meta only. Meta's `disable_reason` code, forwarded unchanged.
+         *
+         * Present when `accountStatus` is `2` (DISABLED) and Meta gives a reason; this separates a policy action from a payment problem. Absent when Meta reports no reason, or the connected token cannot read the field.
+         *
+         * Meta publishes no stable list of values, so none are enumerated here: resolve the code against Meta's own ad account reference.
          */
         disableReason?: number;
         /**
-         * TikTok only. Total balance the advertiser can spend (cash plus grant), in whole units of `currency`. Read from the Business Center balance when the connection has a finance role there, which is the only TikTok source that counts cash held in a shared payment portfolio; otherwise TikTok's advertiser-level balance, which can read 0 for a cash-funded advertiser.
+         * TikTok only. Total balance the advertiser can spend (cash plus grant), in whole units of `currency`.
+         *
+         * Read from the Business Center balance when the connection has a finance role there: the only TikTok source that counts cash held in a shared payment portfolio. Otherwise TikTok's advertiser-level balance, which can read 0 for a cash-funded advertiser.
          */
         balance?: number;
         /**
@@ -55909,17 +57141,12 @@ export type ListAdAccountsResponse = ({
             type?: number;
         };
         /**
-         * Meta only. Whether the ad account has a payment method, derived as follows:
-         * - `missing` when `accountStatus` is `3` (UNSETTLED) or `9` (IN_GRACE_PERIOD),
-         * when `disableReason` is `3` (RISK_PAYMENT), or when the connected person
-         * has the MANAGE task on the account (admin, who always sees billing) and
-         * Meta returns no funding source. Ad creation on such an account fails at
-         * the ad step with Meta code 100 / subcode 1359188: add a payment method in
-         * Meta's Billing & payments center.
-         * - `ok` when Meta returns a funding source. This is presence, not validity:
-         * Meta can still refuse the card or balance at ad creation.
-         * - `unknown` when the connected person is not an admin of the account, or
-         * the token cannot read the billing fields.
+         * Meta only. Whether the ad account has a payment method:
+         *
+         * - `missing`: `accountStatus` is `3` (UNSETTLED) or `9` (IN_GRACE_PERIOD), `disableReason` is `3` (RISK_PAYMENT), or the connected person has the MANAGE task on the account (admin, who always sees billing) and Meta returns no funding source.
+         * - `missing`, effect: ad creation fails at the ad step with Meta code 100 / subcode 1359188. Add a payment method in Meta's Billing & payments center.
+         * - `ok`: Meta returns a funding source. This is presence, not validity: Meta can still refuse the card or balance at ad creation.
+         * - `unknown`: the connected person is not an admin of the account, or the token cannot read the billing fields.
          *
          */
         billingStatus?: 'ok' | 'missing' | 'unknown';
@@ -55932,7 +57159,12 @@ export type ListAdAccountsResponse = ({
          */
         unusableReason?: (string) | null;
         /**
-         * Always present. True when the ad account is in this connection's ad-account selection, or when the connection has no selection (then every ad account is usable). For a posting account (e.g. facebook, twitter) the selection of its ads connection applies. Unrelated to `selectable`, which is the platform's own status. Writes to an ad account with `selected: false` answer 403 `ad_account_not_selected`; `inScopeOnly=true` lists only the selected ones.
+         * Always present. True when the ad account is in this connection's ad-account selection, or when the connection has no selection (then every ad account is usable).
+         *
+         * - For a posting account (e.g. facebook, twitter), the selection of its ads connection applies.
+         * - Unrelated to `selectable`, which is the platform's own status.
+         * - Writes to an ad account with `selected: false` answer 403 `ad_account_not_selected`.
+         * - `inScopeOnly=true` lists only the selected ones.
          */
         selected?: boolean;
     }>;
@@ -56074,11 +57306,17 @@ export type BoostPostData = {
          */
         postId?: string;
         /**
-         * Platform post ID (alternative to postId). Reddit: the post id, with or without the `t3_` prefix. Meta: a Page post id (`<pageId>_<postId>` or the bare post id) or an Instagram media id. On a Meta Ads business-login connection (platform metaads) the id is resolved live: an Instagram media id is boosted as that media, running as the Instagram account that owns it.
+         * Platform post ID (alternative to postId).
+         *
+         * - Reddit: the post id, with or without the `t3_` prefix.
+         * - Meta: a Page post id (`<pageId>_<postId>` or the bare post id) or an Instagram media id.
+         * - Meta Ads business-login connection (platform metaads): the id is resolved live. An Instagram media id is boosted as that media, running as the Instagram account that owns it.
          */
         platformPostId?: string;
         /**
-         * Zernio account id. Normally the connected posting account (facebook, instagram, tiktok, linkedin, pinterest, twitter), a googleads account or a redditads account. TikTok: the TikTok Ads connection (platform tiktokads) is accepted too when the post brings its own authorization (sparkAuthCode or sparkPosts), so Spark ads need no organic TikTok account connected; such a call must use platformPostId, not postId.
+         * Zernio account id. Normally the connected posting account (facebook, instagram, tiktok, linkedin, pinterest, twitter), a googleads account or a redditads account.
+         *
+         * TikTok: the TikTok Ads connection (platform tiktokads) is also accepted when the post brings its own authorization (sparkAuthCode or sparkPosts), so Spark ads need no organic TikTok account connected. Such a call must use platformPostId, not postId.
          */
         accountId: string;
         /**
@@ -56099,7 +57337,10 @@ export type BoostPostData = {
          */
         goal: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'conversions' | 'app_promotion';
         /**
-         * Meta, or TikTok with `smartPlus: true`. Attach the boosted post to this existing ad set instead of creating a campaign. On TikTok the id is an existing Smart+ ad group: the post is added as one more Spark ad in it (up to 30 per ad group), under the identity its `sparkAuthCode` creates; goal and budget are inherited from the Smart+ campaign; a regular ad group is rejected with a 400. Meta: The ad set then owns budget, schedule and targeting; sending those too is a 400.
+         * Meta, or TikTok with `smartPlus: true`. Attach the boosted post to this existing ad set instead of creating a campaign.
+         *
+         * - Meta: the ad set then owns budget, schedule and targeting; sending those too is a 400.
+         * - TikTok: the id is an existing Smart+ ad group. The post is added as one more Spark ad (up to 30 per ad group), under the identity its `sparkAuthCode` creates. Goal and budget are inherited from the Smart+ campaign; a regular ad group is rejected with a 400.
          */
         adSetId?: string;
         /**
@@ -56123,7 +57364,9 @@ export type BoostPostData = {
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * X only. A lifetime total, in whole currency units, that caps a daily budget (budgetType daily): the line item gets both daily_budget_amount_local_micro and total_budget_amount_local_micro, and stops spending once the total is reached. Must be at least budgetAmount. Read back as budget.daily and budget.lifetime. 400 on a lifetime budget or on another platform.
+         * X only (400 on another platform or on a lifetime budget). A lifetime total, in whole currency units, that caps a daily budget (budgetType daily). Must be at least budgetAmount.
+         *
+         * The line item gets both daily_budget_amount_local_micro and total_budget_amount_local_micro and stops spending once the total is reached. Read back as budget.daily and budget.lifetime.
          */
         lifetimeBudgetCap?: number;
         /**
@@ -56162,7 +57405,12 @@ export type BoostPostData = {
          */
         startDate?: string;
         /**
-         * Ad-set end time (ISO 8601), mapped to the ad set's `end_time` (on X, the line item's `end_time`; X campaigns carry no flight dates). Required for lifetime budgets. On Meta, TikTok, X, Pinterest and Reddit a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local. Same field as on POST /v1/ads/create.
+         * Ad-set end time (ISO 8601). Required for lifetime budgets. Same field as on POST /v1/ads/create.
+         *
+         * Maps to the ad set's `end_time` (on X, the line item's `end_time`; X campaigns carry no flight dates).
+         *
+         * On Meta, TikTok, X, Pinterest and Reddit, a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local.
+         *
          */
         endDate?: string;
         /**
@@ -56182,15 +57430,10 @@ export type BoostPostData = {
             endDate?: string;
         };
         /**
-         * Same geo/demographic fields as the `TargetingSpec` used by /v1/ads/create.
-         * Geo keys (`regions`/`cities`/`zips`/`metros`) resolve via
-         * GET /v1/ads/targeting/search?dimension=geo. City radius and lat/lng
-         * `customLocations` are Meta-only and preserve the boosted post's
-         * social proof (the ad references the existing post). On Reddit the whole
-         * `TargetingSpec` applies, including `communities`, `excludedCommunities`,
-         * `conversationKeywords`, `excludedConversationKeywords`, `interests`,
-         * `audienceInclude` / `audienceExclude` and `excludedLocations`; without
-         * any geo the ad targets the US.
+         * Same geo/demographic fields as the `TargetingSpec` used by /v1/ads/create. Geo keys (`regions`/`cities`/`zips`/`metros`) resolve via GET /v1/ads/targeting/search?dimension=geo.
+         *
+         * - Meta only: city radius and lat/lng `customLocations`. They preserve the boosted post's social proof (the ad references the existing post).
+         * - Reddit: the whole `TargetingSpec` applies, including `communities`, `excludedCommunities`, `conversationKeywords`, `excludedConversationKeywords`, `interests`, `audienceInclude` / `audienceExclude` and `excludedLocations`. Without any geo the ad targets the US.
          *
          */
         targeting?: {
@@ -56272,25 +57515,14 @@ export type BoostPostData = {
          */
         locationTargetingType?: (GoogleLocationTargetingType);
         /**
-         * Meta only. A Meta-native targeting spec (e.g.
-         * `{ "geo_locations": { "cities": [{ "key": "...", "radius": 15, "distance_unit": "kilometer" }] } }`).
-         * Sent alone it is forwarded unchanged. Use for advanced fields the structured
-         * object does not expose (flexible_spec, excluded audiences, business places,
-         * user_os, wireless_carrier).
+         * Meta only. A Meta-native targeting spec (e.g. `{ "geo_locations": { "cities": [{ "key": "...", "radius": 15, "distance_unit": "kilometer" }] } }`). Sent alone, it is forwarded unchanged. Use it for advanced fields the structured object does not expose (flexible_spec, excluded audiences, business places, user_os, wireless_carrier).
          *
-         * Can be combined with `targeting`: rawTargeting is the BASE layer and the
-         * built camelCase spec is merged on top, key by key (camelCase wins on
-         * collision). The merge goes one level deep inside `geo_locations` and
-         * `excluded_geo_locations` (built sub-keys win; raw-only sub-keys such as
-         * `location_types` survive). Array values (`flexible_spec`, ...) are replaced
-         * as a whole key, never element-merged.
+         * **With `targeting`:** rawTargeting is the BASE layer and the built camelCase spec is merged on top, key by key (camelCase wins on collision).
          *
-         * When `rawTargeting` is present the `advantage_audience: 0` default that
-         * Zernio normally applies is no longer emitted, so it cannot clobber a
-         * `targeting_automation` sent in the raw spec. Meta requires
-         * `targeting_automation` on ad set creation, so include it in the raw spec,
-         * or send `targeting.advantage_audience` (0 or 1), which is merged over raw
-         * as `targeting_automation`.
+         * - The merge goes one level deep inside `geo_locations` and `excluded_geo_locations` (built sub-keys win; raw-only sub-keys such as `location_types` survive).
+         * - Array values (`flexible_spec`, ...) are replaced as a whole key, never element-merged.
+         *
+         * **`targeting_automation`.** When `rawTargeting` is present, Zernio no longer emits its usual `advantage_audience: 0` default, so it cannot clobber a `targeting_automation` in the raw spec. Meta requires `targeting_automation` on ad set creation: include it in the raw spec, or send `targeting.advantage_audience` (0 or 1), merged over raw as `targeting_automation`.
          *
          */
         rawTargeting?: {
@@ -56366,26 +57598,24 @@ export type BoostPostData = {
          */
         regionalRegulatedCategories?: Array<(string)>;
         /**
-         * Meta only. Verified identity IDs of the beneficiary and payer for each declared
-         * regionalRegulatedCategories value. Meta may require them on ad sets created through
-         * the API even when a default beneficiary and payer are set in Ads Manager advertising
-         * settings (seen on AUSTRALIA_FINSERV), so sending them explicitly is the reliable path.
-         * The value is the Verified identity ID (Meta Business Settings > Verified identities),
-         * not a Page or Business ID, and beneficiary and payer may be the same ID.
-         * Send each ID as a string of digits: Verified identity IDs can have 17 digits, more than a
-         * JSON number holds exactly, and a number that arrives rounded is rejected. Numbers up to
-         * 9007199254740991 are still accepted. The IDs reach Meta unchanged.
-         * Keys by category: AUSTRALIA_FINSERV uses australia_finserv_beneficiary /
-         * australia_finserv_payer; TAIWAN_FINSERV uses taiwan_finserv_beneficiary /
-         * taiwan_finserv_payer; INDIA_FINSERV uses india_finserv_beneficiary / india_finserv_payer;
-         * TAIWAN_UNIVERSAL uses taiwan_universal_beneficiary / taiwan_universal_payer;
-         * SINGAPORE_UNIVERSAL uses singapore_universal_beneficiary / singapore_universal_payer;
-         * AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL use
-         * universal_beneficiary / universal_payer. When Meta rejects the ad set for a missing verified
-         * advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys
-         * (the keys the declared categories expect), details.suggestedCategories (the markets Meta
-         * ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
-         * Ignored when adSetId adds the ad to an existing ad set.
+         * Meta only. Verified identity IDs of the beneficiary and payer for each declared regionalRegulatedCategories value. Ignored when adSetId adds the ad to an existing ad set.
+         *
+         * Meta may require them on ad sets created through the API even when Ads Manager advertising settings have a default beneficiary and payer (seen on AUSTRALIA_FINSERV), so sending them explicitly is the reliable path.
+         *
+         * The value is the Verified identity ID (Meta Business Settings > Verified identities), not a Page or Business ID. Beneficiary and payer may be the same ID. The IDs reach Meta unchanged.
+         *
+         * Send each ID as a string of digits: Verified identity IDs can have 17 digits, more than a JSON number holds exactly, and a number that arrives rounded is rejected. Numbers up to 9007199254740991 are still accepted.
+         *
+         * Keys by category:
+         *
+         * - AUSTRALIA_FINSERV: australia_finserv_beneficiary / australia_finserv_payer
+         * - TAIWAN_FINSERV: taiwan_finserv_beneficiary / taiwan_finserv_payer
+         * - INDIA_FINSERV: india_finserv_beneficiary / india_finserv_payer
+         * - TAIWAN_UNIVERSAL: taiwan_universal_beneficiary / taiwan_universal_payer
+         * - SINGAPORE_UNIVERSAL: singapore_universal_beneficiary / singapore_universal_payer
+         * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL: universal_beneficiary / universal_payer
+         *
+         * When Meta rejects the ad set for a missing verified advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys (the keys the declared categories expect), details.suggestedCategories (the markets Meta ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
          *
          */
         regionalRegulationIdentities?: {
@@ -56427,21 +57657,33 @@ export type BoostPostData = {
          */
         callToAction?: string;
         /**
-         * TikTok-only. Spark Code (creator's `auth_code`) authorizing cross-creator
-         * Spark Ads: the advertiser can boost a video owned by a DIFFERENT TikTok
-         * account. Without this, boosts are limited to videos owned by the same
-         * account running the ads (same-BC creators only). The creator generates the
-         * code in their TikTok app's Promote settings and shares it with the
-         * advertiser. Maps to `auth_code` on the creative entry of /v2/ad/create/.
+         * TikTok-only. Spark Code (the creator's `auth_code`) authorizing cross-creator Spark Ads: the advertiser can boost a video owned by a DIFFERENT TikTok account. Maps to `auth_code` on the creative entry of /v2/ad/create/.
+         *
+         * Without it, boosts are limited to videos owned by the same account running the ads (same-BC creators only). The creator generates the code in their TikTok app's Promote settings and shares it with the advertiser.
          *
          */
         sparkAuthCode?: string;
         /**
-         * TikTok only. Run the Spark post in a Smart+ campaign (goal `conversions` = Smart+ Web Conversions, `lead_generation` = Smart+ Lead Generation) instead of a regular campaign. Requires `sparkAuthCode` (the Smart+ ad runs the post under the identity that redeeming its Spark code creates; a Business Center-owned post is not accepted there) and `promotedObject.pixelId` + `customEventType`. `app_promotion` is not available on a Spark post. Rejected with a 400 on other platforms. A Smart+ Spark ad uses a dynamic CTA portfolio, sent as ad_configuration.call_to_action_id (TikTok does not accept a named call to action there): Zernio creates one per ad account and reuses it, and `callToAction` is rejected with a 400 on this path.
+         * TikTok only. Run the Spark post in a Smart+ campaign instead of a regular one: goal `conversions` = Smart+ Web Conversions, `lead_generation` = Smart+ Lead Generation. Rejected with a 400 on other platforms.
+         *
+         * **Requires:**
+         *
+         * - `sparkAuthCode`: the Smart+ ad runs the post under the identity created by redeeming its Spark code. A Business Center-owned post is not accepted.
+         * - `promotedObject.pixelId` + `customEventType`.
+         *
+         * `app_promotion` is not available on a Spark post.
+         *
+         * A Smart+ Spark ad uses a dynamic CTA portfolio, sent as ad_configuration.call_to_action_id (TikTok accepts no named call to action there). Zernio creates one per ad account and reuses it; `callToAction` is rejected with a 400 on this path.
          */
         smartPlus?: boolean;
         /**
-         * TikTok Smart+ only (requires `smartPlus: true`). Several Spark posts as creatives of ONE Smart+ ad, each with its own post code (TikTok allows 1-50 per ad; posts from different creators mix). Replaces `platformPostId` + `sparkAuthCode`. Without `adSetId` it creates campaign + ad group + one ad carrying all of them; with `adSetId` it creates one new ad with all of them in that ad group. Rejected with a 400 on other platforms.
+         * TikTok Smart+ only (requires `smartPlus: true`; a 400 on other platforms). Several Spark posts as creatives of ONE Smart+ ad, each with its own post code. Replaces `platformPostId` + `sparkAuthCode`.
+         *
+         * TikTok allows 1-50 per ad, and posts from different creators can mix.
+         *
+         * - Without `adSetId`: creates campaign + ad group + one ad carrying all of them.
+         * - With `adSetId`: creates one new ad with all of them in that ad group.
+         *
          */
         sparkPosts?: Array<{
             /**
@@ -56454,7 +57696,13 @@ export type BoostPostData = {
             sparkAuthCode: string;
         }>;
         /**
-         * TikTok Smart+ Web Conversions only (requires `smartPlus: true`, goal `conversions`). Promo codes or offers TikTok highlights on the ad (Ads Manager's "Add promo code or offer"). A promo code needs shoppers to enter it at checkout; an entry without `promoCode` is an offer applied automatically. Rejected with a 400 on other platforms and on Lead Generation campaigns.
+         * TikTok Smart+ Web Conversions only (requires `smartPlus: true`, goal `conversions`). Promo codes or offers TikTok highlights on the ad (Ads Manager's "Add promo code or offer").
+         *
+         * - A promo code needs shoppers to enter it at checkout.
+         * - An entry without `promoCode` is an offer applied automatically.
+         *
+         * Rejected with a 400 on other platforms and on Lead Generation campaigns.
+         *
          */
         promoCodes?: Array<{
             discountType: 'PERCENTAGE' | 'CASH';
@@ -56481,31 +57729,14 @@ export type BoostPostData = {
             minimumPurchaseCurrency?: string;
         }>;
         /**
-         * Meta, TikTok and Reddit. What the conversion ad set optimizes toward, so a boost
-         * of an existing organic post can run for a conversion instead of only
-         * engagement or traffic. Required when `goal` is `conversions` (Meta also
-         * `lead_conversion`); ignored on goals that do not optimize for a conversion.
+         * Meta, TikTok and Reddit. What the conversion ad set optimizes toward, so a boost of an existing organic post can run for a conversion instead of only engagement or traffic. Required when `goal` is `conversions` (Meta also `lead_conversion`); ignored on goals that do not optimize for a conversion.
          *
-         * Meta: `pixelId` + `customEventType` (a commerce event such as PURCHASE
-         * under `conversions`, a leads-class event such as LEAD under
-         * `lead_conversion`), or `customConversionId` to optimize against a Custom
-         * Conversion, or `customEventType: OTHER` + `customEventStr` for a pixel
-         * custom event. Becomes the ad set `promoted_object`; without it Meta
-         * rejects the ad set ("Please select a promoted object", subcode 1815430).
-         * With `adSetId` the existing ad set already carries it.
-         *
-         * TikTok: BOTH `pixelId` and `customEventType` are required. TikTok refuses
-         * a conversion ad group with no pixel ("Please select a pixel") and one
-         * with a pixel but no event ("Select a pixel event."). Combine freely with
-         * `platformPostId` + `sparkAuthCode`: the pixel lives on the ad group and
-         * the Spark item on the creative.
-         *
-         * Reddit: every ad group carries a pixel, whatever the goal. `pixelId` picks
-         * it (default: the ad account's first pixel; 422 when the account has none).
-         * `conversions` requires `customEventType` (PURCHASE, LEAD,
-         * COMPLETE_REGISTRATION, SIGN_UP, ADD_TO_CART, PAGE_VISIT, VIEW_CONTENT or
-         * CONTENT_VIEW), and the pixel must already have received that event (422
-         * otherwise); `lead_generation` needs the pixel to have received Lead.
+         * - Meta: `pixelId` + `customEventType` (a commerce event such as PURCHASE under `conversions`, a leads-class event such as LEAD under `lead_conversion`), or `customConversionId` for a Custom Conversion, or `customEventType: OTHER` + `customEventStr` for a pixel custom event.
+         * - Meta: becomes the ad set `promoted_object`; without it Meta rejects the ad set ("Please select a promoted object", subcode 1815430). With `adSetId` the existing ad set already carries it.
+         * - TikTok: BOTH `pixelId` and `customEventType` are required. TikTok refuses a conversion ad group with no pixel ("Please select a pixel") or with a pixel but no event ("Select a pixel event.").
+         * - TikTok: combine freely with `platformPostId` + `sparkAuthCode`; the pixel lives on the ad group and the Spark item on the creative.
+         * - Reddit: every ad group carries a pixel, whatever the goal. `pixelId` picks it (default: the ad account's first pixel; 422 when the account has none).
+         * - Reddit: `conversions` requires `customEventType` (PURCHASE, LEAD, COMPLETE_REGISTRATION, SIGN_UP, ADD_TO_CART, PAGE_VISIT, VIEW_CONTENT or CONTENT_VIEW), and the pixel must already have received that event (422 otherwise). `lead_generation` needs the pixel to have received Lead.
          *
          */
         promotedObject?: {
@@ -56543,30 +57774,55 @@ export type BoostPostData = {
          */
         dsaPayor?: string;
         /**
-         * Lead Gen form ID to attach to the boosted ad's creative. REQUIRED when `goal` is `lead_generation`. On Meta this is the leadgen_forms ID (create one via POST /v1/ads/lead-forms). On LinkedIn this is the adForm ID (create one via POST /v1/ads/lead-forms with a LinkedIn account); the creative's `leadgenCallToAction.destination` is set to `urn:li:adForm:{id}`. Ignored for other goals. Reddit: rejected with 400 on every goal (Reddit retired its native lead forms).
+         * Lead Gen form ID to attach to the boosted ad's creative. REQUIRED when `goal` is `lead_generation`; ignored for other goals.
+         *
+         * - Meta: the leadgen_forms ID (create one via POST /v1/ads/lead-forms).
+         * - LinkedIn: the adForm ID (create one via POST /v1/ads/lead-forms with a LinkedIn account). The creative's `leadgenCallToAction.destination` is set to `urn:li:adForm:{id}`.
+         * - Reddit: rejected with 400 on every goal (Reddit retired its native lead forms).
          */
         leadGenFormId?: string;
         /**
-         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default); PAUSED pauses only the top-most object this boost creates and switches everything below it on: a new campaign is held paused with its ad set and ad on (one PUT /v1/ads/campaigns/{campaignId}/status with `active` brings it live); into an existing campaign (TikTok `existingCampaignId`) the new ad set is held paused; attached to an existing ad set (`adSetId`) the new ad itself is paused. On LinkedIn the held campaign group is PAUSED, its campaign and creative ACTIVE. X has no per-ad switch, so its lowest level is the line item. `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level; `status: PAUSED` adds a hold of its own only when none of them is PAUSED. To create every object paused, send all three as PAUSED.
+         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default).
+         *
+         * PAUSED pauses only the top-most object this boost creates and switches everything below it on:
+         *
+         * - New campaign: held paused with its ad set and ad on. One PUT /v1/ads/campaigns/{campaignId}/status with `active` brings it live.
+         * - Into an existing campaign (TikTok `existingCampaignId`): the new ad set is held paused.
+         * - Attached to an existing ad set (`adSetId`): the new ad itself is paused.
+         * - LinkedIn: the held campaign group is PAUSED, its campaign and creative ACTIVE.
+         * - X: has no per-ad switch, so its lowest level is the line item.
+         *
+         * `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level. `status: PAUSED` adds a hold of its own only when none of them is PAUSED. To create every object paused, send all three as PAUSED.
+         *
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Every platform, same semantics as POST /v1/ads/create. Sets the switch of the new campaign alone (LinkedIn: the campaign group) and overrides `status` for it. `ACTIVE` with `status: PAUSED` switches the campaign on and holds the new ad set paused (its ad on). Omitted, it follows `status`. Rejected with a 400 alongside `adSetId` or `existingCampaignId`, where no campaign is created (change an existing one with PUT /v1/ads/campaigns/{campaignId}/status).
+         * Every platform, same semantics as POST /v1/ads/create. Sets the switch of the new campaign alone (LinkedIn: the campaign group) and overrides `status` for it. When omitted, it follows `status`.
+         *
+         * `ACTIVE` with `status: PAUSED` switches the campaign on and holds the new ad set paused (its ad on).
+         *
+         * Rejected with a 400 alongside `adSetId` or `existingCampaignId`, where no campaign is created (change an existing one with PUT /v1/ads/campaigns/{campaignId}/status).
+         *
          */
         campaignStatus?: 'ACTIVE' | 'PAUSED';
         /**
-         * Every platform, same semantics as POST /v1/ads/create. Sets the switch of the new ad set alone (Google, TikTok and Pinterest: the ad group; LinkedIn: the campaign, which stays DRAFT when held; X: the line item) and overrides `status` for it. Omitted, it follows `status`.
+         * Every platform, same semantics as POST /v1/ads/create. Sets the switch of the new ad set alone and overrides `status` for it. Omitted, it follows `status`.
          *
-         * Precedence: a level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level. `status: PAUSED` then holds the top-most new object that has no level status, and only when no level status is PAUSED; every other new object is switched on. So `campaignStatus: ACTIVE` + `adSetStatus: PAUSED` + `adStatus: PAUSED` keeps the campaign on with the new ad set and ad off, and all three PAUSED create the whole tree paused.
+         * The ad set is the ad group on Google, TikTok and Pinterest; the campaign on LinkedIn (it stays DRAFT when held); the line item on X.
+         *
+         * **Precedence.** A level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level. `status: PAUSED` then holds the top-most new object without a level status, only when no level status is PAUSED; every other new object is switched on.
+         *
+         * So `campaignStatus: ACTIVE` + `adSetStatus: PAUSED` + `adStatus: PAUSED` keeps the campaign on with the new ad set and ad off, and all three PAUSED create the whole tree paused.
          *
          * Rejected with a 400 alongside `adSetId` (that ad set already exists; change it with PUT /v1/ads/ad-sets/{adSetId}/status).
          *
          */
         adSetStatus?: 'ACTIVE' | 'PAUSED';
         /**
-         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId` (Meta, TikTok Smart+), and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`. LinkedIn: a creative held off is created DRAFT, because LinkedIn refuses PAUSED on a creative until its review is APPROVED. A DRAFT creative is not submitted for review and cannot serve; it reads `paused`, and resuming the ad (PUT /v1/ads/{adId}/status `active`) switches it ACTIVE, which starts the review.
+         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId` (Meta, TikTok Smart+), and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`.
          *
-         * X returns a 400: a promoted post has no switch of its own, so hold the line item with `adSetStatus`.
+         * - LinkedIn: a creative held off is created DRAFT, because LinkedIn refuses PAUSED on a creative until its review is APPROVED. A DRAFT creative is not submitted for review and cannot serve; it reads `paused`. Resuming the ad (PUT /v1/ads/{adId}/status `active`) switches it ACTIVE, which starts the review.
+         * - X: returns a 400. A promoted post has no switch of its own, so hold the line item with `adSetStatus`.
          *
          */
         adStatus?: AdActivationStatus;
@@ -56582,21 +57838,28 @@ export type BoostPostData = {
             windowDays: 1 | 7 | 28;
         }>;
         /**
-         * Meta only. Extra primary-text options Meta rotates on the boosted post (asset_feed_spec.bodies with DEGREES_OF_FREEDOM); the post keeps its own text as one of the options. Works for Facebook posts and Instagram media. Under a conversions or traffic goal Meta also wants a website URL on the options, taken from `linkUrl` (send it with a `callToAction`); engagement boosts need none.
+         * Meta only. Extra primary-text options Meta rotates on the boosted post (asset_feed_spec.bodies with DEGREES_OF_FREEDOM). The post keeps its own text as one of the options. Works for Facebook posts and Instagram media.
+         *
+         * Under a conversions or traffic goal, Meta also wants a website URL on the options, taken from `linkUrl` (send it with a `callToAction`). Engagement boosts need none.
+         *
          */
         bodies?: Array<(string)>;
         /**
-         * Meta only (a 400 elsewhere). When Meta refuses an existing Instagram video as the ad (subcode 1815279), Zernio first copies the video into the ad account and retries on the original post, then falls back to a new Facebook video in a new Page post that does not show the original post's likes and comments; the response reports which in `instagramVideoFallback`. Messaging boosts never use the unlinked copy. `false` skips every fallback and returns Meta's error.
+         * Meta only (a 400 elsewhere). Controls the fallback when Meta refuses an existing Instagram video as the ad (subcode 1815279).
+         *
+         * - First, Zernio copies the video into the ad account and retries on the original post.
+         * - Then it falls back to a new Facebook video in a new Page post, which does not show the original post's likes and comments.
+         *
+         * The response reports which in `instagramVideoFallback`. Messaging boosts never use the unlinked copy. `false` skips every fallback and returns Meta's error.
+         *
          */
         rehostOnInstagramVideoRejection?: boolean;
         /**
-         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is
-         * TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`.
-         * When on, TikTok may deliver beyond the selected audiences or interests. Available on
-         * Video views, Traffic, Lead generation, App install, Web conversion and Community interaction.
-         * Only the flags you send are written; an unwritten flag reads back null in
-         * `nativeSettings`, so send `false` explicitly to be able to verify it is off.
-         * Not available with smartPlus or when attaching to an existing ad set (adSetId).
+         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`. When on, TikTok may deliver beyond the selected audiences or interests.
+         *
+         * Available on Video views, Traffic, Lead generation, App install, Web conversion and Community interaction. Not available with smartPlus or when attaching to an existing ad set (adSetId).
+         *
+         * Only the flags you send are written. An unwritten flag reads back null in `nativeSettings`, so send `false` explicitly to be able to verify it is off.
          *
          */
         smartTargeting?: {
@@ -56610,66 +57873,62 @@ export type BoostPostData = {
             interestsBehaviors?: boolean;
         };
         /**
-         * Meta, or TikTok with `goal: video_views`. TikTok: ENGAGED_VIEW (6-second
-         * Focused View, the default) or ENGAGED_VIEW_FIFTEEN (15-second views), both
-         * billed per view (CPV); any other value is a 400. Meta: explicit ad-set
-         * `optimization_goal` override. When omitted,
-         * defaults to the value derived from `goal`. Messaging boosts always
-         * use CONVERSATIONS and reject another optimizationGoal. Otherwise the value must be compatible
-         * with the objective Meta derives from `goal`, not with the objective used
-         * by `POST /v1/ads/create` for the same `goal` name: boost maps `goal:
-         * "engagement"` to objective `OUTCOME_AWARENESS`, which accepts
-         * `REACH`, `IMPRESSIONS`, `AD_RECALL_LIFT`, or THRUPLAY-class values.
-         * `POST_ENGAGEMENT` with `goal: engagement` opts the boost into objective
-         * `OUTCOME_ENGAGEMENT` with `destination_type` `ON_POST`, exactly as
-         * `metaObjective: OUTCOME_ENGAGEMENT` does (sending both is the same request).
-         * `POST_ENGAGEMENT` returns 400 with any other `goal`, with `leadGenFormId`, or
-         * with a `CALL_NOW` or messaging `callToAction`. With `adSetId` the ad joins an
-         * existing ad set and `optimizationGoal` is not read. Under
-         * `OUTCOME_ENGAGEMENT` the ad runs on the post itself, so `destinationType`
-         * is a 400 (messaging CTAs excepted) and `optimizationGoal` must be
-         * `POST_ENGAGEMENT` or `REACH`; anything else is a 400 (Meta no longer
-         * offers `IMPRESSIONS` there, while a plain engagement boost on
-         * `OUTCOME_AWARENESS` still accepts it). The created ad reports the objective
-         * and optimization goal Meta runs it with in `platformObjective` and
-         * `optimizationGoal` (on `adSetId`, those of the existing ad set).
+         * Ad-set optimization goal override. Meta, or TikTok with `goal: video_views`.
+         *
+         * **TikTok**: ENGAGED_VIEW (6-second Focused View, the default) or ENGAGED_VIEW_FIFTEEN (15-second views), both billed per view (CPV). Any other value is a 400.
+         *
+         * **Meta**: explicit ad-set `optimization_goal` override. When omitted, defaults to the value derived from `goal`.
+         *
+         * - Messaging boosts always use CONVERSATIONS and reject other values.
+         * - Otherwise the value must fit the objective Meta derives from `goal` for boosts, not the one `POST /v1/ads/create` uses for the same name. Boost maps `goal: "engagement"` to `OUTCOME_AWARENESS`, which accepts `REACH`, `IMPRESSIONS`, `AD_RECALL_LIFT`, or THRUPLAY-class values.
+         * - `POST_ENGAGEMENT` with `goal: engagement` opts into `OUTCOME_ENGAGEMENT` with `destination_type` `ON_POST`, exactly like `metaObjective: OUTCOME_ENGAGEMENT` (sending both is the same request).
+         * - `POST_ENGAGEMENT` returns 400 with any other `goal`, with `leadGenFormId`, or with a `CALL_NOW` or messaging `callToAction`.
+         * - Under `OUTCOME_ENGAGEMENT` the ad runs on the post, so `destinationType` is a 400 (messaging CTAs excepted) and `optimizationGoal` must be `POST_ENGAGEMENT` or `REACH`. Meta no longer offers `IMPRESSIONS` there; a plain engagement boost on `OUTCOME_AWARENESS` still accepts it.
+         * - With `adSetId` the ad joins an existing ad set and `optimizationGoal` is not read.
+         *
+         * The created ad reports the objective and optimization goal Meta runs it with in `platformObjective` and `optimizationGoal` (with `adSetId`, those of the existing ad set).
          *
          */
         optimizationGoal?: string;
         /**
          * Meta only, with `goal: engagement` and without `adSetId` (400 otherwise).
-         * `OUTCOME_ENGAGEMENT` creates the campaign with objective `OUTCOME_ENGAGEMENT`
-         * and the ad set with `optimization_goal` `POST_ENGAGEMENT` (unless
-         * `optimizationGoal` is set) and `destination_type` `ON_POST`, the shape Ads
-         * Manager uses to boost an existing post. `optimizationGoal: POST_ENGAGEMENT`
-         * selects the same objective, so the two may be sent together. `destinationType`
-         * returns 400 (messaging CTAs excepted) and `optimizationGoal` must be
-         * `POST_ENGAGEMENT` or `REACH` (400 otherwise). When both are
-         * omitted, an engagement boost keeps `OUTCOME_AWARENESS` with `REACH`. Returns 400 with `leadGenFormId` or with a `callToAction` whose objective
-         * is not `OUTCOME_ENGAGEMENT` (`CALL_NOW`); messaging CTAs keep their own
-         * `CONVERSATIONS` ad set. Verified against Meta on Facebook posts; Instagram posts
-         * are accepted but not yet verified.
+         *
+         * `OUTCOME_ENGAGEMENT` creates the campaign with objective `OUTCOME_ENGAGEMENT` and the ad set with `optimization_goal` `POST_ENGAGEMENT` (unless `optimizationGoal` is set) and `destination_type` `ON_POST`: the shape Ads Manager uses to boost an existing post.
+         *
+         * - `optimizationGoal: POST_ENGAGEMENT` selects the same objective, so the two may be sent together.
+         * - `destinationType` returns 400 (messaging CTAs excepted); `optimizationGoal` must be `POST_ENGAGEMENT` or `REACH` (400 otherwise).
+         * - When both are omitted, an engagement boost keeps `OUTCOME_AWARENESS` with `REACH`.
+         * - Returns 400 with `leadGenFormId` or a `callToAction` whose objective is not `OUTCOME_ENGAGEMENT` (`CALL_NOW`). Messaging CTAs keep their own `CONVERSATIONS` ad set.
+         *
+         * Verified against Meta on Facebook posts; Instagram posts are accepted but not yet verified.
          *
          */
         metaObjective?: 'OUTCOME_ENGAGEMENT';
         /**
-         * Meta only (facebook, instagram and Meta ads connections). Dry-runs the boost with Meta's
-         * execution_options validate_only: the campaign, ad set, creative (the post reference) and ad
-         * are checked as sent, everything PAUSED, and nothing is created or stored on Meta or in Zernio.
-         * Returns 200 with the same body as a validateOnly POST /v1/ads/create (`validateOnly`, `results`
-         * per node, `message`). Idempotency-Key storage and the duplicate-boost guard are bypassed. Counts
-         * toward the 30 Meta writes per ad account per 5 minutes. With `adSetId` only the ad is dry-run.
-         * An Instagram video that Meta refuses as a direct reference (subcode 1815279) comes back as
-         * `unverified` nodes, because the copy a real boost makes cannot be dry-run.
-         * `true` on any other platform returns 400 naming `validateOnly` and creates nothing; `false` is
-         * ignored. `dryRun` is not a field: sending it returns 400 instead of creating the ad.
+         * Meta only (facebook, instagram and Meta ads connections). Dry-runs the boost with Meta's execution_options validate_only: the campaign, ad set, creative (the post reference) and ad are checked as sent, everything PAUSED, and nothing is created or stored on Meta or in Zernio.
+         *
+         * Returns 200 with the same body as a validateOnly POST /v1/ads/create (`validateOnly`, `results` per node, `message`).
+         *
+         * - Idempotency-Key storage and the duplicate-boost guard are bypassed.
+         * - Counts toward the 30 Meta writes per ad account per 5 minutes.
+         * - With `adSetId`, only the ad is dry-run.
+         * - An Instagram video Meta refuses as a direct reference (subcode 1815279) comes back as `unverified` nodes, because the copy a real boost makes cannot be dry-run.
+         *
+         * `true` on any other platform returns 400 naming `validateOnly` and creates nothing; `false` is ignored. `dryRun` is not a field: sending it returns 400 instead of creating the ad.
          *
          */
         validateOnly?: boolean;
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -56694,7 +57953,13 @@ export type BoostPostResponse = ({
     message?: string;
     instagramVideoFallback?: InstagramVideoFallback;
     /**
-     * Present with instagramVideoFallback: one human-readable line saying how the Instagram video was boosted. On Meta also present, as an entry starting with `activation_failed:`, when Meta refused the final switch to ACTIVE of the campaign, ad set or ad this boost created: nothing was deleted, `message` says not everything is ACTIVE, and the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later. A retry without Idempotency-Key inside the 10-minute dedup window that finds the stored ad PAUSED although it asks for ACTIVE gets a `replayed_paused:` entry with the same status calls instead.
+     * Human-readable notes about the boost.
+     *
+     * - **With instagramVideoFallback:** one line saying how the Instagram video was boosted.
+     * - **`activation_failed:` (Meta):** Meta refused the final switch to ACTIVE of the campaign, ad set or ad this boost created. Nothing was deleted and `message` says not everything is ACTIVE.
+     * - **`activation_failed:` content:** names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     * - **`replayed_paused:`:** a retry without Idempotency-Key inside the 10-minute dedup window found the stored ad PAUSED although it asks for ACTIVE. Carries the same status calls.
+     *
      */
     warnings?: Array<(string)>;
 });
@@ -56908,11 +58173,19 @@ export type CreateStandaloneAdData = {
          */
         name?: string;
         /**
-         * Meta, Reddit and Google. Exact campaign name. Overrides the default `<name> - Campaign`. Ignored when the request joins an existing campaign or ad set. Google: no line breaks and at most 255 characters, checked before calling Google; names are unique in the Google Ads account, and on Search and Display a taken name is a 400 naming this field.
+         * Meta, Reddit and Google. Exact campaign name; overrides the default `<name> - Campaign`. Ignored when the request joins an existing campaign or ad set.
+         *
+         * Google: no line breaks and at most 255 characters, checked before calling Google. Names are unique in the Google Ads account, and on Search and Display a taken name is a 400 naming this field.
          */
         campaignName?: string;
         /**
-         * Meta, Reddit and Google (the ad group). Exact ad set name. Overrides the default `<name> - Ad Set` (Google Search and Display: `<name> - Ad Group`). Ignored when the request joins an existing ad set (`adSetId`). Google Search and Display only, also on `existingCampaignId`, where the new ad group's name is returned as `adSetName`; no line breaks, at most 255 characters, unique in the campaign (a taken name is a 400 naming this field). Demand Gen names its ad group with `demandGen.adGroupName` and Performance Max with `assetGroup.name`. (For per-ad names on the multi-creative shape, set `name` on each `creatives[]` entry.)
+         * Exact ad set name. Meta, Reddit and Google (the ad group).
+         *
+         * - Overrides the default `<name> - Ad Set` (Google Search and Display: `<name> - Ad Group`).
+         * - Ignored when the request joins an existing ad set (`adSetId`).
+         * - Google Search and Display only: also works on `existingCampaignId`, where the new ad group's name is returned as `adSetName`. No line breaks, at most 255 characters, unique in the campaign (a taken name is a 400 naming this field).
+         * - Demand Gen names its ad group with `demandGen.adGroupName`, and Performance Max with `assetGroup.name`.
+         * - For per-ad names on the multi-creative shape, set `name` on each `creatives[]` entry.
          */
         adSetName?: string;
         /**
@@ -56921,46 +58194,56 @@ export type CreateStandaloneAdData = {
         adName?: string;
         tracking?: AdTracking;
         /**
-         * Available goals vary by platform. Omitted, it is inferred from the ad (see `appliedDefaults.goal` in the response); the attach shape inherits it from the ad set.
+         * The ad's goal. Available goals vary by platform. When omitted, it is inferred from the ad (see `appliedDefaults.goal` in the response); the attach shape inherits it from the ad set.
          *
          * **Meta**
-         * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event such as PURCHASE or START_TRIAL, or `promotedObject.customConversionId` to optimise against a Custom Conversion, or `customEventType: OTHER` + `customEventStr` to optimise against a pixel custom event.
-         * - `lead_conversion`: OUTCOME_LEADS optimizing website pixel leads. Same pixel and event fields, but with a leads-class event such as LEAD, SUBMIT_APPLICATION, SCHEDULE or CONTACT (or `promotedObject.customConversionId` to optimise against a Custom Conversion instead). Meta gates conversion events by objective, so leads-class events are rejected under `conversions`.
+         *
+         * - `conversions`: OUTCOME_SALES. Requires `promotedObject.pixelId` and `promotedObject.customEventType` with a commerce event (e.g. PURCHASE, START_TRIAL). Alternatives: `promotedObject.customConversionId` for a Custom Conversion, or `customEventType: OTHER` + `customEventStr` for a pixel custom event.
+         * - `lead_conversion`: OUTCOME_LEADS optimizing website pixel leads. Same pixel and event fields, with a leads-class event (LEAD, SUBMIT_APPLICATION, SCHEDULE, CONTACT) or `promotedObject.customConversionId`. Meta gates conversion events by objective, so leads-class events are rejected under `conversions`.
          * - `lead_generation`: OUTCOME_LEADS with instant forms. Requires `leadGenFormId`. `promotedObject.pageId` is optional and auto-filled from the connected Page.
          * - `app_promotion`: requires `promotedObject.applicationId` and `promotedObject.objectStoreUrl`.
-         * - `catalog_sales`: Advantage+ catalog ads, for example vehicle inventory. Requires `promotedObject.productSetId`, `promotedObject.pixelId` and `promotedObject.customEventType`. Builds a catalog TEMPLATE creative from the copy fields, which may carry template tags like {{product.name}} or {{vehicle.make}}. No imageUrl or video is sent; Meta renders the visuals per catalog item. Discover catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets. Single shape only, no creatives[], dynamicCreative, placementAssets, existingCreativeId or carouselCards; an imageUrl or video sent with it is ignored and not uploaded. Works with `existingCampaignId`, and with `adSetId` to add a catalog ad to an existing ad set (then only `promotedObject.productSetId` is required; pixel and event stay on the ad set). Pick the format with `catalogFormat`.
-         * - `traffic` with `promotedObject.productSetId`: a catalog ad without a pixel (OUTCOME_TRAFFIC, `optimizationGoal` LINK_CLICKS by default or LANDING_PAGE_VIEWS). The product set goes on the template creative only, never on the ad set's promoted_object, and no `pixelId` or `customEventType` is needed. Same creative rules as `catalog_sales`.
-         * - `page_likes`: Page Likes conversion location under OUTCOME_ENGAGEMENT (destination_type ON_PAGE, optimization PAGE_LIKES). `promotedObject.pageId` is optional and auto-filled from the connected Page. The creative CTA is fixed to LIKE_PAGE targeting that Page; headline / body / linkUrl / callToAction / imageUrl / video are all optional (Meta derives the link and the Like button from the Page).
-         * - `page_visits`: Meta's "Page visits and followers" under OUTCOME_TRAFFIC (destination_type FACEBOOK_PAGE, optimization PROFILE_VISIT). `promotedObject.pageId` is optional and auto-filled from the connected Page, and `linkUrl` defaults to the Page. Meta enables Profile Visit ads per ad account: one it has not enabled is refused with Meta's "This account isn't eligible to use Profile Visit ads yet".
+         * - `catalog_sales`: Advantage+ catalog ads (e.g. vehicle inventory). Requires `promotedObject.productSetId`, `promotedObject.pixelId` and `promotedObject.customEventType`. Builds a catalog TEMPLATE creative from the copy fields, which may carry template tags like {{product.name}} or {{vehicle.make}}.
+         * - `catalog_sales` visuals: no imageUrl or video is sent; Meta renders them per catalog item (an imageUrl or video sent is ignored, not uploaded). Find catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets.
+         * - `catalog_sales` shape: single shape only, no creatives[], dynamicCreative, placementAssets, existingCreativeId or carouselCards. Works with `existingCampaignId`, and with `adSetId` to add to an existing ad set (then only `promotedObject.productSetId` is required). Pick the format with `catalogFormat`.
+         * - `traffic` with `promotedObject.productSetId`: a catalog ad without a pixel (OUTCOME_TRAFFIC, `optimizationGoal` LINK_CLICKS by default or LANDING_PAGE_VIEWS). The product set goes on the template creative only, never the ad set's promoted_object. No `pixelId` or `customEventType` needed. Same creative rules as `catalog_sales`.
+         * - `page_likes`: Page Likes under OUTCOME_ENGAGEMENT (destination_type ON_PAGE, optimization PAGE_LIKES). `promotedObject.pageId` is optional and auto-filled. The CTA is fixed to LIKE_PAGE for that Page; headline / body / linkUrl / callToAction / imageUrl / video are all optional (Meta derives them from the Page).
+         * - `page_visits`: "Page visits and followers" under OUTCOME_TRAFFIC (destination_type FACEBOOK_PAGE, optimization PROFILE_VISIT). `promotedObject.pageId` is optional and auto-filled; `linkUrl` defaults to the Page. Accounts Meta has not enabled are refused with "This account isn't eligible to use Profile Visit ads yet".
          *
          * **TikTok**
-         * - `conversions`: website-conversion ad group. Requires `promotedObject.pixelId`, your TikTok Pixel ID. Accepts an optional `promotedObject.customEventType` with a TikTok optimization_event code your pixel tracks (newer pixels use e.g. SHOPPING for purchase events; legacy pixels use ON_WEB_ORDER, INITIATE_ORDER, ON_WEB_REGISTER or FORM). To inherit pixel and event from an existing ad group, pass `adSetId` instead.
+         *
+         * - `conversions`: website-conversion ad group. Requires `promotedObject.pixelId` (your TikTok Pixel ID). Optional `promotedObject.customEventType`: a TikTok optimization_event code your pixel tracks (newer pixels: e.g. SHOPPING for purchases; legacy: ON_WEB_ORDER, INITIATE_ORDER, ON_WEB_REGISTER, FORM). To inherit pixel and event from an existing ad group, pass `adSetId`.
          *
          * **LinkedIn**
-         * - `engagement`, `traffic`, `awareness` and `video_views` create standalone Direct Sponsored Content ads. `traffic` requires `linkUrl`; `video_views` requires `video`.
-         * - `lead_generation`: requires `leadGenFormId` (an adForm ID from POST /v1/ads/lead-forms). The campaign objective is set to MAX_LEAD and the creative's `leadgenCallToAction` destination is set to `urn:li:adForm:{id}`.
-         * - `job_applicants` requires a `platformSpecificData.jobs` creative.
-         * - For `conversions` on LinkedIn, or to promote an existing post, use POST /v1/ads/boost.
+         *
+         * - `engagement`, `traffic`, `awareness`, `video_views`: standalone Direct Sponsored Content ads. `traffic` requires `linkUrl`; `video_views` requires `video`.
+         * - `lead_generation`: requires `leadGenFormId` (an adForm ID from POST /v1/ads/lead-forms). Sets the campaign objective to MAX_LEAD and the creative's `leadgenCallToAction` destination to `urn:li:adForm:{id}`.
+         * - `job_applicants`: requires a `platformSpecificData.jobs` creative.
+         * - `conversions` or promoting an existing post: use POST /v1/ads/boost.
          *
          * **OpenAI Ads**
-         * - Only `traffic`, `awareness`, and `conversions` are supported (other goals return 400). Maps to OpenAI's `bidding_type` (clicks, impressions, conversions respectively). `conversions` requires an active conversion event setting on the account; create a tracking tag with `defaultEventType` via the tracking-tags API (`POST /v1/accounts/{accountId}/tracking-tags`), or configure a conversion event in OpenAI Ads Manager, or the request returns 400. Pick the event with `promotedObject.customEventType` (see AdPromotedObject); without it the most recently created optimizable event is used.
+         *
+         * - Only `traffic`, `awareness`, `conversions` (other goals return 400). They map to OpenAI's `bidding_type` (clicks, impressions, conversions).
+         * - `conversions` needs an active conversion event setting on the account, or returns 400. Create a tracking tag with `defaultEventType` (`POST /v1/accounts/{accountId}/tracking-tags`) or configure one in OpenAI Ads Manager.
+         * - Pick the event with `promotedObject.customEventType` (see AdPromotedObject); without it, the most recently created optimizable event is used.
          *
          * **Reddit Ads**
-         * - `traffic` (CLICKS), `awareness` (BRAND_AWARENESS), `conversions`, `video_views` (VIDEO_VIEWABLE_IMPRESSIONS) and `lead_generation` (LEAD_GENERATION); any other goal returns 400.
-         * - `conversions` requires `promotedObject.customEventType`; the pixel must already have received that event (see AdPromotedObject).
-         * - `lead_generation` sends people to `linkUrl` and optimizes toward the pixel's Lead event, which the pixel must already have received. Reddit retired its native lead forms on September 30, 2026, so `leadGenFormId` returns 400.
-         * - `video_views` needs a `video` (422 otherwise); `optimizationGoal` picks VIDEO_VIEW_6S (default) or VIDEO_VIEW_15S.
+         *
+         * - Supported: `traffic` (CLICKS), `awareness` (BRAND_AWARENESS), `conversions`, `video_views` (VIDEO_VIEWABLE_IMPRESSIONS), `lead_generation` (LEAD_GENERATION). Any other goal returns 400.
+         * - `conversions`: requires `promotedObject.customEventType`; the pixel must already have received that event (see AdPromotedObject).
+         * - `lead_generation`: sends people to `linkUrl` and optimizes toward the pixel's Lead event, which the pixel must already have received. Reddit retired native lead forms on September 30, 2026, so `leadGenFormId` returns 400.
+         * - `video_views`: needs a `video` (422 otherwise); `optimizationGoal` picks VIDEO_VIEW_6S (default) or VIDEO_VIEW_15S.
          *
          */
         goal?: 'engagement' | 'traffic' | 'awareness' | 'video_views' | 'lead_generation' | 'lead_conversion' | 'conversions' | 'app_promotion' | 'catalog_sales' | 'page_likes' | 'page_visits' | 'job_applicants';
         /**
-         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group: `audience` is
-         * TikTok's `smart_audience_enabled`, `interestsBehaviors` its `smart_interest_behavior_enabled`.
-         * When on, TikTok may deliver beyond the selected audiences or interests. Available on
-         * Video views, Traffic, Lead generation, App install, Web conversion and Community interaction.
-         * Only the flags you send are written; an unwritten flag reads back null in
-         * `nativeSettings`, so send `false` explicitly to be able to verify it is off.
-         * Not available with smartPlus or when attaching to an existing ad set (adSetId).
+         * TikTok only (a 400 elsewhere). TikTok Smart Targeting on the ad group. When on, TikTok may deliver beyond the selected audiences or interests.
+         *
+         * - `audience`: TikTok's `smart_audience_enabled`.
+         * - `interestsBehaviors`: TikTok's `smart_interest_behavior_enabled`.
+         *
+         * Available on Video views, Traffic, Lead generation, App install, Web conversion and Community interaction. Not available with smartPlus or when attaching to an existing ad set (adSetId).
+         *
+         * Only the flags you send are written. An unwritten flag reads back null in `nativeSettings`, so send `false` explicitly to be able to verify it is off.
          *
          */
         smartTargeting?: {
@@ -56974,7 +58257,13 @@ export type CreateStandaloneAdData = {
             interestsBehaviors?: boolean;
         };
         /**
-         * Meta, TikTok with goal video_views (ENGAGED_VIEW, the 6-second default, or ENGAGED_VIEW_FIFTEEN; both bill per view), or Reddit with goal video_views (VIDEO_VIEW_6S, the default, or VIDEO_VIEW_15S; other values return 400). Meta: Explicit ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`). Overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). Forwarded verbatim to Meta, which validates compatibility with the campaign objective and rejects incompatible combinations.
+         * Explicit optimization goal. Supported on:
+         *
+         * - **TikTok** with goal video_views: ENGAGED_VIEW (the 6-second default) or ENGAGED_VIEW_FIFTEEN; both bill per view.
+         * - **Reddit** with goal video_views: VIDEO_VIEW_6S (default) or VIDEO_VIEW_15S; other values return 400.
+         * - **Meta:** the ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`).
+         *
+         * On Meta it overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). It is forwarded verbatim; Meta validates compatibility with the campaign objective and rejects incompatible combinations.
          */
         optimizationGoal?: string;
         /**
@@ -56982,7 +58271,13 @@ export type CreateStandaloneAdData = {
          */
         billingEvent?: string;
         /**
-         * Meta only. Defaults to AUCTION and is explicitly sent on new campaigns, including validateOnly. Reusing existingCampaignId does not change the campaign. RESERVED = Reach & Frequency: requires `rfPredictionId` (a RESERVED prediction from /v1/ads/rf-predictions + /reserve). Budget, schedule and pricing come from the reservation, so budgetAmount/budgetType are not required and bid fields are ignored. Only the plain single-ad shape (no creatives[], adSetId, existingCampaignId or dynamicCreative).
+         * Meta only. Buying type. Defaults to AUCTION and is explicitly sent on new campaigns, including validateOnly. Reusing existingCampaignId does not change the campaign.
+         *
+         * RESERVED = Reach & Frequency:
+         *
+         * - Requires `rfPredictionId` (a RESERVED prediction from /v1/ads/rf-predictions + /reserve).
+         * - Budget, schedule and pricing come from the reservation, so budgetAmount/budgetType are not required and bid fields are ignored.
+         * - Only the plain single-ad shape (no creatives[], adSetId, existingCampaignId or dynamicCreative).
          */
         buyingType?: 'AUCTION' | 'RESERVED';
         /**
@@ -56990,15 +58285,29 @@ export type CreateStandaloneAdData = {
          */
         rfPredictionId?: string;
         /**
-         * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative. Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+         * Not supported. Meta validates creative_sourcing_spec.promotion_metadata_spec on the create call and then discards it, so a Promotion set through the Marketing API never reaches the creative.
+         *
+         * Any object is rejected with 400 invalid_field_value. Send null or omit the field, and set the Promotion on the ad in Ads Manager. Verified on 2026-09-11 across Graph v19.0 to v25.0 and every write path.
+         *
          */
         promotion?: MetaPromotion;
         /**
-         * Meta only. Applied to each new creative, including standalone, attach and catalog template shapes. With creatives[], these are defaults; an item replaces the whole feature map, including an empty map. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. On catalog ads, the catalog enhancements are keys of this same map, for example `{ "product_extensions": "OPT_OUT", "media_type_automation": "OPT_OUT", "standard_enhancements_catalog": "OPT_OUT", "multi_creative_post_carousel": "OPT_OUT" }`.
+         * Meta only. Applied to each new creative, including standalone, attach and catalog template shapes.
+         *
+         * - With creatives[], these are defaults; an item replaces the whole feature map, including an empty map.
+         * - auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting.
+         * - On catalog ads, the catalog enhancements are keys of this same map, for example `{ "product_extensions": "OPT_OUT", "media_type_automation": "OPT_OUT", "standard_enhancements_catalog": "OPT_OUT", "multi_creative_post_carousel": "OPT_OUT" }`.
+         *
          */
         creativeFeatures?: MetaCreativeFeatures;
         /**
-         * Meta catalog template creatives only (goal `catalog_sales`, goal `traffic` with `promotedObject.productSetId`, or `adSetId` with `promotedObject.productSetId`); a 400 otherwise. Sent as `object_story_spec.template_data.format_option`. `force_single_link` is never sent with it (Meta rejects the pair, subcode 1443051). `single_image` also sends `format_transformation_spec` with `carousel` and `da_collection` set to `data_source: ["none"]`, so Meta keeps the single image instead of turning it into a carousel or collection. `carousel_images_single_item` also sends `template_data.multi_share_end_card: false`, which Meta requires for that format (subcode 1443167). Omit it to let Meta pick the format.
+         * Meta catalog template creatives only (goal `catalog_sales`, goal `traffic` with `promotedObject.productSetId`, or `adSetId` with `promotedObject.productSetId`); a 400 otherwise. Omit it to let Meta pick the format.
+         *
+         * Sent as `object_story_spec.template_data.format_option`. `force_single_link` is never sent with it (Meta rejects the pair, subcode 1443051).
+         *
+         * - `single_image`: also sends `format_transformation_spec` with `carousel` and `da_collection` set to `data_source: ["none"]`, so Meta keeps the single image instead of turning it into a carousel or collection.
+         * - `carousel_images_single_item`: also sends `template_data.multi_share_end_card: false`, which Meta requires for that format (subcode 1443167).
+         *
          */
         catalogFormat?: 'single_image' | 'carousel_images_multi_items' | 'carousel_images_single_item' | 'carousel_slideshows';
         /**
@@ -57006,58 +58315,106 @@ export type CreateStandaloneAdData = {
          */
         multiAdvertiser?: 'OPT_IN' | 'OPT_OUT';
         /**
-         * Meta only. Meta's "Ad includes media created or edited with AI" disclosure, the checkbox in Ads Manager, stored on the creative as `generative_asset_spec.transparency_metadata.self_disclosure`. OPT_IN checks it, OPT_OUT explicitly declares no AI media, omitted leaves Meta's default. Applied to each new creative, including standalone, creatives[] and attach shapes, and preserved when a creative is rebuilt. This sets the disclosure on the ad; whether and when the viewer-facing label renders is Meta's decision.
+         * Meta only. Meta's "Ad includes media created or edited with AI" disclosure (the Ads Manager checkbox), stored on the creative as `generative_asset_spec.transparency_metadata.self_disclosure`.
+         *
+         * - OPT_IN: checks it.
+         * - OPT_OUT: explicitly declares no AI media.
+         * - Omitted: leaves Meta's default.
+         *
+         * Applied to each new creative (standalone, creatives[] and attach shapes) and preserved when a creative is rebuilt. This sets the disclosure on the ad; whether and when the viewer-facing label renders is Meta's decision.
+         *
          */
         aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
         /**
-         * Google Performance Max validates the complete atomic campaign and asset group with no resource creation or local persistence. Google validation still downloads image URLs and consumes quota. On Meta, validates the complete inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created, and validation bypasses Idempotency-Key storage. Supports a single image or existing video.id (each also with bodies[] / headlines[] Multiple Text Options), all-image placementAssets with per-rule copy and text pools, or existingCreativeId; dynamicCreative, translations, carouselCards, placement videos, new video uploads, creatives[], adSetId and RESERVED buying return 400. Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped. When Meta cannot dry-run the nested tree (code 2, or an unknown-error code 1 on an OFFSITE_CONVERSIONS ad set nested in a new campaign, which Meta returns for some website-conversion ad sets that it then creates normally, or a code 100 subcode 2446880 "WhatsApp number required" on an ad that does not message on WhatsApp, which Meta returns intermittently and then creates the ad normally), the campaign and creative are validated on their own and the adSet and ad nodes come back unverified with the reason. If the creative's own dry run also asks for a WhatsApp number, the creative comes back unverified too. Messaging ads still fail on 2446880. Success returns 200 with per-node results; Meta rejection returns an error. ChatGPT (OpenAI) has no platform dry-run: Zernio runs every check it knows (creative lengths, budget, bid strategy, targeting) plus live lookups of the conversion event and target countries, and uploads or creates nothing. OpenAI's own write-time checks (image fetch, currency-specific minimums, ad review) still run only on a real create. Any other platform, or a Google campaignType other than pmax or demand_gen, returns 501 `feature_not_available`.
+         * Validate the request without creating anything. Any other platform, or a Google campaignType other than pmax or demand_gen, returns 501 `feature_not_available`.
+         *
+         * **Google Performance Max**: validates the complete atomic campaign and asset group, with no resource creation or local persistence. Validation still downloads image URLs and consumes quota.
+         *
+         * **Meta**: validates the inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created; validation bypasses Idempotency-Key storage. Success returns 200 with per-node results; a Meta rejection returns an error.
+         *
+         * - Supported: a single image or existing video.id (each also with bodies[] / headlines[] Multiple Text Options), all-image placementAssets with per-rule copy and text pools, or existingCreativeId.
+         * - Return 400: dynamicCreative, translations, carouselCards, placement videos, new video uploads, creatives[], adSetId, RESERVED buying.
+         * - Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped.
+         * - When Meta cannot dry-run the nested tree, the campaign and creative are validated alone and the adSet and ad nodes return unverified with the reason. This covers code 2, and two errors Meta returns but then creates normally (below).
+         * - Code 1 (unknown error) on an OFFSITE_CONVERSIONS ad set nested in a new campaign (some website-conversion ad sets).
+         * - Code 100 subcode 2446880 "WhatsApp number required" on an ad that does not message on WhatsApp (intermittent). If the creative's own dry run also asks for a WhatsApp number, the creative is unverified too. Messaging ads still fail on 2446880.
+         *
+         * **ChatGPT (OpenAI)**: no platform dry-run. Zernio runs every check it knows (creative lengths, budget, bid strategy, targeting) plus live lookups of the conversion event and target countries, and uploads or creates nothing. OpenAI's own checks (image fetch, currency-specific minimums, ad review) run only on a real create.
+         *
          */
         validateOnly?: boolean;
         /**
-         * Budget in WHOLE currency units (USD: 50 = $50.00), NOT cents. Meta's own Marketing API takes this same number in minor units, so it is an easy and expensive mix-up. Required on legacy, multi-creative and Performance Max shapes. Inherited on attach. OpenAI Ads: in the ad account currency, minimum 1; OpenAI can require a higher daily minimum for some currencies and names it in the error.
+         * Budget in WHOLE currency units (USD: 50 = $50.00), NOT cents. Meta's own Marketing API takes this number in minor units, an easy and expensive mix-up.
+         *
+         * Required on legacy, multi-creative and Performance Max shapes. Inherited on attach.
+         *
+         * **OpenAI Ads:** in the ad account currency, minimum 1. OpenAI can require a higher daily minimum for some currencies and names it in the error.
          */
         budgetAmount?: number;
         /**
-         * Defaults to daily when `budgetAmount` is sent without it (reported in `appliedDefaults.budgetType`). Inherited on attach. OpenAI Ads accepts both as the campaign's single spend cap. A lifetime cap can later switch to daily with PUT /v1/ads/campaigns/{campaignId}, but OpenAI never switches a daily cap back to lifetime (422). Automatic bidding (Maximize Results) needs a daily budget. Reddit Ads: the ad group's daily or lifetime spend goal.
+         * Defaults to daily when `budgetAmount` is sent without it (reported in `appliedDefaults.budgetType`). Inherited on attach.
+         *
+         * - **OpenAI Ads:** accepts both as the campaign's single spend cap. A lifetime cap can later switch to daily with PUT /v1/ads/campaigns/{campaignId}, but never daily back to lifetime (422). Automatic bidding (Maximize Results) needs a daily budget.
+         * - **Reddit Ads:** the ad group's daily or lifetime spend goal.
          */
         budgetType?: 'daily' | 'lifetime';
         /**
-         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default, back-compat); PAUSED pauses only the TOP-MOST object this call creates and switches everything below it on, so one resume of that object brings the new tree live and nothing that already existed is touched: a new campaign is held paused with its ad set and ad on; with `existingCampaignId` the new ad set is held paused with its ad on; with `adSetId` the new ad itself is paused. `campaignStatus: ACTIVE` with `status: PAUSED` moves the pause down to the new ad set. `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level; `status: PAUSED` adds a hold of its own only when none of them is PAUSED. To create every object paused, send all three as PAUSED. LinkedIn: a held campaign group is PAUSED with its campaign and creative ACTIVE; a new campaign in an existing group stays DRAFT; a held creative (with `adSetId`) is created DRAFT, as LinkedIn refuses PAUSED until its review is APPROVED. X has no per-ad switch, so its lowest level is the line item. Google Performance Max and Demand Gen accept PAUSED only (the campaign is created paused).
+         * Publish state of the created entities, on every platform. Omitted or ACTIVE publishes live (default, back-compat).
+         *
+         * PAUSED pauses only the TOP-MOST object this call creates and switches everything below it on, so one resume of that object brings the new tree live and nothing pre-existing is touched:
+         *
+         * - New campaign: held paused with its ad set and ad on.
+         * - With `existingCampaignId`: the new ad set is held paused with its ad on.
+         * - With `adSetId`: the new ad itself is paused.
+         *
+         * **Level overrides.** `campaignStatus`, `adSetStatus` and `adStatus` set one level each and always win for that level. `status: PAUSED` adds its own hold only when none of them is PAUSED. `campaignStatus: ACTIVE` with `status: PAUSED` moves the pause down to the new ad set. To create every object paused, send all three as PAUSED.
+         *
+         * **Platform notes:**
+         *
+         * - LinkedIn: a held campaign group is PAUSED with its campaign and creative ACTIVE. A new campaign in an existing group stays DRAFT. A held creative (with `adSetId`) is created DRAFT, as LinkedIn refuses PAUSED until its review is APPROVED.
+         * - X: no per-ad switch, so its lowest level is the line item.
+         * - Google Performance Max and Demand Gen: accept PAUSED only (the campaign is created paused).
+         *
          */
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Every platform. Sets the switch of the new campaign alone (LinkedIn: the campaign group) and overrides `status` for it. `PAUSED` holds the campaign off with its ad set and ad on unless `adSetStatus` or `adStatus` say otherwise; `ACTIVE` with `status: PAUSED` switches the campaign on and holds the new ad set paused (its ad on). Omitted, it follows `status`. Ignored when the request creates no campaign (`existingCampaignId` or `adSetId`).
+         * Every platform. Sets the switch of the new campaign alone (LinkedIn: the campaign group) and overrides `status` for it. Omitted, it follows `status`. Ignored when the request creates no campaign (`existingCampaignId` or `adSetId`).
+         *
+         * - `PAUSED`: holds the campaign off with its ad set and ad on, unless `adSetStatus` or `adStatus` say otherwise.
+         * - `ACTIVE` with `status: PAUSED`: switches the campaign on and holds the new ad set paused (its ad on).
+         *
          */
         campaignStatus?: 'ACTIVE' | 'PAUSED';
         /**
-         * Every platform. Sets the switch of the new ad set alone (Google, TikTok, Pinterest and ChatGPT: the ad group; LinkedIn: the campaign, which stays DRAFT when held; X: the line item) and overrides `status` for it. Omitted, it follows `status`.
+         * Every platform. Sets the switch of the new ad set alone and overrides `status` for it. When omitted, it follows `status`. Equivalent object: Google, TikTok, Pinterest and ChatGPT, the ad group; LinkedIn, the campaign (stays DRAFT when held); X, the line item.
          *
-         * Precedence: a level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level. `status: PAUSED` then holds the top-most new object that has no level status, and only when no level status is PAUSED; every other new object is switched on. So `campaignStatus: ACTIVE` + `adSetStatus: PAUSED` + `adStatus: PAUSED` keeps the campaign on with the new ad set and ad off, and all three PAUSED creates the whole tree paused.
+         * Precedence: a level status (`campaignStatus`, `adSetStatus`, `adStatus`) always wins for its level. `status: PAUSED` then holds the top-most new object with no level status, only when no level status is PAUSED. Every other new object is switched on.
          *
-         * Rejected with a 400 alongside `adSetId` (that ad set already exists; change it with PUT /v1/ads/ad-sets/{adSetId}/status). Performance Max and Demand Gen accept PAUSED only.
+         * So `campaignStatus: ACTIVE` + `adSetStatus: PAUSED` + `adStatus: PAUSED` keeps the campaign on with the new ad set and ad off; all three PAUSED creates the whole tree paused.
+         *
+         * Rejected with a 400 alongside `adSetId` (that ad set exists; change it with PUT /v1/ads/ad-sets/{adSetId}/status). Performance Max and Demand Gen accept PAUSED only.
          *
          */
         adSetStatus?: 'ACTIVE' | 'PAUSED';
         /**
-         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId`, and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`. LinkedIn: a creative held off is created DRAFT, because LinkedIn refuses PAUSED on a creative until its review is APPROVED. A DRAFT creative is not submitted for review and cannot serve; it reads `paused`, and resuming the ad (PUT /v1/ads/{adId}/status `active`) switches it ACTIVE, which starts the review.
+         * Sets the switch of the new ad alone, also when attaching to an existing ad set with `adSetId`, and overrides `status` for it. Same precedence as `adSetStatus`. Omitted, it follows `status`.
          *
-         * X returns a 400: a promoted post has no switch of its own, so hold the line item with `adSetStatus`. `PAUSED` with `buyingType: RESERVED` returns a 400 (Meta creates the first Reach and Frequency ad ACTIVE). Performance Max and Demand Gen accept PAUSED only.
+         * - LinkedIn: a creative held off is created DRAFT, because LinkedIn refuses PAUSED on a creative until its review is APPROVED. A DRAFT creative is not submitted for review and cannot serve; it reads `paused`. Resuming the ad (PUT /v1/ads/{adId}/status `active`) switches it ACTIVE, which starts the review.
+         * - X: returns a 400. A promoted post has no switch of its own, so hold the line item with `adSetStatus`.
+         * - `PAUSED` with `buyingType: RESERVED`: returns a 400 (Meta creates the first Reach and Frequency ad ACTIVE).
+         * - Performance Max and Demand Gen: accept PAUSED only.
          *
          */
         adStatus?: AdActivationStatus;
         /**
          * Meta only. Where the budget lives, which selects the Meta budget model:
-         * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the
-         * ad set. This is the back-compatible behaviour; omit this field to keep it.
-         * - `campaign`: CBO (Campaign Budget Optimization / Advantage Campaign Budget). The
-         * budget AND `bidStrategy` are set on the CAMPAIGN, and Meta distributes spend
-         * across ad sets automatically.
-         * The returned ad stores the applied `budgetLevel` and budget in `campaignBudget`
-         * for CBO or `adSetBudget` for ABO. Edit CBO budgets with
-         * `PUT /v1/ads/campaigns/{campaignId}` and ABO budgets with
-         * `PUT /v1/ads/ad-sets/{adSetId}`.
-         * Meta requires the budget at exactly one level, never both. Non-Meta platforms ignore
-         * this field. Ignored on the attach shape (`adSetId`), which inherits the existing budget.
+         *
+         * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the ad set. Back-compatible; omit this field to keep it.
+         * - `campaign`: CBO (Campaign Budget Optimization / Advantage Campaign Budget). The budget AND `bidStrategy` are set on the CAMPAIGN, and Meta distributes spend across ad sets automatically.
+         *
+         * The returned ad stores the applied `budgetLevel`, and the budget in `campaignBudget` (CBO) or `adSetBudget` (ABO). Edit CBO budgets with `PUT /v1/ads/campaigns/{campaignId}` and ABO budgets with `PUT /v1/ads/ad-sets/{adSetId}`.
+         *
+         * Meta requires the budget at exactly one level, never both. Non-Meta platforms ignore this field. Ignored on the attach shape (`adSetId`), which inherits the existing budget.
          *
          */
         budgetLevel?: 'adset' | 'campaign';
@@ -57066,7 +58423,14 @@ export type CreateStandaloneAdData = {
          */
         currency?: string;
         /**
-         * Required for Meta, Google, Pinterest, LinkedIn, OpenAI Ads and Reddit Ads on legacy + attach shapes (skip for multi-creative; use `creatives[].headline`). Ignored for TikTok. On X, the website card title (needs imageUrl and linkUrl, max 70). Max: Meta=255, Google=30, Pinterest=100, LinkedIn=400, OpenAI=50 (min 3), Reddit=300 (the promoted post's title). On LinkedIn this is the ad's headline (the bold text on the creative); for traffic ads it's the link card title. On OpenAI Ads this is the chat card's title.
+         * Ad headline. Required for Meta, Google, Pinterest, LinkedIn, OpenAI Ads and Reddit Ads on legacy + attach shapes (for multi-creative, skip it and use `creatives[].headline`). Ignored for TikTok.
+         *
+         * Max length: Meta=255, Google=30, Pinterest=100, LinkedIn=400, OpenAI=50 (min 3), Reddit=300.
+         *
+         * - LinkedIn: the ad's headline (the bold text on the creative); for traffic ads, the link card title.
+         * - OpenAI Ads: the chat card's title.
+         * - Reddit: the promoted post's title.
+         * - X: the website card title (needs imageUrl and linkUrl, max 70).
          */
         headline?: string;
         /**
@@ -57074,28 +58438,36 @@ export type CreateStandaloneAdData = {
          */
         longHeadline?: string;
         /**
-         * Required on legacy + attach shapes. For X this is the tweet text (max 280 chars including a ~24-char URL when `linkUrl` is set). On LinkedIn this is the post commentary (the intro text shown above the ad). On OpenAI Ads this is the chat card's body text. On Reddit it is the promoted post's body: optional on image, video and carousel ads, required on text ads. Max: Google=90, Pinterest=500, OpenAI=100.
+         * Required on legacy + attach shapes.
+         *
+         * - X: the tweet text (max 280 chars including a ~24-char URL when `linkUrl` is set).
+         * - LinkedIn: the post commentary (the intro text shown above the ad).
+         * - OpenAI Ads: the chat card's body text.
+         * - Reddit: the promoted post's body. Optional on image, video and carousel ads, required on text ads.
+         *
+         * Max: Google=90, Pinterest=500, OpenAI=100.
          */
         body?: string;
         /**
-         * Meta only (facebook/instagram). Link description: the secondary text shown below the headline (Meta's link_data.description; on video creatives mapped to video_data.link_description). When omitted, Meta auto-pulls the destination URL's OpenGraph description. Applies on legacy, attach, and placementAssets shapes; for multi-creative use creatives[].description (this field is the shared fallback). For multi-text variations use `descriptions` (array) instead.
+         * Meta only (facebook/instagram). Link description: the secondary text shown below the headline (Meta's link_data.description; on video creatives mapped to video_data.link_description). When omitted, Meta auto-pulls the destination URL's OpenGraph description.
+         *
+         * - Applies on legacy, attach, and placementAssets shapes.
+         * - For multi-creative use creatives[].description (this field is the shared fallback).
+         * - For multi-text variations use `descriptions` (array) instead.
          */
         description?: string;
         /**
-         * Meta only. Multiple Text Options (Advantage+ Flexible Format): supply 1-5 primary-text
-         * variations and Meta optimises delivery across them, WITHOUT enabling full Dynamic Creative
-         * (`dynamicCreative`). Uses `optimization_type: DEGREES_OF_FREEDOM` on the asset feed, so
-         * multiple ads per ad set are allowed (unlike `dynamicCreative` which is limited to one).
-         * Requires `imageUrl` or `video`, `linkUrl`, and `callToAction`. When set, the top-level
-         * `body` field is used as the `object_story_spec.link_data.message` (the preview text) and
-         * `headlines` must also be present. On a video creative the copy lands in
-         * `video_data.message` / `video_data.title` instead of `link_data`. Mutually exclusive
-         * with `dynamicCreative`, `carouselCards`, and `creatives[]`. With `placementAssets` the pool
-         * is applied to the placement-customized creative instead (`optimization_type: PLACEMENT`,
-         * every body carries the label of each rule that does not pin its own `body`, and the same for
-         * `headlines`), so Meta rotates the options per placement while media stays pinned; a rule's
-         * own `body` / `headline` stays pinned for that placement. `descriptions[]` cannot join a
-         * placement-customized creative (Meta refuses a second description per rule, subcode 1885878).
+         * Meta only. Multiple Text Options (Advantage+ Flexible Format): 1-5 primary-text variations that Meta optimises delivery across, WITHOUT enabling full Dynamic Creative (`dynamicCreative`).
+         *
+         * Uses `optimization_type: DEGREES_OF_FREEDOM` on the asset feed, so multiple ads per ad set are allowed (unlike `dynamicCreative`, which is limited to one).
+         *
+         * **Requirements:** `imageUrl` or `video`, `linkUrl`, `callToAction`, and `headlines`. The top-level `body` becomes `object_story_spec.link_data.message` (the preview text). On a video creative the copy lands in `video_data.message` / `video_data.title` instead of `link_data`.
+         *
+         * Mutually exclusive with `dynamicCreative`, `carouselCards`, and `creatives[]`.
+         *
+         * **With `placementAssets`:** the pool applies to the placement-customized creative instead (`optimization_type: PLACEMENT`). Every body carries the label of each rule that does not pin its own `body` (same for `headlines`), so Meta rotates options per placement while media stays pinned.
+         *
+         * A rule's own `body` / `headline` stays pinned for that placement. `descriptions[]` cannot join a placement-customized creative (Meta refuses a second description per rule, subcode 1885878).
          *
          */
         bodies?: Array<(string)>;
@@ -57111,23 +58483,50 @@ export type CreateStandaloneAdData = {
          */
         descriptions?: Array<(string)>;
         /**
-         * Required on legacy + attach shapes for Meta. Honoured on TikTok (passes through to the Spark Ad creative's `call_to_action`) and on LinkedIn (the CTA button on the ad; defaults to LEARN_MORE when `linkUrl` is set). LinkedIn accepts: LEARN_MORE, SIGN_UP, DOWNLOAD, SUBSCRIBE, REGISTER, JOIN, ATTEND, REQUEST_DEMO, VIEW_QUOTE, APPLY, SEE_MORE, SHOP_NOW, BUY_NOW. Reddit (image, video and carousel ads) accepts: LEARN_MORE, SHOP_NOW, SIGN_UP, CONTACT_US, DOWNLOAD, GET_QUOTE, SUBSCRIBE, APPLY_NOW, BOOK_NOW, BUY_TICKETS, DONATE_NOW, GET_DIRECTIONS, GET_SHOWTIMES, LISTEN_NOW, ORDER_NOW, SEE_MENU, INSTALL_MOBILE_APP (other values return 400). Ignored by Google, Pinterest, and X.
+         * The ad's call-to-action button.
+         *
+         * - **Meta:** required on legacy + attach shapes.
+         * - **TikTok:** honoured, passed through to the Spark Ad creative's `call_to_action`.
+         * - **LinkedIn:** the CTA button on the ad; defaults to LEARN_MORE when `linkUrl` is set. Accepts LEARN_MORE, SIGN_UP, DOWNLOAD, SUBSCRIBE, REGISTER, JOIN, ATTEND, REQUEST_DEMO, VIEW_QUOTE, APPLY, SEE_MORE, SHOP_NOW, BUY_NOW.
+         * - **Reddit** (image, video and carousel ads): accepts LEARN_MORE, SHOP_NOW, SIGN_UP, CONTACT_US, DOWNLOAD, GET_QUOTE, SUBSCRIBE, APPLY_NOW, BOOK_NOW, BUY_TICKETS, DONATE_NOW, GET_DIRECTIONS, GET_SHOWTIMES, LISTEN_NOW, ORDER_NOW, SEE_MENU, INSTALL_MOBILE_APP. Other values return 400.
+         * - **Google, Pinterest, and X:** ignored.
          */
         callToAction?: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW';
         /**
-         * Required on legacy + attach shapes (skip for multi-creative). On LinkedIn it's the ad's destination URL; required for `traffic` ads, optional for `engagement` / `awareness`. NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead of a destination). On LinkedIn, `imageUrl` + `linkUrl` publishes an ARTICLE-content creative; this is LinkedIn's article ad format, with the image as thumbnail and `longHeadline` as description. Required for OpenAI Ads (the chat card's target_url). Reddit: required on image and video ads (the post's destination and the ad's click URL), the fallback for carousel cards without their own, and refused with 400 on text ads.
+         * The ad's destination URL. Required on legacy + attach shapes (skip for multi-creative). NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead).
+         *
+         * - **LinkedIn:** required for `traffic` ads, optional for `engagement` / `awareness`. `imageUrl` + `linkUrl` publishes an ARTICLE-content creative (LinkedIn's article ad format), with the image as thumbnail and `longHeadline` as description.
+         * - **OpenAI Ads:** required (the chat card's target_url).
+         * - **Reddit:** required on image and video ads (the post's destination and the ad's click URL), the fallback for carousel cards without their own, and refused with 400 on text ads.
          */
         linkUrl?: string;
         /**
-         * Lead Gen form ID to attach to the ad's creative. REQUIRED when `goal` is `lead_generation`. Create one via POST /v1/ads/lead-forms. On Meta (facebook/instagram) this is the leadgen_forms ID; the ad set's promoted_object.page_id + LEAD_GENERATION optimization + destination_type ON_AD are derived automatically from the goal. On LinkedIn this is the adForm ID; the creative's `leadgenCallToAction.destination` is set to `urn:li:adForm:{id}` and the campaign objective is set to MAX_LEAD. Forms must be owned by the sponsoredAccount (not the organization) for the URN to resolve. Also required on every Meta ATTACH (`adSetId`) call that targets a lead ad set (the form attaches per-ad; Meta rejects a formless ad in a lead ad set). `placementAssets`, `dynamicCreative` and `carouselCards` (Meta multi-card Instant-Form lead ad; `linkUrl` and per-card `linkUrl` are optional and forwarded as real destinations when sent, falling back to Meta's lead-form link when omitted) ARE supported on Meta instant-form lead ads. Reddit: rejected with 400 on every goal (Reddit retired its native lead forms).
+         * Lead Gen form ID to attach to the ad's creative. REQUIRED when `goal` is `lead_generation`. Create one via POST /v1/ads/lead-forms.
+         *
+         * - Meta (facebook/instagram): the leadgen_forms ID. The ad set's promoted_object.page_id, LEAD_GENERATION optimization and destination_type ON_AD are derived automatically from the goal.
+         * - Meta: also required on every ATTACH (`adSetId`) call targeting a lead ad set (the form attaches per-ad; Meta rejects a formless ad in a lead ad set).
+         * - Meta: `placementAssets`, `dynamicCreative` and `carouselCards` (multi-card Instant-Form lead ad) ARE supported on instant-form lead ads. `linkUrl` and per-card `linkUrl` are optional, forwarded as real destinations when sent, else falling back to Meta's lead-form link.
+         * - LinkedIn: the adForm ID. The creative's `leadgenCallToAction.destination` is set to `urn:li:adForm:{id}` and the campaign objective to MAX_LEAD. Forms must be owned by the sponsoredAccount (not the organization) for the URN to resolve.
+         * - Reddit: rejected with 400 on every goal (Reddit retired its native lead forms).
          */
         leadGenFormId?: string;
         /**
-         * Image creative for Meta/Google/Pinterest/LinkedIn on legacy + attach shapes (mutually exclusive with `video`). Required for LinkedIn ads unless `video` is set. Not required for Google Search campaigns. For TikTok, this field carries the VIDEO URL (the TikTok ads endpoint is video-only; the field retains the `imageUrl` name for cross-platform consistency). On X, imageUrl + headline + linkUrl together build a website card (image, title and destination under the post; the URL is not added to the post text); sending only some of them is a 400. description, video and callToAction are rejected with 400 on X (promote a post that carries a video with POST /v1/ads/boost). For Google Display, treated as the landscape image (alias of `images.landscape`); supply `images.square` alongside or the request is rejected. For LinkedIn the image is uploaded to LinkedIn under the authoring Company Page (see `organizationId`); recommended ratio 1.91:1 (e.g. 1200×627). Required for OpenAI Ads (uploaded as the chat card's image; OpenAI has no video ad format). Reddit: builds an image ad (requires `linkUrl`); on a Reddit video ad it is the fallback for `video.thumbnailUrl`.
+         * Image creative for Meta/Google/Pinterest/LinkedIn on legacy + attach shapes. Mutually exclusive with `video`.
+         *
+         * - LinkedIn: required unless `video` is set. Uploaded to LinkedIn under the authoring Company Page (see `organizationId`); recommended ratio 1.91:1 (e.g. 1200×627).
+         * - Google: not required for Search campaigns. For Display, treated as the landscape image (alias of `images.landscape`); supply `images.square` alongside or the request is rejected.
+         * - TikTok: this field carries the VIDEO URL (the TikTok ads endpoint is video-only; the `imageUrl` name is kept for cross-platform consistency).
+         * - X: imageUrl + headline + linkUrl together build a website card (image, title and destination under the post; the URL is not added to the post text). Sending only some of them is a 400.
+         * - X: description, video and callToAction are rejected with 400 (promote a post that carries a video with POST /v1/ads/boost).
+         * - OpenAI Ads: required, uploaded as the chat card's image (OpenAI has no video ad format).
+         * - Reddit: builds an image ad (requires `linkUrl`). On a Reddit video ad it is the fallback for `video.thumbnailUrl`.
          */
         imageUrl?: string;
         /**
-         * Google Display (Responsive Display Ads) only. Google RDA requires both a landscape (1.91:1) and a square (1:1) marketing image; sending only one is rejected upstream as 'Too few.' (NOT_ENOUGH_*_MARKETING_IMAGE_ASSET). Supply both URLs here. Either this field or the legacy `imageUrl` can provide the landscape, but `square` has no legacy counterpart so it must be set here for Display.
+         * Google Display (Responsive Display Ads) only. Google RDA requires both a landscape (1.91:1) and a square (1:1) marketing image; sending only one is rejected upstream as 'Too few.' (NOT_ENOUGH_*_MARKETING_IMAGE_ASSET). Supply both URLs here.
+         *
+         * Either this field or the legacy `imageUrl` can provide the landscape, but `square` has no legacy counterpart, so it must be set here for Display.
+         *
          */
         images?: {
             /**
@@ -57140,7 +58539,13 @@ export type CreateStandaloneAdData = {
             square?: string;
         };
         /**
-         * Meta (facebook, instagram), LinkedIn and Reddit. On Reddit `url`, `linkUrl` and a thumbnail (`thumbnailUrl`, or `imageUrl`) are all required. Creates a single VIDEO ad. Mutually exclusive with `imageUrl`. Supply `url` to upload a file, or `id` to reuse a video already on the ad account (list them with GET /v1/ads/videos). Works on the single-ad and attach (`adSetId`) shapes; for Meta multi-creative, set `video` per entry inside `creatives[]` instead. For LinkedIn the video is uploaded to LinkedIn under the authoring Company Page (see `organizationId`) and the campaign format is set to SINGLE_VIDEO; LinkedIn ignores `thumbnailUrl` (it auto-generates the poster frame). Supply MP4 H.264/AAC, 3s-30min, 75KB-500MB.
+         * Creates a single VIDEO ad. Meta (facebook, instagram), LinkedIn and Reddit. Mutually exclusive with `imageUrl`.
+         *
+         * Supply `url` to upload a file, or `id` to reuse a video already on the ad account (list them with GET /v1/ads/videos). Works on the single-ad and attach (`adSetId`) shapes; for Meta multi-creative, set `video` per entry inside `creatives[]` instead. Supply MP4 H.264/AAC, 3s-30min, 75KB-500MB.
+         *
+         * - Reddit: `url`, `linkUrl` and a thumbnail (`thumbnailUrl`, or `imageUrl`) are all required.
+         * - LinkedIn: uploaded under the authoring Company Page (see `organizationId`) and the campaign format is set to SINGLE_VIDEO. LinkedIn ignores `thumbnailUrl` (it auto-generates the poster frame).
+         *
          */
         video?: {
             /**
@@ -57152,7 +58557,11 @@ export type CreateStandaloneAdData = {
              */
             id?: string;
             /**
-             * Public URL of a still-image thumbnail for the video. OPTIONAL: when omitted on Meta, the poster is auto-generated from Meta's own preferred video thumbnail (the same candidates Ads Manager shows), so video ads usually publish without supplying one. When Meta produces no candidate the request fails with a 502 platform_error (reason: video_thumbnail_unavailable). Retry, or supply this field. Provide it to control the poster frame exactly (uploaded as an ad image and referenced in object_story_spec.video_data). Ignored by LinkedIn (auto-generated poster frame).
+             * Public URL of a still-image thumbnail for the video. OPTIONAL.
+             *
+             * - Meta, omitted: the poster is auto-generated from Meta's own preferred video thumbnail (the candidates Ads Manager shows), so video ads usually publish without one. If Meta produces no candidate, the request fails with a 502 platform_error (reason: video_thumbnail_unavailable): retry, or supply this field.
+             * - Meta, provided: controls the poster frame exactly (uploaded as an ad image and referenced in object_story_spec.video_data).
+             * - LinkedIn: ignored (auto-generated poster frame).
              */
             thumbnailUrl?: string;
         };
@@ -57193,135 +58602,71 @@ export type CreateStandaloneAdData = {
             callToAction: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP';
         }>;
         /**
-         * When present, switches to the attach shape: adds
-         * one new ad to this existing ad set without creating a new
-         * campaign. Budget, targeting, goal, schedule, AND bid strategy
-         * are inherited from the ad set on Meta, and passing `bidStrategy`
-         * in attach mode returns 400. To change an existing ad set's
-         * bid, use `PUT /v1/ads/ad-sets/{adSetId}`. Mutually exclusive
-         * with `creatives[]`. `dynamicCreative` returns 400 in attach mode: create
-         * a new dynamic ad set by omitting `adSetId` instead.
+         * When present, switches to the attach shape: adds one new ad to this existing ad set without creating a new campaign. Mutually exclusive with `creatives[]`.
          *
-         * The attached ad takes the full single-creative surface:
-         * `headline`/`body`/`description`/`callToAction` plus either
-         * `imageUrl`/`video` OR `placementAssets` (its own per-placement
-         * Feed/Story assets) OR `translations`/`defaultLocale` (its own
-         * per-locale asset feed, Meta only), and `leadGenFormId` when
-         * the target is a lead ad set (the parent must be ON_AD, true for ad sets
-         * created via goal `lead_generation`; Meta rejects a formless ad
-         * there, so pass the form on EVERY attached ad). This is the way
-         * to build N full ads sharing one ad set: create the first ad
-         * via the normal shape, then attach the rest one call each.
+         * **Inherited from the ad set on Meta:** budget, targeting, goal, schedule and bid strategy. Passing `bidStrategy` in attach mode returns 400 (change an ad set's bid with `PUT /v1/ads/ad-sets/{adSetId}`). `dynamicCreative` returns 400 in attach mode: omit `adSetId` to create a new dynamic ad set instead.
          *
-         * Supported on Meta (facebook, instagram), Google Ads, TikTok,
-         * and LinkedIn. On TikTok the `adSetId` is the ad group ID; the
-         * new ad inherits the ad group's bid + budget + targeting.
-         * On LinkedIn the `adSetId` is the LinkedIn Campaign ID
-         * (numeric); we attach a new Creative to that Campaign, so
-         * the Campaign's `platformSpecificData` bidding, targeting,
-         * budget and schedule are inherited (passing those fields
-         * returns 400).
+         * **Creative.** The attached ad takes the full single-creative surface: `headline`/`body`/`description`/`callToAction` plus one of:
          *
-         * On Google Ads the `adSetId` is the AD GROUP id (numeric). `goal`
-         * is not required: the ad group keeps its campaign's bidding,
-         * budget and targeting. `campaignType` is read from the ad group's
-         * campaign (Search, Display or Demand Gen), so it can be omitted;
-         * a `campaignType` that contradicts the ad group returns 400, an
-         * ad group Google does not know in that customer returns 404, and
-         * any other campaign type returns 422. A Search ad needs
-         * `headline` + `body` + `linkUrl`; a Display ad also needs
-         * `images.landscape` + `images.square` + `businessName`. Google
-         * allows 3 responsive search ads per ad group: a fourth returns
-         * 422 naming the limit (`RESPONSIVE_SEARCH_ADS_PER_AD_GROUP`) and
-         * the ad group.
-         * `budgetAmount`/`budgetType` and bidding fields
-         * (`bidStrategy`, `bidAmount`, `portfolioBidStrategyId`)
-         * return 400 on this shape; the ad group already owns them.
-         * With `campaignType: "demand_gen"` the ad group must belong to a
-         * Demand Gen campaign (otherwise 400); `demandGen` carries only the
-         * ad's creative, the new ad is created PAUSED, and ad group settings
-         * (geo, languages, `demandGen.channels`/`audience`/`audienceId`/
-         * `adGroupName`) return 400. `validateOnly` is supported.
+         * - `imageUrl`/`video`
+         * - `placementAssets` (its own per-placement Feed/Story assets)
+         * - `translations`/`defaultLocale` (its own per-locale asset feed, Meta only)
          *
-         * On Reddit Ads the `adSetId` is the AD GROUP id. Only the post
-         * and the ad are created; the ad group keeps its budget,
-         * schedule, targeting, bid and optimization, so `budgetAmount`,
-         * `budgetType`, `startDate`, `endDate`, targeting fields,
-         * `promotedObject`, `tracking.pixelId` and `optimizationGoal`
-         * return 400. `goal` is not required. An ad group of another
-         * ad account returns 404.
+         * Pass `leadGenFormId` on EVERY ad attached to a lead ad set: the parent must be ON_AD (true for ad sets created via goal `lead_generation`), and Meta rejects a formless ad there.
+         *
+         * To build N full ads sharing one ad set, create the first ad via the normal shape, then attach the rest one call each.
+         *
+         * **Platforms.** Supported on Meta (facebook, instagram), Google Ads, TikTok, LinkedIn and Reddit Ads.
+         *
+         * - TikTok: `adSetId` is the ad group ID; the new ad inherits the ad group's bid, budget and targeting.
+         * - LinkedIn: `adSetId` is the LinkedIn Campaign ID (numeric). We attach a new Creative to that Campaign, so its `platformSpecificData` bidding, targeting, budget and schedule are inherited (passing those fields returns 400).
+         * - Reddit Ads: `adSetId` is the AD GROUP id. Only the post and the ad are created; the ad group keeps its budget, schedule, targeting, bid and optimization. `goal` is not required. An ad group of another ad account returns 404.
+         * - Reddit Ads, rejected with 400: `budgetAmount`, `budgetType`, `startDate`, `endDate`, targeting fields, `promotedObject`, `tracking.pixelId` and `optimizationGoal`.
+         *
+         * **Google Ads.** `adSetId` is the AD GROUP id (numeric). `goal` is not required: the ad group keeps its campaign's bidding, budget and targeting. `validateOnly` is supported.
+         *
+         * - `campaignType` is read from the ad group's campaign (Search, Display or Demand Gen) and can be omitted. A contradicting `campaignType` returns 400, an ad group Google does not know in that customer returns 404, and any other campaign type returns 422.
+         * - A Search ad needs `headline` + `body` + `linkUrl`; a Display ad also needs `images.landscape` + `images.square` + `businessName`.
+         * - Google allows 3 responsive search ads per ad group: a fourth returns 422 naming the limit (`RESPONSIVE_SEARCH_ADS_PER_AD_GROUP`) and the ad group.
+         * - `budgetAmount`/`budgetType` and bidding fields (`bidStrategy`, `bidAmount`, `portfolioBidStrategyId`) return 400; the ad group already owns them.
+         * - With `campaignType: "demand_gen"` the ad group must belong to a Demand Gen campaign (otherwise 400). `demandGen` carries only the ad's creative, and the new ad is created PAUSED.
+         * - Demand Gen ad group settings return 400: geo, languages, `demandGen.channels`/`audience`/`audienceId`/ `adGroupName`.
          *
          */
         adSetId?: string;
         /**
-         * Meta, Google Ads, LinkedIn, TikTok and Reddit Ads. On TikTok: creates
-         * the ad group and the ad under this existing campaign; the
-         * campaign is neither created nor activated and its
-         * objective must fit `goal`; not with `smartPlus`.
-         * On Meta: add the new ad
-         * set under this EXISTING campaign instead of creating a new
-         * one (multi-ad-set audience testing). The new ad set's
-         * budget is matched to the campaign's mode automatically:
-         * for a CBO campaign (campaign-level budget) omit
-         * `budgetAmount`/`budgetType`, since the campaign owns the
-         * budget; for an ABO campaign pass them (they go on the new
-         * ad set). On LinkedIn: create a new Campaign (and its
-         * Creative) under this EXISTING CampaignGroup. On Google
-         * Ads: create a new ad group under this EXISTING campaign;
-         * the new ad group inherits the campaign's budget, so omit
-         * `budgetAmount`/`budgetType` (and any bidding field), or
-         * the request returns 400. With `campaignType: "demand_gen"` the
-         * campaign must be a Demand Gen campaign (otherwise 400): the new ad
-         * group (with its geo, languages, channels and audience from the
-         * request) and its ad are created in one atomic request, the ad
-         * group PAUSED; schedule and `locationTargetingType` belong to the
-         * campaign and return 400. A campaign migrated from Discovery that
-         * still targets locations and languages on the campaign refuses them on
-         * a new ad group, so geo and language fields return 400 there; the new
-         * ad group follows the campaign's targeting. On failure only the entities we
-         * authored are cleaned up; the pre-existing parent is left
-         * untouched and is never (re)activated. On Reddit Ads:
-         * creates a new ad group and the ad under this EXISTING
-         * campaign; `goal` may be omitted (the campaign's objective
-         * decides it) and any other goal returns 400 naming the one to
-         * send. The ad group must start no earlier than a future
-         * campaign start and end no later than the campaign end
-         * (400 otherwise); without `endDate` it ends with the
-         * campaign. When the campaign has
-         * no campaign budget, send `budgetAmount`/`budgetType` for the
-         * new ad group (400 without them); bid, conversion event and
-         * pixel work as on a new campaign. Under campaign budget
-         * optimization the ad group takes the campaign's bid,
-         * goal type, optimization event and pixel and carries no
-         * budget of its own, so `budgetAmount`/`budgetType`, bid
-         * fields or another conversion event or pixel return 400,
-         * as does an `endDate` when the campaign has no end
-         * date. A
-         * campaign of another ad account returns 404, a Reddit Max
-         * campaign 422. If the ad fails, the new ad group is
-         * archived. Mutually exclusive with `adSetId` and `creatives[]`.
+         * Create the new objects under this EXISTING campaign instead of creating a new one. Supported on Meta, Google Ads, LinkedIn, TikTok and Reddit Ads. Mutually exclusive with `adSetId` and `creatives[]`.
+         *
+         * - TikTok: creates the ad group and the ad under this campaign. The campaign is neither created nor activated, and its objective must fit `goal`. Not with `smartPlus`.
+         * - Meta: adds the new ad set under this campaign (multi-ad-set audience testing). Its budget matches the campaign's mode: for a CBO campaign (campaign-level budget) omit `budgetAmount`/`budgetType`, since the campaign owns the budget; for an ABO campaign pass them (they go on the new ad set).
+         * - LinkedIn: creates a new Campaign (and its Creative) under this EXISTING CampaignGroup.
+         * - Google Ads: creates a new ad group under this campaign. It inherits the campaign's budget, so omit `budgetAmount`/`budgetType` (and any bidding field), or the request returns 400.
+         * - Google Ads with `campaignType: "demand_gen"`: the campaign must be Demand Gen (otherwise 400). The new ad group (with its geo, languages, channels and audience from the request) and its ad are created in one atomic request, the ad group PAUSED. Schedule and `locationTargetingType` belong to the campaign and return 400.
+         * - Google Ads, campaign migrated from Discovery that still targets locations and languages on the campaign: geo and language fields return 400 on a new ad group, which follows the campaign's targeting.
+         * - Google Ads failure: only the entities we authored are cleaned up. The pre-existing parent is left untouched and is never (re)activated.
+         * - Reddit Ads: creates a new ad group and the ad under this campaign. `goal` may be omitted (the campaign's objective decides it); any other goal returns 400 naming the one to send. If the ad fails, the new ad group is archived.
+         * - Reddit Ads dates: the ad group must start no earlier than a future campaign start and end no later than the campaign end (400 otherwise). Without `endDate` it ends with the campaign.
+         * - Reddit Ads, campaign without a campaign budget: send `budgetAmount`/`budgetType` for the new ad group (400 without them). Bid, conversion event and pixel work as on a new campaign.
+         * - Reddit Ads under campaign budget optimization: the ad group takes the campaign's bid, goal type, optimization event and pixel and has no budget of its own. `budgetAmount`/`budgetType`, bid fields, or another conversion event or pixel return 400, as does an `endDate` when the campaign has no end date.
+         * - Reddit Ads errors: a campaign of another ad account returns 404, a Reddit Max campaign 422.
          *
          */
         existingCampaignId?: string;
         /**
-         * Meta attach shape only (`adSetId`). The phone number (E.164, e.g. `+4712345678`)
-         * for an ad added to a "website and phone call" ad set (destination_type
-         * `WEBSITE_AND_PHONE_CALL`), sent as the creative's call configuration. Optional:
-         * when omitted, the number on the ad set's existing ads is reused, and if none of
-         * them carries one the request is a 400. Rejected with 400 on any other ad set,
-         * with `existingCreativeId`, without `adSetId`, or on other platforms (a new call
-         * campaign is `POST /v1/ads/call`).
+         * Meta attach shape only (`adSetId`). The phone number (E.164, e.g. `+4712345678`) for an ad added to a "website and phone call" ad set (destination_type `WEBSITE_AND_PHONE_CALL`), sent as the creative's call configuration.
+         *
+         * Optional: when omitted, the number on the ad set's existing ads is reused; if none carries one, the request is a 400.
+         *
+         * Rejected with 400 on any other ad set, with `existingCreativeId`, without `adSetId`, or on other platforms (a new call campaign is `POST /v1/ads/call`).
          *
          */
         phoneNumber?: string;
         /**
-         * Meta only. Reuse an EXISTING ad creative by id instead of
-         * building a new one from the copy/media fields (which are then
-         * ignored). Combine with `existingCampaignId` to build a
-         * multi-ad-set campaign that shares one creative. Mutually
-         * exclusive with `creatives[]`, `dynamicCreative`, and
-         * `placementAssets`. The creative id used is returned as
-         * `creativeId` on the create response.
+         * Meta only. Reuse an EXISTING ad creative by id instead of building a new one from the copy/media fields (which are then ignored).
+         *
+         * - Combine with `existingCampaignId` to build a multi-ad-set campaign that shares one creative.
+         * - Mutually exclusive with `creatives[]`, `dynamicCreative`, and `placementAssets`.
+         * - The creative id used is returned as `creativeId` on the create response.
          *
          */
         existingCreativeId?: string;
@@ -57334,17 +58679,22 @@ export type CreateStandaloneAdData = {
          */
         boardId?: string;
         /**
-         * LinkedIn only. The Company Page that authors the Direct Sponsored Content ("dark") post backing the ad. Accepts a numeric organization ID or a full `urn:li:organization:N` URN. Required unless the resolved `accountId` is a connected LinkedIn Company-Page account (defaults to that page) or the LinkedIn ad account is org-owned (defaults to the account's owning organization). The authenticated member must be an ADMINISTRATOR or DIRECT_SPONSORED_CONTENT_POSTER of this page (and the page must be associated with the ad account), or LinkedIn returns 403. Ignored by every other platform.
+         * LinkedIn only (ignored by every other platform). The Company Page that authors the Direct Sponsored Content ("dark") post backing the ad. Accepts a numeric organization ID or a full `urn:li:organization:N` URN.
+         *
+         * Required unless it defaults:
+         *
+         * - to the page, when the resolved `accountId` is a connected LinkedIn Company-Page account;
+         * - to the owning organization, when the LinkedIn ad account is org-owned.
+         *
+         * The authenticated member must be an ADMINISTRATOR or DIRECT_SPONSORED_CONTENT_POSTER of this page, and the page must be associated with the ad account, or LinkedIn returns 403.
          */
         organizationId?: string;
         /**
-         * Nested targeting object, the same TargetingSpec shape as `POST /v1/ads/boost`,
-         * `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences. Merged
-         * UNDER the flat inline targeting fields below: `savedTargetingId` < `targeting` <
-         * flat fields (a flat field present on the body replaces the nested value entirely).
-         * Both forms are equivalent; use whichever your integration already builds.
-         * Reddit-only targeting (`communities`, `excludedCommunities`,
-         * `conversationKeywords`, `excludedConversationKeywords`) is sent here.
+         * Nested targeting object: the same TargetingSpec shape as `POST /v1/ads/boost`, `POST /v1/ads/targeting/reach-estimate`, and `saved_targeting` audiences.
+         *
+         * Merged UNDER the flat inline targeting fields below: `savedTargetingId` < `targeting` < flat fields (a flat field present on the body replaces the nested value entirely). Both forms are equivalent; use whichever your integration already builds.
+         *
+         * Reddit-only targeting (`communities`, `excludedCommunities`, `conversationKeywords`, `excludedConversationKeywords`) is sent here.
          *
          */
         targeting?: (TargetingSpec);
@@ -57361,9 +58711,14 @@ export type CreateStandaloneAdData = {
          */
         countryGroups?: Array<('africa' | 'asia' | 'europe' | 'north_america' | 'south_america' | 'oceania' | 'central_america' | 'caribbean' | 'eea' | 'euro_area' | 'nafta' | 'mercosur' | 'afta' | 'apec' | 'gcc' | 'cisfta' | 'emerging_markets' | 'itunes_app_store' | 'android_free_store' | 'android_paid_store')>;
         /**
-         * City-level geo targeting (Meta, Google and TikTok). An entry is either `{ key }` or the key alone as a plain string (`["1006410"]`). Each city is targeted by the platform's opaque `key` (the city ID) which can be looked up via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`. Optional `radius` + `distance_unit` (Meta only) extend the targeting beyond the city limits (e.g. radius 25 km around the city center). Both must be set together, or both omitted (Meta defaults to ~16 km when omitted).
+         * City-level geo targeting (Meta, Google and TikTok). An entry is `{ key }` or the key alone as a plain string (`["1006410"]`).
          *
-         * On Meta, cannot overlap with the same country in `countries` (Meta returns a "locations overlap" error). Either drop the country or scope it to a different country. On TikTok, keys are numeric location ids and can be sent without `countries`.
+         * Each city is targeted by the platform's opaque `key` (the city ID), found via `GET /v1/ads/targeting/search?dimension=geo&q=<name>&countryCode=<ISO>`.
+         *
+         * **Radius (Meta only):** optional `radius` + `distance_unit` extend targeting beyond city limits (e.g. radius 25 km around the center). Set both or omit both (Meta defaults to ~16 km).
+         *
+         * - **Meta:** cannot overlap with the same country in `countries` (Meta returns a "locations overlap" error). Drop the country or scope it to a different one.
+         * - **TikTok:** keys are numeric location ids and can be sent without `countries`.
          *
          */
         cities?: Array<(string | {
@@ -57393,7 +58748,15 @@ export type CreateStandaloneAdData = {
         ageMin?: number;
         ageMax?: number;
         /**
-         * Interest objects from /v1/ads/targeting/search?dimension=interest (or dimension=interestKeyword on TikTok). Each must include id and name. On TikTok, bare numeric ids are interest categories (`interest_category_ids`) and ids like `keyword:123456` from `dimension=interestKeyword` are additional interests (`interest_keyword_ids`); any other id returns 422 naming `targeting.interests`. TikTok matches people who fit ANY selected interest, additional interest or behavior (one OR'd group), and that group is ANDed with location, age, gender and the other dimensions.
+         * Interest objects from /v1/ads/targeting/search?dimension=interest (or dimension=interestKeyword on TikTok). Each must include id and name.
+         *
+         * **TikTok:**
+         *
+         * - Bare numeric ids are interest categories (`interest_category_ids`).
+         * - Ids like `keyword:123456` from `dimension=interestKeyword` are additional interests (`interest_keyword_ids`).
+         * - Any other id returns 422 naming `targeting.interests`.
+         * - TikTok matches people who fit ANY selected interest, additional interest or behavior (one OR'd group). That group is ANDed with location, age, gender and the other dimensions.
+         *
          */
         interests?: Array<{
             id: string;
@@ -57425,7 +58788,15 @@ export type CreateStandaloneAdData = {
             address?: string;
         }>;
         /**
-         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn). On TikTok they target people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories, or who viewed videos with a picked hashtag (`hashtag:<id>` ids from `dimension=hashtag`, sent as a `HASHTAG_RELATED` action with `VIEW_HASHTAG`), and the ad group uses the TikTok placement only. On TikTok, behaviors are OR'd with interests and additional interests. Each must include id.
+         * Behaviour entities from /v1/ads/targeting/search?dimension=behavior (Meta, TikTok and LinkedIn). Each must include id.
+         *
+         * **On TikTok:**
+         *
+         * - Targets people who interacted with videos (watched to the end, liked, commented or shared, last 15 days) or creators (followed or viewed the profile) in the picked categories.
+         * - Or people who viewed videos with a picked hashtag: `hashtag:<id>` ids from `dimension=hashtag`, sent as a `HASHTAG_RELATED` action with `VIEW_HASHTAG`.
+         * - The ad group uses the TikTok placement only.
+         * - Behaviors are OR'd with interests and additional interests.
+         *
          */
         behaviors?: Array<{
             id: string;
@@ -57460,19 +58831,19 @@ export type CreateStandaloneAdData = {
          */
         incomeTier?: 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
         /**
-         * e.g. ["en","es"]. Google: campaign language targeting (language_constant) using Google's language codes (ISO 639-1, plus variants such as `zh_CN`); unknown codes return 400. On Meta, a bare code targets all regional variants ("en" = all English), or use a region-qualified code for a specific one ("en_GB", "pt_BR", "zh_TW"); unknown codes are rejected. Other ad platforms use their own language-code systems.
+         * Language codes, e.g. ["en","es"].
+         *
+         * - Google: campaign language targeting (language_constant) using Google's language codes (ISO 639-1, plus variants such as `zh_CN`). Unknown codes return 400.
+         * - Meta: a bare code targets all regional variants ("en" = all English); use a region-qualified code for a specific one ("en_GB", "pt_BR", "zh_TW"). Unknown codes are rejected.
+         * - Other ad platforms use their own language-code systems.
          */
         languages?: Array<(string)>;
         /**
-         * Meta only. Manual ad placements. Omit for automatic placements (Meta's default,
-         * recommended for most cases, since Meta optimises delivery across all eligible surfaces).
-         * When set, restricts delivery to the chosen surfaces, mapped onto the ad set's
-         * `targeting.{publisher_platforms, facebook_positions, instagram_positions,
-         * messenger_positions, audience_network_positions, threads_positions,
-         * whatsapp_positions, device_platforms}`. Enum membership is validated here; Meta
-         * additionally enforces co-selection rules (e.g. some positions require their parent
-         * publisher platform) and returns an actionable error which we surface. Non-Meta
-         * platforms reject this field.
+         * Meta only; non-Meta platforms reject this field. Manual ad placements. Omit for automatic placements (Meta's default, recommended for most cases, since Meta optimises delivery across all eligible surfaces).
+         *
+         * When set, restricts delivery to the chosen surfaces, mapped onto the ad set's `targeting.{publisher_platforms, facebook_positions, instagram_positions, messenger_positions, audience_network_positions, threads_positions, whatsapp_positions, device_platforms}`.
+         *
+         * Enum membership is validated here. Meta additionally enforces co-selection rules (e.g. some positions require their parent publisher platform) and returns an actionable error, which we surface.
          *
          */
         placements?: {
@@ -57499,24 +58870,19 @@ export type CreateStandaloneAdData = {
          */
         savedTargetingId?: string;
         /**
-         * Meta only. A raw Meta-native targeting spec (snake_case: `geo_locations`, `age_min`,
-         * `excluded_custom_audiences`, `flexible_spec`, `targeting_automation`, `user_os`,
-         * `wireless_carrier`, business places, etc.), exactly the shape `GET /v1/ads/{adId}` returns for
-         * external ads. Sent alone it reaches the ad set VERBATIM (the clone-a-campaign's-targeting-exactly
-         * path). Meta validates and surfaces any errors.
+         * Meta only. A raw Meta-native targeting spec (snake_case: `geo_locations`, `age_min`, `excluded_custom_audiences`, `flexible_spec`, `targeting_automation`, `user_os`, `wireless_carrier`, business places, etc.), the exact shape `GET /v1/ads/{adId}` returns for external ads.
          *
-         * Can be combined with the camelCase targeting fields (countries/regions/cities/interests/ageMin/...,
-         * `targeting`, `savedTargetingId`, `audienceId`): rawTargeting is the BASE layer and the built
-         * camelCase spec is merged on top, key by key, with the camelCase side winning on collision (the
-         * camelCase precedence chain stays `savedTargetingId` < `targeting` < flat fields). The merge goes
-         * one level deep inside `geo_locations` and `excluded_geo_locations`: built sub-keys win, raw-only
-         * sub-keys such as `location_types` survive alongside built `countries`. Array values
-         * (`flexible_spec`, ...) are replaced as a WHOLE key when the camelCase spec builds them, never
-         * element-merged. When rawTargeting is present the defaults the camelCase builder normally injects
-         * (US geo, `targeting_automation.advantage_audience: 0`) are suppressed, so raw's values are not
-         * clobbered. Include `targeting_automation` in the raw spec (or send `advantageAudience`) as Meta
-         * requires it on create. If cloning an EU campaign, also pass `dsaBeneficiary` / `dsaPayor` (those
-         * are separate fields, not part of targeting).
+         * Sent alone, it reaches the ad set VERBATIM (the path for cloning a campaign's targeting exactly). Meta validates it and surfaces any errors.
+         *
+         * **Combining with camelCase fields** (countries/regions/cities/interests/ageMin/..., `targeting`, `savedTargetingId`, `audienceId`): rawTargeting is the BASE layer and the built camelCase spec is merged on top, key by key, with camelCase winning on collision.
+         *
+         * The camelCase precedence chain stays `savedTargetingId` < `targeting` < flat fields. Merge rules:
+         *
+         * - Inside `geo_locations` and `excluded_geo_locations` the merge goes one level deep: built sub-keys win, and raw-only sub-keys such as `location_types` survive alongside built `countries`.
+         * - Array values (`flexible_spec`, ...) are replaced as a WHOLE key when the camelCase spec builds them, never element-merged.
+         * - With rawTargeting present, the defaults the camelCase builder normally injects (US geo, `targeting_automation.advantage_audience: 0`) are suppressed, so raw values are not clobbered.
+         *
+         * Include `targeting_automation` in the raw spec (or send `advantageAudience`), as Meta requires it on create. When cloning an EU campaign, also pass `dsaBeneficiary` / `dsaPayor` (separate fields, not part of targeting).
          *
          */
         rawTargeting?: {
@@ -57545,85 +58911,80 @@ export type CreateStandaloneAdData = {
          */
         regionalRegulatedCategories?: Array<(string)>;
         /**
-         * Meta only. Verified identity IDs of the beneficiary and payer for each declared
-         * regionalRegulatedCategories value. Meta may require them on ad sets created through
-         * the API even when a default beneficiary and payer are set in Ads Manager advertising
-         * settings (seen on AUSTRALIA_FINSERV), so sending them explicitly is the reliable path.
-         * The value is the Verified identity ID (Meta Business Settings > Verified identities),
-         * not a Page or Business ID, and beneficiary and payer may be the same ID.
-         * Send each ID as a string of digits: Verified identity IDs can have 17 digits, more than a
-         * JSON number holds exactly, and a number that arrives rounded is rejected. Numbers up to
-         * 9007199254740991 are still accepted. The IDs reach Meta unchanged.
-         * Keys by category: AUSTRALIA_FINSERV uses australia_finserv_beneficiary /
-         * australia_finserv_payer; TAIWAN_FINSERV uses taiwan_finserv_beneficiary /
-         * taiwan_finserv_payer; INDIA_FINSERV uses india_finserv_beneficiary / india_finserv_payer;
-         * TAIWAN_UNIVERSAL uses taiwan_universal_beneficiary / taiwan_universal_payer;
-         * SINGAPORE_UNIVERSAL uses singapore_universal_beneficiary / singapore_universal_payer;
-         * AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL use
-         * universal_beneficiary / universal_payer. When Meta rejects the ad set for a missing verified
-         * advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys
-         * (the keys the declared categories expect), details.suggestedCategories (the markets Meta
-         * ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
-         * Ignored when adSetId adds the ad to an existing ad set.
+         * Meta only. Verified identity IDs of the beneficiary and payer for each declared regionalRegulatedCategories value. Ignored when adSetId adds the ad to an existing ad set.
+         *
+         * Meta may require them on ad sets created through the API even when a default beneficiary and payer are set in Ads Manager advertising settings (seen on AUSTRALIA_FINSERV), so sending them explicitly is the reliable path.
+         *
+         * **Value**: the Verified identity ID (Meta Business Settings > Verified identities), not a Page or Business ID. Beneficiary and payer may be the same ID. The IDs reach Meta unchanged.
+         *
+         * Send each ID as a string of digits: Verified identity IDs can have 17 digits, more than a JSON number holds exactly, and a number that arrives rounded is rejected. Numbers up to 9007199254740991 are still accepted.
+         *
+         * **Keys by category**:
+         *
+         * - AUSTRALIA_FINSERV: australia_finserv_beneficiary / australia_finserv_payer
+         * - TAIWAN_FINSERV: taiwan_finserv_beneficiary / taiwan_finserv_payer
+         * - INDIA_FINSERV: india_finserv_beneficiary / india_finserv_payer
+         * - TAIWAN_UNIVERSAL: taiwan_universal_beneficiary / taiwan_universal_payer
+         * - SINGAPORE_UNIVERSAL: singapore_universal_beneficiary / singapore_universal_payer
+         * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL: universal_beneficiary / universal_payer
+         *
+         * **Errors**: when Meta rejects the ad set for a missing verified advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys (the keys the declared categories expect), details.suggestedCategories (the markets Meta ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
          *
          */
         regionalRegulationIdentities?: {
             [key: string]: (string | number);
         };
         /**
-         * Omitted on a lifetime budget, the ad ends 7 days after it starts (reported in `appliedDefaults.endDate`); a daily budget without one runs until paused. Read like `startDate` (account timezone on Meta, TikTok, X, Pinterest, OpenAI and Reddit; whole account-local days on Google; UTC on LinkedIn), and a date-only end runs to 23:59:59 local.
+         * When the ad ends. If omitted: on a lifetime budget, the ad ends 7 days after it starts (reported in `appliedDefaults.endDate`); a daily budget runs until paused.
+         *
+         * Read like `startDate`: account timezone on Meta, TikTok, X, Pinterest, OpenAI and Reddit; whole account-local days on Google; UTC on LinkedIn. A date-only end runs to 23:59:59 local.
          */
         endDate?: string;
         /**
-         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"), mapped to the ad set's
-         * start (Meta `start_time`, TikTok ad group `schedule_start_time`, LinkedIn / Pinterest / X
-         * / Google campaign start). When omitted the ad starts delivering immediately. For lifetime
-         * budgets Meta also requires `endDate`. On Meta, TikTok, X, Pinterest, OpenAI and Reddit a value
-         * without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read
-         * in the ad account timezone (Meta itself would read it as UTC). Google runs whole days in
-         * the customer account timezone and takes the value's calendar date as written. LinkedIn
-         * ad accounts carry no timezone, so there a value without an offset is read as UTC. The created ad's `schedule` echoes the start
-         * and end the platform stored, as UTC instants; when attaching to an existing ad set
-         * (`adSetId`) it is that ad set's start and end. Same field as on `POST /v1/ads/boost`.
+         * Ad-set start time (ISO 8601, e.g. "2026-06-10T09:00:00Z"). When omitted the ad starts delivering immediately. Same field as on `POST /v1/ads/boost`.
+         *
+         * Maps to the ad set's start: Meta `start_time`, TikTok ad group `schedule_start_time`, LinkedIn / Pinterest / X / Google campaign start. For lifetime budgets Meta also requires `endDate`.
+         *
+         * **Values without an offset** (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`):
+         *
+         * - Meta, TikTok, X, Pinterest, OpenAI and Reddit: read in the ad account timezone (Meta itself would read it as UTC).
+         * - Google: runs whole days in the customer account timezone and takes the value's calendar date as written.
+         * - LinkedIn: ad accounts carry no timezone, so it is read as UTC.
+         *
+         * The created ad's `schedule` echoes the start and end the platform stored, as UTC instants. When attaching to an existing ad set (`adSetId`) it is that ad set's start and end.
          *
          */
         startDate?: string;
         /**
-         * Meta only. The Facebook Page the ad runs as (`object_story_spec.page_id`). Defaults to
-         * the Page bound to the connection. Pass another Page ID to run the ad as that Page: any
-         * Page granted to the connection is accepted (for a business-login connection, every Page
-         * granted in Meta's dialog; list them with GET /v1/ads/instagram-accounts). The Instagram
-         * identity is re-resolved for that Page unless `instagramAccountId` is set. A Page the
-         * connection cannot see is a 400 on `pageId` naming the granted Pages.
+         * Meta only. The Facebook Page the ad runs as (`object_story_spec.page_id`). Defaults to the Page bound to the connection.
+         *
+         * Pass another Page ID to run the ad as that Page. Any Page granted to the connection is accepted (for a business-login connection, every Page granted in Meta's dialog; list them with GET /v1/ads/instagram-accounts).
+         *
+         * - The Instagram identity is re-resolved for that Page unless `instagramAccountId` is set.
+         * - A Page the connection cannot see is a 400 on `pageId` naming the granted Pages.
          *
          */
         pageId?: string;
         /**
-         * Meta only. Override the Instagram account the ad is delivered as. Pass an Instagram
-         * Business Account ID (e.g. 17841...), mapped to the creative's `instagram_user_id`; it
-         * is sent as-is and never replaced. When omitted we use the Instagram account linked to
-         * the Page; formats that need an Instagram actor without one use the actor the Page's
-         * other ads already run as, then the Page's page-backed Instagram account. If Meta
-         * refuses that default because the ad account has no access to it (200/1815199), the
-         * creative is retried once with an Instagram account the ad account is authorized for;
-         * with none, the request fails with a 422 on `instagramAccountId` (list the usable
-         * accounts with GET /v1/ads/instagram-accounts). A creative replaced later through
-         * /v1/ads/{adId} follows the same rule. Useful when a Page has more than one eligible IG
-         * account.
+         * Meta only. Overrides the Instagram account the ad is delivered as. Pass an Instagram Business Account ID (e.g. 17841...), mapped to the creative's `instagram_user_id`; it is sent as-is and never replaced. Useful when a Page has more than one eligible IG account.
+         *
+         * When omitted, we use the Instagram account linked to the Page. Formats that need an Instagram actor without one use the actor the Page's other ads already run as, then the Page's page-backed Instagram account.
+         *
+         * If Meta refuses that default because the ad account has no access to it (200/1815199), the creative is retried once with an Instagram account the ad account is authorized for. With none, the request fails with a 422 on `instagramAccountId` (list the usable accounts with GET /v1/ads/instagram-accounts).
+         *
+         * A creative replaced later through /v1/ads/{adId} follows the same rule.
          *
          */
         instagramAccountId?: string;
         /**
-         * Meta only. Dynamic Creative: supply a POOL of assets and Meta auto-combines and
-         * optimises them into the best-performing variations within a single ad (mapped to the
-         * creative's `asset_feed_spec`). When set, the top-level single-creative fields
-         * (`imageUrl`, `headline`, `body`, `linkUrl`, `callToAction`) are ignored. Mutually
-         * exclusive with the `creatives[]` multi-creative shape. Exactly ONE of `imageUrls` /
-         * `videoUrls` is required (Meta allows one ad format per asset feed; sending both →
-         * 400). Limits remain 10 images or videos and 5 bodies, titles or descriptions.
-         * The ad set is created with `is_dynamic_creative: true`. Combining this field
-         * with `adSetId` returns 400: omit `adSetId` to create a new dynamic ad set.
-         * Multiple headlines go in `titles`; multiple primary texts go in `bodies`.
+         * Meta only. Dynamic Creative: supply a POOL of assets and Meta auto-combines and optimises them into the best-performing variations within a single ad (mapped to the creative's `asset_feed_spec`).
+         *
+         * - The top-level single-creative fields (`imageUrl`, `headline`, `body`, `linkUrl`, `callToAction`) are ignored when this is set.
+         * - Mutually exclusive with the `creatives[]` multi-creative shape.
+         * - Exactly ONE of `imageUrls` / `videoUrls` is required (Meta allows one ad format per asset feed; sending both → 400).
+         * - Limits remain 10 images or videos and 5 bodies, titles or descriptions.
+         * - Multiple headlines go in `titles`; multiple primary texts go in `bodies`.
+         * - The ad set is created with `is_dynamic_creative: true`. Combining this field with `adSetId` returns 400: omit `adSetId` to create a new dynamic ad set.
          *
          */
         dynamicCreative?: {
@@ -57661,25 +59022,16 @@ export type CreateStandaloneAdData = {
             adFormat?: 'SINGLE_IMAGE' | 'CAROUSEL_IMAGE' | 'SINGLE_VIDEO';
         };
         /**
-         * Reddit: builds a carousel ad, each card with its image, destination (card `linkUrl`,
-         * falling back to the top-level `linkUrl`, 400 when neither is set), call to action
-         * (card `callToAction`, falling back to the top-level one) and caption (card
-         * `headline`, else `description`). `headline` is still required.
+         * Carousel cards. Behavior per platform:
          *
-         * Meta only. Hand-built carousel: 2-10 authored cards, sent in the order given as
-         * the creative's `link_data.child_attachments`. Unlike `dynamicCreative`,
-         * you author every card's copy and link, but by default Meta may still reorder the
-         * cards for performance (`multi_share_optimized` defaults to true); send
-         * `optimizeCardOrder: false` to keep the order given. Requires top-level `body`
-         * and `callToAction`; `linkUrl` is also required UNLESS `leadGenFormId` is set. Those
-         * become the ad's own Destination and button (`link_data.link` / `link_data.call_to_action`),
-         * and double as the per-card fallback when a card omits its own.
-         * Mutually exclusive with `imageUrl`/`video`, `creatives[]`, `dynamicCreative`,
-         * `placementAssets`, `existingCreativeId`, `adSetId` and goal
-         * `catalog_sales`. Combines with `leadGenFormId` to build a carousel Instant-Form
-         * lead ad: `linkUrl` and per-card `linkUrl` become OPTIONAL and, when sent, are
-         * forwarded as the real card and top-level destinations; when omitted, the
-         * destination falls back to Meta's lead-form link.
+         * **Reddit:** builds a carousel ad. Each card has its image, destination (card `linkUrl`, falling back to top-level `linkUrl`; 400 when neither is set), call to action (card `callToAction`, falling back to the top-level one) and caption (card `headline`, else `description`). `headline` is still required.
+         *
+         * **Meta only:** a hand-built carousel of 2-10 authored cards, sent in order as the creative's `link_data.child_attachments`. Unlike `dynamicCreative`, you author every card's copy and link.
+         *
+         * - Meta may still reorder cards for performance (`multi_share_optimized` defaults to true); send `optimizeCardOrder: false` to keep your order.
+         * - Requires top-level `body` and `callToAction`; `linkUrl` too UNLESS `leadGenFormId` is set. These become the ad's Destination and button (`link_data.link` / `link_data.call_to_action`) and the per-card fallback.
+         * - Mutually exclusive with `imageUrl`/`video`, `creatives[]`, `dynamicCreative`, `placementAssets`, `existingCreativeId`, `adSetId` and goal `catalog_sales`.
+         * - With `leadGenFormId` it builds a carousel Instant-Form lead ad: `linkUrl` and per-card `linkUrl` become OPTIONAL, forwarded as real destinations when sent; when omitted, the destination falls back to Meta's lead-form link.
          *
          */
         carouselCards?: Array<{
@@ -57705,12 +59057,11 @@ export type CreateStandaloneAdData = {
             callToAction?: string;
         }>;
         /**
-         * Meta only (a 400 on any other platform), and only with `carouselCards` (a 400
-         * without them). Sets the creative's `link_data.multi_share_optimized`. `false`
-         * keeps the cards in the order given; Meta then takes at most 5 cards, so `false`
-         * with more than 5 `carouselCards` is a 400. `true` lets Meta pick and reorder the
-         * cards for performance (up to 10). Omitted, nothing is sent and Meta's default
-         * (`true`) applies.
+         * Meta only (a 400 on any other platform), and only with `carouselCards` (a 400 without them). Sets the creative's `link_data.multi_share_optimized`.
+         *
+         * - `false`: keeps the cards in the order given. Meta then takes at most 5 cards, so `false` with more than 5 `carouselCards` is a 400.
+         * - `true`: Meta picks and reorders the cards for performance (up to 10).
+         * - Omitted: nothing is sent and Meta's default (`true`) applies.
          *
          */
         optimizeCardOrder?: boolean;
@@ -57719,38 +59070,23 @@ export type CreateStandaloneAdData = {
          */
         defaultLocale?: string;
         /**
-         * Meta only. Multi-language ads (Dynamic Language Optimization): ONE ad carrying
-         * per-locale copy and, optionally, per-locale media: the "Languages" toggle in Ads
-         * Manager. Keeps social proof (likes/comments/shares) on a SINGLE post instead of
-         * splitting it across one ad per language.
+         * Meta only. Multi-language ads (Dynamic Language Optimization, the "Languages" toggle in Ads Manager): ONE ad with per-locale copy and, optionally, per-locale media. Social proof (likes/comments/shares) stays on a SINGLE post instead of splitting across one ad per language.
          *
-         * The ad's top-level copy is the DEFAULT shown to every locale you do NOT list,
-         * and it counts as one of the language variants.
+         * The ad's top-level copy is the DEFAULT for every locale you do NOT list, and counts as one of the language variants.
          *
-         * IMPORTANT, and the opposite of what you might expect: text does NOT inherit.
-         * Every entry must carry its own `headline`, `body` AND `description`, and all of
-         * them must be DISTINCT from each other and from the ad's top-level copy. Meta
-         * deduplicates identical strings inside the asset feed, so two locales sharing a
-         * string collapse into one asset and the create fails with a misleading "Too few
-         * ... texts provided in asset creation" (subcode 1885817) that names a field which
-         * is actually present. We validate this before calling Meta and return a 400
-         * naming the offending locale and field. `description` is therefore effectively
-         * required on the ad whenever `translations` is present, even though it is
-         * optional otherwise.
+         * **Text does NOT inherit** (the opposite of what you might expect). Every entry needs its own `headline`, `body` AND `description`, all DISTINCT from each other and from the top-level copy. `description` is therefore effectively required on the ad whenever `translations` is present, though optional otherwise.
          *
-         * Do NOT list `defaultLocale` inside `translations`: Meta rejects the duplicate
-         * with "The language asset feed includes an unsupported targeting field"
-         * (subcode 1885985).
+         * Why: Meta deduplicates identical strings in the asset feed, so two locales sharing a string collapse into one asset.
          *
-         * Media DOES inherit and is uploaded once when shared, and `linkUrl` inherits
-         * too: each locale may name its own landing page and unlisted locales fall back
-         * to the ad's top-level `linkUrl`. Meta enforces
-         * Dynamic Creative image dimensions on language feeds, so an `imageUrl` that
-         * works on a normal ad may be rejected with "The following images have invalid
-         * dimensions for Dynamic Creative" (subcode 1885558). Video is not affected.
+         * The create then fails with a misleading "Too few ... texts provided in asset creation" (subcode 1885817) naming a field that is present. We validate first and return a 400 naming the locale and field.
          *
-         * Mutually exclusive with `dynamicCreative`, `placementAssets`, `carouselCards`,
-         * `existingCreativeId` and `creatives[]`. Meta allows one `asset_feed_spec` shape per creative.
+         * Do NOT list `defaultLocale` inside `translations`: Meta rejects the duplicate with "The language asset feed includes an unsupported targeting field" (subcode 1885985).
+         *
+         * **Media DOES inherit** and is uploaded once when shared. `linkUrl` inherits too: each locale may name its own landing page, and unlisted locales fall back to the top-level `linkUrl`.
+         *
+         * Meta enforces Dynamic Creative image dimensions on language feeds, so an `imageUrl` that works on a normal ad may fail with "The following images have invalid dimensions for Dynamic Creative" (subcode 1885558). Video is not affected.
+         *
+         * Mutually exclusive with `dynamicCreative`, `placementAssets`, `carouselCards`, `existingCreativeId` and `creatives[]`: Meta allows one `asset_feed_spec` shape per creative.
          *
          */
         translations?: Array<{
@@ -57788,32 +59124,24 @@ export type CreateStandaloneAdData = {
             thumbnailUrl?: string;
         }>;
         /**
-         * Meta only. Placement asset customization: pin a SPECIFIC asset (image OR video) to
-         * each placement group on a SINGLE ad (e.g. a 9:16 on Stories/Reels and a 4:5 on Feed).
-         * The same thing Meta Ads Manager produces with "different creative per placement",
-         * mapped to the creative's `asset_feed_spec` + `asset_customization_rules`. Deterministic
-         * pinning, NOT the auto-optimizing pool of `dynamicCreative` (mutually exclusive). Works
-         * on the legacy single shape AND the attach shape (`adSetId` + placementAssets adds one
-         * placement-customized ad to an existing ad set, the way to build N per-placement ads
-         * sharing one ad set: create the first normally, attach the rest). Cannot be combined
-         * with `creatives[]` or top-level `bodies`/`headlines`/`descriptions` arrays. Each rule
-         * can override `headline`, `body` and `description` with one string per field. Omitted
-         * fields and unmatched placements use the top-level copy; `linkUrl` and `callToAction`
-         * remain shared. Zernio emits labelled text with `optimization_type: PLACEMENT`.
-         * Multiple text options rotating within a placement are not supported by this input. Each rule's `placements` accepts the same fields as the top-level
-         * `placements` object; Meta enforces co-selection rules and returns an actionable error.
+         * Meta only. Pins a SPECIFIC asset (image OR video) to each placement group on a SINGLE ad (e.g. a 9:16 on Stories/Reels and a 4:5 on Feed). The same thing Ads Manager produces with "different creative per placement", mapped to the creative's `asset_feed_spec` + `asset_customization_rules`.
          *
-         * Meta controls text rendering by placement and format. Validation accepts these fields
-         * but does not prove that every field appears in delivery. Preview the ad; put copy that
-         * must always be visible into the image or video itself.
+         * Deterministic pinning, NOT the auto-optimizing pool of `dynamicCreative` (mutually exclusive). Cannot be combined with `creatives[]` or top-level `bodies`/`headlines`/`descriptions` arrays.
          *
-         * `validateOnly: true` supports all-image placementAssets without uploading or creating
-         * anything. Video placement validation remains unsupported because it requires uploads.
+         * Works on the legacy single shape AND the attach shape: `adSetId` + placementAssets adds one placement-customized ad to an existing ad set. To build N per-placement ads sharing one ad set, create the first normally and attach the rest.
          *
-         * A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad
-         * format). Image mode: `defaultImageUrl` + `rules[].imageUrl`. Video mode:
-         * `defaultVideoUrl` + `rules[].videoUrl` (optional `thumbnailUrl`/`defaultThumbnailUrl`
-         * posters; Meta auto-generates when omitted). Exactly one catch-all default is required.
+         * **Text.** Each rule can override `headline`, `body` and `description` with one string per field. Omitted fields and unmatched placements use the top-level copy; `linkUrl` and `callToAction` remain shared. Zernio emits labelled text with `optimization_type: PLACEMENT`. Multiple text options rotating within a placement are not supported by this input.
+         *
+         * **Placements.** Each rule's `placements` accepts the same fields as the top-level `placements` object; Meta enforces co-selection rules and returns an actionable error.
+         *
+         * Meta controls text rendering by placement and format. Validation accepts these fields but does not prove that every field appears in delivery. Preview the ad, and put copy that must always be visible into the image or video itself.
+         *
+         * `validateOnly: true` supports all-image placementAssets without uploading or creating anything. Video placement validation remains unsupported because it requires uploads.
+         *
+         * **Media.** A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad format). Exactly one catch-all default is required.
+         *
+         * - Image mode: `defaultImageUrl` + `rules[].imageUrl`.
+         * - Video mode: `defaultVideoUrl` + `rules[].videoUrl`, with optional `thumbnailUrl`/`defaultThumbnailUrl` posters (Meta auto-generates them when omitted).
          *
          */
         placementAssets?: (MetaPlacementAssets);
@@ -57844,21 +59172,29 @@ export type CreateStandaloneAdData = {
          */
         campaignNegativeKeywords?: Array<KeywordEntry>;
         /**
-         * Google Search RSA only. Extra text assets as strings or objects with text and optional pinnedField. Existing string input remains supported. The effective create lists, including primary text and deduplication, must contain 3-15 headlines and 2-4 descriptions; excess entries return 400. Each headline is at most 30 characters (Google's limit): a longer one returns 400 naming the field and index (e.g. `additionalHeadlines[2]`), it is never truncated. On Search the same limit applies to `headline` and `longHeadline` (30) and to `body` (90).
+         * Google Search RSA only. Extra text assets, as strings or objects with text and optional pinnedField. String input remains supported.
+         *
+         * - The effective create lists, including primary text and after deduplication, must contain 3-15 headlines and 2-4 descriptions. Excess entries return 400.
+         * - Each headline is at most 30 characters (Google's limit). A longer one returns 400 naming the field and index (e.g. `additionalHeadlines[2]`); it is never truncated.
+         * - On Search the same limit applies to `headline` and `longHeadline` (30) and to `body` (90).
+         *
          */
         additionalHeadlines?: Array<(string | GoogleRsaHeadline)>;
         /**
-         * Google Search RSA only. Extra text assets as strings or objects with text and optional pinnedField. Existing string input remains supported. The effective create lists, including primary text and deduplication, must contain 3-15 headlines and 2-4 descriptions; excess entries return 400. Each description is at most 90 characters (Google's limit): a longer one returns 400 naming the field and index (e.g. `additionalDescriptions[2]`), it is never truncated. On Search the same limit applies to `headline` and `longHeadline` (30) and to `body` (90).
+         * Google Search RSA only. Extra text assets, as strings or objects with text and optional pinnedField. Existing string input remains supported.
+         *
+         * - The effective create lists, including primary text and deduplication, must contain 3-15 headlines and 2-4 descriptions; excess entries return 400.
+         * - Each description is at most 90 characters (Google's limit). A longer one returns 400 naming the field and index (e.g. `additionalDescriptions[2]`); it is never truncated.
+         * - On Search the same limit applies to `headline` and `longHeadline` (30) and to `body` (90).
+         *
          */
         additionalDescriptions?: Array<(string | GoogleRsaDescription)>;
         /**
-         * Google Search only. Sitelink assets to create and attach at the campaign level.
-         * Each entry becomes an Asset (with sitelink_asset + Asset.final_urls) plus a
-         * CampaignAsset link (field_type SITELINK). Approval is async: Google reviews
-         * assets after creation; poll asset.policy_summary later to read the verdict.
-         * Google requires at least two sitelinks to surface them on an ad; four or more
-         * is Google's own recommendation for maximum visibility. The response's
-         * creative.sitelinks[] echoes each input plus its Google resourceName.
+         * Google Search only. Sitelink assets to create and attach at the campaign level. Each entry becomes an Asset (with sitelink_asset + Asset.final_urls) plus a CampaignAsset link (field_type SITELINK).
+         *
+         * Approval is async: Google reviews assets after creation; poll asset.policy_summary later to read the verdict.
+         *
+         * Google requires at least two sitelinks to surface them on an ad; four or more is Google's own recommendation for maximum visibility. The response's creative.sitelinks[] echoes each input plus its Google resourceName.
          *
          */
         sitelinks?: Array<{
@@ -57907,14 +59243,14 @@ export type CreateStandaloneAdData = {
          */
         advantageAudience?: 0 | 1;
         /**
-         * Meta only. Conversion attribution window for the ad set, mapping 1:1 to Meta's
-         * ad-set `attribution_spec`. Only honored for conversion goals (`conversions`,
-         * `lead_generation`, `app_promotion`); ignored for awareness/traffic/engagement.
-         * Omit to use Meta's default (`7-day click` + `1-day view`). Meta enforces the
-         * valid combinations: `VIEW_THROUGH` only allows `windowDays: 1` (7d/28d view
-         * windows were removed Jan 2026); `ENGAGED_VIDEO_VIEW` only `1` and only alongside
-         * `VIEW_THROUGH: 1`; `CLICK_THROUGH: 28` only on certain objectives. Invalid combos
-         * surface as a Meta 400.
+         * Meta only. Conversion attribution window for the ad set, mapping 1:1 to Meta's ad-set `attribution_spec`. Only honored for conversion goals (`conversions`, `lead_generation`, `app_promotion`); ignored for awareness/traffic/engagement. Omit to use Meta's default (`7-day click` + `1-day view`).
+         *
+         * Meta enforces the valid combinations (invalid combos surface as a Meta 400):
+         *
+         * - `VIEW_THROUGH`: only `windowDays: 1` (7d/28d view windows were removed Jan 2026).
+         * - `ENGAGED_VIDEO_VIEW`: only `1`, and only alongside `VIEW_THROUGH: 1`.
+         * - `CLICK_THROUGH: 28`: only on certain objectives.
+         *
          * Example: `[{ "eventType": "CLICK_THROUGH", "windowDays": 7 }, { "eventType": "VIEW_THROUGH", "windowDays": 1 }]`
          *
          */
@@ -57927,15 +59263,15 @@ export type CreateStandaloneAdData = {
          */
         gender?: 'all' | 'male' | 'female';
         /**
-         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window. Sending both shapes returns a 400.
          *
-         * Meta bid strategy applied to the ad set.
+         * Bid strategy applied to the ad set (Meta). Per platform:
          *
-         * OpenAI Ads: sent via this flat field, the only channel it supports (`platformSpecificData` is Meta/LinkedIn-only and returns 400 for OpenAI). `LOWEST_COST_WITH_BID_CAP` or `COST_CAP` with `bidAmount` sets a fixed bid (`fixed_bid`, the CPA bid on `conversions`). Omitted or `LOWEST_COST_WITHOUT_CAP` bids automatically with OpenAI's Maximize Results (`maximize_clicks` for `traffic`, `maximize_conversions` for `conversions`), which needs `budgetType: daily`; on a lifetime budget or the `awareness` goal it returns 400.
-         *
-         * Reddit Ads: sent via this flat field and applied to the new ad group. LOWEST_COST_WITHOUT_CAP or omitted = automatic bidding (BIDLESS), LOWEST_COST_WITH_BID_CAP + `bidAmount` = MANUAL_BIDDING with that bid, COST_CAP + `bidAmount` = MAXIMIZE_VOLUME with that cap. Any other strategy returns 422 before anything is created.
-         *
-         * Google (not deprecated there, this shared flat field is Google's only shape): applied to the campaign this call creates. On Google: LOWEST_COST_WITHOUT_CAP = Maximize Conversions, COST_CAP + bidAmount = Target CPA, LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS, LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling; portfolioBidStrategyId attaches a portfolio strategy instead. Omitted, the campaign falls back to a goal-based default.
+         * - **OpenAI Ads:** only this flat field works (`platformSpecificData` is Meta/LinkedIn-only and returns 400 for OpenAI). `LOWEST_COST_WITH_BID_CAP` or `COST_CAP` with `bidAmount` sets a fixed bid (`fixed_bid`, the CPA bid on `conversions`).
+         * - **OpenAI Ads, automatic:** omitted or `LOWEST_COST_WITHOUT_CAP` uses OpenAI's Maximize Results (`maximize_clicks` for `traffic`, `maximize_conversions` for `conversions`). It needs `budgetType: daily`; a lifetime budget or the `awareness` goal returns 400.
+         * - **Reddit Ads:** flat field, applied to the new ad group. LOWEST_COST_WITHOUT_CAP or omitted = automatic bidding (BIDLESS). LOWEST_COST_WITH_BID_CAP + `bidAmount` = MANUAL_BIDDING with that bid. COST_CAP + `bidAmount` = MAXIMIZE_VOLUME with that cap. Any other strategy returns 422 before anything is created.
+         * - **Google:** not deprecated (this flat field is Google's only shape), applied to the campaign this call creates. LOWEST_COST_WITHOUT_CAP = Maximize Conversions. COST_CAP + bidAmount = Target CPA. LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS.
+         * - **Google, continued:** LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling. portfolioBidStrategyId attaches a portfolio strategy instead. Omitted, the campaign falls back to a goal-based default.
          *
          * @deprecated
          */
@@ -57943,28 +59279,21 @@ export type CreateStandaloneAdData = {
         /**
          * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
          *
-         * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when
-         * `bidStrategy` is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`. Meta only: sending
-         * `bidAmount` WITHOUT `bidStrategy` requires `existingCampaignId` (400 otherwise),
-         * and sets the new ad set's cap under the joined campaign's COST_CAP /
-         * LOWEST_COST_WITH_BID_CAP parent. The strategy itself is inherited from the
-         * campaign. Restating bidStrategy here is accepted but has no effect on the ad set.
+         * Bid cap in WHOLE currency units (USD: 5 = $5.00; JPY: 100 = ¥100). Required when `bidStrategy` is `LOWEST_COST_WITH_BID_CAP` or `COST_CAP`.
          *
-         * Rejected with 400 in `adSetId` attach mode: that shape inherits its cap from
-         * the platform. Use `PUT /v1/ads/ad-sets/{adSetId}` there instead.
+         * Meta only: `bidAmount` WITHOUT `bidStrategy` requires `existingCampaignId` (400 otherwise). It sets the new ad set's cap under the joined campaign's COST_CAP / LOWEST_COST_WITH_BID_CAP parent; the strategy is inherited from the campaign. Restating bidStrategy here is accepted but has no effect on the ad set.
+         *
+         * Rejected with 400 in `adSetId` attach mode, which inherits its cap from the platform. Use `PUT /v1/ads/ad-sets/{adSetId}` there instead.
          *
          * @deprecated
          */
         bidAmount?: number;
         /**
-         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window; sending both shapes returns a 400.
+         * Deprecated: send it inside `platformSpecificData` instead (Meta today; TikTok's nested shape is planned). The flat field keeps working during the deprecation window. Sending both shapes returns a 400.
          *
-         * Minimum ROAS as a decimal multiplier (e.g. 2.0 = 2.0x ROAS). Required when
-         * `bidStrategy` is `LOWEST_COST_WITH_MIN_ROAS`. Sending it without `bidStrategy`
-         * is a 400. Sent to Meta as
-         * `bid_constraints.roas_average_floor` × 10000. Known gap: a CBO campaign's
-         * ROAS floor lives on the campaign only (set via `POST /v1/ads/campaigns`);
-         * there is no supported way to set it while joining a CBO campaign here.
+         * Minimum ROAS as a decimal multiplier (e.g. 2.0 = 2.0x ROAS). Required when `bidStrategy` is `LOWEST_COST_WITH_MIN_ROAS`; sending it without `bidStrategy` is a 400. Sent to Meta as `bid_constraints.roas_average_floor` × 10000.
+         *
+         * Known gap: a CBO campaign's ROAS floor lives on the campaign only (set via `POST /v1/ads/campaigns`). There is no supported way to set it while joining a CBO campaign here.
          *
          * @deprecated
          */
@@ -58009,19 +59338,13 @@ export type CreateStandaloneAdData = {
          */
         valueRulesApplied?: boolean;
         /**
-         * Platform-specific options. The platform is derived from `accountId`;
-         * sending options for a different platform returns a 400. LinkedIn
-         * (campaign bidding and delivery controls) and Meta (the bid trio)
-         * have options today.
+         * Platform-specific options. The platform is derived from `accountId`; options for a different platform return a 400. LinkedIn (campaign bidding and delivery controls) and Meta (the bid trio) have options today.
          *
-         * **Meta**: `bidStrategy`, `bidAmount` and `roasAverageFloor` may be
-         * sent here instead of at the root, which is the preferred home going forward.
-         * Sending the bid fields in BOTH places returns a 400
-         * (`mutually_exclusive_fields`), and sending any of them in
-         * `adSetId` attach mode is a 400 too (the ad set already has its bid).
-         * `dailyMinSpendTarget` / `lifetimeMinSpendTarget` set the new ad set's
-         * minimum spend and live here only; they are rejected in `adSetId` attach
-         * mode as well.
+         * **Meta**
+         *
+         * - `bidStrategy`, `bidAmount` and `roasAverageFloor` may be sent here instead of at the root (the preferred home going forward). Sending them in BOTH places returns a 400 (`mutually_exclusive_fields`).
+         * - Sending any bid field in `adSetId` attach mode is a 400 (the ad set already has its bid).
+         * - `dailyMinSpendTarget` / `lifetimeMinSpendTarget` set the new ad set's minimum spend and live here only; also rejected in `adSetId` attach mode.
          *
          */
         platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData);
@@ -58042,15 +59365,11 @@ export type CreateStandaloneAdData = {
          */
         dsaPayor?: string;
         /**
-         * TikTok only. Synthetic Brand Identity used when the ad
-         * attributes to a CUSTOMIZED_USER (instead of a real TT_USER
-         * @username). Required on the FIRST CUSTOMIZED_USER ad on a
-         * `tiktokads` SocialAccount with no cached identity; omit on
-         * subsequent ads (the identity is cached on the account after
-         * first creation). Non-TikTok platforms ignore this field.
+         * TikTok only; non-TikTok platforms ignore this field. Synthetic Brand Identity used when the ad attributes to a CUSTOMIZED_USER (instead of a real TT_USER @username).
          *
-         * Alternative: configure once via `PATCH /v1/connect/tiktok-ads`,
-         * then create ads without this field.
+         * Required on the FIRST CUSTOMIZED_USER ad on a `tiktokads` SocialAccount with no cached identity. Omit it on later ads: the identity is cached on the account after first creation.
+         *
+         * Alternative: configure once via `PATCH /v1/connect/tiktok-ads`, then create ads without this field.
          *
          */
         brandIdentity?: {
@@ -58088,18 +59407,17 @@ export type CreateStandaloneAdData = {
          */
         identityType?: 'TT_USER' | 'CUSTOMIZED_USER' | 'BC_AUTH_TT';
         /**
-         * TikTok only. Creates the ad as a TikTok Upgraded Smart+
-         * campaign: TikTok automates targeting, bidding and delivery. Supports goals
-         * `conversions` (Smart+ Web Conversions), `lead_generation` (Smart+ Lead
-         * Generation with a website form on `linkUrl`; TikTok Instant Forms not supported)
-         * and `app_promotion` (Smart+ App installs; the ad's destination is the app store,
-         * so `linkUrl` is not used). The web goals require `promotedObject.pixelId` AND
-         * `promotedObject.customEventType`; `app_promotion` requires
-         * `promotedObject.applicationId` instead.
-         * Targeting works like on any TikTok ad (defaults to `countries: ["US"]` when
-         * omitted); TikTok automates delivery within it.
-         * The budget lives on the Smart+ campaign (Campaign Budget Optimization); a `lifetime`
-         * budget without `endDate` ends 7 days after it starts. Smart+ needs `goal` sent, it is never inferred. Cannot be combined with `adSetId`.
+         * TikTok only. Creates the ad as a TikTok Upgraded Smart+ campaign: TikTok automates targeting, bidding and delivery. Supported goals:
+         *
+         * - `conversions`: Smart+ Web Conversions.
+         * - `lead_generation`: Smart+ Lead Generation with a website form on `linkUrl` (TikTok Instant Forms not supported).
+         * - `app_promotion`: Smart+ App installs. The destination is the app store, so `linkUrl` is not used.
+         *
+         * The web goals require `promotedObject.pixelId` AND `promotedObject.customEventType`; `app_promotion` requires `promotedObject.applicationId` instead.
+         *
+         * Targeting works like on any TikTok ad (defaults to `countries: ["US"]` when omitted), and TikTok automates delivery within it.
+         *
+         * The budget lives on the Smart+ campaign (Campaign Budget Optimization). A `lifetime` budget without `endDate` ends 7 days after it starts. Smart+ needs `goal` sent; it is never inferred. Cannot be combined with `adSetId`.
          *
          */
         smartPlus?: boolean;
@@ -58123,7 +59441,14 @@ export type CreateStandaloneAdData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -58139,7 +59464,11 @@ export type CreateStandaloneAdResponse = ({
         node?: 'campaign' | 'adSet' | 'creative' | 'ad' | 'performanceMaxCampaign';
         status?: 'validated' | 'skipped' | 'unverified';
         /**
-         * Why the node could not be validated (on skipped), why Meta could not dry-run it although the other nodes passed (on unverified), or what the dry run could not check and what the request would do as sent (on validated). A Performance Max validation with no location targeting reports here that the campaign would run worldwide.
+         * Explanation for the node's result:
+         *
+         * - On skipped: why the node could not be validated.
+         * - On unverified: why Meta could not dry-run it although the other nodes passed.
+         * - On validated: what the dry run could not check, and what the request would do as sent. For example, a Performance Max validation with no location targeting reports here that the campaign would run worldwide.
          */
         reason?: string;
     }>;
@@ -58149,7 +59478,10 @@ export type CreateStandaloneAdResponse = ({
     appliedDefaults?: AdAppliedDefaults;
     message?: string;
     /**
-     * Meta only, present only when needed. An `activation_failed:` entry means Meta refused the final switch to ACTIVE: the entry names what was kept PAUSED (the ad, and its ad set or campaign when Meta refused those) and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     * Meta only, present only when needed.
+     *
+     * An `activation_failed:` entry means Meta refused the final switch to ACTIVE. The entry names what was kept PAUSED (the ad, plus its ad set or campaign when Meta refused those) and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     *
      */
     warnings?: Array<(string)>;
 } | {
@@ -58159,7 +59491,10 @@ export type CreateStandaloneAdResponse = ({
     appliedDefaults?: AdAppliedDefaults;
     message?: string;
     /**
-     * Meta only, present only when needed. An `activation_failed:` entry means Meta refused the final switch to ACTIVE for the ads it names (or for their ad set or campaign): the entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     * Meta only, present only when needed.
+     *
+     * An `activation_failed:` entry means Meta refused the final switch to ACTIVE for the ads it names (or for their ad set or campaign). The entry names what was kept PAUSED and what was switched ACTIVE, and quotes Meta's error and the status calls that switch the PAUSED ones on later.
+     *
      */
     warnings?: Array<(string)>;
 }));
@@ -58292,7 +59627,10 @@ export type UpdateLeadError = (ErrorResponse | unknown);
 export type ListLeadFormsData = {
     query: {
         /**
-         * Connected Meta ads, Facebook, Instagram or LinkedIn ads account ID. A Meta ads connection resolves its Page through the Facebook account linked to the same profile; an Instagram account uses the Page its ads run under (its own linked Page, else the Facebook or business-login Meta ads account on the same profile).
+         * Connected Meta ads, Facebook, Instagram or LinkedIn ads account ID.
+         *
+         * - Meta ads connection: resolves its Page through the Facebook account linked to the same profile.
+         * - Instagram account: uses the Page its ads run under (its own linked Page, else the Facebook or business-login Meta ads account on the same profile).
          */
         accountId: string;
         /**
@@ -58424,7 +59762,11 @@ export type CreateLeadFormData = {
      */
     thankYouButtonType?: string;
     /**
-     * International E.164 number the CALL_BUSINESS thank-you button dials (Meta thank_you_page.business_phone_number). It must start with + and the country calling code matching countryCode; spaces, dashes, dots and parentheses are stripped, and a local number such as 2025550123 is a 400. Required when thankYouButtonType is CALL_BUSINESS and a 400 with any other button type. Accepted only inside platformSpecificData: a top-level businessPhoneNumber is a 400.
+     * International E.164 number the CALL_BUSINESS thank-you button dials (Meta thank_you_page.business_phone_number).
+     *
+     * - Must start with + and the country calling code matching countryCode. Spaces, dashes, dots and parentheses are stripped; a local number such as 2025550123 is a 400.
+     * - Required when thankYouButtonType is CALL_BUSINESS; a 400 with any other button type.
+     * - Accepted only inside platformSpecificData; a top-level businessPhoneNumber is a 400.
      */
     businessPhoneNumber?: string;
     /**
@@ -58441,7 +59783,9 @@ export type CreateLeadFormData = {
      */
     isOptimizedForQuality?: boolean;
     /**
-     * Requires the lead to verify their phone number over SMS before the form submits (Meta is_phone_sms_verify_enabled). Only meaningful on a form with a PHONE question. Meta can restrict this parameter to apps holding a capability: when it does, the create fails with a 422 naming platformSpecificData.isPhoneSmsVerifyEnabled, and the toggle then has to be set in Meta's form builder.
+     * Requires the lead to verify their phone number over SMS before the form submits (Meta is_phone_sms_verify_enabled). Only meaningful on a form with a PHONE question.
+     *
+     * Meta can restrict this parameter to apps holding a capability. When it does, the create fails with a 422 naming platformSpecificData.isPhoneSmsVerifyEnabled, and the toggle must then be set in Meta's form builder.
      */
     isPhoneSmsVerifyEnabled?: boolean;
     blockDisplayForNonTargetedViewer?: boolean;
@@ -58535,11 +59879,18 @@ export type GetLeadFormData = {
     };
     query: {
         /**
-         * Connected Meta ads, facebook, instagram or linkedin ads account id (selects the platform). A Meta ads connection resolves its Page through the Facebook account linked to the same profile; an Instagram account uses the Page its ads run under (its own linked Page, else the Facebook or business-login Meta ads account on the same profile).
+         * Connected Meta ads, facebook, instagram or linkedin ads account id (selects the platform).
+         *
+         * - Meta ads connection: resolves its Page through the Facebook account linked to the same profile.
+         * - Instagram account: uses the Page its ads run under (its own linked Page, else the Facebook or business-login Meta ads account on the same profile).
          */
         accountId: string;
         /**
-         * Meta only. A Graph field selection passed through verbatim to GET /{form-id}, replacing the default projection, so fields Meta adds later are reachable without an API change. Field names, commas and {} expansion only; anything else (Graph field modifiers such as .limit(), or characters that could open another query parameter) is a 400. Ownership of the form is verified before the selection runs, so this cannot reach any Page but the one accountId manages. Unknown field names are rejected by Meta as a 400.
+         * Meta only. A Graph field selection passed through verbatim to GET /{form-id}, replacing the default projection, so fields Meta adds later are reachable without an API change.
+         *
+         * - Field names, commas and {} expansion only. Anything else (Graph field modifiers such as .limit(), or characters that could open another query parameter) is a 400.
+         * - Unknown field names are rejected by Meta as a 400.
+         * - Ownership of the form is verified before the selection runs, so this cannot reach any Page but the one accountId manages.
          *
          */
         fields?: string;
@@ -58564,7 +59915,10 @@ export type ArchiveLeadFormData = {
     };
     query: {
         /**
-         * Connected Meta ads, facebook, instagram or linkedin ads account id (selects the platform). A Meta ads connection resolves its Page through the Facebook account linked to the same profile; an Instagram account uses the Page its ads run under (its own linked Page, else the Facebook or business-login Meta ads account on the same profile).
+         * Connected Meta ads, facebook, instagram or linkedin ads account id (selects the platform).
+         *
+         * - A Meta ads connection resolves its Page through the Facebook account linked to the same profile.
+         * - An Instagram account uses the Page its ads run under: its own linked Page, else the Facebook or business-login Meta ads account on the same profile.
          */
         accountId: string;
     };
@@ -58979,7 +60333,16 @@ export type SearchAdTargetingData = {
          */
         countryCode?: string;
         /**
-         * What to search. `geo` resolves locations (scope further with `geoType`), `interest`/`behavior` resolve audience entities (`behavior` on Meta, TikTok and LinkedIn), `interestSuggestion` suggests interests related to the names in `q` (Meta only), `interestKeyword`/`hashtag` resolve TikTok additional interests and hashtags (TikTok only), `income` resolves the normalized income tiers, `language` resolves Google's targetable language_constant table (Google only), `workPosition`/`workEmployer`/`workIndustry` resolve Meta work demographics, `industry`/`jobFunction`/`seniority`/`companySize`/`skill` resolve LinkedIn B2B facets (LinkedIn only). Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
+         * What to search. Defaults to `interest` for backward compatibility with the deprecated /v1/ads/interests alias.
+         *
+         * - `geo`: resolves locations (scope further with `geoType`).
+         * - `interest`/`behavior`: resolve audience entities (`behavior` on Meta, TikTok and LinkedIn).
+         * - `interestSuggestion`: suggests interests related to the names in `q` (Meta only).
+         * - `interestKeyword`/`hashtag`: resolve TikTok additional interests and hashtags (TikTok only).
+         * - `income`: resolves the normalized income tiers.
+         * - `language`: resolves Google's targetable language_constant table (Google only).
+         * - `workPosition`/`workEmployer`/`workIndustry`: resolve Meta work demographics.
+         * - `industry`/`jobFunction`/`seniority`/`companySize`/`skill`: resolve LinkedIn B2B facets (LinkedIn only).
          */
         dimension?: 'geo' | 'interest' | 'interestSuggestion' | 'interestKeyword' | 'behavior' | 'hashtag' | 'income' | 'language' | 'workPosition' | 'workEmployer' | 'workIndustry' | 'industry' | 'jobFunction' | 'seniority' | 'companySize' | 'skill' | 'community' | 'conversationKeyword';
         /**
@@ -58991,7 +60354,11 @@ export type SearchAdTargetingData = {
          */
         limit?: number;
         /**
-         * Meta only: the language Meta matches `q` against and names results and `path` in, as language_TERRITORY (e.g. `pl_PL`, `en_US`). Applies to `geo`, `interest`, `interestSuggestion`, `behavior`, `workPosition`, `workEmployer` and `workIndustry`. Without it, `behavior`, `workIndustry` and `interestSuggestion` use `en_US` and the other searches use the language of the Facebook user who connected the account. `income` always uses `en_US`. Ignored on other platforms.
+         * Meta only (ignored on other platforms). The language Meta matches `q` against and names results and `path` in, as language_TERRITORY (e.g. `pl_PL`, `en_US`).
+         *
+         * Applies to `geo`, `interest`, `interestSuggestion`, `behavior`, `workPosition`, `workEmployer` and `workIndustry`.
+         *
+         * **Without it:** `behavior`, `workIndustry` and `interestSuggestion` use `en_US`; other searches use the language of the Facebook user who connected the account. `income` always uses `en_US`.
          */
         locale?: string;
         /**
@@ -59032,7 +60399,13 @@ export type SearchAdTargetingResponse = ({
          */
         countryCode?: string;
         /**
-         * On Reddit `community` results: Reddit's own subreddit id (the `id` is the name). Otherwise only on `country` results: the platform's own id for the country, which `id` replaced with the ISO code (TikTok's native location_id, a GeoNames id such as 2635167 for GB; Meta's country key; Google's geo target constant id; X's targeting value; LinkedIn's geo URN). Use it to match a country against what the platform reports back, e.g. `location_ids` in a TikTok `nativeSettings` read.
+         * The platform's own id for the result.
+         *
+         * - Reddit `community` results: Reddit's own subreddit id (the `id` is the name).
+         * - `country` results: the platform's own id for the country, which `id` replaced with the ISO code. TikTok's native location_id (a GeoNames id such as 2635167 for GB), Meta's country key, Google's geo target constant id, X's targeting value, LinkedIn's geo URN.
+         * - Other results: absent.
+         *
+         * Use it to match a country against what the platform reports back, e.g. `location_ids` in a TikTok `nativeSettings` read.
          */
         platformId?: string;
     }>;
@@ -59217,22 +60590,17 @@ export type EstimateAdReachData = {
          */
         spec?: (TargetingSpec);
         /**
-         * Meta only. A Meta-native targeting spec (snake_case: `geo_locations`, `age_min`,
-         * `flexible_spec`, `excluded_custom_audiences`, `user_os`, ...), the same field
-         * `POST /v1/ads/create` accepts, so the estimate covers the exact audience the ad
-         * set will use. For layered targeting, send `flexible_spec` here: entries AND
-         * together, ids inside one entry OR.
+         * Meta only. A Meta-native targeting spec (snake_case: `geo_locations`, `age_min`, `flexible_spec`, `excluded_custom_audiences`, `user_os`, ...), the same field `POST /v1/ads/create` accepts, so the estimate covers the exact audience the ad set will use. Sending it for an account on another platform returns 400 naming `rawTargeting`.
          *
-         * It uses the same merge rules as `POST /v1/ads/create`: rawTargeting is the BASE
-         * layer and `spec`, converted to Meta's wire shape, is merged on top key by key,
-         * with `spec` winning on collision. The merge goes one level deep inside
-         * `geo_locations` and `excluded_geo_locations` (spec sub-keys win, raw-only
-         * sub-keys such as `location_types` survive). Array values (`flexible_spec`, ...)
-         * are replaced as a whole key when `spec` builds them, never element-merged, so
-         * `spec.interests` or `spec.behaviors` replace a raw `flexible_spec`. The result is
-         * sent to Meta `delivery_estimate` as `targeting_spec`.
+         * For layered targeting, send `flexible_spec` here: entries AND together, ids inside one entry OR.
          *
-         * Sending it for an account on another platform returns 400 naming `rawTargeting`.
+         * **Merge rules** (same as `POST /v1/ads/create`):
+         *
+         * - rawTargeting is the BASE layer; `spec`, converted to Meta's wire shape, is merged on top key by key, with `spec` winning on collision.
+         * - The merge goes one level deep inside `geo_locations` and `excluded_geo_locations` (spec sub-keys win, raw-only sub-keys such as `location_types` survive).
+         * - Array values (`flexible_spec`, ...) are replaced as a whole key when `spec` builds them, never element-merged, so `spec.interests` or `spec.behaviors` replace a raw `flexible_spec`.
+         *
+         * The result is sent to Meta `delivery_estimate` as `targeting_spec`.
          *
          */
         rawTargeting?: {
@@ -60083,12 +61451,11 @@ export type CreateAdAudienceData = {
      */
     engagementSources?: Array<(string)>;
     /**
-     * Required for company_list audiences (LinkedIn only): plain-text
-     * company rows for account targeting. Each row needs at least one
-     * identifier. Not hashed, LinkedIn matches these against its own
-     * company graph. LinkedIn recommends 1,000+ companies for a usable
-     * match rate and takes up to 48h to process the list. Replace the
-     * list later with POST /v1/ads/audiences/{audienceId}/companies.
+     * Required for company_list audiences (LinkedIn only). Plain-text company rows for account targeting; each row needs at least one identifier.
+     *
+     * - Not hashed: LinkedIn matches these against its own company graph.
+     * - LinkedIn recommends 1,000+ companies for a usable match rate and takes up to 48h to process the list.
+     * - Replace the list later with POST /v1/ads/audiences/{audienceId}/companies.
      *
      */
     companies?: Array<{
@@ -60117,27 +61484,20 @@ export type CreateAdAudienceData = {
      */
     sourceId?: string;
     /**
-     * meta_engagement: the engagement event; defaults per source
-     * (page → page_engaged, instagram → ig_business_profile_all,
-     * video → video_watched). Ignored when `rule` is provided.
+     * The event to match. Its meaning depends on the type:
      *
-     * website on Reddit: the conversion event (default `PAGE_VISIT`), or a custom event name.
+     * - meta_engagement: the engagement event. Defaults per source (page → page_engaged, instagram → ig_business_profile_all, video → video_watched). Ignored when `rule` is provided.
+     * - website on Reddit: the conversion event (default `PAGE_VISIT`), or a custom event name.
+     * - website on TikTok: the pixel event (default `PAGE BROWSE`).
+     * - website on Pinterest: the tag event (`pagevisit`, `signup`, `checkout`, `viewcategory`, `search`, `addtocart`, `watchvideo`, `lead`, `custom` or a partner-defined event).
+     * - tiktok_engagement (required): the TikTok engagement event, validated per `source` (TikTok's filter values, spaces included). An unknown value is a 400 that lists the valid ones.
      *
-     * website on TikTok: the pixel event (default `PAGE BROWSE`). website
-     * on Pinterest: the tag event (`pagevisit`, `signup`, `checkout`, `viewcategory`, `search`, `addtocart`, `watchvideo`, `lead`, `custom` or a partner-defined event).
+     * Valid tiktok_engagement values per `source`:
      *
-     * tiktok_engagement (required): the TikTok engagement event, validated
-     * per `source` (TikTok's filter values, spaces included):
-     * - ads: `CLICK`, `IMPRESSION`, `PLAY 2S`, `PLAY 6S`, `PLAY 25`, `PLAY 50`, `PLAY 75`,
-     * `PLAY OVER`, and the `ENGAGEMENT APP PROFILE` / `ENGAGEMENT TIKTOK INSTANT` /
-     * `ENGAGEMENT COLLECTION ADS` `CLICK` and `IMPRESSION` events.
-     * - organic_video: `ORGANIC VIDEO PLAY 2S`, `ORGANIC VIDEO PLAY 6S`,
-     * `ORGANIC VIDEO PLAY OVER`, `ORGANIC VIDEO ENGAGEMENT`.
+     * - ads: `CLICK`, `IMPRESSION`, `PLAY 2S`, `PLAY 6S`, `PLAY 25`, `PLAY 50`, `PLAY 75`, `PLAY OVER`, and the `ENGAGEMENT APP PROFILE` / `ENGAGEMENT TIKTOK INSTANT` / `ENGAGEMENT COLLECTION ADS` `CLICK` and `IMPRESSION` events.
+     * - organic_video: `ORGANIC VIDEO PLAY 2S`, `ORGANIC VIDEO PLAY 6S`, `ORGANIC VIDEO PLAY OVER`, `ORGANIC VIDEO ENGAGEMENT`.
      * - live_video: `LIVE VIDEO VIEW`, `LIVE VIDEO ENGAGEMENT`.
-     * - business_account: `BUSINESS ACCOUNT PROFILE FOLLOW`, `BUSINESS ACCOUNT PROFILE VISIT`,
-     * `BUSINESS ACCOUNT ENGAGEMENT`, `BUSINESS ACCOUNT PLAY 2S`, `BUSINESS ACCOUNT PLAY 6S`,
-     * `BUSINESS ACCOUNT PLAY OVER` and the rest of TikTok's business-account events.
-     * An unknown value is a 400 that lists the valid ones.
+     * - business_account: `BUSINESS ACCOUNT PROFILE FOLLOW`, `BUSINESS ACCOUNT PROFILE VISIT`, `BUSINESS ACCOUNT ENGAGEMENT`, `BUSINESS ACCOUNT PLAY 2S`, `BUSINESS ACCOUNT PLAY 6S`, `BUSINESS ACCOUNT PLAY OVER` and the rest of TikTok's business-account events.
      *
      */
     event?: string;
@@ -60209,28 +61569,21 @@ export type CreateAdAudienceData = {
      */
     urlContains?: string;
     /**
-     * Meta only (a 400 elsewhere). Optional raw Meta rule, replacing the one we build. Omit it for all
-     * visitors of `pixelId`, or use `urlContains` for the common page-match
-     * case.
+     * Meta only (a 400 elsewhere). Optional raw Meta rule, replacing the one we build. Omit it for all visitors of `pixelId`, or use `urlContains` for the common page-match case.
      *
-     * For `website` this is Meta's Flexible Audience Rule and is VALIDATED
-     * before we call Meta: every entry in `inclusions.rules` (and
-     * `exclusions.rules`) must carry `event_sources`, `retention_seconds`
-     * AND `filter`. Meta rejects a rule missing any of the three with code
-     * 100 / subcode 1713098 ("Invalid rule JSON format"), so a bad shape is
-     * a 400 here instead. The pre-2018 flat shapes (`{url: ...}`,
-     * `{event: ...}`) are not accepted by Meta at all (subcode 1870029).
+     * **For `website`** this is Meta's Flexible Audience Rule and is VALIDATED before we call Meta.
+     *
+     * Every entry in `inclusions.rules` (and `exclusions.rules`) must carry `event_sources`, `retention_seconds` AND `filter`. Meta rejects a rule missing any of the three with code 100 / subcode 1713098 ("Invalid rule JSON format"), so a bad shape is a 400 here instead.
+     *
+     * The pre-2018 flat shapes (`{url: ...}`, `{event: ...}`) are not accepted by Meta at all (subcode 1870029).
      *
      * Example, visitors of /checkout in the last 30 days:
+     *
      * `{"inclusions":{"operator":"or","rules":[{"event_sources":[{"id":"<pixelId>","type":"pixel"}],"retention_seconds":2592000,"filter":{"operator":"and","filters":[{"field":"url","operator":"i_contains","value":"/checkout"}]}}]}}`
      *
-     * Note Meta DERIVES `retention_days` from `retention_seconds` and
-     * stores `event_sources[].id` as a number, so a rule read back will
-     * not be byte-identical to the one you sent.
+     * Meta DERIVES `retention_days` from `retention_seconds` and stores `event_sources[].id` as a number, so a rule read back will not be byte-identical to the one you sent.
      *
-     * For `meta_engagement` the rule is forwarded verbatim and NOT
-     * validated: that type has two dialects (the `video` source uses a
-     * legacy flat array), so no single schema covers both.
+     * **For `meta_engagement`** the rule is forwarded verbatim and NOT validated: that type has two dialects (the `video` source uses a legacy flat array), so no single schema covers both.
      *
      */
     rule?: {
@@ -60477,18 +61830,21 @@ export type SendConversionsData = {
         destinationId: string;
         events: Array<ConversionEvent>;
         /**
-         * Send it at the request root, never inside an event. A root-level `test_event_code` (Meta's own name) is accepted as an alias and must be a non-empty string; sending both with different values is a 400. On Meta it is sent as `test_event_code`: the events show in Events Manager's Test Events tab for the pixel whose current test code matches (Meta rotates the code, so copy it again from that tab), and Meta still processes them like any other event, so remove it in production. On Pinterest any value sends the batch with `test=true` (validated, not recorded). On Reddit, sent as `test_id` so the events show in the pixel's test view. Ignored by Google, LinkedIn, and OpenAI Ads.
+         * Test event code. Send it at the request root, never inside an event. A root-level `test_event_code` (Meta's own name) is accepted as an alias and must be a non-empty string; sending both with different values is a 400.
+         *
+         * - Meta: sent as `test_event_code`. Events show in Events Manager's Test Events tab for the pixel whose current test code matches (Meta rotates the code, so copy it again from that tab). Meta still processes them like any other event, so remove it in production.
+         * - Pinterest: any value sends the batch with `test=true` (validated, not recorded).
+         * - Reddit: sent as `test_id`, so the events show in the pixel's test view.
+         * - Google, LinkedIn and OpenAI Ads: ignored.
+         *
          */
         testCode?: string;
         /**
-         * Batch-level user consent. Required by Google for EEA/UK
-         * events under the Feb 2026 restrictions. On Meta, any
-         * DENIED flag enables Limited Data Use on every event in
-         * the batch (data_processing_options ["LDU"] with
-         * geolocation, country 0 / state 0); GRANTED or absent
-         * consent sends events with Meta's default processing.
-         * On Reddit, `adUserData: DENIED` drops every user field
-         * from the events. Ignored by LinkedIn.
+         * Batch-level user consent. Required by Google for EEA/UK events under the Feb 2026 restrictions.
+         *
+         * - **Meta:** any DENIED flag enables Limited Data Use on every event in the batch (data_processing_options ["LDU"] with geolocation, country 0 / state 0). GRANTED or absent consent sends events with Meta's default processing.
+         * - **Reddit:** `adUserData: DENIED` drops every user field from the events.
+         * - **LinkedIn:** ignored.
          *
          */
         consent?: {
@@ -61305,15 +62661,10 @@ export type CreateConversionDestinationData = {
         adAccountId: string;
         name: string;
         /**
-         * Conversion type. For LinkedIn: a unified standard event name
-         * (e.g. "Purchase", "Lead", "AddToCart") or a LinkedIn rule
-         * type enum (e.g. "PURCHASE", "QUALIFIED_LEAD"). For Google:
-         * a unified standard event name (Purchase, Subscribe,
-         * CompleteRegistration, Lead, Schedule) or a Google
-         * ConversionActionCategory enum value directly (e.g.
-         * "PURCHASE", "SUBSCRIBE_PAID", "SIGNUP", "IMPORTED_LEAD",
-         * "BOOK_APPOINTMENT"). Unknown values pass through to the
-         * platform.
+         * Conversion type. Unknown values pass through to the platform.
+         *
+         * - LinkedIn: a unified standard event name (e.g. "Purchase", "Lead", "AddToCart") or a LinkedIn rule type enum (e.g. "PURCHASE", "QUALIFIED_LEAD").
+         * - Google: a unified standard event name (Purchase, Subscribe, CompleteRegistration, Lead, Schedule) or a Google ConversionActionCategory enum value directly (e.g. "PURCHASE", "SUBSCRIBE_PAID", "SIGNUP", "IMPORTED_LEAD", "BOOK_APPOINTMENT").
          *
          */
         type: string;
@@ -61358,17 +62709,13 @@ export type CreateConversionDestinationData = {
             amount: string;
         };
         /**
-         * LinkedIn only. Controls campaign association at rule-creation
-         * time:
-         * - ALL_CAMPAIGNS: associate the rule with every active,
-         * paused, and draft campaign in the ad account
-         * - OBJECTIVE_BASED: associate only campaigns whose
-         * objective matches the rule's type
-         * - NONE: don't auto-associate. Manage associations via
-         * the `/associations` endpoints below.
-         * Note: auto-association runs once at create time; new
-         * campaigns added after the rule still need explicit
-         * association.
+         * LinkedIn only. Controls campaign association at rule-creation time:
+         *
+         * - ALL_CAMPAIGNS: associate the rule with every active, paused, and draft campaign in the ad account.
+         * - OBJECTIVE_BASED: associate only campaigns whose objective matches the rule's type.
+         * - NONE: don't auto-associate. Manage associations via the `/associations` endpoints below.
+         *
+         * Auto-association runs once at create time; campaigns added after the rule still need explicit association.
          *
          */
         autoAssociationType?: 'ALL_CAMPAIGNS' | 'OBJECTIVE_BASED' | 'NONE';
@@ -61788,36 +63135,54 @@ export type CreateMessagingAdData = {
      */
     destination?: 'whatsapp' | 'messenger' | 'instagram_direct';
     /**
-     * Two or three messaging apps on ONE ad set, like Ads Manager's "all messaging apps": the ad set gets Meta's combined destination_type (e.g. MESSAGING_INSTAGRAM_DIRECT_MESSENGER_WHATSAPP) and the creative one CTA per app, so Meta opens the app each viewer is likeliest to answer from. WhatsApp in the list still needs the Page paired with a WhatsApp Business number. With `adSetId`, the existing ad set must already use that combined destination_type. Set this OR `destination`, not both.
+     * Two or three messaging apps on ONE ad set, like Ads Manager's "all messaging apps". Set this OR `destination`, not both.
+     *
+     * The ad set gets Meta's combined destination_type (e.g. MESSAGING_INSTAGRAM_DIRECT_MESSENGER_WHATSAPP) and the creative one CTA per app, so Meta opens the app each viewer is likeliest to answer from.
+     *
+     * - WhatsApp in the list still needs the Page paired with a WhatsApp Business number.
+     * - With `adSetId`, the existing ad set must already use that combined destination_type.
+     *
      */
     destinations?: Array<('whatsapp' | 'messenger' | 'instagram_direct')>;
     /**
-     * A different image or video per placement on one messaging ad, e.g. a 4:5 image on
-     * Feed and a 9:16 image on Stories/Reels. Replaces top-level `imageUrl` / `video`
-     * (sending either alongside is a 400); `headline` and `body` stay required as the
-     * default copy. The CTA, `welcomeMessage` and `whatsappPhoneNumber` apply to every
-     * placement. Works on the single-creative shape and on attach (`adSetId`).
+     * A different image or video per placement on one messaging ad, e.g. a 4:5 image on Feed and a 9:16 image on Stories/Reels. Works on the single-creative shape and on attach (`adSetId`).
      *
-     * Single `destination` only: Meta cannot combine per-placement media with
-     * `destinations` (it drops the placement rules from a multi-destination creative, or
-     * refuses more than one call to action per placement rule with error 1885878), so
-     * that combination is a 400. Also a 400 with `creatives[]`, `platformPostId`,
-     * `existingPostId` or `objectStoryId`, and on POST /v1/ads/call.
+     * Replaces top-level `imageUrl` / `video` (sending either alongside is a 400). `headline` and `body` stay required as the default copy. The CTA, `welcomeMessage` and `whatsappPhoneNumber` apply to every placement.
+     *
+     * Single `destination` only. Meta cannot combine per-placement media with `destinations`: it drops the placement rules from a multi-destination creative, or refuses more than one call to action per placement rule with error 1885878. So that combination is a 400.
+     *
+     * Also a 400 with `creatives[]`, `platformPostId`, `existingPostId` or `objectStoryId`, and on POST /v1/ads/call.
      *
      */
     placementAssets?: (MetaPlacementAssets);
     /**
-     * A workflow in the ad account's profile. When someone clicks the ad, that workflow starts in the conversation the click opens (on the first message, a postback or a standalone referral carrying the ad id), ahead of keyword-matched workflows, if it is active on the receiving account. Stored on the ad. 404 when no such workflow exists in the profile.
+     * A workflow in the ad account's profile, stored on the ad. 404 when no such workflow exists in the profile.
+     *
+     * When someone clicks the ad, the workflow starts in the conversation the click opens (on the first message, a postback or a standalone referral carrying the ad id), ahead of keyword-matched workflows, if it is active on the receiving account.
+     *
      */
     workflowId?: string;
     /**
-     * Dry-runs the ad on Meta with execution_options validate_only as ONE inline campaign + ad set + creative + ad (or creative + ad on the existing ad set with `adSetId`). Nothing is uploaded or created and nothing is stored; media is checked by URL. Supports one creative with `imageUrl`, image `placementAssets`, `carouselCards`, an existing `video.id`, or an existing post. Several creatives, a new `video.url` and video `placementAssets` need uploads first and return 400. Success returns 200 with per-node results; a Meta rejection returns the Meta error.
+     * Dry-runs the ad on Meta with execution_options validate_only, as ONE inline campaign + ad set + creative + ad (or creative + ad on the existing ad set with `adSetId`). Nothing is uploaded, created or stored; media is checked by URL.
+     *
+     * - **Supported:** one creative with `imageUrl`, image `placementAssets`, `carouselCards`, an existing `video.id`, or an existing post.
+     * - **Returns 400:** several creatives, a new `video.url` and video `placementAssets` (they need uploads first).
+     *
+     * Success returns 200 with per-node results; a Meta rejection returns the Meta error.
+     *
      */
     validateOnly?: boolean;
 });
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -61854,7 +63219,14 @@ export type CreateCallAdData = {
 });
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -61868,7 +63240,14 @@ export type CreateCtwaAdData = {
     body: CtwaAdRequestBody;
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -62919,7 +64298,10 @@ export type CreateTrackingTagData = {
          */
         defaultEventType?: 'order_created' | 'lead_created' | 'items_added' | 'contents_viewed' | 'checkout_started' | 'registration_completed' | 'subscription_created' | 'trial_started' | 'appointment_scheduled' | 'page_viewed' | 'app_installed' | 'app_opened';
         /**
-         * Pinterest only (400 elsewhere). Customer data the new tag matches automatically (automatic enhanced match): `em` email, `ph` phone, `fn`/`ln` name, `ge` gender, `db` date of birth, `ct`/`st`/`zp`/`country` location, `external_id`. Pinterest has one switch for the name and one for the location, so `fn` turns on `ln` too and any location code turns on all four.
+         * Pinterest only (400 elsewhere). Customer data the new tag matches automatically (automatic enhanced match): `em` email, `ph` phone, `fn`/`ln` name, `ge` gender, `db` date of birth, `ct`/`st`/`zp`/`country` location, `external_id`.
+         *
+         * Pinterest has one switch for the name and one for the location, so `fn` turns on `ln` too and any location code turns on all four.
+         *
          */
         automaticMatchingFields?: Array<('em' | 'ph' | 'fn' | 'ln' | 'ge' | 'db' | 'ct' | 'st' | 'zp' | 'country' | 'external_id')>;
     };
@@ -63626,7 +65008,9 @@ export type CreateBlogArticleData = {
          */
         publishDate?: string;
         /**
-         * Webflow only. The collection's own fields that the Blogs API does not map, keyed by field slug, in Webflow's value format (a Reference is an item id, an Image is { url, alt }). Required by collections with required fields of their own; a create that leaves one empty answers 400 listing them. A slug the API already fills (name, slug, body, summary, image, tags, author, date) or one the collection lacks answers 400. Other platforms answer 400.
+         * Webflow only (other platforms answer 400). The collection's own fields that the Blogs API does not map, keyed by field slug, in Webflow's value format (a Reference is an item id, an Image is { url, alt }).
+         *
+         * Required by collections with required fields of their own: a create that leaves one empty answers 400 listing them. A slug the API already fills (name, slug, body, summary, image, tags, author, date) or one the collection lacks answers 400.
          */
         fieldData?: {
             [key: string]: unknown;
@@ -63634,7 +65018,14 @@ export type CreateBlogArticleData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -63727,7 +65118,10 @@ export type UpdateBlogArticleData = {
          */
         publishDate?: string;
         /**
-         * Webflow only. The collection's own fields that the Blogs API does not map, keyed by field slug, in Webflow's value format (a Reference is an item id, an Image is { url, alt }). Required by collections with required fields of their own; a create that leaves one empty answers 400 listing them. A slug the API already fills (name, slug, body, summary, image, tags, author, date) or one the collection lacks answers 400. Other platforms answer 400.
+         * Webflow only (other platforms answer 400). The collection's own fields that the Blogs API does not map, keyed by field slug, in Webflow's value format (a Reference is an item id, an Image is { url, alt }).
+         *
+         * - Required by collections with required fields of their own. A create that leaves one empty answers 400 listing them.
+         * - A slug the API already fills (name, slug, body, summary, image, tags, author, date) or one the collection lacks answers 400.
          */
         fieldData?: {
             [key: string]: unknown;
@@ -65902,7 +67296,14 @@ export type CreateCreatorCampaignData = {
     body: CreateCreatorCampaignRequest;
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -65977,7 +67378,14 @@ export type RaiseCreatorCampaignBudgetData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66047,7 +67455,14 @@ export type CreateCampaignParticipantData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66183,7 +67598,14 @@ export type SettleCampaignParticipantData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66218,7 +67640,14 @@ export type CreateCampaignPayoutBatchData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66332,7 +67761,14 @@ export type GetCampaignSubmissionError = (ErrorResponse);
 export type ApproveCampaignSubmissionData = {
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66360,7 +67796,14 @@ export type RejectCampaignSubmissionData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66385,7 +67828,14 @@ export type RejectCampaignSubmissionError = (ErrorResponse | unknown);
 export type ReopenCampaignSubmissionData = {
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66433,7 +67883,14 @@ export type CreateCampaignAdjustmentData = {
     };
     headers?: {
         /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe. Same key + same body replays the original response; same key + different body → 422; key still processing → 409. A request cut off mid-handler (for example by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
          */
         'Idempotency-Key'?: string;
     };
