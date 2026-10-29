@@ -49836,9 +49836,21 @@ export type DuplicateAdCampaignResponse = ({
      * Platform ID of the new campaign
      */
     copiedCampaignId?: string;
+    /**
+     * Meta only: source ad set ID to copied ad set ID. Empty when `deepCopy` is false.
+     */
+    adSetIdMap?: {
+        [key: string]: (string);
+    };
+    /**
+     * Meta only: source ad ID to copied ad ID, across every copied ad set. Empty when `deepCopy` is false.
+     */
+    adIdMap?: {
+        [key: string]: (string);
+    };
     discovery?: 'triggered' | 'skipped' | 'failed';
     /**
-     * Platform-native response from the copy endpoint (Meta includes ad_object_ids for child copies)
+     * Platform-native response from the copy (TikTok and LinkedIn). Absent on Meta, which returns `adSetIdMap` and `adIdMap` instead.
      */
     raw?: {
         [key: string]: unknown;
@@ -50404,9 +50416,19 @@ export type DuplicateAdSetResponse = ({
      * Platform ID of the new ad set
      */
     copiedAdSetId?: string;
+    /**
+     * Platform IDs of the copied ads
+     */
+    copiedAdIds?: Array<(string)>;
+    /**
+     * Meta only: source ad ID to copied ad ID. Empty when `deepCopy` is false.
+     */
+    adIdMap?: {
+        [key: string]: (string);
+    };
     discovery?: 'triggered' | 'skipped' | 'failed';
     /**
-     * Meta's native copy response (includes ad_object_ids for child copies)
+     * Platform-native response from the copy (TikTok). Absent on Meta, which returns `adIdMap` instead.
      */
     raw?: {
         [key: string]: unknown;

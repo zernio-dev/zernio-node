@@ -11783,7 +11783,14 @@ export const bulkUpdateAdCampaignStatus = <ThrowOnError extends boolean = false>
  * so callers can review before launching.
  *
  * Per-platform implementation:
- * - **Meta** uses the native `POST /{campaign-id}/copies` endpoint.
+ * - **Meta** copies one level at a time with Meta's `/copies` endpoint:
+ * the campaign, then each of its ad sets (DELETED and ARCHIVED ones
+ * are skipped), then each ad of every ad set, so a campaign of any
+ * size copies (Meta refuses a single deep copy of 3 or more objects).
+ * `statusOption` applies at every level. If any child copy fails,
+ * the partial copy is deleted and the request fails with Meta's error,
+ * so a retry starts clean. Each copied object takes a few seconds,
+ * so a large campaign takes minutes to answer.
  * - **TikTok** has no native copy primitive; Zernio walks the source
  * graph (`/v2/campaign/get/`, `/v2/adgroup/get/`, `/v2/ad/get/`) and
  * recreates each entity via the corresponding `/create/` endpoints,
@@ -12009,9 +12016,12 @@ export const createAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * The copy is created paused so callers can review before launching.
  * `campaignId` retargets the copy into another campaign; omitted = the source's own campaign.
  *
- * Meta: ads and creatives are included by default (`deepCopy: true`) via Meta's native
- * `POST /{adset-id}/copies`; the new hierarchy materializes asynchronously and sync discovery
- * is triggered automatically (`syncAfter: false` to skip).
+ * Meta: ads and creatives are included by default (`deepCopy: true`). The ad set is copied
+ * with Meta's `/copies` endpoint, then each of its ads (DELETED and ARCHIVED ones are skipped)
+ * into the new ad set, so an ad set with any number of ads copies (Meta refuses a single deep
+ * copy of 3 or more objects). `statusOption` applies to the ad set and every ad. If an ad copy
+ * fails, the partial ad set copy is deleted and the request fails with Meta's error. Sync
+ * discovery is triggered automatically (`syncAfter: false` to skip).
  *
  * TikTok: the ad group is read and recreated under the campaign with its targeting, bidding,
  * budget and schedule (start reset to now); `deepCopy: true` recreates its ads too (default
