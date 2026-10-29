@@ -26819,9 +26819,9 @@ export type GetAccountHealthResponse = ({
             message?: string;
         } | null;
         /**
-         * From the phone number's Meta health_status.
+         * From the phone number's Meta health_status, overridden to `false` when subscribing the number's WhatsApp Business Account to Zernio's webhooks failed at connect.
          *
-         * - `false`: Meta says Zernio is not subscribed to the message webhook for this number, so inbound messages are not delivered, though the number is CONNECTED and can still send.
+         * - `false`: Meta says Zernio is not subscribed to the message webhook for this number, or the subscribe failed when the number was connected, so inbound messages are not delivered, though the number is CONNECTED and can still send.
          * - `false`, fix: re-subscribe (reconnect the number). If it stays `false`, the number is routed to a different WhatsApp Business Account (typically after linking it to a Facebook Page).
          * - `true`: Meta reports no such problem.
          * - `null`: Meta did not report it (read failed or no health_status); not evidence either way.
