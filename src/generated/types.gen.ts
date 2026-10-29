@@ -10104,6 +10104,10 @@ export type InboxWebhookAccount = {
     platform: string;
     username: string;
     displayName?: string;
+    /**
+     * The bare Facebook Page id behind the account, to route inbound messages by Page. Present for Facebook accounts and Instagram accounts connected through Facebook Login; omitted otherwise.
+     */
+    pageId?: string;
 };
 
 /**
@@ -35930,6 +35934,10 @@ export type ListInboxConversationsResponse = ({
         platform?: string;
         accountId?: string;
         accountUsername?: string;
+        /**
+         * The bare Facebook Page id behind the account, for Facebook and Instagram connected through Facebook Login. Null when the account has no Facebook Page.
+         */
+        pageId?: (string) | null;
         participantId?: string;
         participantName?: string;
         participantPicture?: (string) | null;
@@ -36393,6 +36401,10 @@ export type GetInboxConversationResponse = ({
         id?: string;
         accountId?: string;
         accountUsername?: string;
+        /**
+         * The bare Facebook Page id behind the account, for Facebook and Instagram connected through Facebook Login. Null when the account has no Facebook Page.
+         */
+        pageId?: (string) | null;
         platform?: string;
         status?: 'active' | 'archived';
         participantName?: string;
