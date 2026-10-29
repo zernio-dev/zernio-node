@@ -11869,6 +11869,10 @@ export type OAuthApp = {
          */
         fields: Array<(string)>;
     } | null;
+    /**
+     * TikTok only: set this as the webhook callback URL in your TikTok developer app. TikTok uses it to report when a video finishes publishing; Zernio also checks the publish status itself, so posting works without it. Null on other platforms.
+     */
+    sharedWebhookUrl?: (string) | null;
     createdAt: string;
 };
 
