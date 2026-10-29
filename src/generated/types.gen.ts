@@ -26527,6 +26527,22 @@ export type GetAllAccountsHealthResponse = ({
         needsReconnect?: boolean;
         issues?: Array<(string)>;
         /**
+         * User id of the profile owner, not necessarily the team member who connected the account.
+         */
+        ownerUserId?: string;
+        /**
+         * Why the connection is broken or its token refresh is failing, from the most recent current cause. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes), or when no cause is stored.
+         */
+        disconnectReason?: (string) | null;
+        /**
+         * intentional: deliberately disconnected by the user or by Zernio (for example a plan downgrade), not a token failure. unintentional: token expired or revoked, or an auth failure. Null when disconnectReason is null.
+         */
+        disconnectionType?: ('intentional' | 'unintentional') | null;
+        /**
+         * When the earliest current stored cause was recorded (the start of the outage); for an intentional disconnect, when it was disconnected. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes), or when the time is unknown.
+         */
+        unhealthySince?: (string) | null;
+        /**
          * Absent on platforms without analytics sync. failing: several consecutive sync attempts failed. stalled: a sync was requested over 6 hours ago and never completed. never_synced: no sync has completed yet. Failing and stalled raise the account status to at least warning.
          */
         analyticsSync?: {
@@ -26720,6 +26736,22 @@ export type GetAccountHealthResponse = ({
      * Actionable recommendations to fix issues
      */
     recommendations?: Array<(string)>;
+    /**
+     * User id of the profile owner, not necessarily the team member who connected the account.
+     */
+    ownerUserId?: string;
+    /**
+     * Why the connection is broken or its token refresh is failing, from the most recent current cause. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes), or when no cause is stored.
+     */
+    disconnectReason?: (string) | null;
+    /**
+     * intentional: deliberately disconnected by the user or by Zernio (for example a plan downgrade), not a token failure. unintentional: token expired or revoked, or an auth failure. Null when disconnectReason is null.
+     */
+    disconnectionType?: ('intentional' | 'unintentional') | null;
+    /**
+     * When the earliest current stored cause was recorded (the start of the outage); for an intentional disconnect, when it was disconnected. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes), or when the time is unknown.
+     */
+    unhealthySince?: (string) | null;
     /**
      * Absent on platforms without analytics sync. failing: several consecutive sync attempts failed. stalled: a sync was requested over 6 hours ago and never completed. never_synced: no sync has completed yet. Failing and stalled raise the account status to at least warning.
      */
