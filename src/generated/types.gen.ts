@@ -36070,6 +36070,10 @@ export type ListInboxConversationsData = {
          * Filter by conversation status
          */
         status?: 'active' | 'archived';
+        /**
+         * Comma-separated contact tags. Returns only conversations whose contact has any of them. Cannot be combined with folder=requests.
+         */
+        tags?: string;
     };
 };
 
