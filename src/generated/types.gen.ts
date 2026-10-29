@@ -21757,7 +21757,7 @@ export type YouTubeDemographicsResponse = {
 /**
  * YouTube video settings.
  *
- * - Videos under 3 min are auto-detected as Shorts.
+ * - YouTube publishes a vertical or square video of 3 minutes or less as a Short; there is no flag.
  * - Custom thumbnails work for regular videos only.
  * - Scheduled videos are uploaded immediately with the specified visibility.
  * - There is no description field here: the description comes from the post content, or from customContent on this platform target when set, truncated to 5000 characters.
