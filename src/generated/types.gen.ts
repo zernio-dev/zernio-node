@@ -27437,7 +27437,7 @@ export type GetConnectUrlData = {
         /**
          * Connect through one of your own OAuth apps (see /v1/connect/oauth-apps), so the consent screen shows your app and the platform's limits are your app's. Without it the connect runs on Zernio's app, whatever apps the workspace has saved.
          *
-         * - Only platforms listed in `platforms` of GET /v1/connect/oauth-apps accept an app. Any other returns 400, and so do ads connects (`adsConnect=true` in the redirect URL) and connects that end on a destination picker other than Facebook Pages (Instagram through Facebook Login, for example).
+         * - Only platforms listed in `platforms` of GET /v1/connect/oauth-apps accept an app. Any other returns 400, and so do ads connects (`adsConnect=true` in the redirect URL) and connects that end on a destination picker other than Facebook Pages, Pinterest boards and Snapchat public profiles (Instagram through Facebook Login, for example).
          * - A LinkedIn connect through an app saves the member's own profile: organization pages, and mention lookups, stay on Zernio's app.
          * - The connect requests the app's `scopeAreas`. `scopes` may narrow them but not add an area the app does not enable (400).
          * - If the user does not grant every requested area, the account still connects and the redirect carries `missing_permissions=<areas>` (the headless POST returns `missingPermissions`).
@@ -31011,6 +31011,10 @@ export type SelectPinterestBoardData = {
          * Custom redirect URL after connection completes
          */
         redirect_url?: string;
+        /**
+         * The `oauthAppId` from the selection redirect, when the connect ran on one of your own OAuth apps. Pass it back so a retried selection stays on that app; a different app than the connect used returns 400.
+         */
+        oauthAppId?: string;
     };
 };
 
@@ -31135,6 +31139,10 @@ export type SelectSnapchatProfileData = {
          * Custom redirect URL after connection completes
          */
         redirect_url?: string;
+        /**
+         * The `oauthAppId` from the selection redirect, when the connect ran on one of your own OAuth apps. Pass it back so a retried selection stays on that app; a different app than the connect used returns 400.
+         */
+        oauthAppId?: string;
     };
     headers?: {
         /**
