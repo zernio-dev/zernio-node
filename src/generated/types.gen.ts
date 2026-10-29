@@ -325,13 +325,41 @@ export type Ad = {
          */
         assetGroupResourceName?: string;
         /**
-         * Google RSA only. Replaces the complete headline list. No padding or truncation on update.
+         * Google RSA: the headline assets as objects (3 to 15). Meta: every title variation of the creative (`asset_feed_spec.titles`) as strings, the same shape as the `headlines` create input. Present only with 2 or more titles; a single title is `headline`.
          */
-        headlines?: Array<GoogleRsaHeadline>;
+        headlines?: Array<(string | GoogleRsaHeadline)>;
         /**
-         * Google RSA only. Replaces the complete description list. No padding or truncation on update.
+         * Google RSA: the description assets as objects (2 to 4). Meta: every description variation of the creative (`asset_feed_spec.descriptions`) as strings, the same shape as the `descriptions` create input. Present only with 2 or more descriptions; a single one is `description`.
          */
-        descriptions?: Array<GoogleRsaDescription>;
+        descriptions?: Array<(string | GoogleRsaDescription)>;
+        /**
+         * Meta: the creative's title (`link_data.name`, `video_data.title`, or the first `asset_feed_spec.titles` entry). Absent when the creative has none.
+         */
+        headline?: string;
+        /**
+         * Meta: every primary text variation of the creative (`asset_feed_spec.bodies`), the same shape as the `bodies` create input. Present only with 2 or more texts; a single text is `body`.
+         */
+        bodies?: Array<(string)>;
+        /**
+         * Meta: the creative's description under the title (`link_data.description`, `video_data.link_description`, or the first `asset_feed_spec.descriptions` entry).
+         */
+        description?: string;
+        /**
+         * Meta: the call to action type (`call_to_action.type`, or the first `asset_feed_spec.call_to_action_types` entry), e.g. LEARN_MORE or SIGN_UP.
+         */
+        callToAction?: string;
+        /**
+         * Meta: the instant form the call to action opens (`call_to_action.value.lead_gen_form_id`), the same value as the `leadGenFormId` create input. Absent on ads without a lead form.
+         */
+        leadGenFormId?: string;
+        /**
+         * Meta: the ad image hash (`image_hash`), reusable as `imageHash` on POST /v1/ads/create within the same ad account. `thumbnailUrl` and `mediaUrls` carry its stable full resolution permalink when Meta resolves it.
+         */
+        imageHash?: string;
+        /**
+         * Meta: the creative's `url_tags` query string appended to the destination URL.
+         */
+        urlTags?: (string) | null;
         /**
          * Google RSA only. Replaces final URLs. Omitted lists stay unchanged.
          */
@@ -380,7 +408,7 @@ export type Ad = {
          */
         videoUrl?: (string) | null;
         /**
-         * Meta ad creative id backing this ad. Reusable via existingCreativeId on POST /v1/ads/create.
+         * Meta ad creative id backing this ad, refreshed from Meta on every sync. Reusable via existingCreativeId on POST /v1/ads/create, and readable raw through GET /v1/ads/creatives/{creativeId}. Ads synced from Meta also carry it as the legacy `id` key.
          */
         creativeId?: (string) | null;
         /**
@@ -58494,13 +58522,13 @@ export type CreateStandaloneAdData = {
         /**
          * The ad's call-to-action button.
          *
-         * - **Meta:** required on legacy + attach shapes.
+         * - **Meta:** required on legacy + attach shapes. Accepts every call to action type Meta itself accepts (the enum lists them), including values such as SEE_DETAILS that ads synced from Meta carry.
          * - **TikTok:** honoured, passed through to the Spark Ad creative's `call_to_action`.
          * - **LinkedIn:** the CTA button on the ad; defaults to LEARN_MORE when `linkUrl` is set. Accepts LEARN_MORE, SIGN_UP, DOWNLOAD, SUBSCRIBE, REGISTER, JOIN, ATTEND, REQUEST_DEMO, VIEW_QUOTE, APPLY, SEE_MORE, SHOP_NOW, BUY_NOW.
          * - **Reddit** (image, video and carousel ads): accepts LEARN_MORE, SHOP_NOW, SIGN_UP, CONTACT_US, DOWNLOAD, GET_QUOTE, SUBSCRIBE, APPLY_NOW, BOOK_NOW, BUY_TICKETS, DONATE_NOW, GET_DIRECTIONS, GET_SHOWTIMES, LISTEN_NOW, ORDER_NOW, SEE_MENU, INSTALL_MOBILE_APP. Other values return 400.
          * - **Google, Pinterest, and X:** ignored.
          */
-        callToAction?: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW';
+        callToAction?: 'BOOK_TRAVEL' | 'CONTACT_US' | 'DONATE' | 'DONATE_NOW' | 'DOWNLOAD' | 'GET_DIRECTIONS' | 'GO_LIVE' | 'INTERESTED' | 'LEARN_MORE' | 'SEE_DETAILS' | 'LIKE_PAGE' | 'MESSAGE_PAGE' | 'RAISE_MONEY' | 'SAVE' | 'SEND_TIP' | 'SHOP_NOW' | 'SIGN_UP' | 'VIEW_INSTAGRAM_PROFILE' | 'INSTAGRAM_MESSAGE' | 'LOYALTY_LEARN_MORE' | 'PURCHASE_GIFT_CARDS' | 'PAY_TO_ACCESS' | 'SEE_MORE' | 'TRY_IN_CAMERA' | 'WHATSAPP_LINK' | 'GET_IN_TOUCH' | 'TRY_NOW' | 'ASK_A_QUESTION' | 'START_A_CHAT' | 'CHAT_NOW' | 'ASK_US' | 'CHAT_WITH_US' | 'SHOP_ON_RETAILER' | 'BOOK_NOW' | 'CHECK_AVAILABILITY' | 'ORDER_NOW' | 'WHATSAPP_MESSAGE' | 'GET_MOBILE_APP' | 'INSTALL_MOBILE_APP' | 'USE_MOBILE_APP' | 'INSTALL_APP' | 'USE_APP' | 'PLAY_GAME' | 'TRY_DEMO' | 'WATCH_VIDEO' | 'WATCH_MORE' | 'OPEN_LINK' | 'NO_BUTTON' | 'LISTEN_MUSIC' | 'MOBILE_DOWNLOAD' | 'GET_OFFER' | 'GET_OFFER_VIEW' | 'BUY_NOW' | 'BUY_TICKETS' | 'UPDATE_APP' | 'BET_NOW' | 'ADD_TO_CART' | 'SELL_NOW' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'GET_EVENT_TICKETS' | 'REMIND_ME' | 'SEARCH_MORE' | 'PRE_REGISTER' | 'SWIPE_UP_PRODUCT' | 'SWIPE_UP_SHOP' | 'PLAY_GAME_ON_FACEBOOK' | 'VISIT_WORLD' | 'OPEN_INSTANT_APP' | 'JOIN_GROUP' | 'GET_PROMOTIONS' | 'SEND_UPDATES' | 'INQUIRE_NOW' | 'VISIT_PROFILE' | 'CHAT_ON_WHATSAPP' | 'EXPLORE_MORE' | 'CONFIRM' | 'JOIN_CHANNEL' | 'MAKE_AN_APPOINTMENT' | 'ASK_ABOUT_SERVICES' | 'BOOK_A_CONSULTATION' | 'GET_A_QUOTE' | 'BUY_VIA_MESSAGE' | 'ASK_FOR_MORE_INFO' | 'VIEW_PRODUCT' | 'VIEW_CHANNEL' | 'WATCH_LIVE_VIDEO' | 'JOIN_LIVE_VIDEO' | 'IMAGINE' | 'WATCH_NOW' | 'STREAM_NOW' | 'BUY_ACTIVITY_TICKETS' | 'CALL' | 'MISSED_CALL' | 'CALL_NOW' | 'CALL_ME' | 'APPLY_NOW' | 'BUY' | 'GET_QUOTE' | 'SUBSCRIBE' | 'RECORD_NOW' | 'VOTE_NOW' | 'GIVE_FREE_RIDES' | 'REGISTER_NOW' | 'OPEN_MESSENGER_EXT' | 'EVENT_RSVP' | 'CIVIC_ACTION' | 'SEND_INVITES' | 'REFER_FRIENDS' | 'REQUEST_TIME' | 'SEE_MENU' | 'SEARCH' | 'TRY_IT' | 'TRY_ON' | 'LINK_CARD' | 'DIAL_CODE' | 'FIND_YOUR_GROUPS' | 'START_ORDER' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY';
         /**
          * The ad's destination URL. Required on legacy + attach shapes (skip for multi-creative). NOT required when `goal` is `lead_generation` (the ad opens a Lead Gen form instead).
          *
@@ -58608,7 +58636,7 @@ export type CreateStandaloneAdData = {
                 thumbnailUrl?: string;
             };
             linkUrl: string;
-            callToAction: 'LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP';
+            callToAction: 'BOOK_TRAVEL' | 'CONTACT_US' | 'DONATE' | 'DONATE_NOW' | 'DOWNLOAD' | 'GET_DIRECTIONS' | 'GO_LIVE' | 'INTERESTED' | 'LEARN_MORE' | 'SEE_DETAILS' | 'LIKE_PAGE' | 'MESSAGE_PAGE' | 'RAISE_MONEY' | 'SAVE' | 'SEND_TIP' | 'SHOP_NOW' | 'SIGN_UP' | 'VIEW_INSTAGRAM_PROFILE' | 'INSTAGRAM_MESSAGE' | 'LOYALTY_LEARN_MORE' | 'PURCHASE_GIFT_CARDS' | 'PAY_TO_ACCESS' | 'SEE_MORE' | 'TRY_IN_CAMERA' | 'WHATSAPP_LINK' | 'GET_IN_TOUCH' | 'TRY_NOW' | 'ASK_A_QUESTION' | 'START_A_CHAT' | 'CHAT_NOW' | 'ASK_US' | 'CHAT_WITH_US' | 'SHOP_ON_RETAILER' | 'BOOK_NOW' | 'CHECK_AVAILABILITY' | 'ORDER_NOW' | 'WHATSAPP_MESSAGE' | 'GET_MOBILE_APP' | 'INSTALL_MOBILE_APP' | 'USE_MOBILE_APP' | 'INSTALL_APP' | 'USE_APP' | 'PLAY_GAME' | 'TRY_DEMO' | 'WATCH_VIDEO' | 'WATCH_MORE' | 'OPEN_LINK' | 'NO_BUTTON' | 'LISTEN_MUSIC' | 'MOBILE_DOWNLOAD' | 'GET_OFFER' | 'GET_OFFER_VIEW' | 'BUY_NOW' | 'BUY_TICKETS' | 'UPDATE_APP' | 'BET_NOW' | 'ADD_TO_CART' | 'SELL_NOW' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'GET_EVENT_TICKETS' | 'REMIND_ME' | 'SEARCH_MORE' | 'PRE_REGISTER' | 'SWIPE_UP_PRODUCT' | 'SWIPE_UP_SHOP' | 'PLAY_GAME_ON_FACEBOOK' | 'VISIT_WORLD' | 'OPEN_INSTANT_APP' | 'JOIN_GROUP' | 'GET_PROMOTIONS' | 'SEND_UPDATES' | 'INQUIRE_NOW' | 'VISIT_PROFILE' | 'CHAT_ON_WHATSAPP' | 'EXPLORE_MORE' | 'CONFIRM' | 'JOIN_CHANNEL' | 'MAKE_AN_APPOINTMENT' | 'ASK_ABOUT_SERVICES' | 'BOOK_A_CONSULTATION' | 'GET_A_QUOTE' | 'BUY_VIA_MESSAGE' | 'ASK_FOR_MORE_INFO' | 'VIEW_PRODUCT' | 'VIEW_CHANNEL' | 'WATCH_LIVE_VIDEO' | 'JOIN_LIVE_VIDEO' | 'IMAGINE' | 'WATCH_NOW' | 'STREAM_NOW' | 'BUY_ACTIVITY_TICKETS' | 'CALL' | 'MISSED_CALL' | 'CALL_NOW' | 'CALL_ME' | 'APPLY_NOW' | 'BUY' | 'GET_QUOTE' | 'SUBSCRIBE' | 'RECORD_NOW' | 'VOTE_NOW' | 'GIVE_FREE_RIDES' | 'REGISTER_NOW' | 'OPEN_MESSENGER_EXT' | 'EVENT_RSVP' | 'CIVIC_ACTION' | 'SEND_INVITES' | 'REFER_FRIENDS' | 'REQUEST_TIME' | 'SEE_MENU' | 'SEARCH' | 'TRY_IT' | 'TRY_ON' | 'LINK_CARD' | 'DIAL_CODE' | 'FIND_YOUR_GROUPS' | 'START_ORDER';
         }>;
         /**
          * When present, switches to the attach shape: adds one new ad to this existing ad set without creating a new campaign. Mutually exclusive with `creatives[]`.
@@ -59024,7 +59052,7 @@ export type CreateStandaloneAdData = {
             /**
              * CTA-button variations. Required.
              */
-            callToActionTypes?: Array<('LEARN_MORE' | 'SHOP_NOW' | 'SIGN_UP' | 'BOOK_TRAVEL' | 'CONTACT_US' | 'DOWNLOAD' | 'GET_OFFER' | 'GET_QUOTE' | 'SUBSCRIBE' | 'WATCH_MORE' | 'ADD_TO_CART' | 'APPLY_NOW' | 'BOOK_NOW' | 'BUY_TICKETS' | 'DONATE' | 'DONATE_NOW' | 'GET_DIRECTIONS' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'ORDER_NOW' | 'PLAY_GAME' | 'REQUEST_TIME' | 'SEE_MENU' | 'START_ORDER' | 'INSTALL_MOBILE_APP' | 'USE_APP' | 'REGISTER' | 'JOIN' | 'ATTEND' | 'REQUEST_DEMO' | 'VIEW_QUOTE' | 'APPLY' | 'SEE_MORE' | 'BUY_NOW')>;
+            callToActionTypes?: Array<('BOOK_TRAVEL' | 'CONTACT_US' | 'DONATE' | 'DONATE_NOW' | 'DOWNLOAD' | 'GET_DIRECTIONS' | 'GO_LIVE' | 'INTERESTED' | 'LEARN_MORE' | 'SEE_DETAILS' | 'LIKE_PAGE' | 'MESSAGE_PAGE' | 'RAISE_MONEY' | 'SAVE' | 'SEND_TIP' | 'SHOP_NOW' | 'SIGN_UP' | 'VIEW_INSTAGRAM_PROFILE' | 'INSTAGRAM_MESSAGE' | 'LOYALTY_LEARN_MORE' | 'PURCHASE_GIFT_CARDS' | 'PAY_TO_ACCESS' | 'SEE_MORE' | 'TRY_IN_CAMERA' | 'WHATSAPP_LINK' | 'GET_IN_TOUCH' | 'TRY_NOW' | 'ASK_A_QUESTION' | 'START_A_CHAT' | 'CHAT_NOW' | 'ASK_US' | 'CHAT_WITH_US' | 'SHOP_ON_RETAILER' | 'BOOK_NOW' | 'CHECK_AVAILABILITY' | 'ORDER_NOW' | 'WHATSAPP_MESSAGE' | 'GET_MOBILE_APP' | 'INSTALL_MOBILE_APP' | 'USE_MOBILE_APP' | 'INSTALL_APP' | 'USE_APP' | 'PLAY_GAME' | 'TRY_DEMO' | 'WATCH_VIDEO' | 'WATCH_MORE' | 'OPEN_LINK' | 'NO_BUTTON' | 'LISTEN_MUSIC' | 'MOBILE_DOWNLOAD' | 'GET_OFFER' | 'GET_OFFER_VIEW' | 'BUY_NOW' | 'BUY_TICKETS' | 'UPDATE_APP' | 'BET_NOW' | 'ADD_TO_CART' | 'SELL_NOW' | 'GET_SHOWTIMES' | 'LISTEN_NOW' | 'GET_EVENT_TICKETS' | 'REMIND_ME' | 'SEARCH_MORE' | 'PRE_REGISTER' | 'SWIPE_UP_PRODUCT' | 'SWIPE_UP_SHOP' | 'PLAY_GAME_ON_FACEBOOK' | 'VISIT_WORLD' | 'OPEN_INSTANT_APP' | 'JOIN_GROUP' | 'GET_PROMOTIONS' | 'SEND_UPDATES' | 'INQUIRE_NOW' | 'VISIT_PROFILE' | 'CHAT_ON_WHATSAPP' | 'EXPLORE_MORE' | 'CONFIRM' | 'JOIN_CHANNEL' | 'MAKE_AN_APPOINTMENT' | 'ASK_ABOUT_SERVICES' | 'BOOK_A_CONSULTATION' | 'GET_A_QUOTE' | 'BUY_VIA_MESSAGE' | 'ASK_FOR_MORE_INFO' | 'VIEW_PRODUCT' | 'VIEW_CHANNEL' | 'WATCH_LIVE_VIDEO' | 'JOIN_LIVE_VIDEO' | 'IMAGINE' | 'WATCH_NOW' | 'STREAM_NOW' | 'BUY_ACTIVITY_TICKETS' | 'CALL' | 'MISSED_CALL' | 'CALL_NOW' | 'CALL_ME' | 'APPLY_NOW' | 'BUY' | 'GET_QUOTE' | 'SUBSCRIBE' | 'RECORD_NOW' | 'VOTE_NOW' | 'GIVE_FREE_RIDES' | 'REGISTER_NOW' | 'OPEN_MESSENGER_EXT' | 'EVENT_RSVP' | 'CIVIC_ACTION' | 'SEND_INVITES' | 'REFER_FRIENDS' | 'REQUEST_TIME' | 'SEE_MENU' | 'SEARCH' | 'TRY_IT' | 'TRY_ON' | 'LINK_CARD' | 'DIAL_CODE' | 'FIND_YOUR_GROUPS' | 'START_ORDER')>;
             /**
              * Asset-feed ad format. Must match the pool: SINGLE_IMAGE / CAROUSEL_IMAGE require `imageUrls`, SINGLE_VIDEO requires `videoUrls` (400 otherwise). Defaults to SINGLE_IMAGE with `imageUrls`, SINGLE_VIDEO with `videoUrls`.
              */
