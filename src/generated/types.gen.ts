@@ -12221,6 +12221,23 @@ export type OAuthApp = {
      * TikTok only: set this as the webhook callback URL in your TikTok developer app. TikTok uses it to report when a video finishes publishing; Zernio also checks the publish status itself, so posting works without it. Null on other platforms.
      */
     sharedWebhookUrl?: (string) | null;
+    /**
+     * Slack only: whether the signing secret of your Slack app is saved. Without it Zernio refuses every event sent to `slackEvents.requestUrl`.
+     */
+    hasSlackSigningSecret?: boolean;
+    /**
+     * Slack only; null on other platforms. Slack delivers messages and mentions to your app's own Request URL.
+     *
+     * Save the app's signing secret first (`slackSigningSecret`), then set this Request URL under Event Subscriptions and subscribe the listed bot events. Zernio checks each delivery against that secret.
+     *
+     */
+    slackEvents?: {
+        requestUrl: string;
+        /**
+         * Subscribe the app to these bot events.
+         */
+        botEvents: Array<(string)>;
+    } | null;
     createdAt: string;
 };
 
@@ -30710,6 +30727,10 @@ export type CreateOAuthAppData = {
         clientId: string;
         clientSecret: string;
         /**
+         * Slack only: the signing secret from the app's Basic Information page. Needed to receive events from your Slack app; any other platform is a 400.
+         */
+        slackSigningSecret?: string;
+        /**
          * Areas this app requests. Defaults to every area the platform supports; an area the platform cannot request separately is a 400.
          */
         scopeAreas?: Array<('posting' | 'analytics' | 'comments' | 'messaging')>;
@@ -30740,6 +30761,10 @@ export type UpdateOAuthAppData = {
     body: {
         label?: string;
         clientSecret?: string;
+        /**
+         * Slack only: saves or replaces the signing secret from the app's Basic Information page; any other platform is a 400.
+         */
+        slackSigningSecret?: string;
         /**
          * Replaces the areas new connects request. Accounts already connected keep what they were granted until they reconnect.
          */
