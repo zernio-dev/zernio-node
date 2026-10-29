@@ -349,7 +349,7 @@ export type Ad = {
          */
         callToAction?: string;
         /**
-         * Meta: the instant form the call to action opens (`call_to_action.value.lead_gen_form_id`), the same value as the `leadGenFormId` create input. Absent on ads without a lead form.
+         * Meta: the instant form the call to action opens (`call_to_action.value.lead_gen_form_id`, or the asset feed's `call_to_actions` on a dynamic creative), the same value as the `leadGenFormId` create input. Absent on ads without a lead form.
          */
         leadGenFormId?: string;
         /**
