@@ -7074,7 +7074,7 @@ export type CtwaAdRequestBody = {
          * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
          */
         publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
-        facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+        facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
         instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
         messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
         audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
@@ -12089,7 +12089,7 @@ export type MetaPlacementAssets = {
          */
         placements: {
             publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
-            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
             instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
             messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
             audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
@@ -51800,7 +51800,7 @@ export type UpdateAdSetData = {
          */
         placements?: {
             publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
-            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
             instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
             messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
             audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
@@ -58891,7 +58891,7 @@ export type CreateStandaloneAdData = {
              * Top-level platforms to deliver on. A position field below is only honoured when its parent platform is included here.
              */
             publisherPlatforms?: Array<('facebook' | 'instagram' | 'threads' | 'messenger' | 'audience_network' | 'whatsapp')>;
-            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'video_feeds' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
+            facebookPositions?: Array<('feed' | 'right_hand_column' | 'marketplace' | 'story' | 'search' | 'instream_video' | 'facebook_reels' | 'facebook_reels_overlay' | 'profile_feed' | 'notification')>;
             instagramPositions?: Array<('stream' | 'story' | 'explore' | 'explore_home' | 'reels' | 'profile_feed' | 'ig_search' | 'profile_reels')>;
             messengerPositions?: Array<('messenger_home' | 'sponsored_messages' | 'story')>;
             audienceNetworkPositions?: Array<('classic' | 'rewarded_video')>;
