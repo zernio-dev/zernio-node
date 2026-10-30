@@ -31004,6 +31004,14 @@ export type CreateOAuthAppData = {
         clientId: string;
         clientSecret: string;
         /**
+         * Instagram only: the numeric ID of the Meta app your Instagram app lives in. Zernio uses it with `metaAppSecret` to register the webhook. Send both or neither.
+         */
+        metaAppId?: string;
+        /**
+         * Instagram only: the secret of that Meta app. Never returned.
+         */
+        metaAppSecret?: string;
+        /**
          * Slack only: the signing secret from the app's Basic Information page. Needed to receive events from your Slack app; any other platform is a 400.
          */
         slackSigningSecret?: string;
@@ -31038,6 +31046,14 @@ export type UpdateOAuthAppData = {
     body: {
         label?: string;
         clientSecret?: string;
+        /**
+         * Instagram only: the numeric ID of the Meta app your Instagram app lives in. Zernio uses it with `metaAppSecret` to register the webhook. Send both or neither.
+         */
+        metaAppId?: string;
+        /**
+         * Instagram only: the secret of that Meta app. Never returned.
+         */
+        metaAppSecret?: string;
         /**
          * Slack only: saves or replaces the signing secret from the app's Basic Information page; any other platform is a 400.
          */
