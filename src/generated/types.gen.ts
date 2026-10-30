@@ -12975,7 +12975,17 @@ export type PlatformTarget = {
      */
     publishRetries?: number;
     /**
-     * Human-readable error message when status is failed. Contains platform-specific error details explaining why the publish failed.
+     * Human-readable reason this target has not published yet, or why it failed.
+     *
+     * - Failed entries: why the publish failed, with the platform's error details.
+     * - Pending entries: why the publish has not gone out yet, for example the last temporary error while Zernio retries the publish automatically, or a posting limit notice.
+     *
+     * A posting limit holds the post with the notice "This post is queued and will publish automatically after <timestamp>".
+     *
+     * The limits are the hourly posting velocity limit and, on a TikTok account connected through the TikTok for Business app, the daily cap of 15 videos and 15 photo posts.
+     *
+     * A held post keeps status pending and its scheduledFor moves to that timestamp. It is not failed.
+     *
      */
     errorMessage?: string;
     /**
