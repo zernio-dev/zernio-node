@@ -1754,10 +1754,13 @@ export type status3 = 'done' | 'skipped' | 'failed';
 export type AdRuleCondition = {
     /**
      * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency. `reach` and `frequency` use the platform's de-duplicated reach, so they are accepted on Meta and TikTok only.
+     *
+     * `result:<key>` reads one of your own results (see [Campaign results](/guides/campaign-results)), on campaign rules only: the values you sent for the window, or a formula over them and the platform's numbers. A campaign with no value for it never matches.
+     *
      */
-    metric: 'spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency';
+    metric: ('spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency' | unknown);
     /**
-     * Days in the ad account's own timezone. `last_7d` includes today.
+     * Days in the ad account's own timezone. `last_7d` is the 7 full days before today; only `today` reads the day in progress.
      */
     window: 'today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d';
     op: '>' | '>=' | '<' | '<=';
@@ -1765,12 +1768,7 @@ export type AdRuleCondition = {
 };
 
 /**
- * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency. `reach` and `frequency` use the platform's de-duplicated reach, so they are accepted on Meta and TikTok only.
- */
-export type metric = 'spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency';
-
-/**
- * Days in the ad account's own timezone. `last_7d` includes today.
+ * Days in the ad account's own timezone. `last_7d` is the 7 full days before today; only `today` reads the day in progress.
  */
 export type window = 'today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d';
 
@@ -2295,6 +2293,12 @@ export type learningStatus = 'LEARNING' | 'SUCCESS' | 'FAIL';
  * Campaign with nested ad sets and rolled-up metrics
  */
 export type AdTreeCampaign = {
+    /**
+     * Only with `results=true`. The values you sent for this campaign over the range, plus each formula they allow, by metric key. A metric with no value is absent.
+     */
+    results?: {
+        [key: string]: (number);
+    };
     platformCampaignId?: string;
     platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
     campaignName?: string;
@@ -2445,6 +2449,10 @@ export type AdTreeResponse = {
         fromDate?: string;
         toDate?: string;
     };
+    /**
+     * Only with `results=true`. Your metrics and formulas, to label each campaign's `results`.
+     */
+    resultMetrics?: Array<CampaignResultMetric>;
     /**
      * Meta only. Present and true while historical data is being backfilled.
      */
@@ -4462,11 +4470,25 @@ export type CampaignReport = {
 export type CampaignResultMetric = {
     key: string;
     label: string;
-    kind: 'count' | 'money';
+    /**
+     * How the value reads: `percent` values are already multiplied by 100.
+     */
+    kind: 'count' | 'money' | 'percent' | 'ratio';
     currency: (string) | null;
+    /**
+     * Null for a number you send. For a computed metric, the formula over `spend`, `impressions`, `clicks`, `conversions`, `purchase_value` and the metrics you send, e.g. `spend / revenue * 100`.
+     */
+    formula: (string) | null;
+    /**
+     * One of the formulas every team has (`cac_percent`, `cost_per_sale`, `cost_per_qualified_lead`, `lead_to_sale`). Setting the same key replaces it for your team.
+     */
+    builtIn: boolean;
 };
 
-export type kind4 = 'count' | 'money';
+/**
+ * How the value reads: `percent` values are already multiplied by 100.
+ */
+export type kind4 = 'count' | 'money' | 'percent' | 'ratio';
 
 export type CampaignSettlement = {
     /**
@@ -6533,7 +6555,7 @@ export type CreatorCampaignEconomicsCpm = {
 /**
  * What the rate pays on. `engagements` counts the `engagementTypes` as each platform reports them, and `minViewsToEarn` then applies to engagements. Fixed once the campaign leaves draft.
  */
-export type metric2 = 'views' | 'engagements';
+export type metric = 'views' | 'engagements';
 
 export type CreatorCampaignEconomicsPerPost = {
     type: 'per_post';
@@ -10673,7 +10695,7 @@ export type InstagramDemographicsResponse = {
     note?: string;
 };
 
-export type metric3 = 'follower_demographics' | 'engaged_audience_demographics';
+export type metric2 = 'follower_demographics' | 'engaged_audience_demographics';
 
 /**
  * The timeframe used for demographic data
@@ -50814,6 +50836,30 @@ export type GetCampaignResultsUploadError = (ErrorResponse | {
     error?: string;
 });
 
+export type GetCampaignResultsTotalsData = {
+    query: {
+        /**
+         * Comma-separated platform ad account ids, at most 100. Omit for every ad account your key can see.
+         */
+        adAccountIds?: string;
+        fromDate: string;
+        /**
+         * Inclusive. At most 400 days after `fromDate`.
+         */
+        toDate: string;
+    };
+};
+
+export type GetCampaignResultsTotalsResponse = ({
+    fromDate: string;
+    toDate: string;
+    totals: {
+        [key: string]: (number);
+    };
+});
+
+export type GetCampaignResultsTotalsError = (ErrorResponse);
+
 export type ListCampaignResultMetricsResponse = ({
     metrics: Array<CampaignResultMetric>;
 });
@@ -50823,11 +50869,15 @@ export type ListCampaignResultMetricsError = (ErrorResponse);
 export type SetCampaignResultMetricData = {
     body: {
         label: string;
-        kind: 'count' | 'money';
+        kind: 'count' | 'money' | 'percent' | 'ratio';
         /**
          * ISO 4217, money metrics only.
          */
         currency?: (string) | null;
+        /**
+         * Makes it a computed metric. Null or absent for a number you send.
+         */
+        formula?: (string) | null;
     };
     path: {
         key: string;
@@ -52840,6 +52890,10 @@ export type GetAdTreeData = {
          * Profile ID
          */
         profileId?: string;
+        /**
+         * Set to `true` to add your own results (see [Campaign results](/guides/campaign-results)): every campaign gains `results`, the values you sent for the range plus each formula they allow, and the response gains `resultMetrics` to label them.
+         */
+        results?: boolean;
         /**
          * Case-insensitive substring match on campaign, ad set and ad names (`_`, `%` and spaces match literally), or an exact platform campaign, ad set or ad id.
          *

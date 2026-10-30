@@ -383,6 +383,7 @@ import {
   getCampaignConversionGoals,
   getCampaignParticipant,
   getCampaignReport,
+  getCampaignResultsTotals,
   getCampaignResultsUpload,
   getCampaignSubmission,
   getCampaignTargeting,
@@ -2446,6 +2447,7 @@ export class Zernio {
     uploadCampaignResults: this._bind(uploadCampaignResults),
     listCampaignResults: this._bind(listCampaignResults),
     getCampaignResultsUpload: this._bind(getCampaignResultsUpload),
+    getCampaignResultsTotals: this._bind(getCampaignResultsTotals),
     listCampaignResultMetrics: this._bind(listCampaignResultMetrics),
     setCampaignResultMetric: this._bind(setCampaignResultMetric),
   };
