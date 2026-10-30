@@ -28201,6 +28201,10 @@ export type ConnectAdsData = {
          */
         adAccountIds?: Array<(string)>;
         /**
+         * Welcome screen only: your product name in its heading. Same rules as on GET /v1/connect/{platform}.
+         */
+        brandName?: string;
+        /**
          * Force a fresh OAuth even when an account already exists.
          *
          * Normally the endpoint returns `alreadyConnected: true` whenever a connected account is found, keyed off its active state rather than token liveness. Set `force=true` to bypass that and always receive an `authUrl`. Completing the returned OAuth refreshes the stored token on the existing posting and ads accounts in place.
@@ -28220,6 +28224,10 @@ export type ConnectAdsData = {
          */
         loginMode?: 'classic' | 'business';
         /**
+         * Welcome screen only: https URL of your square logo. Rejected with 400 `INVALID_FIELD_VALUE` when the welcome screen is not shown.
+         */
+        logoUrl?: string;
+        /**
          * Business login only. Facebook Page ID to select from the token grants for ad creatives and lead forms.
          */
         pageId?: string;
@@ -28233,6 +28241,10 @@ export type ConnectAdsData = {
          *
          */
         permissionLevel?: 'full' | 'advertise';
+        /**
+         * Welcome screen only: hex colour (`#RRGGBB`) of its button.
+         */
+        primaryColor?: string;
         /**
          * Your Zernio profile ID
          */
@@ -28254,6 +28266,20 @@ export type ConnectAdsData = {
          *
          */
         redirect_url?: string;
+        /**
+         * When `true`, `authUrl` opens on the Zernio-hosted welcome screen with your brand, as on GET /v1/connect/{platform}, naming the ads platform ("<brandName> wants to connect to your Meta Ads").
+         *
+         * - With no `redirect_url`, the flow ends on the branded result page instead of the Zernio dashboard.
+         * - Shown only with `welcome=true`: the workspace's saved "on by default" (`PUT /v1/connect/welcome-screen`) applies to GET /v1/connect/{platform} only, so ads links behave as before unless you opt in. The saved brand still fills in what the call leaves out.
+         * - Cannot be combined with `headless=true` (400 `INVALID_FIELD_VALUE`).
+         * - Responses with `alreadyConnected: true` carry no `authUrl`, so they show no screen.
+         *
+         */
+        welcome?: boolean;
+        /**
+         * Welcome screen only: a URL-encoded JSON object restyling and rewording the welcome screen and the result page, with the keys documented on GET /v1/connect/{platform}. Rejected when the welcome screen is not shown.
+         */
+        welcomeTheme?: string;
     };
 };
 
