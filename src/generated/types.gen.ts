@@ -1915,7 +1915,7 @@ export type AdsAlert = {
      * Stable for the same problem on the same entity. Pass it to POST /v1/ads/alerts/{alertId}/dismiss.
      */
     id?: string;
-    kind?: 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limited' | 'spend_no_results';
+    kind?: 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limited' | 'spend_no_results' | 'connection_lost' | 'sync_failing';
     severity?: 'error' | 'warning' | 'info';
     title?: string;
     /**
@@ -1936,10 +1936,14 @@ export type AdsAlert = {
      * The Zernio ad id when the entity is an ad, for GET /v1/ads/{adId}.
      */
     adId?: string;
+    /**
+     * The Zernio ads connection, on connection_lost and sync_failing alerts.
+     */
+    accountId?: string;
     currency?: (string) | null;
     detectedAt?: string;
     /**
-     * Where to fix it on the platform, when there is such a place.
+     * Where to fix it: a page on the platform, or for connection_lost the Zernio dashboard path (starting with /) where the connection is reconnected.
      */
     fix?: {
         label?: string;
@@ -1948,7 +1952,7 @@ export type AdsAlert = {
     dismissed?: boolean;
 };
 
-export type kind = 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limited' | 'spend_no_results';
+export type kind = 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limited' | 'spend_no_results' | 'connection_lost' | 'sync_failing';
 
 export type severity = 'error' | 'warning' | 'info';
 
@@ -54457,6 +54461,10 @@ export type ListAdsAlertsData = {
          * Also return dismissed alerts, with `dismissed: true`.
          */
         includeDismissed?: boolean;
+        /**
+         * Only alerts of the ads connections on this profile. Omit for every profile the API key can reach.
+         */
+        profileId?: string;
     };
 };
 

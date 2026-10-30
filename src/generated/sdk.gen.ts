@@ -14438,6 +14438,8 @@ export const listAdsBusinessCenters = <ThrowOnError extends boolean = false>(opt
  * - Meta ad accounts with a failed or overdue payment, or disabled while holding live ads
  * - campaigns that spent on 3 or more of the last 7 days without a result (conversion, lead, purchase or conversation goals)
  * - budgets spent to their daily cap yesterday
+ * - ads connections that need reconnecting while they still hold live ads
+ * - ad accounts whose sync has been failing
  *
  * Built from stored data and the last 7 days of synced metrics, so it costs no platform call.
  *
