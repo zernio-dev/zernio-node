@@ -22799,8 +22799,8 @@ export type GetLinkedInDemographicsData = {
          */
         accountId: string;
         /**
-         * Comma-separated list of demographic dimensions: function, seniority, industry, company_size.
-         * Defaults to all four if omitted.
+         * Comma-separated list of demographic dimensions: function, seniority, industry, company_size, country, region.
+         * Defaults to function, seniority, industry and company_size if omitted. Country and region are returned only when requested.
          *
          */
         breakdown?: string;
@@ -22822,7 +22822,7 @@ export type GetLinkedInDemographicsResponse = ({
              */
             dimension?: string;
             /**
-             * LinkedIn URN (urn:li:function:8) or staff count range (SIZE_2_TO_10)
+             * LinkedIn URN (urn:li:function:8 or urn:li:geo:103644278) or staff count range (SIZE_2_TO_10)
              */
             id?: string;
             /**

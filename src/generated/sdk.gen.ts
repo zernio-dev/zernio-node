@@ -446,12 +446,13 @@ export const getFacebookDemographics = <ThrowOnError extends boolean = false>(op
 
 /**
  * Get LinkedIn organization follower demographics
- * Returns the lifetime follower breakdown of a connected LinkedIn organization page by job function, seniority, industry and company size.
+ * Returns the lifetime follower breakdown of a connected LinkedIn organization page by job function, seniority, industry, company size, country and region. Without `breakdown` it returns function, seniority, industry and company size; country and region are returned only when requested.
  *
  * ### Labels
  *
  * - Function, seniority and industry are labelled with LinkedIn's standardized names (English) and keep the LinkedIn URN in `id`.
  * - Company size is labelled as a range such as `2-10` or `10001+`.
+ * - Country and region are labelled with LinkedIn's geo names (English) and keep `urn:li:geo:*` in `id`. A region is a LinkedIn market area, for example New York City Metropolitan Area.
  *
  * LinkedIn returns at most the top 100 values per breakdown and leaves out followers whose profile lacks that field, so a breakdown does not add up to the follower count.
  *
