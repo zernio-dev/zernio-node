@@ -26494,6 +26494,13 @@ export type DeleteProfileError = (unknown | ErrorResponse | {
 export type ListAccountsData = {
     query?: {
         /**
+         * When true, lists every ads account row, one per ad account. By default an API key or OAuth app sees each ads login once per profile and platform, as the single ads connection it had before rows per ad account: its oldest row.
+         *
+         * Only changes the result once ads are connected as one row per ad account; until then the two shapes are the same. Applied before pagination. Accepts `true` or `false` in any letter case; any other value returns 400.
+         *
+         */
+        adAccountRows?: boolean;
+        /**
          * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit), communication = WhatsApp, Telegram, Discord, Slack and iMessage, blogs = Shopify and WordPress, crm = HubSpot, analytics = Google Analytics, social = every other platform.
          */
         category?: 'social' | 'ads' | 'communication' | 'blogs' | 'crm' | 'analytics';
