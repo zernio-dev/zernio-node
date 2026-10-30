@@ -1660,17 +1660,25 @@ export type AdRuleAction = {
     type: 'notify';
 } | {
     /**
-     * Pause the campaign or ad set.
+     * Pause the campaign, ad set or ad.
      */
     type: 'pause';
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
 } | {
     /**
-     * Reactivate a campaign or ad set a rule paused, once `cooldownMinutes` has passed since the pause. Objects you paused yourself are never touched.
+     * Reactivate a campaign, ad set or ad a rule paused, once `cooldownMinutes` has passed since the pause. Objects you paused yourself are never touched.
      */
     type: 'activate';
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
 } | {
     /**
-     * Change the daily budget. Google ad groups have no budget of their own, so on Google it needs a campaign-level rule.
+     * Change the daily budget. Not on ad-level rules (an ad has no budget), and on Google it needs a campaign-level rule (ad groups have no budget of their own).
      */
     type: 'adjust_budget';
     direction: 'increase' | 'decrease';
@@ -1682,6 +1690,10 @@ export type AdRuleAction = {
      * The budget never goes above this on an increase, or below it on a decrease, in the ad account currency.
      */
     limit: number;
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
 };
 
 /**
@@ -1741,9 +1753,9 @@ export type status3 = 'done' | 'skipped' | 'failed';
 
 export type AdRuleCondition = {
     /**
-     * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency.
+     * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency. `reach` and `frequency` use the platform's de-duplicated reach, so they are accepted on Meta and TikTok only.
      */
-    metric: 'spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas';
+    metric: 'spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency';
     /**
      * Days in the ad account's own timezone. `last_7d` includes today.
      */
@@ -1753,9 +1765,9 @@ export type AdRuleCondition = {
 };
 
 /**
- * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency.
+ * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency. `reach` and `frequency` use the platform's de-duplicated reach, so they are accepted on Meta and TikTok only.
  */
-export type metric = 'spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas';
+export type metric = 'spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency';
 
 /**
  * Days in the ad account's own timezone. `last_7d` includes today.
@@ -1797,9 +1809,9 @@ export type AdRuleEvaluation = {
 };
 
 /**
- * Whether the rule checks campaigns or ad sets. Each one is evaluated on its own.
+ * Whether the rule checks campaigns, ad sets or single ads. Each one is evaluated on its own.
  */
-export type AdRuleLevel = 'campaign' | 'adset';
+export type AdRuleLevel = 'campaign' | 'adset' | 'ad';
 
 export type AdRuleObjectEvaluation = {
     /**
@@ -17130,7 +17142,7 @@ export type status52 = 'approved' | 'rejected';
 /**
  * Webhook payload for the `ad_rule.triggered` event.
  *
- * Fires when a scheduled run of a rule with a `notify` action finds campaigns or ad sets that meet every condition of the rule.
+ * Fires when a scheduled run of a rule with a `notify` action finds campaigns, ad sets or ads that meet every condition of the rule.
  *
  * Each object is announced at most once per rule cooldown, so `objects` lists only the objects the run acted on, never the ones still in cooldown. A run where every matching object is still in cooldown sends nothing.
  *
@@ -17156,9 +17168,9 @@ export type WebhookPayloadAdRuleTriggered = {
         id: string;
         name: string;
         /**
-         * Whether the rule evaluates campaigns or ad sets.
+         * Whether the rule evaluates campaigns, ad sets or ads.
          */
-        level: 'campaign' | 'adset';
+        level: 'campaign' | 'adset' | 'ad';
         /**
          * Platform-native ad account ID the rule watches.
          */
@@ -17191,7 +17203,7 @@ export type WebhookPayloadAdRuleTriggered = {
         currency: (string) | null;
     };
     /**
-     * The campaigns or ad sets this run acted on, at the rule's `level`, including those whose action failed. Objects still in cooldown are left out.
+     * The campaigns, ad sets or ads this run acted on, at the rule's `level`, including those whose action failed. Objects still in cooldown are left out.
      */
     objects: Array<{
         /**
@@ -17241,7 +17253,7 @@ export type WebhookPayloadAdRuleTriggered = {
              */
             status: 'done' | 'skipped' | 'failed';
             /**
-             * Why the action was skipped or failed: `already_paused`, `already_active`, `at_limit`, `budget_unknown`, `budget_not_daily`, `budget_level_mismatch`, `no_live_ads`, `ads_allowance_exceeded` (a reactivation or budget increase for a team past its free live-ads allowance), or the platform's message. Null when done.
+             * Why the action was skipped or failed: `already_paused`, `already_active`, `at_limit`, `budget_unknown`, `budget_not_daily`, `budget_level_mismatch`, `no_live_ads`, `daily_limit_reached` (held back by the action's `maxChangesPerDay`), `ads_allowance_exceeded` (a reactivation or budget increase for a team past its free live-ads allowance), or the platform's message. Null when done.
              */
             reason: (string) | null;
             /**
@@ -17261,6 +17273,11 @@ export type WebhookPayloadAdRuleTriggered = {
 };
 
 export type event11 = 'ad_rule.triggered';
+
+/**
+ * Whether the rule evaluates campaigns, ad sets or ads.
+ */
+export type level5 = 'campaign' | 'adset' | 'ad';
 
 /**
  * Webhook payload for the `ad.status_changed` event. Currently emitted
@@ -17392,7 +17409,7 @@ export type event12 = 'ad.status_changed';
 /**
  * Hierarchy level the status applies to. Mirrors Meta's `level`. Creative-level events are not forwarded.
  */
-export type level5 = 'CAMPAIGN' | 'AD_SET' | 'AD';
+export type level6 = 'CAMPAIGN' | 'AD_SET' | 'AD';
 
 /**
  * Webhook payload for the `ad.video.processed` event. Fires once per
@@ -17851,7 +17868,7 @@ export type event21 = 'campaign.budget.depleted';
 /**
  * Always `CAMPAIGN`.
  */
-export type level6 = 'CAMPAIGN';
+export type level7 = 'CAMPAIGN';
 
 /**
  * Webhook payload for `campaign_participant.joined`, `campaign_participant.suspended` and
@@ -50461,6 +50478,22 @@ export type CreateAdRuleResponse = ({
 });
 
 export type CreateAdRuleError = (ErrorResponse);
+
+export type ListAdRuleTemplatesResponse = ({
+    templates: Array<{
+        id: string;
+        name: string;
+        description: string;
+        level: AdRuleLevel;
+        conditions: AdRuleConditions;
+        actions: AdRuleActions;
+        schedule: AdRuleSchedule;
+        cooldownMinutes: number;
+        platforms: Array<(string)> | null;
+    }>;
+});
+
+export type ListAdRuleTemplatesError = (ErrorResponse);
 
 export type ListAdRuleActivityData = {
     query?: {

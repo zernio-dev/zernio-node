@@ -657,6 +657,7 @@ try {
 | `adRules.listAdRuleActivity()` | List every change ad rules made |
 | `adRules.listAdRuleRuns()` | List an ad rule's runs |
 | `adRules.listAdRules()` | List ad rules |
+| `adRules.listAdRuleTemplates()` | List ready-made ad rules |
 | `adRules.createAdRule()` | Create an ad rule |
 | `adRules.getAdRule()` | Get an ad rule |
 | `adRules.updateAdRule()` | Update an ad rule |
