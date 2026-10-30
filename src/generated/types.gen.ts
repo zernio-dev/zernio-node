@@ -4424,6 +4424,10 @@ export type CampaignReport = {
          */
         total: number;
     };
+    /**
+     * The campaign engagement types summed over the same submissions.
+     */
+    engagements: number;
     submissions: CampaignSubmissionCounts;
     /**
      * Top 10 participants by payable, settling and settled cents.
@@ -4521,6 +4525,10 @@ export type CampaignSubmission = {
      * Views that count toward earnings: every view the platform reports for the post, including those before submission, read at the tracking window end at the latest: once the window completes or is cancelled, the last read at or before its end is final and this value stops moving.
      */
     viewsEligible: (number) | null;
+    /**
+     * The campaign engagement types summed at the latest read (all four on a views campaign), frozen at the tracking window end like `viewsEligible`. An `engagements` campaign earns on this count.
+     */
+    engagementsLatest: (number) | null;
     lastAccruedViews: number;
     accruedCents: number;
     approvedCents: number;
@@ -6471,7 +6479,7 @@ export type CreatorCampaignCaps = {
  *
  * Every type carries `budgetCents`, the most the campaign can pay out in total. Once earnings reach it, the campaign stops accruing and `creator_campaign.budget_exhausted` fires.
  *
- * - `cpm`: `ratePer1kCents` per 1,000 eligible views, earned from `minViewsToEarn` views on, capped per post by `maxPayoutPerClipCents`.
+ * - `cpm`: `ratePer1kCents` per 1,000 of the counted `metric` (views by default), earned once a post reaches `minViewsToEarn` of it, capped per post by `maxPayoutPerClipCents`.
  * - `per_post`: `perApprovedPostCents` for each approved post, at most `maxPostsPerParticipant` per participant.
  * - `pool`: `budgetCents` is split at close among approved posts by eligible views; a post needs `minViewsToQualify` views to share.
  *
@@ -6480,11 +6488,27 @@ export type CreatorCampaignEconomics = CreatorCampaignEconomicsCpm | CreatorCamp
 
 export type CreatorCampaignEconomicsCpm = {
     type: 'cpm';
+    /**
+     * What the rate pays on. `engagements` counts the `engagementTypes` as each platform reports them, and `minViewsToEarn` then applies to engagements. Fixed once the campaign leaves draft.
+     */
+    metric?: 'views' | 'engagements';
+    /**
+     * With `metric: engagements`, the engagements that count. Missing means all four, and sending it on a views campaign answers 400. YouTube reports likes and comments only, Facebook and Threads have no saves, and Pinterest reports saves only.
+     */
+    engagementTypes?: Array<('likes' | 'comments' | 'shares' | 'saves')>;
     ratePer1kCents: number;
+    /**
+     * The count a post must reach before it earns, in the campaign metric (views or engagements).
+     */
     minViewsToEarn: number;
     maxPayoutPerClipCents?: number;
     budgetCents: number;
 };
+
+/**
+ * What the rate pays on. `engagements` counts the `engagementTypes` as each platform reports them, and `minViewsToEarn` then applies to engagements. Fixed once the campaign leaves draft.
+ */
+export type metric2 = 'views' | 'engagements';
 
 export type CreatorCampaignEconomicsPerPost = {
     type: 'per_post';
@@ -6542,6 +6566,14 @@ export type CreatorPortalCampaign = {
  */
 export type CreatorPortalEconomics = {
     type: 'cpm';
+    /**
+     * What the rate pays on. Missing means views.
+     */
+    metric?: 'views' | 'engagements';
+    /**
+     * The engagements that count. Missing means all four.
+     */
+    engagementTypes?: Array<('likes' | 'comments' | 'shares' | 'saves')>;
     ratePer1kCents: number;
     minViewsToEarn: number;
     maxPayoutPerClipCents?: number;
@@ -6662,6 +6694,10 @@ export type CreatorPortalSubmission = {
      * Latest view count read for the post.
      */
     views: number;
+    /**
+     * The campaign engagement types summed at the latest read. Null until the post is read.
+     */
+    engagements: (number) | null;
     earnedCents: number;
     rejectReason: (string) | null;
     /**
@@ -10596,7 +10632,7 @@ export type InstagramDemographicsResponse = {
     note?: string;
 };
 
-export type metric2 = 'follower_demographics' | 'engaged_audience_demographics';
+export type metric3 = 'follower_demographics' | 'engaged_audience_demographics';
 
 /**
  * The timeframe used for demographic data
@@ -18040,6 +18076,14 @@ export type WebhookPayloadCampaignSubmission = {
         platformPostUrl: (string) | null;
         status: string;
         viewsAtSubmission: (number) | null;
+        /**
+         * Views that count toward earnings at the latest read.
+         */
+        viewsEligible: (number) | null;
+        /**
+         * The campaign engagement types summed at the latest read. An engagements campaign earns on this count.
+         */
+        engagementsLatest: (number) | null;
         flags: Array<{
             code: string;
             detail: string;
@@ -68231,7 +68275,7 @@ export type ListCampaignSubmissionsData = {
         /**
          * What to sort by. Posts with no value to sort by (not read yet, not scored) come last in either direction.
          */
-        sort?: 'submittedAt' | 'viewsEligible' | 'earnedCents' | 'authenticityScore';
+        sort?: 'submittedAt' | 'viewsEligible' | 'engagementsLatest' | 'earnedCents' | 'authenticityScore';
         status?: 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
     };
 };
