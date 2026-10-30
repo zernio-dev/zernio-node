@@ -28271,6 +28271,8 @@ export type ConnectAdsData = {
          *
          * - With no `redirect_url`, the flow ends on the branded result page instead of the Zernio dashboard.
          * - Shown only with `welcome=true`: the workspace's saved "on by default" (`PUT /v1/connect/welcome-screen`) applies to GET /v1/connect/{platform} only, so ads links behave as before unless you opt in. The saved brand still fills in what the call leaves out.
+         * - Without `adAccountId` or `adAccountIds`, on Meta, Google, LinkedIn, X, Reddit and Microsoft, the user then picks the ad accounts to connect on a branded Zernio-hosted page (skipped when the login reaches only one).
+         * - After that page the flow ends on your `redirect_url` with `connected` set to the ads platform and `accountId` to the ads connection.
          * - Cannot be combined with `headless=true` (400 `INVALID_FIELD_VALUE`).
          * - Responses with `alreadyConnected: true` carry no `authUrl`, so they show no screen.
          *
