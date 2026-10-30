@@ -4423,6 +4423,10 @@ export type CampaignReport = {
          * Latest view counts.
          */
         total: number;
+        /**
+         * Views from ads, on YouTube and X posts.
+         */
+        paid: number;
     };
     /**
      * The campaign engagement types summed over the same submissions.
@@ -4538,6 +4542,14 @@ export type CampaignSubmission = {
      * The campaign engagement types summed at the latest read (all four on a views campaign), frozen at the tracking window end like `viewsEligible`. An `engagements` campaign earns on this count.
      */
     engagementsLatest: (number) | null;
+    /**
+     * Views from ads the creator ran: YouTube views from the advertising traffic source, X impressions beyond the organic ones. Null on other platforms and before the first read. On an organic-only campaign `viewsEligible` is the latest views minus these.
+     */
+    viewsPaid: (number) | null;
+    /**
+     * When `viewsPaid` was last read. YouTube refreshes every 6 hours and reports ad views up to 2 days late; X about once a day while the post is under 30 days old.
+     */
+    paidViewsReadAt: (string) | null;
     lastAccruedViews: number;
     accruedCents: number;
     approvedCents: number;
@@ -4627,12 +4639,12 @@ export type CampaignSubmissionDetail = CampaignSubmission & {
 };
 
 export type CampaignSubmissionFlag = {
-    code: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap';
+    code: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap' | 'paid_views' | 'organic_unverified';
     detail: string;
     raisedAt: string;
 };
 
-export type code = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap';
+export type code = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap' | 'paid_views' | 'organic_unverified';
 
 /**
  * Actions taken on the matched comment itself (comment trigger only; ignored on the
@@ -6505,6 +6517,10 @@ export type CreatorCampaignEconomicsCpm = {
      * With `metric: engagements`, the engagements that count. Missing means all four, and sending it on a views campaign answers 400. YouTube reports likes and comments only, Facebook and Threads have no saves, and Pinterest reports saves only.
      */
     engagementTypes?: Array<('likes' | 'comments' | 'shares' | 'saves')>;
+    /**
+     * Count only organic views: views from ads the creator ran do not earn. Every campaign platform must be YouTube or X, which report ad views per post, or the request answers 400. A post earns nothing until its ad views were first read.
+     */
+    organicViewsOnly?: boolean;
     ratePer1kCents: number;
     /**
      * The count a post must reach before it earns, in the campaign metric (views or engagements).
@@ -6530,6 +6546,10 @@ export type CreatorCampaignEconomicsPool = {
     type: 'pool';
     budgetCents: number;
     minViewsToQualify: number;
+    /**
+     * Count only organic views: views from ads the creator ran do not earn. Every campaign platform must be YouTube or X, which report ad views per post, or the request answers 400. A post earns nothing until its ad views were first read.
+     */
+    organicViewsOnly?: boolean;
 };
 
 /**
@@ -6583,6 +6603,10 @@ export type CreatorPortalEconomics = {
      * The engagements that count. Missing means all four.
      */
     engagementTypes?: Array<('likes' | 'comments' | 'shares' | 'saves')>;
+    /**
+     * Only organic views count; views from ads do not.
+     */
+    organicViewsOnly?: boolean;
     ratePer1kCents: number;
     minViewsToEarn: number;
     maxPayoutPerClipCents?: number;
@@ -6594,6 +6618,10 @@ export type CreatorPortalEconomics = {
     type: 'pool';
     poolCents: number;
     minViewsToQualify: number;
+    /**
+     * Only organic views count; views from ads do not.
+     */
+    organicViewsOnly?: boolean;
 };
 
 export type type10 = 'cpm';
@@ -6707,6 +6735,10 @@ export type CreatorPortalSubmission = {
      * The campaign engagement types summed at the latest read. Null until the post is read.
      */
     engagements: (number) | null;
+    /**
+     * Views that came from ads the creator ran, on YouTube and X. Null where the platform does not report them or before the first read.
+     */
+    viewsFromAds: (number) | null;
     earnedCents: number;
     rejectReason: (string) | null;
     /**
@@ -18093,6 +18125,10 @@ export type WebhookPayloadCampaignSubmission = {
          * The campaign engagement types summed at the latest read. An engagements campaign earns on this count.
          */
         engagementsLatest: (number) | null;
+        /**
+         * Views from ads, on YouTube and X. Null elsewhere or before the first read.
+         */
+        viewsPaid: (number) | null;
         flags: Array<{
             code: string;
             detail: string;
@@ -68412,7 +68448,7 @@ export type ListCampaignSubmissionsData = {
         campaignId: string;
     };
     query?: {
-        flag?: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap';
+        flag?: 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap' | 'paid_views' | 'organic_unverified';
         limit?: number;
         maxScore?: number;
         minScore?: number;
