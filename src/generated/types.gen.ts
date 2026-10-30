@@ -14370,7 +14370,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -14504,7 +14504,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform14 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics';
+export type platform14 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
