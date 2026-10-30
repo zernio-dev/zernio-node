@@ -4455,6 +4455,15 @@ export type CampaignReport = {
     }>;
 };
 
+export type CampaignResultMetric = {
+    key: string;
+    label: string;
+    kind: 'count' | 'money';
+    currency: (string) | null;
+};
+
+export type kind4 = 'count' | 'money';
+
 export type CampaignSettlement = {
     /**
      * The ledger settlement entry.
@@ -6594,7 +6603,7 @@ export type CreatorPortalInvite = {
     campaign: CreatorPortalCampaign;
 };
 
-export type kind4 = 'invite';
+export type kind5 = 'invite';
 
 export type CreatorPortalParticipant = {
     kind: 'participant';
@@ -6640,7 +6649,7 @@ export type CreatorPortalParticipant = {
     payouts: CreatorPortalPayoutSetup;
 };
 
-export type kind5 = 'participant';
+export type kind6 = 'participant';
 
 export type CreatorPortalPayoutEntry = {
     id: string;
@@ -8665,7 +8674,7 @@ export type FileItem = {
     trashed: boolean;
 };
 
-export type kind6 = 'file' | 'folder';
+export type kind7 = 'file' | 'folder';
 
 export type FilePickerSession = {
     /**
@@ -10015,7 +10024,7 @@ export type ImessageSenderLifecycle = {
     createdAt?: string;
 };
 
-export type kind7 = 'phone' | 'email';
+export type kind8 = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
@@ -10969,7 +10978,7 @@ export type InstagramVideoFallback = {
     };
 };
 
-export type kind8 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
+export type kind9 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
 
 /**
  * A Google Search keyword: a bare string (BROAD match), or an object naming the match type.
@@ -15477,7 +15486,7 @@ export type platform15 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | '
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
-export type kind9 = 'pixel' | 'tag' | 'insight_tag';
+export type kind10 = 'pixel' | 'tag' | 'insight_tag';
 
 /**
  * One health check the platform runs on a tracking tag.
@@ -50651,6 +50660,149 @@ export type ListAdRuleRunsResponse = ({
 export type ListAdRuleRunsError = (ErrorResponse | {
     error?: string;
 });
+
+export type UploadCampaignResultsData = {
+    body: {
+        rows: Array<{
+            /**
+             * The day, at most 400 days ago.
+             */
+            date: string;
+            /**
+             * The platform campaign id.
+             */
+            campaignId?: string;
+            /**
+             * The `utm_campaign` value on the campaign's ads.
+             */
+            utmCampaign?: string;
+            /**
+             * The campaign's name, matched case-insensitively.
+             */
+            campaignName?: string;
+            /**
+             * Platform ad account id. Narrows matching to one ad account.
+             */
+            adAccountId?: string;
+            /**
+             * Metric key (snake_case, up to 40 characters) to a non-negative number. 1 to 20 per row.
+             */
+            values: {
+                [key: string]: (number);
+            };
+        }>;
+    };
+    headers?: {
+        /**
+         * A retry with the same key and body replays the first response instead of uploading twice.
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type UploadCampaignResultsResponse = ({
+    uploadId: string;
+    rows: number;
+    status: 'queued';
+});
+
+export type UploadCampaignResultsError = (ErrorResponse | unknown);
+
+export type ListCampaignResultsData = {
+    query: {
+        /**
+         * Comma-separated platform campaign ids, at most 500. Omit for all campaigns.
+         */
+        campaignIds?: string;
+        /**
+         * `nextCursor` from the previous page.
+         */
+        cursor?: string;
+        fromDate: string;
+        /**
+         * Campaigns per page.
+         */
+        limit?: number;
+        /**
+         * Inclusive. At most 400 days after `fromDate`.
+         */
+        toDate: string;
+    };
+};
+
+export type ListCampaignResultsResponse = ({
+    fromDate: string;
+    toDate: string;
+    campaigns: Array<{
+        platform: string;
+        adAccountId: string;
+        campaignId: string;
+        values: {
+            [key: string]: (number);
+        };
+    }>;
+    nextCursor: (string) | null;
+});
+
+export type ListCampaignResultsError = (ErrorResponse);
+
+export type GetCampaignResultsUploadData = {
+    path: {
+        uploadId: string;
+    };
+};
+
+export type GetCampaignResultsUploadResponse = ({
+    uploadId: string;
+    status: 'queued' | 'done' | 'failed';
+    source: 'api' | 'csv' | 'hubspot';
+    rowsReceived: number;
+    rowsMatched: number;
+    rowsUnmatched: number;
+    unmatched: Array<{
+        /**
+         * The row's position in the request.
+         */
+        index?: number;
+        /**
+         * The campaign id, UTM or name the row gave.
+         */
+        campaign?: string;
+        reason?: 'no_campaign' | 'ambiguous';
+    }>;
+    createdAt: string;
+    completedAt: (string) | null;
+});
+
+export type GetCampaignResultsUploadError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListCampaignResultMetricsResponse = ({
+    metrics: Array<CampaignResultMetric>;
+});
+
+export type ListCampaignResultMetricsError = (ErrorResponse);
+
+export type SetCampaignResultMetricData = {
+    body: {
+        label: string;
+        kind: 'count' | 'money';
+        /**
+         * ISO 4217, money metrics only.
+         */
+        currency?: (string) | null;
+    };
+    path: {
+        key: string;
+    };
+};
+
+export type SetCampaignResultMetricResponse = ({
+    metric: CampaignResultMetric;
+});
+
+export type SetCampaignResultMetricError = (ErrorResponse);
 
 export type ListAdCampaignsData = {
     query?: {

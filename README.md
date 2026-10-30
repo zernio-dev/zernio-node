@@ -536,6 +536,15 @@ try {
 | `adAudiences.removeUsersFromAdAudience()` | Remove users from audience |
 | `adAudiences.replaceAdAudienceCompanies()` | Replace audience companies |
 
+### Ad Campaign Results
+| Method | Description |
+|--------|-------------|
+| `adCampaignResults.listCampaignResultMetrics()` | List your result metrics |
+| `adCampaignResults.listCampaignResults()` | List your results per campaign |
+| `adCampaignResults.getCampaignResultsUpload()` | Check a results upload |
+| `adCampaignResults.setCampaignResultMetric()` | Name a result metric |
+| `adCampaignResults.uploadCampaignResults()` | Upload your results per campaign |
+
 ### Ad Campaigns
 | Method | Description |
 |--------|-------------|

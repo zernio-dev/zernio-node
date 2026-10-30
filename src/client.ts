@@ -383,6 +383,7 @@ import {
   getCampaignConversionGoals,
   getCampaignParticipant,
   getCampaignReport,
+  getCampaignResultsUpload,
   getCampaignSubmission,
   getCampaignTargeting,
   getCommentAutomation,
@@ -666,6 +667,8 @@ import {
   listCampaignParticipants,
   listCampaignPayables,
   listCampaignPayoutBatches,
+  listCampaignResultMetrics,
+  listCampaignResults,
   listCampaignSubmissions,
   listChangelog,
   listCommentAutomationLogs,
@@ -944,6 +947,7 @@ import {
   sendWhatsAppConversion,
   sendWhatsAppFlowMessage,
   setBusinessAgentConnectorCredentials,
+  setCampaignResultMetric,
   setCommentModeration,
   setCommerceCollectionMetafields,
   setCommerceDiscountActive,
@@ -1106,6 +1110,7 @@ import {
   uploadAdImage,
   uploadAdVideo,
   uploadBusinessAgentFile,
+  uploadCampaignResults,
   uploadFile,
   uploadMediaDirect,
   uploadPhoneNumberKycDocument,
@@ -2432,6 +2437,17 @@ export class Zernio {
     deleteAdRule: this._bind(deleteAdRule),
     previewAdRule: this._bind(previewAdRule),
     listAdRuleRuns: this._bind(listAdRuleRuns),
+  };
+
+  /**
+   * adcampaignresults API
+   */
+  adcampaignresults = {
+    uploadCampaignResults: this._bind(uploadCampaignResults),
+    listCampaignResults: this._bind(listCampaignResults),
+    getCampaignResultsUpload: this._bind(getCampaignResultsUpload),
+    listCampaignResultMetrics: this._bind(listCampaignResultMetrics),
+    setCampaignResultMetric: this._bind(setCampaignResultMetric),
   };
 
   /**
