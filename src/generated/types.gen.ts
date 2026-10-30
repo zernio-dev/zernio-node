@@ -22161,7 +22161,7 @@ export type ValidateSubredditError = (ErrorResponse | unknown);
 export type GetAnalyticsData = {
     query?: {
         /**
-         * Filter by account ID
+         * Filter by account ID. With a native postId, selects that account's copy of the post.
          */
         accountId?: string;
         /**
@@ -22185,11 +22185,11 @@ export type GetAnalyticsData = {
          */
         platform?: string;
         /**
-         * Returns analytics for a single post. Accepts both Zernio Post IDs and External Post IDs. Zernio IDs are auto-resolved to External Post analytics.
+         * Returns analytics for a single post. Accepts Zernio Post IDs, External Post IDs and the platform's native post ID. Zernio IDs are auto-resolved to External Post analytics.
          */
         postId?: string;
         /**
-         * Filter by profile ID (default "all")
+         * Filter by profile ID (default "all"). With a native postId, selects that profile's copy of the post.
          */
         profileId?: string;
         /**
