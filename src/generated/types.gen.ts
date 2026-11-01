@@ -8456,6 +8456,17 @@ export type FacebookPlatformData = {
      */
     pageId?: string;
     geoRestriction?: GeoRestriction;
+    /**
+     * Facebook Page IDs (numeric, up to 10 unique) to invite as collaborators. Reels only (contentType=reel), sent after the Reel is published, never for drafts. Each Page must accept. Meta allows 10 invites per Page per 24 hours; rejected invites are listed in failedCollaborators. Other values are ignored with a warning.
+     */
+    collaborators?: Array<(string)>;
+    /**
+     * Output only. Collaborator invites Facebook rejected after the Reel was published. The Reel itself stays published.
+     */
+    readonly failedCollaborators?: Array<{
+        pageId: string;
+        reason: string;
+    }>;
     facebookSettings?: FacebookSettings;
 };
 
@@ -10808,7 +10819,7 @@ export type InstagramPlatformData = {
      */
     shareToFeed?: boolean;
     /**
-     * Up to 3 Instagram usernames to invite as collaborators (feed/Reels only)
+     * Up to 3 Instagram usernames to invite as collaborators (feed/Reels only). Collaborators are supported on Instagram and Facebook Page Reels only. TikTok, YouTube, Threads, LinkedIn, X and Pinterest do not expose collaborators in their public APIs.
      */
     collaborators?: Array<(string)>;
     /**
