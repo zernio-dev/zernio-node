@@ -2359,6 +2359,7 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  *
  * - When the Meta link is dead, `platformConnection.status` is `disconnected` and the overall `status` is `error`.
  * - When Meta reports that the number's inbound message webhook does not reach Zernio, or subscribing the number's WhatsApp Business Account to Zernio's webhooks failed at connect, `platformConnection.inboundWebhookSubscribed` is `false`, an entry is added to `issues`, and the overall `status` is at least `warning`.
+ * - When `platformConnection.phoneStatus` is anything other than `CONNECTED`, an entry is added to `issues` and the overall `status` is at least `warning`; `BANNED` makes it `error`. `disconnectReason` stays null, since reconnecting does not lift a Meta status.
  *
  * ### Standalone ads connections (`googleads`, `redditads`)
  *

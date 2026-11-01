@@ -27118,6 +27118,9 @@ export type GetAccountHealthResponse = ({
             granted?: boolean;
             required?: boolean;
         }>;
+        /**
+         * Whether the granted OAuth scopes allow posting. Scopes only: for WhatsApp, whether Meta lets the number send is `platformConnection.phoneStatus` and the overall `status`.
+         */
         canPost?: boolean;
         canFetchAnalytics?: boolean;
         missingRequired?: Array<(string)>;
@@ -27135,7 +27138,7 @@ export type GetAccountHealthResponse = ({
      */
     ownerUserId?: string;
     /**
-     * Why the connection is broken or its token refresh is failing, from the most recent current cause. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes), or when no cause is stored.
+     * Why the connection is broken or its token refresh is failing, from the most recent current cause. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes, Meta phone status), or when no cause is stored.
      */
     disconnectReason?: (string) | null;
     /**
@@ -27143,7 +27146,7 @@ export type GetAccountHealthResponse = ({
      */
     disconnectionType?: ('intentional' | 'unintentional') | null;
     /**
-     * When the earliest current stored cause was recorded (the start of the outage); for an intentional disconnect, when it was disconnected. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes), or when the time is unknown.
+     * When the earliest current stored cause was recorded (the start of the outage); for an intentional disconnect, when it was disconnected. Null when the connection is healthy, including when the account is unhealthy for another reason (analytics, messaging restriction, missing analytics scopes, Meta phone status), or when unknown.
      */
     unhealthySince?: (string) | null;
     /**
@@ -27195,7 +27198,7 @@ export type GetAccountHealthResponse = ({
          */
         checkedAt?: string;
         /**
-         * Meta's own `status` field from the phone-number node (for example CONNECTED), when the object was readable
+         * Meta's own `status` field from the phone-number node (for example CONNECTED), when the object was readable. Anything other than CONNECTED adds an issue and raises `status` (BANNED: error, others: warning).
          */
         phoneStatus?: (string) | null;
         /**
