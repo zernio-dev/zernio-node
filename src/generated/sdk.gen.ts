@@ -13641,7 +13641,8 @@ export const getAd = <ThrowOnError extends boolean = false>(options: OptionsLega
  *
  * - **Status and budget**: supported.
  * - **Targeting**: countries or regions, excludedLocations (countries), the B2B facets, and audience segments. Applied to the LinkedIn Campaign via PARTIAL_UPDATE, and REPLACES the campaign's entire targetingCriteria, not a merge.
- * - **Creative**: uploads new media, creates a replacement inline creative on the same campaign, and pauses the old one.
+ * - **Creative**: uploads new media, creates a replacement inline creative on the same campaign, and removes the old one (it is deleted, the ad's `platformAdId` and `creative.creativeId` move to the new creative, and the new creative keeps the old one's held-off state: `DRAFT` stays `DRAFT`).
+ * - **Name**: updating `name` returns 400 (LinkedIn does not support renaming an ad).
  *
  * ### Reddit Ads
  *

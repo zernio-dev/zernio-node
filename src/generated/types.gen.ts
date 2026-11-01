@@ -53267,7 +53267,9 @@ export type UpdateAdData = {
          *
          * **LinkedIn**: requires new media (image via `imageUrl` or video via `videoUrl`); a text-only update returns 400.
          *
-         * - Uploads the media, creates a new inline media creative on the same campaign, and pauses the old creative (best-effort). The old creative is kept for historical reporting.
+         * - Uploads the media, creates a new inline media creative on the same campaign, and removes the old creative. `platformAdId` and `creative.creativeId` move to the new one.
+         * - The new creative keeps the old one's state. A `DRAFT` or `PAUSED` creative is re-created `DRAFT`, because LinkedIn refuses `PAUSED` before review is `APPROVED`.
+         * - If the old creative cannot be removed, the new one is deleted and the LinkedIn error is returned.
          * - `videoId` and `existingCreativeId` are Meta-only and return 400.
          *
          */
