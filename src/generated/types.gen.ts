@@ -53257,6 +53257,8 @@ export type UpdateAdData = {
          * - Meta creatives are immutable: any change creates a new creative and repoints the ad. The old creative stays on the ad account for historical reporting.
          * - `creativeFeatures` is Meta-only. Omitted settings are preserved from the live creative, including on full rebuilds; a supplied creativeFeatures map overrides individual existing keys.
          *
+         * - A `creative` object with no recognised field (`promotion` alone does not count) is a 400 `missing_required_field` when it is the only update, and is ignored (no creative rebuild) next to another updatable field.
+         *
          * **TikTok**: patch-style. Pass any subset.
          *
          * - `headline` is ignored (no headline slot).
@@ -53278,6 +53280,12 @@ export type UpdateAdData = {
              */
             promotion?: MetaPromotion;
             creativeFeatures?: MetaCreativeFeatures;
+            /**
+             * Meta catalog template ads only. Rebuilds the creative with this `template_data.format_option` (same mapping as on create) and repoints the ad at the new creative.
+             *
+             * Returns 400 on any other network, on a Meta ad without a catalog template creative, or with `existingCreativeId`. Copy or media fields return 422 on a catalog creative.
+             */
+            catalogFormat?: 'single_image' | 'carousel_images_multi_items' | 'carousel_images_single_item' | 'carousel_slideshows';
             /**
              * Meta and LinkedIn (TikTok has no headline slot)
              */
