@@ -8448,6 +8448,10 @@ export type FacebookPlatformData = {
      */
     firstComment?: string;
     /**
+     * When true, Facebook shows its AI-disclosure label on the post. Forwarded as is_ai_generated on Reels (contentType=reel) and video Stories (contentType=story with a video). Meta documents no such parameter for feed posts, feed videos or photo Stories, so the flag is accepted with a warning and no label there.
+     */
+    isAiGenerated?: boolean;
+    /**
      * Target Facebook Page ID for multi-page posting. If omitted, uses the default page. Use GET /v1/accounts/{id}/facebook-page to list pages.
      */
     pageId?: string;
