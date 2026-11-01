@@ -11671,7 +11671,7 @@ export type MediaItem = {
      */
     mimeType?: string;
     /**
-     * Optional custom thumbnail/cover image URL for videos. Supported for Facebook video posts, Facebook Reels, regular video uploads, and LinkedIn video posts. Max 10MB, JPG/PNG recommended.
+     * Optional custom thumbnail/cover image URL for videos. Supported for Facebook video posts, Facebook Reels, YouTube videos and Shorts, and LinkedIn video posts. Max 10MB, JPG/PNG recommended.
      */
     thumbnail?: string;
     /**
@@ -22037,7 +22037,7 @@ export type YouTubeDemographicsResponse = {
  * YouTube video settings.
  *
  * - YouTube publishes a vertical or square video of 3 minutes or less as a Short; there is no flag.
- * - Custom thumbnails work for regular videos only.
+ * - Custom thumbnails work on regular videos and Shorts (verified on a Short on 2026-11-01).
  * - Scheduled videos are uploaded immediately with the specified visibility.
  * - There is no description field here: the description comes from the post content, or from customContent on this platform target when set, truncated to 5000 characters.
  *
