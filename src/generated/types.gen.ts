@@ -58244,7 +58244,7 @@ export type BoostPostData = {
     body: {
         creativeFeatures?: MetaCreativeFeatures;
         /**
-         * Zernio post ID (provide this or platformPostId)
+         * The Zernio post id (24 hex characters) returned when the post was created through Zernio. Send this or platformPostId. A value that is not a Zernio id is boosted as the platform post id, the same as platformPostId; a Zernio id that matches no post is a 404 on postId.
          */
         postId?: string;
         /**
@@ -58258,7 +58258,7 @@ export type BoostPostData = {
         /**
          * Zernio account id. Normally the connected posting account (facebook, instagram, tiktok, linkedin, pinterest, twitter), a googleads account or a redditads account.
          *
-         * TikTok: the TikTok Ads connection (platform tiktokads) is also accepted when the post brings its own authorization (sparkAuthCode or sparkPosts), so Spark ads need no organic TikTok account connected. Such a call must use platformPostId, not postId.
+         * TikTok: the TikTok Ads connection (platform tiktokads) is also accepted when the post brings its own authorization (sparkAuthCode or sparkPosts), so Spark ads need no organic TikTok account connected. Such a call cannot use a Zernio postId: send the TikTok item id (as platformPostId, or in postId).
          */
         accountId: string;
         /**
