@@ -15817,15 +15817,23 @@ export type TreasuryTopup = {
      */
     feeCoveredByZernio?: boolean;
     /**
-     * Gross amount charged
+     * The amount you asked for. A top-up charges the card fee on top of it and credits what Stripe delivers, at least this amount. Older top-ups charged this amount and credited it minus the fee.
      */
     amountCents?: number;
     /**
-     * Stripe processing fee you paid; null until Stripe reports it, 0 when Zernio covers it
+     * Card fee. Once paid, the fee Stripe took (chargedCents minus netCents). Before, the fee charged on top, or null on an older top-up. 0 when Zernio covers it (`payout_batch`).
+     */
+    feeCents?: (number) | null;
+    /**
+     * What your card was charged: amountCents plus the card fee charged on top, or amountCents on an older top-up and on a `payout_batch` payment.
+     */
+    chargedCents?: number;
+    /**
+     * feeCents once the top-up is paid; null before. Kept for older clients: read feeCents.
      */
     stripeFeeCents?: (number) | null;
     /**
-     * Amount credited to your balance: gross minus the Stripe fee, or the whole charge when Zernio covers the fee; null until Stripe reports it
+     * Amount credited to your balance, what Stripe delivered; null until paid. At least amountCents on a top-up that charged the fee on top, and amountCents on `payout_batch` payments.
      */
     netCents?: (number) | null;
     /**
@@ -23631,7 +23639,7 @@ export type GetBalanceError = ({
 export type CreateTopupData = {
     body: {
         /**
-         * Amount in cents, minimum $10
+         * Amount to credit to your balance, in cents: $10 to $100,000. The card fee is charged on top.
          */
         amountCents: number;
         /**
@@ -23660,6 +23668,22 @@ export type CreateTopupData = {
 
 export type CreateTopupResponse = ({
     topupId: string;
+    /**
+     * Credited to your balance once paid: exactly this when feeIsExact, else at least this.
+     */
+    amountCents: number;
+    /**
+     * Card fee, charged on top of amountCents.
+     */
+    feeCents: number;
+    /**
+     * What the card is charged: amountCents plus feeCents.
+     */
+    chargedCents: number;
+    /**
+     * True when feeCents is exactly Stripe's fee for this card. False when it is the region's highest rate, so Stripe may take less and the difference is added to your balance.
+     */
+    feeIsExact: boolean;
     status: 'succeeded' | 'processing' | 'requires_action';
     /**
      * PaymentIntent client secret for Stripe.js handleNextAction; set only when status is requires_action
@@ -23746,6 +23770,34 @@ export type ListTopupsError = (ErrorResponse | {
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
 });
 
+export type GetTopupCardFeeData = {
+    query?: {
+        /**
+         * A saved card of the billing owner's (`pm_...`). Defaults to the default payment method.
+         */
+        paymentMethodId?: string;
+    };
+};
+
+export type GetTopupCardFeeResponse = ({
+    /**
+     * Percentage of the charge, in basis points (315 is 3.15%).
+     */
+    feeBps: number;
+    /**
+     * Fixed part of the fee, in cents.
+     */
+    fixedCents: number;
+    /**
+     * True when this is exactly Stripe's rate for the card.
+     */
+    feeIsExact: boolean;
+});
+
+export type GetTopupCardFeeError = (ErrorResponse | {
+    error?: string;
+});
+
 export type GetTopupReceiptData = {
     path: {
         topupId: string;
@@ -23755,6 +23807,18 @@ export type GetTopupReceiptData = {
 export type GetTopupReceiptResponse = ({
     url: string;
     format: 'pdf' | 'page';
+    /**
+     * As in the top-up list.
+     */
+    amountCents: number;
+    /**
+     * Card fee paid, as in the top-up list.
+     */
+    feeCents: (number) | null;
+    /**
+     * What the card was charged, the total on the receipt.
+     */
+    chargedCents: number;
 });
 
 export type GetTopupReceiptError = (ErrorResponse | {
