@@ -2685,7 +2685,7 @@ export type AnalyticsListResponse = {
         isAd?: boolean;
         profileId?: (string) | null;
         /**
-         * Cover image URL. Facebook and Instagram covers whose Meta CDN link expired are re-read from Meta and served from Zernio storage, so that URL does not expire and can be cached.
+         * Cover image URL. Facebook, Instagram and TikTok covers whose platform CDN link expired are re-read from the platform and served from Zernio storage, so that URL does not expire and can be cached.
          */
         thumbnailUrl?: string;
         mediaType?: 'image' | 'video' | 'gif' | 'document' | 'carousel' | 'text';
@@ -2787,7 +2787,7 @@ export type AnalyticsSinglePostResponse = {
      */
     message?: (string) | null;
     /**
-     * Cover image URL. Facebook and Instagram covers whose Meta CDN link expired are re-read from Meta and served from Zernio storage, so that URL does not expire and can be cached.
+     * Cover image URL. Facebook, Instagram and TikTok covers whose platform CDN link expired are re-read from the platform and served from Zernio storage, so that URL does not expire and can be cached.
      */
     thumbnailUrl?: (string) | null;
     mediaType?: ('image' | 'video' | 'carousel' | 'text') | null;
