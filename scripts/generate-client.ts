@@ -196,7 +196,7 @@ import {
 ${allFunctions.map(f => `  ${f},`).join('\n')}
 } from './generated/sdk.gen';
 
-import { ZernioApiError, parseApiError } from './errors';`;
+import { ZernioApiError, ValidationError, parseApiError } from './errors';`;
 
   // Generate interface
   const interfaceCode = `
@@ -363,6 +363,13 @@ export class Zernio {
    */
   private _bind<F>(operation: F): F {
     return ((options?: Record<string, unknown>) => {
+      const unsafeParam = Zernio._findDotSegmentParam(options?.['path']);
+      if (unsafeParam !== undefined) {
+        return Promise.reject(new ValidationError(
+          \`Path parameter "\${unsafeParam}" cannot be empty, "." or "..": the URL parser would send the request to a different endpoint.\`,
+          { [unsafeParam]: ['must not be empty, "." or ".."'] },
+          { code: 'invalid_path_parameter', param: unsafeParam }));
+      }
       const withClient = { ...options };
       if (withClient['client'] === undefined) {
         withClient['client'] = this._dispatchClient;
@@ -373,6 +380,16 @@ export class Zernio {
       }
       return (operation as (opts: unknown) => unknown)(withClient);
     }) as F;
+  }
+
+  // WHATWG URL drops "." and ".." segments (and their %2e forms), so a dot-only param can't be escaped, only refused.
+  private static _findDotSegmentParam(path: unknown): string | undefined {
+    if (!path || typeof path !== 'object') return undefined;
+    for (const [name, value] of Object.entries(path)) {
+      const segment = Array.isArray(value) ? value.join(',') : value;
+      if (typeof segment === 'string' && ['', '.', '..'].includes(segment)) return name;
+    }
+    return undefined;
   }
 
   /**
