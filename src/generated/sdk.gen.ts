@@ -16507,7 +16507,7 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * Create standalone ad
  * Creates a paid ad with your own creative, building the campaign and ad set it needs or adding it to existing ones.
  *
- * Works across Meta, Google Ads, Pinterest, TikTok, X, LinkedIn, OpenAI Ads (ChatGPT Ads) and Reddit Ads. Per-platform required fields, budget minimums, and video-ad rules are documented on each property below.
+ * Works across Meta, Google Ads, Pinterest, TikTok, X, LinkedIn, OpenAI Ads (ChatGPT Ads), Reddit Ads and Microsoft Ads. Per-platform required fields, budget minimums, and video-ad rules are documented on each property below.
  *
  * ### Request shapes
  *

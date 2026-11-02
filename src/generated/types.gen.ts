@@ -26801,7 +26801,7 @@ export type ListAccountsData = {
          */
         adAccountRows?: boolean;
         /**
-         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit), communication = WhatsApp, Telegram, Discord, Slack and iMessage, blogs = Shopify and WordPress, crm = HubSpot, analytics = Google Analytics, social = every other platform.
+         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit, Microsoft), communication = WhatsApp, Telegram, Discord, Slack and iMessage, blogs = Shopify and WordPress, crm = HubSpot, analytics = Google Analytics, social = every other platform.
          */
         category?: 'social' | 'ads' | 'communication' | 'blogs' | 'crm' | 'analytics';
         /**
