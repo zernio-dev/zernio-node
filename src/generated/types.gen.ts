@@ -41251,6 +41251,10 @@ export type TransferVoiceCallError = (ErrorResponse | unknown);
 export type GetVoiceCallEstimateData = {
     query: {
         /**
+         * Destination the call bridges to: `tel:+E164`, `sip:...` or `wss://...`. Defaults to the dialing number's configured forward. A `tel:` destination adds a second carrier leg to the quote. Encode the `+` as `%2B`.
+         */
+        forwardTo?: string;
+        /**
          * The number the call would dial from, E.164. When it is verified on a Branded Calling identity and `to` is a US number, the estimate includes the per-call Branded Calling surcharge.
          */
         from?: string;
