@@ -16040,14 +16040,33 @@ export const getAdAccountFinance = <ThrowOnError extends boolean = false>(option
  * - the Page's Lead Ads terms
  * - the newest pixel event
  * - the WhatsApp number linked to the Page
+ * - the last refusal Meta gave a create or boost for a reason only the account owner can fix (`last_refusal`, see below)
  *
  * Each check reads on its own: one this connection cannot see comes back `unknown` instead of failing the request.
  *
+ * ### Remembered refusals
+ *
+ * Meta cannot be asked about a code 31 security check up front. So `last_refusal` reports the last refusal of this kind that a create or boost met:
+ *
+ * - a code 31 security check or a temporary block, remembered for the connection (`accountId`)
+ * - a payment method, the non-discrimination policy or a disabled account, remembered for the ad account
+ *
+ * It stays until a later create succeeds, or for 7 days (1 day for a temporary block).
+ *
  * ### Reading the result
  *
- * - `status` is `blocked` when any check is `error` (ads will be refused), `attention` when one is `warning`, else `ok`.
+ * - `ready` is `false` when a create or boost would be refused. `blockers` lists why, each with the `code` a refused create returns (`ad_account_unusable`, `ad_account_payment_required`, `linked_account_required`, `meta_security_check_required`, `ad_account_policy_not_accepted`, ...), a `hint` and a `fix` link.
+ * - `status` is `blocked` when any check is `error`, `attention` when one is `warning`, else `ok`. It also counts problems that stop delivery but not a create, such as a reached spending limit, so `status` can be `blocked` while `ready` is `true`.
+ * - A check that is not `ok` carries the `code` of the create refusal it explains, when there is one: `whatsapp` (`missing`) carries `whatsapp_number_not_linked` and `lead_terms` (`missing`) carries `lead_ads_terms_not_accepted`, which only click-to-WhatsApp ads and lead ads hit.
  * - `missing` marks an optional asset that is not set up (a pixel, a WhatsApp number): only the ads that need it are affected.
+ * - An unsettled balance (`account_status` 3) is a `warning`: Meta still accepts creates on it while a payment method is set.
  * - A `fix.url` is either a Meta page or a Zernio dashboard path (starting with `/`).
+ *
+ * ### validateOnly
+ *
+ * `POST /v1/ads/create` and `POST /v1/ads/boost` with `validateOnly: true` run the account status and payment checks first. A blocked account answers the same `code` with `details.hint` and `details.fix`, without a Meta dry run (Meta counts dry runs as ad writes).
+ *
+ * They read the account state cached for up to 5 minutes. This endpoint always reads it fresh and refreshes that cache.
  *
  */
 export const getAdAccountHealth = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdAccountHealthData, ThrowOnError>) => {

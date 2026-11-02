@@ -57746,12 +57746,40 @@ export type GetAdAccountHealthData = {
 export type GetAdAccountHealthResponse = ({
     adAccountId?: string;
     status?: 'ok' | 'attention' | 'blocked';
+    /**
+     * False when a create or boost on this ad account would be refused; `blockers` says why.
+     */
+    ready?: boolean;
+    blockers?: Array<{
+        /**
+         * The `checks[].id` that blocks.
+         */
+        check: string;
+        /**
+         * The error code a refused create or boost returns for this reason.
+         */
+        code: string;
+        message: string;
+        /**
+         * What to do, in English.
+         */
+        hint: string;
+        fix?: {
+            label?: string;
+            url?: string;
+        };
+    }>;
     checkedAt?: string;
     checks?: Array<{
-        id: 'account_status' | 'payment' | 'spend_cap' | 'page' | 'instagram' | 'lead_terms' | 'pixel' | 'whatsapp';
+        id: 'account_status' | 'payment' | 'spend_cap' | 'page' | 'instagram' | 'lead_terms' | 'pixel' | 'whatsapp' | 'last_refusal';
         status: 'ok' | 'warning' | 'error' | 'missing' | 'unknown';
         title: string;
         message: string;
+        /**
+         * When the check is not `ok`: the error code a create refused for this reason returns.
+         */
+        code?: string;
+        hint?: string;
         fix?: {
             label?: string;
             url?: string;
@@ -58870,6 +58898,7 @@ export type BoostPostData = {
          *
          * - Idempotency-Key storage and the duplicate-boost guard are bypassed.
          * - Counts toward the 30 Meta writes per ad account per 5 minutes.
+         * - Runs the account status and payment checks of GET /v1/ads/accounts/health first: an ad account that is not ready answers its blocker `code` (`ad_account_unusable`, `ad_account_payment_required`) with `details.hint` and `details.fix`, and Meta is not called.
          * - With `adSetId`, only the ad is dry-run.
          * - An Instagram video Meta refuses as a direct reference (subcode 1815279) comes back as `unverified` nodes, because the copy a real boost makes cannot be dry-run.
          *
@@ -59290,6 +59319,8 @@ export type CreateStandaloneAdData = {
          * **Google Performance Max**: validates the complete atomic campaign and asset group, with no resource creation or local persistence. Validation still downloads image URLs and consumes quota.
          *
          * **Meta**: validates the inline campaign, ad set, creative and ad with execution_options validate_only. Nothing is uploaded or created; validation bypasses Idempotency-Key storage. Success returns 200 with per-node results; a Meta rejection returns an error.
+         *
+         * Before the dry run, Meta validateOnly runs the account status and payment checks of GET /v1/ads/accounts/health: an ad account that is not ready answers its blocker `code` (`ad_account_unusable`, `ad_account_payment_required`) with `details.hint` and `details.fix`, and Meta is not called.
          *
          * - Supported: a single image or existing video.id (each also with bodies[] / headlines[] Multiple Text Options), all-image placementAssets with per-rule copy and text pools, or existingCreativeId.
          * - Return 400: dynamicCreative, translations, carouselCards, placement videos, new video uploads, creatives[], adSetId, RESERVED buying.
