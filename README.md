@@ -1009,6 +1009,7 @@ try {
 | `creatorPortal.getCreatorPortal()` | Read a creator invite or participant page |
 | `creatorPortal.joinCreatorCampaign()` | Join a campaign |
 | `creatorPortal.recoverCreatorPortalLinks()` | Email a creator their campaign links |
+| `creatorPortal.removeCreatorAccount()` | Remove a connected account |
 | `creatorPortal.startCreatorConnect()` | Start connecting a creator account |
 | `creatorPortal.startCreatorPayouts()` | Start payout onboarding |
 | `creatorPortal.submitCreatorPost()` | Submit a post |

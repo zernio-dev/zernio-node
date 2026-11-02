@@ -6596,6 +6596,10 @@ export type CreatorPortalCampaign = {
     contentRules: (string) | null;
     startsAt: (string) | null;
     endsAt: (string) | null;
+    /**
+     * Posts published before this moment do not count: `startsAt`, else when the campaign went live.
+     */
+    startedAt: string;
     currency: string;
     economics: CreatorPortalEconomics;
     /**
@@ -6610,6 +6614,10 @@ export type CreatorPortalCampaign = {
      * Days each submitted post is tracked for views.
      */
     trackingDays: number;
+    /**
+     * How many connected accounts can submit posts. Null means no limit.
+     */
+    maxAccountsPerParticipant: (number) | null;
 };
 
 /**
@@ -6667,10 +6675,18 @@ export type CreatorPortalParticipant = {
      * Verified accounts on the campaign's platforms.
      */
     accounts: Array<{
+        /**
+         * Pass to `DELETE /public/creator-campaigns/{token}/accounts/{accountId}` to remove the account.
+         */
+        id: string;
         platform: string;
         username: string;
         displayName: (string) | null;
         avatarUrl: (string) | null;
+        /**
+         * False for an account connected past `maxAccountsPerParticipant`: posts from it are refused until another account is removed.
+         */
+        counts: boolean;
     }>;
     /**
      * The latest 100 submissions.
@@ -6719,11 +6735,15 @@ export type CreatorPortalPayoutEntry = {
 
 export type CreatorPortalPayoutSetup = {
     /**
-     * How the campaign pays: treasury means through Zernio, so the creator onboards for payouts.
+     * How the campaign pays: treasury means through Zernio, so the creator onboards for payouts, which they can do from the moment they join. Earnings wait until it is done.
      */
     mode: 'none' | 'external' | 'treasury';
     status: 'not_started' | 'pending' | 'enabled' | 'not_applicable';
     country: (string) | null;
+    /**
+     * The country the request came from, to preselect before payout setup starts. Null once the payout account has a country, and outside treasury mode.
+     */
+    suggestedCountry: (string) | null;
     /**
      * Treasury payouts sent to the creator.
      */
@@ -6735,7 +6755,7 @@ export type CreatorPortalPayoutSetup = {
 };
 
 /**
- * How the campaign pays: treasury means through Zernio, so the creator onboards for payouts.
+ * How the campaign pays: treasury means through Zernio, so the creator onboards for payouts, which they can do from the moment they join. Earnings wait until it is done.
  */
 export type mode2 = 'none' | 'external' | 'treasury';
 
@@ -24415,6 +24435,28 @@ export type SubmitCreatorPostResponse = ({
 });
 
 export type SubmitCreatorPostError = (ErrorResponse);
+
+export type RemoveCreatorAccountData = {
+    path: {
+        /**
+         * The `id` of one of the participant's `accounts`.
+         */
+        accountId: string;
+        /**
+         * A participant token or an open invite token. A malformed token answers 404 like an unknown one.
+         */
+        token: string;
+    };
+};
+
+export type RemoveCreatorAccountResponse = ({
+    /**
+     * Always true.
+     */
+    removed: boolean;
+});
+
+export type RemoveCreatorAccountError = (ErrorResponse);
 
 export type GetCreatorPayoutsData = {
     path: {
