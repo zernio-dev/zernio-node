@@ -2361,7 +2361,7 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  * - When Meta reports that the number's inbound message webhook does not reach Zernio, or subscribing the number's WhatsApp Business Account to Zernio's webhooks failed at connect, `platformConnection.inboundWebhookSubscribed` is `false`, an entry is added to `issues`, and the overall `status` is at least `warning`.
  * - When `platformConnection.phoneStatus` is anything other than `CONNECTED`, an entry is added to `issues` and the overall `status` is at least `warning`; `BANNED` makes it `error`. `disconnectReason` stays null, since reconnecting does not lift a Meta status.
  *
- * ### Standalone ads connections (`googleads`, `redditads`)
+ * ### Standalone ads connections (`googleads`, `redditads`, `microsoftads`)
  *
  * A connection that cannot serve requests until a fresh OAuth repairs it adds an entry to `issues`. It also adds a recommendation to call `GET /v1/connect/{platform}/ads`, whose `authUrl` reconnects the same account.
  *
@@ -2783,6 +2783,22 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
  *
  * - `error=reddit_ads_scope_not_granted`: the user unticks `adsread` or `adsedit` on Reddit's consent screen (nothing is saved)
  * - `error=reddit_ads_no_ad_accounts`: the user reaches no Reddit ad account
+ *
+ * Without `redirect_url` the browser lands on the Zernio dashboard's ad account picker for the new connection.
+ *
+ * ### Standalone platforms (microsoftads)
+ *
+ * Starts the Microsoft Advertising OAuth flow and creates a standalone ads SocialAccount (microsoftads) with no parent. It is reached only as `microsoftads` in the path.
+ *
+ * Microsoft Advertising users sign in with a Microsoft account by default. A user who signs in to ads.microsoft.com with Google passes `identityProvider=google`, and the flow runs on Google's consent screen instead.
+ *
+ * If an active Microsoft Ads connection already exists on the profile, is not flagged needsReconnection and was signed in with the same identity provider, returns alreadyConnected: true. Otherwise it returns an authUrl; completing it reconnects the same account (same accountId).
+ *
+ * Discovery lists every Microsoft Advertising ad account the user can reach. The callback redirects with `platform=microsoftads` and:
+ *
+ * - `error=microsoft_ads_scope_not_granted`: the user declines the Microsoft Advertising permission (nothing is saved)
+ * - `error=microsoft_ads_unknown_user`: the account that signed in is not a Microsoft Advertising user, for example a Google user connecting without `identityProvider=google` (nothing is saved)
+ * - `error=microsoft_ads_no_ad_accounts`: the user reaches no Microsoft Advertising ad account
  *
  * Without `redirect_url` the browser lands on the Zernio dashboard's ad account picker for the new connection.
  *
@@ -16578,6 +16594,17 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * Only the legacy single-creative shape is available: `creatives[]`, `adSetId`, `existingCampaignId` and `validateOnly` are refused.
  *
  * Reddit throttling surfaces as 429 `rate_limited` with `platform: reddit`; retry after a delay. To promote an existing Reddit post, use POST /v1/ads/boost.
+ *
+ * ### Microsoft Ads
+ *
+ * Use the `accountId` of a `microsoftads` connection and its numeric `adAccountId`. Zernio creates a Search campaign carrying the daily budget and the countries, an ad group carrying the schedule, a responsive search ad and the `keywords`.
+ *
+ * - `goal` is `traffic`; `budgetType` must be `daily`.
+ * - `headline`, `body` and `linkUrl` are required. `additionalHeadlines` and `additionalDescriptions` complete the ad to 3 to 15 headlines (30 characters) and 2 to 4 descriptions (90 characters); missing ones are filled from `name` and the link's host.
+ * - `countries` (or `targeting.countries`) is required; no other targeting field applies.
+ * - Bid fields, `negativeKeywords`, `campaignNegativeKeywords`, sitelinks, callouts, structured snippets, `businessName`, `longHeadline` and a `campaignType` other than `search` return 422.
+ *
+ * Without `status`, every level is switched on and the campaign spends once Microsoft approves the ad: send `status: PAUSED` to create it paused. A failed step deletes the campaign the call created.
  *
  * ### Idempotency
  *
