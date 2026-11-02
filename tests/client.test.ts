@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, onTestFinished } from 'vitest';
 import Zernio, { Late, ZernioApiError, LateApiError } from '../src';
 import packageJson from '../package.json';
 
@@ -110,6 +110,39 @@ describe('Zernio Client', () => {
     });
 
     expect(request?.headers.get('User-Agent')).toBe('custom-agent');
+  });
+
+  const okFetch = () =>
+    vi.fn(
+      async (_input: Request) =>
+        new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } })
+    );
+
+  it('should send every request through a client-level fetch', async () => {
+    const spy = okFetch();
+    const globalFetch = vi.fn(async () => {
+      throw new Error('globalThis.fetch must not be reached');
+    });
+    vi.stubGlobal('fetch', globalFetch);
+    onTestFinished(() => vi.unstubAllGlobals());
+    const client = new Zernio({ apiKey: 'test_key', fetch: spy as unknown as typeof fetch });
+
+    await client.posts.listPosts();
+
+    expect(globalFetch).not.toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy.mock.calls[0]?.[0].headers.get('Authorization')).toBe('Bearer test_key');
+  });
+
+  it('should let a per-call fetch replace the client-level fetch', async () => {
+    const clientLevel = okFetch();
+    const perCall = okFetch();
+    const client = new Zernio({ apiKey: 'test_key', fetch: clientLevel as unknown as typeof fetch });
+
+    await client.posts.listPosts({ fetch: perCall as unknown as typeof fetch });
+
+    expect(perCall).toHaveBeenCalledTimes(1);
+    expect(clientLevel).not.toHaveBeenCalled();
   });
 
   it('should have all resource namespaces', () => {

@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `fetch` client option: a custom fetch used for every request, for logging, tracing, proxying or guarding calls. It receives the final `Request` with the auth header set, and a `fetch` passed to a single call replaces it for that call.
+
 ### Fixed
 - The `timeout` client option is now applied to every request (it was previously ignored). The default is 300000 ms, and a timed-out call rejects with a `TimeoutError` DOMException. A per-call `signal` replaces the timeout for that call. If you set `timeout` by hand and use `publishNow`, allow for publishes that take minutes. A timed-out create can still complete on the server, so retry it with the same `Idempotency-Key`.
 

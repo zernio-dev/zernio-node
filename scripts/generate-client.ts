@@ -222,6 +222,12 @@ export interface ClientOptions {
    * Default headers to include with every request.
    */
   defaultHeaders?: Record<string, string>;
+
+  /**
+   * Custom fetch used for every request, e.g. to log, trace or proxy calls. It receives the final \`Request\`, auth header included. A \`fetch\` passed to a single call replaces it for that call.
+   * @default globalThis.fetch
+   */
+  fetch?: typeof fetch;
 }`;
 
   // Generate namespace properties
@@ -461,6 +467,7 @@ ${namespaceProps.join('\n\n')}
           'User-Agent': \`zernio-node/\${packageJson.version}\`,
           ...(options.defaultHeaders ?? {}),
         },
+        fetch: options.fetch,
       })
     );
 
