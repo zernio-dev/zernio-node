@@ -393,7 +393,7 @@ export const getFacebookPostEarnings = <ThrowOnError extends boolean = false>(op
  * These metrics reflect the entire account's performance across all content surfaces (feed, stories, explore, profile), and are fundamentally different from post-level metrics.
  *
  * - Data may be delayed up to 48 hours.
- * - Max 90 days, defaults to last 30 days.
+ * - Max 90 days (30 for accounts connected through Facebook Login), defaults to last 30 days.
  *
  */
 export const getInstagramAccountInsights = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetInstagramAccountInsightsData, ThrowOnError>) => {
