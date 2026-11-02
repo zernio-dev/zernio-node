@@ -4669,6 +4669,27 @@ export type CampaignSubmissionFlag = {
 export type code = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap' | 'paid_views' | 'organic_unverified';
 
 /**
+ * Facebook only. The media on a comment (sticker, GIF, photo, shared link or video). One attachment per
+ * comment, a single object. URLs are expiring Meta CDN links (oe= expiry), so fetch promptly. Instagram
+ * comments carry no media.
+ *
+ */
+export type CommentAttachment = {
+    /**
+     * Attachment type as Facebook reports it, for example sticker, animated_image_share, photo, image_share, share or video_inline.
+     */
+    type: string;
+    /**
+     * Rendered image/preview URL (from attachment.media.image.src).
+     */
+    imageUrl?: string;
+    /**
+     * Source URL (from attachment.url). For GIFs this is an l.facebook.com redirect.
+     */
+    url?: string;
+};
+
+/**
  * Actions taken on the matched comment itself (comment trigger only; ignored on the
  * story-reply and DM doors). They never block or fail the DM: when one cannot run,
  * the log row says why (`likeSkipped`, `hideSkipped`).
@@ -18335,25 +18356,12 @@ export type WebhookPayloadComment = {
             isDarkPost?: boolean;
         };
         /**
-         * Facebook only. Present on graphic-only comments (sticker, GIF, photo) that
-         * carry no text. URLs are ephemeral and may expire for Meta platforms (oe= expiry),
-         * so fetch promptly. Instagram comments do not support attachments.
+         * Facebook only. Present on graphic-only comments (sticker, GIF, photo) that carry no text:
+         * the webhook only includes it when the comment has no text. The REST comments API returns it
+         * whenever Facebook returns one, text or not.
          *
          */
-        attachment?: {
-            /**
-             * Attachment type: sticker, animated_image_share, or photo.
-             */
-            type: string;
-            /**
-             * Rendered image/preview URL (from attachment.media.image.src).
-             */
-            imageUrl?: string;
-            /**
-             * Source URL (from attachment.url). For GIFs this is an l.facebook.com redirect.
-             */
-            url?: string;
-        };
+        attachment?: (CommentAttachment);
     };
     post: {
         /**
@@ -39008,6 +39016,10 @@ export type GetInboxPostCommentsResponse = ({
          * Whether the current user has liked this comment
          */
         isLiked?: boolean;
+        /**
+         * Facebook only. The comment's sticker, GIF, photo, share or video, whenever Facebook returns one (replies included). Absent when the comment has no media and on every other platform.
+         */
+        attachment?: (CommentAttachment);
         /**
          * Bluesky like URI for unliking
          */
