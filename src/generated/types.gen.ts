@@ -23233,6 +23233,27 @@ export type GetDailyMetricsResponse = ({
         clicks?: number;
         views?: number;
     }>;
+    /**
+     * Sums of the whole range for the applied filters.
+     */
+    totals?: {
+        postCount?: number;
+        impressions?: number;
+        /**
+         * Sum of per-post reach, not unique accounts.
+         */
+        reach?: number;
+        likes?: number;
+        comments?: number;
+        shares?: number;
+        saves?: number;
+        clicks?: number;
+        views?: number;
+        /**
+         * Likes, comments, shares and saves (interactions).
+         */
+        engagement?: number;
+    };
 });
 
 export type GetDailyMetricsError = (ErrorResponse | {
