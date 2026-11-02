@@ -316,10 +316,16 @@ export const getYouTubeDailyViews = <ThrowOnError extends boolean = false>(optio
  * - Up to 100 points (elapsedVideoTimeRatio 0.01-1.0), aggregated over the whole date range. YouTube does not support per-day retention breakdowns.
  * - audienceWatchRatio: the absolute share of viewers watching at that point in the video. It can exceed 1 (rewinds and looping, common on Shorts).
  * - relativeRetentionPerformance: compares against videos of similar length (0 = worst, 0.5 = median, 1 = best).
+ * - Zernio returns exactly the buckets YouTube reports for the requested range and fills none in. A curve that ends before 1.0, or skips a position, means YouTube returned no row there for that range.
+ * - The range ends at toDate (default 3 days ago), so recent views are included only with a later toDate.
  *
  * ### Empty curves
  *
  * YouTube returns an empty curve for videos with very few views or before analytics processing completes (2-3 day delay).
+ *
+ * ### startedWatching and stoppedWatching
+ *
+ * YouTube does not return segment-level data for every video. Zernio then fetches the curve without it: `segmentMetricsAvailable` is `false` and both fields are `0` placeholders in every point. When it is `true`, a `0` is the value YouTube reported.
  *
  */
 export const getYouTubeVideoRetention = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetYouTubeVideoRetentionData, ThrowOnError>) => {

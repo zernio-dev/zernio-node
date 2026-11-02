@@ -22177,7 +22177,11 @@ export type YouTubeVideoRetentionResponse = {
      */
     provisionalSince?: string;
     /**
-     * Up to 100 points covering the video timeline, aggregated over the date range. Can be empty when YouTube has no retention data for the video in the given range.
+     * Whether YouTube returned startedWatching and stoppedWatching for this curve. When false, both are 0 placeholders in every point, not measured values.
+     */
+    segmentMetricsAvailable?: boolean;
+    /**
+     * Up to 100 points covering the video timeline, aggregated over the date range. Contains only the buckets YouTube reports for that range and is never zero-filled, so it can end before 1.0, skip positions, or be empty.
      */
     retentionCurve?: Array<{
         /**
@@ -22193,11 +22197,11 @@ export type YouTubeVideoRetentionResponse = {
          */
         relativeRetentionPerformance?: number;
         /**
-         * Viewers who started watching in this segment. 0 when YouTube has no segment-level data for the video.
+         * Viewers who started watching in this segment. A 0 placeholder when segmentMetricsAvailable is false.
          */
         startedWatching?: number;
         /**
-         * Viewers who stopped watching in this segment. 0 when YouTube has no segment-level data for the video.
+         * Viewers who stopped watching in this segment. A 0 placeholder when segmentMetricsAvailable is false.
          */
         stoppedWatching?: number;
         /**
