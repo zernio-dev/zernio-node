@@ -34225,7 +34225,7 @@ export type UpdateDiscordSettingsData = {
          */
         webhookUsername?: string;
         /**
-         * Custom avatar URL. Empty string resets to default bot avatar.
+         * Custom avatar URL. Empty string resets to default bot avatar. Zernio upload URLs (temp/) are copied to permanent storage; an expired one returns 400.
          */
         webhookAvatarUrl?: string;
         /**
