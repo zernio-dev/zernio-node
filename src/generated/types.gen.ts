@@ -8111,14 +8111,25 @@ export type ErrorResponse = {
     /**
      * Additional structured context for the error (for example field-level validation errors). What it carries depends on the endpoint and platform.
      *
-     * **Meta ads refusals.** The ones customers hit most come back with their own `code` instead of `platform_api_error`, the field to fix in `param`, and `details.fix` ({ label, url }) pointing at the Meta page that resolves it:
+     * **Meta ads refusals.** The ones customers hit most come back with their own `code` instead of `platform_api_error`, the field to fix in `param`, and an English `details.hint` saying how to fix it. `details.fix` ({ label, url }) links the Meta page that resolves it, when there is one.
      *
-     * - `ad_account_payment_required`
-     * - `ad_account_policy_not_accepted`
-     * - `meta_security_check_required`
-     * - `meta_action_blocked`
-     * - `whatsapp_number_not_linked`
-     * - `invalid_targeting`
+     * The code is picked from Meta's numeric `code` and `error_subcode`, never from the message, so it is the same whatever language Meta wrote `error_user_msg` in. Branch on `code` and show `details.hint`.
+     *
+     * - `ad_account_payment_required`: the ad account has no usable payment method (subcode 1815010, 1359188).
+     * - `ad_account_policy_not_accepted`: a business admin has to accept Meta's non-discrimination policy (subcode 2859002, 2859024).
+     * - `lead_ads_terms_not_accepted`: the Facebook Page has not accepted the Lead Ads terms (subcode 1815089).
+     * - `verified_advertiser_required`: the market requires a verified beneficiary and payer; send `regionalRegulationIdentities` (subcode 3858634, 3858636, 3858442, 3858548, 3858495).
+     * - `ad_account_unusable`: the ad account is not active, or the business is restricted from advertising (subcode 1885316, 2446325, and 2490592, 4841021 below).
+     * - `meta_security_check_required`: the Facebook user behind the connection is held at a security check (code 31).
+     * - `meta_action_blocked`: Meta temporarily blocked the Facebook user from this action (subcode 2859015).
+     * - `meta_ad_consent_required`: the Page or Instagram owner chose Meta without ads or less personalized ads (subcode 3858231, 3858412).
+     * - `instagram_account_restricted`: Meta restricted the Instagram account the ad runs as (subcode 2207070).
+     * - `insufficient_permissions`: the ad account cannot use the Instagram account, or the Facebook user has no advertiser permission on the Page (subcode 1815199, 1815202, 1885499, 1341012, and the Advertise permission case below).
+     * - `whatsapp_number_not_linked`: the WhatsApp number is no longer linked to the Page (subcode 2446880).
+     * - `invalid_targeting`: Meta refused the audience or a placement (subcode 1487079, 1870247, 2909035, 1870189, 1870188, 1487756, 1487843, 2490562).
+     * - `post_not_boostable`: Meta does not allow the post to be promoted (subcode 2446187, 2875030, 1487472).
+     * - `budget_too_low`: the budget is below Meta's minimum, which `platformError.error_user_msg` states (subcode 1885272).
+     * - `meta_object_not_accessible`: Meta cannot load an object the request names (wrong ID, deleted, or no access); `platformError.message` names the ID (subcode 33, on ads routes only).
      *
      * Meta's own error stays in the message and in `platformError`.
      *
