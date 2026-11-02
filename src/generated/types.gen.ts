@@ -68428,6 +68428,41 @@ export type RemoveCampaignParticipantResponse = ({
 
 export type RemoveCampaignParticipantError = (ErrorResponse);
 
+export type MoveCampaignParticipantData = {
+    body: {
+        /**
+         * Campaign to move the participant to. Same owner, not closed.
+         */
+        targetCampaignId: string;
+    };
+    path: {
+        /**
+         * Campaign the participant is in now.
+         */
+        campaignId: string;
+        /**
+         * Participant ID.
+         */
+        participantId: string;
+    };
+};
+
+export type MoveCampaignParticipantResponse = ({
+    participant: CampaignParticipant;
+    submissions: {
+        /**
+         * Posts that moved to the target.
+         */
+        moved: number;
+        /**
+         * Undecided posts rejected in this campaign because they did not fit the target.
+         */
+        rejected: number;
+    };
+});
+
+export type MoveCampaignParticipantError = (ErrorResponse);
+
 export type ResendCampaignParticipantInviteData = {
     headers?: {
         /**

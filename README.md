@@ -990,6 +990,7 @@ try {
 | `creatorCampaigns.activateCreatorCampaign()` | Activate creator campaign |
 | `creatorCampaigns.approveCampaignSubmission()` | Approve campaign submission |
 | `creatorCampaigns.closeCreatorCampaign()` | Close creator campaign |
+| `creatorCampaigns.moveCampaignParticipant()` | Move participant to another campaign |
 | `creatorCampaigns.pauseCreatorCampaign()` | Pause creator campaign |
 | `creatorCampaigns.raiseCreatorCampaignBudget()` | Raise creator campaign budget |
 | `creatorCampaigns.reinstateCampaignParticipant()` | Reinstate campaign participant |
