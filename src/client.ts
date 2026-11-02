@@ -295,7 +295,6 @@ import {
   dismissGoogleRecommendations,
   downloadEmailAttachment,
   downloadFile,
-  downloadTikTokVideo,
   duplicateAd,
   duplicateAdCampaign,
   duplicateAdSet,
@@ -2881,13 +2880,6 @@ export class Zernio {
     createVerification: this._bind(createVerification),
     getVerification: this._bind(getVerification),
     checkVerification: this._bind(checkVerification),
-  };
-
-  /**
-   * Tools API - Media download and utilities
-   */
-  tools = {
-    downloadTikTokVideo: this._bind(downloadTikTokVideo),
   };
 
   /**

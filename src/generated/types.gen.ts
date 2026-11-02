@@ -67952,60 +67952,6 @@ export type SetPartnershipAdPermissionResponse = ({
 
 export type SetPartnershipAdPermissionError = (ErrorResponse | unknown);
 
-export type DownloadTikTokVideoData = {
-    query: {
-        /**
-         * Return a download URL or the available formats.
-         */
-        action?: 'download' | 'formats';
-        /**
-         * Format ID from the formats response. Omit to select the first available format.
-         */
-        formatId?: string;
-        /**
-         * TikTok video URL or numeric video ID.
-         */
-        url: string;
-    };
-};
-
-export type DownloadTikTokVideoResponse = ({
-    success: boolean;
-    title: string;
-    /**
-     * Selected format label for action=download.
-     */
-    format?: string;
-    /**
-     * Media download URL for action=download.
-     */
-    downloadUrl?: string;
-    /**
-     * Duration in seconds for action=formats.
-     */
-    duration?: number;
-    /**
-     * Thumbnail URL for action=formats.
-     */
-    cover?: string;
-    /**
-     * Available formats for action=formats.
-     */
-    formats?: Array<{
-        id?: string;
-        label?: string;
-        ext?: string;
-        type?: string;
-        height?: number;
-        width?: number;
-        fps?: number;
-        hasAudio?: boolean;
-        hasVideo?: boolean;
-    }>;
-});
-
-export type DownloadTikTokVideoError = (unknown | ErrorResponse);
-
 export type PrepareMediaData = {
     body: {
         /**

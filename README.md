@@ -313,11 +313,6 @@ try {
 | `media.getMediaPresignedUrl()` | Get upload URL |
 | `media.prepareMedia()` | Prepare media for a platform |
 
-### Tools
-| Method | Description |
-|--------|-------------|
-| `tools.downloadTikTokVideo()` | Download a TikTok video |
-
 ### Users
 | Method | Description |
 |--------|-------------|
