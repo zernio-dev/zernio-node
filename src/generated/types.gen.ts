@@ -22759,11 +22759,13 @@ export type GetFacebookPageInsightsData = {
          * **Live Meta metrics** (current names, post-Nov-2025):
          *
          * - page_media_view (replaces deprecated page_impressions)
+         * - page_total_media_view_unique (reach: unique viewers, replaces deprecated page_impressions_unique). The reach total sums daily unique viewers, not unique people over the range: a viewer seen on several days counts once per day. For a range of exactly 28 days it is Meta's 28-day unique viewers when Meta returns them.
          * - page_views_total
-         * - page_post_engagements
+         * - page_post_engagements (content interactions: reactions, comments, shares and more)
          * - page_video_views
          * - page_video_view_time
          * - page_follows (replaces deprecated page_fans)
+         * - page_actions_post_reactions_like_total, page_actions_post_reactions_love_total, page_actions_post_reactions_wow_total, page_actions_post_reactions_haha_total, page_actions_post_reactions_sorry_total, page_actions_post_reactions_anger_total (reactions by type; like includes care)
          *
          * **Zernio-synthesized** from daily follower snapshots (filling the Nov-2025 gap left by the page_fan_adds / page_fan_removes deprecation):
          *

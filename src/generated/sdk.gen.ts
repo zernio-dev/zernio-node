@@ -337,7 +337,7 @@ export const getYouTubeVideoRetention = <ThrowOnError extends boolean = false>(o
 
 /**
  * Get Facebook Page insights
- * Returns page-level Facebook insights (media views, views, post engagements, video metrics, follower counts). The response shape matches /v1/analytics/instagram/account-insights, so the same client handling works across platforms.
+ * Returns page-level Facebook insights (media views, reach, views, post engagements, reaction counts, video metrics, follower counts). The response shape matches /v1/analytics/instagram/account-insights, so the same client handling works across platforms.
  *
  * Max 89 days, defaults to last 30 days.
  *
@@ -349,6 +349,8 @@ export const getYouTubeVideoRetention = <ThrowOnError extends boolean = false>(o
  * - page_fans
  * - page_fan_adds
  * - page_fan_removes
+ *
+ * page_impressions_unique is deprecated above Graph API v25 and is not accepted; use page_total_media_view_unique. Meta's Page Insights reference (https://developers.facebook.com/docs/graph-api/reference/insights) also deprecates a number of Page Insights metrics for all API versions by June 15, 2026.
  *
  * Use the replacements below. Because Meta did not provide direct adds/removes replacements, Zernio synthesizes followers_gained / followers_lost from the daily follower snapshotter.
  *
