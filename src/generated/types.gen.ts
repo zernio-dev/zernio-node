@@ -1810,11 +1810,16 @@ export type window = 'today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' 
 
 export type op = '>' | '>=' | '<' | '<=';
 
+export type AdRuleConditionItem = AdRuleCondition | AdRuleConditions;
+
 /**
- * Every condition must hold for an object to match. A rate with no denominator (a CPA with no conversions) never matches.
+ * A group: `all` (every item must hold) or `any` (one is enough). An item is a condition or another group, nested up to 3 levels, with at most 10 conditions in total. A rate with no denominator (a CPA with no conversions) never matches.
+ *
  */
 export type AdRuleConditions = {
-    all: Array<AdRuleCondition>;
+    all: Array<AdRuleConditionItem>;
+} | {
+    any: Array<AdRuleConditionItem>;
 };
 
 export type AdRuleEvaluation = {
