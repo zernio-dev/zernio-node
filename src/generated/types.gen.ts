@@ -9,7 +9,7 @@ export type AccountCursorPagination = {
 };
 
 export type AccountsListResponse = {
-    accounts: Array<SocialAccount>;
+    accounts: Array<ListedAccount>;
     /**
      * Whether user has analytics add-on access
      */
@@ -10262,6 +10262,28 @@ export type region = 'US' | 'GB';
 export type status32 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
+ * When inbound messages and comments were first and last seen for the account. Only events matched to this account count. WhatsApp delivery statuses for outbound messages do not count, so the stamps of a number that only sends stay null. The stamps reset on every connect.
+ */
+export type InboundActivity = {
+    /**
+     * First inbound message since the latest connect, or since tracking began for an account connected before it. Null when none yet.
+     */
+    firstMessageAt: (string) | null;
+    /**
+     * Latest inbound message, precise to about one hour. Null when none yet.
+     */
+    lastMessageAt: (string) | null;
+    /**
+     * First inbound comment since the latest connect, or since tracking began for an account connected before it. Null when none yet.
+     */
+    firstCommentAt: (string) | null;
+    /**
+     * Latest inbound comment, precise to about one hour. Null when none yet.
+     */
+    lastCommentAt: (string) | null;
+};
+
+/**
  * Click attribution for a conversation that started from a Meta ad or a ref-tagged ig.me / m.me link, as Meta sent it. Absent when the conversation did not come from an attributable click. For the ad name, campaign and ad set, read `adAttribution`.
  *
  * **First referral wins.** Values come from the referral Meta delivers for the click. If the same person later arrives through another ad or link, the original values are kept. For the fresh referral per click, read the `message.received` / `referral.received` webhooks.
@@ -11779,6 +11801,13 @@ export type LinkedInPlatformData = {
  * How long the poll accepts votes. Defaults to SEVEN_DAYS.
  */
 export type duration = 'ONE_DAY' | 'THREE_DAYS' | 'SEVEN_DAYS' | 'FOURTEEN_DAYS';
+
+export type ListedAccount = SocialAccount & {
+    /**
+     * Present only on WhatsApp, Instagram and Facebook accounts. All four stamps are null when no inbound event has been seen since the latest connect. Null for an account connected before tracking shipped until its first inbound event or its next connect.
+     */
+    inboundActivity?: (InboundActivity | null);
+};
 
 /**
  * MIME type of the file to upload. Rejected with a 400 (INVALID_FIELD_VALUE on contentType) when it is not one of these values, so generic types such as application/octet-stream are not accepted here.
@@ -27235,6 +27264,10 @@ export type GetAllAccountsHealthResponse = ({
             lastSyncedAt?: (string) | null;
         };
         /**
+         * Present on WhatsApp, Instagram and Facebook accounts. An active WhatsApp number with no inbound message or comment 24 hours after its latest connect gets an entry in issues, which never changes status. Null for accounts connected before tracking shipped, until their first inbound event or next connect.
+         */
+        inboundActivity?: (InboundActivity | null);
+        /**
          * Observed from Meta's own errors on our sends, not a live probe. It lags reality by one message in each direction.
          *
          * - Facebook/Instagram: error subcodes 2534122, 1893063, 2534029. Set on the first refused send, cleared when a later send succeeds.
@@ -27447,6 +27480,10 @@ export type GetAccountHealthResponse = ({
          */
         lastSyncedAt?: (string) | null;
     };
+    /**
+     * Present on WhatsApp, Instagram and Facebook accounts. An active WhatsApp number with no inbound message or comment 24 hours after its latest connect gets an entry in issues, which never changes status. Null for accounts connected before tracking shipped, until their first inbound event or next connect.
+     */
+    inboundActivity?: (InboundActivity | null);
     /**
      * Observed from Meta's own errors on our sends, not a live probe. It lags reality by one message in each direction.
      *
