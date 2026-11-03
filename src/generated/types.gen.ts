@@ -2081,6 +2081,12 @@ export type AdsTimelineResponse = {
          * All conversions, including actions excluded from the Conversions column (Google metrics.all_conversions). 0 on platforms without the concept.
          */
         allConversions?: number;
+        /**
+         * `conversions` split by what was counted. Keys are the Meta action_type (e.g. `offsite_conversion.fb_pixel_purchase`) or the Google conversion action name, so a goal change shows as one key ending and another starting. Meta and Google only; empty before 2026-11.
+         */
+        conversionsByType?: {
+            [key: string]: (number);
+        };
         costPerConversion?: number;
         /**
          * Per-action-type counts merged across all ads on this day. Keys are platform-native action types.
