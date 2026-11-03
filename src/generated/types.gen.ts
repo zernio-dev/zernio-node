@@ -20665,9 +20665,18 @@ export type event52 = 'review.restored';
 /**
  * Webhook payload for the review.updated event. Same shape as review.new.
  *
- * Fired when the reviewer edits their text or rating, or when a reply is posted through POST /v1/inbox/reviews/{reviewId}/reply.
+ * Fired when the reviewer edits their text or rating, or when a reply is added, edited or removed.
  *
- * A reply written directly in Google's own interface does NOT fire it: Google emits no notification when a reviewReply is written.
+ * A reply posted through POST /v1/inbox/reviews/{reviewId}/reply fires immediately. The periodic check then reports it again with the full review payload, so expect a second delivery.
+ *
+ *
+ * Replies written or removed in Google's own interface, and replies removed through the API, are reported by the periodic check.
+ *
+ *
+ * For replies written in Google, that is usually within 6 hours for reviews updated in the last 30 days, and usually within about 7 days for older ones.
+ *
+ *
+ * Only teams with a webhook subscribed to review.updated are checked. A removed reply fires with hasReply false.
  *
  * When a reply is present, review.hasReply is true and review.reply is populated.
  *
