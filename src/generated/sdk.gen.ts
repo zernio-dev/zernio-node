@@ -11896,7 +11896,10 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
  *
  * The DM fields are rejected with a 400 naming the field: `dmMessage`, `dmMessageVariations`, `buttons`, `template`, `quickReplies`, `alsoMatchInDms`, `audience`, `followGate`, `dmDelaySeconds`, `commentReplyDelaySeconds`.
  *
- * TikTok comments (TikTok business accounts only) and Threads comments arrive by webhook, so the reply follows within seconds; Threads keeps the comment poll as a fallback. LinkedIn and YouTube are read by the comment poll, so a reply follows the comment by up to the poll interval (10 minutes on posts from the last 24 hours, longer on older posts).
+ * How fast the reply follows the comment:
+ *
+ * - TikTok (business accounts only) and Threads: within seconds, since their comments arrive by webhook. Threads keeps the comment poll as a fallback.
+ * - LinkedIn and YouTube: up to the comment poll interval, 10 minutes on posts from the last 24 hours and longer on older posts.
  *
  * `repeatPolicy` applies there too: with the default `once`, a person gets one public reply per automation, and their later comments get none.
  *
