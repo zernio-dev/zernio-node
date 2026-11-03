@@ -1806,7 +1806,10 @@ export type AdRuleCondition = {
      *
      */
     window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | unknown);
-    op: '>' | '>=' | '<' | '<=';
+    /**
+     * `top` and `bottom` rank the rule's objects by the metric over the window, highest first for `top`, and match the first `value` (a whole number from 1 to 100). Objects with no value are not ranked; the run history shows each one's position.
+     */
+    op: '>' | '>=' | '<' | '<=' | 'top' | 'bottom';
     value: number;
     /**
      * Makes the condition relative: `value` becomes a ratio of the metric over `window` to the same metric over this window. `previous_period` is the same number of days just before `window`; any other value is a window, such as `30_to_2_days_ago`.
@@ -1817,7 +1820,10 @@ export type AdRuleCondition = {
     compareTo?: string;
 };
 
-export type op = '>' | '>=' | '<' | '<=';
+/**
+ * `top` and `bottom` rank the rule's objects by the metric over the window, highest first for `top`, and match the first `value` (a whole number from 1 to 100). Objects with no value are not ranked; the run history shows each one's position.
+ */
+export type op = '>' | '>=' | '<' | '<=' | 'top' | 'bottom';
 
 export type AdRuleConditionItem = AdRuleCondition | AdRuleConditions;
 
@@ -17583,7 +17589,10 @@ export type WebhookPayloadAdRuleTriggered = {
              * `today`, `yesterday`, `last_3d`, `last_7d`, `last_14d` or `last_30d`, in the account's calendar (see `run.today`). New values may be added.
              */
             window: string;
-            op: '>' | '>=' | '<' | '<=';
+            /**
+             * `>`, `>=`, `<`, `<=`, or `top` and `bottom` for a rank condition, whose `actual` is the object's position (1 first).
+             */
+            op: string;
             /**
              * The threshold set on the rule.
              */
