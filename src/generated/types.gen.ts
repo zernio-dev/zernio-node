@@ -345,9 +345,25 @@ export type Ad = {
          */
         description?: string;
         /**
-         * Meta: the call to action type (`call_to_action.type`, or the first `asset_feed_spec.call_to_action_types` entry), e.g. LEARN_MORE or SIGN_UP.
+         * Meta: the call to action type (`call_to_action.type`, or the first `asset_feed_spec.call_to_action_types` entry), e.g. LEARN_MORE or SIGN_UP. TikTok: the ad's `call_to_action`.
          */
         callToAction?: string;
+        /**
+         * TikTok only, with `live=true` on GET /v1/ads/{adId}: the identity the ad runs as (`identity_id`), the same id GET /v1/ads/tiktok-identities lists.
+         */
+        identityId?: string;
+        /**
+         * TikTok only, with `live=true`: the identity type (`identity_type`), e.g. TT_USER, BC_AUTH_TT, CUSTOMIZED_USER or AUTH_CODE.
+         */
+        identityType?: string;
+        /**
+         * TikTok only, with `live=true`: the Business Center that authorized a BC_AUTH_TT identity (`identity_authorized_bc_id`).
+         */
+        identityAuthorizedBcId?: string;
+        /**
+         * TikTok only, with `live=true`: the TikTok post a Spark ad runs (`tiktok_item_id`).
+         */
+        tiktokItemId?: string;
         /**
          * Meta: the instant form the call to action opens (`call_to_action.value.lead_gen_form_id`, or the asset feed's `call_to_actions` on a dynamic creative), the same value as the `leadGenFormId` create input. Absent on ads without a lead form.
          */
@@ -400,7 +416,7 @@ export type Ad = {
             }>;
         };
         /**
-         * Meta video ID for VIDEO-type ads. Null for non-video ads. Callers that need an embeddable MP4 can call GET /{videoId}?fields=source with the page access token.
+         * Meta video ID for VIDEO-type ads (TikTok: the ad library `video_id`). Null for non-video ads. Callers that need an embeddable MP4 can call GET /{videoId}?fields=source with the page access token.
          */
         videoId?: (string) | null;
         /**
@@ -510,12 +526,12 @@ export type Ad = {
          */
         isServing?: (boolean) | null;
         /**
-         * LinkedIn only. The LinkedIn ad format, in LinkedIn's own vocabulary: STANDARD_UPDATE, SINGLE_VIDEO, CAROUSEL, NATIVE_DOCUMENT, EVENT, TEXT_AD, SPOTLIGHT, FOLLOW_COMPANY, JOBS, SPONSORED_INMAILS and others. The list is open, so treat an unrecognized value as valid.
+         * LinkedIn (and TikTok with `live=true`). The LinkedIn ad format, in LinkedIn's own vocabulary: STANDARD_UPDATE, SINGLE_VIDEO, CAROUSEL, NATIVE_DOCUMENT, EVENT, TEXT_AD, SPOTLIGHT, FOLLOW_COMPANY, JOBS, SPONSORED_INMAILS and others. The list is open, so treat an unrecognized value as valid.
          *
          * - On an ad Zernio created: the format it was created as.
          * - On an ad synced from Campaign Manager: the parent campaign's raw `format`, which is what LinkedIn actually enforces on its creatives.
          *
-         * Absent on LinkedIn ads not yet re-synced, and on every other platform.
+         * Absent on LinkedIn ads not yet re-synced. On TikTok with `live=true`: the ad's `ad_format` (e.g. SINGLE_VIDEO). Absent on every other platform.
          */
         adFormat?: (string) | null;
         /**
@@ -12741,6 +12757,8 @@ export type ParameterIdempotencyKeyHeader = string;
  * - The fresh values are stored (later reads return them too), and the response carries `statusReadAt`, the time of the read.
  * - At most 20 platform objects are read per request.
  * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
+ *
+ * **On GET /v1/ads/{adId} for a TikTok ad** the creative is read live too: ad text, call to action, landing page, video, format and identity, returned over the stored creative and never stored. See "Status freshness" in GET /v1/ads/{adId}.
  *
  * **On X** the budget is read live too:
  *
@@ -51133,6 +51151,8 @@ export type ListAdCampaignsData = {
          * - At most 20 platform objects are read per request.
          * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
          *
+         * **On GET /v1/ads/{adId} for a TikTok ad** the creative is read live too: ad text, call to action, landing page, video, format and identity, returned over the stored creative and never stored. See "Status freshness" in GET /v1/ads/{adId}.
+         *
          * **On X** the budget is read live too:
          *
          * - GET /v1/ads/{adId}: `budget`, `adSetBudget`, `campaignBudget` and `budgetLevel` are the line item and campaign budgets X holds now (stored like the switches).
@@ -52155,6 +52175,8 @@ export type ListAdSetsData = {
          * - The fresh values are stored (later reads return them too), and the response carries `statusReadAt`, the time of the read.
          * - At most 20 platform objects are read per request.
          * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
+         *
+         * **On GET /v1/ads/{adId} for a TikTok ad** the creative is read live too: ad text, call to action, landing page, video, format and identity, returned over the stored creative and never stored. See "Status freshness" in GET /v1/ads/{adId}.
          *
          * **On X** the budget is read live too:
          *
@@ -53217,6 +53239,8 @@ export type GetAdData = {
          * - The fresh values are stored (later reads return them too), and the response carries `statusReadAt`, the time of the read.
          * - At most 20 platform objects are read per request.
          * - Where a read fails (credentials, platform error, no reader on that platform), stored values come back with `statusReadAt: null`.
+         *
+         * **On GET /v1/ads/{adId} for a TikTok ad** the creative is read live too: ad text, call to action, landing page, video, format and identity, returned over the stored creative and never stored. See "Status freshness" in GET /v1/ads/{adId}.
          *
          * **On X** the budget is read live too:
          *
@@ -59318,7 +59342,7 @@ export type CreateStandaloneAdData = {
          */
         aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
         /**
-         * Validate the request without creating anything. Any other platform, or a Google campaignType other than pmax or demand_gen, returns 501 `feature_not_available`.
+         * Validate the request without creating anything. Supported on Meta, TikTok, ChatGPT (OpenAI) and Google Performance Max / Demand Gen. Any other platform, or a Google campaignType other than pmax or demand_gen, returns 501 `feature_not_available`.
          *
          * **Google Performance Max**: validates the complete atomic campaign and asset group, with no resource creation or local persistence. Validation still downloads image URLs and consumes quota.
          *
@@ -59334,6 +59358,16 @@ export type CreateStandaloneAdData = {
          * - Code 100 subcode 2446880 "WhatsApp number required" on an ad that does not message on WhatsApp (intermittent). If the creative's own dry run also asks for a WhatsApp number, the creative is unverified too. Messaging ads still fail on 2446880.
          *
          * **ChatGPT (OpenAI)**: no platform dry-run. Zernio runs every check it knows (creative lengths, budget, bid strategy, targeting) plus live lookups of the conversion event and target countries, and uploads or creates nothing. OpenAI's own checks (image fetch, currency-specific minimums, ad review) run only on a real create.
+         *
+         * **TikTok**: TikTok has no dry-run. Zernio runs the input checks and the read-only TikTok calls a real create makes. It uploads or creates nothing: no video, Brand Identity, campaign, ad group or ad. A failure returns the same 4xx a real create would.
+         *
+         * - Advertiser: `message` names its currency when TikTok returns it.
+         * - Identity: `identityId` is authorized on the advertiser (the `identity` node). `message` names the identity and type the ad would run as.
+         * - `existingCampaignId`: exists and is not an Upgraded Smart+ campaign.
+         * - Pixel and optimization event resolve on the advertiser, and the schedule and targeting build.
+         * - Not checked (marked `unverified` with the reason): the video (format, size, length, cover), the ad group as TikTok would create it (the budget minimum for the advertiser currency, location and audience ids, bid), a new campaign, and TikTok's review of the ad text, call to action and landing page.
+         * - A Brand Identity a real create would make from `brandIdentity` is not made: the `identity` node is `unverified`.
+         * - Supported: the single standalone video ad. `smartPlus` and `adSetId` return 400.
          *
          */
         validateOnly?: boolean;
@@ -60455,13 +60489,16 @@ export type CreateStandaloneAdResponse = ({
     validateOnly?: boolean;
     appliedDefaults?: AdAppliedDefaults;
     results?: Array<{
-        node?: 'campaign' | 'adSet' | 'creative' | 'ad' | 'performanceMaxCampaign';
+        /**
+         * `identity` is TikTok only: the identity the ad would run as.
+         */
+        node?: 'campaign' | 'adSet' | 'creative' | 'ad' | 'performanceMaxCampaign' | 'identity';
         status?: 'validated' | 'skipped' | 'unverified';
         /**
          * Explanation for the node's result:
          *
          * - On skipped: why the node could not be validated.
-         * - On unverified: why Meta could not dry-run it although the other nodes passed.
+         * - On unverified: why the platform could not dry-run it although the other nodes passed (Meta), or what only a real create checks (TikTok).
          * - On validated: what the dry run could not check, and what the request would do as sent. For example, a Performance Max validation with no location targeting reports here that the campaign would run worldwide.
          */
         reason?: string;

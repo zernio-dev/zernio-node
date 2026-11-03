@@ -8100,7 +8100,11 @@ export const transferVoiceCall = <ThrowOnError extends boolean = false>(options:
  * Estimate call cost
  * Pre-call cost estimate for a PSTN call: the carrier leg plus optional recording and transcription add-ons.
  *
- * It uses the same billing formula as the post-call invoice, so the quote and the final charge can't disagree. The carrier figure follows the carrier's per-destination rate card: a call dialed from a number in the destination country uses the local mobile rate, and a `tel:` forward destination is quoted as a second carrier leg billed from the same number. The real cost comes from the settled carrier record after the call.
+ * It uses the same billing formula as the post-call invoice, so the quote and the final charge can't disagree.
+ *
+ * The carrier figure follows the carrier's per-destination rate card: a call dialed from a number in the destination country uses the local mobile rate, and a `tel:` forward destination is quoted as a second carrier leg billed from the same number.
+ *
+ * The real cost comes from the settled carrier record after the call.
  *
  * Parity endpoint of `GET /v1/whatsapp/calls/estimate`, minus the Meta line. PSTN calls have no separate Meta bill, so `totalCostUSD` equals `billableCostUSD`.
  *
@@ -13645,6 +13649,9 @@ export const getAdsTimeline = <ThrowOnError extends boolean = false>(options: Op
  * - the ad's own switch (`configuredStatus`)
  * - its delivery status (`status`, `platformStatus`)
  * - its ad set and campaign switches (`platformAdSetStatus`, `platformCampaignStatus`)
+ * - on TikTok, the creative TikTok holds now: `creative.body` (ad text), `creative.callToAction`, `creative.linkUrl` (landing page), `creative.videoId`, `creative.adFormat`, `creative.identityId`, `creative.identityType`, `creative.identityAuthorizedBcId` and, on a Spark ad, `creative.tiktokItemId`.
+ *
+ * The TikTok creative comes from the same TikTok call as the switches. It replaces the stored values in the response only and is never stored. A key TikTok leaves empty keeps its stored value.
  *
  * ### Meta ads that are not synced yet
  *
