@@ -7385,7 +7385,7 @@ export type CtwaAdRequestBody = {
      */
     gender?: 'all' | 'male' | 'female';
     /**
-     * Audience languages (Meta `locales`). A bare ISO 639-1 code targets all regional variants ("en" = all English), a region-qualified code a specific one ("en_GB", "pt_BR"); unknown codes are rejected.
+     * Audience languages (Meta `locales`). A bare ISO 639-1 code targets all regional variants ("en" = all English), a region-qualified code a specific one ("en_GB", "pt_BR"). Meta numeric locale ids (e.g. "24" for English UK) are also accepted. Unknown values are rejected. Same format as `targeting.languages` on POST /v1/ads/boost.
      */
     languages?: Array<(string)>;
     /**
@@ -15228,7 +15228,9 @@ export type TargetingSpec = {
     /**
      * Language codes restricting the audience by language. Applied on Meta, Google, TikTok, LinkedIn, X, Pinterest and Reddit; rejected with 400 on OpenAI. A code the platform cannot target returns 400 listing the ones it can.
      *
-     * On Meta: ISO 639-1 codes (e.g. ['en']). A bare code targets all regional variants ("en" = all English); use a region-qualified code ("en_GB", "pt_BR") for a specific one. Unknown codes are rejected.
+     * On Meta: ISO 639-1 codes (e.g. ['en']). A bare code targets all regional variants ("en" = all English); use a region-qualified code ("en_GB", "pt_BR") for a specific one. Meta numeric locale ids (e.g. "24" for English UK) are also accepted. Unknown values are rejected.
+     *
+     * POST /v1/ads/create and POST /v1/ads/boost take the same format.
      */
     languages?: Array<(string)>;
     /**
@@ -18491,12 +18493,12 @@ export type WebhookPayloadComment = {
          *
          * **Facebook**: populated from a Graph API lookup of the parent post. Present when the post is an ad dark post (isDarkPost true, whatever its promotionStatus) or an organic post that is or was boosted (promotionStatus "active", "extendable" or "finished").
          *
-         * Meta does not link a dark post back to its ad, so on Facebook id is set only when exactly one ad on the Page, created before the dark post, carries the same copy as the post. title is never set on Facebook.
+         * Meta does not link a dark post to its ad, so on Facebook id is set only when a Meta Ads account is connected and exactly one of its ads has the same text as the post. title is never set on Facebook.
          *
          */
         ad?: {
             /**
-             * Meta ad ID. Instagram: from the webhook. Facebook: only on a dark post matched to a single ad by its copy.
+             * Meta ad ID. Instagram: from the webhook. Facebook: only when a connected Meta Ads account has one ad with the same text.
              */
             id?: string;
             /**
@@ -58670,7 +58672,10 @@ export type BoostPostData = {
              */
             gender?: 'all' | 'male' | 'female';
             /**
-             * Meta locale ids (numeric), passed through as given. Reddit: language codes (e.g. `en`).
+             * Language codes, the same format as `languages` on POST /v1/ads/create.
+             *
+             * - Meta: ISO 639-1 codes. A bare code targets all regional variants ("en" = all English); use a region-qualified code for a specific one ("en_GB", "pt_BR"). Meta numeric locale ids (e.g. "24" for English UK) are also accepted. Unknown values are rejected.
+             * - Reddit: ISO 639-1 codes (e.g. `en`).
              */
             languages?: Array<(string)>;
             /**
@@ -60080,7 +60085,7 @@ export type CreateStandaloneAdData = {
          * Language codes, e.g. ["en","es"].
          *
          * - Google: campaign language targeting (language_constant) using Google's language codes (ISO 639-1, plus variants such as `zh_CN`). Unknown codes return 400.
-         * - Meta: a bare code targets all regional variants ("en" = all English); use a region-qualified code for a specific one ("en_GB", "pt_BR", "zh_TW"). Unknown codes are rejected.
+         * - Meta: a bare code targets all regional variants ("en" = all English); use a region-qualified code for a specific one ("en_GB", "pt_BR", "zh_TW"). Meta numeric locale ids (e.g. "24" for English UK) are also accepted. Unknown values are rejected. POST /v1/ads/boost takes the same format in `targeting.languages`.
          * - Other ad platforms use their own language-code systems.
          */
         languages?: Array<(string)>;
