@@ -17224,7 +17224,6 @@ export type current = 'active' | 'restricted' | 'disabled' | 'closed';
  *
  * - Meta `WITH_ISSUES` (payment, policy and account problems)
  * - TikTok account punishment or missing balance
- * - LinkedIn removals
  * - any platform status Zernio does not recognize yet (check `issue.raw`)
  *
  * Ads seen for the first time by a sync never fire it.
@@ -17289,14 +17288,18 @@ export type event9 = 'ad.delivery_issue';
 export type level4 = 'AD';
 
 /**
- * Webhook payload for the `ad.review.approved` and `ad.review.rejected` events. Emitted for every ad network Zernio syncs (Meta, Google, TikTok, LinkedIn, Pinterest, X and the rest).
+ * Webhook payload for the `ad.review.approved` and `ad.review.rejected` events. Emitted for every ad network Zernio syncs (Meta, Google, TikTok, LinkedIn, Pinterest, X, Reddit and the rest).
  *
  * Fires when an ad Zernio already tracked changes review outcome:
  *
  * - `approved`: it leaves review as deliverable, or a rejection is overturned.
  * - `rejected`: the platform rejects it.
  *
- * Ads seen for the first time by a sync, including the history loaded when an account is connected, never fire it. An ad that leaves review paused (for example its ad set is paused) sends no `approved` event.
+ * Ads seen for the first time by a sync, including the history loaded when an account is connected, never fire it.
+ *
+ * On X, Pinterest and LinkedIn, Zernio reads the review apart from the delivery status. An ad that leaves review while paused (for example under a paused campaign) still sends `approved`.
+ *
+ * On the other networks the review shows only in the delivery status, so an ad that leaves review paused sends no `approved` event.
  *
  * Detected by Zernio's own ad sync (and, for Meta, the review poll), so it arrives within one sync cycle of the platform's decision, not instantly. Each outcome is delivered at most once per ad per 24 hours.
  *
@@ -17339,7 +17342,7 @@ export type WebhookPayloadAdReview = {
          */
         raw: string;
         /**
-         * Why the platform rejected the ad, when it says. Always empty on `approved`. Most networks only return a generic message today.
+         * Why the platform rejected the ad, when it says. Always empty on `approved`. Pinterest, LinkedIn and Reddit send their own reasons, X sends none, and most other networks only return a generic message.
          */
         reasons: Array<{
             message: string;
