@@ -1694,39 +1694,6 @@ export const listPosts = <ThrowOnError extends boolean = false>(options?: Option
  *
  * See each platform's schema for media constraints.
  *
- * ## LinkedIn @mentions
- *
- * Mention a person or company by putting its LinkedIn URL inside `@[...]`, in `content`, a LinkedIn entry's `customContent` or its `platformSpecificData.firstComment`. The post is published with LinkedIn's real name and link, with no lookup call first.
- *
- * - Person: `@[https://www.linkedin.com/in/jane-doe]`
- * - Company: `@[https://www.linkedin.com/company/acme]`
- * - Your own text: `@[Jane](https://www.linkedin.com/in/jane-doe)`. For a person it must be the first, last or full name, for a company the exact company name, both case-sensitive. Other text is replaced with LinkedIn's name and returns a `linkedin_mention_name_replaced` warning.
- * - `@[Text](urn:li:person:ID)`, as returned by `GET /v1/accounts/{accountId}/linkedin-mentions`: published exactly as written, with no lookup, so its text must already be LinkedIn's name.
- *
- * A post can resolve at most 10 profile or company URL mentions across its shared content, LinkedIn entries and first comments. Resolving a person's profile URL needs one of your LinkedIn accounts to administer a Page; publishing does not.
- *
- * ### When a mention can't be resolved
- *
- * Only profile and company URLs can fail. A scheduled or published post is rejected with:
- *
- * - `400` `linkedin_mentions_invalid`: a URL could not be resolved
- * - `400` `linkedin_mentions_limit_exceeded`: more than 10 URL mentions
- * - `401` `reconnect_required`: the LinkedIn token expired
- * - `429` `rate_limited`: LinkedIn is rate limiting
- * - `503` `temporarily_unavailable` (retryable): LinkedIn did not answer within 8 seconds in total
- *
- * `details.mentions[]` (`LinkedInMentionIssue`) lists each failing mention with its own code:
- *
- * - `linkedin_mention_unresolvable`
- * - `linkedin_mention_requires_page_admin`
- * - `linkedin_mention_name_unavailable`: LinkedIn withheld the name and none was given
- *
- * Drafts never fail on a mention: unresolved ones (and more than 10) stay as written and come back as `warnings`. A draft is checked again when it is scheduled.
- *
- * ### On other platforms
- *
- * `@[linkedin.com/in/jane]` is posted as its text, or as the vanity (`jane`) when you wrote no text, and `@[Text](urn:li:...)` as `Text`.
- *
  * ## Scheduling
  *
  * Pick one of:
@@ -1877,28 +1844,6 @@ export const getPost = <ThrowOnError extends boolean = false>(options: OptionsLe
  * To promote a draft to scheduled, send `isDraft: false` together with `scheduledFor` (or `publishNow: true`, or `queuedFromProfile`). If `isDraft` is omitted the post keeps its current draft status, so sending only `scheduledFor` to a draft returns 200 but the post remains a draft.
  *
  * Non-draft updates run the same per-platform validation as post creation (media requirements, platform-specific field rules, etc.) against the resulting platforms, returning 400 on failure.
- *
- * ## LinkedIn @mentions
- *
- * Profile and company URLs in the `content` or LinkedIn `customContent` you send are resolved to LinkedIn's name and link, exactly as on `POST /v1/posts` (see Create post for the rules). For example:
- *
- * - `@[https://www.linkedin.com/in/jane-doe]`
- * - `@[Jane](https://www.linkedin.com/company/acme)`
- *
- * Only what the request sends is looked up: an update of the schedule, status or media makes no LinkedIn call, and `@[Text](urn:li:...)` markup is stored as written.
- *
- * Moving a draft out of draft also resolves the stored `content` and the stored `customContent` of its LinkedIn entries, and saves the result.
- *
- * ### When a mention can't be resolved
- *
- * On a non-draft, the request returns one of these, with each mention under `details.mentions[]` (`LinkedInMentionIssue`):
- *
- * - `400` `linkedin_mentions_invalid`
- * - `429` `rate_limited`
- * - `401` `reconnect_required`
- * - `503` `temporarily_unavailable` (retryable)
- *
- * Drafts get `warnings` instead.
  *
  */
 export const updatePost = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdatePostData, ThrowOnError>) => {

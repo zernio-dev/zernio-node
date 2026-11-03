@@ -26150,7 +26150,7 @@ export type CreatePostData = {
          */
         title?: string;
         /**
-         * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn text-free reshare (platformSpecificData.reshareUrl with no text). Required for other text-only posts. LinkedIn @mentions: write @[https://www.linkedin.com/in/jane-doe] or @[https://www.linkedin.com/company/acme] in the text (see the operation description).
+         * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn text-free reshare (platformSpecificData.reshareUrl with no text). Required for other text-only posts. LinkedIn @mentions: write @[https://www.linkedin.com/in/jane-doe] or @[https://www.linkedin.com/company/acme] in the text, see [LinkedIn mentions](/platforms/linkedin#mentions).
          */
         content?: string;
         /**
