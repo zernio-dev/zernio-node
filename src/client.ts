@@ -634,6 +634,7 @@ import {
   listAds,
   listAdsAlerts,
   listAdsBusinessCenters,
+  listAdsByPerformance,
   listAdsInstagramAccounts,
   listAdsInstagramPosts,
   listAdsTikTokIdentities,
@@ -2379,6 +2380,7 @@ export class Zernio {
     getAdSetTargeting: this._bind(getAdSetTargeting),
     updateAdSetStatus: this._bind(updateAdSetStatus),
     getAdTree: this._bind(getAdTree),
+    listAdsByPerformance: this._bind(listAdsByPerformance),
     getAdsTimeline: this._bind(getAdsTimeline),
     getAd: this._bind(getAd),
     updateAd: this._bind(updateAd),
@@ -3011,6 +3013,8 @@ export class Zernio {
     updateAdSetStatus: this._bind(updateAdSetStatus),
     /** @deprecated Use `zernio.adcampaigns.getAdTree` instead. */
     getAdTree: this._bind(getAdTree),
+    /** @deprecated Use `zernio.adcampaigns.listAdsByPerformance` instead. */
+    listAdsByPerformance: this._bind(listAdsByPerformance),
     /** @deprecated Use `zernio.adcampaigns.getAdsTimeline` instead. */
     getAdsTimeline: this._bind(getAdsTimeline),
     /** @deprecated Use `zernio.adcampaigns.getAd` instead. */

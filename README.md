@@ -549,6 +549,7 @@ try {
 | `adCampaigns.listAdKeywords()` | List Search keywords |
 | `adCampaigns.listAds()` | List ads |
 | `adCampaigns.listAdsAlerts()` | List ads that need attention |
+| `adCampaigns.listAdsByPerformance()` | Rank ads by performance |
 | `adCampaigns.listAdSets()` | List ad sets |
 | `adCampaigns.listBidStrategies()` | List portfolio bid strategies |
 | `adCampaigns.listCampaignAssets()` | List campaign assets |

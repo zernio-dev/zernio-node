@@ -2034,6 +2034,57 @@ export type AdsListResponse = {
     backfillPending?: boolean;
 };
 
+export type AdsPerformanceResponse = {
+    ads: Array<{
+        /**
+         * Zernio ad ID.
+         */
+        adId?: string;
+        platformAdId?: (string) | null;
+        platform?: string;
+        name?: string;
+        status?: (string) | null;
+        campaignName?: (string) | null;
+        adSetName?: (string) | null;
+        /**
+         * ISO 4217 code of the ad's money metrics.
+         */
+        currency?: (string) | null;
+        creative?: {
+            type?: ('image' | 'video' | 'carousel' | 'document') | null;
+            thumbnailUrl?: (string) | null;
+            headline?: (string) | null;
+            body?: (string) | null;
+            linkUrl?: (string) | null;
+        };
+        metrics?: {
+            /**
+             * In the ad's currency.
+             */
+            spend?: number;
+            impressions?: number;
+            clicks?: number;
+            /**
+             * Percent.
+             */
+            ctr?: number;
+            /**
+             * Results over the range (see AdMetrics.conversions).
+             */
+            conversions?: number;
+            costPerConversion?: number;
+            purchaseValue?: number;
+            roas?: number;
+            /**
+             * `conversions` split by what was counted (Meta action_type or Google conversion action name).
+             */
+            conversionsByType?: {
+                [key: string]: (number);
+            };
+        };
+    }>;
+};
+
 export type AdStatus = 'active' | 'paused' | 'pending_review' | 'rejected' | 'completed' | 'cancelled' | 'error';
 
 export type AdsTimelineResponse = {
@@ -53204,6 +53255,48 @@ export type GetAdTreeResponse = (AdTreeResponse | (AdTreeResponse & {
 }));
 
 export type GetAdTreeError = (ErrorResponse | unknown);
+
+export type ListAdsByPerformanceData = {
+    query: {
+        /**
+         * Account ID. Sibling-expanded to its linked posting and ads pair. An id the API key cannot reach answers 404.
+         */
+        accountId: string;
+        /**
+         * Optional platform-native ad account ID (e.g. Meta `act_…`) to rank one ad account only.
+         */
+        adAccountId?: string;
+        /**
+         * Inclusive start of the range (YYYY-MM-DD).
+         */
+        fromDate: string;
+        /**
+         * How many ads to return.
+         */
+        limit?: number;
+        /**
+         * Restrict to one platform.
+         */
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        /**
+         * Metric the ads are ranked by, highest first.
+         */
+        sortBy?: 'spend' | 'impressions' | 'clicks' | 'conversions' | 'roas';
+        /**
+         * Inclusive end of the range (YYYY-MM-DD). Max 730-day range.
+         */
+        toDate: string;
+    };
+};
+
+export type ListAdsByPerformanceResponse = (AdsPerformanceResponse | (AdsPerformanceResponse & {
+    /**
+     * Always true on this response. Retry until the request returns 200.
+     */
+    backfillPending: boolean;
+}));
+
+export type ListAdsByPerformanceError = (ErrorResponse | unknown);
 
 export type GetAdsTimelineData = {
     query: {
