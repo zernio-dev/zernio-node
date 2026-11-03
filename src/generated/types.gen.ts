@@ -51504,7 +51504,7 @@ export type UpdateAdCampaignStatusResponse = ({
     skippedReasons?: Array<(string)>;
 });
 
-export type UpdateAdCampaignStatusError = (unknown | ErrorResponse);
+export type UpdateAdCampaignStatusError = (unknown);
 
 export type GetCampaignAdScheduleData = {
     path: {

@@ -12671,6 +12671,18 @@ export const createAdCampaign = <ThrowOnError extends boolean = false>(options: 
  *
  * On Meta the check reads the campaign's own `status`, so a delivery status such as `IN_PROCESS` or `WITH_ISSUES` does not force a write.
  *
+ * ### Retrying
+ *
+ * Retrying the same request is safe: when the first call already switched the campaign, the live read answers `skipped: 1` and nothing is written twice. A call that timed out on your side may still have completed, so retry it instead of assuming it failed.
+ *
+ * These errors fail the same way on every retry until something changes:
+ *
+ * - `401` `reconnect_required`: the platform no longer accepts the connection's token (on Meta, code 190: expired, revoked, password changed or security checkpoint). Reconnect the account, then retry.
+ * - `422` `ad_account_unusable`: the ad account's status does not allow edits. Resolve it in the platform, then retry.
+ * - `400` `platform_api_error` saying the campaign was deleted or archived (Meta subcodes 1487566 and 3858863): there is nothing left to switch.
+ *
+ * A Meta code 190 with subcode 464 means Meta considers the Facebook user unconfirmed. It answers `400` `platform_api_error` and retrying does not clear it: the user must log in to facebook.com and complete what Meta asks (usually confirming their email or phone), then retry.
+ *
  */
 export const updateAdCampaignStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdCampaignStatusData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdateAdCampaignStatusResponse, UpdateAdCampaignStatusError, ThrowOnError>({
