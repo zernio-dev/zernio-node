@@ -2174,9 +2174,16 @@ export type AdTreeAdSet = {
     platformAdSetId?: string;
     adSetName?: string;
     /**
-     * Derived from child ad statuses
+     * Derived from child ad statuses. Reads `paused` when the synced ad set or its campaign is switched off on the platform, even while the ads still report their own switch as on.
      */
     status?: (AdStatus);
+    /**
+     * The ad set's start and end as last synced from the platform, as UTC instants. Null when the ad set was never synced or has no schedule (on Pinterest under a CBO campaign, the end date sits on the campaign).
+     */
+    schedule?: {
+        startDate?: string;
+        endDate?: string;
+    } | null;
     /**
      * Earliest `platformCreatedAt` (platform ad creation time; falls back to `createdAt`, Zernio's sync time, for ads synced before that field existed) across this ad set's ads. Not the ad set's own creation time on the platform, but a proxy usable for sorting.
      */
@@ -2346,9 +2353,16 @@ export type AdTreeCampaign = {
      */
     createdTime?: (string) | null;
     /**
-     * Delivery status derived from child ad statuses. Distinct from `reviewStatus`, which reflects the platform-side review state.
+     * Delivery status derived from child ad statuses. Reads `paused` when the campaign is switched off on the platform (`platformCampaignStatus`), even while its ads still report their own switch as on. Distinct from `reviewStatus`, which reflects the platform-side review state.
      */
     status?: (AdStatus);
+    /**
+     * The campaign's start and end as last synced from the platform, as UTC instants. Null when the campaign was never synced or has no schedule. Where the platform schedules the ad set instead (Meta, TikTok), read `AdTreeAdSet.schedule`.
+     */
+    schedule?: {
+        startDate?: string;
+        endDate?: string;
+    } | null;
     /**
      * Platform-side review state of the campaign. Independent of the
      * children-derived delivery `status`: a campaign can have ads
@@ -12058,7 +12072,7 @@ export type visibility2 = 'published' | 'staging';
 export type gender2 = 'female' | 'male' | 'unisex';
 
 /**
- * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys and unspecified features default to OPT_OUT. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. The deprecated standard_enhancements bundle is rejected by Meta.
+ * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys and unspecified features default to OPT_OUT. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. The deprecated standard_enhancements bundle (subcode 3858504) is a 400 before any Meta call.
  */
 export type MetaCreativeFeatures = {
     [key: string]: ('OPT_IN' | 'OPT_OUT');
@@ -53471,7 +53485,11 @@ export type UpdateAdData = {
          * **Meta**: patch-style.
          *
          * - Pass any subset: omitted fields are preserved from the live creative, including media (`image_hash`/`video_id` reused, no re-upload) and `url_tags`. Sending the full set (`headline`, `body`, `callToAction`, `linkUrl`, `imageUrl`) rebuilds the creative from scratch.
-         * - Partial patching reads the live `object_story_spec`, which Meta strips on SHARE / page-post / dark / asset_feed creatives; those return 422 asking for the full set. A `videoUrl`/`videoId` on an image creative is a type change and also needs the full set.
+         * - Partial patching reads the live `object_story_spec`, which Meta strips on SHARE / page-post / dark post creatives; those return 422 asking for the full set. A `videoUrl`/`videoId` on an image creative is a type change and also needs the full set.
+         * - Creatives with an `asset_feed_spec` (several text options, placement or language rules) take text, link, tracking and enhancement edits in place. The new creative is built from the live asset feed with the edited text, and every video, image, label and rule is kept.
+         * - On those, `body`, `headline` and `description` replace the one option of that kind. When the feed has several, send `bodies`, `headlines` or `descriptions` with one text per option, in order. `linkUrl` replaces the feed's only destination link.
+         * - Image, video and call-to-action changes on asset_feed creatives apply to the story spec (Multiple Text Options creatives). They return 422 when the feed itself holds the images, videos or call-to-action options.
+         * - The live creative's deprecated `standard_enhancements` setting (Meta subcode 3858504) is never sent back; every other enhancement setting is kept.
          * - `existingCreativeId` repoints the ad at a creative from GET /v1/ads/creatives and ignores every other field.
          * - Meta creatives are immutable: any change creates a new creative and repoints the ad. The old creative stays on the ad account for historical reporting.
          * - `creativeFeatures` is Meta-only. Omitted settings are preserved from the live creative, including on full rebuilds; a supplied creativeFeatures map overrides individual existing keys.
@@ -53523,11 +53541,26 @@ export type UpdateAdData = {
              * Google Display only. Uploaded as a new square (1:1) marketing image asset that replaces the current one.
              */
             squareImageUrl?: string;
+            /**
+             * Primary text. On a Meta asset_feed creative it replaces the feed's only body option (422 when it has several: send `bodies`).
+             */
             body?: string;
+            /**
+             * Meta only. The primary text options of an asset_feed creative, one text per option in the order GET /v1/ads/{adId} returns them. Each replaces the option in its position and keeps its rule. A different count returns 422, as does a single-text creative (send `body`). Not with `body`.
+             */
+            bodies?: Array<(string)>;
+            /**
+             * Meta only. Same as `bodies`, for the headline options (Meta `asset_feed_spec.titles`). Cannot be sent with `headline`. Not the top-level Google `headlines`.
+             */
+            headlines?: Array<(string)>;
             /**
              * Link description slot (Meta `link_data.description` / `video_data.link_description`, LinkedIn creative description).
              */
             description?: string;
+            /**
+             * Meta only. Same as `bodies`, for the description options. Cannot be sent with `description`. Not the top-level Google `descriptions`.
+             */
+            descriptions?: Array<(string)>;
             callToAction?: string;
             linkUrl?: string;
             imageUrl?: string;
@@ -58443,9 +58476,11 @@ export type BoostPostData = {
         /**
          * Ad-set end time (ISO 8601). Required for lifetime budgets. Same field as on POST /v1/ads/create.
          *
-         * Maps to the ad set's `end_time` (on X, the line item's `end_time`; X campaigns carry no flight dates).
+         * Maps to the ad set's `end_time` (on X, the line item's `end_time`; X campaigns carry no flight dates). On Pinterest it also goes on the campaign when the ad account needs Campaign Budget Optimization, daily budget included.
          *
          * On Meta, TikTok, X, Pinterest and Reddit, a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone, and a date-only end runs to 23:59:59 local.
+         *
+         * Anything that is not an ISO 8601 date or date-time is a 400 on `endDate`.
          *
          */
         endDate?: string;
@@ -59987,6 +60022,10 @@ export type CreateStandaloneAdData = {
          * When the ad ends. If omitted: on a lifetime budget, the ad ends 7 days after it starts (reported in `appliedDefaults.endDate`); a daily budget runs until paused.
          *
          * Read like `startDate`: account timezone on Meta, TikTok, X, Pinterest, OpenAI and Reddit; whole account-local days on Google; UTC on LinkedIn. A date-only end runs to 23:59:59 local.
+         *
+         * On a Pinterest ad account that needs Campaign Budget Optimization, the end also goes on the campaign, daily budget included.
+         *
+         * 400 when it is not an ISO 8601 date or date-time, or when the ad joins a parent that keeps its own dates: `adSetId` on Meta, TikTok, Google, LinkedIn and Reddit, and `existingCampaignId` on Google.
          */
         endDate?: string;
         /**
