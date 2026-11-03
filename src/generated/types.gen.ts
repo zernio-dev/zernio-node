@@ -1065,6 +1065,15 @@ export type AdFunnelCounts = {
      * Messaging threads where the person sent a first reply.
      */
     messagingFirstReplies?: number;
+    /**
+     * Booked appointments (Meta `Schedule` pixel event). Pair with `spend` for cost per booked meeting.
+     *
+     * **Meta** reports Schedule in its `conversions` insight field, never in `actions`. This takes the FIRST present of `offsite_conversion.fb_pixel_schedule`, `omni_schedule`, `app_custom_event.fb_mobile_schedule`, `onsite_conversion.schedule`, `schedule`, `schedule_total`, `schedule_mobile_app`, `schedule_website`, `schedule_offline`. With none of those, a single `offsite_schedule_add_<dataset>` key counts. Two such keys (two datasets) leave it at 0, since one booking can reach both.
+     *
+     * Added 2026-11-03. Days synced before then read 0 until re-fetched: each sync restates the last 30 days.
+     *
+     */
+    schedules?: number;
 };
 
 export type AdKeyword = {
@@ -1319,6 +1328,9 @@ export type AdMetrics = {
      * Per-action-type counts summed over the date range, keyed by the platform's action-type names. Keys differ by platform, so branch on the ad's platform when interpreting them. Empty object when no actions are reported.
      *
      * - Meta: raw Insights action_type keys (link_click, offsite_conversion.fb_pixel_purchase, onsite_conversion.lead_grouped, ...), covering both engagement and conversion events.
+     * - Meta newer standard events (Schedule, SubmitApplication, Contact, StartTrial, Subscribe and the like) come only from Meta's `conversions` insight field, under keys such as schedule_total, schedule_website or offsite_schedule_add_<dataset>.
+     * - Since 2026-11-03 every `conversions` key that `actions` lacks is added here, rounded per key, and its `conversion_values` value to `actionValues`. A key both fields report keeps its `actions` value.
+     * - Days synced before 2026-11-03 lack those keys until re-fetched. Each sync restates the last 30 days.
      * - TikTok: conversion events plus the paid-engagement family (follow, post_reaction for paid likes, comment, share). Follow is how FOLLOWERS-goal campaigns report their result.
      * - TikTok website (pixel) events: complete_payment (website purchase, counted in `conversions` by SHOPPING-optimised campaigns), place_order, initiate_checkout, add_to_cart, view_content, lead (website form submissions plus TikTok instant-form leads).
      * - TikTok place_order is Place an Order, the website purchase of pixels set up with the legacy ON_WEB_ORDER event. It is absent from days synced before this metric was added until the ad is re-synced.
