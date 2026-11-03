@@ -62479,6 +62479,10 @@ export type ListAdAudiencesResponse = ({
         spec?: (TargetingSpec | null);
         platform?: string;
         size?: number;
+        /**
+         * Who the audience contains, in one line (e.g. '1% lookalike of Customers in US' or 'All website visitors, last 30 days'). Meta only.
+         */
+        summary?: string;
         status?: string;
     }>;
 });
