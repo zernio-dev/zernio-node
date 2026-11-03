@@ -288,6 +288,10 @@ export type Ad = {
      */
     roasAverageFloor?: (number) | null;
     /**
+     * Special ad categories declared when Zernio created this ad (`specialAdCategories` on POST /v1/ads/create or /v1/ads/boost), e.g. ["HOUSING"]. Empty or absent when none was declared or the ad was created outside Zernio.
+     */
+    specialAdCategories?: Array<(string)>;
+    /**
      * Meta promoted object containing conversion event details. Structure varies by objective. Only present for Meta ads.
      */
     promotedObject?: {
@@ -896,6 +900,10 @@ export type AdCampaign = {
         pixel_id?: string;
         page_id?: string;
     } | null;
+    /**
+     * Special ad categories declared when Zernio created the campaign, read from the ad that created it (its earliest ad), e.g. ["HOUSING"]. Absent when none was declared or the campaign was created outside Zernio.
+     */
+    specialAdCategories?: Array<(string)>;
     earliestAd?: string;
     latestAd?: string;
 };
@@ -2527,6 +2535,10 @@ export type AdTreeCampaign = {
         pixel_id?: string;
         page_id?: string;
     } | null;
+    /**
+     * Special ad categories declared when Zernio created the campaign, read from the ad that created it (its earliest ad), e.g. ["HOUSING"]. Absent when none was declared or the campaign was created outside Zernio.
+     */
+    specialAdCategories?: Array<(string)>;
     adSets?: Array<AdTreeAdSet>;
     /**
      * Per-day metric series for this campaign. Present only when `GET /v1/ads/tree` is called with `timeIncrement=1` (any `dailyLevel`). This is the per-campaign daily trend. Summing its additive fields reproduces the campaign `metrics` total, except `reach`: on Meta the range total is de-duplicated, so daily reach does not sum to it.
@@ -58796,7 +58808,14 @@ export type BoostPostData = {
             }>;
         };
         /**
-         * Meta only. Required for housing, employment, credit, or political ads.
+         * Special ad category of the campaign the boost creates. Required for housing, employment, credit, or political ads.
+         *
+         * - Meta: every value.
+         * - TikTok: HOUSING, EMPLOYMENT and CREDIT, sent as the campaign's `special_industries` (TikTok requires one for these ads aimed at the US or Canada). Other values return 400.
+         * - TikTok targeting: a 400 names the field for ZIP codes (`targeting.locations.zips`), gender, ages under 18 (`targeting.ageMin`), interest keywords (`keyword:` ids in `targeting.interests`) and hashtag behaviors.
+         * - TikTok also refuses Smart Targeting (`smartTargeting`) and lookalike audiences (`targeting.audienceInclude` / `targeting.audienceExclude`). Without an age, the ad group targets 18+.
+         * - TikTok sets the category when the campaign is created, so it is a 400 with `smartPlus` or `existingCampaignId`.
+         *
          */
         specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING')>;
         /**
@@ -60112,9 +60131,21 @@ export type CreateStandaloneAdData = {
             [key: string]: unknown;
         };
         /**
-         * Meta only. Declares the ad's special category, required for housing, employment, credit, or
-         * political/social-issue ads (Meta enforces restricted targeting for these). Note: setting a special
-         * category disables income/zip targeting on Meta.
+         * Declares the ad's special category, required for housing, employment, credit, or
+         * political/social-issue ads.
+         *
+         * - Meta: every value. Setting a housing, employment or credit category disables income/zip
+         * targeting on Meta.
+         * - TikTok: HOUSING, EMPLOYMENT and CREDIT, sent as the new campaign's `special_industries`
+         * (TikTok requires one for these ads aimed at the US or Canada). Other values return 400.
+         * - TikTok targeting: the create (and `validateOnly`) returns 400 naming the field for ZIP codes
+         * (`targeting.zips`), gender, ages under 18 (`targeting.ageMin`), interest keywords (`keyword:`
+         * ids in `targeting.interests`) and hashtag behaviors.
+         * - TikTok also refuses Smart Targeting (`smartTargeting`) and lookalike audiences
+         * (`targeting.audienceInclude` / `targeting.audienceExclude`). Without an age, the ad group
+         * targets 18+.
+         * - TikTok sets the category when the campaign is created, so it is a 400 with `smartPlus`,
+         * `existingCampaignId` or `adSetId`.
          *
          */
         specialAdCategories?: Array<('HOUSING' | 'EMPLOYMENT' | 'CREDIT' | 'FINANCIAL_PRODUCTS_SERVICES' | 'ISSUES_ELECTIONS_POLITICS' | 'ONLINE_GAMBLING_AND_GAMING')>;
