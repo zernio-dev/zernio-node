@@ -1791,22 +1791,31 @@ export type AdRuleCondition = {
     /**
      * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency. `reach` and `frequency` use the platform's de-duplicated reach, so they are accepted on Meta and TikTok only.
      *
+     * `daily_budget` is the object's synced daily budget. `budget_used` is spend over the window as a percent of that budget for each day of the window: `today` `>=` 200 means twice the budget spent.
+     *
+     * Both read campaigns and ad sets with a daily budget of their own. A lifetime budget never matches.
+     *
      * `result:<key>` reads one of your own results (see [Campaign results](/guides/campaign-results)), on campaign rules only: the values you sent for the window, or a formula over them and the platform's numbers. A campaign with no value for it never matches.
      *
      */
-    metric: ('spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency' | unknown);
+    metric: ('spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency' | 'daily_budget' | 'budget_used' | unknown);
     /**
      * Days in the ad account's own timezone. `last_7d` is the 7 full days before today; only `today` reads the day in progress.
+     *
+     * `<from>_to_<to>_days_ago` is any range of full days, both ends included, such as `8_to_2_days_ago` to skip the 2 most recent days while their conversions still arrive. `from` is at least `to` and at most 90.
+     *
      */
-    window: 'today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d';
+    window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | unknown);
     op: '>' | '>=' | '<' | '<=';
     value: number;
+    /**
+     * Makes the condition relative: `value` becomes a ratio of the metric over `window` to the same metric over this window. `previous_period` is the same number of days just before `window`; any other value is a window, such as `30_to_2_days_ago`.
+     *
+     * Spend, impressions, clicks, conversions and reach are compared per day, so windows of different lengths compare fairly; rates such as `cpc` compare as they are. A comparison window with no value never matches.
+     *
+     */
+    compareTo?: string;
 };
-
-/**
- * Days in the ad account's own timezone. `last_7d` is the 7 full days before today; only `today` reads the day in progress.
- */
-export type window = 'today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d';
 
 export type op = '>' | '>=' | '<' | '<=';
 
