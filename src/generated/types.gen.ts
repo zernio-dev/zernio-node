@@ -51192,6 +51192,10 @@ export type GetCampaignResultsUploadResponse = ({
         campaign?: string;
         reason?: 'no_campaign' | 'ambiguous';
     }>;
+    /**
+     * Set when `status` is `failed`. `queue_unavailable`: the upload could not be queued. `processing_failed`: its rows could not be stored after several retries. Both are on our side.
+     */
+    failureReason: ('queue_unavailable' | 'processing_failed') | null;
     createdAt: string;
     completedAt: (string) | null;
 });

@@ -12519,6 +12519,8 @@ export const listCampaignResults = <ThrowOnError extends boolean = false>(option
  *
  * `status` turns `done` once every row is processed, usually within seconds. Uploads are kept for 30 days.
  *
+ * A `failed` upload says why in `failureReason`. Send it again: re-sending a day replaces it, so nothing is counted twice.
+ *
  */
 export const getCampaignResultsUpload = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCampaignResultsUploadData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetCampaignResultsUploadResponse, GetCampaignResultsUploadError, ThrowOnError>({
