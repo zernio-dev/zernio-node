@@ -2265,6 +2265,10 @@ export const getFollowerStats = <ThrowOnError extends boolean = false>(options?:
  * - Publishing and deleting posts are always available regardless of these toggles.
  * - Setting `xCapabilities` on a non-X account returns 400.
  *
+ * ### Meta ads sync
+ *
+ * For Facebook accounts, also accepts `metaAdsSyncEnabled` to sync the Meta ads of the ad accounts the account reaches without a Meta Ads connection. See the field for what turning it on and off does.
+ *
  */
 export const updateAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAccountData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdateAccountResponse, UpdateAccountError, ThrowOnError>({

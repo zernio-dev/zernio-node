@@ -15087,6 +15087,13 @@ export type SocialAccount = {
      */
     enabled?: boolean;
     /**
+     * Facebook accounts only (absent on every other platform). Whether this Facebook account syncs the Meta ads of the ad accounts it reaches, the way a `metaads` connection does.
+     *
+     * Off by default; set it with `PUT /v1/accounts/{accountId}`. Synced active ads count on the managed ads meter like ads from a Meta Ads connection.
+     *
+     */
+    metaAdsSyncEnabled?: boolean;
+    /**
      * End of the account's publishing cooldown. Compare it with the current time: a value in the past means the cooldown has ended (the field is cleared on the next successful publish); null means no cooldown since the last successful publish.
      *
      * **When it starts.** A post to the account fails with `errorCategory` `user_abuse` (spam, abuse or rate-limit errors), or 10 or more posts to it fail within an hour with `user_content`, `platform_error`, `platform_rate_limit` or `unknown`.
@@ -27948,6 +27955,28 @@ export type UpdateAccountData = {
              */
             inbox?: boolean;
         };
+        /**
+         * Facebook only (400 `invalid_field_value` on any other platform). Off by default for every Facebook account.
+         *
+         * `true` makes this account sync the Meta ads of the ad accounts it reaches, like a `metaads` connection.
+         *
+         * - The first sync starts at once (14 days, then 90 days of history in the background) and fires `account.ads.initial_sync_completed` for this `accountId` with `platform: metaads`.
+         * - It then refreshes on the Meta Ads schedule.
+         * - Each switch from `false` to `true` runs another initial sync and fires the webhook again. Sending `true` while it is on changes nothing.
+         * - Needs `ads_management` and `ads_read` on the account (403 `reconnect_required` otherwise, with `details.requiredPermissions`).
+         * - Needs ads access (403 `ads_addon_required`) and room in the managed ads allowance (403 `ads_allowance_exceeded`).
+         * - While a `metaads` connection has this account as `parentAccountId`, that connection syncs the ads instead.
+         *
+         * Synced active ads count on the managed ads meter like ads from a Meta Ads
+         * connection.
+         *
+         * `false` stops the sync. Ads already synced are kept, never deleted: they
+         * stop updating and stop counting on the meter, and a `metaads` connection
+         * of yours that reaches the same ad account takes them over. Posting, inbox
+         * and comments on the account are not affected.
+         *
+         */
+        metaAdsSyncEnabled?: boolean;
     };
     path: {
         accountId: string;
@@ -27967,9 +27996,13 @@ export type UpdateAccountResponse = ({
         analytics?: boolean;
         inbox?: boolean;
     };
+    /**
+     * The resulting setting, returned only when the request body included `metaAdsSyncEnabled`.
+     */
+    metaAdsSyncEnabled?: boolean;
 });
 
-export type UpdateAccountError = (unknown | ErrorResponse | {
+export type UpdateAccountError = (ErrorResponse | unknown | {
     error?: string;
 });
 
