@@ -1733,6 +1733,10 @@ export type AdRuleAction = {
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
     maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
 } | {
     /**
      * Reactivate a campaign, ad set or ad a rule paused, once `cooldownMinutes` has passed since the pause. Objects you paused yourself are left alone unless `includeManuallyPaused` is true.
@@ -1746,6 +1750,10 @@ export type AdRuleAction = {
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
     maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
 } | {
     /**
      * Copy the campaign or ad set with its ads, on Meta and TikTok campaigns and ad sets and LinkedIn campaigns. Not on ad-level rules.
@@ -1763,6 +1771,10 @@ export type AdRuleAction = {
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
     maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
 } | {
     /**
      * Move the bid cap or cost cap of a Meta ad set, in the ad account currency. Ad set rules on Meta only. An ad set without a cap is skipped with `no_bid_cap`.
@@ -1785,6 +1797,10 @@ export type AdRuleAction = {
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
     maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
 } | {
     /**
      * Tag the object by its name. Meta, Google and LinkedIn campaigns and ad sets, and TikTok campaigns, ad groups and ads. An object whose name already has the tag (or lacks it, for `remove`) is skipped with `name_unchanged`.
@@ -1806,6 +1822,10 @@ export type AdRuleAction = {
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
     maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
 } | {
     /**
      * Set the daily budget to an exact amount, such as a reset every midnight. Same level rules as the percent change.
@@ -1819,6 +1839,10 @@ export type AdRuleAction = {
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
     maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
 } | {
     /**
      * Change the daily budget. Not on ad-level rules (an ad has no budget), and on Google it needs a campaign-level rule (ad groups have no budget of their own).
@@ -1837,6 +1861,10 @@ export type AdRuleAction = {
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
     maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
 };
 
 /**
@@ -1991,7 +2019,7 @@ export type AdRuleEvaluation = {
 };
 
 /**
- * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal` and `days_live`; an ad set rule also `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
+ * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal`, `days_live` and `budget_level`; an ad set rule also `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
  */
 export type AdRuleFilters = Array<({
     /**
@@ -2004,6 +2032,10 @@ export type AdRuleFilters = Array<({
     field: 'campaign_id' | 'adset_id' | 'ad_id';
     op: 'in' | 'not_in';
     values: Array<(string)>;
+} | {
+    field: 'budget_level';
+    op: 'equals';
+    value: 'campaign' | 'adset';
 } | {
     field: 'days_live';
     op: '>=' | '<';
