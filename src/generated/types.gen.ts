@@ -1675,6 +1675,7 @@ export type AdRule = {
      * Platform campaign IDs the rule is limited to. Null checks the whole ad account.
      */
     campaignIds: Array<(string)> | null;
+    filters: AdRuleFilters;
     conditions: AdRuleConditions;
     actions: AdRuleActions;
     schedule: AdRuleSchedule;
@@ -1916,6 +1917,18 @@ export type AdRuleEvaluation = {
      */
     objects: Array<AdRuleObjectEvaluation>;
 };
+
+/**
+ * Narrows the objects the rule checks. Every filter must hold. Text compares without case, and a missing field reads as empty.
+ */
+export type AdRuleFilters = Array<{
+    /**
+     * The object's own name, its campaign's or ad set's name, or the campaign goal (objective) as the platform reports it.
+     */
+    field: 'name' | 'campaign_name' | 'adset_name' | 'goal';
+    op: 'contains' | 'not_contains' | 'equals' | 'not_equals' | 'starts_with';
+    value: string;
+}>;
 
 /**
  * Whether the rule checks campaigns, ad sets or single ads. Each one is evaluated on its own.
@@ -51202,6 +51215,7 @@ export type CreateAdRuleData = {
          * Only check these platform campaign IDs (or their ad sets). Leave out to check the whole ad account.
          */
         campaignIds?: Array<(string)>;
+        filters?: AdRuleFilters;
         conditions: AdRuleConditions;
         actions: AdRuleActions;
         /**
@@ -51288,6 +51302,7 @@ export type UpdateAdRuleData = {
         name?: string;
         level?: AdRuleLevel;
         campaignIds?: Array<(string)> | null;
+        filters?: AdRuleFilters;
         conditions?: AdRuleConditions;
         actions?: AdRuleActions;
         schedule?: AdRuleSchedule;
