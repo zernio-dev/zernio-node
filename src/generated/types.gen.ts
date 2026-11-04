@@ -27729,6 +27729,10 @@ export type ListAccountsData = {
          */
         platform?: string;
         /**
+         * Comma-separated platforms (up to 50) to list together, the several-platform form of `platform`. Applied before pagination.
+         */
+        platforms?: string;
+        /**
          * Filter accounts by profile ID. Must be a valid ObjectId.
          */
         profileId?: string;
