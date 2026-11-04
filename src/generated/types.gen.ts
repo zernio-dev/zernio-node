@@ -4454,6 +4454,10 @@ export type CallRecord = {
          */
         metaCostUSD?: number;
         telnyxCostUSD?: number;
+        /**
+         * Seconds of the call that were recorded and billed as recording.
+         */
+        recordingSeconds?: number;
         recordingCostUSD?: number;
         /**
          * Amount Zernio bills you = telephony leg + recording + transcription (excludes any Meta portion).
@@ -41840,6 +41844,10 @@ export type ListWhatsAppCallsResponse = ({
              */
             metaCostUSD?: number;
             telnyxCostUSD?: number;
+            /**
+             * Seconds of the call that were recorded and billed as recording.
+             */
+            recordingSeconds?: number;
             recordingCostUSD?: number;
             /**
              * Amount Zernio bills you = Telnyx leg + recording (excludes Meta).
