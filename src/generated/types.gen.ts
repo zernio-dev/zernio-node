@@ -29001,6 +29001,50 @@ export type CreateInviteTokenError = (unknown | ErrorResponse | {
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
 });
 
+export type CreatePlatformInviteData = {
+    body: {
+        /**
+         * The profile the account is connected to.
+         */
+        profileId: string;
+        platform: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'threads' | 'tiktok' | 'youtube' | 'pinterest' | 'reddit' | 'bluesky' | 'snapchat' | 'googlebusiness';
+        /**
+         * Reconnect this existing account instead of adding a new one. It must belong to the profile and platform.
+         */
+        accountId?: string;
+        /**
+         * Instagram only. instagram_login (the default) uses Instagram Login, facebook_login uses Facebook Login. A reconnect link keeps the method the account was connected with.
+         */
+        loginMethod?: 'instagram_login' | 'facebook_login';
+        /**
+         * Days until the link expires.
+         */
+        expiresInDays?: number;
+    };
+};
+
+export type CreatePlatformInviteResponse = ({
+    invite?: {
+        _id?: string;
+        platform?: string;
+        loginMethod?: ('instagram_login' | 'facebook_login') | null;
+        accountId?: (string) | null;
+        expiresAt?: string;
+        inviteUrl?: string;
+    };
+});
+
+export type CreatePlatformInviteError = (ErrorResponse | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+} | {
+    error?: string;
+});
+
 export type GetConnectUrlData = {
     path: {
         /**

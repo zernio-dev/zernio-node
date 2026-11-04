@@ -351,6 +351,7 @@ try {
 | `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
 | `connect.createOAuthApp()` | Add an OAuth app |
 | `connect.createPinterestBoard()` | Create Pinterest board |
+| `connect.createPlatformInvite()` | Create a connect link |
 | `connect.createYoutubePlaylist()` | Create YouTube playlist |
 | `connect.getConnectHandoff()` | Get a phone handoff |
 | `connect.getConnectUrl()` | Get OAuth connect URL |

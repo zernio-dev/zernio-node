@@ -167,6 +167,7 @@ import {
   createPhoneNumberPortIn,
   createPhoneNumberStockWatch,
   createPinterestBoard,
+  createPlatformInvite,
   createPost,
   createProfile,
   createQueueSlot,
@@ -1624,6 +1625,7 @@ export class Zernio {
    * Connect API - OAuth connection flows
    */
   connect = {
+    createPlatformInvite: this._bind(createPlatformInvite),
     getConnectUrl: this._bind(getConnectUrl),
     handleOAuthCallback: this._bind(handleOAuthCallback),
     connectAds: this._bind(connectAds),

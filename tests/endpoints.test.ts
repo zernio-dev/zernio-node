@@ -409,6 +409,11 @@ describe('Endpoint Methods', () => {
   });
 
   describe('connect', () => {
+    it('should have createPlatformInvite method', () => {
+      expect(client.connect.createPlatformInvite).toBeDefined();
+      expect(client.connect.createPlatformInvite).toBeTypeOf('function');
+    });
+
     it('should have getConnectUrl method', () => {
       expect(client.connect.getConnectUrl).toBeDefined();
       expect(client.connect.getConnectUrl).toBeTypeOf('function');
