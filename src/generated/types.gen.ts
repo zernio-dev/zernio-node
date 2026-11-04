@@ -16237,6 +16237,10 @@ export type TreasuryTopup = {
     status?: 'pending' | 'succeeded' | 'failed' | 'expired';
     createdAt?: string;
     succeededAt?: (string) | null;
+    /**
+     * A Stripe invoice exists for this payment (Checkout payments). Every paid payment has a card receipt; see getTopupReceipt.
+     */
+    hasInvoice?: boolean;
 };
 
 export type method4 = 'card' | 'bank_transfer';
@@ -24715,6 +24719,14 @@ export type GetTopupReceiptData = {
 export type GetTopupReceiptResponse = ({
     url: string;
     format: 'pdf' | 'page';
+    /**
+     * The invoice PDF; null when the payment made no invoice.
+     */
+    invoiceUrl?: (string) | null;
+    /**
+     * Stripe's card receipt page for the charge.
+     */
+    receiptUrl?: (string) | null;
     /**
      * As in the top-up list.
      */
