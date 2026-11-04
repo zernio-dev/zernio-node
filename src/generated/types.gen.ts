@@ -13532,7 +13532,7 @@ export type Post = {
      */
     hashtags?: Array<(string)>;
     /**
-     * Stored for reference only. This field does NOT automatically create @mentions when publishing. For LinkedIn @mentions, write them in the post content, for example @[https://www.linkedin.com/in/jane-doe] or @[https://www.linkedin.com/company/acme].
+     * Stored for reference only. Publishing does not create mentions from this field.
      */
     mentions?: Array<(string)>;
     visibility?: 'public' | 'private' | 'unlisted';
@@ -26883,7 +26883,7 @@ export type CreatePostData = {
          */
         title?: string;
         /**
-         * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn text-free reshare (platformSpecificData.reshareUrl with no text). Required for other text-only posts. LinkedIn @mentions: write @[https://www.linkedin.com/in/jane-doe] or @[https://www.linkedin.com/company/acme] in the text, see [LinkedIn mentions](/platforms/linkedin#mentions).
+         * Post caption/text. Optional when media is attached, all platforms have customContent, every platform entry is an X Article (platformSpecificData.article), or every platform entry is a LinkedIn text-free reshare (platformSpecificData.reshareUrl with no text). Required for other text-only posts.
          */
         content?: string;
         /**
@@ -26969,7 +26969,7 @@ export type CreatePostData = {
          */
         hashtags?: Array<(string)>;
         /**
-         * Stored for reference only. This field does NOT automatically create @mentions when publishing. For LinkedIn @mentions, write them in the post content, for example @[https://www.linkedin.com/in/jane-doe] or @[https://www.linkedin.com/company/acme].
+         * Stored for reference only. Publishing does not create mentions from this field.
          */
         mentions?: Array<(string)>;
         /**

@@ -1709,6 +1709,8 @@ export const listPosts = <ThrowOnError extends boolean = false>(options?: Option
  * Create post
  * Create a post, and optionally publish it in the same request. A post published immediately (`publishNow: true`) comes back with `platformPostUrl` in the response.
  *
+ * ## Optional content
+ *
  * `content` is optional in four cases:
  *
  * - media is attached
