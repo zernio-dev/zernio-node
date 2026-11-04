@@ -2019,17 +2019,38 @@ export type outcome = 'triggered' | 'cooldown' | 'no_match' | 'failed';
 
 export type status4 = 'done' | 'failed';
 
+/**
+ * Either `everyMinutes` or `times`. Sending a schedule replaces the rule's whole timing. Without one, a new rule runs every 60 minutes.
+ */
 export type AdRuleSchedule = {
     /**
-     * How often the rule runs, in minutes.
+     * How often the rule runs, in minutes. Null on a rule that runs at set times.
      */
-    everyMinutes: 60 | 180 | 360 | 720 | 1440;
+    everyMinutes?: (15 | 30 | 60 | 180 | 360 | 720 | 1440) | null;
+    /**
+     * Set weekly times in the ad account timezone, instead of an interval. A rule that changes ads needs a cooldown of at least the shortest gap between two times.
+     */
+    times?: Array<{
+        days: Array<('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')>;
+        /**
+         * Wall-clock time, 24-hour `HH:MM`.
+         */
+        at: string;
+    }> | null;
+    /**
+     * The rule runs from this time on.
+     */
+    startsAt?: (string) | null;
+    /**
+     * The rule stops running after this time.
+     */
+    endsAt?: (string) | null;
 };
 
 /**
- * How often the rule runs, in minutes.
+ * How often the rule runs, in minutes. Null on a rule that runs at set times.
  */
-export type everyMinutes = 60 | 180 | 360 | 720 | 1440;
+export type everyMinutes = 15 | 30 | 60 | 180 | 360 | 720 | 1440;
 
 export type AdsAlert = {
     /**
