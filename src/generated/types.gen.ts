@@ -1991,16 +1991,24 @@ export type AdRuleEvaluation = {
 };
 
 /**
- * Narrows the objects the rule checks. Every filter must hold. Text compares without case, and a missing field reads as empty.
+ * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal` and `days_live`; an ad set rule also `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
  */
-export type AdRuleFilters = Array<{
+export type AdRuleFilters = Array<({
     /**
      * The object's own name, its campaign's or ad set's name, or the campaign goal (objective) as the platform reports it.
      */
     field: 'name' | 'campaign_name' | 'adset_name' | 'goal';
     op: 'contains' | 'not_contains' | 'equals' | 'not_equals' | 'starts_with';
     value: string;
-}>;
+} | {
+    field: 'campaign_id' | 'adset_id' | 'ad_id';
+    op: 'in' | 'not_in';
+    values: Array<(string)>;
+} | {
+    field: 'days_live';
+    op: '>=' | '<';
+    value: number;
+})>;
 
 /**
  * Whether the rule checks campaigns, ad sets or single ads. Each one is evaluated on its own.
