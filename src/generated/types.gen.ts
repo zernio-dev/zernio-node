@@ -1757,6 +1757,27 @@ export type AdRuleAction = {
     maxChangesPerDay?: number;
 } | {
     /**
+     * Tag the object by its name. Meta, Google and LinkedIn campaigns and ad sets, and TikTok campaigns, ad groups and ads. An object whose name already has the tag (or lacks it, for `remove`) is skipped with `name_unchanged`.
+     */
+    type: 'edit_name';
+    /**
+     * Text to add, like `[WINNER]`. Compared without case.
+     */
+    add?: string;
+    /**
+     * Where `add` goes. Defaults to `start`.
+     */
+    at?: 'start' | 'end';
+    /**
+     * Text to take out of the name, every copy of it.
+     */
+    remove?: string;
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
+} | {
+    /**
      * Set the daily budget to an exact amount, such as a reset every midnight. Same level rules as the percent change.
      */
     type: 'adjust_budget';
@@ -1793,10 +1814,15 @@ export type AdRuleAction = {
  */
 export type type2 = 'notify';
 
+/**
+ * Where `add` goes. Defaults to `start`.
+ */
+export type at = 'start' | 'end';
+
 export type direction = 'increase' | 'decrease';
 
 /**
- * Each type at most once, and at most one of `pause`, `activate`, `adjust_budget` and `duplicate`.
+ * Each type at most once, and at most one of `pause`, `activate`, `adjust_budget`, `duplicate` and `edit_name`.
  */
 export type AdRuleActions = Array<AdRuleAction>;
 
@@ -1826,7 +1852,7 @@ export type AdRuleActivityEntry = {
      * Its name when the rule acted.
      */
     objectName: (string) | null;
-    type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
+    type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate' | 'edit_name';
     status: 'done' | 'skipped' | 'failed';
     /**
      * Why it was skipped or failed, for example `already_paused`.
@@ -1834,12 +1860,20 @@ export type AdRuleActivityEntry = {
     reason: (string) | null;
     previousDailyBudget: (number) | null;
     newDailyBudget: (number) | null;
+    /**
+     * The name before an `edit_name`.
+     */
+    previousName: (string) | null;
+    /**
+     * The name an applied `edit_name` set.
+     */
+    newName: (string) | null;
     currency: (string) | null;
 };
 
 export type level = 'campaign' | 'adset';
 
-export type type3 = 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
+export type type3 = 'pause' | 'activate' | 'adjust_budget' | 'duplicate' | 'edit_name';
 
 export type status3 = 'done' | 'skipped' | 'failed';
 
@@ -1992,7 +2026,7 @@ export type AdRuleRun = {
         matched?: Array<AdRuleObjectEvaluation>;
         actions?: Array<{
             objectId: string;
-            type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
+            type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate' | 'edit_name';
             status: 'done' | 'skipped' | 'failed';
             /**
              * Why it was skipped or failed, for example `already_paused`.
@@ -2000,6 +2034,8 @@ export type AdRuleRun = {
             reason?: string;
             previousDailyBudget?: number;
             newDailyBudget?: number;
+            previousName?: string;
+            newName?: string;
         }>;
         /**
          * Set when a run of a rule with a `notify` action matched objects and tried to send the webhook. A notify-only rule whose webhook fails ends with outcome `failed`.
@@ -17706,7 +17742,7 @@ export type WebhookPayloadAdRuleTriggered = {
          * What the rule did to the object. Empty on a rule that only notifies.
          */
         actions: Array<{
-            type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
+            type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate' | 'edit_name';
             /**
              * Action result.
              *
@@ -17726,6 +17762,14 @@ export type WebhookPayloadAdRuleTriggered = {
              * On `adjust_budget`, the daily budget after the change. Null when nothing changed.
              */
             newDailyBudget: (number) | null;
+            /**
+             * On `edit_name`, the object's name before the change. Null otherwise.
+             */
+            previousName: (string) | null;
+            /**
+             * On `edit_name`, the name after the change. Null when nothing changed.
+             */
+            newName: (string) | null;
         }>;
     }>;
     /**
@@ -51276,7 +51320,7 @@ export type ListAdRuleActivityData = {
          * ISO 8601 date-time, inclusive.
          */
         to?: string;
-        type?: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
+        type?: 'pause' | 'activate' | 'adjust_budget' | 'duplicate' | 'edit_name';
     };
 };
 
