@@ -12448,6 +12448,7 @@ export const listAdRuleActivity = <ThrowOnError extends boolean = false>(options
 /**
  * Undo a change an ad rule made
  * Puts back a pause, a reactivation or a budget change a rule applied, as a new change recorded in the activity feed. The rule's cooldown then covers the object.
+ *
  * It is refused (409 `invalid_resource_state`) when the change was not applied, was already undone, is a copy, or when the object changed since: delivering again after a pause, paused again after a reactivation, or on another budget.
  *
  */
