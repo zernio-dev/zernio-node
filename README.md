@@ -670,6 +670,7 @@ try {
 | `adRules.updateAdRule()` | Update an ad rule |
 | `adRules.deleteAdRule()` | Delete an ad rule |
 | `adRules.previewAdRule()` | Preview an ad rule |
+| `adRules.undoAdRuleActivity()` | Undo a change an ad rule made |
 
 ### Ad Targeting
 | Method | Description |

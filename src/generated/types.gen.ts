@@ -51287,6 +51287,31 @@ export type ListAdRuleActivityResponse = ({
 
 export type ListAdRuleActivityError = (ErrorResponse);
 
+export type UndoAdRuleActivityData = {
+    path: {
+        /**
+         * The `id` of an entry from `GET /v1/ads/rules/activity`.
+         */
+        activityId: string;
+    };
+};
+
+export type UndoAdRuleActivityResponse = ({
+    undo: {
+        /**
+         * The undo's own activity entry id.
+         */
+        id: string;
+        /**
+         * `skipped` when the object was already as it was before the change.
+         */
+        status: 'applied' | 'skipped' | 'unknown';
+        reason: (string) | null;
+    };
+} | unknown);
+
+export type UndoAdRuleActivityError = (ErrorResponse);
+
 export type GetAdRuleData = {
     path: {
         ruleId: string;
