@@ -13645,6 +13645,10 @@ export type Post = {
      * Queue ID if the post was scheduled via a specific queue
      */
     queueId?: string;
+    /**
+     * Profile the post is filed under. Set only on drafts that have no platforms.
+     */
+    profileId?: string;
     createdAt?: string;
     /**
      * Last change to the post or to any of its platforms (a publish, a failure, a resolved URL).
@@ -17516,7 +17520,9 @@ export type WebhookPayloadAccountDisconnected = {
         username: string;
         displayName?: string;
         /**
-         * Whether the disconnection was intentional (user action) or unintentional (token expired/revoked)
+         * intentional: removed on purpose, for example with DELETE /v1/accounts/{accountId} or by a switch to the Free plan for the accounts over its limit. The account is deleted permanently 1 hour later unless the same account is reconnected within that hour.
+         *
+         * unintentional: the connection broke (token expired or revoked, access lost on the platform). The account stays in Zernio, inactive, until it is reconnected (keeping its accountId) or removed.
          */
         disconnectionType: 'intentional' | 'unintentional';
         /**
@@ -17533,7 +17539,9 @@ export type WebhookPayloadAccountDisconnected = {
 export type event5 = 'account.disconnected';
 
 /**
- * Whether the disconnection was intentional (user action) or unintentional (token expired/revoked)
+ * intentional: removed on purpose, for example with DELETE /v1/accounts/{accountId} or by a switch to the Free plan for the accounts over its limit. The account is deleted permanently 1 hour later unless the same account is reconnected within that hour.
+ *
+ * unintentional: the connection broke (token expired or revoked, access lost on the platform). The account stays in Zernio, inactive, until it is reconnected (keeping its accountId) or removed.
  */
 export type disconnectionType = 'intentional' | 'unintentional';
 
@@ -26941,7 +26949,7 @@ export type ListPostsData = {
         page?: number;
         platform?: string;
         /**
-         * Filter posts to a specific profile (24-char hex ObjectId). Omit it, or send `all` or an empty value, to list posts across every profile.
+         * Filter posts to a specific profile (24-char hex ObjectId), including drafts filed under it without platforms. Omit it, or send `all` or an empty value, to list posts across every profile.
          */
         profileId?: string;
         /**
@@ -27107,6 +27115,10 @@ export type CreatePostData = {
          *
          */
         queueId?: string;
+        /**
+         * Files a draft with no platforms under this profile so it lists under ?profileId= and profile-scoped API keys. Ignored when platforms are set. When promoting the draft via PUT, send platforms, isDraft false and scheduledFor again.
+         */
+        profileId?: string;
     };
     headers?: {
         /**
