@@ -198,6 +198,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getTikTokAccountInsights).toBeTypeOf('function');
     });
 
+    it('should have getTikTokDemographics method', () => {
+      expect(client.analytics.getTikTokDemographics).toBeDefined();
+      expect(client.analytics.getTikTokDemographics).toBeTypeOf('function');
+    });
+
     it('should have getYouTubeDailyViews method', () => {
       expect(client.analytics.getYouTubeDailyViews).toBeDefined();
       expect(client.analytics.getYouTubeDailyViews).toBeTypeOf('function');

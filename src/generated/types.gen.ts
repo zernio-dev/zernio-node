@@ -22824,6 +22824,57 @@ export type GetTikTokAccountInsightsResponse = (InstagramAccountInsightsResponse
 
 export type GetTikTokAccountInsightsError = (unknown | ErrorResponse);
 
+export type GetTikTokDemographicsData = {
+    query: {
+        /**
+         * The Zernio SocialAccount ID for the TikTok account.
+         */
+        accountId: string;
+        /**
+         * Comma-separated list of demographic dimensions: age, gender, country, city. Defaults to all four.
+         */
+        breakdown?: string;
+    };
+};
+
+export type GetTikTokDemographicsResponse = ({
+    success?: boolean;
+    accountId?: string;
+    platform?: 'tiktok';
+    metric?: 'follower_demographics';
+    /**
+     * Only the requested breakdowns are present. Entries are sorted by value, largest first.
+     */
+    demographics?: {
+        [key: string]: Array<{
+            /**
+             * Age group (18-24, 25-34, 35-44, 45-54, 55+), gender (Female, Male, Other), ISO 3166-1 alpha-2 country code, or city name. `other` collects the countries TikTok does not list individually.
+             */
+            dimension?: string;
+            /**
+             * Share of followers, from 0 to 1
+             */
+            value?: number;
+        }>;
+    };
+    note?: string;
+});
+
+export type GetTikTokDemographicsError = (ErrorResponse | {
+    error?: string;
+    code?: string;
+} | {
+    error?: string;
+} | {
+    success?: boolean;
+    error?: string;
+    code?: string;
+    scopeStatus?: {
+        requiresReauthorization?: boolean;
+        hasInsightsScope?: boolean;
+    };
+});
+
 export type GetYouTubeDailyViewsData = {
     query: {
         /**

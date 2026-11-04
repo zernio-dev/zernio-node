@@ -259,6 +259,7 @@ try {
 | `analytics.getPostSamples()` | Get post samples |
 | `analytics.getPostTimeline()` | Get post analytics timeline |
 | `analytics.getTikTokAccountInsights()` | Get TikTok account-level insights |
+| `analytics.getTikTokDemographics()` | Get TikTok follower demographics |
 | `analytics.getTrackingWindow()` | Get a tracking window |
 | `analytics.getYouTubeChannelInsights()` | Get YouTube channel insights |
 | `analytics.getYouTubeDailyViews()` | Get YouTube daily views |
