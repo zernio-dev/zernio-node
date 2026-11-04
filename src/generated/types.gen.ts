@@ -1676,6 +1676,7 @@ export type AdRule = {
      */
     campaignIds: Array<(string)> | null;
     filters: AdRuleFilters;
+    groups: AdRuleGroups;
     /**
      * Null when every matching run acts and notifies.
      */
@@ -1951,24 +1952,30 @@ export type AdRuleCondition = {
      *
      * Both read campaigns and ad sets with a daily budget of their own. A lifetime budget never matches.
      *
+     * `day_of_month` and `working_day_of_month` read today's date in the ad account's timezone, the same for every object: `working_day_of_month` `>=` 5 holds from the fifth weekday of the month (Monday to Friday, holidays not counted). They take `window: today`, no `compareTo` and no `top` or `bottom`.
+     *
      * `result:<key>` reads one of your own results (see [Campaign results](/guides/campaign-results)), on campaign rules only: the values you sent for the window, or a formula over them and the platform's numbers. A campaign with no value for it never matches.
      *
      */
-    metric: ('spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency' | 'daily_budget' | 'budget_used' | unknown);
+    metric: ('spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency' | 'daily_budget' | 'budget_used' | 'day_of_month' | 'working_day_of_month' | unknown);
     /**
-     * Days in the ad account's own timezone. `last_7d` is the 7 full days before today; only `today` reads the day in progress.
+     * Days in the ad account's own timezone. `last_7d` is the 7 full days before today; only `today` and `this_month` read the day in progress.
+     *
+     * `this_month` runs from the 1st through today; `last_month` is the whole previous calendar month.
      *
      * `<from>_to_<to>_days_ago` is any range of full days, both ends included, such as `8_to_2_days_ago` to skip the 2 most recent days while their conversions still arrive. `from` is at least `to` and at most 90.
      *
      */
-    window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | unknown);
+    window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | 'this_month' | 'last_month' | unknown);
     /**
      * `top` and `bottom` rank the rule's objects by the metric over the window, highest first for `top`, and match the first `value` (a whole number from 1 to 100). Objects with no value are not ranked; the run history shows each one's position.
      */
     op: '>' | '>=' | '<' | '<=' | 'top' | 'bottom';
     value: number;
     /**
-     * Makes the condition relative: `value` becomes a ratio of the metric over `window` to the same metric over this window. `previous_period` is the same number of days just before `window`; any other value is a window, such as `30_to_2_days_ago`.
+     * Makes the condition relative: `value` becomes a ratio of the metric over `window` to the same metric over this window, such as `30_to_2_days_ago`.
+     *
+     * `previous_period` is the same number of days just before `window`. For `this_month` it is the same days of last month, and for `last_month` the month before.
      *
      * Spend, impressions, clicks, conversions and reach are compared per day, so windows of different lengths compare fairly; rates such as `cpc` compare as they are. A comparison window with no value never matches.
      *
@@ -2016,6 +2023,23 @@ export type AdRuleEvaluation = {
      * Every delivering campaign or ad set in scope (for an `activate` rule, the rule-paused ones it may reactivate).
      */
     objects: Array<AdRuleObjectEvaluation>;
+    /**
+     * Each group's totals, for a rule with groups. Null otherwise.
+     */
+    groups?: Array<{
+        name: string;
+        matched: boolean;
+        /**
+         * Like an object's conditions, read on the group's totals.
+         */
+        conditions: Array<{
+            [key: string]: unknown;
+        }>;
+        /**
+         * Every campaign counted in the group, paused ones included.
+         */
+        campaignIds: Array<(string)>;
+    }> | null;
 };
 
 /**
@@ -2041,6 +2065,24 @@ export type AdRuleFilters = Array<({
     op: '>=' | '<';
     value: number;
 })>;
+
+/**
+ * Campaigns judged together, campaign rules only. Each group's numbers and your results are added up across its campaigns, and rates and formulas are computed on the totals: a group's `result:cac_percent` is its total spend over its total revenue.
+ *
+ * The conditions are judged once per group, and a matching group acts on each of its campaigns, each with its own cooldown and daily cap. Paused campaigns count toward a group's totals; only the ones the rule may act on are changed.
+ *
+ * A group with no filters holds every campaign the rule checks: the whole ad account. A campaign in several groups is acted on once per run, by the first matching group. Reach and frequency cannot be added up across campaigns, so a rule with groups cannot use them.
+ *
+ * A campaign with no results sent for the window adds its spend and no results to its group. A result sent as a rate (kind `percent` or `ratio`, no formula) reads as unknown for a group; define it as a formula over counts.
+ *
+ */
+export type AdRuleGroups = Array<{
+    /**
+     * Unique in the rule, ignoring case.
+     */
+    name: string;
+    filters: AdRuleFilters;
+}> | null;
 
 /**
  * Whether the rule checks campaigns, ad sets or single ads. Each one is evaluated on its own.
@@ -2076,6 +2118,10 @@ export type AdRuleObjectEvaluation = {
      * True when every condition holds.
      */
     matched: boolean;
+    /**
+     * For a rule with groups: the group this campaign was judged in. `matched` and `conditions` are the group's.
+     */
+    group?: string;
     conditions: Array<(AdRuleCondition & {
     /**
      * The object's value over the window. Null when it cannot be computed.
@@ -4454,10 +4500,6 @@ export type CallRecord = {
          */
         metaCostUSD?: number;
         telnyxCostUSD?: number;
-        /**
-         * Seconds of the call that were recorded and billed as recording.
-         */
-        recordingSeconds?: number;
         recordingCostUSD?: number;
         /**
          * Amount Zernio bills you = telephony leg + recording + transcription (excludes any Meta portion).
@@ -17905,7 +17947,7 @@ export type WebhookPayloadAdRuleTriggered = {
              */
             metric: string;
             /**
-             * `today`, `yesterday`, `last_3d`, `last_7d`, `last_14d` or `last_30d`, in the account's calendar (see `run.today`). New values may be added.
+             * `today`, `yesterday`, `last_3d`, `last_7d`, `last_14d`, `last_30d`, `this_month`, `last_month` or a custom range, in the account's calendar (see `run.today`). New values may be added.
              */
             window: string;
             /**
@@ -41844,10 +41886,6 @@ export type ListWhatsAppCallsResponse = ({
              */
             metaCostUSD?: number;
             telnyxCostUSD?: number;
-            /**
-             * Seconds of the call that were recorded and billed as recording.
-             */
-            recordingSeconds?: number;
             recordingCostUSD?: number;
             /**
              * Amount Zernio bills you = Telnyx leg + recording (excludes Meta).
@@ -51698,6 +51736,7 @@ export type CreateAdRuleData = {
          */
         campaignIds?: Array<(string)>;
         filters?: AdRuleFilters;
+        groups?: AdRuleGroups;
         lifecycle?: AdRuleLifecycle;
         conditions: AdRuleConditions;
         actions: AdRuleActions;
@@ -51815,6 +51854,10 @@ export type UpdateAdRuleData = {
         level?: AdRuleLevel;
         campaignIds?: Array<(string)> | null;
         filters?: AdRuleFilters;
+        /**
+         * Null removes the groups; each campaign is then judged on its own.
+         */
+        groups?: (AdRuleGroups);
         /**
          * Null removes it; every matching run then acts and notifies again.
          */
