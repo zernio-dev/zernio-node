@@ -60326,8 +60326,14 @@ export type CreateStandaloneAdData = {
         /**
          * Meta-only. When present, switches to the multi-creative shape:
          * creates 1 campaign + 1 ad set + N ads (one per entry here).
+         * Mutually exclusive with `adSetId`.
+         *
+         * With `existingCampaignId` it creates 1 ad set + N ads under that campaign, so one call per
+         * audience launches a creative matrix.
+         *
          * Top-level `headline` / `body` / `imageUrl` / `linkUrl` /
-         * `callToAction` are ignored in this mode. Mutually exclusive with `adSetId`.
+         * `callToAction` are ignored in this mode. Entries that repeat an `imageUrl` or `video.url` share
+         * one upload.
          *
          */
         creatives?: Array<{
@@ -60393,10 +60399,11 @@ export type CreateStandaloneAdData = {
          */
         adSetId?: string;
         /**
-         * Create the new objects under this EXISTING campaign instead of creating a new one. Supported on Meta, Google Ads, LinkedIn, TikTok and Reddit Ads. Mutually exclusive with `adSetId` and `creatives[]`.
+         * Create the new objects under this EXISTING campaign instead of creating a new one. Supported on Meta, Google Ads, LinkedIn, TikTok and Reddit Ads. Mutually exclusive with `adSetId`.
          *
          * - TikTok: creates the ad group and the ad under this campaign. The campaign is neither created nor activated, and its objective must fit `goal`. Not with `smartPlus`.
          * - Meta: adds the new ad set under this campaign (multi-ad-set audience testing). Its budget matches the campaign's mode: for a CBO campaign (campaign-level budget) omit `budgetAmount`/`budgetType`, since the campaign owns the budget; for an ABO campaign pass them (they go on the new ad set).
+         * - Meta with `creatives[]`: the new ad set gets one ad per entry.
          * - LinkedIn: creates a new Campaign (and its Creative) under this EXISTING CampaignGroup.
          * - Google Ads: creates a new ad group under this campaign. It inherits the campaign's budget, so omit `budgetAmount`/`budgetType` (and any bidding field), or the request returns 400.
          * - Google Ads with `campaignType: "demand_gen"`: the campaign must be Demand Gen (otherwise 400). The new ad group (with its geo, languages, channels and audience from the request) and its ad are created in one atomic request, the ad group PAUSED. Schedule and `locationTargetingType` belong to the campaign and return 400.
