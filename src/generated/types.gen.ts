@@ -1691,9 +1691,34 @@ export type AdRule = {
 
 export type AdRuleAction = {
     /**
-     * Send the `ad_rule.triggered` webhook.
+     * Send the `ad_rule.triggered` webhook, and the alert to every `send` destination.
      */
     type: 'notify';
+    /**
+     * Also send a short alert through accounts you connected: what matched, the values and what the rule did. Up to 5 destinations, checked when the rule is saved.
+     *
+     * A destination that fails is reported in the run's `notification`; it never undoes a change.
+     *
+     */
+    send?: Array<({
+    /**
+     * A connected Slack account (`GET /v1/accounts`, platform `slack`).
+     */
+    accountId: string;
+    /**
+     * The Slack channel to post in. Defaults to the channel the account was connected with; the bot joins public channels on its own.
+     */
+    channelId?: string;
+} | {
+    /**
+     * A connected Gmail or Outlook mailbox with email access.
+     */
+    accountId: string;
+    /**
+     * The address that receives the alert, sent as a new email from that mailbox.
+     */
+    to: string;
+})>;
 } | {
     /**
      * Pause the campaign, ad set or ad.
@@ -1708,6 +1733,19 @@ export type AdRuleAction = {
      * Reactivate a campaign, ad set or ad a rule paused, once `cooldownMinutes` has passed since the pause. Objects you paused yourself are never touched.
      */
     type: 'activate';
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
+} | {
+    /**
+     * Set the daily budget to an exact amount, such as a reset every midnight. Same level rules as the percent change.
+     */
+    type: 'adjust_budget';
+    /**
+     * The daily budget to set, in the ad account currency. An object already at it is skipped with `already_at_amount`.
+     */
+    amount: number;
     /**
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
@@ -1733,7 +1771,7 @@ export type AdRuleAction = {
 };
 
 /**
- * Send the `ad_rule.triggered` webhook.
+ * Send the `ad_rule.triggered` webhook, and the alert to every `send` destination.
  */
 export type type2 = 'notify';
 
