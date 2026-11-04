@@ -1735,9 +1735,13 @@ export type AdRuleAction = {
     maxChangesPerDay?: number;
 } | {
     /**
-     * Reactivate a campaign, ad set or ad a rule paused, once `cooldownMinutes` has passed since the pause. Objects you paused yourself are never touched.
+     * Reactivate a campaign, ad set or ad a rule paused, once `cooldownMinutes` has passed since the pause. Objects you paused yourself are left alone unless `includeManuallyPaused` is true.
      */
     type: 'activate';
+    /**
+     * Also reactivate paused objects that no rule paused, as soon as they match.
+     */
+    includeManuallyPaused?: boolean;
     /**
      * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
      */
