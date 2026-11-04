@@ -51244,6 +51244,10 @@ export type ListAdRuleTemplatesResponse = ({
         level: AdRuleLevel;
         conditions: AdRuleConditions;
         actions: AdRuleActions;
+        /**
+         * What the template is for: stop waste, grow what works, act at set times, or only tell you.
+         */
+        goal: 'protect' | 'scale' | 'schedule' | 'alert';
         schedule: AdRuleSchedule;
         cooldownMinutes: number;
         platforms: Array<(string)> | null;
