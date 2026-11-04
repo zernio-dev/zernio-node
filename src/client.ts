@@ -626,6 +626,7 @@ import {
   listAdLabels,
   listAdNegativeKeywordLists,
   listAdRuleActivity,
+  listAdRuleAlerts,
   listAdRuleRuns,
   listAdRuleTemplates,
   listAdRules,
@@ -2447,6 +2448,7 @@ export class Zernio {
     updateAdRule: this._bind(updateAdRule),
     deleteAdRule: this._bind(deleteAdRule),
     previewAdRule: this._bind(previewAdRule),
+    listAdRuleAlerts: this._bind(listAdRuleAlerts),
     listAdRuleRuns: this._bind(listAdRuleRuns),
   };
 

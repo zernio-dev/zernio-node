@@ -662,6 +662,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `adRules.listAdRuleActivity()` | List every change ad rules made |
+| `adRules.listAdRuleAlerts()` | List a rule's alerts |
 | `adRules.listAdRuleRuns()` | List an ad rule's runs |
 | `adRules.listAdRules()` | List ad rules |
 | `adRules.listAdRuleTemplates()` | List ready-made ad rules |
