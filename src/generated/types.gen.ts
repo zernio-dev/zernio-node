@@ -27488,7 +27488,7 @@ export type ListAccountsData = {
          */
         profileIds?: string;
         /**
-         * Case-insensitive match on the account username, display name or platform user id, or an exact account id. Combine with page/limit to paginate the matches.
+         * Case-insensitive match on the account username, display name or platform user id. A 24-character hexadecimal value is read as an account id and matches only that exact account. Combine with page/limit to paginate the matches.
          */
         search?: string;
         /**
