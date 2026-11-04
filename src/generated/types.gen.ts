@@ -1739,6 +1739,23 @@ export type AdRuleAction = {
     maxChangesPerDay?: number;
 } | {
     /**
+     * Copy the campaign or ad set with its ads, on Meta and TikTok campaigns and ad sets and LinkedIn campaigns. Not on ad-level rules.
+     */
+    type: 'duplicate';
+    /**
+     * How the copy starts. Defaults to `paused`.
+     */
+    status?: 'paused' | 'active';
+    /**
+     * Text added to the copy's name.
+     */
+    renameSuffix?: string;
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
+} | {
+    /**
      * Set the daily budget to an exact amount, such as a reset every midnight. Same level rules as the percent change.
      */
     type: 'adjust_budget';
@@ -1778,7 +1795,7 @@ export type type2 = 'notify';
 export type direction = 'increase' | 'decrease';
 
 /**
- * Each type at most once, and at most one of `pause`, `activate` and `adjust_budget`.
+ * Each type at most once, and at most one of `pause`, `activate`, `adjust_budget` and `duplicate`.
  */
 export type AdRuleActions = Array<AdRuleAction>;
 
@@ -1808,7 +1825,7 @@ export type AdRuleActivityEntry = {
      * Its name when the rule acted.
      */
     objectName: (string) | null;
-    type: 'pause' | 'activate' | 'adjust_budget';
+    type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
     status: 'done' | 'skipped' | 'failed';
     /**
      * Why it was skipped or failed, for example `already_paused`.
@@ -1821,7 +1838,7 @@ export type AdRuleActivityEntry = {
 
 export type level = 'campaign' | 'adset';
 
-export type type3 = 'pause' | 'activate' | 'adjust_budget';
+export type type3 = 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
 
 export type status3 = 'done' | 'skipped' | 'failed';
 
@@ -1962,7 +1979,7 @@ export type AdRuleRun = {
         matched?: Array<AdRuleObjectEvaluation>;
         actions?: Array<{
             objectId: string;
-            type: 'pause' | 'activate' | 'adjust_budget';
+            type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
             status: 'done' | 'skipped' | 'failed';
             /**
              * Why it was skipped or failed, for example `already_paused`.
@@ -17655,7 +17672,7 @@ export type WebhookPayloadAdRuleTriggered = {
          * What the rule did to the object. Empty on a rule that only notifies.
          */
         actions: Array<{
-            type: 'pause' | 'activate' | 'adjust_budget';
+            type: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
             /**
              * Action result.
              *
@@ -51220,7 +51237,7 @@ export type ListAdRuleActivityData = {
          * ISO 8601 date-time, inclusive.
          */
         to?: string;
-        type?: 'pause' | 'activate' | 'adjust_budget';
+        type?: 'pause' | 'activate' | 'adjust_budget' | 'duplicate';
     };
 };
 
