@@ -53,6 +53,7 @@ const zernio = new Zernio({
   apiKey: 'your-api-key', // Defaults to process.env['ZERNIO_API_KEY']
   baseURL: 'https://zernio.com/api',
   timeout: 300000,
+  fetch: myFetch, // optional, wraps every request
 });
 ```
 
