@@ -16316,7 +16316,7 @@ export type TreasuryTopup = {
      */
     feeCoveredByZernio?: boolean;
     /**
-     * The amount you asked for. A top-up charges exactly this and credits it whole. Top-ups from 2026-11-02 to 2026-11-05 charged a card fee on top and credited what Stripe delivered; older ones charged this amount and credited it minus the fee.
+     * The amount you asked for. A top-up credits exactly this and charges it plus tax (taxCents). Top-ups from 2026-11-02 to 2026-11-05 charged a card fee on top and credited what Stripe delivered; older ones charged this amount and credited it minus the fee.
      */
     amountCents?: number;
     /**
@@ -16324,7 +16324,11 @@ export type TreasuryTopup = {
      */
     feeCents?: (number) | null;
     /**
-     * What your card was charged: amountCents, or amountCents plus the card fee on a top-up from 2026-11-02 to 2026-11-05.
+     * Tax charged on top of amountCents once paid (VAT where it applies, since 2026-11-05); 0 before payment, when reverse charged, outside the EU, and on older top-ups.
+     */
+    taxCents?: number;
+    /**
+     * What your card was charged: amountCents plus taxCents, or amountCents plus the card fee on a top-up from 2026-11-02 to 2026-11-05.
      */
     chargedCents?: number;
     /**
@@ -16342,7 +16346,7 @@ export type TreasuryTopup = {
     createdAt?: string;
     succeededAt?: (string) | null;
     /**
-     * A Checkout invoice exists for this payment (Checkout payments before 2026-10-29). Every paid payment has a card receipt (getTopupReceipt); a paid top-up has a statement (getTopupStatement).
+     * The paid payment has an invoice (getTopupInvoice): every balance top-up paid since 2026-11-05 (unless charged without one for a Stripe credit balance), and Checkout payments before 2026-10-29. Every paid payment has a card receipt (getTopupReceipt).
      */
     hasInvoice?: boolean;
 };
@@ -24728,7 +24732,7 @@ export type GetBalanceError = ({
 export type CreateTopupData = {
     body: {
         /**
-         * Amount to charge and credit to your balance, in cents: $5 to $100,000. No card fee.
+         * Amount to credit to your balance, in cents: $5 to $100,000. Tax is charged on top; no card fee.
          */
         amountCents: number;
         /**
@@ -24758,15 +24762,31 @@ export type CreateTopupData = {
 export type CreateTopupResponse = ({
     topupId: string;
     /**
-     * Charged and credited to your balance once paid.
+     * Credited to your balance once paid.
      */
     amountCents: number;
+    /**
+     * Tax added on top of amountCents (VAT where it applies). 0 when reverse charged or outside the EU.
+     */
+    taxCents: number;
+    /**
+     * What the card is charged: amountCents + taxCents.
+     */
+    totalCents: number;
+    /**
+     * The tax and its rate, for example "VAT 21%". Null when no tax is charged.
+     */
+    taxLabel: (string) | null;
+    /**
+     * True for an EU business with a valid VAT id: no VAT is charged and the invoice says reverse charge.
+     */
+    reverseCharge: boolean;
     /**
      * Always 0: there is no card fee. Kept for older clients.
      */
     feeCents: number;
     /**
-     * What the card is charged: amountCents. Kept for older clients.
+     * Same as totalCents. Kept for older clients.
      */
     chargedCents: number;
     /**
@@ -24859,6 +24879,102 @@ export type ListTopupsError = (ErrorResponse | {
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
 });
 
+export type PreviewTopupData = {
+    body: {
+        /**
+         * Amount to credit to your balance, in cents.
+         */
+        amountCents: number;
+    };
+};
+
+export type PreviewTopupResponse = ({
+    /**
+     * Credited to your balance.
+     */
+    amountCents: number;
+    /**
+     * Tax added on top (VAT where it applies).
+     */
+    taxCents: number;
+    /**
+     * What the card would be charged: amountCents + taxCents.
+     */
+    totalCents: number;
+    /**
+     * The tax and its rate, for example "VAT 21%". Null when no tax is charged.
+     */
+    taxLabel: (string) | null;
+    /**
+     * True for an EU business with a valid VAT id: no VAT, reverse charge.
+     */
+    reverseCharge: boolean;
+});
+
+export type PreviewTopupError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+});
+
 export type GetTopupReceiptData = {
     path: {
         topupId: string;
@@ -24885,12 +25001,113 @@ export type GetTopupReceiptResponse = ({
      */
     feeCents: (number) | null;
     /**
-     * What the card was charged, the total on the receipt.
+     * Tax charged on top of amountCents, as in the top-up list.
+     */
+    taxCents?: number;
+    /**
+     * What the card was charged, tax included: the total on the receipt.
      */
     chargedCents: number;
 });
 
 export type GetTopupReceiptError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+} | {
+    error?: string;
+});
+
+export type GetTopupInvoiceData = {
+    path: {
+        topupId: string;
+    };
+};
+
+export type GetTopupInvoiceResponse = ({
+    url: string;
+    format: 'pdf' | 'page';
+    /**
+     * The invoice PDF.
+     */
+    pdfUrl: (string) | null;
+    /**
+     * The invoice's Stripe-hosted page.
+     */
+    pageUrl: (string) | null;
+    /**
+     * Amount added to your balance, as in the top-up list.
+     */
+    amountCents: number;
+    /**
+     * Tax charged on top of amountCents.
+     */
+    taxCents: number;
+    /**
+     * What the card was charged, tax included.
+     */
+    chargedCents: number;
+});
+
+export type GetTopupInvoiceError = (ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -24966,17 +25183,25 @@ export type GetTopupStatementResponse = ({
     url: string;
     format: 'pdf' | 'page';
     /**
-     * The statement PDF.
+     * The invoice PDF.
      */
     pdfUrl: (string) | null;
     /**
-     * The statement's Stripe-hosted page.
+     * The invoice's Stripe-hosted page.
      */
     pageUrl: (string) | null;
     /**
      * Amount added to your balance, as in the top-up list.
      */
     amountCents: number;
+    /**
+     * Tax charged on top of amountCents.
+     */
+    taxCents: number;
+    /**
+     * What the card was charged, tax included.
+     */
+    chargedCents: number;
 });
 
 export type GetTopupStatementError = (ErrorResponse | {

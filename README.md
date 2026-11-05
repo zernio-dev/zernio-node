@@ -1437,13 +1437,15 @@ try {
 | `treasury.createTransfer()` | Create a transfer |
 | `treasury.getBalance()` | Get balance |
 | `treasury.getPayoutBatch()` | Get a payout batch |
+| `treasury.getTopupInvoice()` | Get a top-up invoice |
 | `treasury.getTopupReceipt()` | Get a top-up receipt |
-| `treasury.getTopupStatement()` | Get a top-up statement |
+| `treasury.getTopupStatement()` | Get a top-up invoice (alias) |
 | `treasury.getTransfer()` | Get a transfer |
 | `treasury.cancelPayoutBatch()` | Cancel an unpaid payout batch |
 | `treasury.cancelTopup()` | Cancel a top-up |
 | `treasury.confirmPayoutBatch()` | Confirm a payout batch payment |
 | `treasury.confirmTopup()` | Confirm a top-up |
+| `treasury.previewTopup()` | Preview a top-up's tax |
 
 ### Twitter Engagement
 | Method | Description |
