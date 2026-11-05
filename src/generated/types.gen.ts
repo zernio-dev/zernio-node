@@ -40105,14 +40105,20 @@ export type GetInboxPostCommentsResponse = ({
          *
          */
         repliesHasMore?: boolean;
+        /**
+         * Whether this comment can be replied to. Always present.
+         */
         canReply?: boolean;
+        /**
+         * Whether DELETE is expected to work on this comment. True for the account's own comments, and for anyone's comment on Facebook, Instagram and YouTube. On TikTok, TikTok's own flag decides. False does not block the call: the platform decides. Always present.
+         */
         canDelete?: boolean;
         /**
-         * Whether this comment can be hidden (Facebook, Instagram, Threads)
+         * Whether hide is supported for this comment's platform (Facebook, Instagram, Threads, X, TikTok). It does not check each comment: X needs a conversation started by the account, and Threads only hides top-level replies. Always present.
          */
         canHide?: boolean;
         /**
-         * Whether this comment can be liked (Facebook, X, Bluesky, Reddit, LinkedIn)
+         * Whether this comment can be liked (Facebook, X, Bluesky, Reddit, LinkedIn, TikTok). Always present.
          */
         canLike?: boolean;
         /**
