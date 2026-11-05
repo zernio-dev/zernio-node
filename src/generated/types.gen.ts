@@ -54709,9 +54709,7 @@ export type UpdateAdResponse = ({
     message?: string;
 });
 
-export type UpdateAdError = (unknown | ErrorResponse | {
-    error?: string;
-});
+export type UpdateAdError = (unknown | ErrorResponse);
 
 export type DeleteAdData = {
     path: {
@@ -54723,9 +54721,7 @@ export type DeleteAdResponse = ({
     message?: string;
 });
 
-export type DeleteAdError = (ErrorResponse | {
-    error?: string;
-});
+export type DeleteAdError = (ErrorResponse);
 
 export type UpdateAdStatusData = {
     body: {
