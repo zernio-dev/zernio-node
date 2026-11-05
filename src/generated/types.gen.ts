@@ -64064,7 +64064,7 @@ export type CreateAdAudienceData = {
      * - ads: `CLICK`, `IMPRESSION`, `PLAY 2S`, `PLAY 6S`, `PLAY 25`, `PLAY 50`, `PLAY 75`, `PLAY OVER`, and the `ENGAGEMENT APP PROFILE` / `ENGAGEMENT TIKTOK INSTANT` / `ENGAGEMENT COLLECTION ADS` `CLICK` and `IMPRESSION` events.
      * - organic_video: `ORGANIC VIDEO PLAY 2S`, `ORGANIC VIDEO PLAY 6S`, `ORGANIC VIDEO PLAY OVER`, `ORGANIC VIDEO ENGAGEMENT`.
      * - live_video: `LIVE VIDEO VIEW`, `LIVE VIDEO ENGAGEMENT`.
-     * - business_account: `BUSINESS ACCOUNT PROFILE FOLLOW`, `BUSINESS ACCOUNT PROFILE VISIT`, `BUSINESS ACCOUNT ENGAGEMENT`, `BUSINESS ACCOUNT PLAY 2S`, `BUSINESS ACCOUNT PLAY 6S`, `BUSINESS ACCOUNT PLAY OVER` and the rest of TikTok's business-account events.
+     * - business_account: `BUSINESS ACCOUNT PROFILE FOLLOW`, `BUSINESS ACCOUNT PROFILE VISIT`, `BUSINESS ACCOUNT ENGAGEMENT`, `BUSINESS ACCOUNT PLAY 2S`, `BUSINESS ACCOUNT PLAY 6S`, `BUSINESS ACCOUNT PLAY OVER`.
      *
      */
     event?: string;
@@ -64089,11 +64089,11 @@ export type CreateAdAudienceData = {
      */
     source?: 'ads' | 'organic_video' | 'live_video' | 'business_account';
     /**
-     * tiktok_engagement: ad group / campaign ids for `ads`, video ids for `organic_video` and `live_video` (max 10). Required except for `business_account`.
+     * tiktok_engagement: ad group ids for `ads`, TikTok post ids (`item_id`) for `organic_video` and live video ids for `live_video` (max 10 for both). Not accepted for `business_account`: Zernio sends the core_user_id of the TikTok for Business user that connected the ad account.
      */
     sourceIds?: Array<(string)>;
     /**
-     * tiktok_engagement: the TikTok identity that owns the videos or business account. Required for organic_video, live_video and business_account.
+     * tiktok_engagement: the TikTok identity (TT_USER or BC_AUTH_TT) that owns the videos. Required for organic_video and live_video.
      */
     identityId?: string;
     /**
