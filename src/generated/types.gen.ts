@@ -59322,7 +59322,7 @@ export type ListAdAccountsResponse = ({
          */
         minimumDailyBudget?: number;
         /**
-         * Meta only. Meta's `funding_source` ID for the ad account, forwarded unchanged. ABSENT both when this connection's token cannot see billing and when the account has no payment method; read `billingStatus` to tell the two apart.
+         * Meta only. Meta's `funding_source` ID for the ad account, forwarded unchanged. ABSENT when this connection's token cannot see billing, when the account has no payment method, and for accounts paid through Business Billing Hub, which still create ads. Absence alone is not a missing payment method.
          */
         fundingSource?: string;
         /**
@@ -59349,10 +59349,10 @@ export type ListAdAccountsResponse = ({
         /**
          * Meta only. Whether the ad account has a payment method:
          *
-         * - `missing`: `accountStatus` is `3` (UNSETTLED) or `9` (IN_GRACE_PERIOD), `disableReason` is `3` (RISK_PAYMENT), or the connected person has the MANAGE task on the account (admin, who always sees billing) and Meta returns no funding source.
+         * - `missing`: `accountStatus` is `3` (UNSETTLED) or `9` (IN_GRACE_PERIOD), or `disableReason` is `3` (RISK_PAYMENT).
          * - `missing`, effect: ad creation fails at the ad step with Meta code 100 / subcode 1359188. Add a payment method in Meta's Billing & payments center.
          * - `ok`: Meta returns a funding source. This is presence, not validity: Meta can still refuse the card or balance at ad creation.
-         * - `unknown`: the connected person is not an admin of the account, or the token cannot read the billing fields.
+         * - `unknown`: Meta returns no funding source. The token may not see billing, the account may have no payment method, or it is paid through Business Billing Hub (Meta omits the funding source there even for admins). Meta decides at ad creation.
          *
          */
         billingStatus?: 'ok' | 'missing' | 'unknown';
