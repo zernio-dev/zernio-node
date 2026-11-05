@@ -4725,7 +4725,7 @@ export type channel2 = 'SEARCH' | 'DISPLAY';
 
 export type CampaignLedgerEntry = {
     id: string;
-    kind: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee';
+    kind: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
     /**
      * Always positive; direction is given by debit and credit.
      */
@@ -4746,7 +4746,7 @@ export type CampaignLedgerEntry = {
     createdAt: string;
 };
 
-export type kind3 = 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee';
+export type kind3 = 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
 
 export type CampaignParticipant = {
     id: string;
@@ -7155,7 +7155,7 @@ export type kind6 = 'participant';
 
 export type CreatorPortalPayoutEntry = {
     id: string;
-    kind: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee';
+    kind: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
     amountCents: number;
     /**
      * The participant bucket the money left; null when it came from outside the participant.
@@ -24572,7 +24572,7 @@ export type GetLedgerBalancesError = (ErrorResponse | {
 
 export type ListLedgerEntriesData = {
     query?: {
-        kind?: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee';
+        kind?: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
         limit?: number;
         referenceId?: string;
         referenceType?: string;
@@ -24585,7 +24585,7 @@ export type ListLedgerEntriesData = {
 export type ListLedgerEntriesResponse = ({
     entries?: Array<{
         id?: string;
-        kind?: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee';
+        kind?: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
         /**
          * Always positive; direction is given by debit and credit
          */
@@ -24619,7 +24619,7 @@ export type ListLedgerEntriesError = (ErrorResponse | {
 
 export type GetBalanceResponse = ({
     /**
-     * Your balance, including card top-ups paid in the last 7 days (see payoutLockedCents). Negative after a dispute or refund of a top-up that was already spent; transfers are refused while it is negative.
+     * Your balance, including card top-ups paid in the last 7 days (see payoutLockedCents). Negative after a dispute or refund of a top-up that was already spent, or, on balance billing, when pay-per-use already in flight (a connected call, an SMS already with the carrier) lands past zero; the next top-up covers it. Transfers are refused while it is negative.
      */
     availableCents?: number;
     /**
@@ -70503,7 +70503,7 @@ export type ListCampaignLedgerData = {
         campaignId: string;
     };
     query?: {
-        kind?: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee';
+        kind?: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
         limit?: number;
         /**
          * List only this participant's entries.
