@@ -12688,7 +12688,7 @@ export type MetaPagePartner = {
  * A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad format). Exactly one catch-all default is required.
  *
  * - Image mode: `defaultImageUrl` + `rules[].imageUrl`.
- * - Video mode: `defaultVideoUrl` + `rules[].videoUrl`, with optional `thumbnailUrl`/`defaultThumbnailUrl` posters (Meta auto-generates them when omitted).
+ * - Video mode: `defaultVideoUrl` or `defaultVideoId` + `rules[].videoUrl` or `rules[].videoId`, with optional `thumbnailUrl`/`defaultThumbnailUrl` posters (Meta auto-generates them when omitted). An id reuses a video already on the ad account and wins over a URL in the same slot; the two can mix across slots.
  *
  * Meta controls text rendering by placement and format. Validation accepts these fields but does not prove every field appears in delivery. Preview the ad, and put copy that must always be visible into the image or video itself.
  *
@@ -12699,9 +12699,13 @@ export type MetaPlacementAssets = {
      */
     defaultImageUrl?: string;
     /**
-     * Video mode. Catch-all video for any placement no rule matches. Required in video mode.
+     * Video mode. Catch-all video for any placement no rule matches. Video mode requires this or `defaultVideoId`.
      */
     defaultVideoUrl?: string;
+    /**
+     * Video mode. ID of a video already on the ad account, used as the catch-all instead of uploading `defaultVideoUrl`. Wins over `defaultVideoUrl`. A video still processing after 30 seconds returns 409.
+     */
+    defaultVideoId?: string;
     /**
      * Video mode (optional). Poster image for the default video; Meta auto-generates one when omitted.
      */
@@ -12715,9 +12719,13 @@ export type MetaPlacementAssets = {
          */
         imageUrl?: string;
         /**
-         * Video mode. The video to deliver for this rule's placements.
+         * Video mode. The video to deliver for this rule's placements. Each rule needs this or `videoId`.
          */
         videoUrl?: string;
+        /**
+         * Video mode. ID of a video already on the ad account, used for this rule instead of uploading `videoUrl`. Wins over `videoUrl`. A video still processing after 30 seconds returns 409.
+         */
+        videoId?: string;
         /**
          * Video mode (optional). Poster image for this rule's video; auto-generated when omitted.
          */
@@ -60553,8 +60561,8 @@ export type CreateStandaloneAdData = {
          *
          * Before the dry run, Meta validateOnly runs the account status and payment checks of GET /v1/ads/accounts/health: an ad account that is not ready answers its blocker `code` (`ad_account_unusable`, `ad_account_payment_required`) with `details.hint` and `details.fix`, and Meta is not called.
          *
-         * - Supported: a single image or existing video.id (each also with bodies[] / headlines[] Multiple Text Options), all-image placementAssets with per-rule copy and text pools, or existingCreativeId.
-         * - Return 400: dynamicCreative, translations, carouselCards, placement videos, new video uploads, creatives[], adSetId, RESERVED buying.
+         * - Supported: a single image or existing video.id (each also with bodies[] / headlines[] Multiple Text Options), all-image placementAssets with per-rule copy and text pools, placementAssets with an existing video id in every slot and no thumbnails, or existingCreativeId.
+         * - Return 400: dynamicCreative, translations, carouselCards, placement videos by URL or with thumbnails, new video uploads, creatives[], adSetId, RESERVED buying.
          * - Placement validation uses existing Instagram identities only. Existing campaign or creative nodes are marked skipped.
          * - When Meta cannot dry-run the nested tree, the campaign and creative are validated alone and the adSet and ad nodes return unverified with the reason. This covers code 2, and two errors Meta returns but then creates normally (below).
          * - Code 1 (unknown error) on an OFFSITE_CONVERSIONS ad set nested in a new campaign (some website-conversion ad sets).
@@ -61390,12 +61398,12 @@ export type CreateStandaloneAdData = {
          *
          * Meta controls text rendering by placement and format. Validation accepts these fields but does not prove that every field appears in delivery. Preview the ad, and put copy that must always be visible into the image or video itself.
          *
-         * `validateOnly: true` supports all-image placementAssets without uploading or creating anything. Video placement validation remains unsupported because it requires uploads.
+         * `validateOnly: true` supports all-image placementAssets, and video placementAssets with a video id in every slot and no thumbnails, without uploading or creating anything. Video URLs and thumbnails need an upload, so they return 400.
          *
          * **Media.** A block is all-image OR all-video, never mixed (Meta's asset_feed_spec carries one ad format). Exactly one catch-all default is required.
          *
          * - Image mode: `defaultImageUrl` + `rules[].imageUrl`.
-         * - Video mode: `defaultVideoUrl` + `rules[].videoUrl`, with optional `thumbnailUrl`/`defaultThumbnailUrl` posters (Meta auto-generates them when omitted).
+         * - Video mode: `defaultVideoUrl` or `defaultVideoId` + `rules[].videoUrl` or `rules[].videoId`, with optional `thumbnailUrl`/`defaultThumbnailUrl` posters (Meta auto-generates them when omitted). An id reuses a video already on the ad account and wins over a URL in the same slot; the two can mix across slots.
          *
          */
         placementAssets?: (MetaPlacementAssets);
