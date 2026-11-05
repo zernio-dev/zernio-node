@@ -20367,6 +20367,11 @@ export type WebhookPayloadMessage = {
          * supported). `text` on those messages is the fixed
          * `[Unsupported message]` placeholder.
          *
+         * Also present with code 131052 when Meta could not download
+         * media the sender attached, except on numbers also using the
+         * WhatsApp Business app. The file is not available, so the sender
+         * has to send it again.
+         *
          */
         unsupported?: {
             /**
