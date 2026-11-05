@@ -40110,7 +40110,7 @@ export type GetInboxPostCommentsResponse = ({
          */
         canReply?: boolean;
         /**
-         * Whether DELETE is expected to work on this comment. True for the account's own comments, and for anyone's comment on Facebook, Instagram and YouTube. On TikTok, TikTok's own flag decides. False does not block the call: the platform decides. Always present.
+         * Whether DELETE is expected to work on this comment. True for the account's own comments, and for anyone's comment on Facebook, Instagram, YouTube and LinkedIn organization accounts. On TikTok, TikTok's own flag decides. False does not block the call: the platform decides. Always present.
          */
         canDelete?: boolean;
         /**

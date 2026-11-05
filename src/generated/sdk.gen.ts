@@ -7123,7 +7123,7 @@ export const replyToInboxPost = <ThrowOnError extends boolean = false>(options: 
  *
  * Zernio does not check `canDelete` before calling the platform. When the platform refuses, the call fails with the platform's message, normally as `platform_api_error` with the platform's own 4xx status.
  *
- * On Facebook and Instagram the account can delete anyone's comment on its own posts. On TikTok only the account's own comments can be deleted; hide the others.
+ * On Facebook, Instagram and LinkedIn organization accounts, the account can delete anyone's comment on its own posts. On Threads, Meta refuses deleting other people's replies; hide them instead. On TikTok only the account's own comments can be deleted; hide the others.
  *
  * On YouTube, a comment the channel did not write is rejected instead, through the same moderation status as `setCommentModeration`, and the response still reports it as deleted. Use `setCommentModeration` directly to reverse the rejection later or to ban the author.
  *
