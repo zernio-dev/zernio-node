@@ -1437,8 +1437,8 @@ try {
 | `treasury.createTransfer()` | Create a transfer |
 | `treasury.getBalance()` | Get balance |
 | `treasury.getPayoutBatch()` | Get a payout batch |
-| `treasury.getTopupCardFee()` | Get the card fee for a top-up |
 | `treasury.getTopupReceipt()` | Get a top-up receipt |
+| `treasury.getTopupStatement()` | Get a top-up statement |
 | `treasury.getTransfer()` | Get a transfer |
 | `treasury.cancelPayoutBatch()` | Cancel an unpaid payout batch |
 | `treasury.cancelTopup()` | Cancel a top-up |

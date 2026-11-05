@@ -16312,19 +16312,19 @@ export type TreasuryTopup = {
         campaignId?: (string) | null;
     } | null;
     /**
-     * True for a `payout_batch` payment: Zernio pays the Stripe processing fee out of its transfer fee, so you are credited the whole charge.
+     * True for a balance top-up (there is no card fee) and a `payout_batch` payment: Zernio pays the Stripe processing fee, so you are credited the whole charge. False on a top-up made before 2026-11-05.
      */
     feeCoveredByZernio?: boolean;
     /**
-     * The amount you asked for. A top-up charges the card fee on top of it and credits what Stripe delivers, at least this amount. Older top-ups charged this amount and credited it minus the fee.
+     * The amount you asked for. A top-up charges exactly this and credits it whole. Top-ups from 2026-11-02 to 2026-11-05 charged a card fee on top and credited what Stripe delivered; older ones charged this amount and credited it minus the fee.
      */
     amountCents?: number;
     /**
-     * Card fee. Once paid, the fee Stripe took (chargedCents minus netCents). Before, the fee charged on top, or null on an older top-up. 0 when Zernio covers it (`payout_batch`).
+     * Card fee you paid: 0 when Zernio covers it (feeCoveredByZernio). On an older top-up, the fee Stripe took once paid, the fee charged on top before, or null.
      */
     feeCents?: (number) | null;
     /**
-     * What your card was charged: amountCents plus the card fee charged on top, or amountCents on an older top-up and on a `payout_batch` payment.
+     * What your card was charged: amountCents, or amountCents plus the card fee on a top-up from 2026-11-02 to 2026-11-05.
      */
     chargedCents?: number;
     /**
@@ -16332,7 +16332,7 @@ export type TreasuryTopup = {
      */
     stripeFeeCents?: (number) | null;
     /**
-     * Amount credited to your balance, what Stripe delivered; null until paid. At least amountCents on a top-up that charged the fee on top, and amountCents on `payout_batch` payments.
+     * Amount credited to your balance; null until paid. amountCents when feeCoveredByZernio; on an older top-up, what Stripe delivered.
      */
     netCents?: (number) | null;
     /**
@@ -16342,7 +16342,7 @@ export type TreasuryTopup = {
     createdAt?: string;
     succeededAt?: (string) | null;
     /**
-     * A Stripe invoice exists for this payment (Checkout payments). Every paid payment has a card receipt; see getTopupReceipt.
+     * A Checkout invoice exists for this payment (Checkout payments before 2026-10-29). Every paid payment has a card receipt (getTopupReceipt); a paid top-up has a statement (getTopupStatement).
      */
     hasInvoice?: boolean;
 };
@@ -24728,7 +24728,7 @@ export type GetBalanceError = ({
 export type CreateTopupData = {
     body: {
         /**
-         * Amount to credit to your balance, in cents: $10 to $100,000. The card fee is charged on top.
+         * Amount to charge and credit to your balance, in cents: $5 to $100,000. No card fee.
          */
         amountCents: number;
         /**
@@ -24758,19 +24758,19 @@ export type CreateTopupData = {
 export type CreateTopupResponse = ({
     topupId: string;
     /**
-     * Credited to your balance once paid: exactly this when feeIsExact, else at least this.
+     * Charged and credited to your balance once paid.
      */
     amountCents: number;
     /**
-     * Card fee, charged on top of amountCents.
+     * Always 0: there is no card fee. Kept for older clients.
      */
     feeCents: number;
     /**
-     * What the card is charged: amountCents plus feeCents.
+     * What the card is charged: amountCents. Kept for older clients.
      */
     chargedCents: number;
     /**
-     * True when feeCents is exactly Stripe's fee for this card. False when it is the region's highest rate, so Stripe may take less and the difference is added to your balance.
+     * Always true. Kept for older clients.
      */
     feeIsExact: boolean;
     status: 'succeeded' | 'processing' | 'requires_action';
@@ -24859,34 +24859,6 @@ export type ListTopupsError = (ErrorResponse | {
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
 });
 
-export type GetTopupCardFeeData = {
-    query?: {
-        /**
-         * A saved card of the billing owner's (`pm_...`). Defaults to the default payment method.
-         */
-        paymentMethodId?: string;
-    };
-};
-
-export type GetTopupCardFeeResponse = ({
-    /**
-     * Percentage of the charge, in basis points (315 is 3.15%).
-     */
-    feeBps: number;
-    /**
-     * Fixed part of the fee, in cents.
-     */
-    fixedCents: number;
-    /**
-     * True when this is exactly Stripe's rate for the card.
-     */
-    feeIsExact: boolean;
-});
-
-export type GetTopupCardFeeError = (ErrorResponse | {
-    error?: string;
-});
-
 export type GetTopupReceiptData = {
     path: {
         topupId: string;
@@ -24919,6 +24891,95 @@ export type GetTopupReceiptResponse = ({
 });
 
 export type GetTopupReceiptError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+} | {
+    error?: string;
+});
+
+export type GetTopupStatementData = {
+    path: {
+        topupId: string;
+    };
+};
+
+export type GetTopupStatementResponse = ({
+    url: string;
+    format: 'pdf' | 'page';
+    /**
+     * The statement PDF.
+     */
+    pdfUrl: (string) | null;
+    /**
+     * The statement's Stripe-hosted page.
+     */
+    pageUrl: (string) | null;
+    /**
+     * Amount added to your balance, as in the top-up list.
+     */
+    amountCents: number;
+});
+
+export type GetTopupStatementError = (ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
