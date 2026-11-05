@@ -23354,7 +23354,16 @@ export type GetAnalyticsError = ({
     code?: string;
 } | {
     error?: string;
-} | AnalyticsSinglePostResponse);
+} | AnalyticsSinglePostResponse | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetAnalyticsDeltaData = {
     query?: {
@@ -23387,6 +23396,15 @@ export type GetAnalyticsDeltaError = (ErrorResponse | {
     code?: string;
 } | {
     error?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetYouTubeChannelInsightsData = {
@@ -24251,6 +24269,15 @@ export type GetDailyMetricsResponse = ({
 export type GetDailyMetricsError = (ErrorResponse | {
     error?: string;
     code?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetAnalyticsDashboardData = {
@@ -24320,7 +24347,16 @@ export type GetAnalyticsDashboardResponse = ({
     dataAsOf: (string) | null;
 });
 
-export type GetAnalyticsDashboardError = (ErrorResponse | unknown);
+export type GetAnalyticsDashboardError = (ErrorResponse | unknown | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetBestTimeToPostData = {
     query?: {
@@ -24367,6 +24403,15 @@ export type GetBestTimeToPostResponse = ({
 export type GetBestTimeToPostError = (ErrorResponse | {
     error?: string;
     requiresAddon?: boolean;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetContentDecayData = {
@@ -24414,6 +24459,15 @@ export type GetContentDecayResponse = ({
 export type GetContentDecayError = (unknown | ErrorResponse | {
     error?: string;
     requiresAddon?: boolean;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetPostingFrequencyData = {
@@ -24462,6 +24516,15 @@ export type GetPostingFrequencyResponse = ({
 export type GetPostingFrequencyError = (ErrorResponse | {
     error?: string;
     requiresAddon?: boolean;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetLedgerBalancesData = {
@@ -25799,6 +25862,15 @@ export type GetPostTimelineError = ({
 } | ErrorResponse | {
     error?: string;
     code?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type RunGoogleAnalyticsReportData = {
@@ -25944,6 +26016,15 @@ export type ListTrackingWindowsResponse = ({
 export type ListTrackingWindowsError = (ErrorResponse | {
     error?: string;
     code?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetTrackingWindowData = {
@@ -25957,6 +26038,15 @@ export type GetTrackingWindowResponse = (TrackingWindowResponse);
 export type GetTrackingWindowError = (ErrorResponse | {
     error?: string;
     code?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type CancelTrackingWindowData = {
@@ -26004,6 +26094,15 @@ export type GetPostSamplesResponse = ({
 export type GetPostSamplesError = (ErrorResponse | {
     error?: string;
     code?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetPostAuthenticityData = {
@@ -26245,7 +26344,16 @@ export type GetInboxVolumeError = ({
     details?: {
         [key: string]: unknown;
     };
-} | ErrorResponse);
+} | ErrorResponse | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetInboxHeatmapData = {
     query: {
@@ -26283,7 +26391,16 @@ export type GetInboxHeatmapError = ({
     details?: {
         [key: string]: unknown;
     };
-} | ErrorResponse);
+} | ErrorResponse | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetInboxSourceBreakdownData = {
     query: {
@@ -26318,7 +26435,16 @@ export type GetInboxSourceBreakdownError = ({
     details?: {
         [key: string]: unknown;
     };
-} | ErrorResponse);
+} | ErrorResponse | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetInboxResponseTimeData = {
     query: {
@@ -26362,7 +26488,16 @@ export type GetInboxResponseTimeError = ({
     details?: {
         [key: string]: unknown;
     };
-} | ErrorResponse);
+} | ErrorResponse | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetInboxTopAccountsData = {
     query: {
@@ -26407,7 +26542,16 @@ export type GetInboxTopAccountsError = ({
     details?: {
         [key: string]: unknown;
     };
-} | ErrorResponse);
+} | ErrorResponse | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type ListInboxConversationAnalyticsData = {
     query: {
@@ -26468,7 +26612,16 @@ export type ListInboxConversationAnalyticsError = ({
     details?: {
         [key: string]: unknown;
     };
-} | ErrorResponse);
+} | ErrorResponse | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetInboxConversationAnalyticsData = {
     path: {
@@ -26526,6 +26679,15 @@ export type GetInboxConversationAnalyticsError = ({
 } | ErrorResponse | {
     error?: string;
     code?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type ListAccountGroupsResponse = ({
@@ -51129,7 +51291,16 @@ export type ListAdsResponse = (AdsListResponse | (AdsListResponse & {
     backfillPending: boolean;
 }));
 
-export type ListAdsError = (ErrorResponse | unknown);
+export type ListAdsError = (ErrorResponse | unknown | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetAdsSearchTermsData = {
     query: {
@@ -52325,7 +52496,16 @@ export type ListAdCampaignsResponse = ({
     pagination?: Pagination;
 });
 
-export type ListAdCampaignsError = (ErrorResponse | unknown);
+export type ListAdCampaignsError = (ErrorResponse | unknown | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type CreateAdCampaignData = {
     body: {
@@ -54317,7 +54497,16 @@ export type GetAdTreeResponse = (AdTreeResponse | (AdTreeResponse & {
     backfillPending: boolean;
 }));
 
-export type GetAdTreeError = (ErrorResponse | unknown);
+export type GetAdTreeError = (ErrorResponse | unknown | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type ListAdsByPerformanceData = {
     query: {
@@ -54359,7 +54548,16 @@ export type ListAdsByPerformanceResponse = (AdsPerformanceResponse | (AdsPerform
     backfillPending: boolean;
 }));
 
-export type ListAdsByPerformanceError = (ErrorResponse | unknown);
+export type ListAdsByPerformanceError = (ErrorResponse | unknown | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetAdsTimelineData = {
     query: {
@@ -54397,7 +54595,16 @@ export type GetAdsTimelineResponse = (AdsTimelineResponse | (AdsTimelineResponse
     backfillPending: boolean;
 }));
 
-export type GetAdsTimelineError = (ErrorResponse | unknown);
+export type GetAdsTimelineError = (ErrorResponse | unknown | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type GetAdData = {
     path: {
@@ -55911,6 +56118,15 @@ export type GetAdAnalyticsResponse = (AdAnalyticsResponse | (AdAnalyticsResponse
 
 export type GetAdAnalyticsError = (ErrorResponse | unknown | {
     error?: string;
+} | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
 });
 
 export type GetAdTrackingTagsData = {
@@ -56269,7 +56485,16 @@ export type ListAdsAlertsResponse = ({
     };
 });
 
-export type ListAdsAlertsError = (ErrorResponse | unknown);
+export type ListAdsAlertsError = (ErrorResponse | unknown | {
+    error?: string;
+    details?: {
+        currentCount?: number;
+        limit?: number;
+        retryAfterSeconds?: number;
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        window?: string;
+    };
+});
 
 export type DismissAdsAlertData = {
     path: {
