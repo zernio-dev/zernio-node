@@ -36841,7 +36841,7 @@ export type ListLogsData = {
          */
         accountId?: string;
         /**
-         * Filter by action (e.g., post.published, message.sent, account.connected, webhook.delivered)
+         * Filter by action (e.g., post.published, message.sent, message.media_download_failed, account.connected, webhook.delivered)
          */
         action?: string;
         /**
