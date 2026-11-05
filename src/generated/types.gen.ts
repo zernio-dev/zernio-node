@@ -53013,6 +53013,13 @@ export type DuplicateAdCampaignResponse = ({
     adIdMap?: {
         [key: string]: (string);
     };
+    /**
+     * The copy exists on the platform in all three cases.
+     *
+     * - `triggered`: an ads sync started and runs after this response, so the copy may not be readable through Zernio yet.
+     * - `skipped`: no sync started, so the copy appears on a later scheduled sync.
+     * - `failed`: the sync could not start. A sync that errors after the response is not reported here.
+     */
     discovery?: 'triggered' | 'skipped' | 'failed';
     /**
      * Platform-native response from the copy (TikTok and LinkedIn). Absent on Meta, which returns `adSetIdMap` and `adIdMap` instead.
@@ -53630,6 +53637,13 @@ export type DuplicateAdSetResponse = ({
     adIdMap?: {
         [key: string]: (string);
     };
+    /**
+     * The copy exists on the platform in all three cases.
+     *
+     * - `triggered`: an ads sync started and runs after this response, so the copy may not be readable through Zernio yet.
+     * - `skipped`: no sync started, so the copy appears on a later scheduled sync.
+     * - `failed`: the sync could not start. A sync that errors after the response is not reported here.
+     */
     discovery?: 'triggered' | 'skipped' | 'failed';
     /**
      * Platform-native response from the copy (TikTok). Absent on Meta, which returns `adIdMap` instead.
@@ -53697,6 +53711,13 @@ export type DuplicateAdResponse = ({
      * Platform ID of the new ad
      */
     copiedAdId?: string;
+    /**
+     * The copy exists on the platform in all three cases.
+     *
+     * - `triggered`: an ads sync started and runs after this response, so the copy may not be readable through Zernio yet.
+     * - `skipped`: no sync started, so the copy appears on a later scheduled sync.
+     * - `failed`: the sync could not start. A sync that errors after the response is not reported here.
+     */
     discovery?: 'triggered' | 'skipped' | 'failed';
     raw?: {
         [key: string]: unknown;

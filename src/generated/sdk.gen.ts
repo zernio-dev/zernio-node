@@ -13115,7 +13115,9 @@ export const bulkUpdateAdCampaignStatus = <ThrowOnError extends boolean = false>
  *
  * ### Sync
  *
- * The new hierarchy is asynchronous to materialize in our DB, and we trigger sync discovery automatically. Set `syncAfter: false` to skip and poll `/v1/ads/tree` on your own cadence.
+ * The copy exists on the platform when this call returns. The new hierarchy reaches our DB through a sync discovery that starts automatically and runs after the response, usually within a few minutes.
+ *
+ * Poll `/v1/ads/tree` until it appears; until then, calls that take a copied id return 404, so retry them. Set `syncAfter: false` to skip the sync; the copy then appears on a later scheduled sync.
  *
  */
 export const duplicateAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DuplicateAdCampaignData, ThrowOnError>) => {
@@ -13319,7 +13321,7 @@ export const createAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * - So an ad set with any number of ads copies: Meta refuses a single deep copy of 3 or more objects.
  * - `statusOption` applies to the ad set and every ad.
  * - If an ad copy fails, the partial ad set copy is deleted and the request fails with Meta's error.
- * - Sync discovery is triggered automatically (`syncAfter: false` to skip).
+ * - A sync discovery starts automatically and runs after the response (`syncAfter: false` to skip). The copy is readable through Zernio once it finishes, usually within a few minutes. Until then, calls that take a copied id return 404, so retry them.
  *
  * TikTok: the ad group is read and recreated under the campaign with its targeting, bidding,
  * budget and schedule (start reset to now); `deepCopy: true` recreates its ads too (default
@@ -13342,7 +13344,7 @@ export const duplicateAdSet = <ThrowOnError extends boolean = false>(options: Op
  *
  * - `adSetId` retargets the copy into another ad set; omitted = the source's own ad set.
  * - Accepts the Zernio ad id or the platform ad id.
- * - Sync discovery is triggered automatically (`syncAfter: false` to skip).
+ * - A sync discovery starts automatically and runs after the response (`syncAfter: false` to skip). The copy is readable through Zernio once it finishes, usually within a few minutes. Until then, calls that take a copied id return 404, so retry them.
  *
  * ### Creative settings
  *
