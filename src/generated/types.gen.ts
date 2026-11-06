@@ -24671,6 +24671,10 @@ export type GetBalanceResponse = ({
      */
     availableCents?: number;
     /**
+     * Balance billing only (absent otherwise). Promotional and support credit Zernio added to your balance. Pay-per-use spends it before availableCents. It is never paid out to payees and is not part of availableCents.
+     */
+    promoCents?: number;
+    /**
      * Part of availableCents from card top-ups charged in the last 7 days, net of refunds and disputes. Transfers to payees cannot use it yet; a transfer that needs it answers 409 `payout_funds_locked` with the day it can be sent.
      */
     payoutLockedCents?: number;
