@@ -8648,12 +8648,12 @@ export type ErrorResponse = {
              */
             id?: string;
             /**
-             * `deleted`: Zernio deleted it. `left_behind`: cleanup could not delete it (Meta refused the delete, or the delete hit a network error), so it still exists. `kept`: deliberately not deleted (image hashes are shared by every upload of the same file).
+             * `deleted`: Zernio deleted it. `left_behind`: cleanup could not delete it (Meta refused the delete, or the delete hit a network error), so it still exists. `kept`: deliberately not deleted: an image (hashes are shared by every upload of the same file), or an object Zernio found by name after Meta lost its answer to the create, which may belong to another request with the same name.
              */
             cleanup?: 'deleted' | 'left_behind' | 'kept';
         }>;
         /**
-         * Meta ad create failures only, when Meta answered a create with a 5xx or dropped the connection and the object could not be looked up. Zernio did not retry it.
+         * Meta ad create failures only, when Meta answered a create with a 5xx or a non-JSON body, or dropped the connection after the request was sent, and reading the parent back by name did not settle it: several objects of the same name, a parent that could not be read, or (after a dropped connection or a non-JSON body) no such object. Zernio did not retry it.
          */
         unconfirmedWrite?: {
             type?: 'campaign' | 'adset' | 'creative' | 'ad';
