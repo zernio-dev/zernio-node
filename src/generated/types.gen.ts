@@ -2064,6 +2064,63 @@ export type status3 = 'done' | 'skipped' | 'failed';
  */
 export type targetMetric = 'cpa' | 'roas';
 
+/**
+ * One check of an ad rule.
+ */
+export type AdRuleAutomationCheck = {
+    id: string;
+    automationId: string;
+    checkedAt: string;
+    outcome: 'triggered' | 'cooldown' | 'no_match' | 'failed';
+    /**
+     * Objects judged.
+     */
+    evaluated: number;
+    subjects: Array<{
+        subject?: {
+            id?: string;
+            name?: string;
+            campaignId?: (string) | null;
+        };
+        matched?: boolean;
+        conditions?: Array<{
+            [key: string]: unknown;
+        }>;
+    }>;
+    actions: Array<(AutomationActionResult & {
+    subjectId?: string;
+})>;
+    notification: {
+        status?: 'done' | 'failed';
+        reason?: string;
+    } | null;
+    error: (string) | null;
+};
+
+export type outcome = 'triggered' | 'cooldown' | 'no_match' | 'failed';
+
+export type status4 = 'done' | 'failed';
+
+/**
+ * An ad rule. It is also readable under `/v1/ads/rules` with the same id. Unknown fields are refused.
+ *
+ * To have a person OK each change before it is made, put an `approval.request` step before the `ads.*` step.
+ *
+ */
+export type AdRuleAutomationDefinition = {
+    name: string;
+    /**
+     * A new ad rule stays paused unless `active`.
+     */
+    status?: 'active' | 'paused';
+    trigger: AutomationScheduleTrigger;
+    subjects: AutomationSubjects;
+    conditions: AdRuleConditions;
+    alert?: AutomationAlert;
+    steps: Array<AutomationStep>;
+    limits?: AutomationLimits;
+};
+
 export type AdRuleCondition = {
     /**
      * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency. `reach` and `frequency` use the platform's de-duplicated reach, so they are accepted on Meta and TikTok only.
@@ -2321,19 +2378,6 @@ export type AdRuleRun = {
     } | null;
     error: (string) | null;
 };
-
-/**
- * Result of the rule run:
- *
- * - `triggered`: the rule acted on at least one object (`error` is set if the webhook could not be sent afterwards).
- * - `cooldown`: objects matched but all were in cooldown.
- * - `no_match`: nothing matched.
- * - `failed`: the metrics could not be read, every action failed, or the webhook of a notify-only rule could not be sent (see `error`).
- *
- */
-export type outcome = 'triggered' | 'cooldown' | 'no_match' | 'failed';
-
-export type status4 = 'done' | 'failed';
 
 /**
  * Either `everyMinutes` or `times`. Sending a schedule replaces the rule's whole timing. Without one, a new rule runs every 60 minutes.
@@ -3543,6 +3587,1115 @@ export type scope = 'full' | 'profiles';
  */
 export type permission = 'read-write' | 'read';
 
+export type Automation = (AdRuleAutomationDefinition & AutomationRecord & {
+    kind?: "ad_rule";
+}) | (EventAutomationDefinition & AutomationRecord & {
+    kind?: "event";
+}) | (ScheduledAutomationDefinition & AutomationRecord & {
+    kind?: "scheduled";
+});
+
+export type AutomationAction = AutomationActionResult & {
+    id: string;
+    automationId: string;
+    automationName: string;
+    checkId: string;
+    subject: {
+        kind?: 'campaign' | 'adset' | 'ad';
+        id?: string;
+        name?: (string) | null;
+    };
+    platform: string;
+    adAccount: {
+        accountId?: string;
+        adAccountId?: string;
+    };
+    currency: (string) | null;
+    createdAt: string;
+};
+
+export type kind2 = 'campaign' | 'adset' | 'ad';
+
+/**
+ * What an ad rule did to one object, as an absolute change: a budget change reads as the budget it set.
+ */
+export type AutomationActionResult = {
+    /**
+     * The id of the step that made it, for example `budget`.
+     */
+    step: string;
+    type: 'ads.pause' | 'ads.activate' | 'ads.set_budget' | 'ads.duplicate' | 'ads.edit_name' | 'ads.set_bid' | 'ads.set_target' | 'ads.reallocate_budget';
+    status: 'applied' | 'skipped' | 'failed';
+    /**
+     * Why it was skipped or failed, such as `already_paused`, `daily_limit_reached` or `awaiting_approval`.
+     */
+    reason: (string) | null;
+    previous: AutomationChangedValue;
+    target: AutomationChangedValue;
+};
+
+export type type5 = 'ads.pause' | 'ads.activate' | 'ads.set_budget' | 'ads.duplicate' | 'ads.edit_name' | 'ads.set_bid' | 'ads.set_target' | 'ads.reallocate_budget';
+
+export type status6 = 'applied' | 'skipped' | 'failed';
+
+export type AutomationAdAccountControls = {
+    /**
+     * The connection your automations reach the ad account through; null when no automation uses it any more.
+     */
+    accountId: (string) | null;
+    /**
+     * The ad platform, for example `facebook`.
+     */
+    platform: string;
+    /**
+     * The platform's ad account id.
+     */
+    adAccountId: string;
+    /**
+     * True when every ad rule on this ad account is stopped.
+     */
+    paused: boolean;
+    pausedAt: (string) | null;
+    /**
+     * The most automations may raise budgets on this ad account in any 24 hours, in the ad account's currency. Null when there is no limit.
+     */
+    dailyRaiseLimit: (number) | null;
+};
+
+/**
+ * Narrows the ad objects checked, before any metric is read. `GET /v1/automations/catalog` lists the fields each subject accepts.
+ *
+ */
+export type AutomationAdFilter = {
+    field: 'name' | 'campaign_name' | 'adset_name' | 'goal';
+    op: 'contains' | 'not_contains' | 'equals' | 'not_equals' | 'starts_with';
+    value: string;
+} | {
+    field: 'campaign_id' | 'adset_id' | 'ad_id';
+    op: 'in' | 'not_in';
+    values: Array<(string)>;
+} | {
+    field: "days_live";
+    op: '>=' | '<';
+    value: number;
+} | {
+    field: "budget_level";
+    op: "equals";
+    value: 'campaign' | 'adset';
+};
+
+export type field = 'name' | 'campaign_name' | 'adset_name' | 'goal';
+
+export type op2 = 'contains' | 'not_contains' | 'equals' | 'not_equals' | 'starts_with';
+
+export type value = 'campaign' | 'adset';
+
+/**
+ * Turns matches into alerts: the ad rule acts only after `confirmChecks` matching checks in a row, keeps the alert open while `hold` holds and marks it critical when `critical` holds.
+ */
+export type AutomationAlert = {
+    confirmChecks?: number;
+    hold?: AdRuleConditions;
+    critical?: AdRuleConditions;
+};
+
+/**
+ * A request an automation sent for a person's approval before acting, with each change it holds.
+ */
+export type AutomationApproval = {
+    id: string;
+    automationId: string;
+    /**
+     * The check that found the matches and sent the request.
+     */
+    checkId: string;
+    /**
+     * `cancelled` when the automation stopped asking for approval before anyone decided.
+     */
+    status: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled';
+    /**
+     * The emails the request was sent to.
+     */
+    to: Array<(string)>;
+    /**
+     * After this the request can no longer be decided and its changes are skipped.
+     */
+    expiresAt: string;
+    createdAt: string;
+    /**
+     * Who approved or rejected it; null while undecided.
+     */
+    decidedBy: {
+        email?: string;
+    } | null;
+    decidedAt: (string) | null;
+    /**
+     * True when the request is pending and you are one of the approvers the automation names now.
+     */
+    canDecide: boolean;
+    /**
+     * The changes the request holds. Notifications are not listed.
+     */
+    changes: Array<AutomationApprovalChange>;
+};
+
+/**
+ * `cancelled` when the automation stopped asking for approval before anyone decided.
+ */
+export type status7 = 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled';
+
+export type AutomationApprovalChange = {
+    actionId: string;
+    subject: {
+        kind: 'campaign' | 'adset' | 'ad';
+        id: string;
+        name: (string) | null;
+    };
+    type: 'ads.pause' | 'ads.activate' | 'ads.set_budget' | 'ads.duplicate' | 'ads.edit_name' | 'ads.set_bid' | 'ads.set_target' | 'ads.reallocate_budget';
+    /**
+     * The value before the change, under one of `dailyBudget`, `name`, `bidAmount`, `targetCpa` or `targetRoas`. Null when the change moves no value.
+     */
+    previous: {
+        dailyBudget?: number;
+        name?: string;
+        bidAmount?: number;
+        targetCpa?: number;
+        targetRoas?: number;
+    } | null;
+    /**
+     * The value the change sets, keyed like `previous`.
+     */
+    target: {
+        dailyBudget?: number;
+        name?: string;
+        bidAmount?: number;
+        targetCpa?: number;
+        targetRoas?: number;
+    } | null;
+    /**
+     * Each condition as it was judged when the request was sent, with its actual value.
+     */
+    conditions: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * `pending` until the request is decided.
+     */
+    status: 'pending' | 'applied' | 'skipped' | 'failed' | 'unknown';
+    /**
+     * Why the change was made, skipped or failed, when known.
+     */
+    reason: (string) | null;
+};
+
+/**
+ * `pending` until the request is decided.
+ */
+export type status8 = 'pending' | 'applied' | 'skipped' | 'failed' | 'unknown';
+
+export type AutomationApprovalDecision = {
+    /**
+     * The token from the emailed approval link. When sent, the decision counts only if the link was sent to you. Leave it out when deciding from the API.
+     */
+    token?: string;
+};
+
+/**
+ * Makes the ad rule wait for a person's OK before it acts. One per ad rule, placed before the change. Each change waits until one of `to` approves it, for `expiresIn` at most.
+ *
+ */
+export type AutomationApprovalStep = {
+    id?: "approval";
+    type: "approval.request";
+    /**
+     * Team members, by email. Each once.
+     */
+    to: Array<(string)>;
+    /**
+     * From `15m` to `7d`, in whole minutes.
+     */
+    expiresIn: string;
+};
+
+/**
+ * What the automation would have done on each past day, replayed on stored daily metrics. Nothing is changed.
+ */
+export type AutomationBacktest = {
+    /**
+     * The first day replayed, in the ad account timezone.
+     */
+    from: string;
+    /**
+     * The last day replayed, yesterday in the ad account timezone.
+     */
+    to: string;
+    timezone: string;
+    /**
+     * True when the ad account timezone is unknown and UTC was used.
+     */
+    timezoneAssumed: boolean;
+    currency: (string) | null;
+    totals: {
+        /**
+         * Actions it would have taken. Skipped ones are not counted.
+         */
+        actions: number;
+        pauses: number;
+        activations: number;
+        /**
+         * Budget changes that raised a budget.
+         */
+        budgetRaised: number;
+        /**
+         * Budget changes that lowered a budget.
+         */
+        budgetLowered: number;
+        /**
+         * The net budget change across every budget action, in `currency`.
+         */
+        budgetChange: number;
+        notifications: number;
+        /**
+         * Actions planned but skipped.
+         */
+        skipped: number;
+        /**
+         * Distinct objects it would have acted on.
+         */
+        subjects: number;
+        /**
+         * Matches left alone by the cooldown or a cap, summed over the days.
+         */
+        heldBack: number;
+        daysWithActions: number;
+    };
+    days: Array<AutomationBacktestDay>;
+    /**
+     * What this replay could not know, for example that budgets have no history.
+     */
+    notes: Array<{
+        code: 'budget_assumed' | 'results_not_replayed' | 'reach_stored' | 'today_whole_day' | 'pause_history' | 'status_history' | 'no_checks' | 'same_day_numbers' | 'alerts_not_replayed';
+        message: string;
+    }>;
+};
+
+export type AutomationBacktestDay = {
+    date: string;
+    /**
+     * Checks the schedule would have run that day. 0 on a day it skips.
+     */
+    checks: number;
+    /**
+     * The most objects any of the day's checks judged.
+     */
+    evaluated: number;
+    /**
+     * The most objects any of the day's checks matched.
+     */
+    matched: number;
+    /**
+     * Matches left alone all day by the cooldown or a cap.
+     */
+    heldBack: number;
+    actions: Array<{
+        subject: {
+            kind: 'campaign' | 'adset' | 'ad';
+            id: string;
+            name: string;
+            campaignId: (string) | null;
+        };
+        /**
+         * For an automation with groups, the group the campaign was judged in.
+         */
+        group?: string;
+        type: 'ads.pause' | 'ads.activate' | 'ads.set_budget' | 'ads.duplicate' | 'ads.edit_name' | 'ads.set_bid' | 'ads.set_target' | 'ads.reallocate_budget' | 'notify.send';
+        /**
+         * For a budget change, the daily budget before and after.
+         */
+        budget?: {
+            from: number;
+            to: number;
+        };
+        /**
+         * Why it would have been skipped. Absent when it would have acted.
+         */
+        skipped?: 'budget_unknown' | 'at_limit' | 'already_at_amount';
+    }>;
+};
+
+/**
+ * Promotes each matched Facebook or Instagram post once, as a Meta ad with a lifetime budget. Posts on other platforms are not boosted. It needs the Ads add-on.
+ *
+ * One boost step per automation, and `limits.maxChangesPerDay` (up to 20) is required: the most posts boosted in a day. At most 5 posts are boosted per check.
+ *
+ */
+export type AutomationBoostStep = {
+    id?: string;
+    type: "ads.boost_post";
+    /**
+     * The Meta ad account that pays, from `GET /v1/ads/accounts`.
+     */
+    adAccountId: string;
+    /**
+     * The whole spend of one boost, in the ad account currency.
+     */
+    budget: number;
+    /**
+     * How long each boost runs.
+     */
+    days: number;
+    goal?: 'engagement' | 'awareness' | 'video_views';
+    /**
+     * ISO 3166 alpha-2 codes.
+     */
+    countries: Array<(string)>;
+};
+
+export type goal2 = 'engagement' | 'awareness' | 'video_views';
+
+/**
+ * The one value the change moved, keyed by what it is. Null when it moved none, as for a pause.
+ */
+export type AutomationChangedValue = {
+    dailyBudget?: number;
+    name?: string;
+    bidAmount?: number;
+    targetCpa?: number;
+    targetRoas?: number;
+} | null;
+
+/**
+ * One check, shaped by the automation's kind.
+ */
+export type AutomationCheck = AdRuleAutomationCheck | EventAutomationCheck | ScheduledAutomationCheck;
+
+export type AutomationConditionResult = {
+    path?: string;
+    metric?: string;
+    window?: string;
+    op?: string;
+    value?: number;
+    compareTo?: string;
+    /**
+     * Null when the value is unknown; such a condition never holds.
+     */
+    actual?: (number) | null;
+    met?: boolean;
+};
+
+/**
+ * The team's switch for every ad rule, and each ad account's own controls. Every team member sees the same ones.
+ */
+export type AutomationControls = {
+    /**
+     * True when every ad rule of the team is stopped. Each rule keeps its own status.
+     */
+    paused: boolean;
+    /**
+     * When the team switch was turned off; null while it is on.
+     */
+    pausedAt: (string) | null;
+    /**
+     * Every ad account your automations use, plus any ad account that has controls set.
+     */
+    adAccounts: Array<AutomationAdAccountControls>;
+};
+
+/**
+ * An automation of one of three kinds, told apart by its shape:
+ *
+ * - **Ad rule**: a `schedule` trigger over campaigns, ad sets or ads, with metric `conditions` and ad `steps`.
+ * - **Event**: a Zernio event in `trigger.type`, narrowed by `trigger.filter`, with notify steps.
+ * - **Scheduled**: a `schedule` trigger over `subjects.each: post`, narrowed by `filter`, with notify and boost steps.
+ *
+ */
+export type AutomationDefinition = AdRuleAutomationDefinition | EventAutomationDefinition | ScheduledAutomationDefinition;
+
+/**
+ * The limits of an event or scheduled automation.
+ */
+export type AutomationEventLimits = {
+    /**
+     * How long the same post or account is left alone after the automation acts on it, rounded up to whole minutes. None by default.
+     */
+    cooldown?: string;
+    /**
+     * Most runs across the last 24 hours. Required, up to 20, with a boost step.
+     */
+    maxChangesPerDay?: number;
+};
+
+/**
+ * Starts the automation when something happens in Zernio, in one profile. `GET /v1/automations/catalog` lists every event with its facts.
+ *
+ */
+export type AutomationEventTrigger = {
+    /**
+     * The Zernio event that starts it.
+     */
+    type: 'post.failed' | 'post.partial' | 'post.published' | 'post.scheduled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.external.created' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.rate_limited' | 'account.ads.sync_failed' | 'ad.status_changed' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.account.quality_updated' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'message.received' | 'message.failed' | 'conversation.started' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'call.received' | 'call.ended' | 'call.failed' | 'lead.received';
+    /**
+     * The profile whose events start it, from `GET /v1/profiles`.
+     */
+    profileId: string;
+    /**
+     * Only events of these accounts. Leave out for every account of the profile.
+     */
+    accountIds?: Array<(string)>;
+    filter?: AutomationFactCondition;
+};
+
+/**
+ * The Zernio event that starts it.
+ */
+export type type6 = 'post.failed' | 'post.partial' | 'post.published' | 'post.scheduled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.external.created' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.rate_limited' | 'account.ads.sync_failed' | 'ad.status_changed' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'whatsapp.template.status_updated' | 'whatsapp.account.quality_updated' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'message.received' | 'message.failed' | 'conversation.started' | 'reaction.received' | 'referral.received' | 'comment.received' | 'review.new' | 'call.received' | 'call.ended' | 'call.failed' | 'lead.received';
+
+/**
+ * Narrows by the facts of the event or post, such as `platform` or `likes`: one comparison, or a group where `all` must hold or `any` is enough. Groups nest.
+ *
+ * A leaf whose `field` is not a fact of the event or post is refused. Text compares ignoring case. A number or date that does not parse never matches.
+ *
+ */
+export type AutomationFactCondition = {
+    /**
+     * A fact name from the catalog.
+     */
+    field: string;
+    op: 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'starts_with' | 'ends_with' | 'exists' | 'not_exists' | 'matches' | 'greater_than' | 'less_than' | 'greater_or_equal' | 'less_or_equal' | 'before' | 'after' | 'has_tag' | 'not_has_tag' | 'is_true' | 'is_false';
+    value: string | number;
+} | {
+    all: Array<AutomationFactCondition>;
+} | {
+    any: Array<AutomationFactCondition>;
+};
+
+export type op3 = 'equals' | 'not_equals' | 'contains' | 'not_contains' | 'starts_with' | 'ends_with' | 'exists' | 'not_exists' | 'matches' | 'greater_than' | 'less_than' | 'greater_or_equal' | 'less_or_equal' | 'before' | 'after' | 'has_tag' | 'not_has_tag' | 'is_true' | 'is_false';
+
+/**
+ * One leaf of the filter, with the fact's value at the check. Content facts are null for teams that keep no content.
+ */
+export type AutomationFactResult = {
+    field?: string;
+    op?: string;
+    value?: unknown;
+    actual?: unknown;
+    met?: boolean;
+};
+
+/**
+ * An ad rule's limits.
+ */
+export type AutomationLimits = {
+    /**
+     * How long an object is left alone after the rule acts on it. Whole minutes, up to `30d`.
+     */
+    cooldown?: string;
+    /**
+     * Most changes across the last 24 hours. Needs an `ads.*` step.
+     */
+    maxChangesPerDay?: number;
+    /**
+     * Most times the rule may change one object, over its whole history. Needs an `ads.*` step.
+     */
+    maxChangesPerObject?: number;
+};
+
+/**
+ * Sends a summary to Slack channels or email addresses of connected accounts. In an ad rule it also sends the `ad_rule.triggered` webhook, and `to` is optional.
+ *
+ * Event and scheduled automations need `to`.
+ *
+ */
+export type AutomationNotifyStep = {
+    /**
+     * In an ad rule the id is always `notify`.
+     */
+    id?: string;
+    type: "notify.send";
+    /**
+     * Up to 5 in an ad rule.
+     */
+    to?: Array<{
+        accountId: string;
+        /**
+         * An address for a connected Gmail or Outlook account.
+         */
+        to?: string;
+        /**
+         * A channel of a connected Slack account.
+         */
+        channelId?: string;
+    }>;
+};
+
+/**
+ * When a scheduled automation checks its posts. Set times and quiet hours are not available for posts.
+ */
+export type AutomationPostSchedule = {
+    type: "schedule";
+    every: '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '1d';
+    /**
+     * Runs from this time on.
+     */
+    startsAt?: string;
+    /**
+     * Stops running after this time.
+     */
+    endsAt?: string;
+};
+
+export type every = '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '1d';
+
+/**
+ * The posts a scheduled automation checks.
+ */
+export type AutomationPostSubjects = {
+    each: "post";
+    /**
+     * The profile whose posts are checked.
+     */
+    profileId: string;
+    /**
+     * Only posts of these accounts. Each must be active on the profile.
+     */
+    accountIds?: Array<(string)>;
+    /**
+     * How far back posts are checked, by when they were published. Whole days, from `1d` to `30d` (`48h` is 2 days).
+     */
+    publishedWithin?: string;
+};
+
+/**
+ * What an ad rule would do if it ran now. Nothing is changed. Cooldowns and daily caps are left out, so a run right after can act on fewer objects.
+ *
+ */
+export type AutomationPreview = {
+    evaluatedAt: string;
+    /**
+     * Today in the ad account timezone.
+     */
+    today: string;
+    timezone: string;
+    /**
+     * True when the ad account timezone is unknown and UTC was used.
+     */
+    timezoneAssumed: boolean;
+    currency: (string) | null;
+    evaluated: number;
+    matched: number;
+    /**
+     * True when more subjects were judged than `limit` lists.
+     */
+    truncated: boolean;
+    /**
+     * Matches first, up to `limit`.
+     */
+    subjects: Array<{
+        subject: {
+            kind?: 'campaign' | 'adset' | 'ad';
+            /**
+             * Platform ID.
+             */
+            id?: string;
+            name?: string;
+            campaignId?: (string) | null;
+        };
+        /**
+         * The group it was judged in, when the rule has `subjects.groups`.
+         */
+        group?: string;
+        matched: boolean;
+        conditions: Array<AutomationConditionResult>;
+        wouldRun: Array<{
+            step?: string;
+            type?: string;
+        }>;
+    }>;
+    /**
+     * Each group's totals against the conditions, when the rule has `subjects.groups`.
+     */
+    groups?: Array<{
+        name?: string;
+        matched?: boolean;
+        conditions?: Array<AutomationConditionResult>;
+        campaignIds?: Array<(string)>;
+    }>;
+};
+
+/**
+ * Every problem with the automation, each at a JSON path such as `steps[0].by`. The first one also fills `error` and `param`.
+ */
+export type AutomationProblems = {
+    problems?: Array<{
+        path: string;
+        code: 'invalid_value' | 'not_supported';
+        message: string;
+    }>;
+};
+
+export type AutomationRecord = {
+    id: string;
+    kind: 'ad_rule' | 'event' | 'scheduled';
+    status: 'active' | 'paused';
+    /**
+     * Send it back as `If-Match` when editing, so an edit made after someone else saved is refused.
+     */
+    version: string;
+    /**
+     * Null until an ad rule first checks. Always null for event and scheduled automations; their checks list when they ran.
+     */
+    lastCheckAt: (string) | null;
+    /**
+     * Null while paused. Always null for event and scheduled automations.
+     */
+    nextCheckAt: (string) | null;
+    createdAt: string;
+    updatedAt: string;
+    /**
+     * Only on `GET /v1/automations/{automationId}`, for an automation installed from a template.
+     */
+    template?: {
+        id: string;
+        name: (string) | null;
+        /**
+         * The template version it was installed from.
+         */
+        version: number;
+        /**
+         * Null once the template is deleted.
+         */
+        latestVersion: (number) | null;
+    };
+};
+
+export type kind3 = 'ad_rule' | 'event' | 'scheduled';
+
+export type AutomationRunResult = {
+    type: 'notify.send' | 'ads.boost_post';
+    /**
+     * `unknown` when the platform never answered, so the outcome is not known.
+     */
+    status: 'pending' | 'applied' | 'skipped' | 'failed' | 'unknown';
+    reason: (string) | null;
+};
+
+export type type7 = 'notify.send' | 'ads.boost_post';
+
+/**
+ * When an ad rule runs: `every` an interval or at set weekly `times` (send one), optionally only between `startsAt` and `endsAt` and never inside `quietHours`. Times and quiet hours are in the ad account timezone.
+ *
+ */
+export type AutomationScheduleTrigger = {
+    type: "schedule";
+    /**
+     * Run every interval. Send this or `times`, not both.
+     */
+    every?: '15m' | '30m' | '1h' | '3h' | '6h' | '12h' | '1d';
+    /**
+     * Set weekly times. Send this or `every`, not both.
+     */
+    times?: Array<{
+        days: Array<('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')>;
+        at: string;
+    }>;
+    /**
+     * Runs from this time on.
+     */
+    startsAt?: string;
+    /**
+     * Stops running after this time. Must be after `startsAt`.
+     */
+    endsAt?: string;
+    /**
+     * A daily window with no checks. It may wrap past midnight, such as `22:00` to `06:00`.
+     */
+    quietHours?: {
+        from: string;
+        /**
+         * Differs from `from`.
+         */
+        to: string;
+    };
+};
+
+/**
+ * One thing an ad rule does for each matching object, in order. An ad rule takes at most one `ads.*` change, can ask for approval before it and notify after it.
+ *
+ * `id` is fixed by the step type; leave it out when writing. `GET /v1/automations/catalog` lists the platforms and subjects each step works on.
+ *
+ */
+export type AutomationStep = {
+    id?: "pause";
+    type: "ads.pause";
+} | {
+    id?: "activate";
+    type: "ads.activate";
+    /**
+     * Also objects a person paused. Without it only what this automation paused is turned back on.
+     */
+    includeManuallyPaused?: boolean;
+} | {
+    id?: "duplicate";
+    type: "ads.duplicate";
+    /**
+     * The copy starts paused unless `active`.
+     */
+    status?: 'paused' | 'active';
+    renameSuffix?: string;
+} | {
+    id?: "budget";
+    type: "ads.change_budget";
+    /**
+     * Up to +100% or down to -90%.
+     */
+    by: string;
+    max?: number;
+    min?: number;
+} | {
+    id?: "budget";
+    type: "ads.set_budget";
+    /**
+     * The daily budget to set, in the ad account currency.
+     */
+    amount: number;
+} | {
+    id?: "bid";
+    type: "ads.change_bid";
+    /**
+     * Up to +100% or down to -90%.
+     */
+    by: string;
+    max?: number;
+    min?: number;
+} | {
+    id?: "bid";
+    type: "ads.set_bid";
+    amount: number;
+} | {
+    id?: "target";
+    type: "ads.change_target";
+    target: 'cpa' | 'roas';
+    by: string;
+    max?: number;
+    min?: number;
+} | {
+    id?: "target";
+    type: "ads.set_target";
+    target: 'cpa' | 'roas';
+    amount: number;
+} | {
+    id?: "reallocate";
+    type: "ads.reallocate_budget";
+    /**
+     * A condition metric or `result:<key>`, not a calendar metric.
+     */
+    metric: string;
+    /**
+     * A condition window.
+     */
+    window: string;
+    /**
+     * Which end is best. Defaults to lowest for `cpa`, `cpc`, `cpm`, `frequency` and cost results, highest otherwise.
+     */
+    best?: 'highest' | 'lowest';
+    /**
+     * How many objects give budget.
+     */
+    from: number;
+    /**
+     * How many objects receive it.
+     */
+    to: number;
+    /**
+     * From 1% to 90%.
+     */
+    by?: string;
+    amount?: number;
+    /**
+     * A giver's budget never goes below this.
+     */
+    min?: number;
+    /**
+     * A receiver's budget never goes above this.
+     */
+    max?: number;
+} | {
+    id?: "edit_name";
+    type: "ads.edit_name";
+    add?: string;
+    remove?: string;
+    at?: 'start' | 'end';
+} | AutomationApprovalStep | AutomationNotifyStep;
+
+/**
+ * What an ad rule checks, and where.
+ */
+export type AutomationSubjects = {
+    /**
+     * The objects judged one by one.
+     */
+    each: 'campaign' | 'adset' | 'ad';
+    /**
+     * The ad account to check. One per ad rule, and an edit cannot move it to another.
+     */
+    adAccounts: [
+        {
+            /**
+             * The ads connection, from `GET /v1/accounts`.
+             */
+            accountId: string;
+            /**
+             * Platform ad account ID, from `GET /v1/ads/accounts`.
+             */
+            adAccountId: string;
+        }
+    ];
+    /**
+     * Only these platform campaigns or their ad sets and ads. Leave out to check the whole ad account.
+     */
+    campaignIds?: Array<(string)>;
+    /**
+     * All must hold.
+     */
+    filters?: Array<AutomationAdFilter>;
+    /**
+     * Judges campaigns together (campaign rules only): each group's numbers are summed and its rates computed on the totals, and a matching group acts on each of its campaigns.
+     *
+     * A group with no filters holds every campaign the rule checks. `reach` and `frequency` cannot be used with groups.
+     *
+     */
+    groups?: Array<{
+        /**
+         * Unique within the rule.
+         */
+        name: string;
+        filters: Array<AutomationAdFilter>;
+    }>;
+};
+
+/**
+ * The objects judged one by one.
+ */
+export type each = 'campaign' | 'adset' | 'ad';
+
+export type AutomationTemplate = {
+    /**
+     * A team template's id (24 hex characters), or the id of one of Zernio's templates such as `stop_losers`.
+     */
+    id: string;
+    name: string;
+    description: string;
+    publisher: {
+        /**
+         * `team` for your team's templates and shared ones, `zernio` for Zernio's own.
+         */
+        type: 'team' | 'zernio';
+    };
+    /**
+     * `team`: your team only. `link`: anyone with the share link can read and install it. `public`: one of Zernio's templates.
+     */
+    visibility: 'team' | 'link' | 'public';
+    /**
+     * Goes up each time the content changes. Renaming or sharing keeps it.
+     */
+    version: number;
+    /**
+     * What its automations work on.
+     */
+    areas: Array<('ads' | 'events' | 'posts' | 'inbox' | 'comments')>;
+    inputs: Array<AutomationTemplateInput>;
+    automations: Array<AutomationTemplateAutomation>;
+    /**
+     * Installs across every team. Always 0 on Zernio's templates.
+     */
+    installs: number;
+    /**
+     * Your team's automations made from it. Absent on shared and Zernio templates.
+     */
+    installedInTeam?: number;
+    /**
+     * While shared by link (on your own templates only). Null otherwise.
+     */
+    share: {
+        /**
+         * The share token for `/v1/automations/templates/shared/{shareToken}`.
+         */
+        token: string;
+        /**
+         * The dashboard page that opens the template.
+         */
+        path: string;
+    } | null;
+    /**
+     * The user who saved it. Only on your team's templates.
+     */
+    createdBy?: string;
+    /**
+     * Absent on Zernio's templates.
+     */
+    createdAt?: string;
+    /**
+     * Absent on Zernio's templates.
+     */
+    updatedAt?: string;
+};
+
+/**
+ * `team` for your team's templates and shared ones, `zernio` for Zernio's own.
+ */
+export type type8 = 'team' | 'zernio';
+
+/**
+ * `team`: your team only. `link`: anyone with the share link can read and install it. `public`: one of Zernio's templates.
+ */
+export type visibility = 'team' | 'link' | 'public';
+
+export type AutomationTemplateAutomation = {
+    /**
+     * Stable within the template, for example `automation1`.
+     */
+    key: string;
+    /**
+     * A `POST /v1/automations` body without `status`, in which every value tied to one account is an input reference such as `{ "$input": "adAccount" }`. Campaign ids, id filters, start and end dates and approval steps are not kept.
+     */
+    definition: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * Where the automations come from. Send `from` or `automations`, not both.
+ */
+export type AutomationTemplateContent = {
+    /**
+     * Copy existing automations: your own (`automationIds`), one of Zernio's templates (`templateId`, for example `stop_losers`), or a template shared by link (`shareToken`).
+     */
+    from?: ({
+    automationIds: Array<(string)>;
+} | {
+    templateId: string;
+} | {
+    shareToken: string;
+});
+    /**
+     * Automation definitions, each checked like a `POST /v1/automations` body. Ad accounts, a trigger's profile and accounts, and alert destinations become inputs.
+     */
+    automations?: Array<AutomationDefinition>;
+};
+
+/**
+ * Something an install asks for. Each automation in the template holds `{ "$input": "<key>" }` where the value goes, and installing puts the value sent in `inputs.<key>` there.
+ */
+export type AutomationTemplateInput = {
+    /**
+     * The name to send the value under in `inputs`, for example `adAccount`.
+     */
+    key: string;
+    /**
+     * What the value is. `ad_account`: `{ accountId, adAccountId }`. `profile`: a profile id. `social_accounts`: an array of social account ids. `notify_destination`: an array of `{ accountId, to?, channelId? }`. `number`, `money` (in the ad account's currency) and `percent`: a number within the bounds below. `choice`: one of `options[].value`.
+     */
+    type: 'ad_account' | 'profile' | 'social_accounts' | 'notify_destination' | 'number' | 'money' | 'percent' | 'choice';
+    label: string;
+    /**
+     * True when an install may leave it out. A field that points at a left-out input is dropped.
+     */
+    optional?: boolean;
+    /**
+     * Used when an install leaves the input out. An input with a default is never missing.
+     */
+    default?: string | number;
+    min?: number;
+    /**
+     * The value must be above it, for example an amount above 0.
+     */
+    exclusiveMin?: number;
+    max?: number;
+    /**
+     * True when only whole numbers are accepted.
+     */
+    integer?: boolean;
+    /**
+     * What a `choice` input offers.
+     */
+    options?: Array<{
+        value: string | number;
+        label: string;
+    }>;
+};
+
+/**
+ * What the value is. `ad_account`: `{ accountId, adAccountId }`. `profile`: a profile id. `social_accounts`: an array of social account ids. `notify_destination`: an array of `{ accountId, to?, channelId? }`. `number`, `money` (in the ad account's currency) and `percent`: a number within the bounds below. `choice`: one of `options[].value`.
+ */
+export type type9 = 'ad_account' | 'profile' | 'social_accounts' | 'notify_destination' | 'number' | 'money' | 'percent' | 'choice';
+
+export type AutomationTemplateInstallation = {
+    templateId: string;
+    templateVersion: number;
+    automations: Array<Automation>;
+};
+
+export type AutomationTemplateInstallRequest = {
+    /**
+     * A value for each input, by its `key`. Required inputs without a default must be sent.
+     */
+    inputs?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Install several times in one call, for example on many ad accounts. Each target is its own install, all or nothing, and its `inputs` win over the shared `inputs`. A failed target leaves the others in place.
+     */
+    targets?: Array<{
+        inputs: {
+            [key: string]: unknown;
+        };
+    }>;
+    /**
+     * The status of every automation created.
+     */
+    status?: 'active' | 'paused';
+};
+
+export type AutomationTemplateInstallResponse = {
+    installation: AutomationTemplateInstallation;
+} | {
+    /**
+     * One result per target, in order.
+     */
+    installations: Array<AutomationTemplateTargetResult>;
+};
+
+export type AutomationTemplateTargetResult = {
+    /**
+     * The index of the entry in `targets`.
+     */
+    target: number;
+    status: 'created' | 'failed';
+    installation?: AutomationTemplateInstallation;
+    /**
+     * Why this target did not install. Problem paths point into the request, such as `targets[2].inputs.adAccount`.
+     */
+    error?: {
+        code: string;
+        message: string;
+        param?: string;
+        details?: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type status9 = 'created' | 'failed';
+
+/**
+ * When the automation runs. Its shape decides the kind:
+ *
+ * - A Zernio event name in `type` makes an event automation.
+ * - A `schedule` over `subjects.each: post` makes a scheduled automation.
+ * - Any other `schedule` makes an ad rule.
+ *
+ */
+export type AutomationTrigger = AutomationScheduleTrigger | AutomationEventTrigger | AutomationPostSchedule;
+
 export type AutoRecharge = {
     /**
      * Whether auto-recharge is on. Charges happen only when this is true and disabledReason is null.
@@ -3760,7 +4913,7 @@ export type BlogArticle = {
 /**
  * WordPress and Wix. Post status (`future` = scheduled, `pending` = in review on Wix); omitted for Shopify.
  */
-export type status6 = 'publish' | 'future' | 'draft' | 'pending' | 'private';
+export type status10 = 'publish' | 'future' | 'draft' | 'pending' | 'private';
 
 /**
  * Bluesky post settings. Supports text posts with up to 4 images or a single video. threadItems creates a reply chain (Bluesky thread). Images exceeding 1MB are automatically compressed. Alt text supported via mediaItem properties. Use langs to tag post language for feed-generator filtering.
@@ -3934,7 +5087,7 @@ export type BrandedCallingIdentity = {
  * - permanently_rejected: terminal
  *
  */
-export type status7 = 'requested' | 'changes_requested' | 'rejected' | 'pending_email_verification' | 'in_review' | 'verified' | 'suspended' | 'expired' | 'permanently_rejected';
+export type status11 = 'requested' | 'changes_requested' | 'rejected' | 'pending_email_verification' | 'in_review' | 'verified' | 'suspended' | 'expired' | 'permanently_rejected';
 
 export type BrandedCallingIdentityNumber = {
     phoneNumberId?: string;
@@ -3956,7 +5109,7 @@ export type BrandedCallingIdentityNumber = {
 /**
  * verified = the identity shows on calls from this number. permanently_rejected cannot be attached again anywhere.
  */
-export type status8 = 'submitted' | 'in_review' | 'verified' | 'unsuccessful' | 'suspended' | 'expired' | 'permanently_rejected';
+export type status12 = 'submitted' | 'in_review' | 'verified' | 'unsuccessful' | 'suspended' | 'expired' | 'permanently_rejected';
 
 /**
  * A person the carrier vetting team phones to confirm the business. Business references are senior contacts at a vendor, partner or client; the financial reference is a CPA or a bank contact. Calls are placed in the reference's local 8am-9pm window.
@@ -4188,7 +5341,7 @@ export type BusinessAgentEventStatus = {
     updated_at: string;
 };
 
-export type status9 = 'request_received' | 'processing' | 'sent' | 'failed' | 'skipped' | 'success';
+export type status13 = 'request_received' | 'processing' | 'sent' | 'failed' | 'skipped' | 'success';
 
 export type BusinessAgentFaq = BusinessAgentFaqInput & {
     id: string;
@@ -4285,7 +5438,7 @@ export type BusinessAgentSkill = BusinessAgentSkillInput & {
 /**
  * pending_review right after a write; blocked means Meta content review rejected it and the agent never applies it.
  */
-export type status10 = 'active' | 'pending_review' | 'blocked';
+export type status14 = 'active' | 'pending_review' | 'blocked';
 
 export type BusinessAgentSkillInput = {
     /**
@@ -4387,7 +5540,7 @@ export type BusinessAgentUiSkillInput = {
 
 export type component_type = 'carousel_quick_reply' | 'carousel_url' | 'cta_url' | 'flow' | 'image' | 'interactive_list' | 'interactive_reply_buttons' | 'location' | 'location_request';
 
-export type status11 = 'enabled' | 'disabled';
+export type status15 = 'enabled' | 'disabled';
 
 export type BusinessAgentWebsite = BusinessAgentWebsiteInput & {
     id: string;
@@ -4510,9 +5663,9 @@ export type CalendarEvent = {
     updatedAt?: (string) | null;
 };
 
-export type visibility = 'default' | 'public' | 'private';
+export type visibility2 = 'default' | 'public' | 'private';
 
-export type status12 = 'confirmed' | 'tentative' | 'cancelled';
+export type status16 = 'confirmed' | 'tentative' | 'cancelled';
 
 export type CalendarEventFields = {
     title?: string;
@@ -4686,7 +5839,7 @@ export type channel = 'whatsapp' | 'pstn';
 
 export type direction2 = 'inbound' | 'outbound';
 
-export type status13 = 'ringing' | 'answered' | 'ended' | 'failed';
+export type status17 = 'ringing' | 'answered' | 'ended' | 'failed';
 
 /**
  * Caller ID presented on the forwarded leg.
@@ -4710,7 +5863,7 @@ export type CampaignAdjustment = {
     createdAt: string;
 };
 
-export type kind2 = 'adjustment';
+export type kind4 = 'adjustment';
 
 export type CampaignAnalyticsResponse = {
     /**
@@ -4913,7 +6066,7 @@ export type CampaignLedgerEntry = {
     createdAt: string;
 };
 
-export type kind3 = 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
+export type kind5 = 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
 
 export type CampaignParticipant = {
     id: string;
@@ -4958,7 +6111,7 @@ export type CampaignParticipant = {
     };
 };
 
-export type status14 = 'invited' | 'active' | 'suspended' | 'removed';
+export type status18 = 'invited' | 'active' | 'suspended' | 'removed';
 
 /**
  * USD cents in each state. accruing: earned on posts not yet approved. owed: approved and on hold. payable: past the hold, ready to pay. settling: a treasury payout in progress, no longer payable and not reversible by a reject. settled: paid out.
@@ -5062,7 +6215,7 @@ export type CampaignResultMetric = {
 /**
  * How the value reads: `percent` values are already multiplied by 100.
  */
-export type kind4 = 'count' | 'money' | 'percent' | 'ratio';
+export type kind6 = 'count' | 'money' | 'percent' | 'ratio';
 
 export type CampaignSettlement = {
     /**
@@ -5205,7 +6358,7 @@ export type CampaignSubmission = {
 
 export type platform4 = 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
 
-export type status15 = 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
+export type status19 = 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
 
 /**
  * Number of submissions in each status.
@@ -5349,7 +6502,7 @@ export type CommentAutomationDmMedia = {
     url: string;
 };
 
-export type type5 = 'image' | 'video' | 'audio' | 'file';
+export type type10 = 'image' | 'video' | 'audio' | 'file';
 
 /**
  * Copy for the follow gate. Sensible defaults are used for any field left empty.
@@ -5479,7 +6632,7 @@ export type source = 'comment' | 'live_comment' | 'story_reply' | 'story_mention
  * - 'gated': the follow-gate confirmation DM went out and we are waiting for the tap. It flips to 'sent' or 'skipped' when they tap.
  * - 'skipped': also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
  */
-export type status16 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
+export type status20 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
 
 /**
  * How the audience rule resolved. Null on automations without one.
@@ -5579,7 +6732,7 @@ export type CommentAutomationTemplate = {
     elements: Array<CommentAutomationTemplateElement>;
 };
 
-export type type6 = 'generic';
+export type type11 = 'generic';
 
 /**
  * Facebook only. How Messenger renders each element imageUrl: horizontal (1.91:1, the default) or square (1:1). Instagram has no such setting, so an Instagram automation carrying it is a 400.
@@ -5767,9 +6920,9 @@ export type platform6 = 'shopify';
 
 export type method = 'code' | 'automatic';
 
-export type type7 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
+export type type12 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
 
-export type status17 = 'active' | 'scheduled' | 'expired';
+export type status21 = 'active' | 'scheduled' | 'expired';
 
 export type CommerceImage = {
     /**
@@ -5824,7 +6977,7 @@ export type CommerceMarket = {
     type?: string;
 };
 
-export type status18 = 'active' | 'draft';
+export type status22 = 'active' | 'draft';
 
 export type CommerceMenu = {
     id?: string;
@@ -5845,7 +6998,7 @@ export type CommerceMenuItem = {
     items?: Array<CommerceMenuItem>;
 };
 
-export type type8 = 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
+export type type13 = 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
 
 export type CommerceMenuItemInput = {
     title: string;
@@ -6339,7 +7492,7 @@ export type ConnectHandoff = {
     } | null;
 };
 
-export type status19 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
+export type status23 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
 
 /**
  * Only with `handoff=true`: the link to show as a QR code.
@@ -6552,7 +7705,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status20 = 'active' | 'inactive';
+export type status24 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -7086,12 +8239,12 @@ export type CreatorCampaign = {
 /**
  * draft until activated; active accepts submissions and accrues; paused stops new submissions; closed is final.
  */
-export type status21 = 'draft' | 'active' | 'paused' | 'closed';
+export type status25 = 'draft' | 'active' | 'paused' | 'closed';
 
 /**
  * Same as economics.type.
  */
-export type type9 = 'cpm' | 'per_post' | 'pool';
+export type type14 = 'cpm' | 'per_post' | 'pool';
 
 /**
  * Branding of the hosted join page, in the connect-link branding shape.
@@ -7270,14 +8423,14 @@ export type CreatorPortalEconomics = {
     organicViewsOnly?: boolean;
 };
 
-export type type10 = 'cpm';
+export type type15 = 'cpm';
 
 export type CreatorPortalInvite = {
     kind: 'invite';
     campaign: CreatorPortalCampaign;
 };
 
-export type kind5 = 'invite';
+export type kind7 = 'invite';
 
 export type CreatorPortalParticipant = {
     kind: 'participant';
@@ -7331,7 +8484,7 @@ export type CreatorPortalParticipant = {
     payouts: CreatorPortalPayoutSetup;
 };
 
-export type kind6 = 'participant';
+export type kind8 = 'participant';
 
 export type CreatorPortalPayoutEntry = {
     id: string;
@@ -7375,7 +8528,7 @@ export type CreatorPortalPayoutSetup = {
  */
 export type mode2 = 'none' | 'external' | 'treasury';
 
-export type status22 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
+export type status26 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
 
 export type CreatorPortalSubmission = {
     id: string;
@@ -8113,7 +9266,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * `adSetId`, the new ads themselves.
  *
  */
-export type status23 = 'ACTIVE' | 'PAUSED';
+export type status27 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults to `status`.
@@ -8527,7 +9680,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status24 = 1 | 2 | 3 | 4;
+export type status28 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -8561,7 +9714,7 @@ export type DmButton = {
     phone?: string;
 };
 
-export type type11 = 'url' | 'postback' | 'phone';
+export type type16 = 'url' | 'postback' | 'phone';
 
 export type EmailAddress = {
     email: string;
@@ -8836,7 +9989,7 @@ export type ErrorResponse = {
 /**
  * Error class for programmatic handling.
  */
-export type type12 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+export type type17 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
  * Meta ad create failures only. The step that failed:
@@ -8861,6 +10014,46 @@ export type quotaScope = 'DEVELOPER' | 'ACCOUNT';
  * Zernio Google Ads burst-limit 429 only (never set alongside `quotaExhausted`). `account` is the limit of 15 requests per minute per connected Google Ads account; `user` is the ceiling of 120 requests per minute per Zernio user across all their Google Ads accounts. Both clear within a minute.
  */
 export type budgetScope = 'account' | 'user';
+
+/**
+ * One event that reached an event automation.
+ */
+export type EventAutomationCheck = {
+    id: string;
+    automationId: string;
+    checkedAt: string;
+    outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
+    evaluated: number;
+    event: (string) | null;
+    eventId: (string) | null;
+    /**
+     * What the event was about.
+     */
+    subject: {
+        kind?: string;
+        id?: string;
+        accountId?: string;
+    } | null;
+    filter: Array<AutomationFactResult>;
+    actions: Array<AutomationRunResult>;
+    error: (string) | null;
+};
+
+export type outcome2 = 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
+
+/**
+ * Runs when something happens in Zernio, such as a post failing, and notifies. Unknown fields are refused.
+ */
+export type EventAutomationDefinition = {
+    name: string;
+    /**
+     * A new event automation is on unless `paused`.
+     */
+    status?: 'active' | 'paused';
+    trigger: AutomationEventTrigger;
+    steps: Array<AutomationNotifyStep>;
+    limits?: AutomationEventLimits;
+};
 
 export type EventDestination = {
     /**
@@ -8908,7 +10101,7 @@ export type ExternalPostMediaItem = {
     unavailableReason?: 'platform_withheld';
 };
 
-export type type13 = 'image' | 'video';
+export type type18 = 'image' | 'video';
 
 /**
  * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
@@ -9375,7 +10568,7 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status25 = 'received';
+export type status29 = 'received';
 
 /**
  * A file or folder in a connected Google Drive or OneDrive. Ids are the provider's own.
@@ -9409,7 +10602,7 @@ export type FileItem = {
     trashed: boolean;
 };
 
-export type kind7 = 'file' | 'folder';
+export type kind9 = 'file' | 'folder';
 
 export type FilePickerSession = {
     /**
@@ -9560,7 +10753,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status26 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status30 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -9663,7 +10856,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status27 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status31 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 export type GoogleAdsUserAccessInvitation = {
     invitationId?: string;
@@ -9678,7 +10871,7 @@ export type GoogleAdsUserAccessInvitation = {
 
 export type accessRole = 'ADMIN' | 'STANDARD' | 'READ_ONLY' | 'EMAIL_ONLY' | 'UNKNOWN';
 
-export type status28 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
+export type status32 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
 
 export type GoogleAdsUserAccessInvitationResult = {
     customerId?: string;
@@ -9702,7 +10895,7 @@ export type GoogleAdsUserAccessInvitationResult = {
 /**
  * PENDING once the email is sent; PENDING_APPROVAL while Google waits for a second admin's multi-party approval.
  */
-export type status29 = 'PENDING' | 'PENDING_APPROVAL';
+export type status33 = 'PENDING' | 'PENDING_APPROVAL';
 
 export type GoogleAdsUserInvitationApproval = {
     /**
@@ -9979,7 +11172,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type14 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type19 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * A Google Business Profile review, as returned by every gmb-reviews read endpoint.
@@ -10298,7 +11491,7 @@ export type GoogleListingGroupFilterNode = {
     } | null;
 };
 
-export type type15 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
+export type type20 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
 
 export type GoogleListingGroupNode = {
     dimension: GoogleListingGroupDimension;
@@ -10552,7 +11745,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status30 = 'applied' | 'dismissed' | 'failed';
+export type status34 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -10695,7 +11888,7 @@ export type ImessageSandboxContact = {
     createdAt?: string;
 };
 
-export type status31 = 'pending' | 'active';
+export type status35 = 'pending' | 'active';
 
 /**
  * An iMessage sender registered as an account on a profile.
@@ -10763,14 +11956,14 @@ export type ImessageSenderLifecycle = {
     createdAt?: string;
 };
 
-export type kind8 = 'phone' | 'email';
+export type kind10 = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
 /**
  * `awaiting_payment`: the first-month charge is still being confirmed by the card; the number is ordered automatically once it is paid (usually under 5 minutes), or the order fails with `failureReason` when the card declines or nothing confirms within 30 minutes.
  */
-export type status32 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status36 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * When inbound messages and comments were first and last seen for the account. Only events matched to this account count. WhatsApp delivery statuses for outbound messages do not count, so the stamps of a number that only sends stay null. The stamps reset on every connect.
@@ -10978,7 +12171,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status33 = 'active' | 'archived';
+export type status37 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -11739,7 +12932,7 @@ export type InstagramVideoFallback = {
     };
 };
 
-export type kind9 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
+export type kind11 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
 
 /**
  * A Google Search keyword: a bare string (BROAD match), or an object naming the match type.
@@ -12403,7 +13596,7 @@ export type MediaItem = {
 /**
  * Optional when the item names a connected file (`fileId`): inferred from the file's MIME type.
  */
-export type type16 = 'image' | 'video' | 'gif' | 'document';
+export type type21 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaSubtitle = {
     /**
@@ -12658,7 +13851,7 @@ export type availability = 'in stock' | 'out of stock' | 'preorder' | 'available
 
 export type condition2 = 'new' | 'refurbished' | 'used';
 
-export type visibility2 = 'published' | 'staging';
+export type visibility3 = 'published' | 'staging';
 
 export type gender2 = 'female' | 'male' | 'unisex';
 
@@ -13127,7 +14320,7 @@ export type OAuthApp = {
 /**
  * `ok`: the platform accepted the keys at the last check. `unchecked`: the check could not reach a verdict (see lastError). `invalid`: the platform rejected the keys; connects and token refreshes through this app will fail until the secret is rotated.
  */
-export type status34 = 'ok' | 'unchecked' | 'invalid';
+export type status38 = 'ok' | 'unchecked' | 'invalid';
 
 export type OAuthAppSetup = {
     platform: string;
@@ -13342,7 +14535,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status35 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status39 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -13352,6 +14545,11 @@ export type Pagination = {
     total?: number;
     pages?: number;
 };
+
+/**
+ * How many whole days before today to replay. Today is not replayed.
+ */
+export type ParameterAutomationBacktestDays = number;
 
 /**
  * WhatsApp social account id (the number must be managed through the Cloud API).
@@ -13474,7 +14672,7 @@ export type PayoutBatch = {
 /**
  * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
  */
-export type status36 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
+export type status40 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
 export type method2 = 'card';
 
@@ -13513,7 +14711,7 @@ export type PayoutBatchItem = {
 /**
  * `skipped`: not paid because payout setup was not finished, or the card payment never completed; the amount is payable again. `failed`: Stripe refused the transfer; the amount is payable again.
  */
-export type status37 = 'pending' | 'paid' | 'failed' | 'skipped';
+export type status41 = 'pending' | 'paid' | 'failed' | 'skipped';
 
 export type PhoneNumberStockWatch = {
     id: string;
@@ -13631,7 +14829,7 @@ export type PlatformAnalytics = {
     isOwner?: (boolean) | null;
 };
 
-export type status38 = 'published' | 'failed';
+export type status42 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -13833,7 +15031,7 @@ export type PortfolioBidStrategy = {
     targetImpressionShare?: (GoogleTargetImpressionShare | null);
 };
 
-export type type17 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
+export type type22 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
 
 export type Post = {
     _id?: string;
@@ -13894,9 +15092,9 @@ export type Post = {
 /**
  * `cancelled` is set by POST /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts. `pending_approval` (set by `requiresApproval: true`) never publishes until POST /v1/posts/{postId}/review approves it.
  */
-export type status39 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status43 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
-export type visibility3 = 'public' | 'private' | 'unlisted';
+export type visibility4 = 'public' | 'private' | 'unlisted';
 
 export type PostAnalytics = {
     impressions?: number;
@@ -14245,7 +15443,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status40 = 'active' | 'draft' | 'archived';
+export type status44 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -14464,7 +15662,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status41 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status45 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -14516,7 +15714,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status42 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status46 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -14603,7 +15801,7 @@ export type RcsCarrierApproval = {
 
 export type scope3 = 'carrier' | 'hub' | 'bot';
 
-export type status43 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status47 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -14629,7 +15827,7 @@ export type RcsContent = {
     suggestions?: Array<RcsSuggestion>;
 };
 
-export type type18 = 'text';
+export type type23 = 'text';
 
 export type orientation = 'VERTICAL' | 'HORIZONTAL';
 
@@ -14742,7 +15940,7 @@ export type RcsSuggestion = {
     postbackData?: string;
 };
 
-export type type19 = 'reply';
+export type type24 = 'reply';
 
 export type application = 'BROWSER' | 'WEBVIEW';
 
@@ -15100,6 +16298,55 @@ export type RfPrediction = {
      * When the reservation's locked price expires (set after reserving).
      */
     expiresAt?: (string) | null;
+};
+
+/**
+ * One check of a scheduled automation.
+ */
+export type ScheduledAutomationCheck = {
+    id: string;
+    automationId: string;
+    checkedAt: string;
+    outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
+    /**
+     * Posts judged.
+     */
+    evaluated: number;
+    /**
+     * The oldest analytics sync among the posts judged: their numbers are as of then.
+     */
+    analyticsSyncedAt: (string) | null;
+    /**
+     * Up to 20 matching posts.
+     */
+    matched: Array<{
+        postId?: string;
+        accountId?: string;
+        platform?: string;
+        url?: (string) | null;
+        filter?: Array<AutomationFactResult>;
+    }>;
+    actions: Array<(AutomationRunResult & {
+    postId?: string;
+})>;
+    error: (string) | null;
+};
+
+/**
+ * Checks a profile's recent posts on a schedule. Each post that matches `filter` is notified about, and can be boosted. At most 20 posts are acted on per check. Unknown fields are refused.
+ *
+ */
+export type ScheduledAutomationDefinition = {
+    name: string;
+    /**
+     * A new scheduled automation is on unless `paused`.
+     */
+    status?: 'active' | 'paused';
+    trigger: AutomationPostSchedule;
+    subjects: AutomationPostSubjects;
+    filter?: AutomationFactCondition;
+    steps: Array<(AutomationNotifyStep | AutomationBoostStep)>;
+    limits?: AutomationEventLimits;
 };
 
 export type SendEmailRequest = {
@@ -15535,7 +16782,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status44 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status48 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -16311,7 +17558,7 @@ export type platform15 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | '
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
-export type kind10 = 'pixel' | 'tag' | 'insight_tag';
+export type kind12 = 'pixel' | 'tag' | 'insight_tag';
 
 /**
  * One health check the platform runs on a tracking tag.
@@ -16498,7 +17745,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status45 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status49 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -16588,7 +17835,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status46 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status50 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -16629,7 +17876,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status47 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status51 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -16754,7 +18001,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type20 = 'image' | 'video' | 'document';
+export type type25 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -16763,7 +18010,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status48 = 'pending' | 'completed' | 'expired';
+export type status52 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -17272,7 +18519,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status49 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status53 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel5 = 'sms' | 'whatsapp';
 
@@ -17487,7 +18734,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status50 = 'success' | 'failed';
+export type status54 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -17601,7 +18848,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status51 = 'success' | 'failure';
+export type status55 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -18111,7 +19358,7 @@ export type WebhookPayloadAdReview = {
 
 export type event11 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status52 = 'approved' | 'rejected';
+export type status56 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -18566,7 +19813,7 @@ export type event15 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status53 = 'ready' | 'error';
+export type status57 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -18707,7 +19954,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event18 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status54 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status58 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -18804,8 +20051,6 @@ export type WebhookPayloadAutomationCheckCompleted = {
 };
 
 export type event20 = 'automation.check.completed';
-
-export type outcome2 = 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
 
 /**
  * Webhook payload for calendar.event.created, calendar.event.updated and calendar.event.deleted. Carries the provider event id and the change only; read the event with `GET /v1/calendar/events/{id}` (deleted ids answer 404).
@@ -19626,7 +20871,7 @@ export type WebhookPayloadCommerceOrder = {
 
 export type event33 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
 
-export type type21 = 'order';
+export type type26 = 'order';
 
 export type WebhookPayloadCommerceProduct = {
     /**
@@ -19669,7 +20914,7 @@ export type WebhookPayloadCommerceProduct = {
 
 export type event34 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
-export type type22 = 'product';
+export type type27 = 'product';
 
 /**
  * Webhook payload for contact.updated and contact.deleted, fired after a provider contacts sync (Google Contacts, Outlook) changed a contact. contact.updated also fires after a WhatsApp coexistence address-book change (WhatsApp never fires contact.deleted). Read the contact with `GET /v1/contacts/{id}`.
@@ -21383,7 +22628,7 @@ export type event53 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status55 = 'published' | 'failed' | 'deleted';
+export type status59 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -21949,7 +23194,7 @@ export type event65 = 'whatsapp.account.name_status_updated';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status56 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status60 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -22083,7 +23328,7 @@ export type event67 = 'whatsapp.account.status_updated';
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status57 = 'restricted' | 'active';
+export type status61 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -22299,7 +23544,7 @@ export type event70 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status58 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status62 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -22363,7 +23608,7 @@ export type event71 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status59 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status63 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -22639,7 +23884,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type23 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type28 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -22681,7 +23926,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type24 = 'platform_error';
+export type type29 = 'platform_error';
 
 export type code3 = 'platform_api_error';
 
@@ -22763,7 +24008,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status60 = 'success' | 'failed' | 'pending';
+export type status64 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -22909,7 +24154,7 @@ export type WorkflowNode = {
  * integrations (webhook, hubspot_upsert_contact, ai, handoff, start_call).
  *
  */
-export type type25 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type30 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -23045,7 +24290,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type26 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type31 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -23124,7 +24369,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type27 = 'divider' | 'latex';
+export type type32 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -52607,6 +53852,739 @@ export type RemoveAdKeywordResponse = ({
 });
 
 export type RemoveAdKeywordError = (ErrorResponse);
+
+export type ListAutomationsData = {
+    query?: {
+        /**
+         * Only automations on this account: the ads connection of an ad rule, or one of the `accountIds` of an event or scheduled automation.
+         */
+        accountId?: string;
+        /**
+         * Only ad rules checking this platform ad account.
+         */
+        adAccountId?: string;
+        /**
+         * `nextCursor` from the previous page.
+         */
+        cursor?: string;
+        limit?: number;
+    };
+};
+
+export type ListAutomationsResponse = ({
+    automations: Array<Automation>;
+    /**
+     * Null on the last page.
+     */
+    nextCursor: (string) | null;
+});
+
+export type ListAutomationsError = (ErrorResponse);
+
+export type CreateAutomationData = {
+    body: AutomationDefinition;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type CreateAutomationResponse = ({
+    automation: Automation;
+});
+
+export type CreateAutomationError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | unknown);
+
+export type GetAutomationCatalogResponse = ({
+    /**
+     * JSON Schema of the body of `POST /v1/automations`.
+     */
+    schema: {
+        [key: string]: unknown;
+    };
+    triggers: Array<{
+        kind: 'ad_rule' | 'event' | 'scheduled';
+        /**
+         * `schedule`, or the Zernio event name.
+         */
+        type: string;
+        /**
+         * Event triggers only.
+         */
+        label?: string;
+        /**
+         * What an event is about, such as `post` or `account`.
+         */
+        subject?: string;
+        /**
+         * Which of `profileId` and `accountIds` an event trigger needs.
+         */
+        scope?: {
+            [key: string]: unknown;
+        };
+        /**
+         * The facts a `filter` can compare, for an event trigger.
+         */
+        facts?: Array<{
+            name?: string;
+            type?: 'string' | 'number' | 'boolean';
+            description?: string;
+        }>;
+        /**
+         * Scheduled trigger only: what it can check (`post`), with the facts of each.
+         */
+        subjects?: Array<{
+            [key: string]: unknown;
+        }>;
+        every?: Array<(string)>;
+        /**
+         * Ad rule trigger only: the weekly set times it takes.
+         */
+        times?: {
+            [key: string]: unknown;
+        };
+        filterOperators?: Array<(string)>;
+        steps?: Array<(string)>;
+        /**
+         * Scheduled trigger only: the platforms, goals, most days and most boosts a day of `ads.boost_post`.
+         */
+        boost?: {
+            [key: string]: unknown;
+        };
+        limits?: Array<(string)>;
+    }>;
+    /**
+     * Ad rule subjects.
+     */
+    subjects: Array<{
+        each?: 'campaign' | 'adset' | 'ad';
+        platforms?: Array<(string)>;
+        metrics?: Array<{
+            metric?: string;
+            platforms?: Array<(string)>;
+        }>;
+        steps?: Array<{
+            type?: string;
+            platforms?: Array<(string)>;
+        }>;
+    }>;
+    /**
+     * The fields and operators `subjects.filters` takes, and which fields each subject accepts.
+     */
+    filters: {
+        [key: string]: unknown;
+    };
+    /**
+     * What `subjects.groups` takes.
+     */
+    groups: {
+        [key: string]: unknown;
+    };
+    /**
+     * The most checks `alert.confirmChecks` can ask for.
+     */
+    alert: {
+        [key: string]: unknown;
+    };
+    /**
+     * Condition operators, windows, `compareTo` options and size limits.
+     */
+    conditions: {
+        [key: string]: unknown;
+    };
+    limits: Array<(string)>;
+    /**
+     * Where `approval.request` goes, how many approvers and how long it can wait.
+     */
+    approval: {
+        [key: string]: unknown;
+    };
+});
+
+export type GetAutomationCatalogError = (ErrorResponse);
+
+export type ListAutomationActionsData = {
+    query?: {
+        /**
+         * Only actions on this ads connection.
+         */
+        accountId?: string;
+        automationId?: string;
+        /**
+         * `nextCursor` from the previous page.
+         */
+        cursor?: string;
+        from?: string;
+        limit?: number;
+        to?: string;
+        /**
+         * A change reads as the value it set, so budget changes filter as `ads.set_budget`.
+         */
+        type?: 'ads.pause' | 'ads.activate' | 'ads.set_budget' | 'ads.duplicate' | 'ads.edit_name' | 'ads.set_bid' | 'ads.set_target' | 'ads.reallocate_budget';
+    };
+};
+
+export type ListAutomationActionsResponse = ({
+    actions: Array<AutomationAction>;
+    nextCursor: (string) | null;
+});
+
+export type ListAutomationActionsError = (ErrorResponse);
+
+export type ListAutomationChecksData = {
+    path: {
+        automationId: string;
+    };
+    query?: {
+        /**
+         * `nextCursor` from the previous page.
+         */
+        cursor?: string;
+        limit?: number;
+    };
+};
+
+export type ListAutomationChecksResponse = ({
+    checks: Array<AutomationCheck>;
+    /**
+     * Null on the last page.
+     */
+    nextCursor: (string) | null;
+});
+
+export type ListAutomationChecksError = (ErrorResponse | {
+    error?: string;
+});
+
+export type PreviewAutomationDraftData = {
+    body: AutomationDefinition;
+    query?: {
+        /**
+         * How many subjects to list, matches first. `evaluated` and `matched` always count them all.
+         */
+        limit?: number;
+    };
+};
+
+export type PreviewAutomationDraftResponse = (AutomationPreview);
+
+export type PreviewAutomationDraftError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse);
+
+export type GetAutomationData = {
+    path: {
+        automationId: string;
+    };
+};
+
+export type GetAutomationResponse = ({
+    automation: Automation;
+});
+
+export type GetAutomationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateAutomationData = {
+    body: {
+        name?: string;
+        status?: 'active' | 'paused';
+        trigger?: AutomationTrigger;
+        subjects?: (AutomationSubjects | AutomationPostSubjects);
+        filter?: AutomationFactCondition;
+        conditions?: AdRuleConditions;
+        alert?: (AutomationAlert | null);
+        /**
+         * The steps the automation's kind takes.
+         */
+        steps?: Array<(AutomationStep | AutomationBoostStep)>;
+        limits?: (AutomationLimits | AutomationEventLimits);
+    };
+    headers?: {
+        /**
+         * The automation's `version` when you read it.
+         */
+        'If-Match'?: string;
+    };
+    path: {
+        automationId: string;
+    };
+};
+
+export type UpdateAutomationResponse = ({
+    automation: Automation;
+});
+
+export type UpdateAutomationError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteAutomationData = {
+    path: {
+        automationId: string;
+    };
+};
+
+export type DeleteAutomationResponse = ({
+    success?: boolean;
+});
+
+export type DeleteAutomationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ActivateAutomationData = {
+    path: {
+        automationId: string;
+    };
+};
+
+export type ActivateAutomationResponse = ({
+    automation: Automation;
+});
+
+export type ActivateAutomationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type PauseAutomationData = {
+    path: {
+        automationId: string;
+    };
+};
+
+export type PauseAutomationResponse = ({
+    automation: Automation;
+});
+
+export type PauseAutomationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type PreviewAutomationData = {
+    path: {
+        automationId: string;
+    };
+    query?: {
+        /**
+         * How many subjects to list, matches first. `evaluated` and `matched` always count them all.
+         */
+        limit?: number;
+    };
+};
+
+export type PreviewAutomationResponse = (AutomationPreview);
+
+export type PreviewAutomationError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | {
+    error?: string;
+});
+
+export type ListAutomationTemplatesData = {
+    query?: {
+        /**
+         * Which templates to list. Only `team` today.
+         */
+        scope?: 'team';
+    };
+};
+
+export type ListAutomationTemplatesResponse = ({
+    templates: Array<AutomationTemplate>;
+});
+
+export type ListAutomationTemplatesError = (ErrorResponse);
+
+export type CreateAutomationTemplateData = {
+    body: ({
+    name: string;
+    description?: string;
+} & AutomationTemplateContent);
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type CreateAutomationTemplateResponse = ({
+    template: AutomationTemplate;
+});
+
+export type CreateAutomationTemplateError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | unknown);
+
+export type GetAutomationTemplateData = {
+    path: {
+        /**
+         * The template's id.
+         */
+        templateId: string;
+    };
+};
+
+export type GetAutomationTemplateResponse = ({
+    template: AutomationTemplate;
+});
+
+export type GetAutomationTemplateError = (ErrorResponse);
+
+export type UpdateAutomationTemplateData = {
+    body: ({
+    name?: string;
+    description?: string;
+    visibility?: 'team' | 'link';
+} & AutomationTemplateContent);
+    path: {
+        /**
+         * The template's id.
+         */
+        templateId: string;
+    };
+};
+
+export type UpdateAutomationTemplateResponse = ({
+    template: AutomationTemplate;
+});
+
+export type UpdateAutomationTemplateError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse);
+
+export type DeleteAutomationTemplateData = {
+    path: {
+        /**
+         * The template's id.
+         */
+        templateId: string;
+    };
+};
+
+export type DeleteAutomationTemplateResponse = ({
+    /**
+     * Always true.
+     */
+    deleted: boolean;
+});
+
+export type DeleteAutomationTemplateError = (ErrorResponse);
+
+export type InstallAutomationTemplateData = {
+    body: AutomationTemplateInstallRequest;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * The template's id.
+         */
+        templateId: string;
+    };
+};
+
+export type InstallAutomationTemplateResponse = (AutomationTemplateInstallResponse | {
+    installations: Array<AutomationTemplateTargetResult>;
+});
+
+export type InstallAutomationTemplateError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | unknown);
+
+export type GetSharedAutomationTemplateData = {
+    path: {
+        /**
+         * The token from the template's `share.token`.
+         */
+        shareToken: string;
+    };
+};
+
+export type GetSharedAutomationTemplateResponse = ({
+    template: AutomationTemplate;
+});
+
+export type GetSharedAutomationTemplateError = (ErrorResponse);
+
+export type InstallSharedAutomationTemplateData = {
+    body: AutomationTemplateInstallRequest;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * The token from the template's `share.token`.
+         */
+        shareToken: string;
+    };
+};
+
+export type InstallSharedAutomationTemplateResponse = (AutomationTemplateInstallResponse | {
+    installations: Array<AutomationTemplateTargetResult>;
+});
+
+export type InstallSharedAutomationTemplateError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | unknown);
+
+export type GetZernioAutomationTemplateData = {
+    path: {
+        /**
+         * The id of one of Zernio's templates, for example `stop_losers`.
+         */
+        templateId: string;
+    };
+};
+
+export type GetZernioAutomationTemplateResponse = ({
+    template: AutomationTemplate;
+});
+
+export type GetZernioAutomationTemplateError = (ErrorResponse);
+
+export type InstallZernioAutomationTemplateData = {
+    body: AutomationTemplateInstallRequest;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * The id of one of Zernio's templates, for example `stop_losers`.
+         */
+        templateId: string;
+    };
+};
+
+export type InstallZernioAutomationTemplateResponse = (AutomationTemplateInstallResponse | {
+    installations: Array<AutomationTemplateTargetResult>;
+});
+
+export type InstallZernioAutomationTemplateError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | unknown);
+
+export type GetAutomationControlsResponse = ({
+    controls: AutomationControls;
+});
+
+export type GetAutomationControlsError = (ErrorResponse);
+
+export type UpdateAutomationControlsData = {
+    body: {
+        /**
+         * True stops every ad automation of the team; false lets them run again.
+         */
+        paused: boolean;
+    };
+};
+
+export type UpdateAutomationControlsResponse = ({
+    controls: AutomationControls;
+});
+
+export type UpdateAutomationControlsError = (ErrorResponse);
+
+export type UpdateAutomationAdAccountControlsData = {
+    body: {
+        /**
+         * The ads connection that reaches the ad account.
+         */
+        accountId: string;
+        /**
+         * The platform's ad account id.
+         */
+        adAccountId: string;
+        /**
+         * True stops every automation on this ad account; false lets them run again.
+         */
+        paused?: boolean;
+        /**
+         * The most automations may raise budgets on this ad account in any 24 hours, in the ad account's currency. A raise past it is cut to the room left.
+         *
+         * Send null to remove the limit.
+         *
+         */
+        dailyRaiseLimit?: (number) | null;
+    };
+};
+
+export type UpdateAutomationAdAccountControlsResponse = ({
+    controls: AutomationControls;
+});
+
+export type UpdateAutomationAdAccountControlsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListAutomationApprovalsData = {
+    path: {
+        automationId: string;
+    };
+    query?: {
+        /**
+         * How many requests to return. There is no cursor; the newest come first.
+         */
+        limit?: number;
+        /**
+         * Only requests in this status.
+         */
+        status?: 'pending' | 'approved' | 'rejected' | 'expired' | 'cancelled';
+    };
+};
+
+export type ListAutomationApprovalsResponse = ({
+    approvals: Array<AutomationApproval>;
+});
+
+export type ListAutomationApprovalsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetAutomationApprovalData = {
+    path: {
+        approvalId: string;
+        automationId: string;
+    };
+};
+
+export type GetAutomationApprovalResponse = ({
+    approval: AutomationApproval;
+});
+
+export type GetAutomationApprovalError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ApproveAutomationApprovalData = {
+    body?: AutomationApprovalDecision;
+    path: {
+        approvalId: string;
+        automationId: string;
+    };
+};
+
+export type ApproveAutomationApprovalResponse = ({
+    approval: AutomationApproval;
+});
+
+export type ApproveAutomationApprovalError = (ErrorResponse | {
+    error?: string;
+});
+
+export type RejectAutomationApprovalData = {
+    body?: AutomationApprovalDecision;
+    path: {
+        approvalId: string;
+        automationId: string;
+    };
+};
+
+export type RejectAutomationApprovalResponse = ({
+    approval: AutomationApproval;
+});
+
+export type RejectAutomationApprovalError = (ErrorResponse | {
+    error?: string;
+});
+
+export type BacktestAutomationDraftData = {
+    body: AutomationDefinition;
+    query?: {
+        /**
+         * How many whole days before today to replay. Today is not replayed.
+         */
+        days?: number;
+    };
+};
+
+export type BacktestAutomationDraftResponse = (AutomationBacktest);
+
+export type BacktestAutomationDraftError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse);
+
+export type BacktestAutomationData = {
+    path: {
+        automationId: string;
+    };
+    query?: {
+        /**
+         * How many whole days before today to replay. Today is not replayed.
+         */
+        days?: number;
+    };
+};
+
+export type BacktestAutomationResponse = (AutomationBacktest);
+
+export type BacktestAutomationError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | {
+    error?: string;
+});
 
 export type ListAdRulesData = {
     query?: {

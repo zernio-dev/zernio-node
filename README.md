@@ -685,6 +685,41 @@ try {
 | `adTargeting.searchAdInterests()` | Search targeting interests |
 | `adTargeting.searchAdTargeting()` | Search targeting options |
 
+### Automations
+| Method | Description |
+|--------|-------------|
+| `automations.listAutomationActions()` | List automation actions |
+| `automations.listAutomationApprovals()` | List an automation's approval requests |
+| `automations.listAutomationChecks()` | List an automation's checks |
+| `automations.listAutomations()` | List automations |
+| `automations.listAutomationTemplates()` | List automation templates |
+| `automations.createAutomation()` | Create an automation |
+| `automations.createAutomationTemplate()` | Create an automation template |
+| `automations.getAutomation()` | Get an automation |
+| `automations.getAutomationApproval()` | Get an approval request |
+| `automations.getAutomationCatalog()` | Get the automations catalog |
+| `automations.getAutomationControls()` | Get automation controls |
+| `automations.getAutomationTemplate()` | Get an automation template |
+| `automations.getSharedAutomationTemplate()` | Get a shared automation template |
+| `automations.getZernioAutomationTemplate()` | Get a Zernio automation template |
+| `automations.updateAutomation()` | Edit an automation |
+| `automations.updateAutomationAdAccountControls()` | Update one ad account's controls |
+| `automations.updateAutomationControls()` | Turn every ad automation off or on |
+| `automations.updateAutomationTemplate()` | Update an automation template |
+| `automations.deleteAutomation()` | Delete an automation |
+| `automations.deleteAutomationTemplate()` | Delete an automation template |
+| `automations.activateAutomation()` | Turn an automation on |
+| `automations.approveAutomationApproval()` | Approve an approval request |
+| `automations.backtestAutomation()` | Backtest a saved automation |
+| `automations.backtestAutomationDraft()` | Backtest an unsaved automation |
+| `automations.installAutomationTemplate()` | Install an automation template |
+| `automations.installSharedAutomationTemplate()` | Install a shared automation template |
+| `automations.installZernioAutomationTemplate()` | Install a Zernio automation template |
+| `automations.pauseAutomation()` | Turn an automation off |
+| `automations.previewAutomation()` | Preview a saved automation |
+| `automations.previewAutomationDraft()` | Preview an unsaved automation |
+| `automations.rejectAutomationApproval()` | Reject an approval request |
+
 ### Blogs
 | Method | Description |
 |--------|-------------|
