@@ -15399,7 +15399,7 @@ export const listAdCreatives = <ThrowOnError extends boolean = false>(options: O
  *
  * ### Other fields
  *
- * - The Page (and linked Instagram account, when present) is resolved from `accountId` as the story actor.
+ * - The Page (and linked Instagram account, when present) is resolved from `accountId` as the story actor. `instagramAccountId` overrides the Instagram account.
  * - `creativeFeatures` configures Advantage+ enhancements.
  * - `promotion` is not supported and any object is rejected with 400.
  *

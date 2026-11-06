@@ -58192,6 +58192,14 @@ export type CreateAdCreativeData = {
             callToAction?: string;
         }>;
         /**
+         * Meta only. The Instagram account the creative runs as, mapped to `instagram_user_id`: an id from `GET /v1/ads/instagram-accounts`, including a Page-backed one.
+         *
+         * - Given, it is never swapped. One the ad account cannot use returns 400 `insufficient_permissions` on `instagramAccountId`.
+         * - Omitted, it uses the account linked to the Page. When the ad account has no access to that one, it retries once with an authorized Instagram account, or returns 422 on `instagramAccountId` when there is none.
+         *
+         */
+        instagramAccountId?: string;
+        /**
          * Only with `carouselCards` (a 400 without them). Sets `link_data.multi_share_optimized`:
          *
          * - `false`: keeps the cards in the order given. Meta then takes at most 5 cards, so `false` with more than 5 cards is a 400.
@@ -61115,7 +61123,7 @@ export type CreateStandaloneAdData = {
          */
         adSetName?: string;
         /**
-         * Meta only. Exact ad name (the single-creative ad object's name). Overrides the default, which is `name`. (For per-ad names on the multi-creative shape, set `name` on each `creatives[]` entry instead.)
+         * Meta only. Exact ad name, overriding the default `name`. On the multi-creative shape it names every ad, numbered `#1`, `#2`... when there are several, unless a `creatives[]` entry sets its own `name`.
          */
         adName?: string;
         tracking?: AdTracking;
