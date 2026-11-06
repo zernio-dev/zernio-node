@@ -24746,7 +24746,7 @@ export type ValidateMediaResponse = ({
      */
     error?: string;
     /**
-     * Stable reason when valid is false. MEDIA_UNDECODABLE: the bytes are not a valid image, video or PDF. MEDIA_URL_UNREACHABLE: HTTP error, timeout or network failure. MEDIA_URL_NOT_ALLOWED: not a public HTTP(S) URL.
+     * Stable reason when valid is false. MEDIA_UNDECODABLE: the bytes are not a valid image, video or PDF. MEDIA_URL_UNREACHABLE: HTTP error, timeout, network failure, or a web page served instead of the file. MEDIA_URL_NOT_ALLOWED: not a public HTTP(S) URL.
      */
     code?: 'MEDIA_UNDECODABLE' | 'MEDIA_URL_UNREACHABLE' | 'MEDIA_URL_NOT_ALLOWED';
     /**
