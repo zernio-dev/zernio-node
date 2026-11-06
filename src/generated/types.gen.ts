@@ -1804,7 +1804,9 @@ export type AdRuleAction = {
     maxChangesPerObject?: number;
 } | {
     /**
-     * Move a Google campaign's target CPA or target ROAS inside the strategy it is on (Target CPA or Maximize conversions for `cpa`, Target ROAS or Maximize conversion value for `roas`), never switching strategies. Campaign rules on Google only. Skipped with `portfolio_bid_strategy` on a portfolio strategy, `unsupported_bid_strategy` on one with no target (Manual CPC, Maximize clicks), and `no_target_cpa` or `no_target_roas` when the strategy holds no such target. A target CPA in a zero-decimal currency is rounded to whole units.
+     * Move a Google campaign's target CPA or target ROAS inside the strategy it is on (Target CPA or Maximize conversions for `cpa`, Target ROAS or Maximize conversion value for `roas`), never switching strategies. Campaign rules on Google only.
+     *
+     * Skipped with `portfolio_bid_strategy` on a portfolio strategy, `unsupported_bid_strategy` on one with no target (Manual CPC, Maximize clicks), and `no_target_cpa` or `no_target_roas` when the strategy holds no such target. A target CPA in a zero-decimal currency is rounded to whole units.
      */
     type: 'adjust_target';
     /**
@@ -1834,11 +1836,19 @@ export type AdRuleAction = {
     maxChangesPerObject?: number;
 } | {
     /**
-     * Move daily budget from the matched objects ranked worst by `metric` to those ranked best, keeping the total the same. Campaign or ad set rules where the budget sits at that level: objects whose budget sits at another level (Meta CBO and ad set budgets), Google shared budgets and lifetime budgets are left out. Changes are reserved all at once: when `maxChangesPerDay` would hold back any of them, none is made. A receiver is raised only after every giver's cut applied (else it fails with `reallocation_incomplete` and the move is tried again next run). Amounts move in the currency's smallest unit (whole units for JPY or KRW). Counts as raising live spend for the free ads allowance. Not with `lifecycle` or `groups`.
+     * Move daily budget from the matched objects ranked worst by `metric` to those ranked best, keeping the total the same. Not with `lifecycle` or `groups`.
+     *
+     * Campaign or ad set rules where the budget sits at that level: objects whose budget sits at another level (Meta CBO and ad set budgets), Google shared budgets and lifetime budgets are left out.
+     *
+     * Changes are reserved all at once: when `maxChangesPerDay` would hold back any of them, none is made. A receiver is raised only after every giver's cut applied (else it fails with `reallocation_incomplete` and the move is tried again next run).
+     *
+     * Amounts move in the currency's smallest unit (whole units for JPY or KRW). Counts as raising live spend for the free ads allowance.
      */
     type: 'reallocate_budget';
     /**
-     * What objects are ranked by: any condition metric except `day_of_month` and `working_day_of_month`, or a result metric (`result:<key>`) on campaign rules. Objects without a value are not ranked, except one that spent with no result on a metric where lower is best (a CPA with no conversions): it ranks worst and only gives.
+     * What objects are ranked by: any condition metric except `day_of_month` and `working_day_of_month`, or a result metric (`result:<key>`) on campaign rules.
+     *
+     * Objects without a value are not ranked, except one that spent with no result on a metric where lower is best (a CPA with no conversions): it ranks worst and only gives.
      */
     metric: string;
     /**
@@ -18220,7 +18230,13 @@ export type WebhookPayloadAdRuleTriggered = {
              */
             status: 'done' | 'skipped' | 'failed';
             /**
-             * Why the action was skipped or failed: `already_paused`, `already_active`, `at_limit`, `budget_unknown`, `budget_not_daily`, `budget_level_mismatch`, `no_live_ads`, `daily_limit_reached` (held back by the action's `maxChangesPerDay`), `ads_allowance_exceeded` (a reactivation or budget increase for a team past its free live-ads allowance), `budget_shared`, `reallocation_incomplete` (failed: a receiver left alone because a giver's cut did not apply, tried again next run), `portfolio_bid_strategy`, `unsupported_bid_strategy`, `no_target_cpa`, `no_target_roas`, or the platform's message. Null when done.
+             * Why the action was skipped or failed, or the platform's message. Null when done.
+             *
+             * Skipped: `already_paused`, `already_active`, `at_limit`, `budget_unknown`, `budget_not_daily`, `budget_level_mismatch`, `no_live_ads`, `budget_shared`, `portfolio_bid_strategy`, `unsupported_bid_strategy`, `no_target_cpa`, `no_target_roas`.
+             *
+             * `daily_limit_reached`: held back by the action's `maxChangesPerDay`. `ads_allowance_exceeded`: a reactivation or budget increase for a team past its free live-ads allowance.
+             *
+             * `reallocation_incomplete` (failed): a receiver left alone because a giver's cut did not apply, tried again next run.
              */
             reason: (string) | null;
             /**
