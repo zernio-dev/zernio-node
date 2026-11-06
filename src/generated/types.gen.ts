@@ -7293,6 +7293,13 @@ export type CreatorPortalSubmission = {
  */
 export type CtwaAdRequestBody = {
     /**
+     * When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
+     *
+     * `false` never sends it again: the request fails with 502 and `details.unconfirmedWrite`, so you can check the parent yourself. One object found by name is still reused.
+     *
+     */
+    retryOnServerError?: boolean;
+    /**
      * Meta enhancement settings for single or attached ads, and defaults for creatives[]. An item replaces the entire map, including with an empty object.
      */
     creativeFeatures?: MetaCreativeFeatures;
@@ -8024,6 +8031,7 @@ export type CtwaMultiResponse = {
     platformCampaignId: string;
     platformAdSetId: string;
     message: string;
+    recoveredWrites?: MetaRecoveredWrites;
     /**
      * Present when Meta created the ad set differently from the request:
      *
@@ -8052,6 +8060,7 @@ export type CtwaSingleResponse = {
         [key: string]: unknown;
     };
     message: string;
+    recoveredWrites?: MetaRecoveredWrites;
     /**
      * Present when Meta created the ad set differently from the request:
      *
@@ -8653,7 +8662,7 @@ export type ErrorResponse = {
             cleanup?: 'deleted' | 'left_behind' | 'kept';
         }>;
         /**
-         * Meta ad create failures only, when Meta answered a create with a 5xx or a non-JSON body, or dropped the connection after the request was sent, and reading the parent back by name did not settle it: several objects of the same name, a parent that could not be read, or (after a dropped connection or a non-JSON body) no such object. Zernio did not retry it.
+         * Meta ad create failures only, when Meta answered a create with a 5xx or a non-JSON body, or dropped the connection after the request was sent, and reading the parent back by name did not settle it: several objects of the same name, a parent that could not be read, or (after a dropped connection, a non-JSON body, or a 5xx with `retryOnServerError: false`) no such object. Zernio did not retry it.
          */
         unconfirmedWrite?: {
             type?: 'campaign' | 'adset' | 'creative' | 'ad';
@@ -12845,6 +12854,28 @@ export type MetaProductSet = {
 export type MetaPromotion = {
     [key: string]: unknown;
 } | null;
+
+/**
+ * Meta only, present only when needed. Every object this request did not get confirmed by its first POST: found by name after Meta lost or failed its answer (`adopted`), or created by a second POST after a Meta 5xx (`repostedAfter`).
+ *
+ * A re-POSTed object may have a twin from the first POST that Meta wrote late: check its parent for a duplicate name. Send `retryOnServerError: false` to never re-POST.
+ *
+ */
+export type MetaRecoveredWrites = Array<{
+    type: 'campaign' | 'adset' | 'ad';
+    /**
+     * The Meta object id this response uses.
+     */
+    id: string;
+    /**
+     * Always true when present. Zernio found this object by name under its parent and reused it instead of creating it again.
+     */
+    adopted?: boolean;
+    /**
+     * Zernio sent the create again after Meta answered a 5xx and the read-back found no such object.
+     */
+    repostedAfter?: 'server_error';
+}>;
 
 export type Money = {
     /**
@@ -60689,6 +60720,13 @@ export type BoostPostData = {
          */
         bodies?: Array<(string)>;
         /**
+         * Meta only (a 400 elsewhere). When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
+         *
+         * `false` never sends it again: the request fails with 502 and `details.unconfirmedWrite`, so you can check the parent yourself. One object found by name is still reused.
+         *
+         */
+        retryOnServerError?: boolean;
+        /**
          * Meta only (a 400 elsewhere). Controls the fallback when Meta refuses an existing Instagram video as the ad (subcode 1815279).
          *
          * - First, Zernio copies the video into the ad account and retries on the original post.
@@ -60797,6 +60835,7 @@ export type BoostPostResponse = ({
     ad?: Ad;
     message?: string;
     instagramVideoFallback?: InstagramVideoFallback;
+    recoveredWrites?: MetaRecoveredWrites;
     /**
      * Human-readable notes about the boost.
      *
@@ -61170,6 +61209,13 @@ export type CreateStandaloneAdData = {
          *
          */
         aiDisclosure?: 'OPT_IN' | 'OPT_OUT';
+        /**
+         * Meta only (a 400 elsewhere). When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
+         *
+         * `false` never sends it again: the request fails with 502 and `details.unconfirmedWrite`, so you can check the parent yourself. One object found by name is still reused.
+         *
+         */
+        retryOnServerError?: boolean;
         /**
          * Validate the request without creating anything. Supported on Meta, TikTok, ChatGPT (OpenAI) and Google Performance Max / Demand Gen. Any other platform, or a Google campaignType other than pmax or demand_gen, returns 501 `feature_not_available`.
          *
@@ -62360,6 +62406,7 @@ export type CreateStandaloneAdResponse = ({
     ad?: Ad;
     appliedDefaults?: AdAppliedDefaults;
     message?: string;
+    recoveredWrites?: MetaRecoveredWrites;
     /**
      * Meta only, present only when needed.
      *
@@ -62373,6 +62420,7 @@ export type CreateStandaloneAdResponse = ({
     platformAdSetId?: string;
     appliedDefaults?: AdAppliedDefaults;
     message?: string;
+    recoveredWrites?: MetaRecoveredWrites;
     /**
      * Meta only, present only when needed.
      *
