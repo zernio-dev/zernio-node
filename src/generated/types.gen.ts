@@ -23142,6 +23142,14 @@ export type YouTubePlatformData = {
      * Optional YouTube playlist ID to add the video to after upload (e.g. 'PLxxxxxxxxxxxxx'). Use GET /v1/accounts/{id}/youtube-playlists to list available playlists. Works for both immediate and scheduled uploads. Quota cost: 50 YouTube API units per call.
      */
     playlistId?: string;
+    /**
+     * Language of the title and description (BCP-47, e.g. ko).
+     */
+    defaultLanguage?: string;
+    /**
+     * Spoken language of the video (BCP-47, e.g. ko). When a video has no audio language, YouTube may set en-US once its metadata is updated.
+     */
+    defaultAudioLanguage?: string;
 };
 
 export type YouTubeScopeMissingResponse = {
@@ -28149,6 +28157,14 @@ export type UpdatePostMetadataData = {
          * YouTube playlist ID to add the video to (e.g. 'PLxxxxxxxxxxxxx'). Use GET /v1/accounts/{id}/youtube-playlists to list available playlists. Only playlists owned by the channel are supported.
          */
         playlistId?: string;
+        /**
+         * Language of the title and description (BCP-47, e.g. ko).
+         */
+        defaultLanguage?: string;
+        /**
+         * Spoken language of the video (BCP-47, e.g. ko). When a video has no audio language, YouTube may set en-US once its metadata is updated.
+         */
+        defaultAudioLanguage?: string;
     };
     path: {
         /**
