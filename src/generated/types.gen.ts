@@ -13261,6 +13261,8 @@ export type ParameterEmailAccountId = string;
  *
  * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
  *
+ * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+ *
  */
 export type ParameterIdempotencyKeyHeader = string;
 
@@ -24890,6 +24892,8 @@ export type CreateTopupData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -25709,6 +25713,8 @@ export type CreateTransferData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -28258,6 +28264,8 @@ export type CreateProfileData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -39597,6 +39605,8 @@ export type SendInboxMessageData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -40926,6 +40936,8 @@ export type ReplyToInboxPostData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -41862,6 +41874,8 @@ export type ReplyToInboxReviewData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -42522,6 +42536,8 @@ export type InitiateWhatsAppCallData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -42791,6 +42807,8 @@ export type CreateVoiceCallData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -43481,6 +43499,8 @@ export type SendSmsData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -43546,6 +43566,8 @@ export type CreateRcsAgentData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -43697,6 +43719,8 @@ export type SendRcsMessageData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -43909,6 +43933,8 @@ export type CreateBrandedCallingEnterpriseData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -44011,6 +44037,8 @@ export type CreateBrandedCallingIdentityData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -50228,6 +50256,8 @@ export type AskSupportQuestionData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -60822,6 +60852,8 @@ export type BoostPostData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -62384,6 +62416,8 @@ export type CreateStandaloneAdData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -66128,6 +66162,8 @@ export type CreateMessagingAdData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66172,6 +66208,8 @@ export type CreateCallAdData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -66192,6 +66230,8 @@ export type CreateCtwaAdData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -67970,6 +68010,8 @@ export type CreateBlogArticleData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -70195,6 +70237,8 @@ export type CreateCreatorCampaignData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -70277,6 +70321,8 @@ export type RaiseCreatorCampaignBudgetData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -70353,6 +70399,8 @@ export type CreateCampaignParticipantData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -70518,6 +70566,8 @@ export type ResendCampaignParticipantInviteData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -70564,6 +70614,8 @@ export type SettleCampaignParticipantData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -70609,6 +70661,8 @@ export type CreateCampaignPayoutBatchData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -70734,6 +70788,8 @@ export type ApproveCampaignSubmissionData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -70769,6 +70825,8 @@ export type RejectCampaignSubmissionData = {
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
          *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
          */
         'Idempotency-Key'?: string;
     };
@@ -70800,6 +70858,8 @@ export type ReopenCampaignSubmissionData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
@@ -70855,6 +70915,8 @@ export type CreateCampaignAdjustmentData = {
          * - Key still processing: 409.
          *
          * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
          *
          */
         'Idempotency-Key'?: string;
