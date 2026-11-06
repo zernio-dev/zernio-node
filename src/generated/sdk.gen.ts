@@ -12670,7 +12670,7 @@ export const uploadCampaignResults = <ThrowOnError extends boolean = false>(opti
 
 /**
  * List your results per campaign
- * Your results summed per campaign over a date range, one entry per campaign with every metric it has, for the ad accounts your key can see. Each day counts its newest value only.
+ * Your results summed per campaign over a date range, one entry per campaign with every metric it has, for the ad accounts your key can see. Each day counts its newest uploaded value only, plus the events sent to `POST /v1/events` that are tied to the campaign (`sales`, `revenue`, `leads`, `qualified_leads`).
  *
  * Paginated by campaign: pass `nextCursor` back as `cursor` until it is null.
  *
@@ -12700,7 +12700,7 @@ export const getCampaignResultsUpload = <ThrowOnError extends boolean = false>(o
 
 /**
  * Get your results totals
- * Each metric you send summed over a date range across every campaign of the ad accounts your key can see, or of the ones you name. Each day counts its newest value only.
+ * Each metric you send summed over a date range across every campaign of the ad accounts your key can see, or of the ones you name. Each day counts its newest uploaded value only, plus the events sent to `POST /v1/events` that are tied to a campaign.
  *
  * Formulas are not computed here, since they also read the platform's numbers: apply one to these totals and the account's spend for the same range, or read it per campaign from `GET /v1/ads/tree?results=true`.
  *
@@ -18370,6 +18370,8 @@ export const listEvents = <ThrowOnError extends boolean = false>(options: Option
  * - Email, phone and `externalId` are stored only as SHA-256 hashes.
  * - `sourceUrl` keeps only its origin, path and attribution parameters (`utm_*`, `gclid`, `fbclid`, `ttclid`, `li_fat_id`, `epik`, `rdt_cid`, `gbraid`, `wbraid`).
  * - Events sent with `testCode` are forwarded but not stored.
+ * - Sending an event again with the same `eventId` replaces the stored one.
+ * - A stored `Purchase`, `Lead` or `QualifiedLead` tied to one of your campaigns (see `campaign` on each event) counts in `GET /v1/ads/campaign-results` and in ad rules as `sales` and `revenue`, `leads` or `qualified_leads`.
  *
  */
 export const sendEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendEventsData, ThrowOnError>) => {

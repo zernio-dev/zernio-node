@@ -6606,6 +6606,19 @@ export type ConversionEvent = {
      */
     sourceUrl?: string;
     /**
+     * The ad campaign behind the event, when you know it. Read only by `POST /v1/events`, which ties the event to the campaign named by `campaign.id`, then by the `utm_campaign` of `sourceUrl`, then by `campaign.name`. See its Storage notes for how the event then counts.
+     */
+    campaign?: {
+        /**
+         * Platform campaign ID.
+         */
+        id?: string;
+        /**
+         * Campaign name as it appears on the ad platform (case-insensitive).
+         */
+        name?: string;
+    };
+    /**
      * Where the conversion happened. Used by Meta. Google also requires an event source internally; omitting this field sends OTHER to Google. Send an explicit value for accurate origin reporting. `business_messaging` (Meta) marks an event from a WhatsApp, Messenger or Instagram Direct conversation and needs `messaging`.
      */
     actionSource?: 'web' | 'app' | 'offline' | 'crm' | 'phone_call' | 'system_generated' | 'business_messaging';
