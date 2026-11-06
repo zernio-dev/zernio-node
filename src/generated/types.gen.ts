@@ -8206,7 +8206,7 @@ export type CreatorCampaign = {
      */
     activatedAt: (string) | null;
     /**
-     * none: settle records a payout made elsewhere. external: you pay from your own rails on campaign_payout.payable and settle with your reference. treasury: settle moves the money from your Zernio balance to the creator's Stripe account, and the creator sets up payouts from their campaign page.
+     * none: settle records a payout made elsewhere. external: you pay from your own rails on campaign_payout.payable and settle with your reference. treasury: you pay by card with a payout batch and Zernio pays each creator in your name 7 days after the charge.
      */
     settlement: 'none' | 'external' | 'treasury';
     economics: CreatorCampaignEconomics;
@@ -14647,7 +14647,7 @@ export type PayoutBatch = {
     id: string;
     campaignId: (string) | null;
     /**
-     * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
+     * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` during the 7-day card hold and while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
      */
     status: 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
     method: 'card';
@@ -14660,17 +14660,21 @@ export type PayoutBatch = {
      */
     feeCents: number;
     /**
-     * The card charge: amountCents plus feeCents.
+     * amountCents plus feeCents. The card is charged this plus the VAT on the fee where it applies (see the batch invoice).
      */
     totalCents: number;
     items: Array<PayoutBatchItem>;
     paidAt: (string) | null;
+    /**
+     * When the 7-day card hold ends and the creators are paid. Null until the charge succeeds.
+     */
+    releasesAt: (string) | null;
     finishedAt: (string) | null;
     createdAt: string;
 };
 
 /**
- * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
+ * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` during the 7-day card hold and while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
  */
 export type status40 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
@@ -14695,9 +14699,9 @@ export type PayoutBatchItem = {
      */
     totalCents: number;
     /**
-     * `skipped`: not paid because payout setup was not finished, or the card payment never completed; the amount is payable again. `failed`: Stripe refused the transfer; the amount is payable again.
+     * `skipped`: payout setup not finished, or the card payment never completed. `failed`: Stripe refused the transfer. `refunded`: failed or skipped after the card hold; its payout, fee and VAT on the fee went back to the card through a credit note. The amount is payable again in every case.
      */
-    status: 'pending' | 'paid' | 'failed' | 'skipped';
+    status: 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
     /**
      * Why the item was not paid, in plain words.
      */
@@ -14706,12 +14710,16 @@ export type PayoutBatchItem = {
      * The treasury transfer that paid this item.
      */
     transferId: (string) | null;
+    /**
+     * What went back to the card for a `refunded` item: payout, fee and VAT on the fee. Null otherwise.
+     */
+    refundedCents: (number) | null;
 };
 
 /**
- * `skipped`: not paid because payout setup was not finished, or the card payment never completed; the amount is payable again. `failed`: Stripe refused the transfer; the amount is payable again.
+ * `skipped`: payout setup not finished, or the card payment never completed. `failed`: Stripe refused the transfer. `refunded`: failed or skipped after the card hold; its payout, fee and VAT on the fee went back to the card through a credit note. The amount is payable again in every case.
  */
-export type status41 = 'pending' | 'paid' | 'failed' | 'skipped';
+export type status41 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
 
 export type PhoneNumberStockWatch = {
     id: string;
@@ -17861,7 +17869,7 @@ export type TreasuryTransfer = {
      */
     feeCents?: number;
     /**
-     * Amount debited from your balance: amountCents plus feeCents
+     * amountCents plus feeCents, both paid by the payout batch card charge
      */
     totalCents?: number;
     currency?: string;
@@ -26276,7 +26284,7 @@ export type ListLedgerEntriesError = (ErrorResponse | {
 
 export type GetBalanceResponse = ({
     /**
-     * Your balance, including card top-ups paid in the last 7 days (see payoutLockedCents). It goes negative after a dispute or refund of a spent top-up, or when pay-per-use already in flight lands past zero. The next top-up covers it. Transfers are refused while it is negative.
+     * Your balance. It goes negative after a dispute or refund of a spent top-up, or when pay-per-use already in flight lands past zero. The next top-up covers it. New payout batches are refused while it is negative.
      */
     availableCents?: number;
     /**
@@ -26284,11 +26292,13 @@ export type GetBalanceResponse = ({
      */
     promoCents?: number;
     /**
-     * Part of availableCents from card top-ups charged in the last 7 days, net of refunds and disputes. Transfers to payees cannot use it yet; a transfer that needs it answers 409 `payout_funds_locked` with the day it can be sent.
+     * Always 0. The balance no longer pays creators, so none of it is locked from them.
+     * @deprecated
      */
     payoutLockedCents?: number;
     /**
-     * The card top-ups behind payoutLockedCents, soonest first.
+     * Always empty. The balance no longer pays creators.
+     * @deprecated
      */
     payoutLocks?: Array<{
         topupId: string;
@@ -27286,67 +27296,6 @@ export type CreateTransferData = {
         'Idempotency-Key'?: string;
     };
 };
-
-export type CreateTransferResponse = (TreasuryTransfer);
-
-export type CreateTransferError = (ErrorResponse | {
-    /**
-     * Human-readable error message suitable for end-user display.
-     */
-    error: string;
-    /**
-     * Machine-readable error code. Stable across versions.
-     */
-    code: 'PAYMENT_REQUIRED';
-    /**
-     * Discriminator for which gate fired.
-     */
-    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
-    /**
-     * Link to the relevant documentation page.
-     */
-    documentation_url?: string;
-    /**
-     * Deep-link to send the end-user to. For
-     * `free_tier_exceeded` and `twitter_passthrough` this opens
-     * the add-payment-method drawer on the Zernio billing page.
-     * For `enterprise_required` this is the Zernio enterprise
-     * contact page.
-     *
-     */
-    dashboard_url?: string;
-    /**
-     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
-     */
-    details?: {
-        /**
-         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
-         */
-        free_tier_account_limit?: number;
-        /**
-         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
-         */
-        current_account_count?: number;
-        /**
-         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
-         */
-        has_payment_method?: boolean;
-        /**
-         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
-         */
-        verification_amount_cents?: number;
-        /**
-         * The negotiated connected-account cap from the
-         * team's enterprise contract. Self-service teams
-         * have no cap and never receive this reason. Only
-         * set when reason=enterprise_required.
-         *
-         */
-        effective_account_limit?: number;
-    };
-} | {
-    error?: string;
-} | unknown);
 
 export type ListTransfersData = {
     query?: {
@@ -72952,7 +72901,7 @@ export type SettleCampaignParticipantData = {
          */
         externalReference?: string;
         /**
-         * Treasury campaigns only: record a payout you already made outside Zernio, without moving money. Ignored on other settlement modes, which always record.
+         * Treasury campaigns only, and required there: record a payout you already made outside Zernio. Ignored on other settlement modes, which always record.
          */
         recordOnly?: boolean;
     };
@@ -73059,6 +73008,58 @@ export type ListCampaignPayoutBatchesResponse = ({
 });
 
 export type ListCampaignPayoutBatchesError = (ErrorResponse);
+
+export type PreviewCampaignPayoutBatchData = {
+    body: {
+        /**
+         * Preview only these participants. Defaults to every payable participant who is ready.
+         */
+        participantIds?: Array<(string)>;
+        /**
+         * Leave these participants out.
+         */
+        excludeParticipantIds?: Array<(string)>;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+    };
+};
+
+export type PreviewCampaignPayoutBatchResponse = ({
+    /**
+     * Creators who would be paid.
+     */
+    payoutCount: number;
+    /**
+     * Total the creators receive.
+     */
+    amountCents: number;
+    /**
+     * Zernio fee: 4% per creator, 50 cent minimum.
+     */
+    feeCents: number;
+    /**
+     * VAT on the fee, 0 when none applies.
+     */
+    taxCents: number;
+    /**
+     * What the card would be charged: amountCents + feeCents + taxCents.
+     */
+    totalCents: number;
+    /**
+     * For example "VAT 21%". Null when there is no tax.
+     */
+    taxLabel: (string) | null;
+    /**
+     * The fee is reverse charged: you account for the VAT.
+     */
+    reverseCharge: boolean;
+});
+
+export type PreviewCampaignPayoutBatchError = (ErrorResponse);
 
 export type CreateCampaignInviteLinkData = {
     path: {

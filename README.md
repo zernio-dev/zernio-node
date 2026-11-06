@@ -1033,6 +1033,7 @@ try {
 | `creatorCampaigns.closeCreatorCampaign()` | Close creator campaign |
 | `creatorCampaigns.moveCampaignParticipant()` | Move participant to another campaign |
 | `creatorCampaigns.pauseCreatorCampaign()` | Pause creator campaign |
+| `creatorCampaigns.previewCampaignPayoutBatch()` | Preview a payout batch |
 | `creatorCampaigns.raiseCreatorCampaignBudget()` | Raise creator campaign budget |
 | `creatorCampaigns.reinstateCampaignParticipant()` | Reinstate campaign participant |
 | `creatorCampaigns.rejectCampaignSubmission()` | Reject campaign submission |
@@ -1469,7 +1470,7 @@ try {
 | `treasury.listTransfers()` | List transfers |
 | `treasury.createPayeeOnboardingLink()` | Create a payee onboarding link |
 | `treasury.createTopup()` | Create a top-up |
-| `treasury.createTransfer()` | Create a transfer |
+| `treasury.createTransfer()` | Create a transfer (removed) |
 | `treasury.getAutoRecharge()` | Get auto-recharge settings |
 | `treasury.getBalance()` | Get balance |
 | `treasury.getPayoutBatch()` | Get a payout batch |
