@@ -1804,7 +1804,90 @@ export type AdRuleAction = {
     maxChangesPerObject?: number;
 } | {
     /**
-     * Tag the object by its name. Meta, Google and LinkedIn campaigns and ad sets, and TikTok campaigns, ad groups and ads. An object whose name already has the tag (or lacks it, for `remove`) is skipped with `name_unchanged`.
+     * Move a Google campaign's target CPA or target ROAS inside the strategy it is on (Target CPA or Maximize conversions for `cpa`, Target ROAS or Maximize conversion value for `roas`), never switching strategies. Campaign rules on Google only. Skipped with `portfolio_bid_strategy` on a portfolio strategy, `unsupported_bid_strategy` on one with no target (Manual CPC, Maximize clicks), and `no_target_cpa` or `no_target_roas` when the strategy holds no such target. A target CPA in a zero-decimal currency is rounded to whole units.
+     */
+    type: 'adjust_target';
+    /**
+     * Which target moves: `cpa` in the ad account currency, `roas` as a ratio (3 is 300%).
+     */
+    target: 'cpa' | 'roas';
+    /**
+     * The target to set.
+     */
+    amount?: number;
+    direction?: 'increase' | 'decrease';
+    /**
+     * Step size. A decrease is at most 90.
+     */
+    percent?: number;
+    /**
+     * The target never goes above this on an increase, or below it on a decrease.
+     */
+    limit?: number;
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
+} | {
+    /**
+     * Move daily budget from the matched objects ranked worst by `metric` to those ranked best, keeping the total the same. Campaign or ad set rules where the budget sits at that level: objects whose budget sits at another level (Meta CBO and ad set budgets), Google shared budgets and lifetime budgets are left out. Changes are reserved all at once: when `maxChangesPerDay` would hold back any of them, none is made. A receiver is raised only after every giver's cut applied (else it fails with `reallocation_incomplete` and the move is tried again next run). Amounts move in the currency's smallest unit (whole units for JPY or KRW). Counts as raising live spend for the free ads allowance. Not with `lifecycle` or `groups`.
+     */
+    type: 'reallocate_budget';
+    /**
+     * What objects are ranked by: any condition metric except `day_of_month` and `working_day_of_month`, or a result metric (`result:<key>`) on campaign rules. Objects without a value are not ranked, except one that spent with no result on a metric where lower is best (a CPA with no conversions): it ranks worst and only gives.
+     */
+    metric: string;
+    /**
+     * The period the metric is read over, like a condition window.
+     */
+    window: string;
+    /**
+     * Which end of the ranking is best. Defaults to `lowest` for `cpa`, `cpc`, `cpm`, `frequency` and result metrics whose formula has spend above the line (cost per sale, %CAC), `highest` otherwise.
+     */
+    best?: 'highest' | 'lowest';
+    /**
+     * How many of the worst-ranked objects give budget.
+     */
+    from: {
+        count: number;
+    };
+    /**
+     * How many of the best-ranked objects receive it. With fewer ranked objects than `from` plus `to`, givers take at most half and no object is on both sides.
+     */
+    to: {
+        count: number;
+    };
+    /**
+     * The share of each giver's daily budget it gives.
+     */
+    percent?: number;
+    /**
+     * The total to move each run, in the ad account currency, taken evenly from the givers.
+     */
+    amount?: number;
+    /**
+     * A giver never goes below this daily budget. A giver also always keeps a tenth of its budget.
+     */
+    minBudget?: number;
+    /**
+     * A receiver never goes above this daily budget; what receivers cannot take stays with the givers.
+     */
+    maxBudget?: number;
+    /**
+     * At most this many objects changed in any 24 hours, across runs. Matches over the limit are skipped with `daily_limit_reached` and tried again later.
+     */
+    maxChangesPerDay?: number;
+    /**
+     * At most this many changes to one object by this rule, counted over the last 400 days. An object at the limit is left alone like one in cooldown.
+     */
+    maxChangesPerObject?: number;
+} | {
+    /**
+     * Tag the object by its name. Meta, TikTok and Reddit campaigns, ad sets and ads, and Google, LinkedIn and Pinterest campaigns and ad sets. An object whose name already has the tag (or lacks it, for `remove`) is skipped with `name_unchanged`.
      */
     type: 'edit_name';
     /**
@@ -1876,12 +1959,22 @@ export type type2 = 'notify';
 export type direction = 'increase' | 'decrease';
 
 /**
+ * Which target moves: `cpa` in the ad account currency, `roas` as a ratio (3 is 300%).
+ */
+export type target = 'cpa' | 'roas';
+
+/**
+ * Which end of the ranking is best. Defaults to `lowest` for `cpa`, `cpc`, `cpm`, `frequency` and result metrics whose formula has spend above the line (cost per sale, %CAC), `highest` otherwise.
+ */
+export type best = 'highest' | 'lowest';
+
+/**
  * Where `add` goes. Defaults to `start`.
  */
 export type at = 'start' | 'end';
 
 /**
- * Each type at most once, and at most one of `pause`, `activate`, `adjust_budget`, `adjust_bid`, `duplicate` and `edit_name`.
+ * Each type at most once, and at most one of `pause`, `activate`, `adjust_budget`, `adjust_bid`, `adjust_target`, `reallocate_budget`, `duplicate` and `edit_name`.
  */
 export type AdRuleActions = Array<AdRuleAction>;
 
@@ -1911,7 +2004,7 @@ export type AdRuleActivityEntry = {
      * Its name when the rule acted.
      */
     objectName: (string) | null;
-    type: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'duplicate' | 'edit_name';
+    type: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'adjust_target' | 'reallocate_budget' | 'duplicate' | 'edit_name';
     status: 'done' | 'skipped' | 'failed';
     /**
      * Why it was skipped or failed, for example `already_paused`.
@@ -1935,14 +2028,31 @@ export type AdRuleActivityEntry = {
      * The cap an applied `adjust_bid` set.
      */
     newBidAmount: (number) | null;
+    /**
+     * Which target an `adjust_target` moved.
+     */
+    targetMetric: ('cpa' | 'roas') | null;
+    /**
+     * The target CPA or target ROAS before an `adjust_target`.
+     */
+    previousTarget: (number) | null;
+    /**
+     * The target an applied `adjust_target` set.
+     */
+    newTarget: (number) | null;
     currency: (string) | null;
 };
 
 export type level = 'campaign' | 'adset';
 
-export type type3 = 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'duplicate' | 'edit_name';
+export type type3 = 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'adjust_target' | 'reallocate_budget' | 'duplicate' | 'edit_name';
 
 export type status3 = 'done' | 'skipped' | 'failed';
+
+/**
+ * Which target an `adjust_target` moved.
+ */
+export type targetMetric = 'cpa' | 'roas';
 
 export type AdRuleCondition = {
     /**
@@ -2168,7 +2278,7 @@ export type AdRuleRun = {
         matched?: Array<AdRuleObjectEvaluation>;
         actions?: Array<{
             objectId: string;
-            type: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'duplicate' | 'edit_name';
+            type: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'adjust_target' | 'reallocate_budget' | 'duplicate' | 'edit_name';
             status: 'done' | 'skipped' | 'failed';
             /**
              * Why it was skipped or failed, for example `already_paused`.
@@ -2180,6 +2290,9 @@ export type AdRuleRun = {
             newName?: string;
             previousBidAmount?: number;
             newBidAmount?: number;
+            targetMetric?: 'cpa' | 'roas';
+            previousTarget?: number;
+            newTarget?: number;
         }>;
         /**
          * Set when a run of a rule with a `notify` action matched objects and tried to send the webhook. A notify-only rule whose webhook fails ends with outcome `failed`.
@@ -18094,7 +18207,7 @@ export type WebhookPayloadAdRuleTriggered = {
          * What the rule did to the object. Empty on a rule that only notifies.
          */
         actions: Array<{
-            type: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'duplicate' | 'edit_name';
+            type: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'adjust_target' | 'reallocate_budget' | 'duplicate' | 'edit_name';
             /**
              * Action result.
              *
@@ -18103,7 +18216,7 @@ export type WebhookPayloadAdRuleTriggered = {
              */
             status: 'done' | 'skipped' | 'failed';
             /**
-             * Why the action was skipped or failed: `already_paused`, `already_active`, `at_limit`, `budget_unknown`, `budget_not_daily`, `budget_level_mismatch`, `no_live_ads`, `daily_limit_reached` (held back by the action's `maxChangesPerDay`), `ads_allowance_exceeded` (a reactivation or budget increase for a team past its free live-ads allowance), or the platform's message. Null when done.
+             * Why the action was skipped or failed: `already_paused`, `already_active`, `at_limit`, `budget_unknown`, `budget_not_daily`, `budget_level_mismatch`, `no_live_ads`, `daily_limit_reached` (held back by the action's `maxChangesPerDay`), `ads_allowance_exceeded` (a reactivation or budget increase for a team past its free live-ads allowance), `budget_shared`, `reallocation_incomplete` (failed: a receiver left alone because a giver's cut did not apply, tried again next run), `portfolio_bid_strategy`, `unsupported_bid_strategy`, `no_target_cpa`, `no_target_roas`, or the platform's message. Null when done.
              */
             reason: (string) | null;
             /**
@@ -18130,6 +18243,18 @@ export type WebhookPayloadAdRuleTriggered = {
              * On `adjust_bid`, the cap after the change. Null when nothing changed.
              */
             newBidAmount: (number) | null;
+            /**
+             * On `adjust_target`, which target moved. Null otherwise.
+             */
+            targetMetric: ('cpa' | 'roas') | null;
+            /**
+             * On `adjust_target`, the target before the change. Null otherwise.
+             */
+            previousTarget: (number) | null;
+            /**
+             * On `adjust_target`, the target after the change. Null when nothing changed.
+             */
+            newTarget: (number) | null;
         }>;
     }>;
     /**
@@ -52559,7 +52684,7 @@ export type ListAdRuleActivityData = {
          * ISO 8601 date-time, inclusive.
          */
         to?: string;
-        type?: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'duplicate' | 'edit_name';
+        type?: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'adjust_target' | 'reallocate_budget' | 'duplicate' | 'edit_name';
     };
 };
 
