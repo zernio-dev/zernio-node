@@ -13691,7 +13691,7 @@ export const updateAdSetStatus = <ThrowOnError extends boolean = false>(options:
  *
  * Deleting an ad or a campaign is a soft delete: the Ad documents move to `status: cancelled` and are kept indefinitely. Their historical spend still counts toward the metrics of any date range they fall in. There is no pruning job and no retention window.
  *
- * Filter on `status` if your view should hide them, but do that after reading the totals, not before.
+ * Pass `status=not_deleted` if your view should hide them, but do that after reading the totals, not before.
  *
  */
 export const getAdTree = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetAdTreeData, ThrowOnError>) => {

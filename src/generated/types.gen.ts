@@ -52938,9 +52938,9 @@ export type ListAdCampaignsData = {
          */
         source?: 'zernio' | 'all';
         /**
-         * Filter by derived campaign status (post-aggregation)
+         * Filter by derived campaign status (post-aggregation). `not_deleted` keeps every status except `cancelled`.
          */
-        status?: AdStatus;
+        status?: (AdStatus | 'not_deleted');
         /**
          * End of metrics date range (YYYY-MM-DD, inclusive). Defaults to today. Max 730-day range.
          */
@@ -54921,9 +54921,9 @@ export type GetAdTreeData = {
          */
         source?: 'zernio' | 'all';
         /**
-         * Filter by derived campaign status (post-aggregation)
+         * Filter by derived campaign status (post-aggregation). `not_deleted` keeps every status except `cancelled`.
          */
-        status?: AdStatus;
+        status?: (AdStatus | 'not_deleted');
         /**
          * Set to `1` to also return a daily breakdown (mirrors Meta Insights' `time_increment=1`). Only `1` (daily) is supported. See `dailyLevel` to control which levels carry it.
          *
