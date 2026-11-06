@@ -19542,9 +19542,9 @@ export type event12 = 'ad_rule.triggered';
 export type level5 = 'campaign' | 'adset' | 'ad';
 
 /**
- * Webhook payload for the `ad_set.created` event. Fires when an ad set is created through Zernio (API, MCP or dashboard), once per ad set, after its row is recorded so `GET /v1/ads/ad-sets/{adSetId}` finds it.
+ * Webhook payload for the `ad_set.created` event. Fires when an ad set is created through Zernio (API, MCP or dashboard) or detected by the sync, once per ad set, after its row is recorded so `GET /v1/ads/ad-sets/{adSetId}` finds it.
  *
- * History loaded when an account connects is never announced.
+ * `source` is `zernio` for ad sets created through Zernio and `platform` for ad sets our sync detected, up to one sync interval later. History loaded when an account connects, and ad sets created more than 7 days ago, are never announced.
  *
  * An ad set is announced at most once per 24 hours.
  *
@@ -19584,7 +19584,7 @@ export type WebhookPayloadAdSetCreated = {
         } | null;
     };
     /**
-     * Where the ad set was created. `zernio` for ad sets created through Zernio.
+     * Where the ad set was created. `zernio` for ad sets created through Zernio, `platform` for ad sets the sync detected.
      */
     source: 'zernio' | 'platform';
     /**
@@ -19601,7 +19601,11 @@ export type event13 = 'ad_set.created';
 export type level6 = 'AD_SET';
 
 /**
- * Webhook payload for the `ad_set.updated` event. Fires when an ad set is edited through Zernio (API, MCP or dashboard), after the platform and Zernio both accepted the edit, once per user who can see the ad set.
+ * Webhook payload for the `ad_set.updated` event. Fires when an ad set is edited through Zernio (API, MCP or dashboard), after the platform and Zernio both accepted the edit, once per user who can see the ad set. It also fires when the sync detects an edit made outside Zernio.
+ *
+ * `source` is `zernio` for edits through Zernio, `platform` for edits the sync detected outside Zernio, up to one sync interval late, sent only to the user whose sync saw it.
+ *
+ * From the sync, `changes` covers only `name` and `status` (status not on Reddit). Never for history loaded when an account connects.
  *
  * `changes` names the edited fields and never their values: read the ad set with `GET /v1/ads/ad-sets/{adSetId}` for the current state. Ignore values you do not know, new ones can be added. Budget and targeting edits made through `PUT /v1/ads/{adId}` arrive as `ad.updated`.
  *
@@ -19647,7 +19651,7 @@ export type WebhookPayloadAdSetUpdated = {
      */
     changes: Array<('name' | 'status' | 'budget' | 'bid' | 'schedule' | 'targeting' | 'creative' | 'settings')>;
     /**
-     * Where the edit was made. `zernio` for edits through Zernio.
+     * Where the edit was made. `zernio` for edits through Zernio, `platform` for edits the sync detected outside Zernio.
      */
     source: 'zernio' | 'platform';
     /**
@@ -20728,7 +20732,7 @@ export type event32 = 'campaign_submission.received' | 'campaign_submission.flag
  *
  * From the sync, `changes` covers only `name`, `status` and `schedule` (schedule only on Google, LinkedIn, Pinterest and OpenAI Ads). Budget edits made outside Zernio are not announced. Never for history loaded when an account connects. An ad rule that changes a campaign arrives as `ad_rule.triggered`.
  *
- * Ad set edits made through Zernio arrive as `ad_set.updated`. Google sub-resource edits (ad schedule, targeting, negative keywords, conversion goals, assets, asset groups, listing group filters) are not announced.
+ * Ad set edits arrive as `ad_set.updated`. Google sub-resource edits (ad schedule, targeting, negative keywords, conversion goals, assets, asset groups, listing group filters) are not announced.
  *
  * `changes` names the edited fields and never their values: read the campaign with `GET /v1/ads/campaigns/{campaignId}` for the current state. Ignore values you do not know, new ones can be added.
  *
