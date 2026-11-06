@@ -10631,6 +10631,10 @@ export type HubSpotSettings = {
      * Whether Zernio sends closed-won deals as Purchase events to the profile's event destinations.
      */
     reportDeals: boolean;
+    /**
+     * Whether closed-won deals count as sales on the ad campaign that brought their contact, in campaign results and ad rules.
+     */
+    useDealsAsResults: boolean;
 };
 
 export type platform8 = 'hubspot';
@@ -36057,6 +36061,10 @@ export type UpdateHubSpotSettingsData = {
          * Send each deal that becomes closed won as a Purchase to the profile's event destinations, about once an hour. Requires the portal to have granted `crm.objects.deals.read`; otherwise 400. Deals closed before it was turned on are not sent.
          */
         reportDeals?: boolean;
+        /**
+         * Count each closed-won deal as a sale with its amount on the ad campaign that brought its contact, in `GET /v1/ads/campaign-results` and ad rules. Requires `crm.objects.deals.read`; otherwise 400. Turning it on fills in the deals of the last 90 days, never sent to the ad platforms.
+         */
+        useDealsAsResults?: boolean;
     };
     path: {
         accountId: string;
