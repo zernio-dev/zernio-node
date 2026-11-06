@@ -24716,6 +24716,10 @@ export type ValidatePostResponse = (({
     errors?: Array<{
         platform?: string;
         error?: string;
+        /**
+         * Present on media errors. MEDIA_UNDECODABLE means the bytes at the URL are not a valid image, video or PDF.
+         */
+        code?: 'MEDIA_UNDECODABLE';
     }>;
     warnings?: Array<{
         platform?: string;
@@ -24741,13 +24745,39 @@ export type ValidateMediaResponse = ({
      * Error message if valid is false
      */
     error?: string;
+    /**
+     * Stable reason when valid is false. MEDIA_UNDECODABLE: the bytes are not a valid image, video or PDF. MEDIA_URL_UNREACHABLE: HTTP error, timeout or network failure. MEDIA_URL_NOT_ALLOWED: not a public HTTP(S) URL.
+     */
+    code?: 'MEDIA_UNDECODABLE' | 'MEDIA_URL_UNREACHABLE' | 'MEDIA_URL_NOT_ALLOWED';
+    /**
+     * Content-Type header the server sent (may disagree with the detected format)
+     */
     contentType?: string;
     /**
      * File size in bytes
      */
     size?: (number) | null;
     sizeFormatted?: string;
-    type?: 'image' | 'video' | 'unknown';
+    /**
+     * Detected from the file bytes
+     */
+    type?: 'image' | 'video' | 'document';
+    /**
+     * Detected format (jpeg, png, webp, gif, heif, mp4, mov, webm, pdf, ...)
+     */
+    format?: string;
+    /**
+     * Image width in pixels (images only)
+     */
+    width?: number;
+    /**
+     * Image height in pixels (images only)
+     */
+    height?: number;
+    /**
+     * How deeply the content was verified. decoded: every pixel decoded. header: file signature and header verified (videos, PDFs, HEIC/AVIF, images over 32 MB).
+     */
+    inspection?: 'decoded' | 'header';
     /**
      * Per-platform size limit comparison (only present when size and type are known)
      */
