@@ -17288,13 +17288,17 @@ export type TikTokPlatformData = {
      */
     mediaType?: 'video' | 'photo';
     /**
-     * Optional for video posts. Timestamp in milliseconds to select which frame to use as thumbnail (defaults to 1000ms/1 second). Ignored when videoCoverImageUrl is provided.
+     * Optional for video posts. Timestamp in milliseconds to select which frame to use as thumbnail (defaults to 1000ms/1 second). Ignored when the videoCoverImageUrl image becomes the cover, and used when Zernio skips that image (see videoCoverImageUrl).
      */
     videoCoverTimestampMs?: number;
     /**
      * Optional for video posts. URL of a custom thumbnail image (JPG, PNG, or WebP, max 20MB). Any downloadable URL works: we rehost it ourselves. Overrides videoCoverTimestampMs when provided.
      *
-     * The image is stitched as a single frame at the start of the video to serve as the cover. Accounts connected through the TikTok for Business app instead hand it to TikTok as the cover, with no stitching, falling back to videoCoverTimestampMs without it.
+     * The image is stitched as a single frame at the start of the video to serve as the cover.
+     *
+     * When the image shape is far from the video shape (it would fill less than half of the frame, for example a landscape cover on a vertical video), or the stitch fails, Zernio skips the image and TikTok uses videoCoverTimestampMs.
+     *
+     * Accounts connected through the TikTok for Business app instead hand it to TikTok as the cover, with no stitching, falling back to videoCoverTimestampMs without it.
      *
      */
     videoCoverImageUrl?: string;
