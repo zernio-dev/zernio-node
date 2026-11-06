@@ -56316,7 +56316,10 @@ export type CreateAdSetData = {
          * Reddit only. ISO 8601 end of the ad group. Defaults to the campaign end.
          */
         endDate?: string;
-        targeting?: TargetingSpec;
+        /**
+         * Reddit: the full targeting object. Google: locations and languages only, on a Demand Gen campaign.
+         */
+        targeting?: (TargetingSpec);
         /**
          * Reddit only. The pixel and the conversion event the ad group optimizes toward.
          */
@@ -63518,12 +63521,14 @@ export type CreateStandaloneAdData = {
         /**
          * Meta only. Where the budget lives, which selects the Meta budget model:
          *
-         * - `adset` (default): ABO (Ad-set Budget Optimization). The budget is set on the ad set. Back-compatible; omit this field to keep it.
+         * - `adset` (used when omitted): ABO (Ad-set Budget Optimization). The budget is set on the ad set.
          * - `campaign`: CBO (Campaign Budget Optimization / Advantage Campaign Budget). The budget AND `bidStrategy` are set on the CAMPAIGN, and Meta distributes spend across ad sets automatically.
          *
          * The returned ad stores the applied `budgetLevel`, and the budget in `campaignBudget` (CBO) or `adSetBudget` (ABO). Edit CBO budgets with `PUT /v1/ads/campaigns/{campaignId}` and ABO budgets with `PUT /v1/ads/ad-sets/{adSetId}`.
          *
-         * Meta requires the budget at exactly one level, never both. Non-Meta platforms ignore this field. Ignored on the attach shape (`adSetId`), which inherits the existing budget.
+         * Meta requires the budget at exactly one level, never both. Ignored on the Meta attach shape (`adSetId`), which inherits the existing budget.
+         *
+         * Google Demand Gen also reads it. A new Demand Gen campaign accepts only `campaign` or no value. With `existingCampaignId` or `adSetId`, omit it: the budget stays on the existing campaign. Other platforms ignore it.
          *
          */
         budgetLevel?: 'adset' | 'campaign';
@@ -64282,7 +64287,7 @@ export type CreateStandaloneAdData = {
          */
         audienceId?: string;
         /**
-         * Google only. Performance Max requires assetGroup and Demand Gen requires demandGen; both are always created PAUSED. With `adSetId` it defaults to the ad group's own campaign type instead of display.
+         * Google only. Omitted, it is display on a new campaign, and the existing campaign's own type with `existingCampaignId` or `adSetId` (Search, Display or Demand Gen; other types return 422). Performance Max requires assetGroup and Demand Gen requires demandGen; both are always created PAUSED.
          */
         campaignType?: 'display' | 'search' | 'pmax' | 'demand_gen';
         /**

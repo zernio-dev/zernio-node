@@ -13797,6 +13797,15 @@ export const listAdSets = <ThrowOnError extends boolean = false>(options?: Optio
  *
  * The ad group is created WITHOUT an ad (Google Ads compliance row C.190). Ads join it later via `adSetId` on POST /v1/ads/create. Supports Google Ads and Reddit Ads; every other platform returns 501.
  *
+ * **Google Ads** (`platform: google`)
+ *
+ * - The ad group type follows the campaign: a standard ad group under a Search or Display campaign, a Demand Gen ad group under a Demand Gen campaign.
+ * - On a Demand Gen campaign the ad group is always created PAUSED, and `maxCpc` or `status: ACTIVE` returns 400 (Demand Gen bids at the campaign).
+ * - `targeting` sets a Demand Gen ad group's locations and languages (`countries`, `regions`, `cities`, `zips`, `metros`, `languages`), created atomically with the ad group. Without it the ad group serves worldwide.
+ * - `targeting` returns 400 for any other targeting field, and on campaigns that keep geo on the campaign: Search, Display, and Demand Gen campaigns migrated from Discovery. Edit those with PUT /v1/ads/campaigns/{campaignId}/targeting.
+ * - Any other campaign type returns 400 (Performance Max has asset groups instead of ad groups).
+ * - A campaign that is not in the ad account, or was removed, returns 404.
+ *
  * **Reddit Ads** (`platform: reddit`)
  *
  * - `adAccountId` (the Reddit ad account id) is required and must be a selected ad account of the connection (403 otherwise).
@@ -13807,7 +13816,7 @@ export const listAdSets = <ThrowOnError extends boolean = false>(options?: Optio
  * - The ad group must start no earlier than a future campaign start and end no later than the campaign end (400 otherwise).
  * - `targeting` takes the same targeting object as the other ad endpoints (no geo defaults to the US).
  * - A campaign of another ad account returns 404, a Reddit Max campaign 422.
- * - `maxCpc` and `customerId` are Google only (400 on Reddit), and the Reddit fields return 400 on Google.
+ * - `maxCpc` and `customerId` are Google only (400 on Reddit), and the other Reddit fields return 400 on Google.
  *
  * ### After creation
  *
@@ -17024,6 +17033,8 @@ export const listGoogleAssetGroups = <ThrowOnError extends boolean = false>(opti
  * Adds an asset group with its assets and optional product targeting to a Performance Max campaign, or just validates it without creating anything.
  *
  * The group, any new assets, their links and an optional listing-group tree are created in one atomic request, so Google checks the asset minimums (for non-retail campaigns) against the whole set. Created PAUSED unless status is ENABLED. validateOnly: true runs Google's validation without creating anything.
+ *
+ * A campaign that is not Performance Max returns 400 on campaignId (add an ad group with POST /v1/ads/ad-sets instead). A missing or removed campaign returns 404.
  *
  */
 export const createGoogleAssetGroup = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateGoogleAssetGroupData, ThrowOnError>) => {
