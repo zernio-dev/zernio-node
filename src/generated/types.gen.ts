@@ -63297,7 +63297,7 @@ export type CreateStandaloneAdData = {
          * - `app_promotion`: requires `promotedObject.applicationId` and `promotedObject.objectStoreUrl`.
          * - `catalog_sales`: Advantage+ catalog ads (e.g. vehicle inventory). Requires `promotedObject.productSetId`, `promotedObject.pixelId` and `promotedObject.customEventType`. Builds a catalog TEMPLATE creative from the copy fields, which may carry template tags like {{product.name}} or {{vehicle.make}}.
          * - `catalog_sales` visuals: no imageUrl or video is sent; Meta renders them per catalog item (an imageUrl or video sent is ignored, not uploaded). Find catalogs via GET /v1/ads/catalogs and product sets via GET /v1/ads/catalogs/{catalogId}/product-sets.
-         * - `catalog_sales` shape: single shape only, no creatives[], dynamicCreative, placementAssets, existingCreativeId or carouselCards. Works with `existingCampaignId`, and with `adSetId` to add to an existing ad set (then only `promotedObject.productSetId` is required). Pick the format with `catalogFormat`.
+         * - `catalog_sales` shape: single shape only, no creatives[], dynamicCreative, placementAssets, existingCreativeId or carouselCards. Works with `existingCampaignId`, and with `adSetId` to add to an existing ad set (then only `promotedObject.productSetId` is required). Pick the format with `catalogFormat`, and open the carousel with `catalogIntroCards`.
          * - `traffic` with `promotedObject.productSetId`: a catalog ad without a pixel (OUTCOME_TRAFFIC, `optimizationGoal` LINK_CLICKS by default or LANDING_PAGE_VIEWS). The product set goes on the template creative only, never the ad set's promoted_object. No `pixelId` or `customEventType` needed. Same creative rules as `catalog_sales`.
          * - `page_likes`: Page Likes under OUTCOME_ENGAGEMENT (destination_type ON_PAGE, optimization PAGE_LIKES). `promotedObject.pageId` is optional and auto-filled. The CTA is fixed to LIKE_PAGE for that Page; headline / body / linkUrl / callToAction / imageUrl / video are all optional (Meta derives them from the Page).
          * - `page_visits`: "Page visits and followers" under OUTCOME_TRAFFIC (destination_type FACEBOOK_PAGE, optimization PROFILE_VISIT). `promotedObject.pageId` is optional and auto-filled; `linkUrl` defaults to the Page. Accounts Meta has not enabled are refused with "This account isn't eligible to use Profile Visit ads yet".
@@ -63403,6 +63403,34 @@ export type CreateStandaloneAdData = {
          *
          */
         catalogFormat?: 'single_image' | 'carousel_images_multi_items' | 'carousel_images_single_item' | 'carousel_slideshows';
+        /**
+         * Meta only. Static cards shown before the catalog products in a catalog carousel, for example a brand or offer slide. Valid only with goal `catalog_sales` and `catalogFormat` omitted or `carousel_images_multi_items`; a 400 otherwise.
+         *
+         * Sent in order as `object_story_spec.template_data.child_attachments` with `static_card: true`, followed by one catalog card built from the top-level `headline`, `description` and `callToAction`.
+         *
+         */
+        catalogIntroCards?: Array<{
+            /**
+             * Card image; uploaded to the ad account and referenced by hash.
+             */
+            imageUrl: string;
+            /**
+             * Card headline. Meta does not show it on Instagram.
+             */
+            headline: string;
+            /**
+             * Card description. Meta does not show it on Instagram.
+             */
+            description?: string;
+            /**
+             * Card destination URL. Defaults to the top-level linkUrl.
+             */
+            linkUrl?: string;
+            /**
+             * Card CTA override. Defaults to the top-level callToAction; same enum.
+             */
+            callToAction?: string;
+        }>;
         /**
          * Meta only. Multi-advertiser ads: whether Meta may show this ad alongside other advertisers' in one unit. Meta auto-enrols since Aug 2024, so send OPT_OUT to leave. It is a top-level creative field, NOT a `creativeFeatures` key, and Meta rejects it there.
          */
