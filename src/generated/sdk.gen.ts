@@ -95,6 +95,7 @@ export const validateSubreddit = <ThrowOnError extends boolean = false>(options:
  * - fromDate defaults to 90 days ago if omitted, max range 366 days.
  * - Single post lookups may return 202 (sync pending) or 424 (all platforms failed).
  * - For follower stats, use /v1/accounts/follower-stats.
+ * - Accounts creators connected to your creator campaigns are left out, here and in every other analytics, follower-stats, account health, inbox and external posts read, unless the request names their profileId or accountId.
  *
  * ### LinkedIn personal accounts
  *
