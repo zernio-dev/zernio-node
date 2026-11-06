@@ -26494,7 +26494,7 @@ export type CreateTopupResponse = ({
      */
     taxLabel: (string) | null;
     /**
-     * True for an EU business with a valid VAT id: no VAT is charged and the invoice says reverse charge.
+     * True for an EU business whose VAT id VIES confirms: no VAT is charged and the invoice says reverse charge (inversión del sujeto pasivo).
      */
     reverseCharge: boolean;
     /**
