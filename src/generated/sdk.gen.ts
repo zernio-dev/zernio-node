@@ -45,7 +45,11 @@ export const validatePostLength = <ThrowOnError extends boolean = false>(options
  *
  * Accepts the same body as POST /v1/posts. Does NOT validate accounts, transform media, or track usage. Account lookups are limit-only: a twitter accountId is resolved, scoped to the caller, only to pick the 280 vs 25000 character limit. Missing, foreign, or invalid ids fall back to 280 and never error.
  *
- * Every image, gif and video URL in `mediaItems` and `customMedia` is fetched and checked: a file that is not a real image, video or PDF (wrong bytes, truncated, corrupt) is an error with code `MEDIA_UNDECODABLE`. Images are checked at header level (the full file is decoded only when the header is not enough); use POST /v1/tools/validate/media for a full pixel decode. A URL our servers cannot fetch is reported as a warning, not an error, because the platform may still reach it.
+ * Every image, gif and video URL in `mediaItems` and `customMedia` is fetched and checked:
+ *
+ * - A file that is not a real image, video or PDF (wrong bytes, truncated, corrupt) is an error with code `MEDIA_UNDECODABLE`.
+ * - Images are checked at header level. The full file is decoded only when the header is not enough. Use POST /v1/tools/validate/media for a full pixel decode.
+ * - A URL our servers cannot fetch is a warning, not an error, because the platform may still reach it.
  *
  * Returns errors for failures and warnings for near-limit content (>90% of character limit).
  *
@@ -61,7 +65,13 @@ export const validatePost = <ThrowOnError extends boolean = false>(options: Opti
  * Validate media URL
  * Check that a media URL is reachable and that its bytes are a real image, video or PDF, then return metadata (detected format, file size, dimensions) plus per-platform size limit comparisons.
  *
- * `valid: true` means the content was verified, not just the extension or Content-Type. Images up to 32 MB are fully decoded (`inspection: decoded`); videos, PDFs and larger images are verified by their file signature and header (`inspection: header`). The type and format come from the bytes, not the Content-Type header. Corrupt, truncated or non-media files return `valid: false` with code `MEDIA_UNDECODABLE`. Rejects private/localhost URLs for SSRF protection.
+ * `valid: true` means the content was verified, not just the extension or Content-Type:
+ *
+ * - Images up to 32 MB are fully decoded (`inspection: decoded`).
+ * - Videos, PDFs and larger images are verified by their file signature and header (`inspection: header`).
+ * - The type and format come from the bytes, not the Content-Type header.
+ * - Corrupt, truncated or non-media files return `valid: false` with code `MEDIA_UNDECODABLE`.
+ * - Private/localhost URLs are rejected for SSRF protection.
  *
  * Platform limits are sourced from each platform's actual upload constraints.
  *
