@@ -8610,7 +8610,7 @@ export type ErrorResponse = {
      * **Failed Meta ad create** (`POST /v1/ads/create`, `POST /v1/ads/boost`, `POST /v1/ads/ctwa`). Carries `stage` (where it failed), `adAccountId` (on which ad account) and `createdObjects` (every object this request had already created, with what cleanup did to it).
      *
      * - `left_behind` objects still exist on the ad account (Meta refused the delete, typically on a held account, or the delete hit a network error). Delete them yourself or reuse them.
-     * - `unconfirmedWrite` is set when Meta answered a create with a 5xx or dropped the connection and Zernio could not confirm whether the object exists. Check that parent before creating it again.
+     * - `unconfirmedWrite` is set when Meta answered a create with a 5xx or a non-JSON body, or dropped the connection, and Zernio could not confirm whether the object exists. Check that parent before creating it again.
      *
      * **Ineligible ad account: 422 `ad_account_unusable`.** When Meta refuses a write because the ad account's status is ineligible to manage ads (Meta subcode 2490592 or 4841021, on the write itself or on a cleanup delete), any Meta ads write answers it.
      *
@@ -8657,12 +8657,22 @@ export type ErrorResponse = {
              */
             id?: string;
             /**
-             * `deleted`: Zernio deleted it. `left_behind`: cleanup could not delete it (Meta refused the delete, or the delete hit a network error), so it still exists. `kept`: deliberately not deleted: an image (hashes are shared by every upload of the same file), or an object Zernio found by name after Meta lost its answer to the create, which may belong to another request with the same name.
+             * - `deleted`: Zernio deleted it.
+             * - `left_behind`: cleanup could not delete it (Meta refused the delete, or the delete hit a network error), so it still exists.
+             * - `kept`: deliberately not deleted. Either an image (hashes are shared by every upload of the same file), or an object Zernio found by name after Meta lost its answer to the create, which may belong to another request with the same name.
+             *
              */
             cleanup?: 'deleted' | 'left_behind' | 'kept';
         }>;
         /**
-         * Meta ad create failures only, when Meta answered a create with a 5xx or a non-JSON body, or dropped the connection after the request was sent, and reading the parent back by name did not settle it: several objects of the same name, a parent that could not be read, or (after a dropped connection, a non-JSON body, or a 5xx with `retryOnServerError: false`) no such object. Zernio did not retry it.
+         * Meta ad create failures only. Set when Meta answered a create with a 5xx or a non-JSON body, or dropped the connection after the request was sent, and reading the parent back by name did not settle it. Zernio did not retry it.
+         *
+         * One of these left it open:
+         *
+         * - The read-back found several objects of the same name.
+         * - The parent could not be read, or the object is a creative, which has no reliable read-back.
+         * - The read-back found no such object, after a dropped connection, a non-JSON body, a 5xx with `retryOnServerError: false`, or a 5xx on a create whose own body is `status: ACTIVE`.
+         *
          */
         unconfirmedWrite?: {
             type?: 'campaign' | 'adset' | 'creative' | 'ad';
