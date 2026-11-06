@@ -352,6 +352,7 @@ import {
   getAnalytics,
   getAnalyticsDashboard,
   getAnalyticsDelta,
+  getAutoRecharge,
   getBalance,
   getBestTimeToPost,
   getBilling,
@@ -1037,6 +1038,7 @@ import {
   updateAdSetStatus,
   updateAdStatus,
   updateAdTrackingTags,
+  updateAutoRecharge,
   updateBidStrategy,
   updateBlog,
   updateBlogArticle,
@@ -1381,6 +1383,8 @@ export class Zernio {
    */
   treasury = {
     getBalance: this._bind(getBalance),
+    getAutoRecharge: this._bind(getAutoRecharge),
+    updateAutoRecharge: this._bind(updateAutoRecharge),
     createTopup: this._bind(createTopup),
     listTopups: this._bind(listTopups),
     previewTopup: this._bind(previewTopup),

@@ -3420,6 +3420,50 @@ export type scope = 'full' | 'profiles';
  */
 export type permission = 'read-write' | 'read';
 
+export type AutoRecharge = {
+    /**
+     * Whether auto-recharge is on. Charges happen only when this is true and disabledReason is null.
+     */
+    enabled: boolean;
+    /**
+     * Recharge when the balance drops below this, in cents.
+     */
+    belowCents: number;
+    /**
+     * Recharge back up to this, in cents. The charge is toCents minus the balance, plus tax.
+     */
+    toCents: number;
+    /**
+     * Most auto-recharge may add per calendar month (UTC), before tax; null for no limit.
+     */
+    monthlyLimitCents: (number) | null;
+    /**
+     * Low-balance email threshold, sent once per drop below it; null for none.
+     */
+    alertBelowCents: (number) | null;
+    /**
+     * `payment_failed` after four failed charges in a row. Updating the card clears it.
+     */
+    disabledReason: ('payment_failed') | null;
+    /**
+     * Failed charges in a row; 0 once one goes through.
+     */
+    retryCount: number;
+    /**
+     * When a declined recharge is tried again; null when none is waiting.
+     */
+    nextRetryAt: (string) | null;
+    /**
+     * Auto-recharge top-ups this calendar month (UTC), paid or being paid, before tax.
+     */
+    monthRechargedCents: number;
+};
+
+/**
+ * `payment_failed` after four failed charges in a row. Updating the card clears it.
+ */
+export type disabledReason = 'payment_failed';
+
 /**
  * Meta bid strategy. Same enum applies at campaign and ad-set level; ad-set value (when set)
  * overrides campaign-level. Cross-field rules:
@@ -24728,6 +24772,53 @@ export type GetBalanceError = ({
      */
     required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
 });
+
+export type GetAutoRechargeResponse = (AutoRecharge);
+
+export type GetAutoRechargeError = ({
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+} | unknown);
+
+export type UpdateAutoRechargeData = {
+    body: {
+        /**
+         * Turns auto-recharge on or off. A rule switched off by failed charges stays off until the card is updated.
+         */
+        enabled?: boolean;
+        /**
+         * Recharge when the balance drops below this, in cents. At least $5.
+         */
+        belowCents?: number;
+        /**
+         * Recharge back up to this, in cents. More than $5 above belowCents.
+         */
+        toCents?: number;
+        /**
+         * Most auto-recharge may add per calendar month (UTC), before tax. Null for no limit.
+         */
+        monthlyLimitCents?: (number) | null;
+        /**
+         * Email the billing owner once each time the balance drops below this. Null for no email.
+         */
+        alertBelowCents?: (number) | null;
+    };
+};
+
+export type UpdateAutoRechargeResponse = (AutoRecharge);
+
+export type UpdateAutoRechargeError = (ErrorResponse | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+} | unknown);
 
 export type CreateTopupData = {
     body: {
