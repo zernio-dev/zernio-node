@@ -66687,7 +66687,7 @@ export type ListAdAudiencesData = {
         adAccountId: string;
         platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads' | 'redditads';
         /**
-         * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences; the other types return uploaded/derived audiences.
+         * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences and needs no adAccountId; the other types keep only the platform audiences of that type (an empty list when the platform has none). Meta ENGAGEMENT audiences are `meta_engagement`.
          */
         type?: 'customer_list' | 'company_list' | 'engagement' | 'meta_engagement' | 'website' | 'website_retargeting' | 'lookalike' | 'saved_targeting';
     };
@@ -66722,6 +66722,10 @@ export type ListAdAudiencesResponse = ({
         summary?: string;
         status?: string;
     }>;
+    /**
+     * Meta only. True when the ad account has more than 1,000 custom audiences and the list stops at the first 1,000.
+     */
+    truncated?: boolean;
 });
 
 export type ListAdAudiencesError = (ErrorResponse | unknown);
