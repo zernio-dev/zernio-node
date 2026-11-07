@@ -18168,6 +18168,10 @@ export type UsageMetering = {
         product?: 'accounts' | 'numbers' | 'imessage' | 'calls' | 'sms' | 'messages' | 'verify' | 'dlc' | 'xApi' | 'ads' | 'credits' | 'other';
         totalUsd?: number;
         quantity?: number;
+        /**
+         * Present only on pay-per-use paid from the prepaid balance (balance billing). That spend is included in `days` and `totals` but is not on the monthly invoice.
+         */
+        paidFrom?: 'balance';
     }>;
     /**
      * Peak counts over the window (usage-based COUNT metrics + live active-number count). Null when `profileId` / `accountId` is set.
