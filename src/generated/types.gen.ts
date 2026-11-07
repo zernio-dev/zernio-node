@@ -26364,6 +26364,17 @@ export type GetBalanceResponse = ({
     pendingTopupCents?: number;
     currency?: 'usd';
     recentTopups?: Array<TreasuryTopup>;
+    /**
+     * Balance billing only (absent otherwise). The 10 newest recharges paid from the account credit you held when you moved to the balance, newest first. Nothing was charged to your card and there is no invoice. The amount was added to promoCents with the credit's own expiry.
+     */
+    recentCreditRecharges?: Array<{
+        id: string;
+        /**
+         * Credit added to promoCents.
+         */
+        amountCents: number;
+        createdAt: string;
+    }>;
 });
 
 export type GetBalanceError = ({

@@ -708,6 +708,8 @@ export const getBalance = <ThrowOnError extends boolean = false>(options?: Optio
  * Get auto-recharge settings
  * Your balance's auto-recharge rule: when the balance drops below `belowCents`, the billing owner's saved card is charged back up to `toCents`, tax added on top as for any top-up.
  *
+ * Account credit you held when you moved to the balance pays a recharge first, without a card charge or invoice (see `recentCreditRecharges` on `GET /v1/balance`). The card is charged only once that credit is used up, and only while the balance is still below `belowCents`.
+ *
  * The first read gives the default rule, sized from your last 30 days of pay-per-use: below about a week of spend (at least $5), back up by about two more weeks (at least $20).
  *
  * - 409 `balance_billing_required`: the account is not on the prepaid balance.
