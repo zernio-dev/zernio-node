@@ -144,9 +144,27 @@ export type Ad = {
     reviewStatus?: (AdReviewStatus);
     adType?: 'boost' | 'standalone';
     /**
-     * Creative format, classified from the media the creative carries. `null` when the creative carries no media to classify. An unsynced creative and a genuine text-only ad are indistinguishable, so neither is guessed at. Returned by `GET /v1/ads`, `GET /v1/ads/{adId}` and the ad nodes of `GET /v1/ads/tree`.
+     * Creative format. Returned by `GET /v1/ads`, `GET /v1/ads/{adId}` and the ad nodes of `GET /v1/ads/tree`. `text` was added in 1.522.0, so treat unknown values as unclassified.
+     *
+     * - Google: from the ad type. Search ads (`RESPONSIVE_SEARCH_AD`, `EXPANDED_TEXT_AD`, `TEXT_AD`, `EXPANDED_DYNAMIC_SEARCH_AD`, `CALL_AD`) are `text`, video ads or any ad with a YouTube video are `video`, `DEMAND_GEN_CAROUSEL_AD` is `carousel`, other ads with images are `image`.
+     * - Pinterest: from `creative_type`. `VIDEO` and `MAX_VIDEO` are `video`, `CAROUSEL` is `carousel`, `REGULAR` and `SHOPPING` are `image`, others are `image` when the pin has an image.
+     * - X: from the tweet media. `photo` is `image`, `video` and `animated_gif` are `video`. Card and text-only tweets are `null`.
+     * - Other platforms: from the media the creative carries. Two or more images or cards are `carousel`.
+     *
+     * `null` when nothing classifies it: no media and no known format, or a Performance Max asset group. A Google ad not re-synced since 1.522.0 is still classified by its media until the next sync (about 3 hours).
+     *
      */
-    creativeType?: ('carousel' | 'video' | 'document' | 'image') | null;
+    creativeType?: ('carousel' | 'video' | 'document' | 'image' | 'text') | null;
+    /**
+     * The platform's own creative or ad type, as stored by the last sync. Omitted when the platform reports none.
+     *
+     * - Google: `ad_group_ad.ad.type` (e.g. `RESPONSIVE_SEARCH_AD`, `RESPONSIVE_DISPLAY_AD`, `VIDEO_RESPONSIVE_AD`).
+     * - Pinterest: the ad `creative_type` (e.g. `REGULAR`, `VIDEO`, `CAROUSEL`).
+     * - X: the promoted tweet's media type (`photo`, `video`, `animated_gif`).
+     * - TikTok: `ad_format`. LinkedIn: the campaign `format`. Meta: the creative `object_type`.
+     *
+     */
+    platformCreativeType?: string;
     /**
      * Available goals vary by platform:
      *
@@ -609,9 +627,17 @@ export type platform = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinte
 export type adType = 'boost' | 'standalone';
 
 /**
- * Creative format, classified from the media the creative carries. `null` when the creative carries no media to classify. An unsynced creative and a genuine text-only ad are indistinguishable, so neither is guessed at. Returned by `GET /v1/ads`, `GET /v1/ads/{adId}` and the ad nodes of `GET /v1/ads/tree`.
+ * Creative format. Returned by `GET /v1/ads`, `GET /v1/ads/{adId}` and the ad nodes of `GET /v1/ads/tree`. `text` was added in 1.522.0, so treat unknown values as unclassified.
+ *
+ * - Google: from the ad type. Search ads (`RESPONSIVE_SEARCH_AD`, `EXPANDED_TEXT_AD`, `TEXT_AD`, `EXPANDED_DYNAMIC_SEARCH_AD`, `CALL_AD`) are `text`, video ads or any ad with a YouTube video are `video`, `DEMAND_GEN_CAROUSEL_AD` is `carousel`, other ads with images are `image`.
+ * - Pinterest: from `creative_type`. `VIDEO` and `MAX_VIDEO` are `video`, `CAROUSEL` is `carousel`, `REGULAR` and `SHOPPING` are `image`, others are `image` when the pin has an image.
+ * - X: from the tweet media. `photo` is `image`, `video` and `animated_gif` are `video`. Card and text-only tweets are `null`.
+ * - Other platforms: from the media the creative carries. Two or more images or cards are `carousel`.
+ *
+ * `null` when nothing classifies it: no media and no known format, or a Performance Max asset group. A Google ad not re-synced since 1.522.0 is still classified by its media until the next sync (about 3 hours).
+ *
  */
-export type creativeType = 'carousel' | 'video' | 'document' | 'image';
+export type creativeType = 'carousel' | 'video' | 'document' | 'image' | 'text';
 
 /**
  * Available goals vary by platform:
@@ -2522,7 +2548,10 @@ export type AdsPerformanceResponse = {
          */
         currency?: (string) | null;
         creative?: {
-            type?: ('image' | 'video' | 'carousel' | 'document') | null;
+            /**
+             * Same classification as the ad `creativeType`.
+             */
+            type?: ('image' | 'video' | 'carousel' | 'document' | 'text') | null;
             thumbnailUrl?: (string) | null;
             headline?: (string) | null;
             body?: (string) | null;
