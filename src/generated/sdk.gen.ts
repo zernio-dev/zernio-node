@@ -730,6 +730,8 @@ export const getAutoRecharge = <ThrowOnError extends boolean = false>(options?: 
  *
  * A bank asking for 3D Secure counts as a decline: the charge happens while you are away, so the email asks you to top up in Billing.
  *
+ * A pay-per-use request that finds the balance at $0 runs the recharge first (with the rule on, a saved card and no retry pending) and goes through when the charge lands, so a new balance at $0 is charged on first use.
+ *
  * When this month's auto-recharges plus the next one would pass `monthlyLimitCents`, the card is not charged and you get one email that month. At $0, pay-per-use then answers 402 `usage_limit_reached`.
  *
  * - 400: a field is out of range, or `toCents` is not more than $5 above `belowCents`.
