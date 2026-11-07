@@ -26744,6 +26744,12 @@ export type GetTopupReceiptData = {
     path: {
         topupId: string;
     };
+    query?: {
+        /**
+         * true answers the card receipt itself as a PDF file (application/pdf, as an attachment) instead of the JSON links.
+         */
+        download?: boolean;
+    };
 };
 
 export type GetTopupReceiptResponse = ({
