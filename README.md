@@ -1471,14 +1471,14 @@ try {
 | `treasury.createPayeeOnboardingLink()` | Create a payee onboarding link |
 | `treasury.createTopup()` | Create a top-up |
 | `treasury.createTransfer()` | Create a transfer (removed) |
-| `treasury.getAutoRecharge()` | Get auto-recharge settings |
+| `treasury.getAutoRecharge()` | Get auto top-up settings |
 | `treasury.getBalance()` | Get balance |
 | `treasury.getPayoutBatch()` | Get a payout batch |
 | `treasury.getTopupInvoice()` | Get a top-up invoice |
 | `treasury.getTopupReceipt()` | Get a top-up receipt |
 | `treasury.getTopupStatement()` | Get a top-up invoice (alias) |
 | `treasury.getTransfer()` | Get a transfer |
-| `treasury.updateAutoRecharge()` | Update auto-recharge settings |
+| `treasury.updateAutoRecharge()` | Update auto top-up settings |
 | `treasury.cancelPayoutBatch()` | Cancel an unpaid payout batch |
 | `treasury.cancelTopup()` | Cancel a top-up |
 | `treasury.confirmPayoutBatch()` | Confirm a payout batch payment |

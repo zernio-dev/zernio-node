@@ -705,10 +705,10 @@ export const getBalance = <ThrowOnError extends boolean = false>(options?: Optio
 };
 
 /**
- * Get auto-recharge settings
- * Your balance's auto-recharge rule: when the balance drops below `belowCents`, the billing owner's saved card is charged back up to `toCents`, tax added on top as for any top-up.
+ * Get auto top-up settings
+ * Your balance's auto top-up rule: when the balance drops below `belowCents`, the billing owner's saved card is charged back up to `toCents`, tax added on top as for any top-up.
  *
- * Account credit you held when you moved to the balance pays a recharge first, without a card charge or invoice (see `recentCreditRecharges` on `GET /v1/balance`). The card is charged only once that credit is used up, and only while the balance is still below `belowCents`.
+ * Account credit you held when you moved to the balance pays an auto top-up first, without a card charge or invoice (see `recentCreditRecharges` on `GET /v1/balance`). The card is charged only once that credit is used up, and only while the balance is still below `belowCents`.
  *
  * The first read gives the default rule, sized from your last 30 days of pay-per-use: below about a week of spend (at least $5), back up by about two more weeks (at least $20).
  *
@@ -725,16 +725,16 @@ export const getAutoRecharge = <ThrowOnError extends boolean = false>(options?: 
 };
 
 /**
- * Update auto-recharge settings
- * Changes the auto-recharge rule. Omitted fields keep their value.
+ * Update auto top-up settings
+ * Changes the auto top-up rule. Omitted fields keep their value.
  *
- * A declined recharge is retried 1 hour, 1 day and 3 days later, with an email each time. After the last retry fails, auto-recharge switches off (`disabledReason: payment_failed`) until the card is updated. A top-up you make yourself resets the retries.
+ * A declined auto top-up is retried 1 hour, 1 day and 3 days later, with an email each time. After the last retry fails, auto top-up switches off (`disabledReason: payment_failed`) until the card is updated. A top-up you make yourself resets the retries.
  *
  * A bank asking for 3D Secure counts as a decline: the charge happens while you are away, so the email asks you to top up in Billing.
  *
- * A pay-per-use request that finds the balance at $0 runs the recharge first (with the rule on, a saved card and no retry pending) and goes through when the charge lands, so a new balance at $0 is charged on first use.
+ * A pay-per-use request that finds the balance at $0 runs the auto top-up first (with the rule on, a saved card and no retry pending) and goes through when the charge lands, so a new balance at $0 is charged on first use.
  *
- * When this month's auto-recharges plus the next one would pass `monthlyLimitCents`, the card is not charged and you get one email that month. At $0, pay-per-use then answers 402 `usage_limit_reached`.
+ * When this month's auto top-ups plus the next one would pass `monthlyLimitCents`, the card is not charged and you get one email that month. At $0, pay-per-use then answers 402 `usage_limit_reached`.
  *
  * - 400: a field is out of range, or `toCents` is not more than $5 above `belowCents`.
  * - 409 `balance_billing_required`: the account is not on the prepaid balance.
@@ -22567,7 +22567,7 @@ export const settleCampaignParticipant = <ThrowOnError extends boolean = false>(
  * ### How it works
  *
  * 1. Every payable creator who finished payout setup (or only `participantIds`, minus `excludeParticipantIds`) is held in `settling`.
- * 2. The saved card (the default one, or `paymentMethodId`) pays one invoice while the payer is present: the payouts, plus the fee (4% per creator, 50 cent minimum) and the VAT on the fee where it applies.
+ * 2. The saved card (the default one, or `paymentMethodId`) pays one invoice while the payer is present: the payouts, plus the fee (4%, 50 cents minimum per payout) and the VAT on the fee where it applies.
  * 3. Card payments are held 7 days against chargebacks (`releasesAt`). Then each creator gets a transfer funded by the charge, and the batch ends `paid` or `partially_failed`.
  *
  * Zernio collects the payouts and pays each creator on your behalf and in your name, so the payouts carry no VAT.

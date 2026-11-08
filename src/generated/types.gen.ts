@@ -4727,19 +4727,19 @@ export type AutomationTrigger = AutomationScheduleTrigger | AutomationEventTrigg
 
 export type AutoRecharge = {
     /**
-     * Whether auto-recharge is on. Charges happen only when this is true and disabledReason is null.
+     * Whether auto top-up is on. Charges happen only when this is true and disabledReason is null.
      */
     enabled: boolean;
     /**
-     * Recharge when the balance drops below this, in cents.
+     * Top up when the balance drops below this, in cents.
      */
     belowCents: number;
     /**
-     * Recharge back up to this, in cents. The charge is toCents minus the balance, plus tax.
+     * Top back up to this, in cents. The charge is toCents minus the balance, plus tax.
      */
     toCents: number;
     /**
-     * Most auto-recharge may add per calendar month (UTC), before tax; null for no limit.
+     * Most auto top-up may add per calendar month (UTC), before tax; null for no limit.
      */
     monthlyLimitCents: (number) | null;
     /**
@@ -4755,11 +4755,11 @@ export type AutoRecharge = {
      */
     retryCount: number;
     /**
-     * When a declined recharge is tried again; null when none is waiting.
+     * When a declined auto top-up is tried again; null when none is waiting.
      */
     nextRetryAt: (string) | null;
     /**
-     * Auto-recharge top-ups this calendar month (UTC), paid or being paid, before tax.
+     * Auto top-ups this calendar month (UTC), paid or being paid, before tax.
      */
     monthRechargedCents: number;
 };
@@ -14735,7 +14735,7 @@ export type PayoutBatchItem = {
      */
     amountCents: number;
     /**
-     * Zernio fee on top: 4% with a 50 cent minimum.
+     * Zernio fee on top: 4%, 50 cents minimum per payout.
      */
     feeCents: number;
     /**
@@ -17909,7 +17909,7 @@ export type TreasuryTransfer = {
      */
     amountCents?: number;
     /**
-     * Zernio fee added on top, 4% with a 50 cent minimum
+     * Zernio fee added on top: 4%, 50 cents minimum per payout.
      */
     feeCents?: number;
     /**
@@ -26517,7 +26517,7 @@ export type GetBalanceResponse = ({
     currency?: 'usd';
     recentTopups?: Array<TreasuryTopup>;
     /**
-     * Balance billing only (absent otherwise). The 10 newest recharges paid from the account credit you held when you moved to the balance, newest first. Nothing was charged to your card and there is no invoice. The amount was added to promoCents with the credit's own expiry.
+     * Balance billing only (absent otherwise). The 10 newest auto top-ups paid from the account credit you held when you moved to the balance, newest first. Nothing was charged to your card and there is no invoice. The amount was added to promoCents with the credit's own expiry.
      */
     recentCreditRecharges?: Array<{
         id: string;
@@ -26607,19 +26607,19 @@ export type GetAutoRechargeError = ({
 export type UpdateAutoRechargeData = {
     body: {
         /**
-         * Turns auto-recharge on or off. A rule switched off by failed charges stays off until the card is updated.
+         * Turns auto top-up on or off. A rule switched off by failed charges stays off until the card is updated.
          */
         enabled?: boolean;
         /**
-         * Recharge when the balance drops below this, in cents. At least $5.
+         * Top up when the balance drops below this, in cents. At least $5.
          */
         belowCents?: number;
         /**
-         * Recharge back up to this, in cents. More than $5 above belowCents.
+         * Top back up to this, in cents. More than $5 above belowCents.
          */
         toCents?: number;
         /**
-         * Most auto-recharge may add per calendar month (UTC), before tax. Null for no limit.
+         * Most auto top-up may add per calendar month (UTC), before tax. Null for no limit.
          */
         monthlyLimitCents?: (number) | null;
         /**
@@ -73254,7 +73254,7 @@ export type PreviewCampaignPayoutBatchResponse = ({
      */
     amountCents: number;
     /**
-     * Zernio fee: 4% per creator, 50 cent minimum.
+     * Zernio fee: 4%, 50 cents minimum per payout.
      */
     feeCents: number;
     /**
