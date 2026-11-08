@@ -29477,7 +29477,7 @@ export type CreatePostError = ({
     details?: {
         mentions?: Array<LinkedInMentionIssue>;
     };
-} | ErrorResponse | {
+} | ErrorResponse | BalanceRequiredError | {
     error?: string;
     /**
      * Stable machine-readable cause. Absent for ownership failures.
@@ -29641,7 +29641,7 @@ export type UpdatePostData = {
 
 export type UpdatePostResponse = (PostUpdateResponse | PostPublishIncompleteResponse);
 
-export type UpdatePostError = (ErrorResponse | {
+export type UpdatePostError = (ErrorResponse | BalanceRequiredError | {
     error?: string;
 });
 
@@ -29683,7 +29683,7 @@ export type RetryPostData = {
     };
 };
 
-export type RetryPostResponse = (PostRetryResponse | {
+export type RetryPostResponse = (PostRetryResponse | PostPublishIncompleteResponse | {
     message?: string;
     /**
      * Summary of why the retry did not fully succeed.
@@ -29692,7 +29692,9 @@ export type RetryPostResponse = (PostRetryResponse | {
     post?: Post;
 });
 
-export type RetryPostError = (ErrorResponse | {
+export type RetryPostError = (ErrorResponse | ({
+    error?: string;
+} | BalanceRequiredError) | {
     error?: string;
 } | {
     error?: string;
