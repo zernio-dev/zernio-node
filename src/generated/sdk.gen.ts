@@ -768,6 +768,7 @@ export const updateAutoRecharge = <ThrowOnError extends boolean = false>(options
  * - 402 `card_declined`: the bank's reason.
  * - 400: `method: bank_transfer` (bank transfers are not available yet).
  * - 400 `invalid_billing_address`: the billing address gives no tax location. Add it in Billing, then retry.
+ * - 429 `payment_attempts_limited`: five card payments were declined in 24 hours. Nothing reaches the bank until `Retry-After` runs out.
  *
  * Needs an owner, admin or billing admin, signed in or through a full-access key they created.
  *
@@ -22589,6 +22590,7 @@ export const settleCampaignParticipant = <ThrowOnError extends boolean = false>(
  * - 402: your balance is negative after a dispute or refund.
  * - 400: nothing payable ("Nothing is payable.").
  * - 400 `invalid_billing_address`: Stripe cannot place your billing address, so it cannot tax the fee. Nothing is held.
+ * - 429 `payment_attempts_limited`: five card payments were declined in 24 hours. Nothing is held and nothing reaches the bank until `Retry-After` runs out.
  *
  * ### Access and retries
  *
