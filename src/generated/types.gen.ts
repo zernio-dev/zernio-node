@@ -26466,6 +26466,14 @@ export type GetBalanceResponse = ({
      */
     availableCents?: number;
     /**
+     * True when the account pays pay-per-use from this prepaid balance (new signups). Absent otherwise: that pay-per-use is on the monthly invoice.
+     */
+    balanceBilling?: boolean;
+    /**
+     * Balance billing only (absent otherwise). What pay-per-use can still spend: availableCents plus promoCents, minus usage not yet posted. At 0 or below, new pay-per-use answers 402 `insufficient_balance`.
+     */
+    spendableCents?: number;
+    /**
      * Balance billing only (absent otherwise). Promotional and support credit Zernio added to your balance. Pay-per-use spends it before availableCents. It is never paid out to payees and is not part of availableCents.
      */
     promoCents?: number;
