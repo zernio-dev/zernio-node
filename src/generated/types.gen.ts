@@ -26814,6 +26814,10 @@ export type PreviewTopupResponse = ({
      * True for an EU business with a valid VAT id: no VAT, reverse charge.
      */
     reverseCharge: boolean;
+    /**
+     * Two-letter country the tax was placed in, from the billing address. Null when Stripe Tax returned no address.
+     */
+    country?: (string) | null;
 });
 
 export type PreviewTopupError = (ErrorResponse | {
