@@ -12749,6 +12749,8 @@ export type InstagramPlatformData = {
      *
      * No error or webhook reports the removal: read droppedCollaborators on the Instagram entry of `GET /v1/posts/{postId}`. Invites stay pending until each collaborator accepts; `GET /v1/accounts/{accountId}/instagram/media/{mediaId}/collaborators` shows who accepted.
      *
+     * More than 3 usable usernames returns 400. Values that are not Instagram usernames, and collaborators on a Story, are not sent and return a warning.
+     *
      */
     collaborators?: Array<(string)>;
     /**
