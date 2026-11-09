@@ -2306,7 +2306,9 @@ export const deleteProfile = <ThrowOnError extends boolean = false>(options: Opt
  *
  * ### Pagination
  *
- * Server-side pagination is optional. When omitted, returns all accounts (backward-compatible).
+ * Server-side pagination is optional. When omitted, the dashboard gets every account, while an API key or OAuth app gets at most 500: the first cursor page, ordered by account id.
+ *
+ * When that cap cuts the list, the response carries `warning` and `pagination.nextCursor`, plus the `X-Result-Truncated: true` and `X-Result-Limit: 500` headers. Pass `nextCursor` back as `cursor` (with `limit`) to list the rest.
  *
  * - Cursor paging: send `limit` alone for the first page, then pass `pagination.nextCursor` back as `cursor` until it is null. Pages are ordered by account id, so accounts added or removed between calls never shift a page. Cannot be combined with `page`, `sort` or `perProfile`.
  * - Offset paging: send `page` and `limit` together. Out-of-range page/limit values are rejected with 400 rather than silently clamped.
@@ -2323,6 +2325,13 @@ export const listAccounts = <ThrowOnError extends boolean = false>(options?: Opt
  * Get follower stats
  * Returns follower count history and growth metrics for connected accounts.
  * Requires analytics add-on subscription. Follower counts are refreshed once per day.
+ *
+ * ### Limits
+ *
+ * - At most 25 accounts per request: up to 25 `accountIds`, or a page of accounts. More than 25 `accountIds` returns 400.
+ * - Without `accountIds`, the response is the first page of 25 accounts even when `limit` and `cursor` are omitted. Pass `pagination.nextCursor` back as `cursor` for the next one.
+ * - When that default page cuts the list, the response also carries a `warning` and the headers `X-Result-Truncated: true` and `X-Result-Limit: 25`.
+ * - At most 1 year between `fromDate` and `toDate`. A longer range returns 400.
  *
  */
 export const getFollowerStats = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetFollowerStatsData, ThrowOnError>) => {

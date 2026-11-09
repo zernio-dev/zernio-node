@@ -15,9 +15,13 @@ export type AccountsListResponse = {
      */
     hasAnalyticsAccess: boolean;
     /**
-     * Present on a paginated request: `{ page, limit, total, pages }` with page and limit, `{ limit, nextCursor }` with cursor paging (limit alone or cursor).
+     * Present on a paginated request: `{ page, limit, total, pages }` with page and limit, `{ limit, nextCursor }` with cursor paging (limit alone or cursor). Also `{ limit, nextCursor }` on an unpaged API request cut at 500 accounts.
      */
     pagination?: (Pagination | AccountCursorPagination);
+    /**
+     * Only when an unpaged API request was cut at 500 accounts: how to list the rest with cursor paging.
+     */
+    warning?: string;
     /**
      * Only with profileIds and perProfile. Accounts matching the filters per profile ID; a profile with none is absent.
      */
@@ -10679,9 +10683,13 @@ export type FollowerStatsResponse = {
     };
     granularity?: string;
     /**
-     * Only present when limit or cursor is sent.
+     * Present when limit or cursor is sent, and on the default page of 25 that an API request without accountIds gets.
      */
     pagination?: AccountCursorPagination;
+    /**
+     * Only when the default page of 25 cut the list. Page through the rest with cursor.
+     */
+    warning?: string;
 };
 
 export type FoodMenu = {
@@ -30243,7 +30251,7 @@ export type ListAccountsData = {
          */
         order?: 'asc' | 'desc';
         /**
-         * Page number (1-based) for offset paging. Requires limit; omit page, limit and cursor for all accounts.
+         * Page number (1-based) for offset paging. Requires limit; omit page, limit and cursor for an unpaged listing (at most 500 accounts for an API key or OAuth app).
          *
          */
         page?: number;
@@ -30290,7 +30298,7 @@ export type ListAccountsError = (ErrorResponse);
 export type GetFollowerStatsData = {
     query?: {
         /**
-         * Comma-separated list of account IDs (optional, defaults to all user's accounts)
+         * Comma-separated list of up to 25 account IDs. Optional: without it, the response pages through all your accounts.
          */
         accountIds?: string;
         /**
@@ -30298,7 +30306,7 @@ export type GetFollowerStatsData = {
          */
         cursor?: string;
         /**
-         * Start date in YYYY-MM-DD format (defaults to 30 days ago)
+         * Start date in YYYY-MM-DD format (defaults to one year before toDate). At most one year before toDate.
          */
         fromDate?: string;
         /**
@@ -30306,7 +30314,7 @@ export type GetFollowerStatsData = {
          */
         granularity?: 'daily' | 'weekly' | 'monthly';
         /**
-         * Accounts per page, ordered by account id. Send it to page through accounts; the response then carries `pagination.nextCursor`. Without limit or cursor every matching account is returned.
+         * Accounts per page, ordered by account id; the response carries `pagination.nextCursor`. Without limit or cursor, a request without accountIds still gets a first page of 25.
          */
         limit?: number;
         /**
