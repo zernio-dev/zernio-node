@@ -1234,7 +1234,11 @@ export type AdLead = {
      */
     id?: string;
     /**
-     * Meta lead id. On LinkedIn, the leadFormResponse id.
+     * The ad network the lead came from.
+     */
+    platform?: ('meta' | 'google' | 'linkedin' | 'tiktok') | null;
+    /**
+     * Meta lead id. On Google, the lead form submission id; on LinkedIn, the leadFormResponse id.
      */
     leadgenId?: string;
     formId?: string;
@@ -1288,6 +1292,11 @@ export type AdLead = {
      */
     webhookDeliveredAt?: (string) | null;
 };
+
+/**
+ * The ad network the lead came from.
+ */
+export type platform3 = 'meta' | 'google' | 'linkedin' | 'tiktok';
 
 /**
  * Meta leads only. `contacted` is set when the first WhatsApp message of a lead_received workflow is delivered, `unreachable` when it fails or the phone number is not valid.
@@ -4880,7 +4889,7 @@ export type Blog = {
     handle?: string;
 };
 
-export type platform3 = 'shopify' | 'wordpress' | 'wix' | 'webflow';
+export type platform4 = 'shopify' | 'wordpress' | 'wix' | 'webflow';
 
 /**
  * An article inside a blog on the connected platform.
@@ -6399,7 +6408,7 @@ export type CampaignSubmission = {
     };
 };
 
-export type platform4 = 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
+export type platform5 = 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
 
 export type status19 = 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
 
@@ -6908,7 +6917,7 @@ export type CommerceCollection = {
     } | null;
 };
 
-export type platform5 = 'shopify' | 'woocommerce';
+export type platform6 = 'shopify' | 'woocommerce';
 
 export type sortOrder = 'manual' | 'best_selling' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc' | 'created' | 'created_desc' | 'most_relevant';
 
@@ -6959,7 +6968,7 @@ export type CommerceDiscount = {
     } | null;
 };
 
-export type platform6 = 'shopify';
+export type platform7 = 'shopify';
 
 export type method = 'code' | 'automatic';
 
@@ -8198,7 +8207,7 @@ export type CreateMetaAdAccountRequest = {
 /**
  * Optional. Omit it or send meta for a Meta ad account.
  */
-export type platform7 = 'meta';
+export type platform8 = 'meta';
 
 export type CreatorCampaign = {
     id: string;
@@ -11887,7 +11896,7 @@ export type HubSpotSettings = {
     useDealsAsResults: boolean;
 };
 
-export type platform8 = 'hubspot';
+export type platform9 = 'hubspot';
 
 export type ImessageAudienceContact = {
     conversationId?: string;
@@ -11967,7 +11976,7 @@ export type ImessageSender = {
     isActive?: boolean;
 };
 
-export type platform9 = 'imessage';
+export type platform10 = 'imessage';
 
 /**
  * A provisioned iMessage sender order and its lifecycle. Activation is asynchronous: poll GET /v1/imessage/senders/{senderId} or subscribe to account.connected.
@@ -12253,7 +12262,7 @@ export type InboxWebhookConversationDetail = {
     contactId?: string;
 };
 
-export type platform10 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
+export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -12372,7 +12381,7 @@ export type InboxWebhookMessage = {
     isRead: boolean;
 };
 
-export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
+export type platform12 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
 
 export type direction3 = 'incoming' | 'outgoing';
 
@@ -12490,7 +12499,7 @@ export type InstagramAccountInsightsResponse = {
 /**
  * Platform that served this response.
  */
-export type platform12 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
+export type platform13 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
 
 export type metricType = 'time_series' | 'total_value';
 
@@ -16326,7 +16335,7 @@ export type ReviewWebhookReview = {
 /**
  * Platform the review originated on. Currently Google Business Profile only.
  */
-export type platform13 = 'googlebusiness';
+export type platform14 = 'googlebusiness';
 
 /**
  * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
@@ -16700,7 +16709,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform14 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
+export type platform15 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -16767,7 +16776,7 @@ export type StoredEvent = {
     } | null;
 };
 
-export type platform15 = 'googleads' | 'metaads';
+export type platform16 = 'googleads' | 'metaads';
 
 /**
  * A tracking tag's install on a connected store: a Shopify web pixel, a Custom HTML widget on a WordPress site, the Zernio embedded script on a Wix site, or the Zernio custom code script on a Webflow site. Fields marked with a platform are present only for it.
@@ -17679,7 +17688,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform16 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+export type platform17 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -21205,7 +21214,7 @@ export type WebhookPayloadComment = {
 
 export type event37 = 'comment.received';
 
-export type platform17 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform18 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 export type WebhookPayloadCommerceOrder = {
     /**
@@ -21649,7 +21658,11 @@ export type WebhookPayloadLead = {
          */
         id: string;
         /**
-         * Meta lead ID (the platform's leadgen_id)
+         * The ad network the lead came from.
+         */
+        platform?: ('meta' | 'google' | 'linkedin' | 'tiktok') | null;
+        /**
+         * The network's lead id: Meta's leadgen_id, or the Google lead form submission id
          */
         leadgenId: string;
         /**
@@ -21708,8 +21721,6 @@ export type WebhookPayloadLead = {
 };
 
 export type event49 = 'lead.received';
-
-export type platform18 = 'facebook';
 
 /**
  * Webhook payload for message received events
@@ -65128,9 +65139,9 @@ export type ListLeadsData = {
         formId?: string;
         limit?: number;
         /**
-         * meta skips the LinkedIn live fetch; linkedin requires accountId to be a LinkedIn ads connection (400 otherwise).
+         * Only leads of this network. meta and google list stored leads of that network (no LinkedIn live fetch); linkedin requires accountId to be a LinkedIn ads connection (400 otherwise). Without it, every stored network is listed, and an accountId that is a LinkedIn ads connection switches to the live fetch.
          */
-        platform?: 'meta' | 'linkedin';
+        platform?: 'meta' | 'google' | 'linkedin';
         /**
          * Meta only. Case-insensitive text search over the lead's answers and the form name.
          */
