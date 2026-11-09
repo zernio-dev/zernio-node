@@ -433,6 +433,7 @@ import {
   getDsaRecommendations,
   getEmailMessage,
   getEmailThread,
+  getEvent,
   getFacebookDemographics,
   getFacebookPageInfo,
   getFacebookPageInsights,
@@ -2797,6 +2798,7 @@ export class Zernio {
     removeCustomConversionGoal: this._bind(removeCustomConversionGoal),
     listEvents: this._bind(listEvents),
     sendEvents: this._bind(sendEvents),
+    getEvent: this._bind(getEvent),
     listEventDestinations: this._bind(listEventDestinations),
     createEventDestination: this._bind(createEventDestination),
     deleteEventDestination: this._bind(deleteEventDestination),
@@ -3442,6 +3444,8 @@ export class Zernio {
     listEvents: this._bind(listEvents),
     /** @deprecated Use `zernio.conversions.sendEvents` instead. */
     sendEvents: this._bind(sendEvents),
+    /** @deprecated Use `zernio.conversions.getEvent` instead. */
+    getEvent: this._bind(getEvent),
     /** @deprecated Use `zernio.conversions.listEventDestinations` instead. */
     listEventDestinations: this._bind(listEventDestinations),
     /** @deprecated Use `zernio.conversions.createEventDestination` instead. */

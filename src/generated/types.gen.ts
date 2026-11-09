@@ -16704,6 +16704,63 @@ export type platform14 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'link
  */
 export type tiktokAccountType = 'business' | 'personal' | 'unknown';
 
+export type StoredEvent = {
+    eventId?: string;
+    eventName?: string;
+    eventTime?: string;
+    receivedAt?: string;
+    actionSource?: (string) | null;
+    value?: (number) | null;
+    currency?: (string) | null;
+    /**
+     * Origin, path and attribution parameters only.
+     */
+    sourceUrl?: (string) | null;
+    utm?: {
+        source?: (string) | null;
+        medium?: (string) | null;
+        campaign?: (string) | null;
+        content?: (string) | null;
+    };
+    /**
+     * Ad ID from the `zrn` parameter Zernio adds to links of ads it creates.
+     */
+    zrn?: (string) | null;
+    clickIds?: {
+        gclid?: (string) | null;
+        fbc?: (string) | null;
+    };
+    /**
+     * Destinations the event was forwarded to.
+     */
+    destinationsSent?: number;
+    hasEmail?: boolean;
+    hasPhone?: boolean;
+    hasExternalId?: boolean;
+    /**
+     * The ad behind the event, when Zernio can name it. Google: from the click behind `clickIds.gclid` (synced daily from Google Ads click_view for clicks up to 14 days before the event; gbraid/wbraid clicks are not resolved). Meta: from the `zrn` ad id, for Meta ads Zernio holds. `null` otherwise.
+     */
+    ad?: {
+        platform?: 'googleads' | 'metaads';
+        /**
+         * Google Ads customer id (Google only).
+         */
+        customerId?: string;
+        campaignId?: (string) | null;
+        /**
+         * Google only.
+         */
+        adGroupId?: (string) | null;
+        /**
+         * Meta only.
+         */
+        adSetId?: (string) | null;
+        adId?: (string) | null;
+    } | null;
+};
+
+export type platform15 = 'googleads' | 'metaads';
+
 /**
  * A tracking tag's install on a connected store: a Shopify web pixel, a Custom HTML widget on a WordPress site, the Zernio embedded script on a Wix site, or the Zernio custom code script on a Webflow site. Fields marked with a platform are present only for it.
  */
@@ -17614,7 +17671,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform15 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+export type platform16 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -21140,7 +21197,7 @@ export type WebhookPayloadComment = {
 
 export type event37 = 'comment.received';
 
-export type platform16 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform17 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 export type WebhookPayloadCommerceOrder = {
     /**
@@ -21644,7 +21701,7 @@ export type WebhookPayloadLead = {
 
 export type event49 = 'lead.received';
 
-export type platform17 = 'facebook';
+export type platform18 = 'facebook';
 
 /**
  * Webhook payload for message received events
@@ -22644,7 +22701,7 @@ export type event54 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform18 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
+export type platform19 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * WhatsApp send origin. Absent on non-WhatsApp platforms.
@@ -23455,7 +23512,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
 
 export type event69 = 'whatsapp.account.alert_received';
 
-export type platform19 = 'whatsapp';
+export type platform20 = 'whatsapp';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.
@@ -67899,60 +67956,7 @@ export type ListEventsData = {
 };
 
 export type ListEventsResponse = ({
-    events?: Array<{
-        eventId?: string;
-        eventName?: string;
-        eventTime?: string;
-        receivedAt?: string;
-        actionSource?: (string) | null;
-        value?: (number) | null;
-        currency?: (string) | null;
-        /**
-         * Origin, path and attribution parameters only.
-         */
-        sourceUrl?: (string) | null;
-        utm?: {
-            source?: (string) | null;
-            medium?: (string) | null;
-            campaign?: (string) | null;
-            content?: (string) | null;
-        };
-        /**
-         * Ad ID from the `zrn` parameter Zernio adds to links of ads it creates.
-         */
-        zrn?: (string) | null;
-        clickIds?: {
-            gclid?: (string) | null;
-            fbc?: (string) | null;
-        };
-        /**
-         * Destinations the event was forwarded to.
-         */
-        destinationsSent?: number;
-        hasEmail?: boolean;
-        hasPhone?: boolean;
-        hasExternalId?: boolean;
-        /**
-         * The ad behind the event, when Zernio can name it. Google: from the click behind `clickIds.gclid` (synced daily from Google Ads click_view for clicks up to 14 days before the event; gbraid/wbraid clicks are not resolved). Meta: from the `zrn` ad id, for Meta ads Zernio holds. `null` otherwise.
-         */
-        ad?: {
-            platform?: 'googleads' | 'metaads';
-            /**
-             * Google Ads customer id (Google only).
-             */
-            customerId?: string;
-            campaignId?: (string) | null;
-            /**
-             * Google only.
-             */
-            adGroupId?: (string) | null;
-            /**
-             * Meta only.
-             */
-            adSetId?: (string) | null;
-            adId?: (string) | null;
-        } | null;
-    }>;
+    events?: Array<StoredEvent>;
     /**
      * Pass as `cursor` to get the next page; `null` on the last page.
      */
@@ -67994,6 +67998,10 @@ export type SendEventsData = {
          * Forwarded as each platform test code (see POST /v1/ads/conversions). A root-level `test_event_code` is accepted as an alias. Test events are not stored.
          */
         testCode?: string;
+        /**
+         * `sync` sends to every destination before answering (200, per-destination results). `async` stores and queues the sends, then answers 202 at once; each send is retried while the platform fails for now, and its outcome shows on GET /v1/events/{eventId}. Requests with `testCode` always send now.
+         */
+        mode?: 'sync' | 'async';
     };
     headers?: {
         /**
@@ -68047,12 +68055,70 @@ export type SendEventsResponse = ({
          * Set when the destination could not be reached at all (account disconnected, unsupported platform, platform error).
          */
         error?: string;
+        /**
+         * The destination failed for now (platform error, timeout, rate limit) and the send is queued for retries; its outcome shows on GET /v1/events/{eventId}.
+         */
+        retrying?: boolean;
     }>;
+    /**
+     * Destinations whose sends were queued (all of them with `mode: async`, retries with `sync`).
+     */
+    queuedDestinations?: number;
+} | {
+    eventsReceived?: number;
+    stored?: boolean;
+    /**
+     * Destinations whose sends were queued.
+     */
+    queuedDestinations?: number;
+    destinations?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Always `null`: requests with a test code send now and answer 200.
+     */
+    testCode?: (string) | null;
 });
 
 export type SendEventsError = (ErrorResponse | {
     error?: string;
 } | unknown);
+
+export type GetEventData = {
+    path: {
+        /**
+         * The `eventId` the event was sent with.
+         */
+        eventId: string;
+    };
+    query: {
+        /**
+         * Profile the event belongs to.
+         */
+        profileId: string;
+    };
+};
+
+export type GetEventResponse = ({
+    event?: StoredEvent;
+    deliveries?: Array<{
+        accountId?: string;
+        destinationId?: string;
+        platform?: ('metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads') | null;
+        status?: 'sent' | 'retrying' | 'failed';
+        /**
+         * Send attempt (1 = the first).
+         */
+        attempt?: number;
+        error?: (string) | null;
+        errorCode?: (string) | null;
+        sentAt?: string;
+    }>;
+});
+
+export type GetEventError = (ErrorResponse | {
+    error?: string;
+});
 
 export type ListEventDestinationsData = {
     query?: {

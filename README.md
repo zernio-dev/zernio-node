@@ -996,6 +996,7 @@ try {
 | `conversions.getConversionDestination()` | Get a conversion destination |
 | `conversions.getConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
+| `conversions.getEvent()` | Get one stored event and its deliveries |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |
 | `conversions.updateConversionAction()` | Update a conversion action's settings |
 | `conversions.updateConversionDestination()` | Update a conversion destination |
