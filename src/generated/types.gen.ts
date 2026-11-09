@@ -36926,6 +36926,16 @@ export type ListInstagramStoriesData = {
          */
         accountId: string;
     };
+    query?: {
+        /**
+         * Also return archived stories that are no longer live, newest first after the live ones. Every item then carries `expired` and `metrics`.
+         */
+        includeExpired?: boolean;
+        /**
+         * Maximum number of archived stories to read when `includeExpired=true` (live stories are always all returned).
+         */
+        limit?: number;
+    };
 };
 
 export type ListInstagramStoriesResponse = ({
@@ -36958,10 +36968,26 @@ export type ListInstagramStoriesResponse = ({
          * When the story was posted.
          */
         timestamp?: (string) | null;
+        /**
+         * Only with `includeExpired=true`. True for an archived story that is no longer live; its media urls point to Zernio storage.
+         */
+        expired?: boolean;
+        /**
+         * Only with `includeExpired=true`. Latest archived reading of the story (the final one once it expired), or null when none was taken yet.
+         */
+        metrics?: {
+            views?: number;
+            reach?: number;
+            replies?: number;
+            shares?: number;
+            follows?: number;
+            profileVisits?: number;
+            lastUpdated?: (string) | null;
+        } | null;
     }>;
 });
 
-export type ListInstagramStoriesError = (unknown | ErrorResponse);
+export type ListInstagramStoriesError = (ErrorResponse);
 
 export type GetInstagramPublishingLimitData = {
     path: {
