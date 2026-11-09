@@ -13595,6 +13595,15 @@ export type MediaItem = {
     type?: 'image' | 'video' | 'gif' | 'document';
     /**
      * A media item with a null, missing or empty url is dropped, unless it names a connected file with `fileId` + `accountId`.
+     *
+     * A Google Drive share link is accepted here and in `thumbnail`, `instagramThumbnail`, `customMedia` and cover fields such as TikTok's `video_cover_image_url` (`drive.google.com/file/d/{id}/view`, `open?id={id}`, `uc?id={id}`, `drive.usercontent.google.com/download?id={id}`).
+     *
+     * Zernio copies the file into its media storage when the post is created or updated and stores that copy's url, so platforms never fetch from Drive. Large files behind Drive's virus-scan page work too.
+     *
+     * The file must be shared as "Anyone with the link". A private, deleted or unknown file, or a folder link, fails the request with a 400 (`invalid_field_value`) before anything is saved. For a private file of a connected Google account, send `fileId` + `accountId` instead.
+     *
+     * A Drive file over 5 GB fails with a 400 (`invalid_field_value`). If Google Drive does not answer within 15 seconds, or the copy stalls for 30 seconds or runs past 4 minutes, the request fails with a 503 (`temporarily_unavailable`, `Retry-After` set) and nothing is saved, so retry it.
+     *
      */
     url?: string;
     /**
