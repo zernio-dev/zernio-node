@@ -4731,7 +4731,7 @@ export type AutoRecharge = {
      */
     enabled: boolean;
     /**
-     * Top up when the balance drops below this, in cents.
+     * Auto top-up charges the card when the balance drops below this, in cents.
      */
     belowCents: number;
     /**
@@ -4774,7 +4774,7 @@ export type disabledReason = 'payment_failed';
  */
 export type BalanceRequiredError = ErrorResponse & {
     /**
-     * Dashboard link to Billing that opens the top-up drawer (the add-card drawer first when there is no card). Send the user there, then retry.
+     * Dashboard link to Billing that opens the Add funds drawer (the add-card drawer first when there is no card). Send the user there, then retry.
      */
     funding_url: string;
 };
@@ -20254,7 +20254,7 @@ export type WebhookPayloadBalanceCharged = {
          */
         id: string;
         /**
-         * `manual`: someone topped up in Billing or through the API. `auto_top_up`: the auto top-up rule charged the card.
+         * `manual`: someone added funds in Billing or through the API. `auto_top_up`: the auto top-up rule charged the card.
          */
         trigger: 'manual' | 'auto_top_up';
         /**
@@ -20293,7 +20293,7 @@ export type WebhookPayloadBalanceCharged = {
 export type event23 = 'balance.charged';
 
 /**
- * `manual`: someone topped up in Billing or through the API. `auto_top_up`: the auto top-up rule charged the card.
+ * `manual`: someone added funds in Billing or through the API. `auto_top_up`: the auto top-up rule charged the card.
  */
 export type trigger = 'manual' | 'auto_top_up';
 
@@ -20320,7 +20320,7 @@ export type WebhookPayloadBalanceEmpty = {
      */
     code: 'insufficient_balance' | 'usage_limit_reached';
     /**
-     * Dashboard link that opens the top-up drawer in Billing.
+     * Dashboard link that opens the Add funds drawer in Billing.
      */
     fundingUrl: string;
     /**
@@ -20357,7 +20357,7 @@ export type WebhookPayloadBalanceLow = {
         alertBelowCents: number;
     };
     /**
-     * Dashboard link that opens the top-up drawer in Billing.
+     * Dashboard link that opens the Add funds drawer in Billing.
      */
     fundingUrl: string;
     /**
@@ -26467,7 +26467,7 @@ export type ListLedgerEntriesError = (ErrorResponse | {
 
 export type GetBalanceResponse = ({
     /**
-     * Your balance. It goes negative after a dispute or refund of a spent top-up, or when pay-per-use already in flight lands past zero. The next top-up covers it. New payout batches are refused while it is negative.
+     * Your balance. It goes negative after a dispute or refund of funds already spent, or when pay-per-use already in flight lands past zero. The next funds you add cover it. New payout batches are refused while it is negative.
      */
     availableCents?: number;
     /**
@@ -26616,7 +26616,7 @@ export type UpdateAutoRechargeData = {
          */
         enabled?: boolean;
         /**
-         * Top up when the balance drops below this, in cents. At least $5.
+         * Auto top-up charges the card when the balance drops below this, in cents. At least $5.
          */
         belowCents?: number;
         /**

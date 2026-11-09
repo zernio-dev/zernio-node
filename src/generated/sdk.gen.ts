@@ -687,10 +687,10 @@ export const listLedgerEntries = <ThrowOnError extends boolean = false>(options?
  * Returns your team's balance:
  *
  * - the balance pay-per-use draws on
- * - top-ups still waiting for payment
- * - your latest top-ups and payout batch payments
+ * - funds added but still waiting for payment
+ * - your latest payments into the balance and payout batch payments
  *
- * A card top-up is in `availableCents` as soon as it is paid. The balance never pays creators: payouts are charged to your card per payout batch.
+ * Funds added by card are in `availableCents` as soon as they are paid. The balance never pays creators: payouts are charged to your card per payout batch.
  *
  * A card dispute or refund is debited from the available balance and can make it negative. New payout batches are refused until it is positive again.
  *
@@ -728,9 +728,9 @@ export const getAutoRecharge = <ThrowOnError extends boolean = false>(options?: 
  * Update auto top-up settings
  * Changes the auto top-up rule. Omitted fields keep their value.
  *
- * A declined auto top-up is retried 1 hour, 1 day and 3 days later, with an email each time. After the last retry fails, auto top-up switches off (`disabledReason: payment_failed`) until the card is updated. A top-up you make yourself resets the retries.
+ * A declined auto top-up is retried 1 hour, 1 day and 3 days later, with an email each time. After the last retry fails, auto top-up switches off (`disabledReason: payment_failed`) until the card is updated. Adding funds yourself resets the retries.
  *
- * A bank asking for 3D Secure counts as a decline: the charge happens while you are away, so the email asks you to top up in Billing.
+ * A bank asking for 3D Secure counts as a decline: the charge happens while you are away, so the email asks you to add funds in Billing.
  *
  * A pay-per-use request that finds the balance at $0 runs the auto top-up first (with the rule on, a saved card and no retry pending) and goes through when the charge lands, so a new balance at $0 is charged on first use.
  *
@@ -750,7 +750,7 @@ export const updateAutoRecharge = <ThrowOnError extends boolean = false>(options
 };
 
 /**
- * Create a top-up
+ * Add funds
  * Charges the billing owner's saved card (the default one, or `paymentMethodId`) `amountCents` plus tax, while the payer is present, and credits your balance `amountCents`. There is no card fee.
  *
  * Tax is added on top of the amount (`taxCents`, `totalCents`): VAT at 21% in Spain, at the customer's country rate for EU consumers; an EU business whose VAT id VIES confirms is reverse charged (no VAT, `reverseCharge: true`); outside the EU there is none.
@@ -821,7 +821,7 @@ export const getTopupReceipt = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Get a top-up invoice
- * The invoice for a paid balance top-up: the PDF of the Stripe invoice it was paid through.
+ * The invoice for funds added to the balance, once paid: the PDF of the Stripe invoice it was paid through.
  *
  * It shows the amount added to your balance and the tax charged on top: VAT where it applies, or a reverse charge note for an EU business with a valid VAT id. Usage paid from the balance carries no further VAT.
  *
@@ -843,7 +843,7 @@ export const getTopupInvoice = <ThrowOnError extends boolean = false>(options: O
  * Get a top-up invoice (alias)
  * Alias of getTopupInvoice, kept for clients written against its first name.
  *
- * The invoice for a paid balance top-up: the PDF of the Stripe invoice it was paid through.
+ * The invoice for funds added to the balance, once paid: the PDF of the Stripe invoice it was paid through.
  *
  * It shows the amount added to your balance and the tax charged on top: VAT where it applies, or a reverse charge note for an EU business with a valid VAT id. Usage paid from the balance carries no further VAT.
  *
@@ -22588,7 +22588,7 @@ export const settleCampaignParticipant = <ThrowOnError extends boolean = false>(
  *
  * - 402 `payment_required`: no saved card. Nothing is held.
  * - 402 `card_declined`: the bank's reason; every amount is payable again.
- * - 402: card payouts are limited to $10,000.00 gross per rolling 30 days by default. Over it the call answers "Over your instant payout limit. Top up your balance to pay more this month, or contact support to raise the limit."
+ * - 402: card payouts are limited to $10,000.00 gross per rolling 30 days by default. Over it the call answers "Over your instant payout limit for the last 30 days. Contact support to raise it."
  * - 402: your balance is negative after a dispute or refund.
  * - 400: nothing payable ("Nothing is payable.").
  * - 400 `invalid_billing_address`: Stripe cannot place your billing address, so it cannot tax the fee. Nothing is held.

@@ -1469,7 +1469,7 @@ try {
 | `treasury.listTopups()` | List top-ups |
 | `treasury.listTransfers()` | List transfers |
 | `treasury.createPayeeOnboardingLink()` | Create a payee onboarding link |
-| `treasury.createTopup()` | Create a top-up |
+| `treasury.createTopup()` | Add funds |
 | `treasury.createTransfer()` | Create a transfer (removed) |
 | `treasury.getAutoRecharge()` | Get auto top-up settings |
 | `treasury.getBalance()` | Get balance |
