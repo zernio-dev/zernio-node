@@ -12870,7 +12870,7 @@ export type InstagramPlatformData = {
      */
     thumbOffset?: number;
     /**
-     * Custom cover image URL for Instagram Reels (JPG or PNG, publicly accessible). Overrides thumbOffset when provided. Also accepted as reelCover (alias).
+     * Custom cover image URL for Instagram Reels (JPG or PNG, publicly accessible). Overrides thumbOffset when provided. Also accepted as reelCover (alias). The cover cannot be changed after publishing because Meta only allows comment_enabled to be updated on published Instagram media.
      */
     instagramThumbnail?: string;
     /**
@@ -13595,6 +13595,13 @@ export type MediaItem = {
     type?: 'image' | 'video' | 'gif' | 'document';
     /**
      * A media item with a null, missing or empty url is dropped, unless it names a connected file with `fileId` + `accountId`.
+     *
+     * A Google Drive share link is accepted here and in `thumbnail`, `instagramThumbnail`, `customMedia` and cover fields such as TikTok's `video_cover_image_url` (`drive.google.com/file/d/{id}/view`, `open?id={id}`, `uc?id={id}`, `drive.usercontent.google.com/download?id={id}`). Zernio copies the file into its media storage when the post is created or updated and stores that copy's url, so platforms never fetch from Drive. Large files behind Drive's virus-scan page work too.
+     *
+     * The file must be shared as "Anyone with the link". A private, deleted or unknown file, or a folder link, fails the request with a 400 (`invalid_field_value`) before anything is saved. For a private file of a connected Google account, send `fileId` + `accountId` instead.
+     *
+     * A Drive file over 5 GB fails with a 400 (`invalid_field_value`). If Google Drive does not respond, the request fails with a 503 (`temporarily_unavailable`, `Retry-After` set) and nothing is saved, so retry it.
+     *
      */
     url?: string;
     /**
@@ -29972,11 +29979,11 @@ export type EditPostError = (unknown | ErrorResponse | {
 export type UpdatePostMetadataData = {
     body: {
         /**
-         * The platform to update metadata on
+         * The platform to update metadata on. Facebook accepts only thumbnailUrl.
          */
-        platform: 'youtube';
+        platform: 'youtube' | 'facebook';
         /**
-         * YouTube video ID (required for direct mode, ignored for post-based mode)
+         * YouTube video ID (required for direct mode, ignored for post-based mode). Not supported for Facebook.
          */
         videoId?: string;
         /**
@@ -30004,13 +30011,18 @@ export type UpdatePostMetadataData = {
          */
         privacyStatus?: 'public' | 'private' | 'unlisted';
         /**
-         * Public URL of a custom thumbnail image (JPEG, PNG, or GIF, max 50 MB, recommended 1280x720). Works on any video you own, including videos not published through Zernio. The channel must be verified (phone verification) to set custom thumbnails.
+         * Public URL of a custom thumbnail image.
+         *
+         * - YouTube: JPEG, PNG, or GIF, max 50 MB, recommended 1280x720. Works on any video you own, including videos not published through Zernio. The channel must be verified (phone verification) to set custom thumbnails.
+         * - Facebook: JPEG or PNG, max 5 MB, served directly (no redirects). Replaces the cover of a feed video or Reel published through Zernio. Stories are not supported.
          *
          * **Errors:**
          *
-         * - 400 with the reason, no field updated: YouTube refuses the thumbnail (e.g. channel without the custom-thumbnail permission, video not owned by the connected channel), or the image URL cannot be fetched or has an unsupported format or size.
+         * - 400 with the reason, no field updated: the platform refuses the thumbnail (e.g. YouTube channel without the custom-thumbnail permission, video not owned by the connected account), the Facebook post is not a feed video or Reel, or the image URL cannot be fetched or has an unsupported format or size.
          * - 429: YouTube thumbnail rate limit (uploadRateLimitExceeded). Retry later, not immediately, because retries keep the channel over its limit.
-         * - 500: any other temporary YouTube or network failure; can be retried.
+         * - 404 (Facebook): Facebook cannot find the video. Right after publishing this can be Meta's processing lag, so retry shortly; otherwise the video was deleted or the Page no longer grants access.
+         * - 503 (Facebook): Facebook is still processing the video, so the cover cannot be set yet. Retry in a few minutes.
+         * - 500: any other temporary platform or network failure; can be retried.
          *
          */
         thumbnailUrl?: string;
@@ -42862,6 +42874,10 @@ export type ReplyToInboxPostData = {
          */
         commentId?: string;
         /**
+         * (LinkedIn only) When true, the reply starts with an @mention of the author of `commentId` (a member or a page), tagged with their URN and the name LinkedIn returns for them. Requires `commentId`. Returns 400 `platform_not_supported` on other platforms, and 400 `linkedin_mention_name_unavailable` with `details.authorUrn` when LinkedIn does not return the author's name (for example a page the account does not administer); mention them in `message` as @[Name](urn) instead. If LinkedIn rejects any mention in the reply, it is posted once more with every mention as plain text.
+         */
+        mentionAuthor?: boolean;
+        /**
          * (Bluesky only) Parent content identifier
          */
         parentCid?: string;
@@ -42913,6 +42929,10 @@ export type ReplyToInboxPostError = ({
     error?: string;
     code?: string;
     details?: {
+        /**
+         * (mentionAuthor) URN of the comment author whose name LinkedIn did not return
+         */
+        authorUrn?: string;
         mentions?: Array<LinkedInMentionIssue>;
     };
 } | ErrorResponse | unknown);

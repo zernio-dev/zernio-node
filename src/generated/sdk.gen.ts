@@ -72,6 +72,7 @@ export const validatePost = <ThrowOnError extends boolean = false>(options: Opti
  * - The type and format come from the bytes, not the Content-Type header.
  * - Corrupt, truncated or non-media files return `valid: false` with code `MEDIA_UNDECODABLE`.
  * - Private/localhost URLs are rejected for SSRF protection.
+ * - A Google Drive share link is checked against the file behind it. A file not shared as "Anyone with the link" returns `valid: false` with code `MEDIA_URL_UNREACHABLE`.
  *
  * Platform limits are sourced from each platform's actual upload constraints.
  *
@@ -2226,12 +2227,18 @@ export const editPost = <ThrowOnError extends boolean = false>(options: OptionsL
 
 /**
  * Update post metadata
- * Updates metadata of a published video on the specified platform without re-uploading. Currently only supported for YouTube. At least one updatable field is required.
+ * Updates metadata of a published video on the specified platform without re-uploading. Supported on YouTube and Facebook. At least one updatable field is required.
+ *
+ * ### Platforms
+ *
+ * - YouTube: every field below.
+ * - Facebook: `thumbnailUrl` only, on a feed video or Reel published through Zernio (post-based mode). It replaces the video's cover. Any other field, a Story, a non-video post, or direct `videoId` mode returns 400.
+ * - Instagram: not supported. Meta does not allow changing a Reel or video cover after publishing, so set `instagramThumbnail` when creating the post.
  *
  * ### Two modes
  *
  * 1. Post-based (video published through Zernio): pass the Zernio postId in the URL and platform in the body.
- * 2. Direct video ID (video uploaded outside Zernio, e.g. directly to YouTube): use _ as the postId, and pass videoId + accountId + platform in the body. The accountId is the Zernio account ID for the connected YouTube channel.
+ * 2. Direct video ID (YouTube only, video uploaded outside Zernio): use _ as the postId, and pass videoId + accountId + platform in the body. The accountId is the Zernio account ID for the connected YouTube channel.
  *
  */
 export const updatePostMetadata = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdatePostMetadataData, ThrowOnError>) => {
