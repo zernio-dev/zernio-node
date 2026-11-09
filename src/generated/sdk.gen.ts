@@ -2510,6 +2510,7 @@ export const getAccountHealth = <ThrowOnError extends boolean = false>(options: 
  * - `cid`: the Bluesky content id needed to reply.
  * - `subreddit`: Reddit only.
  * - `title`, `description`, `link`, `boardId` and `boardOwnerUsername`: Pinterest only (the native Pin values; `message` keeps title and description joined).
+ * - `isOwner`: Pinterest and Facebook. On Pinterest, true for a Pin the account created and false for a Pin it saved from another user, so keep `isOwner: true` to import only its own Pins. On Facebook, false marks a collab post by another Page.
  *
  * ### Expired tokens
  *
@@ -17329,6 +17330,8 @@ export const createStandaloneAd = <ThrowOnError extends boolean = false>(options
  * - Statuses work as for Meta leads.
  *
  * ### LinkedIn
+ *
+ * LinkedIn lead form responses are also stored and listed with the other networks (`platform: linkedin`), usually within 15 minutes, once they reach Zernio.
  *
  * When `accountId` is a LinkedIn ads account, `adAccountId` is required. Leads are fetched live from LinkedIn's `leadFormResponses`: LinkedIn has no webhook and enforces 90-day retention, so nothing is persisted.
  *

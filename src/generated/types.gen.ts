@@ -10224,6 +10224,10 @@ export type ExternalPostSummary = {
      */
     mediaAudioType?: string;
     /**
+     * Pinterest: true when the account created the Pin, false when it saved it from another user; keep true to import only its own Pins. Facebook: false for a collab post by another Page. Null when unknown and for other platforms.
+     */
+    isOwner?: (boolean) | null;
+    /**
      * Engagement + insights for the post. `likes` and `comments` are
      * available immediately after an on-demand sync (they come from the
      * platform listing). `reach`, `impressions`, `views` depend on the
@@ -14898,7 +14902,7 @@ export type PlatformAnalytics = {
      */
     errorCode?: ('post_not_found' | 'not_post_owner' | 'permission_missing') | null;
     /**
-     * Facebook only: true when the connected Page authored the post, false when Facebook reports another author (a collab post), null when unknown or for other platforms.
+     * Facebook: true when the connected Page authored the post, false when Facebook reports another author (a collab post). Pinterest: true when the account created the Pin, false when it saved it from another user. Null when unknown or for other platforms.
      */
     isOwner?: (boolean) | null;
 };
@@ -30900,6 +30904,10 @@ export type GetAccountPostsResponse = ({
          * Pinterest only: username of the board owner
          */
         boardOwnerUsername?: string;
+        /**
+         * Pinterest: true when the account created the Pin, false when it saved it from another user. Facebook: false for a collab post by another Page. Absent when the platform does not report it.
+         */
+        isOwner?: boolean;
     }>;
     lastUpdated?: string;
 });
