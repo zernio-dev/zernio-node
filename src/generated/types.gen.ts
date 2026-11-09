@@ -24383,7 +24383,7 @@ export type WorkflowNode = {
      * **Variables** available from the start of every run (absent values are `''`):
      *
      * - Message: `lastMessage`, `inboundText`, `triggerText`, `conversationId`.
-     * - Contact: `contact.name`, `contact.phone`, `contact.handle`, `contact.tags` (array), `contact.fields` (the contact's custom fields object), `contact.lastInteractionAt` (ISO date), `contact.lastInteractionHoursAgo` (number), `contact.isFollower` (Instagram, from the stored profile: true, false or `''` when unknown).
+     * - Contact: `contact.name`, `contact.phone`, `contact.handle`, `contact.tags` (array), `contact.fields` (the contact's custom fields object), `contact.lastInteractionAt` (ISO date), `contact.lastInteractionHoursAgo` (number), `contact.isFollower` and `contact.followerCount` (Instagram, from the stored profile; `''` when unknown).
      * - Referral: `referral.ref`, `referral.source`, `referral.type`, `referral.adId`, `referral.adTitle` (the ad title or headline Meta sent), `referral.adName` (the synced ad's name, else `referral.adTitle`), `referral.campaignName` (the synced ad's campaign).
      * - Taps: `postback.payload`, `postback.title`, `quickReply.payload`, `quickReply.title`.
      * - Story and comment: `story.id`, `story.url`, `comment.id`, `comment.text`, `comment.platformPostId`.
