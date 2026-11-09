@@ -13900,7 +13900,10 @@ export type visibility3 = 'published' | 'staging';
 export type gender2 = 'female' | 'male' | 'unisex';
 
 /**
- * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys and unspecified features default to OPT_OUT. auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. The deprecated standard_enhancements bundle (subcode 3858504) is a 400 before any Meta call.
+ * Meta Advantage+ creative enhancements. Map snake_case feature names to OPT_IN or OPT_OUT; Meta validates supported keys. On creation Zernio sends only the keys you name, so Meta's default applies to the rest; on PUT /v1/ads/{adId} omitted keys keep the creative's current value. Send OPT_OUT to switch an enhancement off.
+ *
+ * auto_promotion_tag is an Advantage+ enhancement, not the Ads Manager Promotion setting. The deprecated standard_enhancements bundle (subcode 3858504) is a 400 before any Meta call.
+ *
  */
 export type MetaCreativeFeatures = {
     [key: string]: ('OPT_IN' | 'OPT_OUT');
