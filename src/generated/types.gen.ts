@@ -67362,21 +67362,6 @@ export type SendConversionsData = {
             adPersonalization?: 'GRANTED' | 'DENIED';
         };
     };
-    headers?: {
-        /**
-         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
-         *
-         * - Same key + same body: replays the original response.
-         * - Same key + different body: 422.
-         * - Key still processing: 409.
-         *
-         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
-         *
-         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
-         *
-         */
-        'Idempotency-Key'?: string;
-    };
 };
 
 export type SendConversionsResponse = ({
