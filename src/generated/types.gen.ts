@@ -31766,7 +31766,9 @@ export type GetConnectUrlData = {
          *
          * When present, the consent dialog asks only for the scopes behind those areas, plus the scopes every connection needs (identity, token refresh, listing the pages, organizations or channels the user picks from).
          *
-         * - Scopes never asked for are absent from the account's `permissions`. The account keeps the requested areas in `scopeAreas`, and the health endpoints judge it against them: an area never asked for reads `not_requested` and does not make the account unhealthy, so an `analytics`-only account reports `canPost: false` with `status: healthy`. A `posting`-only account cannot read analytics or the inbox until reconnected with more areas.
+         * - Scopes never asked for are absent from the account's `permissions`. The account keeps the requested areas in `scopeAreas`.
+         * - The health endpoints judge the account against those areas: an area never asked for reads `not_requested` and does not make it unhealthy, so an `analytics`-only account reports `canPost: false` with `status: healthy`.
+         * - A `posting`-only account cannot read analytics or the inbox until reconnected with more areas.
          * - First comments need `comments`: a `posting`-only account publishes the post and skips the first comment.
          * - Scopes in none of the areas (X likes, bookmarks and follows, Pinterest ads-only extras) are requested only when the parameter is omitted.
          *
@@ -42867,7 +42869,12 @@ export type ReplyToInboxPostData = {
          */
         commentId?: string;
         /**
-         * (LinkedIn only) When true, the reply starts with an @mention of the author of `commentId` (a member or a page), tagged with their URN and the name LinkedIn returns for them. Requires `commentId`. Returns 400 `platform_not_supported` on other platforms, and 400 `linkedin_mention_name_unavailable` with `details.authorUrn` when LinkedIn does not return the author's name (for example a page the account does not administer); mention them in `message` as @[Name](urn) instead. If LinkedIn rejects any mention in the reply, it is posted once more with every mention as plain text.
+         * (LinkedIn only) When true, the reply starts with an @mention of the author of `commentId` (a member or a page), tagged with their URN and the name LinkedIn returns for them. Requires `commentId`.
+         *
+         * - Returns 400 `platform_not_supported` on other platforms.
+         * - Returns 400 `linkedin_mention_name_unavailable` with `details.authorUrn` when LinkedIn does not return the author's name (for example a page the account does not administer); mention them in `message` as @[Name](urn) instead.
+         * - If LinkedIn rejects any mention in the reply, it is posted once more with every mention as plain text.
+         *
          */
         mentionAuthor?: boolean;
         /**
