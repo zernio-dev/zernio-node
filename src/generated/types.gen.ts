@@ -36173,6 +36173,18 @@ export type GetPageWebhookSubscriptionResponse = ({
      * Present only when leadgen is missing.
      */
     warning?: (string) | null;
+    /**
+     * Instagram accounts only.
+     */
+    instagramUserId?: string;
+    /**
+     * Instagram accounts only. Id of the subscription record on Meta; null when there is none.
+     */
+    subscriptionId?: (string) | null;
+    /**
+     * Instagram accounts only. Webhook fields Zernio expects that Meta did not subscribe.
+     */
+    missingFields?: Array<(string)>;
 });
 
 export type GetPageWebhookSubscriptionError = (ErrorResponse | {
@@ -36192,6 +36204,26 @@ export type ResyncPageWebhookSubscriptionResponse = ({
     leadgen?: boolean;
     subscribedFields?: Array<(string)>;
     warning?: (string) | null;
+    /**
+     * Instagram accounts only.
+     */
+    instagramUserId?: string;
+    /**
+     * Instagram accounts only. Id of the subscription record after the repair.
+     */
+    subscriptionId?: (string) | null;
+    /**
+     * Instagram accounts only. Id of the record before the repair; null when there was none.
+     */
+    previousSubscriptionId?: (string) | null;
+    /**
+     * Instagram accounts only. True when the subscription record id changed.
+     */
+    recreated?: boolean;
+    /**
+     * Instagram accounts only. Webhook fields Zernio expects that Meta did not subscribe.
+     */
+    missingFields?: Array<(string)>;
 });
 
 export type ResyncPageWebhookSubscriptionError = (ErrorResponse | {

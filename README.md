@@ -362,7 +362,7 @@ try {
 | `connect.getHubSpotConnectUrl()` | Get HubSpot OAuth connect URL |
 | `connect.getLinkedInOrganizations()` | List LinkedIn orgs |
 | `connect.getOAuthApp()` | Get an OAuth app |
-| `connect.getPageWebhookSubscription()` | Read a Facebook Page's webhook subscription |
+| `connect.getPageWebhookSubscription()` | Read an account's webhook subscription |
 | `connect.getPendingOAuthData()` | Get pending OAuth data |
 | `connect.getPinterestBoards()` | List Pinterest boards |
 | `connect.getRedditFlairs()` | List subreddit flairs |
@@ -403,7 +403,7 @@ try {
 | `connect.connectWordPressWithApplicationPassword()` | Connect self-hosted WordPress with an application password |
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
-| `connect.resyncPageWebhookSubscription()` | Re-subscribe a Facebook Page to Zernio's webhooks |
+| `connect.resyncPageWebhookSubscription()` | Re-subscribe an account to Zernio's webhooks |
 | `connect.selectFacebookPage()` | Select Facebook page |
 | `connect.selectGoogleAnalyticsProperty()` | Connect the chosen Google Analytics property |
 | `connect.selectGoogleBusinessLocation()` | Select Google Business Profile location |
