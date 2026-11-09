@@ -25477,11 +25477,18 @@ export type GetTikTokAccountInsightsData = {
          * Comma-separated list. Defaults to
          * "follower_count,likes_count,video_count,followers_gained,followers_lost".
          *
-         * Live from /v2/user/info/ (requires user.info.stats scope):
+         * Live profile counters (requires user.info.stats scope):
          * - follower_count  (cumulative; time series joined from AccountStats)
          * - following_count (cumulative; time series joined from AccountStats.metadata)
          * - likes_count     (cumulative; time series joined from AccountStats.metadata)
          * - video_count     (cumulative; time series joined from AccountStats.metadata)
+         *
+         * Daily account figures from TikTok (requires user.insights scope and an account on Zernio's TikTok connection):
+         * - video_views     (views of all the account's videos that day)
+         * - likes           (likes received that day)
+         * - comments        (comments received that day)
+         * - shares          (shares that day)
+         * - profile_views   (profile views that day)
          *
          * Zernio-synthesized:
          * - followers_gained  (sum of positive daily follower deltas)
@@ -25490,8 +25497,8 @@ export type GetTikTokAccountInsightsData = {
          */
         metrics?: string;
         /**
-         * "total_value" returns the latest cumulative counter value.
-         * "time_series" returns daily values joined from AccountStats snapshots.
+         * "total_value" returns the latest value of a cumulative counter, and the sum over the range for a daily account metric.
+         * "time_series" returns daily values: joined from AccountStats snapshots for the counters, TikTok's own daily figures for the daily account metrics.
          *
          */
         metricType?: 'time_series' | 'total_value';

@@ -269,15 +269,25 @@ export const getLinkedInOrgAggregateAnalytics = <ThrowOnError extends boolean = 
 
 /**
  * Get TikTok account-level insights
- * Returns account-level TikTok insights from /v2/user/info/ (live) plus historical time series joined from Zernio's daily snapshotter (AccountStats).
+ * Returns account-level TikTok insights: the lifetime profile counters (live, with historical time series joined from Zernio's daily snapshotter) and TikTok's own daily account figures (video views, likes, comments, shares, profile views).
  *
  * - Response shape matches /v1/analytics/instagram/account-insights.
  * - Max 89 days, defaults to last 30 days.
  * - Requires the user.info.stats scope on the account (412 if missing).
  *
- * ### Why the scope is narrow
+ * ### Daily account metrics
  *
- * This ACCOUNT-level endpoint intentionally exposes only the four counter metrics below. It does not return:
+ * `video_views`, `likes`, `comments`, `shares` and `profile_views` are TikTok's daily figures for the whole account, read from the TikTok Business Accounts API. They count every video of the account, not only recent ones, so they differ from GET /v1/analytics/daily-metrics, which sums per-post analytics.
+ *
+ * - With `metricType=time_series` each day is one entry in `values`. With `total_value` the total is the sum over the range.
+ * - The latest day available is yesterday, and TikTok can take 24-48 hours to settle a day. Days after the latest available one are left out of `values`.
+ * - They work for Business and personal TikTok accounts connected through Zernio's TikTok connection, with the user.insights scope.
+ * - Accounts on the original TikTok integration (or on your own TikTok app) cannot read them: each one is listed in `unavailableMetrics` with reason `unsupported_metric`, and reconnecting through Zernio's TikTok connection enables them. A grant without user.insights lists them with reason `permission_missing`. Either way the other requested metrics are still returned.
+ * - They are not in the default metric set: ask for them in `metrics`.
+ *
+ * ### What is not exposed
+ *
+ * This ACCOUNT-level endpoint does not return:
  *
  * - account-level impressions / reach
  * - follower inflow / outflow breakdown
