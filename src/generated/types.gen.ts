@@ -59937,9 +59937,9 @@ export type ListAdsInstagramAccountsResponse = ({
      */
     isPageBacked: boolean;
     /**
-     * Discovery source; Page linkage also uses page_backed.
+     * Discovery source; Page linkage also uses page_backed. business_partner is a partner asset shared with the ad account's business; promote_pages is linked to a Page the ad account promotes.
      */
-    source: 'ad_account' | 'page_backed' | 'business';
+    source: 'ad_account' | 'page_backed' | 'business' | 'business_partner' | 'promote_pages';
 })>;
     pages: Array<{
         /**
@@ -59965,7 +59965,7 @@ export type ListAdsInstagramAccountsResponse = ({
         /**
          * Discovery source of the resolved identity; null when absent from discovery.
          */
-        source: ('ad_account' | 'page_backed' | 'business') | null;
+        source: ('ad_account' | 'page_backed' | 'business' | 'business_partner' | 'promote_pages') | null;
     };
 });
 

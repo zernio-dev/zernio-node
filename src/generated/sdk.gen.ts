@@ -15522,6 +15522,8 @@ export const listTikTokSmartPlusReviews = <ThrowOnError extends boolean = false>
  *
  * Discovers identities through connected_instagram_accounts, Page linkage and Page-backed identities, with a best-effort business fallback. Business permission errors do not fail discovery. The resolved object uses the same profile-scoped resolver as ad creation; null means no identity was resolved. Format-specific observed-actor fallbacks at creative creation are not predicted.
  *
+ * Instagram accounts and Pages that other businesses share with the ad account's business as partner assets are listed with source business_partner, and Pages the ad account promotes with source promote_pages. These reads are best effort: a failure there never fails discovery.
+ *
  */
 export const listAdsInstagramAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdsInstagramAccountsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdsInstagramAccountsResponse, ListAdsInstagramAccountsError, ThrowOnError>({
