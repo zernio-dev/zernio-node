@@ -72,7 +72,6 @@ export const validatePost = <ThrowOnError extends boolean = false>(options: Opti
  * - The type and format come from the bytes, not the Content-Type header.
  * - Corrupt, truncated or non-media files return `valid: false` with code `MEDIA_UNDECODABLE`.
  * - Private/localhost URLs are rejected for SSRF protection.
- * - A Google Drive share link is checked against the file behind it. A file not shared as "Anyone with the link" returns `valid: false` with code `MEDIA_URL_UNREACHABLE`.
  *
  * Platform limits are sourced from each platform's actual upload constraints.
  *
