@@ -16822,7 +16822,7 @@ export const createAdAccount = <ThrowOnError extends boolean = false>(options: O
  *
  * Writes through /v1/ads endpoints to an ad account with `selected: false` answer `403 ad_account_not_selected`. Add it to the selection first (dashboard picker, or `GET /v1/connect/{platform}/ads` with `adAccountIds`).
  *
- * The list includes unselected ad accounts by default. Pass `inScopeOnly=true` to get only the ones this connection can use.
+ * The list includes unselected ad accounts by default, except on a Meta connection with a selection, which lists them only with `live=true`. Pass `inScopeOnly=true` to get only the ones this connection can use.
  *
  */
 export const listAdAccounts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListAdAccountsData, ThrowOnError>) => {
