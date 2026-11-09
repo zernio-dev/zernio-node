@@ -198,6 +198,11 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getTikTokAccountInsights).toBeTypeOf('function');
     });
 
+    it('should have getPinterestAccountInsights method', () => {
+      expect(client.analytics.getPinterestAccountInsights).toBeDefined();
+      expect(client.analytics.getPinterestAccountInsights).toBeTypeOf('function');
+    });
+
     it('should have getTikTokDemographics method', () => {
       expect(client.analytics.getTikTokDemographics).toBeDefined();
       expect(client.analytics.getTikTokDemographics).toBeTypeOf('function');

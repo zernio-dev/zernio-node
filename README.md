@@ -255,6 +255,7 @@ try {
 | `analytics.getLinkedInOrgAggregateAnalytics()` | Get LinkedIn org analytics |
 | `analytics.getLinkedInPostAnalytics()` | Get LinkedIn post stats |
 | `analytics.getLinkedInPostReactions()` | Get LinkedIn post reactions |
+| `analytics.getPinterestAccountInsights()` | Get Pinterest account-level insights |
 | `analytics.getPostAuthenticity()` | Get a post's authenticity score |
 | `analytics.getPostingFrequency()` | Get frequency vs engagement |
 | `analytics.getPostSamples()` | Get post samples |

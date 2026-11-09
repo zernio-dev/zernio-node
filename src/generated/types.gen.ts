@@ -12391,7 +12391,7 @@ export type direction3 = 'incoming' | 'outgoing';
 
 /**
  * Shared account-insights response envelope used by every platform-level
- * analytics endpoint (/v1/analytics/{facebook|instagram|youtube|linkedin|tiktok}*).
+ * analytics endpoint (/v1/analytics/{facebook|instagram|youtube|linkedin|tiktok|pinterest}*).
  * The name is historical - the shape was first shipped for Instagram and every
  * new platform endpoint reuses it for response-shape consistency. The platform
  * field echoes back which platform served the response.
@@ -12406,7 +12406,7 @@ export type InstagramAccountInsightsResponse = {
     /**
      * Platform that served this response.
      */
-    platform?: 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
+    platform?: 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok' | 'pinterest';
     dateRange?: {
         since?: string;
         until?: string;
@@ -12503,7 +12503,7 @@ export type InstagramAccountInsightsResponse = {
 /**
  * Platform that served this response.
  */
-export type platform13 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok';
+export type platform13 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok' | 'pinterest';
 
 export type metricType = 'time_series' | 'total_value';
 
@@ -16588,7 +16588,7 @@ export type SocialAccount = {
      */
     platformUserId?: string;
     /**
-     * Accounts connected through your own OAuth app: the permission areas the connect requested. Null on accounts connected through Zernio's app.
+     * The permission areas the connect requested: the `scopes` of GET /v1/connect/{platform}, or your OAuth app's areas. Null when the connect requested every area.
      */
     scopeAreas?: Array<(string)> | null;
     /**
@@ -19182,7 +19182,7 @@ export type event5 = 'account.disconnected';
 export type disconnectionType = 'intentional' | 'unintentional';
 
 /**
- * Webhook payload for account.permissions_changed events: an account connected through your own OAuth app hit a missing permission and stays connected for its other areas.
+ * Webhook payload for account.permissions_changed events: an account connected with `scopes` or through your own OAuth app hit a missing permission and stays connected for its other areas.
  */
 export type WebhookPayloadAccountPermissionsChanged = {
     /**
@@ -19202,9 +19202,9 @@ export type WebhookPayloadAccountPermissionsChanged = {
         username: string;
         displayName?: string;
         /**
-         * The OAuth app the account connected through.
+         * The OAuth app the account connected through; null on Zernio's app.
          */
-        oauthAppId: string;
+        oauthAppId: (string) | null;
         /**
          * Every area now missing. Enable the permission on your app (or have the user grant it), then reconnect the account.
          */
@@ -24827,6 +24827,10 @@ export type YouTubeDailyViewsResponse = {
      * Sum of views across all days in the range
      */
     totalViews?: number;
+    /**
+     * Present and true when YouTube refused the refresh (the Analytics quota or its rate limit) and the response serves the days Zernio already stored, so some days may be missing; lastSyncedAt says how old they are. Retry later for a full refresh.
+     */
+    stale?: boolean;
     dailyViews?: Array<{
         date?: string;
         views?: number;
@@ -25511,6 +25515,60 @@ export type GetTikTokAccountInsightsData = {
 export type GetTikTokAccountInsightsResponse = (InstagramAccountInsightsResponse);
 
 export type GetTikTokAccountInsightsError = (unknown | ErrorResponse);
+
+export type GetPinterestAccountInsightsData = {
+    query: {
+        /**
+         * The Zernio SocialAccount ID for the Pinterest account.
+         */
+        accountId: string;
+        /**
+         * Start date (YYYY-MM-DD). Defaults to 30 days ago. At most 89 days before today.
+         */
+        fromDate?: string;
+        /**
+         * Comma-separated list. Defaults to "impressions,engagements,follower_count".
+         *
+         * Live from Pinterest, one value per day:
+         * - impressions
+         * - engagements
+         * - saves
+         * - pin_clicks
+         * - outbound_clicks
+         *
+         * From Zernio daily snapshots:
+         * - follower_count    (follower count per day; total is the latest)
+         * - followers_gained  (sum of positive daily follower deltas)
+         * - followers_lost    (sum of absolute negative daily deltas)
+         *
+         */
+        metrics?: string;
+        /**
+         * "total_value" returns one total per metric.
+         * "time_series" also returns the daily values.
+         *
+         */
+        metricType?: 'time_series' | 'total_value';
+        /**
+         * Alias of fromDate, kept for existing callers
+         * @deprecated
+         */
+        since?: string;
+        /**
+         * End date (YYYY-MM-DD). Defaults to today.
+         */
+        toDate?: string;
+        /**
+         * Alias of toDate, kept for existing callers
+         * @deprecated
+         */
+        until?: string;
+    };
+};
+
+export type GetPinterestAccountInsightsResponse = (InstagramAccountInsightsResponse);
+
+export type GetPinterestAccountInsightsError = (unknown | ErrorResponse);
 
 export type GetTikTokDemographicsData = {
     query: {
@@ -30514,6 +30572,12 @@ export type GetAllAccountsHealthResponse = ({
         status?: 'healthy' | 'warning' | 'error';
         canPost?: boolean;
         canFetchAnalytics?: boolean;
+        /**
+         * Present when the account connected with `scopes` or through your own OAuth app: each permission area the platform splits, as granted, missing or not_requested. An area never requested does not make the account unhealthy.
+         */
+        scopeAreas?: {
+            [key: string]: ('granted' | 'missing' | 'not_requested');
+        };
         tokenValid?: boolean;
         tokenExpiresAt?: string;
         /**
@@ -30729,6 +30793,12 @@ export type GetAccountHealthResponse = ({
         canPost?: boolean;
         canFetchAnalytics?: boolean;
         missingRequired?: Array<(string)>;
+        /**
+         * Present when the account connected with `scopes` or through your own OAuth app: each permission area the platform splits, as granted, missing or not_requested. An area never requested does not make the account unhealthy.
+         */
+        scopeAreas?: {
+            [key: string]: ('granted' | 'missing' | 'not_requested');
+        };
     };
     /**
      * List of issues found
@@ -31684,7 +31754,7 @@ export type GetConnectUrlData = {
          *
          * When present, the consent dialog asks only for the scopes behind those areas, plus the scopes every connection needs (identity, token refresh, listing the pages, organizations or channels the user picks from).
          *
-         * - Scopes never asked for are absent from the account's `permissions`, and the health endpoints report them as not granted. A `posting`-only account cannot read analytics or the inbox until reconnected with more areas.
+         * - Scopes never asked for are absent from the account's `permissions`. The account keeps the requested areas in `scopeAreas`, and the health endpoints judge it against them: an area never asked for reads `not_requested` and does not make the account unhealthy, so an `analytics`-only account reports `canPost: false` with `status: healthy`. A `posting`-only account cannot read analytics or the inbox until reconnected with more areas.
          * - First comments need `comments`: a `posting`-only account publishes the post and skips the first comment.
          * - Scopes in none of the areas (X likes, bookmarks and follows, Pinterest ads-only extras) are requested only when the parameter is omitted.
          *
@@ -31701,7 +31771,7 @@ export type GetConnectUrlData = {
          * | instagram (`loginMethod=facebook_login`) | `instagram_content_publish` | `instagram_manage_insights` | `instagram_manage_comments` | `instagram_manage_messages` | `ads_management`, `ads_read`, `leads_retrieval`, `pages_manage_ads` | `instagram_basic`, `pages_show_list`, `pages_read_engagement`, `business_management`, `pages_messaging`, `pages_manage_metadata` |
          * | linkedin | `w_member_social`, `w_organization_social`, `r_organization_social`, `r_organization_followers` | `r_member_postAnalytics`, `r_member_profileAnalytics`, `rw_organization_admin`, `r_organization_social`, `r_organization_followers` | `w_member_social`, `w_member_social_feed`, `w_organization_social`, `w_organization_social_feed`, `r_organization_social`, `r_organization_social_feed` | none | `r_ads`, `rw_ads`, `r_ads_reporting`, `r_marketing_leadgen_automation`, `rw_conversions` | `openid`, `profile`, `email`, `r_basicprofile`, `rw_organization_admin` |
          * | twitter | `tweet.write`, `media.write` | (in the always-requested set) | `tweet.write`, `like.write`, `tweet.moderate.write` | `dm.read`, `dm.write`, `media.write` | none | `tweet.read`, `users.read`, `offline.access` |
-         * | tiktok | `video.publish` | `user.info.stats`, `user.insights`, `video.list`, `video.insights` | `comment.list`, `comment.list.manage`, `video.list` | `message.list.read`, `message.list.send`, `message.list.manage` | none | `user.info.basic`, `user.info.username`, `user.info.profile`, `user.account.type`, `video.publish`, `video.upload`, `video.list` |
+         * | tiktok | `video.publish`, `video.upload` | `user.info.stats`, `user.insights`, `video.list`, `video.insights` | `comment.list`, `comment.list.manage`, `video.list` | `message.list.read`, `message.list.send`, `message.list.manage` | none | `user.info.basic`, `user.info.username`, `user.info.profile`, `user.account.type`, `video.list` |
          * | youtube | `youtube.upload` | `yt-analytics.readonly` | `youtube.force-ssl` | none | none | `youtube` |
          * | threads | `threads_content_publish`, `threads_manage_replies`, `threads_delete` | `threads_manage_insights` | `threads_content_publish`, `threads_read_replies`, `threads_manage_replies`, `threads_delete` | none | none | `threads_basic` |
          * | reddit | `submit`, `read`, `mysubreddits`, `flair`, `history`, `edit` | `read`, `history` | `read`, `history`, `edit`, `vote` | `privatemessages` | none | `identity` |
@@ -31717,6 +31787,8 @@ export type GetConnectUrlData = {
          * | microsoft | `Mail.ReadWrite`, `Mail.Send` | `Calendars.ReadWrite` | `Files.ReadWrite` | `Contacts.Read` | `openid`, `profile`, `email`, `offline_access`, `User.Read` |
          *
          * Areas accumulate: reconnecting with more areas widens the grant, and `GET /v1/accounts/{accountId}/health` reports the result.
+         *
+         * On tiktok, a connect without `posting` returns 409 `INVALID_RESOURCE_STATE` (`param: scopes`) when the profile already holds an account from Zernio's older TikTok app: that account can only be replaced by a grant that includes posting.
          *
          */
         scopes?: string;
@@ -33069,6 +33141,10 @@ export type SelectFacebookPageData = {
      */
     connectFlow?: string;
     /**
+     * The `scopes` the callback redirect carried, passed back unchanged so the account records the areas it requested. Omit it when the redirect had none.
+     */
+    scopes?: string;
+    /**
      * Decoded user profile object from the OAuth callback.
      */
     userProfile: {
@@ -33218,6 +33294,10 @@ export type SelectInstagramAccountData = {
          * Set by the Zernio-hosted picker, whose user token stays in an httpOnly cookie. Integrators send tempToken instead.
          */
         connectFlow?: string;
+        /**
+         * The `scopes` the callback redirect carried, passed back unchanged so the account records the areas it requested. Omit it when the redirect had none.
+         */
+        scopes?: string;
         /**
          * Optional custom redirect URL to return to after selection
          */
