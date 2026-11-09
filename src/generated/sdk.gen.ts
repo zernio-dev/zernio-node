@@ -17321,7 +17321,12 @@ export const createStandaloneAd = <ThrowOnError extends boolean = false>(options
  *
  * ### Google
  *
- * Google lead form submissions are stored like Meta leads and listed with them, usually within 15 minutes of the submission. Each lead says its network in `platform` (`meta`, `google`, `linkedin`), and `platform=google` lists only Google leads. On a Google lead `leadgenId` is the submission id and `formId` the lead form asset id; answers are keyed like Meta's (`email`, `phone_number`, `full_name`), custom questions by their text. Statuses work as for Meta leads.
+ * Google lead form submissions are stored like Meta leads and listed with them, usually within 15 minutes of the submission.
+ *
+ * - Each lead says its network in `platform` (`meta`, `google`, `linkedin`), and `platform=google` lists only Google leads.
+ * - `leadgenId` is the submission id and `formId` the lead form asset id.
+ * - Answers are keyed like Meta's (`email`, `phone_number`, `full_name`), custom questions by their text.
+ * - Statuses work as for Meta leads.
  *
  * ### LinkedIn
  *
