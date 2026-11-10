@@ -12209,7 +12209,7 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
  * ### Targeting (comment trigger)
  *
  * - Per-post: set `platformPostId` to scope to one specific post (only one active per-post automation is allowed per post).
- * On Instagram this is the Graph media id (`platformPostId` from GET /v1/external-posts), not the number inside an instagram.com link. A link id (19 digits) is swapped for the media id of the matching synced post, or rejected with a 400 when that post has not synced yet.
+ * - On Instagram, `platformPostId` is the media id from GET /v1/external-posts, not the number in an instagram.com link. A link id (19 digits) is swapped for the matching synced post's media id, or rejected with a 400 if that post has not synced yet.
  * - Account-wide ("any post"): omit `platformPostId` (and `postId`). The automation evaluates every comment on every post on the account.
  *
  * You can stack unlimited account-wide automations, each with its own keyword set, and they all run independently. Per-post automations take priority on their post.
