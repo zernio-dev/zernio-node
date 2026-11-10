@@ -12209,6 +12209,7 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
  * ### Targeting (comment trigger)
  *
  * - Per-post: set `platformPostId` to scope to one specific post (only one active per-post automation is allowed per post).
+ * On Instagram this is the Graph media id (`platformPostId` from GET /v1/external-posts), not the number inside an instagram.com link. A link id (19 digits) is swapped for the media id of the matching synced post, or rejected with a 400 when that post has not synced yet.
  * - Account-wide ("any post"): omit `platformPostId` (and `postId`). The automation evaluates every comment on every post on the account.
  *
  * You can stack unlimited account-wide automations, each with its own keyword set, and they all run independently. Per-post automations take priority on their post.
@@ -17450,7 +17451,7 @@ export const createStandaloneAd = <ThrowOnError extends boolean = false>(options
  *
  * ### LinkedIn
  *
- * LinkedIn lead form responses are also stored and listed with the other networks (`platform: linkedin`), usually within 15 minutes, once they reach Zernio.
+ * LinkedIn lead form responses are also stored and listed with the other networks (`platform: linkedin`), usually within 15 minutes, once they reach Zernio. So are TikTok Instant Form leads (`platform: tiktok`), as TikTok sends them.
  *
  * When `accountId` is a LinkedIn ads account, `adAccountId` is required. Leads are fetched live from LinkedIn's `leadFormResponses`: LinkedIn has no webhook and enforces 90-day retention, so nothing is persisted.
  *
