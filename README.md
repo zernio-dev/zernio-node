@@ -1109,6 +1109,7 @@ try {
 | `email.listEmailFolders()` | List mailbox folders |
 | `email.listEmailLabels()` | List labels |
 | `email.listEmailMessages()` | List email messages |
+| `email.listEmailSendAs()` | List send-as addresses |
 | `email.listEmailThreads()` | List email threads |
 | `email.listScheduledEmails()` | List scheduled emails |
 | `email.createEmailLabel()` | Create a label |

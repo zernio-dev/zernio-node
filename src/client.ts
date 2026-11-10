@@ -744,6 +744,7 @@ import {
   listEmailFolders,
   listEmailLabels,
   listEmailMessages,
+  listEmailSendAs,
   listEmailThreads,
   listEventDestinations,
   listEvents,
@@ -1969,6 +1970,7 @@ export class Zernio {
     listEmailFolders: this._bind(listEmailFolders),
     listEmailLabels: this._bind(listEmailLabels),
     createEmailLabel: this._bind(createEmailLabel),
+    listEmailSendAs: this._bind(listEmailSendAs),
     deleteEmailLabel: this._bind(deleteEmailLabel),
     downloadEmailAttachment: this._bind(downloadEmailAttachment),
   };

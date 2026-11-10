@@ -9922,6 +9922,34 @@ export type EmailMessagePatch = {
     removeLabels?: Array<(string)>;
 };
 
+/**
+ * An address the mailbox can send from.
+ */
+export type EmailSendAs = {
+    email?: string;
+    displayName?: (string) | null;
+    /**
+     * Gmail alias reply-to address, if set.
+     */
+    replyTo?: (string) | null;
+    /**
+     * The mailbox's own address.
+     */
+    isPrimary?: boolean;
+    /**
+     * The address Gmail picks by default in its compose window.
+     */
+    isDefault?: boolean;
+    /**
+     * Gmail sends from an alias only once it is verified. Always `true` on Outlook.
+     */
+    verified?: boolean;
+    /**
+     * Signature html. Gmail only; always `null` on Outlook.
+     */
+    signature?: (string) | null;
+};
+
 export type EmailThread = {
     id?: string;
     accountId?: string;
@@ -16618,6 +16646,14 @@ export type SendEmailRequest = {
     bcc?: Array<EmailAddress>;
     replyTo?: Array<EmailAddress>;
     fromName?: string;
+    /**
+     * Send from another address of the mailbox, listed by `GET /v1/email/send-as`. Gmail: a verified send-as alias, else 400. Outlook: any address the mailbox has Send As or Send on Behalf rights on, else 403. Omitted, the mail leaves from the mailbox address.
+     */
+    from?: string;
+    /**
+     * Gmail only. Appends the signature of the sending address (the `from` alias, or the mailbox address) to `html` and `text`. Outlook answers 400: Graph does not expose Outlook signatures.
+     */
+    appendSignature?: boolean;
     subject: string;
     /**
      * Plain-text body. One of `text` or `html` is required.
@@ -40367,6 +40403,31 @@ export type CreateEmailLabelResponse = ({
 });
 
 export type CreateEmailLabelError = (ErrorResponse);
+
+export type ListEmailSendAsData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type ListEmailSendAsResponse = ({
+    data?: Array<EmailSendAs>;
+    meta?: {
+        /**
+         * `true` when `from` must be in this list (Gmail). `false` when the provider decides at send time (Outlook).
+         */
+        completeList?: boolean;
+        /**
+         * Whether `appendSignature` works on this mailbox.
+         */
+        signatures?: boolean;
+    };
+});
+
+export type ListEmailSendAsError = (ErrorResponse);
 
 export type DeleteEmailLabelData = {
     path: {
