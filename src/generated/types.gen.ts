@@ -1183,6 +1183,9 @@ export type AdKeyword = {
          */
         landingPageExperience?: ('BELOW_AVERAGE' | 'AVERAGE' | 'ABOVE_AVERAGE') | null;
     };
+    /**
+     * When Zernio last read this keyword from Google: the last successful keyword sync of its ad account, or a later edit through Zernio.
+     */
     syncedAt?: (string) | null;
     /**
      * Trailing 30-day window. Null on rows synced before the metrics columns existed (re-synced on the keyword's next daily sweep).
