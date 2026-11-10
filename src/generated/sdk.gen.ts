@@ -7626,6 +7626,7 @@ export const unlikePost = <ThrowOnError extends boolean = false>(options: Option
  *
  * - 400 with `details.privateReplyConsumed: true`: the comment's single private reply is spent (by this call or an earlier one). Never retry it.
  * - 502: Meta answered a server error after receiving the reply. It carries `details.privateReplyOutcome: "unknown"`. The reply is usually delivered and the comment's private reply spent, so check the conversation before retrying.
+ * - Meta-originated failures carry Meta's error object in `platformError` (`code`, `error_subcode`, `message`, `type`, `fbtrace_id`). Common Instagram subcodes: 2534014 commenter not found, 2534023 already replied, 2534024 older than 7 days, 2534025 not eligible for a private reply, 2534066 declined.
  *
  * ### Recording
  *
