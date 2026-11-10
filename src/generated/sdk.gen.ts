@@ -18027,7 +18027,7 @@ export const browseAdTargeting = <ThrowOnError extends boolean = false>(options:
  *
  * Spend, impressions and demographics are political-only fields and are left out of the default projection; request them via `fields`.
  *
- * **Meta rate limit.** Meta searches are capped at 30 requests per hour per team, because all customers share Zernio's Meta quota. Meta can also throttle that shared quota. Either way you get a `429` with `Retry-After`: wait that long before retrying.
+ * **Meta rate limit.** Meta searches are capped at 40 requests per hour per team, because all customers share Zernio's Meta quota. Meta can also throttle that shared quota. Either way you get a `429` with `Retry-After`: wait that long before retrying.
  *
  * **LinkedIn coverage.** Ads served after June 1 2023, worldwide, kept for a year after their last impression. EU-delivered ads carry impression ranges and the disclosed targeting facets.
  *
