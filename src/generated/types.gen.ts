@@ -10875,6 +10875,24 @@ export type verificationStatus = 'accepted' | 'pending' | 'unverified';
 export type source2 = 'provider' | 'declared';
 
 /**
+ * An Outlook shared mailbox added under a connected Microsoft account. It is an account of its own, so every `/v1/email` endpoint takes its `accountId`.
+ */
+export type EmailSharedMailbox = {
+    /**
+     * Pass it as `accountId` to any /v1/email endpoint.
+     */
+    accountId?: string;
+    address?: string;
+    displayName?: (string) | null;
+    /**
+     * The Outlook account whose access opens this mailbox.
+     */
+    parentAccountId?: string;
+    isActive?: boolean;
+    addedAt?: string;
+};
+
+/**
  * A signature Zernio stores and appends itself, so it works on every provider.
  */
 export type EmailSignature = {
@@ -34232,7 +34250,9 @@ export type GetConnectUrlData = {
         /**
          * Comma-separated permission areas to request instead of the platform's full permission set.
          *
-         * **Values:** `posting`, `analytics`, `comments`, `messaging`, `ads`; on google and microsoft, `email`, `calendar`, `files`, `contacts`.
+         * **Values:** `posting`, `analytics`, `comments`, `messaging`, `ads`; on google and microsoft, `email`, `calendar`, `files`, `contacts`, `directory`; on microsoft only, `shared_mailboxes`. `directory` (people search) works on microsoft, and on google only through your own OAuth app for now.
+         *
+         * `shared_mailboxes` (Microsoft only) adds `Mail.ReadWrite.Shared` and `Mail.Send.Shared`, so the account can add shared mailboxes it has access to with `POST /v1/email/shared-mailboxes`. Pass it next to `email`. To add it to a connected account, reconnect with `scopes=email,shared_mailboxes`.
          *
          * **Default:** omit it (what the dashboard does) to request everything the platform supports. Google and microsoft REQUIRE it (400 `INVALID_FIELD_VALUE` when absent) because their consent screens are reviewed per area.
          *
@@ -42749,6 +42769,38 @@ export type DeleteEmailSendAsResponse = ({
 export type DeleteEmailSendAsError = (ErrorResponse | {
     error?: string;
 });
+
+export type ListEmailSharedMailboxesData = {
+    query: {
+        /**
+         * The connected Google, Microsoft or IMAP account.
+         */
+        accountId: string;
+    };
+};
+
+export type ListEmailSharedMailboxesResponse = ({
+    data?: Array<EmailSharedMailbox>;
+});
+
+export type ListEmailSharedMailboxesError = (ErrorResponse);
+
+export type AddEmailSharedMailboxData = {
+    body: {
+        /**
+         * The connected Microsoft account that has access to the shared mailbox.
+         */
+        accountId: string;
+        address: string;
+        displayName?: string;
+    };
+};
+
+export type AddEmailSharedMailboxResponse = ({
+    data?: EmailSharedMailbox;
+});
+
+export type AddEmailSharedMailboxError = (ErrorResponse);
 
 export type ListEmailSignaturesData = {
     query?: {
@@ -54821,6 +54873,54 @@ export type ListContactGroupsResponse = ({
 });
 
 export type ListContactGroupsError = (unknown | ErrorResponse | {
+    error?: string;
+});
+
+export type AutocompleteContactsData = {
+    query: {
+        /**
+         * A Google or Microsoft account connected with the contacts or directory area.
+         */
+        accountId: string;
+        limit?: number;
+        /**
+         * What the user typed: a name or the start of an email address.
+         */
+        q: string;
+    };
+};
+
+export type AutocompleteContactsResponse = ({
+    data?: Array<{
+        name?: string;
+        email?: (string) | null;
+        emails?: Array<(string)>;
+        /**
+         * E.164 numbers only.
+         */
+        phones?: Array<(string)>;
+        company?: (string) | null;
+        jobTitle?: (string) | null;
+        photoUrl?: (string) | null;
+        /**
+         * contacts = saved contacts, other = people the user mailed, directory = the organization.
+         */
+        source?: 'contacts' | 'other' | 'directory';
+    }>;
+    meta?: {
+        accountId?: string;
+        /**
+         * Each source searched. A source the provider refused, such as the directory of a personal Google account, has searched false and an error.
+         */
+        sources?: Array<{
+            source?: 'contacts' | 'other' | 'directory';
+            searched?: boolean;
+            error?: 'not_available_for_this_account' | 'provider_error';
+        }>;
+    };
+});
+
+export type AutocompleteContactsError = (unknown | ErrorResponse | {
     error?: string;
 });
 

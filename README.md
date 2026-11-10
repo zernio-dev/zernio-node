@@ -982,6 +982,7 @@ try {
 | `contacts.getContactChannels()` | List channels for a contact |
 | `contacts.updateContact()` | Update contact |
 | `contacts.deleteContact()` | Delete contact |
+| `contacts.autocompleteContacts()` | Search people |
 
 ### Content Retention
 | Method | Description |
@@ -1137,6 +1138,7 @@ try {
 | `email.listEmailLabels()` | List labels |
 | `email.listEmailMessages()` | List email messages |
 | `email.listEmailSendAs()` | List send-as addresses |
+| `email.listEmailSharedMailboxes()` | List shared mailboxes |
 | `email.listEmailSignatures()` | List signatures |
 | `email.listEmailThreads()` | List email threads |
 | `email.listScheduledEmails()` | List scheduled emails |
@@ -1157,6 +1159,7 @@ try {
 | `email.deleteEmailLabel()` | Delete a label |
 | `email.deleteEmailSendAs()` | Remove a declared send-as address |
 | `email.deleteEmailSignature()` | Delete a signature |
+| `email.addEmailSharedMailbox()` | Add a shared mailbox |
 | `email.cancelScheduledEmail()` | Cancel a scheduled email |
 | `email.declareEmailSendAs()` | Declare a send-as address |
 | `email.discoverImapSettings()` | Find the mail settings for an address |
