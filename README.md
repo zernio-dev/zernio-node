@@ -974,6 +974,7 @@ try {
 ### Contacts
 | Method | Description |
 |--------|-------------|
+| `contacts.listContactGroups()` | List contact groups |
 | `contacts.listContacts()` | List contacts |
 | `contacts.bulkCreateContacts()` | Bulk create contacts |
 | `contacts.createContact()` | Create contact |

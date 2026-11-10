@@ -54676,6 +54676,10 @@ export type ListContactsData = {
          * Filter by the SocialAccount that owns the contact channel. Contacts are resolved through their channels, so the profileId contact filter is not applied while accountId is set. A profileId sent alongside is still access-checked and still scopes the returned filters.tags list.
          */
         accountId?: string;
+        /**
+         * A group id from GET /v1/contacts/groups, such as contactGroups/abc, folder:default or category:VIP. Returns the contacts the Google or Outlook contacts sync filed in that group on the account. Requires accountId. Memberships are not stored while content retention is off.
+         */
+        group?: string;
         isSubscribed?: 'true' | 'false';
         limit?: number;
         platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms';
@@ -54784,6 +54788,41 @@ export type CreateContactResponse = ({
 });
 
 export type CreateContactError = (unknown | ErrorResponse);
+
+export type ListContactGroupsData = {
+    query: {
+        /**
+         * A Google or Microsoft account connected with the contacts area.
+         */
+        accountId: string;
+    };
+};
+
+export type ListContactGroupsResponse = ({
+    data?: Array<{
+        /**
+         * Google contactGroups/{id}; Outlook folder:{folderId} (folder:default for the default Contacts folder) or category:{name}.
+         */
+        id?: string;
+        name?: string;
+        type?: 'group' | 'folder' | 'category';
+        /**
+         * A group the provider defines, such as Google starred or the default Outlook Contacts folder.
+         */
+        system?: boolean;
+        /**
+         * Members as Google counts them. Null for Outlook.
+         */
+        memberCount?: (number) | null;
+    }>;
+    meta?: {
+        accountId?: string;
+    };
+});
+
+export type ListContactGroupsError = (unknown | ErrorResponse | {
+    error?: string;
+});
 
 export type GetContactData = {
     path: {

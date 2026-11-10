@@ -755,6 +755,7 @@ import {
   listCommerceProducts,
   listCommerceRedirects,
   listConnectedApps,
+  listContactGroups,
   listContacts,
   listConversationLabels,
   listConversionActions,
@@ -2406,6 +2407,7 @@ export class Zernio {
   contacts = {
     listContacts: this._bind(listContacts),
     createContact: this._bind(createContact),
+    listContactGroups: this._bind(listContactGroups),
     getContact: this._bind(getContact),
     updateContact: this._bind(updateContact),
     deleteContact: this._bind(deleteContact),
