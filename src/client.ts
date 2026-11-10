@@ -154,6 +154,7 @@ import {
   createDiscordGuildRole,
   createDiscordScheduledEvent,
   createDiscordThread,
+  createEmailLabel,
   createEventDestination,
   createFilePickerSession,
   createFolder,
@@ -257,6 +258,7 @@ import {
   deleteDiscordGuildRole,
   deleteDiscordMessage,
   deleteDiscordScheduledEvent,
+  deleteEmailLabel,
   deleteEventDestination,
   deleteGoogleBusinessMedia,
   deleteGoogleBusinessPlaceAction,
@@ -740,6 +742,7 @@ import {
   listDiscordPinnedMessages,
   listDiscordScheduledEvents,
   listEmailFolders,
+  listEmailLabels,
   listEmailMessages,
   listEmailThreads,
   listEventDestinations,
@@ -1964,6 +1967,9 @@ export class Zernio {
     trashEmailMessage: this._bind(trashEmailMessage),
     replyEmailMessage: this._bind(replyEmailMessage),
     listEmailFolders: this._bind(listEmailFolders),
+    listEmailLabels: this._bind(listEmailLabels),
+    createEmailLabel: this._bind(createEmailLabel),
+    deleteEmailLabel: this._bind(deleteEmailLabel),
     downloadEmailAttachment: this._bind(downloadEmailAttachment),
   };
 

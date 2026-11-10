@@ -9829,6 +9829,29 @@ export type EmailFolder = {
 
 export type wellKnown = 'inbox' | 'sent' | 'drafts' | 'trash' | 'spam' | 'archive';
 
+/**
+ * A Gmail label or an Outlook category. Outlook categories are addressed by name, so their `id` is the name.
+ */
+export type EmailLabel = {
+    /**
+     * Gmail label id such as `Label_12`, or the Outlook category name.
+     */
+    id?: string;
+    accountId?: string;
+    provider?: 'google' | 'microsoft';
+    /**
+     * Gmail nests labels with a slash, as in `Hermia/Handled`.
+     */
+    name?: string;
+    type?: 'system' | 'user';
+    color?: {
+        backgroundColor?: string;
+        textColor?: string;
+    } | null;
+};
+
+export type type17 = 'system' | 'user';
+
 export type EmailListMeta = {
     /**
      * The filters the provider could not apply server-side, so they were applied to the fetched page (Microsoft: `bcc`, `anyEmail`, and every other filter when `searchQueryNative` is set).
@@ -9868,6 +9891,10 @@ export type EmailMessage = {
     date?: string;
     unread?: boolean;
     starred?: boolean;
+    /**
+     * Gmail: the ids of the user labels on the message (names come from `GET /v1/email/labels`). Outlook: its category names.
+     */
+    labels?: Array<(string)>;
     metadata?: {
         [key: string]: (string);
     };
@@ -9885,6 +9912,14 @@ export type EmailMessagePatch = {
      * Well-known folder name or folder id to move into.
      */
     folder?: string;
+    /**
+     * Labels to add, by id or name (case-insensitive). The message stays where it is. On Outlook these are category names; a name not yet in the mailbox is created on the message.
+     */
+    addLabels?: Array<(string)>;
+    /**
+     * Labels to remove, by id or name. A label cannot be both added and removed in one request.
+     */
+    removeLabels?: Array<(string)>;
 };
 
 export type EmailThread = {
@@ -9897,6 +9932,10 @@ export type EmailThread = {
     messageIds?: Array<(string)>;
     draftIds?: Array<(string)>;
     folders?: Array<(string)>;
+    /**
+     * Every label (Gmail) or category (Outlook) on any message of the thread.
+     */
+    labels?: Array<(string)>;
     hasAttachments?: boolean;
     hasDrafts?: boolean;
     unread?: boolean;
@@ -10080,7 +10119,7 @@ export type ErrorResponse = {
 /**
  * Error class for programmatic handling.
  */
-export type type17 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+export type type18 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
  * Meta ad create failures only. The step that failed:
@@ -10192,7 +10231,7 @@ export type ExternalPostMediaItem = {
     unavailableReason?: 'platform_withheld';
 };
 
-export type type18 = 'image' | 'video';
+export type type19 = 'image' | 'video';
 
 /**
  * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
@@ -11271,7 +11310,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type19 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type20 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * A Google Business Profile review, as returned by every gmb-reviews read endpoint.
@@ -11590,7 +11629,7 @@ export type GoogleListingGroupFilterNode = {
     } | null;
 };
 
-export type type20 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
+export type type21 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
 
 export type GoogleListingGroupNode = {
     dimension: GoogleListingGroupDimension;
@@ -13711,7 +13750,7 @@ export type MediaItem = {
 /**
  * Optional when the item names a connected file (`fileId`): inferred from the file's MIME type.
  */
-export type type21 = 'image' | 'video' | 'gif' | 'document';
+export type type22 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaSubtitle = {
     /**
@@ -15157,7 +15196,7 @@ export type PortfolioBidStrategy = {
     targetImpressionShare?: (GoogleTargetImpressionShare | null);
 };
 
-export type type22 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
+export type type23 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
 
 export type Post = {
     _id?: string;
@@ -15978,7 +16017,7 @@ export type RcsContent = {
     suggestions?: Array<RcsSuggestion>;
 };
 
-export type type23 = 'text';
+export type type24 = 'text';
 
 export type orientation = 'VERTICAL' | 'HORIZONTAL';
 
@@ -16091,7 +16130,7 @@ export type RcsSuggestion = {
     postbackData?: string;
 };
 
-export type type24 = 'reply';
+export type type25 = 'reply';
 
 export type application = 'BROWSER' | 'WEBVIEW';
 
@@ -18259,7 +18298,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type25 = 'image' | 'video' | 'document';
+export type type26 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -21530,7 +21569,7 @@ export type WebhookPayloadCommerceOrder = {
 
 export type event40 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
 
-export type type26 = 'order';
+export type type27 = 'order';
 
 export type WebhookPayloadCommerceProduct = {
     /**
@@ -21573,7 +21612,7 @@ export type WebhookPayloadCommerceProduct = {
 
 export type event41 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
-export type type27 = 'product';
+export type type28 = 'product';
 
 /**
  * Webhook payload for contact.updated and contact.deleted, fired after a provider contacts sync (Google Contacts, Outlook) changed a contact. contact.updated also fires after a WhatsApp coexistence address-book change (WhatsApp never fires contact.deleted). Read the contact with `GET /v1/contacts/{id}`.
@@ -22202,7 +22241,7 @@ export type platform19 = 'instagram' | 'facebook' | 'linkedin';
 /**
  * Null on LinkedIn.
  */
-export type type28 = 'caption' | 'post' | 'comment';
+export type type29 = 'caption' | 'post' | 'comment';
 
 /**
  * Webhook payload for message received events
@@ -24765,7 +24804,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type29 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type30 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -24807,7 +24846,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type30 = 'platform_error';
+export type type31 = 'platform_error';
 
 export type code4 = 'platform_api_error';
 
@@ -25035,7 +25074,7 @@ export type WorkflowNode = {
  * integrations (webhook, hubspot_upsert_contact, ai, handoff, start_call).
  *
  */
-export type type31 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type32 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -25171,7 +25210,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type32 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type33 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -25250,7 +25289,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type33 = 'divider' | 'latex';
+export type type34 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -40263,6 +40302,64 @@ export type ListEmailFoldersResponse = ({
 });
 
 export type ListEmailFoldersError = (ErrorResponse);
+
+export type ListEmailLabelsData = {
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type ListEmailLabelsResponse = ({
+    data?: Array<EmailLabel>;
+});
+
+export type ListEmailLabelsError = (ErrorResponse);
+
+export type CreateEmailLabelData = {
+    body: {
+        accountId: string;
+        name: string;
+        /**
+         * Gmail only. Both values must come from Gmail's label palette.
+         */
+        color?: {
+            backgroundColor: string;
+            textColor: string;
+        };
+    };
+};
+
+export type CreateEmailLabelResponse = ({
+    data?: EmailLabel;
+});
+
+export type CreateEmailLabelError = (ErrorResponse);
+
+export type DeleteEmailLabelData = {
+    path: {
+        labelId: string;
+    };
+    query: {
+        /**
+         * The connected Google or Microsoft account.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteEmailLabelResponse = ({
+    data?: {
+        id?: string;
+        deleted?: boolean;
+    };
+});
+
+export type DeleteEmailLabelError = (ErrorResponse | {
+    error?: string;
+});
 
 export type DownloadEmailAttachmentData = {
     path: {

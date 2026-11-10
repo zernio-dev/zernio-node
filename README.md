@@ -1107,14 +1107,17 @@ try {
 | Method | Description |
 |--------|-------------|
 | `email.listEmailFolders()` | List mailbox folders |
+| `email.listEmailLabels()` | List labels |
 | `email.listEmailMessages()` | List email messages |
 | `email.listEmailThreads()` | List email threads |
 | `email.listScheduledEmails()` | List scheduled emails |
+| `email.createEmailLabel()` | Create a label |
 | `email.getEmailMessage()` | Get an email message |
 | `email.getEmailThread()` | Get an email thread with its messages |
 | `email.getScheduledEmail()` | Get a scheduled email |
-| `email.updateEmailMessage()` | Mark read or starred, or move a message |
+| `email.updateEmailMessage()` | Mark read or starred, label, or move a message |
 | `email.updateEmailThread()` | Update every message in a thread |
+| `email.deleteEmailLabel()` | Delete a label |
 | `email.cancelScheduledEmail()` | Cancel a scheduled email |
 | `email.downloadEmailAttachment()` | Download an attachment |
 | `email.replyEmailMessage()` | Reply to a message |
