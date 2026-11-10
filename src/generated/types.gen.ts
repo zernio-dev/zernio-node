@@ -11795,7 +11795,7 @@ export type FollowerStatsResponse = {
      */
     pagination?: AccountCursorPagination;
     /**
-     * Only when the default page of 25 cut the list. Page through the rest with cursor.
+     * Only when the response was cut: the default page of 25 accounts (page through the rest with cursor), or a date range longer than a year (dateRange.from shows where the data starts). Both reasons are joined when they apply together.
      */
     warning?: string;
 };
@@ -21996,7 +21996,7 @@ export type WebhookPayloadCalendarEvent = {
         id?: string;
         changeType?: 'created' | 'updated' | 'deleted';
         /**
-         * The calendar holding the event, to pass as `calendarId` when reading it: `primary` for the user's main calendar. Null when it is not known, as for a deleted Outlook event.
+         * The calendar holding the event, to pass as `calendarId` when reading it: `primary` for the user's main calendar, else the Google calendar id. Null when it is not known, as for a deleted Outlook event.
          */
         calendarId?: (string) | null;
         /**
@@ -32842,7 +32842,7 @@ export type GetFollowerStatsData = {
          */
         cursor?: string;
         /**
-         * Start date in YYYY-MM-DD format (defaults to one year before toDate). At most one year before toDate.
+         * Start date in YYYY-MM-DD format (defaults to one year before toDate). An earlier date is moved to one year before toDate.
          */
         fromDate?: string;
         /**

@@ -2437,7 +2437,7 @@ export const listAccounts = <ThrowOnError extends boolean = false>(options?: Opt
  * - At most 25 accounts per request: up to 25 `accountIds`, or a page of accounts. More than 25 `accountIds` returns 400.
  * - Without `accountIds`, the response is the first page of 25 accounts even when `limit` and `cursor` are omitted. Pass `pagination.nextCursor` back as `cursor` for the next one.
  * - When that default page cuts the list, the response also carries a `warning` and the headers `X-Result-Truncated: true` and `X-Result-Limit: 25`.
- * - At most 1 year between `fromDate` and `toDate`. A longer range returns 400.
+ * - At most 1 year between `fromDate` and `toDate`. A longer range is cut to the year before `toDate`: `dateRange.from` shows where the data starts and the response carries a `warning`.
  *
  */
 export const getFollowerStats = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetFollowerStatsData, ThrowOnError>) => {
