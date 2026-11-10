@@ -489,6 +489,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.connectWebflowWithSiteToken).toBeTypeOf('function');
     });
 
+    it('should have getEmailConnectUrl method', () => {
+      expect(client.connect.getEmailConnectUrl).toBeDefined();
+      expect(client.connect.getEmailConnectUrl).toBeTypeOf('function');
+    });
+
     it('should have connectWordPressWithApplicationPassword method', () => {
       expect(client.connect.connectWordPressWithApplicationPassword).toBeDefined();
       expect(client.connect.connectWordPressWithApplicationPassword).toBeTypeOf('function');

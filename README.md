@@ -357,6 +357,7 @@ try {
 | `connect.getConnectHandoff()` | Get a phone handoff |
 | `connect.getConnectUrl()` | Get OAuth connect URL |
 | `connect.getConnectWelcomeScreen()` | Get the saved welcome screen |
+| `connect.getEmailConnectUrl()` | Get a hosted link to connect any mailbox |
 | `connect.getFacebookPages()` | List Facebook pages |
 | `connect.getGmbLocations()` | List Google Business Profile locations |
 | `connect.getGoogleAnalyticsConnectUrl()` | Get Google Analytics OAuth connect URL |
@@ -832,6 +833,7 @@ try {
 ### Calendar
 | Method | Description |
 |--------|-------------|
+| `calendar.listCalendarEventInstances()` | List the occurrences of a recurring event |
 | `calendar.listCalendarEvents()` | List events in a window |
 | `calendar.listCalendars()` | List calendars |
 | `calendar.createCalendarEvent()` | Create an event |
@@ -996,10 +998,12 @@ try {
 | `conversions.listCustomConversionGoals()` | List custom conversion goals |
 | `conversions.listEventDestinations()` | List event destinations |
 | `conversions.listEvents()` | List stored events |
+| `conversions.listForwardingRules()` | List forwarding rules |
 | `conversions.createConversionAction()` | Create website conversion action |
 | `conversions.createConversionDestination()` | Create a conversion destination |
 | `conversions.createCustomConversionGoal()` | Create a custom conversion goal |
 | `conversions.createEventDestination()` | Add an event destination |
+| `conversions.createForwardingRule()` | Add a forwarding rule |
 | `conversions.getConversionDestination()` | Get a conversion destination |
 | `conversions.getConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
@@ -1010,20 +1014,26 @@ try {
 | `conversions.updateCustomConversionGoal()` | Update a custom conversion goal |
 | `conversions.deleteConversionDestination()` | Delete a conversion destination |
 | `conversions.deleteEventDestination()` | Remove an event destination |
+| `conversions.deleteForwardingRule()` | Remove a forwarding rule |
 | `conversions.addConversionAssociations()` | Associate campaigns |
 | `conversions.adjustConversions()` | Adjust uploaded conversions |
 | `conversions.removeConversionAssociations()` | Remove associated campaigns |
 | `conversions.removeCustomConversionGoal()` | Remove a custom conversion goal |
+| `conversions.restateEvent()` | Change a stored event's value |
+| `conversions.retractEvent()` | Retract a stored event |
 | `conversions.sendConversions()` | Send conversion events |
 | `conversions.sendEvents()` | Send events to every destination |
 
 ### Creator Campaigns
 | Method | Description |
 |--------|-------------|
+| `creatorCampaigns.listCampaignDrafts()` | List campaign drafts |
 | `creatorCampaigns.listCampaignLedger()` | List campaign ledger |
+| `creatorCampaigns.listCampaignOrders()` | List campaign orders |
 | `creatorCampaigns.listCampaignParticipants()` | List campaign participants |
 | `creatorCampaigns.listCampaignPayables()` | List campaign payables |
 | `creatorCampaigns.listCampaignPayoutBatches()` | List payout batches |
+| `creatorCampaigns.listCampaignSamples()` | List campaign sample requests |
 | `creatorCampaigns.listCampaignSubmissions()` | List campaign submissions |
 | `creatorCampaigns.listCreatorCampaigns()` | List creator campaigns |
 | `creatorCampaigns.createCampaignAdjustment()` | Create campaign adjustment |
@@ -1031,24 +1041,35 @@ try {
 | `creatorCampaigns.createCampaignParticipant()` | Invite campaign participant |
 | `creatorCampaigns.createCampaignPayoutBatch()` | Pay creators with one card payment |
 | `creatorCampaigns.createCreatorCampaign()` | Create creator campaign |
+| `creatorCampaigns.getCampaignAdResults()` | Get campaign ad results |
+| `creatorCampaigns.getCampaignDraft()` | Get campaign draft |
 | `creatorCampaigns.getCampaignParticipant()` | Get campaign participant |
 | `creatorCampaigns.getCampaignReport()` | Get campaign report |
 | `creatorCampaigns.getCampaignSubmission()` | Get campaign submission |
 | `creatorCampaigns.getCreatorCampaign()` | Get creator campaign |
 | `creatorCampaigns.updateCreatorCampaign()` | Update creator campaign |
 | `creatorCampaigns.activateCreatorCampaign()` | Activate creator campaign |
+| `creatorCampaigns.approveCampaignDraft()` | Approve campaign draft |
+| `creatorCampaigns.approveCampaignParticipant()` | Approve pending campaign participant |
+| `creatorCampaigns.approveCampaignSample()` | Approve campaign sample request |
 | `creatorCampaigns.approveCampaignSubmission()` | Approve campaign submission |
 | `creatorCampaigns.closeCreatorCampaign()` | Close creator campaign |
+| `creatorCampaigns.declineCampaignSample()` | Decline campaign sample request |
+| `creatorCampaigns.denyCampaignParticipant()` | Deny pending campaign participant |
+| `creatorCampaigns.launchCampaignAds()` | Launch campaign posts as ads |
 | `creatorCampaigns.moveCampaignParticipant()` | Move participant to another campaign |
 | `creatorCampaigns.pauseCreatorCampaign()` | Pause creator campaign |
 | `creatorCampaigns.previewCampaignPayoutBatch()` | Preview a payout batch |
 | `creatorCampaigns.raiseCreatorCampaignBudget()` | Raise creator campaign budget |
 | `creatorCampaigns.reinstateCampaignParticipant()` | Reinstate campaign participant |
+| `creatorCampaigns.rejectCampaignDraft()` | Reject campaign draft |
 | `creatorCampaigns.rejectCampaignSubmission()` | Reject campaign submission |
 | `creatorCampaigns.removeCampaignParticipant()` | Remove campaign participant |
 | `creatorCampaigns.reopenCampaignSubmission()` | Reopen campaign submission |
+| `creatorCampaigns.requestCampaignDraftRevision()` | Request changes on a campaign draft |
 | `creatorCampaigns.resendCampaignParticipantInvite()` | Resend campaign participant invite |
 | `creatorCampaigns.settleCampaignParticipant()` | Settle campaign participant |
+| `creatorCampaigns.shipCampaignSample()` | Mark campaign sample shipped |
 | `creatorCampaigns.suspendCampaignParticipant()` | Suspend campaign participant |
 
 ### Creator Portal
@@ -1059,10 +1080,14 @@ try {
 | `creatorPortal.getCreatorPayoutStatement()` | Download a payout statement |
 | `creatorPortal.getCreatorPortal()` | Read a creator invite or participant page |
 | `creatorPortal.joinCreatorCampaign()` | Join a campaign |
+| `creatorPortal.presignCreatorDraftUpload()` | Get an upload URL for a draft |
 | `creatorPortal.recoverCreatorPortalLinks()` | Email a creator their campaign links |
 | `creatorPortal.removeCreatorAccount()` | Remove a connected account |
+| `creatorPortal.requestCreatorSample()` | Request a product sample |
+| `creatorPortal.setCreatorSparkCode()` | Set a post's Spark code |
 | `creatorPortal.startCreatorConnect()` | Start connecting a creator account |
 | `creatorPortal.startCreatorPayouts()` | Start payout onboarding |
+| `creatorPortal.submitCreatorDraft()` | Submit a draft for review |
 | `creatorPortal.submitCreatorPost()` | Submit a post |
 
 ### Custom Fields
@@ -1106,22 +1131,39 @@ try {
 ### Email
 | Method | Description |
 |--------|-------------|
+| `email.listEmailDrafts()` | List drafts |
 | `email.listEmailFolders()` | List mailbox folders |
 | `email.listEmailLabels()` | List labels |
 | `email.listEmailMessages()` | List email messages |
 | `email.listEmailSendAs()` | List send-as addresses |
+| `email.listEmailSignatures()` | List signatures |
 | `email.listEmailThreads()` | List email threads |
 | `email.listScheduledEmails()` | List scheduled emails |
+| `email.createEmailDraft()` | Create a draft |
 | `email.createEmailLabel()` | Create a label |
+| `email.createEmailSignature()` | Create a signature |
+| `email.createImapAccount()` | Connect an IMAP mailbox |
+| `email.getEmailDraft()` | Get a draft |
 | `email.getEmailMessage()` | Get an email message |
+| `email.getEmailSignature()` | Get a signature |
 | `email.getEmailThread()` | Get an email thread with its messages |
 | `email.getScheduledEmail()` | Get a scheduled email |
+| `email.updateEmailDraft()` | Update a draft |
 | `email.updateEmailMessage()` | Mark read or starred, label, or move a message |
+| `email.updateEmailSignature()` | Update a signature |
 | `email.updateEmailThread()` | Update every message in a thread |
+| `email.deleteEmailDraft()` | Delete a draft |
 | `email.deleteEmailLabel()` | Delete a label |
+| `email.deleteEmailSendAs()` | Remove a declared send-as address |
+| `email.deleteEmailSignature()` | Delete a signature |
 | `email.cancelScheduledEmail()` | Cancel a scheduled email |
+| `email.declareEmailSendAs()` | Declare a send-as address |
+| `email.discoverImapSettings()` | Find the mail settings for an address |
 | `email.downloadEmailAttachment()` | Download an attachment |
+| `email.forwardEmailMessage()` | Forward a message |
+| `email.importEmailSignatures()` | Import Gmail signatures |
 | `email.replyEmailMessage()` | Reply to a message |
+| `email.sendEmailDraft()` | Send a draft |
 | `email.sendEmailMessage()` | Send an email |
 | `email.trashEmailMessage()` | Move a message to trash |
 

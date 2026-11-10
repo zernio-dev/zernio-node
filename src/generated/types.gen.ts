@@ -1763,7 +1763,7 @@ export type AdRuleAction = {
     channelId?: string;
 } | {
     /**
-     * A connected Gmail or Outlook mailbox with email access.
+     * A connected Gmail, Outlook or IMAP mailbox with email access.
      */
     accountId: string;
     /**
@@ -4175,7 +4175,7 @@ export type AutomationNotifyStep = {
     to?: Array<{
         accountId: string;
         /**
-         * An address for a connected Gmail or Outlook account.
+         * An address, sent from a connected Gmail, Outlook or IMAP mailbox.
          */
         to?: string;
         /**
@@ -5703,6 +5703,19 @@ export type CalendarEvent = {
     participants?: Array<(EmailAddress & {
     status?: 'accepted' | 'declined' | 'tentative' | 'pending';
     comment?: (string) | null;
+    /**
+     * The guest may skip the event.
+     */
+    optional?: boolean;
+    /**
+     * A room or equipment address.
+     */
+    resource?: boolean;
+    /**
+     * This guest is the connected mailbox.
+     */
+    self?: boolean;
+    organizer?: boolean;
 })>;
     organizer?: (EmailAddress | null);
     recurrence?: Array<(string)> | null;
@@ -5721,6 +5734,14 @@ export type CalendarEvent = {
     status?: 'confirmed' | 'tentative' | 'cancelled';
     icalUid?: (string) | null;
     masterEventId?: (string) | null;
+    /**
+     * `series` is a recurring master, `occurrence` one of its instances, and `exception` an instance changed on its own. Google flags an instance as an exception only when it was moved off its slot.
+     */
+    type?: 'single' | 'series' | 'occurrence' | 'exception';
+    /**
+     * For an occurrence or exception, the start it has in the series pattern.
+     */
+    originalStart?: (string) | null;
     htmlLink?: (string) | null;
     readOnly?: boolean;
     metadata?: {
@@ -5733,6 +5754,11 @@ export type CalendarEvent = {
 export type visibility2 = 'default' | 'public' | 'private';
 
 export type status16 = 'confirmed' | 'tentative' | 'cancelled';
+
+/**
+ * `series` is a recurring master, `occurrence` one of its instances, and `exception` an instance changed on its own. Google flags an instance as an exception only when it was moved off its slot.
+ */
+export type type10 = 'single' | 'series' | 'occurrence' | 'exception';
 
 export type CalendarEventFields = {
     title?: string;
@@ -5751,12 +5777,21 @@ export type CalendarEventFields = {
     end?: string;
     allDay?: boolean;
     /**
-     * IANA zone the event is scheduled in. Default UTC.
+     * IANA zone the event is scheduled in. Defaults to the calendar's zone on Google and the mailbox's working-hours zone on Microsoft (UTC when Outlook has none, as on personal accounts). A PATCH that moves an event without a zone keeps the zone the event already has.
      */
     timezone?: string;
-    participants?: Array<EmailAddress>;
+    participants?: Array<(EmailAddress & {
     /**
-     * RRULE lines, e.g. `RRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=10`.
+     * The guest may skip the event.
+     */
+    optional?: boolean;
+    /**
+     * A room or equipment address: Google and Outlook book it as a resource.
+     */
+    resource?: boolean;
+})>;
+    /**
+     * RRULE lines, e.g. `RRULE:FREQ=WEEKLY;BYDAY=MO,WE;COUNT=10`. Microsoft takes one RRULE plus EXDATE lines; Zernio removes the EXDATE occurrences after saving the series.
      */
     recurrence?: Array<(string)>;
     reminders?: {
@@ -5768,12 +5803,24 @@ export type CalendarEventFields = {
     conferencing?: 'google_meet' | 'teams';
     busy?: boolean;
     visibility?: 'default' | 'public' | 'private';
+    /**
+     * String pairs stored on the event and returned on reads, on Google and Microsoft.
+     */
     metadata?: {
         [key: string]: (string);
     };
+    /**
+     * Who gets an invitation or update email for this write: everyone, only guests outside the organizer's domain, or nobody. Google only; Outlook always notifies, so `external` and `none` answer 400 `unsupported_for_provider` on a Microsoft account.
+     */
+    notifyParticipants?: 'all' | 'external' | 'none';
 };
 
 export type conferencing = 'google_meet' | 'teams';
+
+/**
+ * Who gets an invitation or update email for this write: everyone, only guests outside the organizer's domain, or nobody. Google only; Outlook always notifies, so `external` and `none` answer 400 `unsupported_for_provider` on a Microsoft account.
+ */
+export type notifyParticipants = 'all' | 'external' | 'none';
 
 /**
  * One call on a number you own, either channel. `channel` tells you which
@@ -6114,6 +6161,78 @@ export type CampaignBidding = {
  */
 export type channel2 = 'SEARCH' | 'DISPLAY';
 
+/**
+ * One version of a creator's content, uploaded for review before it is published. A revision is a new version in the same `chainId` with `version` + 1 and `revisionOf` set to the version it answers.
+ */
+export type CampaignDraft = {
+    id: string;
+    campaignId: string;
+    participantId: string;
+    creator: {
+        id: string;
+        displayName: string;
+        /**
+         * The creator's profile picture: their connected account with the most followers, else their Gravatar. Null when neither exists. Platform picture URLs can expire, so show initials when the image fails to load.
+         */
+        avatarUrl: (string) | null;
+    };
+    /**
+     * The id of the first version of the chain.
+     */
+    chainId: string;
+    version: number;
+    /**
+     * The version this one answers; null on version 1.
+     */
+    revisionOf: (string) | null;
+    mediaUrl: string;
+    mediaType: 'video' | 'image';
+    caption: string;
+    /**
+     * submitted: waits for review. approved: the creator may publish it. revision_requested: the creator should upload a new version. rejected: final.
+     */
+    status: 'submitted' | 'approved' | 'revision_requested' | 'rejected';
+    /**
+     * The note sent with a revision request, or the rejection reason.
+     */
+    reviewNote: (string) | null;
+    reviewedAt: (string) | null;
+    submittedAt: string;
+    /**
+     * Review comments on this version, in video order.
+     */
+    comments: Array<{
+        id: string;
+        /**
+         * Milliseconds into the video; null for a general comment.
+         */
+        atMs: (number) | null;
+        body: string;
+        createdAt: string;
+    }>;
+    /**
+     * The live post submitted for this draft, once the creator published it.
+     */
+    submissionId: (string) | null;
+};
+
+export type mediaType2 = 'video' | 'image';
+
+/**
+ * submitted: waits for review. approved: the creator may publish it. revision_requested: the creator should upload a new version. rejected: final.
+ */
+export type status18 = 'submitted' | 'approved' | 'revision_requested' | 'rejected';
+
+/**
+ * Drafts by the status of their latest version.
+ */
+export type CampaignDraftCounts = {
+    submitted: number;
+    approved: number;
+    revision_requested: number;
+    rejected: number;
+};
+
 export type CampaignLedgerEntry = {
     id: string;
     kind: 'accrual' | 'approval' | 'hold_release' | 'adjustment' | 'settling' | 'settlement' | 'reversal' | 'topup' | 'transfer' | 'fee' | 'usage' | 'grant';
@@ -6146,8 +6265,12 @@ export type CampaignParticipant = {
         id: string;
         displayName: string;
         email: (string) | null;
+        /**
+         * The creator's profile picture: their connected account with the most followers, else their Gravatar. Null when neither exists. Platform picture URLs can expire, so show initials when the image fails to load.
+         */
+        avatarUrl: (string) | null;
     };
-    status: 'invited' | 'active' | 'suspended' | 'removed';
+    status: 'invited' | 'pending' | 'active' | 'suspended' | 'removed' | 'denied';
     joinedAt: (string) | null;
     /**
      * Social accounts the creator connected, verified once Zernio confirmed the creator owns them.
@@ -6182,7 +6305,7 @@ export type CampaignParticipant = {
     };
 };
 
-export type status18 = 'invited' | 'active' | 'suspended' | 'removed';
+export type status19 = 'invited' | 'pending' | 'active' | 'suspended' | 'removed' | 'denied';
 
 /**
  * USD cents in each state. accruing: earned on posts not yet approved. owed: approved and on hold. payable: past the hold, ready to pay. settling: a treasury payout in progress, no longer payable and not reversible by a reject. settled: paid out.
@@ -6288,6 +6411,86 @@ export type CampaignResultMetric = {
  */
 export type kind6 = 'count' | 'money' | 'percent' | 'ratio';
 
+/**
+ * A free product sample a creator asked for.
+ */
+export type CampaignSample = {
+    id: string;
+    campaignId: string;
+    participantId: string;
+    creator: {
+        id: string;
+        displayName: string;
+        /**
+         * The creator's profile picture: their connected account with the most followers, else their Gravatar. Null when neither exists. Platform picture URLs can expire, so show initials when the image fails to load.
+         */
+        avatarUrl: (string) | null;
+    };
+    /**
+     * The store the sample comes from.
+     */
+    storeAccountId: string;
+    productId: string;
+    variantId: (string) | null;
+    productTitle: string;
+    variantTitle: (string) | null;
+    shippingAddress: CampaignSampleShippingAddress;
+    /**
+     * The creator's note.
+     */
+    note: (string) | null;
+    /**
+     * pending: waits for review. approved: a discount code was created. shipped: you recorded that you sent it. declined: final for this request.
+     */
+    status: 'pending' | 'approved' | 'shipped' | 'declined';
+    declineReason: (string) | null;
+    /**
+     * The 100%-off, single-use code for the product, set on approval.
+     */
+    discountCode: (string) | null;
+    trackingUrl: (string) | null;
+    approvedAt: (string) | null;
+    shippedAt: (string) | null;
+    requestedAt: string;
+    /**
+     * When a post is due: the approval plus the campaign's `sampleContentDueDays`. Null unless approved or shipped.
+     */
+    contentDueAt: (string) | null;
+    /**
+     * True past `contentDueAt` when the creator submitted no post since the approval.
+     */
+    contentOwed: boolean;
+};
+
+/**
+ * pending: waits for review. approved: a discount code was created. shipped: you recorded that you sent it. declined: final for this request.
+ */
+export type status20 = 'pending' | 'approved' | 'shipped' | 'declined';
+
+/**
+ * Sample requests by status.
+ */
+export type CampaignSampleCounts = {
+    pending: number;
+    approved: number;
+    shipped: number;
+    declined: number;
+};
+
+export type CampaignSampleShippingAddress = {
+    name: string;
+    line1: string;
+    line2?: string;
+    city: string;
+    region?: string;
+    postalCode: string;
+    /**
+     * ISO 3166-1 alpha-2 country code.
+     */
+    country: string;
+    phone?: string;
+};
+
 export type CampaignSettlement = {
     /**
      * The ledger settlement entry.
@@ -6324,6 +6527,10 @@ export type CampaignSubmission = {
      * The creator account the post was published from.
      */
     accountId: string;
+    /**
+     * The creator pasted a TikTok Spark code for this post, so it can launch as a Spark Ad. The code itself is never returned.
+     */
+    hasSparkCode?: boolean;
     platform: 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
     platformPostId: string;
     platformPostUrl: (string) | null;
@@ -6376,11 +6583,19 @@ export type CampaignSubmission = {
     authenticityScore: (number) | null;
     authenticityConfidence: (number) | null;
     flags: Array<CampaignSubmissionFlag>;
+    /**
+     * The approved draft this post publishes, on a campaign with `requireDraftApproval`.
+     */
+    draftId: (string) | null;
     createdAt: string;
     updatedAt: string;
     creator: {
         id: string;
         displayName: string;
+        /**
+         * The creator's profile picture: their connected account with the most followers, else their Gravatar. Null when neither exists. Platform picture URLs can expire, so show initials when the image fails to load.
+         */
+        avatarUrl: (string) | null;
     };
     /**
      * 0 to 100, where 100 means the view pattern looks organic. Null until the post is scored.
@@ -6429,7 +6644,7 @@ export type CampaignSubmission = {
 
 export type platform5 = 'tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter';
 
-export type status19 = 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
+export type status21 = 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
 
 /**
  * Number of submissions in each status.
@@ -6573,7 +6788,7 @@ export type CommentAutomationDmMedia = {
     url: string;
 };
 
-export type type10 = 'image' | 'video' | 'audio' | 'file';
+export type type11 = 'image' | 'video' | 'audio' | 'file';
 
 /**
  * Copy for the follow gate. Sensible defaults are used for any field left empty.
@@ -6703,7 +6918,7 @@ export type source = 'comment' | 'live_comment' | 'story_reply' | 'story_mention
  * - 'gated': the follow-gate confirmation DM went out and we are waiting for the tap. It flips to 'sent' or 'skipped' when they tap.
  * - 'skipped': also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
  */
-export type status20 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
+export type status22 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
 
 /**
  * How the audience rule resolved. Null on automations without one.
@@ -6803,7 +7018,7 @@ export type CommentAutomationTemplate = {
     elements: Array<CommentAutomationTemplateElement>;
 };
 
-export type type11 = 'generic';
+export type type12 = 'generic';
 
 /**
  * Facebook only. How Messenger renders each element imageUrl: horizontal (1.91:1, the default) or square (1:1). Instagram has no such setting, so an Instagram automation carrying it is a 400.
@@ -6991,9 +7206,9 @@ export type platform7 = 'shopify';
 
 export type method = 'code' | 'automatic';
 
-export type type12 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
+export type type13 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
 
-export type status21 = 'active' | 'scheduled' | 'expired';
+export type status23 = 'active' | 'scheduled' | 'expired';
 
 export type CommerceImage = {
     /**
@@ -7048,7 +7263,7 @@ export type CommerceMarket = {
     type?: string;
 };
 
-export type status22 = 'active' | 'draft';
+export type status24 = 'active' | 'draft';
 
 export type CommerceMenu = {
     id?: string;
@@ -7069,7 +7284,7 @@ export type CommerceMenuItem = {
     items?: Array<CommerceMenuItem>;
 };
 
-export type type13 = 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
+export type type14 = 'frontpage' | 'collection' | 'collections' | 'product' | 'catalog' | 'page' | 'blog' | 'article' | 'search' | 'shop_policy' | 'http' | 'metaobject' | 'customer_account_page';
 
 export type CommerceMenuItemInput = {
     title: string;
@@ -7563,7 +7778,7 @@ export type ConnectHandoff = {
     } | null;
 };
 
-export type status23 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
+export type status25 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
 
 /**
  * Only with `handoff=true`: the link to show as a QR code.
@@ -7792,7 +8007,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status24 = 'active' | 'inactive';
+export type status26 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -8077,9 +8292,49 @@ export type CreateCreatorCampaignRequest = {
     maxPostAgeMinutes?: (number) | null;
     settlement?: 'none' | 'external' | 'treasury';
     branding?: (CreatorCampaignBranding | null);
+    /**
+     * The page creator tracking links open. Required unless `attribution` is `code`.
+     */
+    landingUrl?: (string) | null;
+    /**
+     * What each creator's discount code takes off an order. Required unless `attribution` is `link`.
+     */
+    codeDiscountPercent?: (number) | null;
+    /**
+     * Treasury campaigns only. Pays every ready creator at 15:00 UTC, daily or on Mondays, with one payout batch on your saved card, paid out 7 days later. A refused card charges nothing and we email you. Needs a money mover and a saved card.
+     */
+    autoPayout?: (CreatorCampaignAutoPayout | null);
+    /**
+     * manual holds creators who join through the open link as `pending` until you approve them. Personal invites are never held.
+     */
+    joinApproval?: 'auto' | 'manual';
+    /**
+     * Creators upload a draft for review before publishing, and each submitted post must name an approved draft.
+     */
+    requireDraftApproval?: boolean;
+    /**
+     * A connected Shopify or WooCommerce store account. On `commission` and smart `retainer` economics its orders pay commission: required there, and fixed once such a campaign leaves draft.
+     *
+     * On any campaign creators can ask for free samples of its products (`sampleProductIds`). Changing it without `sampleProductIds` clears the sample products; null removes the store and the products.
+     *
+     */
+    storeAccountId?: (string) | null;
+    /**
+     * Product ids in the store that creators can ask a free sample of. Each is read from the store and saved as `sampleProducts`; an unknown product answers 404 `product_not_found`. Needs a store, otherwise 400 `missing_required_field` (`param: storeAccountId`).
+     */
+    sampleProductIds?: Array<(string)>;
+    /**
+     * Days after a sample is approved before a creator with no post since shows as owing content.
+     */
+    sampleContentDueDays?: number;
 };
 
 export type settlement = 'none' | 'external' | 'treasury';
+
+/**
+ * manual holds creators who join through the open link as `pending` until you approve them. Personal invites are never held.
+ */
+export type joinApproval = 'auto' | 'manual';
 
 export type CreatedGoogleAdAccount = {
     platform: 'google';
@@ -8142,6 +8397,81 @@ export type CreatedMetaAdAccount = {
      * Recovery instructions if the account could not be attached to the connection.
      */
     warnings: Array<(string)>;
+};
+
+export type CreateEmailDraftRequest = {
+    accountId: string;
+    /**
+     * Optional on a draft; needed before it is sent.
+     */
+    to?: Array<EmailAddress>;
+    cc?: Array<EmailAddress>;
+    bcc?: Array<EmailAddress>;
+    replyTo?: Array<EmailAddress>;
+    fromName?: string;
+    /**
+     * Send from another address of the mailbox, as on `POST /v1/email/messages`. Checked when the draft is saved.
+     */
+    from?: string;
+    /**
+     * Puts the signature of the sending address in the draft body, where the user sees it: its Zernio default first, else its Gmail signature.
+     */
+    appendSignature?: boolean;
+    /**
+     * Puts this Zernio signature in the draft body instead. Wins over `appendSignature`.
+     */
+    signatureId?: string;
+    /**
+     * On a reply draft, empty keeps the thread subject.
+     */
+    subject?: string;
+    text?: string;
+    html?: string;
+    attachments?: Array<EmailAttachmentInput>;
+    /**
+     * Custom `X-` headers only.
+     */
+    headers?: {
+        [key: string]: (string);
+    };
+    /**
+     * Kept with the draft and returned on the sent message and its email.* webhooks.
+     */
+    metadata?: {
+        [key: string]: (string);
+    };
+    /**
+     * Makes a reply draft in that message's thread, addressed and threaded like a reply. Not with `forwardOf`.
+     */
+    inReplyTo?: string;
+    /**
+     * With `inReplyTo`: address every recipient of the original. Leave out `to`, `cc` and `bcc`.
+     */
+    replyAll?: boolean;
+    /**
+     * Makes a forward draft of that message, with its attachments. Recipients can come later. Not with `inReplyTo`.
+     */
+    forwardOf?: string;
+    /**
+     * With `forwardOf`: false keeps only the inline images of the original.
+     */
+    includeAttachments?: boolean;
+    /**
+     * With `forwardOf`: attachment ids (from a read of the original) to leave out.
+     */
+    excludeAttachmentIds?: Array<(string)>;
+    /**
+     * Puts the open pixel in the draft html now; fires `email.opened` once it is sent. Needs `html`.
+     */
+    trackOpens?: boolean;
+    /**
+     * Rewrites the draft's links now; fires `email.link_clicked` once it is sent. Needs `html`.
+     */
+    trackLinks?: boolean;
+    /**
+     * Fires `email.thread_replied` once it is sent.
+     */
+    trackReplies?: boolean;
 };
 
 export type CreateGoogleAdAccountRequest = {
@@ -8264,7 +8594,7 @@ export type CreatorCampaign = {
     /**
      * Same as economics.type.
      */
-    type: 'cpm' | 'per_post' | 'pool';
+    type: 'cpm' | 'per_post' | 'pool' | 'retainer' | 'commission' | 'ad_performance';
     currency: string;
     platforms: Array<('tiktok' | 'instagram' | 'youtube' | 'threads' | 'pinterest' | 'facebook' | 'twitter')>;
     /**
@@ -8305,6 +8635,26 @@ export type CreatorCampaign = {
      * Internal watermark of the payable scan.
      */
     payableScannedAt: (string) | null;
+    /**
+     * auto: creators who join through the open link are active at once. manual: they land `pending` until you approve or deny them. Personal invites are never held.
+     */
+    joinApproval: 'auto' | 'manual';
+    /**
+     * Creators upload a draft for review first, and submit the live post for an approved draft (`draftId`).
+     */
+    requireDraftApproval: boolean;
+    /**
+     * The connected store (Shopify or WooCommerce) whose orders pay commission and whose products creators can ask as samples. Null when the campaign has neither.
+     */
+    storeAccountId: (string) | null;
+    /**
+     * Products creators can ask a free sample of.
+     */
+    sampleProducts: Array<CreatorCampaignSampleProduct>;
+    /**
+     * Days after a sample is approved before a creator with no post since shows as owing content (`contentOwed`).
+     */
+    sampleContentDueDays: number;
     createdAt: string;
     updatedAt: string;
     /**
@@ -8321,17 +8671,134 @@ export type CreatorCampaign = {
      * What the campaign's creators can be paid now, summed over every participant's payable balance.
      */
     payableCents: number;
+    /**
+     * The page creator tracking links open.
+     */
+    landingUrl?: (string) | null;
+    /**
+     * What each creator discount code takes off.
+     */
+    codeDiscountPercent?: (number) | null;
+    autoPayout?: (CreatorCampaignAutoPayout | null);
+    /**
+     * Creators who asked to join through the open link and wait for a decision. Not counted in `participantCount`.
+     */
+    pendingParticipantCount: number;
+    draftCounts: CampaignDraftCounts;
+    sampleCounts: CampaignSampleCounts;
 };
 
 /**
  * draft until activated; active accepts submissions and accrues; paused stops new submissions; closed is final.
  */
-export type status25 = 'draft' | 'active' | 'paused' | 'closed';
+export type status27 = 'draft' | 'active' | 'paused' | 'closed';
 
 /**
  * Same as economics.type.
  */
-export type type14 = 'cpm' | 'per_post' | 'pool';
+export type type15 = 'cpm' | 'per_post' | 'pool' | 'retainer' | 'commission' | 'ad_performance';
+
+export type CreatorCampaignAdResultFigures = {
+    /**
+     * Ad spend in minor units of the campaign currency.
+     */
+    spendCents: number;
+    impressions: number;
+    clicks: number;
+    purchases: number;
+    purchaseValueCents: number;
+    /**
+     * Purchase value over spend. Null before any spend.
+     */
+    roas: (number) | null;
+    /**
+     * Spend per purchase. Null without purchases.
+     */
+    cpaCents: (number) | null;
+    /**
+     * Clicks over impressions, in percent. Null without impressions.
+     */
+    ctr: (number) | null;
+};
+
+export type CreatorCampaignAdResults = {
+    currency: string;
+    totals: (CreatorCampaignAdResultFigures & {
+    /**
+     * Posts with at least one ad.
+     */
+    posts: number;
+    ads: number;
+});
+    /**
+     * Posts that run as ads or had a launch, biggest spend first. An ad belongs to the post it was launched from, else to the post it runs (boosted post, effective Instagram media, Spark item).
+     */
+    submissions: Array<{
+        submissionId: string;
+        participantId: string;
+        creator: {
+            id: string;
+            displayName: string;
+            /**
+             * The creator's profile picture: their connected account with the most followers, else their Gravatar. Null when neither exists. Platform picture URLs can expire, so show initials when the image fails to load.
+             */
+            avatarUrl: (string) | null;
+        };
+        platform: string;
+        platformPostId: string;
+        ads: Array<{
+            /**
+             * Zernio ad id, as in /v1/ads.
+             */
+            id: string;
+            name: string;
+            status: string;
+            platformAdId: (string) | null;
+        }>;
+        launches: Array<{
+            /**
+             * Ad account and ad set or campaign the post was launched into.
+             */
+            placementKey: string;
+            identity: 'brand' | 'creator';
+            status: 'launching' | 'launched' | 'failed';
+            adId: (string) | null;
+            error: (string) | null;
+            updatedAt: string;
+        }>;
+        results: CreatorCampaignAdResultFigures;
+    }>;
+    /**
+     * Creators whose posts run as ads, ranked by `rankBy`.
+     */
+    creators: Array<(CreatorCampaignAdResultFigures & {
+    rank: number;
+    participantId: string;
+    creator: {
+        id: string;
+        displayName: string;
+        /**
+         * The creator's profile picture: their connected account with the most followers, else their Gravatar. Null when neither exists. Platform picture URLs can expire, so show initials when the image fails to load.
+         */
+        avatarUrl: (string) | null;
+    };
+    posts: number;
+    ads: number;
+})>;
+    capabilities: {
+        /**
+         * Whether creator identity on Instagram (Partnership Ads) is available to the caller. It is a limited release while Meta reviews the permission it needs.
+         */
+        partnershipAds: boolean;
+    };
+};
+
+export type CreatorCampaignAutoPayout = {
+    enabled: boolean;
+    cadence: 'weekly' | 'daily';
+};
+
+export type cadence = 'weekly' | 'daily';
 
 /**
  * Branding of the hosted join page, in the connect-link branding shape.
@@ -8374,6 +8841,29 @@ export type CreatorCampaignCaps = {
 };
 
 /**
+ * Commission on store orders. Set `percentOfSalesBps`, `perOrderCents` or both. Sales are the line items after discounts, before shipping and tax; refunds come off them, and a cancelled or fully refunded order earns nothing.
+ */
+export type CreatorCampaignCommissionTerms = {
+    /**
+     * Share of the sales in basis points: 1500 is 15%.
+     */
+    percentOfSalesBps?: number;
+    /**
+     * A flat amount per credited order.
+     */
+    perOrderCents?: number;
+    /**
+     * How an order is credited: the creator's discount code, the last click on their tracking link, or both with the code winning.
+     */
+    attribution?: 'code_or_link' | 'code' | 'link';
+};
+
+/**
+ * How an order is credited: the creator's discount code, the last click on their tracking link, or both with the code winning.
+ */
+export type attribution = 'code_or_link' | 'code' | 'link';
+
+/**
  * How the campaign pays, picked by `type`. Amounts are USD cents.
  *
  * Every type carries `budgetCents`, the most the campaign can pay out in total. Once earnings reach it, the campaign stops accruing and `creator_campaign.budget_exhausted` fires.
@@ -8381,9 +8871,42 @@ export type CreatorCampaignCaps = {
  * - `cpm`: `ratePer1kCents` per 1,000 of the counted `metric` (views by default), earned once a post reaches `minViewsToEarn` of it, capped per post by `maxPayoutPerClipCents`.
  * - `per_post`: `perApprovedPostCents` for each approved post, at most `maxPostsPerParticipant` per participant.
  * - `pool`: `budgetCents` is split at close among approved posts by eligible views; a post needs `minViewsToQualify` views to share.
+ * - `ad_performance`: pays on the results of the ads that run each post (see `GET /v1/creator-campaigns/{campaignId}/ad-results`), counted once a day through the previous UTC day. Only Instagram, Facebook and TikTok posts.
+ * - `retainer`: `amountCents` per `period` once the creator has `requiredApprovedPosts` approved posts in it. `mode: smart` tops the period's commission up to `amountCents`.
+ * - `commission`: a share of the sales of the linked store (`storeAccountId`) credited to each creator by their discount code or tracking link.
  *
  */
-export type CreatorCampaignEconomics = CreatorCampaignEconomicsCpm | CreatorCampaignEconomicsPerPost | CreatorCampaignEconomicsPool;
+export type CreatorCampaignEconomics = CreatorCampaignEconomicsCpm | CreatorCampaignEconomicsPerPost | CreatorCampaignEconomicsPool | CreatorCampaignEconomicsAdPerformance | CreatorCampaignEconomicsRetainer | CreatorCampaignEconomicsCommission;
+
+/**
+ * Pays on what the ads running a post achieve. `spend` and `purchase_value` take `rateBps` (a share of the amount), `purchases` and `clicks` take `centsPerUnit` each, and `impressions` takes `centsPerUnit` per 1,000.
+ *
+ * Sending the other rate field, or `organicViewsOnly`, answers 400. Every campaign platform must be Instagram, Facebook or TikTok. Money from an ad billed in another currency than the campaign does not count.
+ *
+ */
+export type CreatorCampaignEconomicsAdPerformance = {
+    type: 'ad_performance';
+    metric: 'spend' | 'purchases' | 'purchase_value' | 'clicks' | 'impressions';
+    /**
+     * Basis points of the spend or purchase value: 1000 is 10%.
+     */
+    rateBps?: number;
+    /**
+     * Cents per purchase or click, or per 1,000 impressions.
+     */
+    centsPerUnit?: number;
+    maxPayoutPerPostCents?: number;
+    budgetCents: number;
+};
+
+export type metric = 'spend' | 'purchases' | 'purchase_value' | 'clicks' | 'impressions';
+
+export type CreatorCampaignEconomicsCommission = {
+    type: 'commission';
+    budgetCents: number;
+} & CreatorCampaignCommissionTerms;
+
+export type type16 = 'commission';
 
 export type CreatorCampaignEconomicsCpm = {
     type: 'cpm';
@@ -8411,7 +8934,7 @@ export type CreatorCampaignEconomicsCpm = {
 /**
  * What the rate pays on. `engagements` counts the `engagementTypes` as each platform reports them, and `minViewsToEarn` then applies to engagements. Fixed once the campaign leaves draft.
  */
-export type metric = 'views' | 'engagements';
+export type metric2 = 'views' | 'engagements';
 
 export type CreatorCampaignEconomicsPerPost = {
     type: 'per_post';
@@ -8428,6 +8951,51 @@ export type CreatorCampaignEconomicsPool = {
      * Count only organic views: views from ads the creator ran do not earn. Every campaign platform must be YouTube or X, which report ad views per post, or the request answers 400. A post earns nothing until its ad views were first read.
      */
     organicViewsOnly?: boolean;
+};
+
+export type CreatorCampaignEconomicsRetainer = {
+    type: 'retainer';
+    /**
+     * `standard` pays `amountCents` per period. `smart` guarantees it: the commission the creator earned in the period is topped up to `amountCents`. Smart needs `commission` and a linked store.
+     */
+    mode?: 'standard' | 'smart';
+    amountCents: number;
+    /**
+     * Weeks start Monday 00:00 UTC, months on the 1st. A period is paid within a day after it ends. A standard `once` retainer pays as soon as the posts are approved; a smart one when the campaign ends.
+     */
+    period: 'week' | 'month' | 'once';
+    /**
+     * Posts approved within the period that it needs. 0 pays without posts.
+     */
+    requiredApprovedPosts: number;
+    commission?: CreatorCampaignCommissionTerms;
+    budgetCents: number;
+};
+
+/**
+ * `standard` pays `amountCents` per period. `smart` guarantees it: the commission the creator earned in the period is topped up to `amountCents`. Smart needs `commission` and a linked store.
+ */
+export type mode3 = 'standard' | 'smart';
+
+/**
+ * Weeks start Monday 00:00 UTC, months on the 1st. A period is paid within a day after it ends. A standard `once` retainer pays as soon as the posts are approved; a smart one when the campaign ends.
+ */
+export type period = 'week' | 'month' | 'once';
+
+/**
+ * A product creators can ask a free sample of, as it was in the store when it was picked.
+ */
+export type CreatorCampaignSampleProduct = {
+    productId: string;
+    title: string;
+    imageUrl: (string) | null;
+    /**
+     * The options a creator picks from. Empty for a product with a single variant.
+     */
+    variants: Array<{
+        id: string;
+        title: string;
+    }>;
 };
 
 /**
@@ -8474,6 +9042,53 @@ export type CreatorPortalCampaign = {
      * How many connected accounts can submit posts. Null means no limit.
      */
     maxAccountsPerParticipant: (number) | null;
+    /**
+     * manual: a creator who joins through the open link waits `pending` until the campaign team accepts them.
+     */
+    joinApproval: 'auto' | 'manual';
+    /**
+     * The creator uploads a draft for review first, and submits the live post for an approved draft.
+     */
+    requireDraftApproval: boolean;
+    /**
+     * Products the creator can ask a free sample of; empty when the campaign offers none.
+     */
+    sampleProducts: Array<CreatorCampaignSampleProduct>;
+    /**
+     * Days after a sample is approved by which a post is expected.
+     */
+    sampleContentDueDays: number;
+};
+
+/**
+ * One version of a draft the creator uploaded for review.
+ */
+export type CreatorPortalDraft = {
+    /**
+     * Pass as `draftId` when submitting the live post of an approved draft, or as `revisionOf` to answer a revision request.
+     */
+    id: string;
+    chainId: string;
+    version: number;
+    revisionOf: (string) | null;
+    status: 'submitted' | 'approved' | 'revision_requested' | 'rejected';
+    mediaUrl: string;
+    mediaType: 'video' | 'image';
+    caption: string;
+    reviewNote: (string) | null;
+    comments: Array<{
+        /**
+         * Milliseconds into the video; null for a general comment.
+         */
+        atMs: (number) | null;
+        body: string;
+    }>;
+    submittedAt: string;
+    reviewedAt: (string) | null;
+    /**
+     * The live post submitted for this draft.
+     */
+    submissionId: (string) | null;
 };
 
 /**
@@ -8508,9 +9123,18 @@ export type CreatorPortalEconomics = {
      * Only organic views count; views from ads do not.
      */
     organicViewsOnly?: boolean;
-};
+} | {
+    type: 'retainer';
+    mode: 'standard' | 'smart';
+    amountCents: number;
+    period: 'week' | 'month' | 'once';
+    requiredApprovedPosts: number;
+    commission: (CreatorCampaignCommissionTerms | null);
+} | ({
+    type: 'commission';
+} & CreatorCampaignCommissionTerms);
 
-export type type15 = 'cpm';
+export type type17 = 'cpm';
 
 export type CreatorPortalInvite = {
     kind: 'invite';
@@ -8524,7 +9148,7 @@ export type CreatorPortalParticipant = {
     campaign: CreatorPortalCampaign;
     participant: {
         displayName: string;
-        status: 'invited' | 'active' | 'suspended' | 'removed';
+        status: 'invited' | 'pending' | 'active' | 'suspended' | 'removed' | 'denied';
         joinedAt: (string) | null;
     };
     /**
@@ -8548,6 +9172,14 @@ export type CreatorPortalParticipant = {
      * The latest 100 submissions.
      */
     submissions: Array<CreatorPortalSubmission>;
+    /**
+     * The latest 100 draft versions, newest first. Empty on a campaign that does not review drafts.
+     */
+    drafts: Array<CreatorPortalDraft>;
+    /**
+     * Every sample request of the creator, newest first.
+     */
+    samples: Array<CreatorPortalSample>;
     earnings: {
         /**
          * Earned, not approved yet.
@@ -8569,6 +9201,26 @@ export type CreatorPortalParticipant = {
         nextReleaseAt: (string) | null;
     };
     payouts: CreatorPortalPayoutSetup;
+    /**
+     * On a campaign that pays commission on a linked store: the creator's discount code, tracking link and the orders credited to them. Null otherwise, and for a creator who is not active.
+     */
+    referral?: (CreatorPortalReferral | null);
+    /**
+     * On a retainer campaign: the period running now. Null otherwise.
+     */
+    retainer?: ({
+    periodStart: string;
+    /**
+     * Null on a one-time retainer of a campaign without an end date.
+     */
+    periodEnd: (string) | null;
+    approvedPosts: number;
+    requiredApprovedPosts: number;
+    /**
+     * Commission earned in the period; a smart retainer tops it up to its amount.
+     */
+    commissionCents: number;
+} | null);
 };
 
 export type kind8 = 'participant';
@@ -8613,14 +9265,79 @@ export type CreatorPortalPayoutSetup = {
 /**
  * How the campaign pays: treasury means through Zernio, so the creator onboards for payouts, which they can do from the moment they join. Earnings wait until it is done.
  */
-export type mode3 = 'none' | 'external' | 'treasury';
+export type mode4 = 'none' | 'external' | 'treasury';
 
-export type status26 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
+export type status28 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
+
+export type CreatorPortalReferral = {
+    /**
+     * The creator's discount code. Null while the store has not created it yet, or on a link-only campaign.
+     */
+    code: (string) | null;
+    /**
+     * What the code takes off an order.
+     */
+    discountPercent: (number) | null;
+    /**
+     * The landing page with the UTM parameters that credit the creator. Null on a code-only campaign.
+     */
+    trackingUrl: (string) | null;
+    /**
+     * The latest 50 credited orders.
+     */
+    orders: Array<{
+        id: string;
+        number: string;
+        placedAt: string;
+        matchedBy: 'code' | 'link';
+        salesCents: number;
+        refundedCents: number;
+        commissionCents: number;
+        status: 'in_refund_window' | 'confirmed' | 'refunded';
+        /**
+         * Order date plus the campaign hold, when the commission is approved.
+         */
+        confirmsAt: string;
+    }>;
+    totals: {
+        orders: number;
+        /**
+         * Sales net of refunds.
+         */
+        salesCents: number;
+        commissionCents: number;
+    };
+};
+
+export type CreatorPortalSample = {
+    id: string;
+    productId: string;
+    productTitle: string;
+    variantTitle: (string) | null;
+    status: 'pending' | 'approved' | 'shipped' | 'declined';
+    shippingAddress: CampaignSampleShippingAddress;
+    note: (string) | null;
+    /**
+     * The single-use code to redeem the product at checkout, once approved.
+     */
+    discountCode: (string) | null;
+    trackingUrl: (string) | null;
+    declineReason: (string) | null;
+    requestedAt: string;
+    /**
+     * When a post is due for the sample; null until approved.
+     */
+    contentDueAt: (string) | null;
+};
 
 export type CreatorPortalSubmission = {
     id: string;
     platform: string;
     postId: string;
+    /**
+     * A TikTok post whose Spark code the creator pasted, so the brand can run it as a Spark Ad. The code itself is never returned.
+     */
+    hasSparkCode: boolean;
     url: (string) | null;
     status: 'received' | 'tracking' | 'pending_review' | 'approved' | 'rejected' | 'expired' | 'withdrawn';
     submittedAt: string;
@@ -8644,6 +9361,10 @@ export type CreatorPortalSubmission = {
      */
     flags: Array<('unreachable' | 'post_deleted' | 'duplicate_post' | 'under_review')>;
     trackingEndsAt: (string) | null;
+    /**
+     * The approved draft this post publishes.
+     */
+    draftId: (string) | null;
 };
 
 /**
@@ -9353,7 +10074,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * `adSetId`, the new ads themselves.
  *
  */
-export type status27 = 'ACTIVE' | 'PAUSED';
+export type status29 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults to `status`.
@@ -9767,7 +10488,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status28 = 1 | 2 | 3 | 4;
+export type status30 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -9801,7 +10522,7 @@ export type DmButton = {
     phone?: string;
 };
 
-export type type16 = 'url' | 'postback' | 'phone';
+export type type18 = 'url' | 'postback' | 'phone';
 
 export type EmailAddress = {
     email: string;
@@ -9817,15 +10538,181 @@ export type EmailAttachment = {
     contentId?: (string) | null;
 };
 
+export type EmailAttachmentInput = {
+    filename: string;
+    contentType: string;
+    /**
+     * Fetched at send time. Exactly one of `url` or `base64`.
+     */
+    url?: string;
+    base64?: string;
+    /**
+     * Makes the attachment inline (`cid:` reference in the html).
+     */
+    contentId?: string;
+};
+
+/**
+ * On Google, Microsoft and IMAP accounts with email access: what this mailbox provider can do, so you can branch before calling.
+ */
+export type EmailCapabilities = {
+    sync?: {
+        mode?: 'push' | 'poll';
+        typicalDelaySeconds?: number;
+    };
+    drafts?: {
+        supported?: boolean;
+        /**
+         * Edits the user makes in their mail client show up in the draft you read back.
+         */
+        clientEditsVisible?: boolean;
+        /**
+         * Drafts carry a `version` for `If-Match`.
+         */
+        versioned?: boolean;
+    };
+    forward?: {
+        /**
+         * The provider forwards itself (Outlook's createForward); otherwise Zernio builds the forward.
+         */
+        native?: boolean;
+        asAttachment?: boolean;
+    };
+    sendAs?: {
+        /**
+         * `provider`: `GET /v1/email/send-as` lists every address the provider accepts. `partial`: shared mailboxes are not listed; declare them with `POST /v1/email/send-as`.
+         */
+        list?: 'provider' | 'partial' | 'declared';
+        sharedMailboxes?: boolean;
+    };
+    signatures?: {
+        /**
+         * `read`: `appendSignature` falls back to the provider signature when no Zernio default exists.
+         */
+        provider?: 'read' | 'none';
+        /**
+         * Zernio-stored signatures (`/v1/email/signatures`) work on this mailbox.
+         */
+        zernio?: boolean;
+    };
+    labels?: {
+        model?: 'labels' | 'categories' | 'folders';
+    };
+    bounces?: {
+        detection?: boolean;
+    };
+    scheduledSend?: {
+        holdAsDraft?: boolean;
+    };
+    tracking?: boolean;
+};
+
+export type mode5 = 'push' | 'poll';
+
+/**
+ * `provider`: `GET /v1/email/send-as` lists every address the provider accepts. `partial`: shared mailboxes are not listed; declare them with `POST /v1/email/send-as`.
+ */
+export type list = 'provider' | 'partial' | 'declared';
+
+/**
+ * `read`: `appendSignature` falls back to the provider signature when no Zernio default exists.
+ */
+export type provider2 = 'read' | 'none';
+
+export type model = 'labels' | 'categories' | 'folders';
+
+/**
+ * Only with `clean=true`. The new text of the mail, deterministic (no model): client quote markup first, then attribution lines in common languages, then boilerplate such as "Sent from my iPhone".
+ *
+ * `text` is never empty when the mail has a body: when extraction leaves nothing, the whole body comes back with `status: fallback`.
+ *
+ * The sender's signature stays in `text` and is also in `signature`. A forward keeps the forwarded content and its header block is parsed into `forwarded`. A bounce report passes through whole.
+ *
+ */
+export type EmailClean = {
+    text?: string;
+    status?: 'stripped' | 'unchanged' | 'fallback';
+    removed?: {
+        /**
+         * Quoted earlier mail was removed.
+         */
+        quoted?: boolean;
+        /**
+         * A forward's header block was removed; it is parsed into `forwarded`.
+         */
+        forwardHeader?: boolean;
+        /**
+         * Client boilerplate such as "Sent from my iPhone" was removed.
+         */
+        boilerplate?: boolean;
+    };
+    signature?: (string) | null;
+    forwarded?: {
+        from?: (string) | null;
+        to?: (string) | null;
+        date?: (string) | null;
+        subject?: (string) | null;
+    } | null;
+};
+
+export type status31 = 'stripped' | 'unchanged' | 'fallback';
+
+/**
+ * A draft in the mailbox. Carries the message fields; `id` is the draft id the drafts endpoints take. Store `id`, not `messageId`.
+ */
+export type EmailDraft = EmailMessage & {
+    object?: EmailDraftObject;
+    /**
+     * The draft id: the Gmail draft id, or the Outlook message id.
+     */
+    id?: string;
+    /**
+     * Fixed when the draft is created. A draft the user wrote in their mail client is read from its headers.
+     */
+    kind?: 'new' | 'reply' | 'forward';
+    /**
+     * Changes on every edit, the user's in their mail app included. Pass it as `If-Match` to update or send only that version. Also the `ETag` response header.
+     */
+    version?: string;
+    /**
+     * The provider message behind the draft. Volatile: Gmail replaces it on every save.
+     */
+    messageId?: string;
+    /**
+     * The message a reply draft answers.
+     */
+    inReplyTo?: (string) | null;
+    /**
+     * The message a forward draft forwards.
+     */
+    forwardOf?: (string) | null;
+    /**
+     * Set when the draft was created with tracking.
+     */
+    trackingId?: (string) | null;
+};
+
+/**
+ * Fixed when the draft is created. A draft the user wrote in their mail client is read from its headers.
+ */
+export type kind9 = 'new' | 'reply' | 'forward';
+
+/**
+ * Always `draft`.
+ */
+export type EmailDraftObject = 'draft';
+
 export type EmailFolder = {
     id?: string;
     accountId?: string;
-    provider?: 'google' | 'microsoft';
+    provider?: 'google' | 'microsoft' | 'imap';
     name?: string;
     wellKnown?: 'inbox' | 'sent' | 'drafts' | 'trash' | 'spam' | 'archive';
     unreadCount?: number;
     totalCount?: number;
 };
+
+export type provider3 = 'google' | 'microsoft' | 'imap';
 
 export type wellKnown = 'inbox' | 'sent' | 'drafts' | 'trash' | 'spam' | 'archive';
 
@@ -9838,7 +10725,7 @@ export type EmailLabel = {
      */
     id?: string;
     accountId?: string;
-    provider?: 'google' | 'microsoft';
+    provider?: 'google' | 'microsoft' | 'imap';
     /**
      * Gmail nests labels with a slash, as in `Hermia/Handled`.
      */
@@ -9850,7 +10737,7 @@ export type EmailLabel = {
     } | null;
 };
 
-export type type17 = 'system' | 'user';
+export type type19 = 'system' | 'user';
 
 export type EmailListMeta = {
     /**
@@ -9866,9 +10753,13 @@ export type EmailMessage = {
     id?: string;
     threadId?: string;
     accountId?: string;
-    provider?: 'google' | 'microsoft';
+    provider?: 'google' | 'microsoft' | 'imap';
     folders?: Array<(string)>;
     from?: (EmailAddress | null);
+    /**
+     * The mailbox that actually sent it. Same as `from`, except when Outlook sent on behalf of `from` (Send on Behalf rather than Send As).
+     */
+    sender?: (EmailAddress | null);
     to?: Array<EmailAddress>;
     cc?: Array<EmailAddress>;
     bcc?: Array<EmailAddress>;
@@ -9902,6 +10793,15 @@ export type EmailMessage = {
      * Set on a send with `trackOpens`, `trackLinks` or `trackReplies`; the email.* webhooks carry it.
      */
     trackingId?: (string) | null;
+    clean?: EmailClean;
+    /**
+     * On a mail sent from a draft (`POST /v1/email/drafts/{draftId}/send`): the draft it was. The sent mail has a new id.
+     */
+    draftId?: (string) | null;
+    /**
+     * On a forward: the message it forwarded.
+     */
+    forwardedFrom?: (string) | null;
 };
 
 export type EmailMessagePatch = {
@@ -9923,37 +10823,84 @@ export type EmailMessagePatch = {
 };
 
 /**
- * An address the mailbox can send from.
+ * An address the mailbox can send from: listed by the provider, or declared with `POST /v1/email/send-as`.
  */
 export type EmailSendAs = {
     email?: string;
-    displayName?: (string) | null;
+    /**
+     * Display name used when `fromName` is not given.
+     */
+    name?: (string) | null;
+    /**
+     * `primary` is the mailbox's own address, `alias` a provider alias, `shared` a declared address (shared mailbox, delegate or alias).
+     */
+    type?: 'primary' | 'alias' | 'shared';
+    /**
+     * `pending`: Gmail has not verified the alias, so sends from it are refused. `unverified`: declared and not sent from yet; it becomes `accepted` after its first send.
+     */
+    verificationStatus?: 'accepted' | 'pending' | 'unverified';
+    /**
+     * The address the provider picks by default.
+     */
+    isDefault?: boolean;
+    source?: 'provider' | 'declared';
     /**
      * Gmail alias reply-to address, if set.
      */
     replyTo?: (string) | null;
     /**
-     * The mailbox's own address.
+     * What `appendSignature` appends for this address: the Zernio default first, else the Gmail signature. `null` means `appendSignature` answers 400.
      */
-    isPrimary?: boolean;
+    signature?: {
+        source?: 'zernio' | 'gmail';
+        /**
+         * The Zernio signature id. `null` for a Gmail signature.
+         */
+        id?: (string) | null;
+        html?: string;
+        text?: (string) | null;
+    } | null;
+};
+
+/**
+ * `primary` is the mailbox's own address, `alias` a provider alias, `shared` a declared address (shared mailbox, delegate or alias).
+ */
+export type type20 = 'primary' | 'alias' | 'shared';
+
+/**
+ * `pending`: Gmail has not verified the alias, so sends from it are refused. `unverified`: declared and not sent from yet; it becomes `accepted` after its first send.
+ */
+export type verificationStatus = 'accepted' | 'pending' | 'unverified';
+
+export type source2 = 'provider' | 'declared';
+
+/**
+ * A signature Zernio stores and appends itself, so it works on every provider.
+ */
+export type EmailSignature = {
+    id?: string;
+    name?: string;
+    html?: string;
     /**
-     * The address Gmail picks by default in its compose window.
+     * Appended to plain-text bodies. When `null`, the html stripped to text is used.
      */
-    isDefault?: boolean;
+    text?: (string) | null;
     /**
-     * Gmail sends from an alias only once it is verified. Always `true` on Outlook.
+     * `null` for a workspace-wide signature.
      */
-    verified?: boolean;
+    accountId?: (string) | null;
     /**
-     * Signature html. Gmail only; always `null` on Outlook.
+     * Sending addresses this signature is the default for. Each address has one default per scope; an account signature wins over a workspace one.
      */
-    signature?: (string) | null;
+    defaultFor?: Array<(string)>;
+    createdAt?: string;
+    updatedAt?: string;
 };
 
 export type EmailThread = {
     id?: string;
     accountId?: string;
-    provider?: 'google' | 'microsoft';
+    provider?: 'google' | 'microsoft' | 'imap';
     subject?: string;
     snippet?: string;
     participants?: Array<EmailAddress>;
@@ -10015,6 +10962,29 @@ export type ErrorResponse = {
     platformError?: {
         [key: string]: unknown;
     };
+    /**
+     * Email API: the mailbox provider the error came from (`google`, `microsoft`).
+     */
+    provider?: string;
+    /**
+     * Email API: the provider's own error code and message, for support and logs. Branch on `code`, not on this.
+     */
+    providerError?: {
+        code?: (string) | null;
+        message?: (string) | null;
+    };
+    /**
+     * Email API: whether the same request can succeed if retried (with the same `Idempotency-Key` for sends).
+     */
+    retryable?: boolean;
+    /**
+     * Email API: the request id, also in the `X-Request-Id` header. Quote it when you contact support.
+     */
+    requestId?: string;
+    /**
+     * Email API: where this `code` is documented.
+     */
+    docsUrl?: string;
     /**
      * Additional structured context for the error (for example field-level validation errors). What it carries depends on the endpoint and platform.
      *
@@ -10147,7 +11117,7 @@ export type ErrorResponse = {
 /**
  * Error class for programmatic handling.
  */
-export type type18 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
+export type type21 = 'invalid_request_error' | 'authentication_error' | 'permission_error' | 'not_found' | 'rate_limit_error' | 'platform_error' | 'api_error';
 
 /**
  * Meta ad create failures only. The step that failed:
@@ -10213,6 +11183,25 @@ export type EventAutomationDefinition = {
     limits?: AutomationEventLimits;
 };
 
+/**
+ * What happened to a correction at one destination the event was forwarded to.
+ */
+export type EventCorrection = {
+    accountId?: string;
+    destinationId?: string;
+    platform?: (string) | null;
+    /**
+     * `corrected`: the platform changed its count. `not_supported`: the platform has no API to change a conversion it already counted. `failed`: see `error`.
+     */
+    status?: 'corrected' | 'not_supported' | 'failed';
+    error?: (string) | null;
+};
+
+/**
+ * `corrected`: the platform changed its count. `not_supported`: the platform has no API to change a conversion it already counted. `failed`: see `error`.
+ */
+export type status32 = 'corrected' | 'not_supported' | 'failed';
+
 export type EventDestination = {
     /**
      * Event destination ID, used to delete it.
@@ -10259,7 +11248,7 @@ export type ExternalPostMediaItem = {
     unavailableReason?: 'platform_withheld';
 };
 
-export type type19 = 'image' | 'video';
+export type type22 = 'image' | 'video';
 
 /**
  * unavailable means the media file could not be retrieved (url is null or, for LinkedIn videos, a cover image standing in for the file). available or absent means the file is available at url (older synced items omit the field).
@@ -10422,7 +11411,7 @@ export type ExternalPostWebhookPost = {
 /**
  * Always "external". Distinguishes these from Zernio-originated post.* events.
  */
-export type source2 = 'external';
+export type source3 = 'external';
 
 export type FacebookPageInfo = {
     /**
@@ -10586,7 +11575,7 @@ export type FacebookPostEarningsResponse = {
  * across dates or across posts.
  *
  */
-export type period = 'lifetime';
+export type period2 = 'lifetime';
 
 /**
  * Facebook options that must be nested under platformSpecificData.facebookSettings, or sent at the request root as facebookSettings. The remaining Facebook options sit directly on platformSpecificData, see FacebookPlatformData.
@@ -10730,7 +11719,7 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status29 = 'received';
+export type status33 = 'received';
 
 /**
  * A file or folder in a connected Google Drive or OneDrive. Ids are the provider's own.
@@ -10764,7 +11753,7 @@ export type FileItem = {
     trashed: boolean;
 };
 
-export type kind9 = 'file' | 'folder';
+export type kind10 = 'file' | 'folder';
 
 export type FilePickerSession = {
     /**
@@ -10889,6 +11878,92 @@ export type FoodMenuSection = {
     items?: Array<FoodMenuItem>;
 };
 
+export type ForwardEmailRequest = {
+    accountId: string;
+    to: Array<EmailAddress>;
+    cc?: Array<EmailAddress>;
+    bcc?: Array<EmailAddress>;
+    replyTo?: Array<EmailAddress>;
+    fromName?: string;
+    /**
+     * Send from another address of the mailbox, as on `POST /v1/email/messages`.
+     */
+    from?: string;
+    /**
+     * Appends the signature of the sending address to the note, above the forwarded original: its Zernio default first, else its Gmail signature.
+     */
+    appendSignature?: boolean;
+    /**
+     * Appends this Zernio signature to the note instead. Wins over `appendSignature`.
+     */
+    signatureId?: string;
+    /**
+     * Defaults to "Fwd: " plus the original subject.
+     */
+    subject?: string;
+    /**
+     * Optional note above the forwarded mail.
+     */
+    text?: string;
+    /**
+     * Optional note above the forwarded mail, as html.
+     */
+    html?: string;
+    /**
+     * Added to the forwarded attachments. Everything together stays under 25 MB, else 413 `attachment_too_large`.
+     */
+    attachments?: Array<EmailAttachmentInput>;
+    /**
+     * False keeps only the inline images of the original.
+     */
+    includeAttachments?: boolean;
+    /**
+     * Attachment ids (from a read of the original) to leave out.
+     */
+    excludeAttachmentIds?: Array<(string)>;
+    metadata?: {
+        [key: string]: (string);
+    };
+    /**
+     * Adds an open pixel to the note and fires `email.opened`. Needs `html`.
+     */
+    trackOpens?: boolean;
+    /**
+     * Rewrites the links of the note and fires `email.link_clicked`. Needs `html`.
+     */
+    trackLinks?: boolean;
+    /**
+     * Fires `email.thread_replied` when someone else writes in the thread.
+     */
+    trackReplies?: boolean;
+};
+
+export type ForwardingRule = {
+    /**
+     * Rule ID, used to delete it.
+     */
+    id?: string;
+    profileId?: string;
+    accountId?: string;
+    /**
+     * Platform destination (pixel, conversion action, rule, ...).
+     */
+    destinationId?: string;
+    /**
+     * Event names forwarded to this destination; null forwards every event.
+     */
+    eventNames?: Array<(string)> | null;
+    createdAt?: string;
+};
+
+/**
+ * Why this account, calendar or address could not be read. The provider's code when it gave one.
+ */
+export type FreeBusyError = {
+    code?: string;
+    message?: string;
+};
+
 /**
  * Country-level geo-restriction (allowlist). When set, the post is only visible to users in the specified countries. Supported on Facebook (feed posts, videos, reels), X (media-level restriction), and LinkedIn (organization pages only, min 300 targeted followers). Ignored on unsupported platforms. Stories (Facebook, Instagram) do not support geo-restriction.
  *
@@ -10919,7 +11994,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status30 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status34 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -11022,7 +12097,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status31 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status35 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 export type GoogleAdsUserAccessInvitation = {
     invitationId?: string;
@@ -11037,7 +12112,7 @@ export type GoogleAdsUserAccessInvitation = {
 
 export type accessRole = 'ADMIN' | 'STANDARD' | 'READ_ONLY' | 'EMAIL_ONLY' | 'UNKNOWN';
 
-export type status32 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
+export type status36 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
 
 export type GoogleAdsUserAccessInvitationResult = {
     customerId?: string;
@@ -11061,7 +12136,7 @@ export type GoogleAdsUserAccessInvitationResult = {
 /**
  * PENDING once the email is sent; PENDING_APPROVAL while Google waits for a second admin's multi-party approval.
  */
-export type status33 = 'PENDING' | 'PENDING_APPROVAL';
+export type status37 = 'PENDING' | 'PENDING_APPROVAL';
 
 export type GoogleAdsUserInvitationApproval = {
     /**
@@ -11338,7 +12413,7 @@ export type topicType = 'STANDARD' | 'EVENT' | 'OFFER';
 /**
  * Button action type: LEARN_MORE, BOOK, ORDER, SHOP, SIGN_UP, CALL
  */
-export type type20 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
+export type type23 = 'LEARN_MORE' | 'BOOK' | 'ORDER' | 'SHOP' | 'SIGN_UP' | 'CALL';
 
 /**
  * A Google Business Profile review, as returned by every gmb-reviews read endpoint.
@@ -11657,7 +12732,7 @@ export type GoogleListingGroupFilterNode = {
     } | null;
 };
 
-export type type21 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
+export type type24 = 'SUBDIVISION' | 'UNIT_INCLUDED' | 'UNIT_EXCLUDED';
 
 export type GoogleListingGroupNode = {
     dimension: GoogleListingGroupDimension;
@@ -11911,7 +12986,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status34 = 'applied' | 'dismissed' | 'failed';
+export type status38 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -12008,6 +13083,137 @@ export type HubSpotSettings = {
 
 export type platform9 = 'hubspot';
 
+export type ImapConnectResult = {
+    dryRun?: boolean;
+    created?: boolean;
+    reconnected?: boolean;
+    account?: {
+        _id?: string;
+        platform?: string;
+        username?: string;
+        displayName?: string;
+        profileId?: string;
+    };
+    stages?: {
+        imapConnect?: 'ok' | 'failed' | 'skipped';
+        imapAuth?: 'ok' | 'failed' | 'skipped';
+        smtpConnect?: 'ok' | 'failed' | 'skipped';
+        smtpAuth?: 'ok' | 'failed' | 'skipped';
+    };
+    /**
+     * The special folders found: SPECIAL-USE first, then localized names.
+     */
+    folders?: {
+        sent?: string;
+        drafts?: string;
+        trash?: string;
+        spam?: string;
+        archive?: string;
+    };
+    settings?: {
+        imap?: {
+            host?: string;
+            port?: number;
+            /**
+             * tls from the first byte (993, 465) or STARTTLS on a plain port (143, 587).
+             */
+            security?: 'tls' | 'starttls';
+        };
+        smtp?: {
+            host?: string;
+            port?: number;
+            /**
+             * tls from the first byte (993, 465) or STARTTLS on a plain port (143, 587).
+             */
+            security?: 'tls' | 'starttls';
+        };
+        source?: string;
+    };
+    /**
+     * Hosted page only: where to send the user next.
+     */
+    redirectUrl?: string;
+};
+
+export type imapConnect = 'ok' | 'failed' | 'skipped';
+
+export type imapAuth = 'ok' | 'failed' | 'skipped';
+
+export type smtpConnect = 'ok' | 'failed' | 'skipped';
+
+export type smtpAuth = 'ok' | 'failed' | 'skipped';
+
+/**
+ * tls from the first byte (993, 465) or STARTTLS on a plain port (143, 587).
+ */
+export type security = 'tls' | 'starttls';
+
+export type ImapDiscovery = {
+    email?: string;
+    route?: 'imap' | 'google_oauth' | 'microsoft_oauth' | 'unsupported';
+    provider?: {
+        id?: (string) | null;
+        name?: (string) | null;
+    } | null;
+    source?: 'preset' | 'mx' | 'autoconfig' | 'ispdb' | 'srv' | 'probe' | 'none';
+    /**
+     * low when only a probe answered: show the settings for the user to check.
+     */
+    confidence?: 'high' | 'medium' | 'low';
+    imap?: {
+        host?: string;
+        port?: number;
+        security?: 'tls' | 'starttls';
+        username?: string;
+    } | null;
+    smtp?: {
+        host?: string;
+        port?: number;
+        /**
+         * tls from the first byte (993, 465) or STARTTLS on a plain port (143, 587).
+         */
+        security?: 'tls' | 'starttls';
+    } | null;
+    auth?: {
+        kind?: 'password' | 'app_password' | 'oauth';
+        label?: string;
+        why?: string;
+        helpUrl?: string;
+        steps?: Array<(string)>;
+        note?: string;
+    } | null;
+    /**
+     * What to switch on at the provider first, such as IMAP access on GMX or Yandex.
+     */
+    preflight?: Array<{
+        id?: 'enable_imap';
+        text?: string;
+        url?: string;
+    }>;
+    reconnectCause?: (string) | null;
+    reason?: (string) | null;
+    unsupportedReason?: ('proton_requires_bridge') | null;
+    /**
+     * Google only: Gmail over IMAP with an app password, for accounts whose admin blocks Google sign-in for other apps.
+     */
+    appPasswordFallback?: {
+        [key: string]: unknown;
+    };
+};
+
+export type route = 'imap' | 'google_oauth' | 'microsoft_oauth' | 'unsupported';
+
+export type source4 = 'preset' | 'mx' | 'autoconfig' | 'ispdb' | 'srv' | 'probe' | 'none';
+
+/**
+ * low when only a probe answered: show the settings for the user to check.
+ */
+export type confidence = 'high' | 'medium' | 'low';
+
+export type kind11 = 'password' | 'app_password' | 'oauth';
+
+export type unsupportedReason = 'proton_requires_bridge';
+
 export type ImessageAudienceContact = {
     conversationId?: string;
     accountId?: string;
@@ -12054,7 +13260,7 @@ export type ImessageSandboxContact = {
     createdAt?: string;
 };
 
-export type status35 = 'pending' | 'active';
+export type status39 = 'pending' | 'active';
 
 /**
  * An iMessage sender registered as an account on a profile.
@@ -12122,14 +13328,14 @@ export type ImessageSenderLifecycle = {
     createdAt?: string;
 };
 
-export type kind10 = 'phone' | 'email';
+export type kind12 = 'phone' | 'email';
 
 export type region = 'US' | 'GB';
 
 /**
  * `awaiting_payment`: the first-month charge is still being confirmed by the card; the number is ordered automatically once it is paid (usually under 5 minutes), or the order fails with `failureReason` when the card declines or nothing confirms within 30 minutes.
  */
-export type status36 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status40 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * When inbound messages and comments were first and last seen for the account. Only events matched to this account count. WhatsApp delivery statuses for outbound messages do not count, so the stamps of a number that only sends stay null. The stamps reset on every connect.
@@ -12337,7 +13543,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status37 = 'active' | 'archived';
+export type status41 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -12761,7 +13967,7 @@ export type InstagramDemographicsResponse = {
     note?: string;
 };
 
-export type metric2 = 'follower_demographics' | 'engaged_audience_demographics';
+export type metric3 = 'follower_demographics' | 'engaged_audience_demographics';
 
 /**
  * The timeframe used for demographic data
@@ -13105,7 +14311,7 @@ export type InstagramVideoFallback = {
     };
 };
 
-export type kind11 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
+export type kind13 = 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
 
 /**
  * A Google Search keyword: a bare string (BROAD match), or an object naming the match type.
@@ -13778,7 +14984,7 @@ export type MediaItem = {
 /**
  * Optional when the item names a connected file (`fileId`): inferred from the file's MIME type.
  */
-export type type22 = 'image' | 'video' | 'gif' | 'document';
+export type type25 = 'image' | 'video' | 'gif' | 'document';
 
 export type MediaSubtitle = {
     /**
@@ -14505,7 +15711,7 @@ export type OAuthApp = {
 /**
  * `ok`: the platform accepted the keys at the last check. `unchecked`: the check could not reach a verdict (see lastError). `invalid`: the platform rejected the keys; connects and token refreshes through this app will fail until the secret is rotated.
  */
-export type status38 = 'ok' | 'unchecked' | 'invalid';
+export type status42 = 'ok' | 'unchecked' | 'invalid';
 
 export type OAuthAppSetup = {
     platform: string;
@@ -14720,7 +15926,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status39 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status43 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -14771,7 +15977,7 @@ export type ParameterCatalogTokenAccountId = string;
 export type ParameterCreatorPortalToken = string;
 
 /**
- * The connected Google or Microsoft account.
+ * The connected Google, Microsoft or IMAP account.
  */
 export type ParameterEmailAccountId = string;
 
@@ -14861,7 +16067,7 @@ export type PayoutBatch = {
 /**
  * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` during the 7-day card hold and while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
  */
-export type status40 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
+export type status44 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
 export type method2 = 'card';
 
@@ -14904,7 +16110,7 @@ export type PayoutBatchItem = {
 /**
  * `skipped`: payout setup not finished, or the card payment never completed. `failed`: Stripe refused the transfer. `refunded`: failed or skipped after the card hold; its payout, fee and VAT on the fee went back to the card through a credit note. The amount is payable again in every case.
  */
-export type status41 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
+export type status45 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
 
 export type PhoneNumberStockWatch = {
     id: string;
@@ -15022,7 +16228,7 @@ export type PlatformAnalytics = {
     isOwner?: (boolean) | null;
 };
 
-export type status42 = 'published' | 'failed';
+export type status46 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -15224,7 +16430,7 @@ export type PortfolioBidStrategy = {
     targetImpressionShare?: (GoogleTargetImpressionShare | null);
 };
 
-export type type23 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
+export type type26 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
 
 export type Post = {
     _id?: string;
@@ -15292,7 +16498,7 @@ export type Post = {
 /**
  * `cancelled` is set by POST /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts. `pending_approval` (set by `requiresApproval: true`) never publishes until POST /v1/posts/{postId}/review approves it.
  */
-export type status43 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status47 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
 export type visibility4 = 'public' | 'private' | 'unlisted';
 
@@ -15665,7 +16871,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status44 = 'active' | 'draft' | 'archived';
+export type status48 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -15902,7 +17108,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status45 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status49 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -15954,7 +17160,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status46 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status50 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -16041,7 +17247,7 @@ export type RcsCarrierApproval = {
 
 export type scope3 = 'carrier' | 'hub' | 'bot';
 
-export type status47 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status51 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -16067,7 +17273,7 @@ export type RcsContent = {
     suggestions?: Array<RcsSuggestion>;
 };
 
-export type type24 = 'text';
+export type type27 = 'text';
 
 export type orientation = 'VERTICAL' | 'HORIZONTAL';
 
@@ -16180,7 +17386,7 @@ export type RcsSuggestion = {
     postbackData?: string;
 };
 
-export type type25 = 'reply';
+export type type28 = 'reply';
 
 export type application = 'BROWSER' | 'WEBVIEW';
 
@@ -16637,7 +17843,7 @@ export type ScheduledEmail = {
     createdAt?: string;
 };
 
-export type status48 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
+export type status52 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
 
 export type SendEmailRequest = {
     accountId: string;
@@ -16647,13 +17853,17 @@ export type SendEmailRequest = {
     replyTo?: Array<EmailAddress>;
     fromName?: string;
     /**
-     * Send from another address of the mailbox, listed by `GET /v1/email/send-as`. Gmail: a verified send-as alias, else 400. Outlook: any address the mailbox has Send As or Send on Behalf rights on, else 403. Omitted, the mail leaves from the mailbox address.
+     * Send from another address listed by `GET /v1/email/send-as`; on Outlook, declare a shared mailbox there first. An address not on the list answers 400, and Outlook refusing it at send time answers 403. Omitted, the mail leaves from the mailbox address.
      */
     from?: string;
     /**
-     * Gmail only. Appends the signature of the sending address (the `from` alias, or the mailbox address) to `html` and `text`. Outlook answers 400: Graph does not expose Outlook signatures.
+     * Appends the signature of the sending address: its Zernio default first, else its Gmail signature. 400 when it has neither.
      */
     appendSignature?: boolean;
+    /**
+     * Appends this Zernio signature instead. Wins over `appendSignature`.
+     */
+    signatureId?: string;
     subject: string;
     /**
      * Plain-text body. One of `text` or `html` is required.
@@ -16661,7 +17871,7 @@ export type SendEmailRequest = {
     text?: string;
     html?: string;
     /**
-     * 25 MB in total; 3 MB per attachment on Microsoft.
+     * 25 MB in total on every provider. Send files over 4 MB by url: request bodies are capped at 4.5 MB.
      */
     attachments?: Array<{
         filename: string;
@@ -16690,7 +17900,7 @@ export type SendEmailRequest = {
      */
     scheduledFor?: string;
     /**
-     * Needs `scheduledFor`. Saves the email as a draft in the mailbox now and sends that draft at `scheduledFor`, with any edits the user made in Gmail or Outlook. A draft deleted or sent from the mailbox first fails the send (`email.send_failed`). Cancelling deletes the draft.
+     * Needs `scheduledFor`. Saves the email as a draft in the mailbox now and sends that draft at `scheduledFor`, with any edits the user made in their mail app. A draft deleted or sent from the mailbox first fails the send (`email.send_failed`). Cancelling deletes the draft.
      */
     holdAsDraft?: boolean;
     /**
@@ -16796,10 +18006,11 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
+    capabilities?: EmailCapabilities;
     /**
      * The account's id on its platform, as the platform reports it to Zernio. Stable across reconnects, so use it to match an account against your own records.
      *
@@ -16937,7 +18148,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform15 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
+export type platform15 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -17141,7 +18352,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status49 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status53 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -17740,7 +18951,7 @@ export type commercialContentType = 'none' | 'brand_organic' | 'brand_content';
 /**
  * Optional override. Defaults based on provided media items.
  */
-export type mediaType2 = 'video' | 'photo';
+export type mediaType3 = 'video' | 'photo';
 
 /**
  * One TikTok `reject_info` entry.
@@ -17921,7 +19132,7 @@ export type platform17 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | '
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
  */
-export type kind12 = 'pixel' | 'tag' | 'insight_tag';
+export type kind14 = 'pixel' | 'tag' | 'insight_tag';
 
 /**
  * One health check the platform runs on a tracking tag.
@@ -18108,7 +19319,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status50 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status54 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -18198,7 +19409,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status51 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status55 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -18239,7 +19450,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status52 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status56 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -18354,6 +19565,63 @@ export type UpdateCreatorCampaignRequest = {
     economics?: CreatorCampaignEconomics;
     caps?: CreatorCampaignCaps;
     branding?: (CreatorCampaignBranding | null);
+    /**
+     * The page creator tracking links open. Required unless `attribution` is `code`.
+     */
+    landingUrl?: (string) | null;
+    /**
+     * What each creator's discount code takes off an order. Required unless `attribution` is `link`.
+     */
+    codeDiscountPercent?: (number) | null;
+    /**
+     * Treasury campaigns only. Pays every ready creator at 15:00 UTC, daily or on Mondays, with one payout batch on your saved card, paid out 7 days later. A refused card charges nothing and we email you. Needs a money mover and a saved card.
+     */
+    autoPayout?: (CreatorCampaignAutoPayout | null);
+    /**
+     * manual holds creators who join through the open link as `pending` until you approve them. Personal invites are never held.
+     */
+    joinApproval?: 'auto' | 'manual';
+    /**
+     * Creators upload a draft for review before publishing, and each submitted post must name an approved draft.
+     */
+    requireDraftApproval?: boolean;
+    /**
+     * A connected Shopify or WooCommerce store account. On `commission` and smart `retainer` economics its orders pay commission: required there, and fixed once such a campaign leaves draft.
+     *
+     * On any campaign creators can ask for free samples of its products (`sampleProductIds`). Changing it without `sampleProductIds` clears the sample products; null removes the store and the products.
+     *
+     */
+    storeAccountId?: (string) | null;
+    /**
+     * Product ids in the store that creators can ask a free sample of. Each is read from the store and saved as `sampleProducts`; an unknown product answers 404 `product_not_found`. Needs a store, otherwise 400 `missing_required_field` (`param: storeAccountId`).
+     */
+    sampleProductIds?: Array<(string)>;
+    /**
+     * Days after a sample is approved before a creator with no post since shows as owing content.
+     */
+    sampleContentDueDays?: number;
+};
+
+/**
+ * Every field is optional; the ones you leave out keep their current value. `text` or `html` replaces the whole body, and `attachments` replaces the whole set.
+ */
+export type UpdateEmailDraftRequest = {
+    accountId: string;
+    to?: Array<EmailAddress>;
+    cc?: Array<EmailAddress>;
+    bcc?: Array<EmailAddress>;
+    replyTo?: Array<EmailAddress>;
+    subject?: string;
+    text?: string;
+    /**
+     * On a draft created with tracking, the new html is instrumented again under the same `trackingId`.
+     */
+    html?: string;
+    attachments?: Array<EmailAttachmentInput>;
+    /**
+     * Swaps the Zernio signature block in the new `html` or `text` for this signature, so switching never stacks two; `null` removes it. Needs `html` or `text` in the same request.
+     */
+    signatureId?: (string) | null;
 };
 
 export type UploadedFile = {
@@ -18364,7 +19632,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type26 = 'image' | 'video' | 'document';
+export type type29 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -18373,7 +19641,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status53 = 'pending' | 'completed' | 'expired';
+export type status57 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -18576,7 +19844,7 @@ export type granularity = 'day' | 'month' | 'total';
 /**
  * `cycle` = a real billing period resolved; `window` = trailing/custom window (or cycle fallback).
  */
-export type source3 = 'cycle' | 'window';
+export type source5 = 'cycle' | 'window';
 
 export type groupBy = 'profile' | 'account';
 
@@ -18886,7 +20154,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status54 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status58 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel5 = 'sms' | 'whatsapp';
 
@@ -18922,7 +20190,7 @@ export type Webhook = {
     /**
      * Events subscribed to
      */
-    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'lead.received' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'account.rate_limited' | 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted' | 'email.opened' | 'email.link_clicked' | 'email.thread_replied' | 'email.send_failed' | 'file.created' | 'file.updated' | 'file.deleted' | 'file.picked' | 'contact.updated' | 'contact.deleted' | 'balance.low' | 'balance.empty' | 'balance.charged')>;
+    events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'lead.received' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'account.rate_limited' | 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted' | 'email.sent' | 'email.opened' | 'email.link_clicked' | 'email.thread_replied' | 'email.send_failed' | 'email.bounced' | 'email.updated' | 'email.deleted' | 'file.created' | 'file.updated' | 'file.deleted' | 'file.picked' | 'contact.updated' | 'contact.deleted' | 'balance.low' | 'balance.empty' | 'balance.charged' | 'campaign_participant.pending' | 'campaign_participant.approved' | 'campaign_participant.denied' | 'campaign_draft.submitted' | 'campaign_draft.approved' | 'campaign_draft.revision_requested' | 'campaign_draft.rejected' | 'campaign_sample.requested' | 'campaign_sample.approved' | 'campaign_sample.shipped' | 'campaign_sample.declined')>;
     /**
      * Whether webhook delivery is enabled
      */
@@ -19116,7 +20384,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status55 = 'success' | 'failed';
+export type status59 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -19230,7 +20498,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status56 = 'success' | 'failure';
+export type status60 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -19359,6 +20627,14 @@ export type WebhookPayloadAccountConnected = {
         platform: string;
         username: string;
         displayName?: string;
+        /**
+         * Present and true when a reconnect restored an existing account in place, keeping its accountId.
+         */
+        reconnected?: boolean;
+        /**
+         * The IMAP account this connection replaces, when a reconnected mailbox moved to Google or Microsoft. That account is retired at the same time, with account.disconnected and reasonCode replaced.
+         */
+        replacedAccountId?: string;
     };
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
@@ -19404,6 +20680,14 @@ export type WebhookPayloadAccountDisconnected = {
          * Human-readable reason for the disconnection
          */
         reason: string;
+        /**
+         * IMAP mailboxes only: why polling stopped, or replaced when a Google or Microsoft account took over the mailbox.
+         */
+        reasonCode?: 'auth_failed' | 'imap_disabled' | 'tls_error' | 'unreachable' | 'replaced';
+        /**
+         * IMAP mailboxes only: a hosted link, valid seven days, that reconnects the same account in place. Send it to the user.
+         */
+        reconnectUrl?: string;
     };
     /**
      * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
@@ -19419,6 +20703,11 @@ export type event5 = 'account.disconnected';
  * unintentional: the connection broke (token expired or revoked, access lost on the platform). The account stays in Zernio, inactive, until it is reconnected (keeping its accountId) or removed.
  */
 export type disconnectionType = 'intentional' | 'unintentional';
+
+/**
+ * IMAP mailboxes only: why polling stopped, or replaced when a Google or Microsoft account took over the mailbox.
+ */
+export type reasonCode = 'auth_failed' | 'imap_disabled' | 'tls_error' | 'unreachable' | 'replaced';
 
 /**
  * Webhook payload for account.permissions_changed events: an account connected with `scopes` or through your own OAuth app hit a missing permission and stays connected for its other areas.
@@ -19606,7 +20895,7 @@ export type level4 = 'AD';
 /**
  * Where the ad was created. `zernio` for ads created through Zernio, `platform` for ads the sync detected.
  */
-export type source4 = 'zernio' | 'platform';
+export type source6 = 'zernio' | 'platform';
 
 /**
  * Webhook payload for the `ad.delivery_issue` event. Fires when an ad Zernio already tracked moves into the platform's error state:
@@ -19740,7 +21029,7 @@ export type WebhookPayloadAdReview = {
 
 export type event11 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status57 = 'approved' | 'rejected';
+export type status61 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -20316,7 +21605,7 @@ export type event17 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status58 = 'ready' | 'error';
+export type status62 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -20457,7 +21746,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event20 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status59 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status63 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -20706,6 +21995,14 @@ export type WebhookPayloadCalendarEvent = {
     calendarEvent: {
         id?: string;
         changeType?: 'created' | 'updated' | 'deleted';
+        /**
+         * The calendar holding the event, to pass as `calendarId` when reading it: `primary` for the user's main calendar. Null when it is not known, as for a deleted Outlook event.
+         */
+        calendarId?: (string) | null;
+        /**
+         * The series this event belongs to, when it is an occurrence or exception.
+         */
+        masterEventId?: (string) | null;
     };
     timestamp: string;
 };
@@ -21170,9 +22467,67 @@ export type WebhookPayloadCampaignCreated = {
 export type event34 = 'campaign.created';
 
 /**
- * Webhook payload for `campaign_participant.joined`, `campaign_participant.suspended` and
- * `campaign_participant.removed`. `participant.status` is the status after the change.
- * `participant.joinedAt` is null for a participant removed before they ever joined.
+ * Webhook payload for `campaign_draft.submitted`, `campaign_draft.approved`,
+ * `campaign_draft.revision_requested` and `campaign_draft.rejected`. `draft` is the version
+ * the event is about; `draft.status` is its status after the change.
+ *
+ */
+export type WebhookPayloadCampaignDraft = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'campaign_draft.submitted' | 'campaign_draft.approved' | 'campaign_draft.revision_requested' | 'campaign_draft.rejected';
+    campaign: {
+        id: string;
+        name: string;
+    };
+    participant: {
+        id: string;
+    };
+    creator: {
+        id: string;
+        displayName: string;
+    };
+    draft: {
+        id: string;
+        chainId: string;
+        version: number;
+        revisionOf: (string) | null;
+        status: 'submitted' | 'approved' | 'revision_requested' | 'rejected';
+        mediaUrl: string;
+        mediaType: 'video' | 'image';
+        caption: string;
+        /**
+         * The revision note or the rejection reason.
+         */
+        reviewNote: (string) | null;
+        comments: Array<{
+            /**
+             * Milliseconds into the video; null for a general comment.
+             */
+            atMs: (number) | null;
+            body: string;
+        }>;
+    };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
+    timestamp: string;
+};
+
+export type event35 = 'campaign_draft.submitted' | 'campaign_draft.approved' | 'campaign_draft.revision_requested' | 'campaign_draft.rejected';
+
+/**
+ * Webhook payload for `campaign_participant.joined`, `campaign_participant.pending`,
+ * `campaign_participant.approved`, `campaign_participant.denied`, `campaign_participant.suspended`
+ * and `campaign_participant.removed`. `participant.status` is the status after the change.
+ * `participant.joinedAt` is null for a participant who never joined (pending, denied, or removed before joining).
  *
  */
 export type WebhookPayloadCampaignParticipant = {
@@ -21185,14 +22540,14 @@ export type WebhookPayloadCampaignParticipant = {
      * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
      */
     test?: boolean;
-    event: 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed';
+    event: 'campaign_participant.joined' | 'campaign_participant.pending' | 'campaign_participant.approved' | 'campaign_participant.denied' | 'campaign_participant.suspended' | 'campaign_participant.removed';
     campaign: {
         id: string;
         name: string;
     };
     participant: {
         id: string;
-        status: 'invited' | 'active' | 'suspended' | 'removed';
+        status: 'invited' | 'pending' | 'active' | 'suspended' | 'removed' | 'denied';
         joinedAt: (string) | null;
     };
     creator: {
@@ -21205,7 +22560,7 @@ export type WebhookPayloadCampaignParticipant = {
     timestamp: string;
 };
 
-export type event35 = 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed';
+export type event36 = 'campaign_participant.joined' | 'campaign_participant.pending' | 'campaign_participant.approved' | 'campaign_participant.denied' | 'campaign_participant.suspended' | 'campaign_participant.removed';
 
 /**
  * Webhook payload for `campaign_payout.payable` and `campaign_payout.settled`.
@@ -21294,12 +22649,65 @@ export type WebhookPayloadCampaignPayout = {
     timestamp: string;
 };
 
-export type event36 = 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed';
+export type event37 = 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed';
 
 /**
  * returned: Stripe refused the transfer. stale: it could not be confirmed with Stripe within 24 hours. reversed: Stripe reversed it after it was sent; the settlement is undone.
  */
 export type reason3 = 'returned' | 'stale' | 'reversed';
+
+/**
+ * Webhook payload for `campaign_sample.requested`, `campaign_sample.approved`,
+ * `campaign_sample.shipped` and `campaign_sample.declined`. `sample.status` is the status
+ * after the change; `sample.discountCode` is set from approval on.
+ *
+ */
+export type WebhookPayloadCampaignSample = {
+    /**
+     * Stable webhook event ID: the dedupe key, also sent as the X-Zernio-Event-Id header and identical on every retry and redelivery. It identifies the event only, never an account or other resource.
+     */
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'campaign_sample.requested' | 'campaign_sample.approved' | 'campaign_sample.shipped' | 'campaign_sample.declined';
+    campaign: {
+        id: string;
+        name: string;
+    };
+    participant: {
+        id: string;
+    };
+    creator: {
+        id: string;
+        displayName: string;
+    };
+    sample: {
+        id: string;
+        storeAccountId: string;
+        productId: string;
+        variantId: (string) | null;
+        productTitle: string;
+        variantTitle: (string) | null;
+        status: 'pending' | 'approved' | 'shipped' | 'declined';
+        shippingAddress: CampaignSampleShippingAddress;
+        note: (string) | null;
+        /**
+         * The 100%-off, single-use code, set from approval on.
+         */
+        discountCode: (string) | null;
+        trackingUrl: (string) | null;
+        declineReason: (string) | null;
+    };
+    /**
+     * UTC time at which Zernio generated this event (set once when the event payload is built, before delivery is queued). Retries and redeliveries keep the original value, so it reflects the event, not the delivery attempt.
+     */
+    timestamp: string;
+};
+
+export type event38 = 'campaign_sample.requested' | 'campaign_sample.approved' | 'campaign_sample.shipped' | 'campaign_sample.declined';
 
 /**
  * Webhook payload for campaign submission events:
@@ -21362,7 +22770,7 @@ export type WebhookPayloadCampaignSubmission = {
     timestamp: string;
 };
 
-export type event37 = 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected';
+export type event39 = 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected';
 
 /**
  * Webhook payload for the `campaign.updated` event. Fires when a campaign is edited through Zernio (API, MCP or dashboard), after the platform and Zernio both accepted the edit, once per user who can see the campaign. It also fires when the sync detects an edit made outside Zernio.
@@ -21419,7 +22827,7 @@ export type WebhookPayloadCampaignUpdated = {
     timestamp: string;
 };
 
-export type event38 = 'campaign.updated';
+export type event40 = 'campaign.updated';
 
 /**
  * Webhook payload for comment received events (Instagram, Facebook, Threads, YouTube, LinkedIn, Bluesky, Reddit, TikTok). X/Twitter does NOT fire this event. TikTok events carry only the author id: the comment.update webhook has no username, picture or owner flag.
@@ -21586,7 +22994,7 @@ export type WebhookPayloadComment = {
     timestamp: string;
 };
 
-export type event39 = 'comment.received';
+export type event41 = 'comment.received';
 
 export type platform18 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
@@ -21633,9 +23041,9 @@ export type WebhookPayloadCommerceOrder = {
     };
 };
 
-export type event40 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
+export type event42 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
 
-export type type27 = 'order';
+export type type30 = 'order';
 
 export type WebhookPayloadCommerceProduct = {
     /**
@@ -21676,9 +23084,9 @@ export type WebhookPayloadCommerceProduct = {
     };
 };
 
-export type event41 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
+export type event43 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
-export type type28 = 'product';
+export type type31 = 'product';
 
 /**
  * Webhook payload for contact.updated and contact.deleted, fired after a provider contacts sync (Google Contacts, Outlook) changed a contact. contact.updated also fires after a WhatsApp coexistence address-book change (WhatsApp never fires contact.deleted). Read the contact with `GET /v1/contacts/{id}`.
@@ -21705,7 +23113,7 @@ export type WebhookPayloadContact = {
     timestamp: string;
 };
 
-export type event42 = 'contact.updated' | 'contact.deleted';
+export type event44 = 'contact.updated' | 'contact.deleted';
 
 export type changeType2 = 'updated' | 'deleted';
 
@@ -21745,12 +23153,12 @@ export type WebhookPayloadContactFieldChanged = {
     source: 'api' | 'workflow' | 'automation';
 };
 
-export type event43 = 'contact.field_changed';
+export type event45 = 'contact.field_changed';
 
 /**
  * Who wrote the field: the API or dashboard, a workflow set_field node, or an automation.
  */
-export type source5 = 'api' | 'workflow' | 'automation';
+export type source7 = 'api' | 'workflow' | 'automation';
 
 export type WebhookPayloadContactTag = {
     /**
@@ -21777,12 +23185,12 @@ export type WebhookPayloadContactTag = {
     source: 'api' | 'workflow' | 'automation';
 };
 
-export type event44 = 'contact.tag_added' | 'contact.tag_removed';
+export type event46 = 'contact.tag_added' | 'contact.tag_removed';
 
 /**
- * Who answers a conversation changed under Meta's handover protocol. WhatsApp: Meta
- * Business Agent took it over, handed it to you, or another partner app took it.
- * Facebook and Instagram: another app passed the thread to you, or took or received it.
+ * Who answers a conversation changed. WhatsApp: Meta Business Agent took it over,
+ * handed it to you, or another partner app took it. Facebook and Instagram (Meta's
+ * conversation routing): another app passed the thread to you or took it from you.
  *
  */
 export type WebhookPayloadConversationControlChanged = {
@@ -21823,7 +23231,7 @@ export type WebhookPayloadConversationControlChanged = {
     timestamp: string;
 };
 
-export type event45 = 'conversation.control_changed';
+export type event47 = 'conversation.control_changed';
 
 /**
  * Who answers now. ai_agent: Meta Business Agent (WhatsApp); app: you; other: another app (a WhatsApp partner, or a Messenger / Instagram receiver such as Page Inbox).
@@ -21872,7 +23280,7 @@ export type WebhookPayloadConversationStarted = {
     timestamp: string;
 };
 
-export type event46 = 'conversation.started';
+export type event48 = 'conversation.started';
 
 /**
  * Webhook payload for `creator_campaign.budget_exhausted` and `creator_campaign.closed`.
@@ -21911,7 +23319,144 @@ export type WebhookPayloadCreatorCampaign = {
     timestamp: string;
 };
 
-export type event47 = 'creator_campaign.budget_exhausted' | 'creator_campaign.closed';
+export type event49 = 'creator_campaign.budget_exhausted' | 'creator_campaign.closed';
+
+/**
+ * Webhook payload for email.bounced. One event per failed recipient of the bounce.
+ */
+export type WebhookPayloadEmailBounced = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'email.bounced';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    /**
+     * The mail that bounced. `messageId`, `trackingId` and `metadata` are set when it was sent with tracking; otherwise match on `threadId`, `internetMessageId` or `subject`.
+     */
+    email: {
+        /**
+         * Provider id of the sent mail.
+         */
+        messageId?: (string) | null;
+        threadId?: string;
+        /**
+         * The RFC 5322 Message-ID of the mail that bounced.
+         */
+        internetMessageId?: (string) | null;
+        trackingId?: (string) | null;
+        metadata?: {
+            [key: string]: (string);
+        } | null;
+        /**
+         * From the headers the report quotes.
+         */
+        subject?: (string) | null;
+        /**
+         * From the headers the report quotes.
+         */
+        sentAt?: (string) | null;
+    };
+    bounce: {
+        /**
+         * The address that refused the mail.
+         */
+        recipient?: string;
+        /**
+         * `hard`: 5.x.x, the address does not take mail. `soft`: 4.x.x, a temporary refusal the sending server gave up on. `undetermined`: the report gave no status.
+         */
+        type?: 'hard' | 'soft' | 'undetermined';
+        category?: 'user_unknown' | 'mailbox_full' | 'domain_not_found' | 'policy_blocked' | 'spam_blocked' | 'blocklisted' | 'message_too_large' | 'content_rejected' | 'auth_failure' | 'rate_limited' | 'other';
+        /**
+         * RFC 3463 enhanced status, such as 5.1.1.
+         */
+        status?: (string) | null;
+        /**
+         * The SMTP reply code, such as 550. Always a number.
+         */
+        smtpCode?: (number) | null;
+        /**
+         * The receiving server's answer.
+         */
+        diagnostic?: (string) | null;
+        /**
+         * `remove` only for an address that does not take mail. Sender-side refusals (authentication, blocklists, spam filters) are `fix_configuration` or `review`, never `remove`.
+         */
+        recommendedAction?: 'remove' | 'retry' | 'review' | 'fix_configuration';
+        reportingMta?: (string) | null;
+        /**
+         * `dsn`: a standard delivery report with the bounced Message-ID. `ndr`: a non-standard report read from its headers and text.
+         */
+        detection?: 'dsn' | 'ndr';
+        /**
+         * Provider id of the bounce report in the mailbox.
+         */
+        bounceMessageId?: string;
+        /**
+         * When the report arrived in the mailbox.
+         */
+        bouncedAt?: string;
+        /**
+         * When Zernio read it. Reports can arrive minutes to days after the send.
+         */
+        detectedAt?: string;
+    };
+    timestamp: string;
+};
+
+export type event50 = 'email.bounced';
+
+/**
+ * `hard`: 5.x.x, the address does not take mail. `soft`: 4.x.x, a temporary refusal the sending server gave up on. `undetermined`: the report gave no status.
+ */
+export type type32 = 'hard' | 'soft' | 'undetermined';
+
+export type category2 = 'user_unknown' | 'mailbox_full' | 'domain_not_found' | 'policy_blocked' | 'spam_blocked' | 'blocklisted' | 'message_too_large' | 'content_rejected' | 'auth_failure' | 'rate_limited' | 'other';
+
+/**
+ * `remove` only for an address that does not take mail. Sender-side refusals (authentication, blocklists, spam filters) are `fix_configuration` or `review`, never `remove`.
+ */
+export type recommendedAction = 'remove' | 'retry' | 'review' | 'fix_configuration';
+
+/**
+ * `dsn`: a standard delivery report with the bounced Message-ID. `ndr`: a non-standard report read from its headers and text.
+ */
+export type detection = 'dsn' | 'ndr';
+
+/**
+ * Webhook payload for email.deleted.
+ */
+export type WebhookPayloadEmailDeleted = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'email.deleted';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    email: {
+        messageId?: string;
+        threadId?: (string) | null;
+    };
+    timestamp: string;
+};
+
+export type event51 = 'email.deleted';
 
 /**
  * Webhook payload for email.link_clicked.
@@ -21950,7 +23495,7 @@ export type WebhookPayloadEmailLinkClicked = {
     timestamp: string;
 };
 
-export type event48 = 'email.link_clicked';
+export type event52 = 'email.link_clicked';
 
 /**
  * Webhook payload for email.opened.
@@ -21982,7 +23527,7 @@ export type WebhookPayloadEmailOpened = {
     timestamp: string;
 };
 
-export type event49 = 'email.opened';
+export type event53 = 'email.opened';
 
 /**
  * Webhook payload for email.send_failed. Read the send with `GET /v1/email/messages/scheduled/{scheduleId}`.
@@ -22016,7 +23561,60 @@ export type WebhookPayloadEmailSendFailed = {
     timestamp: string;
 };
 
-export type event50 = 'email.send_failed';
+export type event54 = 'email.send_failed';
+
+/**
+ * Webhook payload for email.sent.
+ */
+export type WebhookPayloadEmailSent = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'email.sent';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    source: 'send' | 'reply' | 'forward' | 'draft' | 'scheduled';
+    email: {
+        /**
+         * Provider id of the sent mail.
+         */
+        messageId?: string;
+        threadId?: string;
+        trackingId?: (string) | null;
+        metadata?: {
+            [key: string]: (string);
+        } | null;
+        subject?: string;
+        from?: (EmailAddress | null);
+        to?: Array<EmailAddress>;
+        cc?: Array<EmailAddress>;
+        bcc?: Array<EmailAddress>;
+        sentAt?: string;
+    };
+    /**
+     * The draft it was sent from (`source: draft`, or a scheduled draft).
+     */
+    draftId?: (string) | null;
+    /**
+     * The scheduled send (`source: scheduled`).
+     */
+    scheduleId?: (string) | null;
+    replyToMessageId?: (string) | null;
+    forwardedFrom?: (string) | null;
+    timestamp: string;
+};
+
+export type event55 = 'email.sent';
+
+export type source8 = 'send' | 'reply' | 'forward' | 'draft' | 'scheduled';
 
 /**
  * Webhook payload for email.thread_replied.
@@ -22048,11 +23646,71 @@ export type WebhookPayloadEmailThreadReplied = {
          * Replies in the thread so far.
          */
         count?: number;
+        /**
+         * The reply without the quoted history, as `clean=true` returns it on a message read. `status: fallback` means nothing could be stripped safely and `text` is the whole body.
+         */
+        clean?: {
+            text?: string;
+            status?: 'stripped' | 'unchanged' | 'fallback';
+        };
     };
     timestamp: string;
 };
 
-export type event51 = 'email.thread_replied';
+export type event56 = 'email.thread_replied';
+
+/**
+ * Webhook payload for email.updated. Gmail sends `changes`; Outlook sends the message as it is now and `changes: null`.
+ */
+export type WebhookPayloadEmailUpdated = {
+    id: string;
+    profiles?: WebhookProfiles;
+    /**
+     * Always true when present: only a sample sent by POST /v1/webhooks/test with an event carries it. Real deliveries never do.
+     */
+    test?: boolean;
+    event: 'email.updated';
+    account: {
+        accountId?: string;
+        profileId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: (string) | null;
+    };
+    /**
+     * The message as it is after the change.
+     */
+    email: {
+        messageId?: string;
+        threadId?: (string) | null;
+        /**
+         * `inbox`, `sent`, `archive`, `trash`, `spam`, `drafts`, or the provider folder id for any other folder.
+         */
+        folder?: (string) | null;
+        unread?: (boolean) | null;
+        /**
+         * Gmail star or Outlook flag.
+         */
+        starred?: (boolean) | null;
+        /**
+         * Gmail user label ids or Outlook category names.
+         */
+        labels?: Array<(string)> | null;
+    };
+    /**
+     * What changed. Gmail only; null on Outlook.
+     */
+    changes: {
+        unread?: boolean;
+        starred?: boolean;
+        folder?: string;
+        labelsAdded?: Array<(string)>;
+        labelsRemoved?: Array<(string)>;
+    } | null;
+    timestamp: string;
+};
+
+export type event57 = 'email.updated';
 
 /**
  * Webhook payload for post.external.created / post.external.updated /
@@ -22089,7 +23747,7 @@ export type WebhookPayloadExternalPost = {
     timestamp: string;
 };
 
-export type event52 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
+export type event58 = 'post.external.created' | 'post.external.updated' | 'post.external.deleted';
 
 /**
  * Webhook payload for file.created, file.updated and file.deleted. Carries the provider file id and the change only; read the file with `GET /v1/files/{id}`.
@@ -22116,7 +23774,7 @@ export type WebhookPayloadFile = {
     timestamp: string;
 };
 
-export type event53 = 'file.created' | 'file.updated' | 'file.deleted';
+export type event59 = 'file.created' | 'file.updated' | 'file.deleted';
 
 /**
  * Webhook payload for file.picked: the user picked files on a hosted picker page (`POST /v1/files/picker-sessions`), so the app may now open them. Every id was checked against Drive before the event fired.
@@ -22151,7 +23809,7 @@ export type WebhookPayloadFilePicked = {
     timestamp: string;
 };
 
-export type event54 = 'file.picked';
+export type event60 = 'file.picked';
 
 /**
  * Webhook payload for lead.received events (Meta Lead Gen / Instant Forms).
@@ -22235,7 +23893,7 @@ export type WebhookPayloadLead = {
     timestamp: string;
 };
 
-export type event55 = 'lead.received';
+export type event61 = 'lead.received';
 
 /**
  * Webhook payload for mention received events (Instagram, Facebook, LinkedIn).
@@ -22300,14 +23958,14 @@ export type WebhookPayloadMention = {
     timestamp: string;
 };
 
-export type event56 = 'mention.received';
+export type event62 = 'mention.received';
 
 export type platform19 = 'instagram' | 'facebook' | 'linkedin';
 
 /**
  * Null on LinkedIn.
  */
-export type type29 = 'caption' | 'post' | 'comment';
+export type type33 = 'caption' | 'post' | 'comment';
 
 /**
  * Webhook payload for message received events
@@ -22514,7 +24172,7 @@ export type WebhookPayloadMessage = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific message context (present when the message is a quick reply tap, postback button tap, inline keyboard callback, a quote-reply to an earlier message, an inbound another app is answering under Meta's handover protocol, or a TikTok DM that is not plain text)
+     * Platform-specific message context (present when the message is a quick reply tap, postback button tap, inline keyboard callback, a quote-reply to an earlier message, an inbound another app is answering under Meta's conversation routing, or a TikTok DM that is not plain text)
      */
     metadata?: {
         /**
@@ -22523,7 +24181,7 @@ export type WebhookPayloadMessage = {
          * To take control back:
          *
          * - WhatsApp: sending a reply takes control back.
-         * - Facebook, and Instagram accounts connected through a Facebook Page: take control first with POST /v1/inbox/conversations/{conversationId}/thread-control.
+         * - Facebook, and Instagram accounts connected through a Facebook Page: a send tries take_thread_control once and resends. Meta allows the take only when the account has a default app set in conversation routing and has allowed Zernio to take control of conversations.
          * - Instagram Login connections: cannot take or request control; wait for the owner to pass it.
          *
          */
@@ -22890,7 +24548,7 @@ export type WebhookPayloadMessage = {
     timestamp: string;
 };
 
-export type event57 = 'message.received';
+export type event63 = 'message.received';
 
 /**
  * Which Zernio surface produced the message. Always present and
@@ -22949,7 +24607,7 @@ export type WebhookPayloadMessageDeleted = {
     timestamp: string;
 };
 
-export type event58 = 'message.deleted';
+export type event64 = 'message.deleted';
 
 /**
  * Shared payload for message.delivered, message.read, message.played and message.failed events. Fires when the platform reports a new delivery state for an outgoing message.
@@ -23013,7 +24671,7 @@ export type WebhookPayloadMessageDeliveryStatus = {
     timestamp: string;
 };
 
-export type event59 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
+export type event65 = 'message.delivered' | 'message.read' | 'message.played' | 'message.failed';
 
 /**
  * Webhook payload for message.edited events. Fires when the sender
@@ -23056,7 +24714,7 @@ export type WebhookPayloadMessageEdited = {
     timestamp: string;
 };
 
-export type event60 = 'message.edited';
+export type event66 = 'message.edited';
 
 /**
  * Webhook payload for message sent events (fired when a message is sent via the API, or from the WhatsApp Business app on Coexistence numbers)
@@ -23302,7 +24960,7 @@ export type WebhookPayloadMessageSent = {
     timestamp: string;
 };
 
-export type event61 = 'message.sent';
+export type event67 = 'message.sent';
 
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
@@ -23319,7 +24977,7 @@ export type platform20 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 't
  * Says where WhatsApp saw the send come from, not which Zernio surface produced it: read sentVia for that.
  *
  */
-export type source6 = 'whatsapp_business_app' | 'cloud_api' | 'meta_business_agent';
+export type source9 = 'whatsapp_business_app' | 'cloud_api' | 'meta_business_agent';
 
 /**
  * Webhook payload for phone_number.stock_available events
@@ -23367,7 +25025,7 @@ export type WebhookPayloadPhoneNumberStockAvailable = {
     timestamp: string;
 };
 
-export type event62 = 'phone_number.stock_available';
+export type event68 = 'phone_number.stock_available';
 
 /**
  * Webhook payload for post events
@@ -23429,7 +25087,7 @@ export type WebhookPayloadPost = {
     timestamp: string;
 };
 
-export type event63 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
+export type event69 = 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled';
 
 /**
  * Webhook payload for `post.authenticity_changed`. Fired when a tracked post's
@@ -23493,7 +25151,7 @@ export type WebhookPayloadPostAuthenticityChanged = {
     timestamp: string;
 };
 
-export type event64 = 'post.authenticity_changed';
+export type event70 = 'post.authenticity_changed';
 
 /**
  * Webhook payload for these per-platform events:
@@ -23609,12 +25267,12 @@ export type WebhookPayloadPostPlatform = {
     timestamp: string;
 };
 
-export type event65 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
+export type event71 = 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved';
 
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status60 = 'published' | 'failed' | 'deleted';
+export type status64 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -23682,7 +25340,7 @@ export type WebhookPayloadPostTrackingCompleted = {
     timestamp: string;
 };
 
-export type event66 = 'post.tracking_completed';
+export type event72 = 'post.tracking_completed';
 
 export type completionReason2 = 'final_read' | 'unreachable' | 'post_deleted';
 
@@ -23744,7 +25402,7 @@ export type WebhookPayloadReaction = {
     timestamp: string;
 };
 
-export type event67 = 'reaction.received';
+export type event73 = 'reaction.received';
 
 export type action = 'added' | 'removed';
 
@@ -23823,7 +25481,7 @@ export type WebhookPayloadReferral = {
     timestamp: string;
 };
 
-export type event68 = 'referral.received';
+export type event74 = 'referral.received';
 
 /**
  * Webhook payload for the review.deleted event.
@@ -23881,7 +25539,7 @@ export type WebhookPayloadReviewDeleted = {
     timestamp: string;
 };
 
-export type event69 = 'review.deleted';
+export type event75 = 'review.deleted';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -23913,7 +25571,7 @@ export type WebhookPayloadReviewNew = {
     timestamp: string;
 };
 
-export type event70 = 'review.new';
+export type event76 = 'review.new';
 
 /**
  * Webhook payload for the review.restored event. Same shape as review.new.
@@ -23948,7 +25606,7 @@ export type WebhookPayloadReviewRestored = {
     timestamp: string;
 };
 
-export type event71 = 'review.restored';
+export type event77 = 'review.restored';
 
 /**
  * Webhook payload for the review.updated event. Same shape as review.new.
@@ -23996,7 +25654,7 @@ export type WebhookPayloadReviewUpdated = {
     timestamp: string;
 };
 
-export type event72 = 'review.updated';
+export type event78 = 'review.updated';
 
 export type WebhookPayloadSequenceEnrollment = {
     /**
@@ -24029,7 +25687,7 @@ export type WebhookPayloadSequenceEnrollment = {
     exitReason?: 'completed' | 'replied' | 'manual' | 'failed' | 'unsubscribed';
 };
 
-export type event73 = 'sequence.enrolled' | 'sequence.exited';
+export type event79 = 'sequence.enrolled' | 'sequence.exited';
 
 /**
  * sequence.exited only. completed: the last step was sent; replied: the contact replied and the sequence exits on reply; manual: unenrolled through the API; failed: the step kept failing to send; unsubscribed: the contact opted out.
@@ -24050,7 +25708,7 @@ export type WebhookPayloadSupportRun = {
     run: SupportRun;
 };
 
-export type event74 = 'support.run.completed' | 'support.run.failed';
+export type event80 = 'support.run.completed' | 'support.run.failed';
 
 /**
  * Webhook payload for test deliveries
@@ -24071,7 +25729,7 @@ export type WebhookPayloadTest = {
     timestamp: string;
 };
 
-export type event75 = 'webhook.test';
+export type event81 = 'webhook.test';
 
 /**
  * Webhook payload for `whatsapp.account.alert_received`, forwarded from Meta's
@@ -24123,7 +25781,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
     timestamp: string;
 };
 
-export type event76 = 'whatsapp.account.alert_received';
+export type event82 = 'whatsapp.account.alert_received';
 
 export type platform21 = 'whatsapp';
 
@@ -24175,12 +25833,12 @@ export type WebhookPayloadWhatsAppAccountNameStatusUpdated = {
     timestamp: string;
 };
 
-export type event77 = 'whatsapp.account.name_status_updated';
+export type event83 = 'whatsapp.account.name_status_updated';
 
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status61 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status65 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -24233,12 +25891,12 @@ export type WebhookPayloadWhatsAppAccountQualityUpdated = {
     timestamp: string;
 };
 
-export type event78 = 'whatsapp.account.quality_updated';
+export type event84 = 'whatsapp.account.quality_updated';
 
 /**
  * The Meta webhook field that reported the change.
  */
-export type source7 = 'phone_number_quality_update' | 'business_capability_update';
+export type source10 = 'phone_number_quality_update' | 'business_capability_update';
 
 /**
  * Webhook payload for `whatsapp.account.status_updated`. Fired when Meta restricts,
@@ -24309,12 +25967,12 @@ export type WebhookPayloadWhatsAppAccountStatusUpdated = {
     timestamp: string;
 };
 
-export type event79 = 'whatsapp.account.status_updated';
+export type event85 = 'whatsapp.account.status_updated';
 
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status62 = 'restricted' | 'active';
+export type status66 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -24366,7 +26024,7 @@ export type WebhookPayloadWhatsAppContactIdentityChanged = {
     timestamp: string;
 };
 
-export type event80 = 'whatsapp.contact.identity_changed';
+export type event86 = 'whatsapp.contact.identity_changed';
 
 /**
  * Which Meta signal reported the change. `user_changed_number`: new phone number. `user_changed_user_id` and `user_id_update`: new BSUID.
@@ -24440,7 +26098,7 @@ export type WebhookPayloadWhatsAppTemplateCategoryUpdated = {
     timestamp: string;
 };
 
-export type event81 = 'whatsapp.template.category_updated';
+export type event87 = 'whatsapp.template.category_updated';
 
 /**
  * `scheduled` is Meta's 24h advance notice of an upcoming
@@ -24452,7 +26110,7 @@ export type changeType3 = 'scheduled' | 'applied';
 /**
  * The category right now, regardless of changeType.
  */
-export type category2 = 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
+export type category3 = 'UTILITY' | 'MARKETING' | 'AUTHENTICATION';
 
 /**
  * Present only when changeType is `applied`. The category before this change.
@@ -24522,7 +26180,7 @@ export type WebhookPayloadWhatsAppTemplateStatusUpdated = {
     timestamp: string;
 };
 
-export type event82 = 'whatsapp.template.status_updated';
+export type event88 = 'whatsapp.template.status_updated';
 
 /**
  * New status. Forwarded verbatim from Meta's `event` field.
@@ -24530,7 +26188,7 @@ export type event82 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status63 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status67 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -24589,12 +26247,12 @@ export type WebhookPayloadWorkflowRun = {
     error?: string;
 };
 
-export type event83 = 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed';
+export type event89 = 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed';
 
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status64 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status68 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -24870,7 +26528,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type30 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type34 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -24912,7 +26570,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type31 = 'platform_error';
+export type type35 = 'platform_error';
 
 export type code4 = 'platform_api_error';
 
@@ -24994,7 +26652,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status65 = 'success' | 'failed' | 'pending';
+export type status69 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -25140,7 +26798,7 @@ export type WorkflowNode = {
  * integrations (webhook, hubspot_upsert_contact, ai, handoff, start_call).
  *
  */
-export type type32 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type36 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -25260,7 +26918,7 @@ export type XArticle = {
 /**
  * Publish creates an X Article draft and then publishes it. Draft stops after draft creation and returns the X draft ID without a public URL.
  */
-export type mode4 = 'publish' | 'draft';
+export type mode6 = 'publish' | 'draft';
 
 export type XArticleBlock = {
     type: 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
@@ -25276,7 +26934,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type33 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type37 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -25355,7 +27013,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type34 = 'divider' | 'latex';
+export type type38 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -27359,7 +29017,7 @@ export type UpdateAutoRechargeData = {
          */
         toCents?: number;
         /**
-         * Most auto top-up may add per calendar month (UTC), before tax. Null for no limit.
+         * Most auto top-up may add per calendar month (UTC), before tax. At least toCents while auto top-up is on. Null for no limit.
          */
         monthlyLimitCents?: (number) | null;
         /**
@@ -28451,6 +30109,10 @@ export type StartCreatorConnectData = {
          * One of the campaign's platforms, for example tiktok.
          */
         platform: string;
+        /**
+         * The Zernio connect window the participant page opened (`/connect/complete` with its `window` id). Any other URL answers 400 `invalid_field_value`.
+         */
+        windowUrl?: string;
     };
     path: {
         /**
@@ -28472,6 +30134,10 @@ export type SubmitCreatorPostData = {
          * The public link to the post.
          */
         url: string;
+        /**
+         * The approved draft this post publishes. Required when the campaign has `requireDraftApproval`: it must be one of the creator's own drafts, `approved`, and not used by another post yet (each draft backs one post only).
+         */
+        draftId?: string;
     };
     path: {
         /**
@@ -28486,6 +30152,95 @@ export type SubmitCreatorPostResponse = ({
 });
 
 export type SubmitCreatorPostError = (ErrorResponse);
+
+export type PresignCreatorDraftUploadData = {
+    body: {
+        filename: string;
+        contentType: 'video/mp4' | 'video/quicktime' | 'video/webm' | 'image/jpeg' | 'image/png' | 'image/webp';
+        /**
+         * File size in bytes. Optional; over 500 MB answers 400.
+         */
+        size?: number;
+    };
+    path: {
+        /**
+         * A participant token or an open invite token. A malformed token answers 404 like an unknown one.
+         */
+        token: string;
+    };
+};
+
+export type PresignCreatorDraftUploadResponse = ({
+    /**
+     * Presigned URL to `PUT` the file to.
+     */
+    uploadUrl: string;
+    /**
+     * Where the file is served once uploaded. Pass it as `mediaUrl`.
+     */
+    publicUrl: string;
+    key: string;
+    /**
+     * Seconds until `uploadUrl` expires.
+     */
+    expiresIn: number;
+});
+
+export type PresignCreatorDraftUploadError = (ErrorResponse);
+
+export type SubmitCreatorDraftData = {
+    body: {
+        /**
+         * The `publicUrl` of the uploaded file.
+         */
+        mediaUrl: string;
+        mediaType: 'video' | 'image';
+        caption?: string;
+        /**
+         * The version marked `revision_requested` that this draft answers.
+         */
+        revisionOf?: string;
+    };
+    path: {
+        /**
+         * A participant token or an open invite token. A malformed token answers 404 like an unknown one.
+         */
+        token: string;
+    };
+};
+
+export type SubmitCreatorDraftResponse = ({
+    draft: CreatorPortalDraft;
+});
+
+export type SubmitCreatorDraftError = (ErrorResponse);
+
+export type RequestCreatorSampleData = {
+    body: {
+        /**
+         * A `productId` from the campaign's `sampleProducts`.
+         */
+        productId: string;
+        /**
+         * Required when the product lists `variants`.
+         */
+        variantId?: string;
+        shippingAddress: CampaignSampleShippingAddress;
+        note?: string;
+    };
+    path: {
+        /**
+         * A participant token or an open invite token. A malformed token answers 404 like an unknown one.
+         */
+        token: string;
+    };
+};
+
+export type RequestCreatorSampleResponse = ({
+    sample: CreatorPortalSample;
+});
+
+export type RequestCreatorSampleError = (ErrorResponse);
 
 export type RemoveCreatorAccountData = {
     path: {
@@ -28508,6 +30263,34 @@ export type RemoveCreatorAccountResponse = ({
 });
 
 export type RemoveCreatorAccountError = (ErrorResponse);
+
+export type SetCreatorSparkCodeData = {
+    body: {
+        /**
+         * The Spark code, or null to clear it.
+         */
+        sparkAuthCode: (string) | null;
+    };
+    path: {
+        /**
+         * The `id` of one of the participant's `submissions`.
+         */
+        submissionId: string;
+        /**
+         * A participant token or an open invite token. A malformed token answers 404 like an unknown one.
+         */
+        token: string;
+    };
+};
+
+export type SetCreatorSparkCodeResponse = ({
+    submission: {
+        id: string;
+        hasSparkCode: boolean;
+    };
+});
+
+export type SetCreatorSparkCodeError = (ErrorResponse);
 
 export type GetCreatorPayoutsData = {
     path: {
@@ -33558,6 +35341,35 @@ export type ConnectWebflowWithSiteTokenError = (unknown | ErrorResponse | {
         effective_account_limit?: number;
     };
 });
+
+export type GetEmailConnectUrlData = {
+    query: {
+        /**
+         * Prefills the address and skips the first screen.
+         */
+        email?: string;
+        /**
+         * Display name for sent mail; the page asks for it when absent.
+         */
+        name?: string;
+        profileId: string;
+        /**
+         * Opens the reconnect variant for an IMAP account: only the new password is asked for, and the accountId stays the same.
+         */
+        reconnectAccountId?: string;
+        /**
+         * Where the page sends the user afterwards, with status, accountId, platform and email (or status=error and error).
+         */
+        redirect_url?: string;
+    };
+};
+
+export type GetEmailConnectUrlResponse = ({
+    authUrl?: string;
+    expiresAt?: string;
+});
+
+export type GetEmailConnectUrlError = (ErrorResponse);
 
 export type ConnectWordPressWithApplicationPasswordData = {
     body: {
@@ -39521,7 +41333,7 @@ export type CreateWebhookSettingsData = {
         /**
          * Events to subscribe to (at least one required)
          */
-        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'lead.received' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'balance.low' | 'balance.empty' | 'balance.charged')>;
+        events: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'lead.received' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'balance.low' | 'balance.empty' | 'balance.charged' | 'campaign_participant.pending' | 'campaign_participant.approved' | 'campaign_participant.denied' | 'campaign_draft.submitted' | 'campaign_draft.approved' | 'campaign_draft.revision_requested' | 'campaign_draft.rejected' | 'campaign_sample.requested' | 'campaign_sample.approved' | 'campaign_sample.shipped' | 'campaign_sample.declined')>;
         /**
          * Enable or disable webhook delivery. Defaults to `true` when omitted.
          */
@@ -39593,7 +41405,7 @@ export type UpdateWebhookSettingsData = {
         /**
          * Events to subscribe to. Must contain at least one event if provided.
          */
-        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'lead.received' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'balance.low' | 'balance.empty' | 'balance.charged')>;
+        events?: Array<('post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'conversation.started' | 'conversation.control_changed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'lead.received' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.automatic_event' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'verification.approved' | 'verification.failed' | 'api.changelog.published' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'balance.low' | 'balance.empty' | 'balance.charged' | 'campaign_participant.pending' | 'campaign_participant.approved' | 'campaign_participant.denied' | 'campaign_draft.submitted' | 'campaign_draft.approved' | 'campaign_draft.revision_requested' | 'campaign_draft.rejected' | 'campaign_sample.requested' | 'campaign_sample.approved' | 'campaign_sample.shipped' | 'campaign_sample.declined')>;
         /**
          * Enable or disable webhook delivery
          */
@@ -39782,7 +41594,7 @@ export type TestWebhookData = {
         /**
          * Send a sample payload of this event instead of `webhook.test`. The sample is marked with `test: true`.
          */
-        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'account.rate_limited' | 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted' | 'email.opened' | 'email.link_clicked' | 'email.thread_replied' | 'email.send_failed' | 'file.created' | 'file.updated' | 'file.deleted' | 'file.picked' | 'contact.updated' | 'contact.deleted' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'conversation.started' | 'conversation.control_changed' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'lead.received' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.automatic_event' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'verification.approved' | 'verification.failed' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'balance.low' | 'balance.empty' | 'balance.charged' | 'api.changelog.published';
+        event?: 'post.scheduled' | 'post.published' | 'post.failed' | 'post.partial' | 'post.cancelled' | 'post.recycled' | 'post.platform.published' | 'post.platform.failed' | 'post.platform.deleted' | 'post.tiktok.url_resolved' | 'post.external.created' | 'post.external.updated' | 'post.external.deleted' | 'account.connected' | 'account.disconnected' | 'account.permissions_changed' | 'account.ads.initial_sync_completed' | 'account.ads.sync_failed' | 'account.ads.sync_recovered' | 'account.rate_limited' | 'calendar.event.created' | 'calendar.event.updated' | 'calendar.event.deleted' | 'email.sent' | 'email.opened' | 'email.link_clicked' | 'email.thread_replied' | 'email.send_failed' | 'email.bounced' | 'email.updated' | 'email.deleted' | 'file.created' | 'file.updated' | 'file.deleted' | 'file.picked' | 'contact.updated' | 'contact.deleted' | 'analytics.synced' | 'post.tracking_completed' | 'post.authenticity_changed' | 'message.received' | 'message.sent' | 'message.edited' | 'message.deleted' | 'message.delivered' | 'message.read' | 'message.played' | 'message.failed' | 'reaction.received' | 'referral.received' | 'conversation.started' | 'conversation.control_changed' | 'contact.tag_added' | 'contact.tag_removed' | 'contact.field_changed' | 'sequence.enrolled' | 'sequence.exited' | 'workflow.run.started' | 'workflow.run.completed' | 'workflow.run.failed' | 'support.run.completed' | 'support.run.failed' | 'campaign_submission.received' | 'campaign_submission.flagged' | 'campaign_submission.pending_review' | 'campaign_submission.approved' | 'campaign_submission.rejected' | 'creator_campaign.budget_exhausted' | 'creator_campaign.closed' | 'campaign_payout.payable' | 'campaign_payout.settled' | 'campaign_payout.failed' | 'campaign_participant.joined' | 'campaign_participant.pending' | 'campaign_participant.approved' | 'campaign_participant.denied' | 'campaign_participant.suspended' | 'campaign_participant.removed' | 'campaign_draft.submitted' | 'campaign_draft.approved' | 'campaign_draft.revision_requested' | 'campaign_draft.rejected' | 'campaign_sample.requested' | 'campaign_sample.approved' | 'campaign_sample.shipped' | 'campaign_sample.declined' | 'call.received' | 'call.ended' | 'call.failed' | 'call.permission_request' | 'call.transcript_segment' | 'call.recording_ready' | 'comment.received' | 'mention.received' | 'review.new' | 'review.updated' | 'review.deleted' | 'review.restored' | 'ad.status_changed' | 'ad.created' | 'ad.updated' | 'campaign.created' | 'campaign.updated' | 'ad_set.created' | 'ad_set.updated' | 'ad.review.approved' | 'ad.review.rejected' | 'ad.delivery_issue' | 'campaign.budget.depleted' | 'ad_account.status_changed' | 'ad.video.processed' | 'ad_rule.triggered' | 'automation.check.completed' | 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown' | 'automation.alert.opened' | 'automation.alert.escalated' | 'automation.alert.resolved' | 'lead.received' | 'whatsapp.template.status_updated' | 'whatsapp.template.category_updated' | 'whatsapp.account.name_status_updated' | 'whatsapp.account.quality_updated' | 'whatsapp.account.status_updated' | 'whatsapp.account.alert_received' | 'whatsapp.contact.identity_changed' | 'whatsapp.number.activated' | 'whatsapp.number.declined' | 'whatsapp.number.action_required' | 'whatsapp.automatic_event' | 'whatsapp.number.verification_required' | 'whatsapp.number.suspended' | 'whatsapp.number.reactivated' | 'whatsapp.number.released' | 'whatsapp.number.kyc_submitted' | 'phone_number.stock_available' | 'sms.registration.action_required' | 'sms.registration.status_updated' | 'branded_calling.identity.status_updated' | 'branded_calling.identity.action_required' | 'branded_calling.number.status_updated' | 'rcs.agent.status_updated' | 'verification.approved' | 'verification.failed' | 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted' | 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded' | 'balance.low' | 'balance.empty' | 'balance.charged' | 'api.changelog.published';
     };
 };
 
@@ -39960,7 +41772,7 @@ export type ListLogsError = (unknown | ErrorResponse);
 export type ListEmailThreadsData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         after?: string;
@@ -40017,9 +41829,13 @@ export type GetEmailThreadData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
+        /**
+         * Add a `clean` object to every message: the text each one added, without quoted replies, footers or tracking pixels, plus its `signature` and a parsed `forwarded` header.
+         */
+        clean?: boolean;
     };
 };
 
@@ -40051,7 +41867,7 @@ export type UpdateEmailThreadError = (ErrorResponse | {
 export type ListEmailMessagesData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         after?: string;
@@ -40083,6 +41899,21 @@ export type ListEmailMessagesError = (ErrorResponse);
 
 export type SendEmailMessageData = {
     body: SendEmailRequest;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type SendEmailMessageResponse = ({
@@ -40151,7 +41982,7 @@ export type SendEmailMessageError = (ErrorResponse | {
 export type ListScheduledEmailsData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         /**
@@ -40176,7 +42007,7 @@ export type GetScheduledEmailData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40196,7 +42027,7 @@ export type CancelScheduledEmailData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40216,9 +42047,13 @@ export type GetEmailMessageData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
+        /**
+         * Add a `clean` object: the new text without quoted replies, footers or tracking pixels, the `signature` on its own (it also stays in `text`), and a parsed `forwarded` header. Ready to hand to an LLM.
+         */
+        clean?: boolean;
         /**
          * Include the raw internet headers under `headers`.
          */
@@ -40259,7 +42094,7 @@ export type TrashEmailMessageData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40284,6 +42119,21 @@ export type ReplyEmailMessageData = {
      */
     subject?: string;
 });
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
     path: {
         messageId: string;
     };
@@ -40354,10 +42204,304 @@ export type ReplyEmailMessageError = (ErrorResponse | {
     error?: string;
 });
 
+export type ForwardEmailMessageData = {
+    body: ForwardEmailRequest;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        messageId: string;
+    };
+};
+
+export type ForwardEmailMessageResponse = ({
+    data?: EmailMessage;
+});
+
+export type ForwardEmailMessageError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | {
+    error?: string;
+});
+
+export type ListEmailDraftsData = {
+    query: {
+        /**
+         * The connected Google, Microsoft or IMAP account.
+         */
+        accountId: string;
+        cursor?: string;
+        limit?: number;
+    };
+};
+
+export type ListEmailDraftsResponse = ({
+    data?: Array<EmailDraft>;
+    pagination?: CursorPagination;
+    meta?: EmailListMeta;
+});
+
+export type ListEmailDraftsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CreateEmailDraftData = {
+    body: CreateEmailDraftRequest;
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type CreateEmailDraftResponse = ({
+    data?: EmailDraft;
+});
+
+export type CreateEmailDraftError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetEmailDraftData = {
+    path: {
+        draftId: string;
+    };
+    query: {
+        /**
+         * The connected Google, Microsoft or IMAP account.
+         */
+        accountId: string;
+    };
+};
+
+export type GetEmailDraftResponse = ({
+    data?: EmailDraft;
+});
+
+export type GetEmailDraftError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateEmailDraftData = {
+    body: UpdateEmailDraftRequest;
+    headers?: {
+        /**
+         * The draft `version` (also its `ETag`). The request applies only if the draft is still that version; otherwise 412 `draft_conflict` with the current draft in `details.draft`.
+         */
+        'If-Match'?: string;
+    };
+    path: {
+        draftId: string;
+    };
+};
+
+export type UpdateEmailDraftResponse = ({
+    data?: EmailDraft;
+});
+
+export type UpdateEmailDraftError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteEmailDraftData = {
+    path: {
+        draftId: string;
+    };
+    query: {
+        /**
+         * The connected Google, Microsoft or IMAP account.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteEmailDraftResponse = ({
+    data?: {
+        id?: string;
+        deleted?: boolean;
+    };
+});
+
+export type DeleteEmailDraftError = (ErrorResponse | {
+    error?: string;
+});
+
+export type SendEmailDraftData = {
+    body: {
+        accountId: string;
+        /**
+         * Send later, 1 minute to 30 days ahead: answers 202 with a `ScheduledEmail`. The draft stays editable in the mailbox and goes out as it stands then. Cancelling with `DELETE /v1/email/messages/scheduled/{scheduleId}` keeps the draft.
+         */
+        sendAt?: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+        /**
+         * The draft `version` (also its `ETag`). The request applies only if the draft is still that version; otherwise 412 `draft_conflict` with the current draft in `details.draft`.
+         */
+        'If-Match'?: string;
+    };
+    path: {
+        draftId: string;
+    };
+};
+
+export type SendEmailDraftResponse = ({
+    data?: EmailMessage;
+} | {
+    data?: ScheduledEmail;
+});
+
+export type SendEmailDraftError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | {
+    error?: string;
+});
+
 export type ListEmailFoldersData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40369,10 +42513,80 @@ export type ListEmailFoldersResponse = ({
 
 export type ListEmailFoldersError = (ErrorResponse);
 
+export type DiscoverImapSettingsData = {
+    body: {
+        email: string;
+    };
+};
+
+export type DiscoverImapSettingsResponse = ({
+    data?: ImapDiscovery;
+});
+
+export type DiscoverImapSettingsError = (ErrorResponse);
+
+export type CreateImapAccountData = {
+    body: {
+        profileId: string;
+        email: string;
+        /**
+         * Shown to people the mailbox emails.
+         */
+        name?: string;
+        /**
+         * Shortcut for imap.password.
+         */
+        password?: string;
+        /**
+         * Leave out to use discovery. username defaults to the email.
+         */
+        imap?: {
+            host?: string;
+            port?: number;
+            security?: 'tls' | 'starttls';
+            username?: string;
+            password?: string;
+        };
+        /**
+         * username and password default to the IMAP ones.
+         */
+        smtp?: {
+            host?: string;
+            port?: number;
+            security?: 'tls' | 'starttls';
+            username?: string;
+            password?: string;
+        };
+        /**
+         * Other addresses this mailbox sends as.
+         */
+        identities?: Array<{
+            email: string;
+            name?: string;
+        }>;
+        /**
+         * Run every check and store nothing, for live validation in your own form.
+         */
+        dryRun?: boolean;
+        /**
+         * On-premise servers only: accept a certificate that cannot be verified. The hosted page never offers it.
+         */
+        allowSelfSignedCertificate?: boolean;
+        /**
+         * Reconnect this account in place with a new password; the stored servers are reused.
+         */
+        reconnectAccountId?: string;
+    };
+};
+
+export type CreateImapAccountResponse = (ImapConnectResult);
+
+export type CreateImapAccountError = (ErrorResponse);
+
 export type ListEmailLabelsData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40407,7 +42621,7 @@ export type CreateEmailLabelError = (ErrorResponse);
 export type ListEmailSendAsData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40417,17 +42631,148 @@ export type ListEmailSendAsResponse = ({
     data?: Array<EmailSendAs>;
     meta?: {
         /**
-         * `true` when `from` must be in this list (Gmail). `false` when the provider decides at send time (Outlook).
+         * `provider`: the provider lists every address (Gmail), nothing can be declared. `partial`: declare the addresses the provider cannot list (Outlook).
          */
-        completeList?: boolean;
+        list?: 'provider' | 'partial';
         /**
-         * Whether `appendSignature` works on this mailbox.
+         * Whether the provider's own signatures appear here (Gmail).
          */
-        signatures?: boolean;
+        providerSignatures?: boolean;
     };
 });
 
 export type ListEmailSendAsError = (ErrorResponse);
+
+export type DeclareEmailSendAsData = {
+    body: {
+        accountId: string;
+        email: string;
+        name?: string;
+    };
+};
+
+export type DeclareEmailSendAsResponse = ({
+    data?: EmailSendAs;
+});
+
+export type DeclareEmailSendAsError = (ErrorResponse);
+
+export type DeleteEmailSendAsData = {
+    path: {
+        email: string;
+    };
+    query: {
+        /**
+         * The connected Google, Microsoft or IMAP account.
+         */
+        accountId: string;
+    };
+};
+
+export type DeleteEmailSendAsResponse = ({
+    data?: {
+        email?: string;
+        deleted?: boolean;
+    };
+});
+
+export type DeleteEmailSendAsError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListEmailSignaturesData = {
+    query?: {
+        accountId?: string;
+    };
+};
+
+export type ListEmailSignaturesResponse = ({
+    data?: Array<EmailSignature>;
+});
+
+export type ListEmailSignaturesError = (ErrorResponse);
+
+export type CreateEmailSignatureData = {
+    body: {
+        accountId?: string;
+        name: string;
+        html: string;
+        text?: string;
+        defaultFor?: Array<(string)>;
+    };
+};
+
+export type CreateEmailSignatureResponse = ({
+    data?: EmailSignature;
+});
+
+export type CreateEmailSignatureError = (ErrorResponse);
+
+export type ImportEmailSignaturesData = {
+    query: {
+        /**
+         * The connected Google, Microsoft or IMAP account.
+         */
+        accountId: string;
+    };
+};
+
+export type ImportEmailSignaturesResponse = ({
+    data?: Array<EmailSignature>;
+});
+
+export type ImportEmailSignaturesError = (ErrorResponse);
+
+export type GetEmailSignatureData = {
+    path: {
+        signatureId: string;
+    };
+};
+
+export type GetEmailSignatureResponse = ({
+    data?: EmailSignature;
+});
+
+export type GetEmailSignatureError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateEmailSignatureData = {
+    body: {
+        name?: string;
+        html?: string;
+        text?: (string) | null;
+        defaultFor?: Array<(string)>;
+    };
+    path: {
+        signatureId: string;
+    };
+};
+
+export type UpdateEmailSignatureResponse = ({
+    data?: EmailSignature;
+});
+
+export type UpdateEmailSignatureError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteEmailSignatureData = {
+    path: {
+        signatureId: string;
+    };
+};
+
+export type DeleteEmailSignatureResponse = ({
+    data?: {
+        id?: string;
+        deleted?: boolean;
+    };
+});
+
+export type DeleteEmailSignatureError = (ErrorResponse | {
+    error?: string;
+});
 
 export type DeleteEmailLabelData = {
     path: {
@@ -40435,7 +42780,7 @@ export type DeleteEmailLabelData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40458,7 +42803,7 @@ export type DownloadEmailAttachmentData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         messageId: string;
@@ -40474,7 +42819,7 @@ export type DownloadEmailAttachmentError = (ErrorResponse | {
 export type ListCalendarsData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40489,7 +42834,7 @@ export type ListCalendarsError = (ErrorResponse);
 export type ListCalendarEventsData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         /**
@@ -40503,6 +42848,9 @@ export type ListCalendarEventsData = {
         limit?: number;
         location?: string;
         showCancelled?: boolean;
+        /**
+         * Order by start time across the whole window. On Google, `desc` reads the window in full, so a window over 2,500 events answers 400; narrow `from` and `to`.
+         */
         sortOrder?: 'asc' | 'desc';
         /**
          * IANA zone the `start` and `end` offsets are rendered in. Default UTC.
@@ -40536,7 +42884,7 @@ export type GetCalendarEventData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         /**
@@ -40582,13 +42930,17 @@ export type DeleteCalendarEventData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         /**
          * The calendar holding the event (an id from GET /v1/calendar/calendars). Defaults to the primary calendar.
          */
         calendarId?: string;
+        /**
+         * Who gets the cancellation email. Google only; `external` and `none` answer 400 on a Microsoft account.
+         */
+        notifyParticipants?: 'all' | 'external' | 'none';
     };
 };
 
@@ -40603,6 +42955,42 @@ export type DeleteCalendarEventError = (ErrorResponse | {
     error?: string;
 });
 
+export type ListCalendarEventInstancesData = {
+    path: {
+        /**
+         * The series (master) event id.
+         */
+        eventId: string;
+    };
+    query: {
+        accountId: string;
+        /**
+         * The calendar holding the event (an id from GET /v1/calendar/calendars). Defaults to the primary calendar.
+         */
+        calendarId?: string;
+        cursor?: string;
+        from: string;
+        limit?: number;
+        /**
+         * IANA zone the `start` and `end` offsets are rendered in.
+         */
+        timezone?: string;
+        to: string;
+    };
+};
+
+export type ListCalendarEventInstancesResponse = ({
+    data?: Array<CalendarEvent>;
+    pagination?: {
+        hasMore?: boolean;
+        nextCursor?: (string) | null;
+    };
+});
+
+export type ListCalendarEventInstancesError = (ErrorResponse | {
+    error?: string;
+});
+
 export type RsvpCalendarEventData = {
     body: {
         accountId: string;
@@ -40612,6 +43000,10 @@ export type RsvpCalendarEventData = {
         calendarId?: string;
         status: 'accepted' | 'declined' | 'tentative';
         comment?: string;
+        /**
+         * false records the response without emailing the organizer.
+         */
+        sendResponse?: boolean;
     };
     path: {
         eventId: string;
@@ -40628,7 +43020,24 @@ export type RsvpCalendarEventError = (ErrorResponse | {
 
 export type CalendarFreeBusyData = {
     body: {
-        accountIds: Array<(string)>;
+        /**
+         * Accounts to read with their defaults. Send this or `accounts`.
+         */
+        accountIds?: Array<(string)>;
+        /**
+         * Accounts with per-account options. Send this or `accountIds`.
+         */
+        accounts?: Array<{
+            accountId: string;
+            /**
+             * Calendars to read (ids from GET /v1/calendar/calendars, or `primary`).
+             */
+            calendarIds?: Array<(string)>;
+            /**
+             * Coworkers whose free-busy this account can see, usually people in the same organization.
+             */
+            emails?: Array<(string)>;
+        }>;
         from: string;
         to: string;
     };
@@ -40639,7 +43048,21 @@ export type CalendarFreeBusyResponse = ({
         accountId?: string;
         from?: string;
         to?: string;
-        busy?: Array<BusyBlock>;
+        /**
+         * The account's own busy time across the calendars read, merged. Null when the account could not be read.
+         */
+        busy?: Array<BusyBlock> | null;
+        calendars?: Array<{
+            id?: string;
+            busy?: Array<BusyBlock>;
+            error?: FreeBusyError;
+        }>;
+        people?: Array<{
+            email?: string;
+            busy?: Array<BusyBlock>;
+            error?: FreeBusyError;
+        }>;
+        error?: FreeBusyError;
     }>;
 });
 
@@ -40686,7 +43109,7 @@ export type CalendarAvailabilityError = (ErrorResponse);
 export type ListFilesData = {
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
         cursor?: string;
@@ -40788,7 +43211,7 @@ export type GetFileData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40827,7 +43250,7 @@ export type TrashFileData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40853,7 +43276,7 @@ export type DownloadFileData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -40871,7 +43294,7 @@ export type GetFileShareLinkData = {
     };
     query: {
         /**
-         * The connected Google or Microsoft account.
+         * The connected Google, Microsoft or IMAP account.
          */
         accountId: string;
     };
@@ -69103,6 +71526,64 @@ export type GetEventError = (ErrorResponse | {
     error?: string;
 });
 
+export type RestateEventData = {
+    body: {
+        /**
+         * Profile the event belongs to.
+         */
+        profileId: string;
+        /**
+         * The corrected total value.
+         */
+        value: number;
+        /**
+         * ISO 4217 code such as USD. Defaults to the currency the event was sent with.
+         */
+        currency?: string;
+    };
+    path: {
+        /**
+         * The `eventId` the event was sent with.
+         */
+        eventId: string;
+    };
+};
+
+export type RestateEventResponse = ({
+    eventId?: string;
+    value?: number;
+    destinations?: Array<EventCorrection>;
+});
+
+export type RestateEventError = (ErrorResponse | {
+    error?: string;
+});
+
+export type RetractEventData = {
+    path: {
+        /**
+         * The `eventId` the event was sent with.
+         */
+        eventId: string;
+    };
+    query: {
+        /**
+         * Profile the event belongs to.
+         */
+        profileId: string;
+    };
+};
+
+export type RetractEventResponse = ({
+    eventId?: string;
+    deleted?: boolean;
+    destinations?: Array<EventCorrection>;
+});
+
+export type RetractEventError = (ErrorResponse | {
+    error?: string;
+});
+
 export type ListEventDestinationsData = {
     query?: {
         profileId?: string;
@@ -69148,6 +71629,60 @@ export type DeleteEventDestinationResponse = ({
 });
 
 export type DeleteEventDestinationError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListForwardingRulesData = {
+    query?: {
+        profileId?: string;
+    };
+};
+
+export type ListForwardingRulesResponse = ({
+    forwardingRules?: Array<ForwardingRule>;
+});
+
+export type ListForwardingRulesError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CreateForwardingRuleData = {
+    body: {
+        profileId: string;
+        /**
+         * Connected ads account ID that owns the destination.
+         */
+        accountId: string;
+        /**
+         * The platform destination: a pixel, a conversion action or a conversion rule.
+         */
+        destinationId: string;
+        eventNames?: Array<(string)>;
+    };
+};
+
+export type CreateForwardingRuleResponse = ({
+    forwardingRule?: ForwardingRule;
+});
+
+export type CreateForwardingRuleError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteForwardingRuleData = {
+    path: {
+        /**
+         * The rule `id`.
+         */
+        ruleId: string;
+    };
+};
+
+export type DeleteForwardingRuleResponse = ({
+    deleted?: boolean;
+});
+
+export type DeleteForwardingRuleError = (ErrorResponse | {
     error?: string;
 });
 
@@ -74060,7 +76595,7 @@ export type ListCampaignParticipantsData = {
     query?: {
         limit?: number;
         skip?: number;
-        status?: 'invited' | 'active' | 'suspended' | 'removed';
+        status?: 'invited' | 'pending' | 'active' | 'suspended' | 'removed' | 'denied';
     };
 };
 
@@ -74089,6 +76624,74 @@ export type GetCampaignParticipantResponse = ({
 });
 
 export type GetCampaignParticipantError = (ErrorResponse);
+
+export type ApproveCampaignParticipantData = {
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Participant ID.
+         */
+        participantId: string;
+    };
+};
+
+export type ApproveCampaignParticipantResponse = ({
+    participant: CampaignParticipant;
+});
+
+export type ApproveCampaignParticipantError = (ErrorResponse);
+
+export type DenyCampaignParticipantData = {
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Participant ID.
+         */
+        participantId: string;
+    };
+};
+
+export type DenyCampaignParticipantResponse = ({
+    participant: CampaignParticipant;
+});
+
+export type DenyCampaignParticipantError = (ErrorResponse);
 
 export type SuspendCampaignParticipantData = {
     path: {
@@ -74561,6 +77164,320 @@ export type ReopenCampaignSubmissionResponse = ({
 
 export type ReopenCampaignSubmissionError = (ErrorResponse | unknown);
 
+export type ListCampaignDraftsData = {
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+    };
+    query?: {
+        limit?: number;
+        /**
+         * Only drafts of this participant.
+         */
+        participantId?: string;
+        skip?: number;
+        /**
+         * Only drafts whose latest version is in this status. `submitted` is the review queue.
+         */
+        status?: 'submitted' | 'approved' | 'revision_requested' | 'rejected';
+    };
+};
+
+export type ListCampaignDraftsResponse = ({
+    drafts: Array<CampaignDraft>;
+    total: number;
+});
+
+export type ListCampaignDraftsError = (ErrorResponse);
+
+export type GetCampaignDraftData = {
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Draft version ID.
+         */
+        draftId: string;
+    };
+};
+
+export type GetCampaignDraftResponse = ({
+    draft: CampaignDraft;
+    /**
+     * Every version of the chain, newest first.
+     */
+    versions: Array<CampaignDraft>;
+});
+
+export type GetCampaignDraftError = (ErrorResponse);
+
+export type ApproveCampaignDraftData = {
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Draft version ID.
+         */
+        draftId: string;
+    };
+};
+
+export type ApproveCampaignDraftResponse = ({
+    draft: CampaignDraft;
+});
+
+export type ApproveCampaignDraftError = (ErrorResponse | unknown);
+
+export type RequestCampaignDraftRevisionData = {
+    body: {
+        /**
+         * What to change overall. Stored as `reviewNote`.
+         */
+        note?: string;
+        comments?: Array<{
+            /**
+             * Milliseconds into the video the comment is about. Null or omitted for a general comment.
+             */
+            atMs?: (number) | null;
+            body: string;
+        }>;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Draft version ID.
+         */
+        draftId: string;
+    };
+};
+
+export type RequestCampaignDraftRevisionResponse = ({
+    draft: CampaignDraft;
+});
+
+export type RequestCampaignDraftRevisionError = (ErrorResponse | unknown);
+
+export type RejectCampaignDraftData = {
+    body: {
+        reason: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Draft version ID.
+         */
+        draftId: string;
+    };
+};
+
+export type RejectCampaignDraftResponse = ({
+    draft: CampaignDraft;
+});
+
+export type RejectCampaignDraftError = (ErrorResponse | unknown);
+
+export type ListCampaignSamplesData = {
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+    };
+    query?: {
+        limit?: number;
+        /**
+         * Only requests of this participant.
+         */
+        participantId?: string;
+        skip?: number;
+        /**
+         * Only requests in this status. `pending` is the review queue.
+         */
+        status?: 'pending' | 'approved' | 'shipped' | 'declined';
+    };
+};
+
+export type ListCampaignSamplesResponse = ({
+    samples: Array<CampaignSample>;
+    total: number;
+});
+
+export type ListCampaignSamplesError = (ErrorResponse);
+
+export type ApproveCampaignSampleData = {
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Sample request ID.
+         */
+        sampleId: string;
+    };
+};
+
+export type ApproveCampaignSampleResponse = ({
+    sample: CampaignSample;
+});
+
+export type ApproveCampaignSampleError = (ErrorResponse | unknown);
+
+export type DeclineCampaignSampleData = {
+    body: {
+        /**
+         * Shown to the creator.
+         */
+        reason: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Sample request ID.
+         */
+        sampleId: string;
+    };
+};
+
+export type DeclineCampaignSampleResponse = ({
+    sample: CampaignSample;
+});
+
+export type DeclineCampaignSampleError = (ErrorResponse | unknown);
+
+export type ShipCampaignSampleData = {
+    /**
+     * Optional: no body marks the sample shipped without a tracking link.
+     */
+    body?: {
+        /**
+         * The carrier tracking link, shown to the creator.
+         */
+        trackingUrl?: string;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+        /**
+         * Sample request ID.
+         */
+        sampleId: string;
+    };
+};
+
+export type ShipCampaignSampleResponse = ({
+    sample: CampaignSample;
+});
+
+export type ShipCampaignSampleError = (ErrorResponse | unknown);
+
 export type ListCampaignPayablesData = {
     path: {
         /**
@@ -74643,6 +77560,71 @@ export type ListCampaignLedgerResponse = ({
 
 export type ListCampaignLedgerError = (ErrorResponse);
 
+export type ListCampaignOrdersData = {
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+    };
+    query?: {
+        limit?: number;
+        /**
+         * Only this creator's orders.
+         */
+        participantId?: string;
+        skip?: number;
+        status?: 'pending' | 'matched' | 'unmatched';
+    };
+};
+
+export type ListCampaignOrdersResponse = ({
+    orders: Array<{
+        id: string;
+        /**
+         * The order id on the store, as in `GET /v1/commerce/orders/{orderId}`.
+         */
+        platformOrderId: string;
+        orderNumber: string;
+        status: 'pending' | 'matched' | 'unmatched';
+        participantId: (string) | null;
+        creatorName: (string) | null;
+        /**
+         * The creator's profile picture. Same source as a participant's `creator.avatarUrl`.
+         */
+        creatorAvatarUrl: (string) | null;
+        matchedBy: ('code' | 'link') | null;
+        discountCode: (string) | null;
+        currency: string;
+        salesCents: number;
+        refundedCents: number;
+        /**
+         * Commission the order holds now, net of refunds.
+         */
+        commissionCents: number;
+        orderCreatedAt: string;
+        approvedAt: (string) | null;
+    }>;
+    total: number;
+    referrals: Array<{
+        participantId: string;
+        creatorName: string;
+        /**
+         * The creator's profile picture. Same source as a participant's `creator.avatarUrl`.
+         */
+        creatorAvatarUrl: (string) | null;
+        code: (string) | null;
+        /**
+         * Null until the code is first created, when the creator opens their page.
+         */
+        codeStatus: ('ready' | 'failed') | null;
+        codeFailureReason: (string) | null;
+        trackingUrl: (string) | null;
+    }>;
+});
+
+export type ListCampaignOrdersError = (ErrorResponse);
+
 export type GetCampaignReportData = {
     path: {
         /**
@@ -74657,3 +77639,128 @@ export type GetCampaignReportResponse = ({
 });
 
 export type GetCampaignReportError = (ErrorResponse);
+
+export type LaunchCampaignAdsData = {
+    body: {
+        /**
+         * Approved submissions to run as ads.
+         */
+        submissionIds: Array<(string)>;
+        /**
+         * Meta runs Instagram and Facebook posts; TikTok runs TikTok posts.
+         */
+        network: 'meta' | 'tiktok';
+        /**
+         * The brand's connected ads account (Facebook or TikTok) the ads run from, as in `/v1/accounts`.
+         */
+        accountId: string;
+        /**
+         * Platform ad account ID.
+         */
+        adAccountId: string;
+        /**
+         * Existing Meta ad set the ads go into. Required when `network` is `meta`.
+         */
+        adSetId?: string;
+        /**
+         * Existing TikTok campaign that gets one ad group per post. Required when `network` is `tiktok`.
+         */
+        existingCampaignId?: string;
+        /**
+         * Daily budget of each TikTok ad group, in the ad account currency. Required when `network` is `tiktok`.
+         */
+        dailyBudget?: number;
+        /**
+         * Whose handle the ad runs under. TikTok takes `creator` only.
+         */
+        identity: 'brand' | 'creator';
+        /**
+         * Primary text of brand ads. Defaults to the post caption.
+         */
+        body?: string;
+        headline?: string;
+        /**
+         * Call to action, as in `POST /v1/ads/create`.
+         */
+        callToAction?: string;
+        /**
+         * Destination URL (http or https).
+         */
+        linkUrl?: string;
+        /**
+         * Ads launch paused unless set to `ACTIVE`.
+         */
+        status?: 'ACTIVE' | 'PAUSED';
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+    };
+};
+
+export type LaunchCampaignAdsResponse = ({
+    results: Array<{
+        submissionId: string;
+        /**
+         * `in_progress`: another launch of this post into the same placement is still running.
+         */
+        outcome: 'launched' | 'already_launched' | 'in_progress' | 'failed';
+        identity: 'brand' | 'creator';
+        /**
+         * Zernio ad id, as in /v1/ads.
+         */
+        adId: (string) | null;
+        /**
+         * Why the post did not launch.
+         */
+        error: (string) | null;
+    }>;
+});
+
+export type LaunchCampaignAdsError = (ErrorResponse | unknown);
+
+export type GetCampaignAdResultsData = {
+    path: {
+        /**
+         * Campaign ID.
+         */
+        campaignId: string;
+    };
+    query?: {
+        /**
+         * First day counted (YYYY-MM-DD, UTC). Omit to count from the first day of data.
+         */
+        from?: string;
+        /**
+         * How `creators` is ranked.
+         */
+        rankBy?: 'spend' | 'roas' | 'purchases';
+        /**
+         * Last day counted (YYYY-MM-DD, UTC). Omit to count through the latest day of data.
+         */
+        to?: string;
+    };
+};
+
+export type GetCampaignAdResultsResponse = ({
+    adResults: CreatorCampaignAdResults;
+});
+
+export type GetCampaignAdResultsError = (ErrorResponse);
