@@ -16550,6 +16550,14 @@ export type ScheduledEmail = {
     accountId?: string;
     status?: 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
     scheduledFor?: string;
+    /**
+     * True when the email waits as a draft in the mailbox and is sent as that draft stands at `scheduledFor`.
+     */
+    holdAsDraft?: boolean;
+    /**
+     * The mailbox draft of a `holdAsDraft` send: the Gmail draft id, or the Outlook message id. `null` otherwise.
+     */
+    draftId?: (string) | null;
     to?: Array<EmailAddress>;
     /**
      * Empty on a reply that keeps the thread subject. `null` once the send finishes under zero content retention.
@@ -16624,7 +16632,7 @@ export type SendEmailRequest = {
      */
     scheduledFor?: string;
     /**
-     * Reserved; currently rejected.
+     * Needs `scheduledFor`. Saves the email as a draft in the mailbox now and sends that draft at `scheduledFor`, with any edits the user made in Gmail or Outlook. A draft deleted or sent from the mailbox first fails the send (`email.send_failed`). Cancelling deletes the draft.
      */
     holdAsDraft?: boolean;
     /**

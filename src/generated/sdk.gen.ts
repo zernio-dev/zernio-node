@@ -5944,7 +5944,7 @@ export const listEmailMessages = <ThrowOnError extends boolean = false>(options:
  * ### Other errors
  *
  * - 402: Gmail sends need a payment method on the workspace. Reading, calendar and files do not.
- * - 400: `holdAsDraft` is reserved and rejected; `trackOpens` or `trackLinks` without `html`; `scheduledFor` outside 1 minute to 30 days.
+ * - 400: `holdAsDraft` without `scheduledFor`; `trackOpens` or `trackLinks` without `html`; `scheduledFor` outside 1 minute to 30 days.
  *
  */
 export const sendEmailMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SendEmailMessageData, ThrowOnError>) => {
@@ -6021,7 +6021,7 @@ export const trashEmailMessage = <ThrowOnError extends boolean = false>(options:
  * Reply to a message
  * Replies inside the provider's thread: the provider builds the quoted original and threading headers, your `html` or `text` goes above the quote. `to`, `cc`, `bcc`, `replyTo`, `subject`, `headers` and `attachments` are honoured.
  *
- * `scheduledFor` schedules the reply (202) and `trackOpens`, `trackLinks` and `trackReplies` track it, as on send; `holdAsDraft` is rejected. Same protection, caps and headers as sending.
+ * `scheduledFor` schedules the reply (202) and `trackOpens`, `trackLinks` and `trackReplies` track it, as on send; `holdAsDraft` holds it as a reply draft in the thread until then. Same protection, caps and headers as sending.
  *
  */
 export const replyEmailMessage = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplyEmailMessageData, ThrowOnError>) => {
