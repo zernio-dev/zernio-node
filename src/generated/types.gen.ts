@@ -15381,6 +15381,28 @@ export type PostAnalytics = {
      */
     reposts?: number;
     /**
+     * Views across every surface Meta counts for the post (Meta total_views_count): Instagram itself, the same post shared to Facebook, and its boosts and ads, replays included. Instagram videos and Reels on accounts connected with Facebook Login only. `views` stays Instagram organic only.
+     *
+     * - Null for Instagram Login accounts, other platforms, and snapshots taken before the field existed (it fills on the post's next analytics sync).
+     * - On a post published to several accounts, the sum across accounts, counting views for the accounts that do not report it. Null when no account reports it.
+     * - Also null for images and carousels.
+     */
+    totalViews?: (number) | null;
+    /**
+     * Likes across every surface Meta counts for the post (Meta total_like_count): Instagram itself, the same post shared to Facebook, and its boosts and ads. Instagram accounts connected with Facebook Login only. `likes` stays Instagram organic only.
+     *
+     * - Null for Instagram Login accounts, other platforms, and snapshots taken before the field existed (it fills on the post's next analytics sync).
+     * - On a post published to several accounts, the sum across accounts, counting likes for the accounts that do not report it. Null when no account reports it.
+     */
+    totalLikes?: (number) | null;
+    /**
+     * Comments across every surface Meta counts for the post (Meta total_comments_count): Instagram itself, the same post shared to Facebook, and its boosts and ads. Instagram accounts connected with Facebook Login only. `comments` stays Instagram organic only.
+     *
+     * - Null for Instagram Login accounts, other platforms, and snapshots taken before the field existed (it fills on the post's next analytics sync).
+     * - On a post published to several accounts, the sum across accounts, counting comments for the accounts that do not report it. Null when no account reports it.
+     */
+    totalComments?: (number) | null;
+    /**
      * Video length in seconds. Null when unknown: platforms that do not report a length, non-video media, or when Instagram does not expose the media URL (e.g. reels with copyrighted audio).
      *
      * - YouTube: filled for public videos once their analytics next refresh (from the Data API; live streams may report null). The Data API has no Shorts flag: a video over 180 seconds cannot be a Short, but a shorter one may be a regular upload.

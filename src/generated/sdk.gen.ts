@@ -797,6 +797,7 @@ export const updateAutoRecharge = <ThrowOnError extends boolean = false>(options
  * - 402 `card_declined`: the bank's reason.
  * - 400: `method: bank_transfer` (bank transfers are not available yet).
  * - 400 `invalid_billing_address`: the billing address gives no tax location. Add it in Billing, then retry.
+ * - 400 `billing_address_required`: the total with tax is over EUR 400 (at the day's ECB rate) and the billing details hold no name and street address. An invoice over that amount must name the buyer and their address. Add them in Billing > Billing details, then retry. Nothing is charged.
  * - 429 `payment_attempts_limited`: five card payments were declined in 24 hours. Nothing reaches the bank until `Retry-After` runs out.
  *
  * Needs an owner, admin or billing admin, signed in or through a full-access key they created.
