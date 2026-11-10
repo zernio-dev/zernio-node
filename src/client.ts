@@ -418,6 +418,7 @@ import {
   getContact,
   getContactChannels,
   getContentDecay,
+  getContentRetention,
   getConversionDestination,
   getConversionMetrics,
   getConversionsQuality,
@@ -1105,6 +1106,7 @@ import {
   updateCommerceRedirect,
   updateConnectWelcomeScreen,
   updateContact,
+  updateContentRetention,
   updateConversionAction,
   updateConversionDestination,
   updateCreatorCampaign,
@@ -1650,6 +1652,14 @@ export class Zernio {
    */
   feedback = {
     submitFeedback: this._bind(submitFeedback),
+  };
+
+  /**
+   * contentretention API
+   */
+  contentretention = {
+    getContentRetention: this._bind(getContentRetention),
+    updateContentRetention: this._bind(updateContentRetention),
   };
 
   /**

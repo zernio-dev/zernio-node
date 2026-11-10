@@ -980,6 +980,12 @@ try {
 | `contacts.updateContact()` | Update contact |
 | `contacts.deleteContact()` | Delete contact |
 
+### Content Retention
+| Method | Description |
+|--------|-------------|
+| `contentRetention.getContentRetention()` | Get content retention mode |
+| `contentRetention.updateContentRetention()` | Turn zero content retention on or off |
+
 ### Conversions
 | Method | Description |
 |--------|-------------|
