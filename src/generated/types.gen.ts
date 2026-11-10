@@ -37396,7 +37396,7 @@ export type GetInstagramStoryInsightsData = {
 
 export type GetInstagramStoryInsightsResponse = ({
     data: {
-        source: 'live' | 'cached' | 'unavailable';
+        source: 'live' | 'archived' | 'cached' | 'unavailable';
         metrics: {
             /**
              * Total story plays. Replaces deprecated 'impressions' for media created after 2024-07-02.
