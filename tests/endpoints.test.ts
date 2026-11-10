@@ -729,6 +729,51 @@ describe('Endpoint Methods', () => {
       expect(client.connect.startMicrosoftAdminConsent).toBeTypeOf('function');
     });
 
+    it('should have createGoogleOrgConnection method', () => {
+      expect(client.connect.createGoogleOrgConnection).toBeDefined();
+      expect(client.connect.createGoogleOrgConnection).toBeTypeOf('function');
+    });
+
+    it('should have createMicrosoftOrgConnection method', () => {
+      expect(client.connect.createMicrosoftOrgConnection).toBeDefined();
+      expect(client.connect.createMicrosoftOrgConnection).toBeTypeOf('function');
+    });
+
+    it('should have listOrgConnections method', () => {
+      expect(client.connect.listOrgConnections).toBeDefined();
+      expect(client.connect.listOrgConnections).toBeTypeOf('function');
+    });
+
+    it('should have getOrgConnection method', () => {
+      expect(client.connect.getOrgConnection).toBeDefined();
+      expect(client.connect.getOrgConnection).toBeTypeOf('function');
+    });
+
+    it('should have updateOrgConnection method', () => {
+      expect(client.connect.updateOrgConnection).toBeDefined();
+      expect(client.connect.updateOrgConnection).toBeTypeOf('function');
+    });
+
+    it('should have deleteOrgConnection method', () => {
+      expect(client.connect.deleteOrgConnection).toBeDefined();
+      expect(client.connect.deleteOrgConnection).toBeTypeOf('function');
+    });
+
+    it('should have verifyOrgConnection method', () => {
+      expect(client.connect.verifyOrgConnection).toBeDefined();
+      expect(client.connect.verifyOrgConnection).toBeTypeOf('function');
+    });
+
+    it('should have listOrgConnectionUsers method', () => {
+      expect(client.connect.listOrgConnectionUsers).toBeDefined();
+      expect(client.connect.listOrgConnectionUsers).toBeTypeOf('function');
+    });
+
+    it('should have addOrgConnectionMailbox method', () => {
+      expect(client.connect.addOrgConnectionMailbox).toBeDefined();
+      expect(client.connect.addOrgConnectionMailbox).toBeTypeOf('function');
+    });
+
   });
 
   describe('connect.bluesky', () => {

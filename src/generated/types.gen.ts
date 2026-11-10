@@ -15770,6 +15770,46 @@ export type OpenHours = Array<{
 }>;
 
 /**
+ * A Google Workspace domain or Microsoft 365 tenant whose administrator granted Zernio access to its mailboxes once.
+ */
+export type OrgConnection = {
+    id?: string;
+    provider?: 'google' | 'microsoft';
+    status?: 'pending' | 'active' | 'revoked';
+    profileId?: string;
+    areas?: Array<('email' | 'calendar' | 'files' | 'contacts')>;
+    domain?: (string) | null;
+    tenantId?: (string) | null;
+    adminEmail?: (string) | null;
+    allowedEmails?: Array<(string)> | null;
+    lastError?: (string) | null;
+    verifiedAt?: (string) | null;
+    createdAt?: string;
+    /**
+     * What the administrator does. Google returns `dnsRecord`, `adminConsoleUrl`, `clientId`, `scopes` and `directoryScope`; Microsoft returns `adminConsentUrl` and `applicationPermissions`.
+     */
+    setup?: {
+        type?: 'google_domain_wide_delegation' | 'microsoft_admin_consent';
+        dnsRecord?: {
+            type?: 'TXT';
+            host?: string;
+            value?: string;
+        };
+        adminConsoleUrl?: string;
+        clientId?: (string) | null;
+        scopes?: Array<(string)>;
+        directoryScope?: string;
+        adminConsentUrl?: (string) | null;
+        applicationPermissions?: Array<(string)>;
+        steps?: Array<(string)>;
+    };
+};
+
+export type status43 = 'pending' | 'active' | 'revoked';
+
+export type type26 = 'google_domain_wide_delegation' | 'microsoft_admin_consent';
+
+/**
  * A number you bought or ported. Null fields are omitted, except `socialAccountId` and `ownerAccountId`. Credentials stored for the number (such as the SIP digest password) are never returned; `sipAuthUsername` is the only SIP credential field exposed.
  */
 export type OwnedPhoneNumber = {
@@ -15944,7 +15984,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status43 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status44 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -16085,7 +16125,7 @@ export type PayoutBatch = {
 /**
  * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` during the 7-day card hold and while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
  */
-export type status44 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
+export type status45 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
 export type method2 = 'card';
 
@@ -16128,7 +16168,7 @@ export type PayoutBatchItem = {
 /**
  * `skipped`: payout setup not finished, or the card payment never completed. `failed`: Stripe refused the transfer. `refunded`: failed or skipped after the card hold; its payout, fee and VAT on the fee went back to the card through a credit note. The amount is payable again in every case.
  */
-export type status45 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
+export type status46 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
 
 export type PhoneNumberStockWatch = {
     id: string;
@@ -16246,7 +16286,7 @@ export type PlatformAnalytics = {
     isOwner?: (boolean) | null;
 };
 
-export type status46 = 'published' | 'failed';
+export type status47 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -16448,7 +16488,7 @@ export type PortfolioBidStrategy = {
     targetImpressionShare?: (GoogleTargetImpressionShare | null);
 };
 
-export type type26 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
+export type type27 = 'TARGET_CPA' | 'TARGET_ROAS' | 'MAXIMIZE_CONVERSIONS' | 'MAXIMIZE_CONVERSION_VALUE' | 'TARGET_IMPRESSION_SHARE';
 
 export type Post = {
     _id?: string;
@@ -16516,7 +16556,7 @@ export type Post = {
 /**
  * `cancelled` is set by POST /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts. `pending_approval` (set by `requiresApproval: true`) never publishes until POST /v1/posts/{postId}/review approves it.
  */
-export type status47 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status48 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
 export type visibility4 = 'public' | 'private' | 'unlisted';
 
@@ -16889,7 +16929,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status48 = 'active' | 'draft' | 'archived';
+export type status49 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -17126,7 +17166,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status49 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status50 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -17178,7 +17218,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status50 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status51 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -17265,7 +17305,7 @@ export type RcsCarrierApproval = {
 
 export type scope3 = 'carrier' | 'hub' | 'bot';
 
-export type status51 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status52 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -17291,7 +17331,7 @@ export type RcsContent = {
     suggestions?: Array<RcsSuggestion>;
 };
 
-export type type27 = 'text';
+export type type28 = 'text';
 
 export type orientation = 'VERTICAL' | 'HORIZONTAL';
 
@@ -17404,7 +17444,7 @@ export type RcsSuggestion = {
     postbackData?: string;
 };
 
-export type type28 = 'reply';
+export type type29 = 'reply';
 
 export type application = 'BROWSER' | 'WEBVIEW';
 
@@ -17861,7 +17901,7 @@ export type ScheduledEmail = {
     createdAt?: string;
 };
 
-export type status52 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
+export type status53 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
 
 export type SendEmailRequest = {
     accountId: string;
@@ -18370,7 +18410,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status53 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status54 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -19337,7 +19377,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status54 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status55 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -19427,7 +19467,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status55 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status56 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -19468,7 +19508,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status56 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status57 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -19650,7 +19690,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type29 = 'image' | 'video' | 'document';
+export type type30 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -19659,7 +19699,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status57 = 'pending' | 'completed' | 'expired';
+export type status58 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -20172,7 +20212,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status58 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status59 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel5 = 'sms' | 'whatsapp';
 
@@ -20402,7 +20442,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status59 = 'success' | 'failed';
+export type status60 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -20516,7 +20556,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status60 = 'success' | 'failure';
+export type status61 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -21047,7 +21087,7 @@ export type WebhookPayloadAdReview = {
 
 export type event11 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status61 = 'approved' | 'rejected';
+export type status62 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -21623,7 +21663,7 @@ export type event17 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status62 = 'ready' | 'error';
+export type status63 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -21764,7 +21804,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event20 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status63 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status64 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -23061,7 +23101,7 @@ export type WebhookPayloadCommerceOrder = {
 
 export type event42 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
 
-export type type30 = 'order';
+export type type31 = 'order';
 
 export type WebhookPayloadCommerceProduct = {
     /**
@@ -23104,7 +23144,7 @@ export type WebhookPayloadCommerceProduct = {
 
 export type event43 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
-export type type31 = 'product';
+export type type32 = 'product';
 
 /**
  * Webhook payload for contact.updated and contact.deleted, fired after a provider contacts sync (Google Contacts, Outlook) changed a contact. contact.updated also fires after a WhatsApp coexistence address-book change (WhatsApp never fires contact.deleted). Read the contact with `GET /v1/contacts/{id}`.
@@ -23505,7 +23545,7 @@ export type event51 = 'email.bounced';
 /**
  * `hard`: 5.x.x, the address does not take mail. `soft`: 4.x.x, a temporary refusal the sending server gave up on. `undetermined`: the report gave no status.
  */
-export type type32 = 'hard' | 'soft' | 'undetermined';
+export type type33 = 'hard' | 'soft' | 'undetermined';
 
 export type category2 = 'user_unknown' | 'mailbox_full' | 'domain_not_found' | 'policy_blocked' | 'spam_blocked' | 'blocklisted' | 'message_too_large' | 'content_rejected' | 'auth_failure' | 'rate_limited' | 'other';
 
@@ -24053,7 +24093,7 @@ export type platform19 = 'instagram' | 'facebook' | 'linkedin';
 /**
  * Null on LinkedIn.
  */
-export type type33 = 'caption' | 'post' | 'comment';
+export type type34 = 'caption' | 'post' | 'comment';
 
 /**
  * Webhook payload for message received events
@@ -25360,7 +25400,7 @@ export type event72 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status64 = 'published' | 'failed' | 'deleted';
+export type status65 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -25926,7 +25966,7 @@ export type event84 = 'whatsapp.account.name_status_updated';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status65 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status66 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -26060,7 +26100,7 @@ export type event86 = 'whatsapp.account.status_updated';
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status66 = 'restricted' | 'active';
+export type status67 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -26276,7 +26316,7 @@ export type event89 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status67 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status68 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -26340,7 +26380,7 @@ export type event90 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status68 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status69 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -26616,7 +26656,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type34 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type35 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -26658,7 +26698,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type35 = 'platform_error';
+export type type36 = 'platform_error';
 
 export type code4 = 'platform_api_error';
 
@@ -26740,7 +26780,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status69 = 'success' | 'failed' | 'pending';
+export type status70 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -26886,7 +26926,7 @@ export type WorkflowNode = {
  * integrations (webhook, hubspot_upsert_contact, ai, handoff, start_call).
  *
  */
-export type type36 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type37 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -27022,7 +27062,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type37 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type38 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -27101,7 +27141,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type38 = 'divider' | 'latex';
+export type type39 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -43447,6 +43487,191 @@ export type StartMicrosoftAdminConsentResponse = ({
 });
 
 export type StartMicrosoftAdminConsentError = (ErrorResponse | {
+    error?: string;
+});
+
+export type CreateGoogleOrgConnectionData = {
+    body: {
+        profileId: string;
+        /**
+         * The Workspace domain the admin delegates.
+         */
+        domain: string;
+        /**
+         * Areas the mailboxes get, the same as a user connect.
+         */
+        scopes: Array<('email' | 'calendar' | 'files' | 'contacts')>;
+        /**
+         * A super admin, used to list the domain's users.
+         */
+        adminEmail?: string;
+        /**
+         * Addresses or `@domain` entries mailboxes must match. Omit for every mailbox.
+         */
+        allowedEmails?: Array<(string)>;
+    };
+};
+
+export type CreateGoogleOrgConnectionResponse = ({
+    data?: OrgConnection;
+});
+
+export type CreateGoogleOrgConnectionError = (ErrorResponse);
+
+export type CreateMicrosoftOrgConnectionData = {
+    body: {
+        profileId: string;
+        scopes: Array<('email' | 'calendar' | 'files' | 'contacts')>;
+        /**
+         * Addresses or `@domain` entries mailboxes must match. Omit for every mailbox.
+         */
+        allowedEmails?: Array<(string)>;
+        /**
+         * Where Microsoft sends the administrator after consent.
+         */
+        redirectUrl?: string;
+    };
+};
+
+export type CreateMicrosoftOrgConnectionResponse = ({
+    data?: OrgConnection;
+});
+
+export type CreateMicrosoftOrgConnectionError = (ErrorResponse);
+
+export type ListOrgConnectionsData = {
+    query: {
+        profileId: string;
+    };
+};
+
+export type ListOrgConnectionsResponse = ({
+    data?: Array<OrgConnection>;
+});
+
+export type ListOrgConnectionsError = (ErrorResponse);
+
+export type GetOrgConnectionData = {
+    path: {
+        orgConnectionId: string;
+    };
+};
+
+export type GetOrgConnectionResponse = ({
+    data?: OrgConnection;
+});
+
+export type GetOrgConnectionError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateOrgConnectionData = {
+    body: {
+        allowedEmails?: Array<(string)> | null;
+        adminEmail?: (string) | null;
+    };
+    path: {
+        orgConnectionId: string;
+    };
+};
+
+export type UpdateOrgConnectionResponse = ({
+    data?: OrgConnection;
+});
+
+export type UpdateOrgConnectionError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteOrgConnectionData = {
+    path: {
+        orgConnectionId: string;
+    };
+};
+
+export type DeleteOrgConnectionResponse = ({
+    data?: {
+        deleted?: boolean;
+        mailboxAccountIds?: Array<(string)>;
+    };
+});
+
+export type DeleteOrgConnectionError = (ErrorResponse | {
+    error?: string;
+});
+
+export type VerifyOrgConnectionData = {
+    body?: {
+        /**
+         * Google only. Any mailbox in the domain.
+         */
+        email?: string;
+    };
+    path: {
+        orgConnectionId: string;
+    };
+};
+
+export type VerifyOrgConnectionResponse = ({
+    data?: OrgConnection;
+});
+
+export type VerifyOrgConnectionError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListOrgConnectionUsersData = {
+    path: {
+        orgConnectionId: string;
+    };
+    query?: {
+        cursor?: string;
+    };
+};
+
+export type ListOrgConnectionUsersResponse = ({
+    data?: Array<{
+        id?: string;
+        email?: string;
+        name?: (string) | null;
+        allowed?: boolean;
+        accountId?: (string) | null;
+    }>;
+    nextCursor?: (string) | null;
+});
+
+export type ListOrgConnectionUsersError = (ErrorResponse | {
+    error?: string;
+});
+
+export type AddOrgConnectionMailboxData = {
+    body: {
+        email: string;
+        /**
+         * Display name; defaults to the provider's.
+         */
+        name?: string;
+    };
+    path: {
+        orgConnectionId: string;
+    };
+};
+
+export type AddOrgConnectionMailboxResponse = ({
+    data?: {
+        /**
+         * The account id to use with every email, calendar, files and contacts endpoint.
+         */
+        _id?: string;
+        platform?: 'google' | 'microsoft';
+        username?: string;
+        displayName?: string;
+        profileId?: string;
+        orgConnectionId?: string;
+    };
+});
+
+export type AddOrgConnectionMailboxError = (ErrorResponse | {
     error?: string;
 });
 

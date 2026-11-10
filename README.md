@@ -346,10 +346,14 @@ try {
 | `connect.listInstagramPages()` | List Pages with a linked Instagram account |
 | `connect.listLinkedInOrganizations()` | List LinkedIn orgs |
 | `connect.listOAuthApps()` | List your OAuth apps |
+| `connect.listOrgConnections()` | List organization connections |
+| `connect.listOrgConnectionUsers()` | List an organization's users |
 | `connect.listPinterestBoardsForSelection()` | List Pinterest boards |
 | `connect.listSlackChannels()` | List Slack channels for the channel picker |
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
 | `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
+| `connect.createGoogleOrgConnection()` | Start a Google Workspace organization connection |
+| `connect.createMicrosoftOrgConnection()` | Start a Microsoft 365 organization connection |
 | `connect.createOAuthApp()` | Add an OAuth app |
 | `connect.createPinterestBoard()` | Create Pinterest board |
 | `connect.createPlatformInvite()` | Create a connect link |
@@ -364,6 +368,7 @@ try {
 | `connect.getHubSpotConnectUrl()` | Get HubSpot OAuth connect URL |
 | `connect.getLinkedInOrganizations()` | List LinkedIn orgs |
 | `connect.getOAuthApp()` | Get an OAuth app |
+| `connect.getOrgConnection()` | Get an organization connection |
 | `connect.getPageWebhookSubscription()` | Read an account's webhook subscription |
 | `connect.getPendingOAuthData()` | Get pending OAuth data |
 | `connect.getPinterestBoards()` | List Pinterest boards |
@@ -383,10 +388,13 @@ try {
 | `connect.updateGmbLocation()` | Update Google Business Profile location |
 | `connect.updateLinkedInOrganization()` | Switch LinkedIn account type |
 | `connect.updateOAuthApp()` | Update an OAuth app |
+| `connect.updateOrgConnection()` | Update an organization connection |
 | `connect.updatePinterestBoards()` | Set default Pinterest board |
 | `connect.updateRedditSubreddits()` | Set default subreddit |
 | `connect.updateYoutubeDefaultPlaylist()` | Set default YouTube playlist |
 | `connect.deleteOAuthApp()` | Remove an OAuth app |
+| `connect.deleteOrgConnection()` | Delete an organization connection |
+| `connect.addOrgConnectionMailbox()` | Add a mailbox from an organization connection |
 | `connect.assignGoogleBusinessLocation()` | Assign Google Business Profile location to another profile |
 | `connect.completeMetaAdsBusinessLogin()` | Complete Meta business login |
 | `connect.completeTelegramConnect()` | Check Telegram status |
@@ -416,6 +424,7 @@ try {
 | `connect.setRedditPostFlair()` | Set Reddit post flair |
 | `connect.startMicrosoftAdminConsent()` | Admin-consent link for a Microsoft tenant |
 | `connect.testOAuthApp()` | Check an OAuth app's keys |
+| `connect.verifyOrgConnection()` | Verify an organization connection |
 | `connect.voteRedditThing()` | Vote on a Reddit post or comment |
 
 ### Reddit
