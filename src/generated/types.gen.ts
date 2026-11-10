@@ -8081,11 +8081,11 @@ export type ConversionEvent = {
          */
         externalId?: string;
         /**
-         * Client IP address. Sent plaintext.
+         * Client IP address. Sent plaintext (Meta, Pinterest, Reddit, OpenAI, Google Ads).
          */
         ipAddress?: string;
         /**
-         * Client user-agent string. Sent plaintext.
+         * Client user-agent string. Sent plaintext (Meta, Pinterest, Reddit, OpenAI, Google Ads).
          */
         userAgent?: string;
         /**
@@ -8101,7 +8101,7 @@ export type ConversionEvent = {
          */
         state?: string;
         /**
-         * Meta advanced matching (zp). US uses first 5 digits; hashed server-side. Meta only.
+         * Postal code. Meta advanced matching (zp; US uses first 5 digits; hashed server-side). Google Ads sends it plain in an address identifier with firstName, lastName and country, only when all four are present.
          */
         zip?: string;
         /**
