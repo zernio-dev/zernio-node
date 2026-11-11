@@ -4805,6 +4805,10 @@ export type BalanceRequiredError = ErrorResponse & {
      * Dashboard link to Billing that opens the Add funds drawer (the add-card drawer first when there is no card). Send the user there, then retry.
      */
     funding_url: string;
+    /**
+     * Only when an item debited later (a phone number's first month, all numbers of the order) is refused: what the balance must hold, in cents.
+     */
+    required_cents?: number;
 };
 
 /**
@@ -52281,7 +52285,7 @@ export type SubmitPhoneNumberKycResponse = ({
     }>;
 });
 
-export type SubmitPhoneNumberKycError = (unknown | ErrorResponse);
+export type SubmitPhoneNumberKycError = (unknown | ErrorResponse | BalanceRequiredError);
 
 export type ViewPhoneNumberKycDocumentData = {
     path: {
