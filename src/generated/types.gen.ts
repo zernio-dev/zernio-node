@@ -10007,7 +10007,7 @@ export type CtwaAdRequestBody = {
      */
     dsaPayor?: string;
     /**
-     * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. AUSTRALIA_FINSERV, AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, INDIA_FINSERV, MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL). Forwarded to the ad set.
+     * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. AUSTRALIA_FINSERV, AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, INDIA_FINSERV, MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, US_SECURITIES_LICENSING). Forwarded to the ad set.
      */
     regionalRegulatedCategories?: Array<(string)>;
     /**
@@ -10026,7 +10026,7 @@ export type CtwaAdRequestBody = {
      * - INDIA_FINSERV: india_finserv_beneficiary / india_finserv_payer
      * - TAIWAN_UNIVERSAL: taiwan_universal_beneficiary / taiwan_universal_payer
      * - SINGAPORE_UNIVERSAL: singapore_universal_beneficiary / singapore_universal_payer
-     * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL: universal_beneficiary / universal_payer
+     * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL, THAILAND_UNIVERSAL and US_SECURITIES_LICENSING: universal_beneficiary / universal_payer
      *
      * When Meta rejects the ad set for a missing verified advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys (keys the declared categories expect), details.suggestedCategories (markets Meta ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
      *
@@ -60870,14 +60870,14 @@ export type UpdateAdSetData = {
          * set's `regional_regulated_categories`, same values as on POST /v1/ads/create
          * (AUSTRALIA_FINSERV, AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, INDIA_FINSERV,
          * MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL,
-         * THAILAND_UNIVERSAL). Send it with `regionalRegulationIdentities`. An empty array is a 400.
+         * THAILAND_UNIVERSAL, US_SECURITIES_LICENSING). Send it with `regionalRegulationIdentities`. An empty array is a 400.
          *
          */
         regionalRegulatedCategories?: Array<(string)>;
         /**
          * Meta only (400 elsewhere, before anything in the request is written). Writes the ad set's `regional_regulation_identities`: the Verified identity IDs of the beneficiary and payer for each declared category.
          *
-         * - Same keys and validation as on POST /v1/ads/create (for example `universal_beneficiary` / `universal_payer` for BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL).
+         * - Same keys and validation as on POST /v1/ads/create (for example `universal_beneficiary` / `universal_payer` for BRAZIL_REGULATION, MALAYSIA_UNIVERSAL, THAILAND_UNIVERSAL and US_SECURITIES_LICENSING).
          * - Send each ID as a string of digits; an empty object is a 400.
          * - When Meta refuses the ad set for a missing verified advertiser, the 400 `platform_api_error` names the expected keys in `details.expectedIdentityKeys`, as on create.
          *
@@ -66931,7 +66931,7 @@ export type BoostPostData = {
          */
         specialAdCategoryCountry?: Array<(string)>;
         /**
-         * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. AUSTRALIA_FINSERV, AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, INDIA_FINSERV, MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL). Forwarded to the ad set.
+         * Meta only. Regional regulation categories required when the ad set targets certain countries (e.g. AUSTRALIA_FINSERV, AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, INDIA_FINSERV, MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, US_SECURITIES_LICENSING). Forwarded to the ad set.
          */
         regionalRegulatedCategories?: Array<(string)>;
         /**
@@ -66950,7 +66950,7 @@ export type BoostPostData = {
          * - INDIA_FINSERV: india_finserv_beneficiary / india_finserv_payer
          * - TAIWAN_UNIVERSAL: taiwan_universal_beneficiary / taiwan_universal_payer
          * - SINGAPORE_UNIVERSAL: singapore_universal_beneficiary / singapore_universal_payer
-         * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL: universal_beneficiary / universal_payer
+         * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL, THAILAND_UNIVERSAL and US_SECURITIES_LICENSING: universal_beneficiary / universal_payer
          *
          * When Meta rejects the ad set for a missing verified advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys (the keys the declared categories expect), details.suggestedCategories (the markets Meta ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
          *
@@ -68321,7 +68321,7 @@ export type CreateStandaloneAdData = {
         /**
          * Meta only. Regional regulation categories required when the ad set targets certain countries.
          * Known values: AUSTRALIA_FINSERV, AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, INDIA_FINSERV,
-         * MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL. Meta rejects the ad set without this when
+         * MALAYSIA_UNIVERSAL, SINGAPORE_UNIVERSAL, TAIWAN_FINSERV, TAIWAN_UNIVERSAL, THAILAND_UNIVERSAL, US_SECURITIES_LICENSING (securities and investments ad sets targeting the United States). Meta rejects the ad set without this when
          * the targeting geo includes the corresponding country.
          *
          */
@@ -68342,7 +68342,7 @@ export type CreateStandaloneAdData = {
          * - INDIA_FINSERV: india_finserv_beneficiary / india_finserv_payer
          * - TAIWAN_UNIVERSAL: taiwan_universal_beneficiary / taiwan_universal_payer
          * - SINGAPORE_UNIVERSAL: singapore_universal_beneficiary / singapore_universal_payer
-         * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL and THAILAND_UNIVERSAL: universal_beneficiary / universal_payer
+         * - AUSTRALIA_UNIVERSAL, BRAZIL_REGULATION, MALAYSIA_UNIVERSAL, THAILAND_UNIVERSAL and US_SECURITIES_LICENSING: universal_beneficiary / universal_payer
          *
          * **Errors**: when Meta rejects the ad set for a missing verified advertiser, the error carries param regionalRegulationIdentities, details.expectedIdentityKeys (the keys the declared categories expect), details.suggestedCategories (the markets Meta ties to that subcode) and Meta's metaCode, metaSubcode and fbtraceId.
          *
