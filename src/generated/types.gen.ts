@@ -7749,6 +7749,22 @@ export type ConnectedApp = {
     tokenCount?: number;
 };
 
+/**
+ * The account a credentials connect created or updated.
+ */
+export type ConnectedMessagingAccount = {
+    accountId?: string;
+    platform?: 'line' | 'wechat';
+    /**
+     * The LINE basic ID (for example @123abcde) or the WeChat AppID.
+     */
+    username?: string;
+    displayName?: string;
+    isActive?: boolean;
+};
+
+export type platform8 = 'line' | 'wechat';
+
 export type ConnectHandoff = {
     id?: string;
     status?: 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
@@ -8576,7 +8592,7 @@ export type CreateMetaAdAccountRequest = {
 /**
  * Optional. Omit it or send meta for a Meta ad account.
  */
-export type platform8 = 'meta';
+export type platform9 = 'meta';
 
 export type CreatorCampaign = {
     id: string;
@@ -13107,7 +13123,7 @@ export type HubSpotSettings = {
     useDealsAsResults: boolean;
 };
 
-export type platform9 = 'hubspot';
+export type platform10 = 'hubspot';
 
 export type ImapConnectResult = {
     dryRun?: boolean;
@@ -13318,7 +13334,7 @@ export type ImessageSender = {
     isActive?: boolean;
 };
 
-export type platform10 = 'imessage';
+export type platform11 = 'imessage';
 
 /**
  * A provisioned iMessage sender order and its lifecycle. Activation is asynchronous: poll GET /v1/imessage/senders/{senderId} or subscribe to account.connected.
@@ -13579,7 +13595,7 @@ export type InboxWebhookConversationDetail = {
      * The platform's conversation id, equal to `conversation.platformConversationId` on inbox webhooks (whose `conversation.id` is Zernio's internal id). Both are accepted by the conversation endpoints.
      */
     id: string;
-    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
+    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
     /**
      * Same value as `id`.
      */
@@ -13604,7 +13620,7 @@ export type InboxWebhookConversationDetail = {
     contactId?: string;
 };
 
-export type platform11 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage';
+export type platform12 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
 
 /**
  * The message object included in inbox webhook payloads.
@@ -13618,7 +13634,7 @@ export type InboxWebhookMessage = {
      * Internal conversation ID
      */
     conversationId: string;
-    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
+    platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'line' | 'wechat';
     /**
      * Platform's message ID
      */
@@ -13723,7 +13739,7 @@ export type InboxWebhookMessage = {
     isRead: boolean;
 };
 
-export type platform12 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms';
+export type platform13 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'line' | 'wechat';
 
 export type direction3 = 'incoming' | 'outgoing';
 
@@ -13841,7 +13857,7 @@ export type InstagramAccountInsightsResponse = {
 /**
  * Platform that served this response.
  */
-export type platform13 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok' | 'pinterest';
+export type platform14 = 'facebook' | 'instagram' | 'youtube' | 'linkedin' | 'tiktok' | 'pinterest';
 
 export type metricType = 'time_series' | 'total_value';
 
@@ -17773,7 +17789,7 @@ export type ReviewWebhookReview = {
 /**
  * Platform the review originated on. Currently Google Business Profile only.
  */
-export type platform14 = 'googlebusiness';
+export type platform15 = 'googlebusiness';
 
 /**
  * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
@@ -18072,7 +18088,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -18203,6 +18219,10 @@ export type SocialAccount = {
      * - loginMethod: "facebook_login" when connected through Facebook Login; absent for Instagram Login. On facebook_login accounts, comment reads leave hidden comments out entirely instead of returning them with isHidden true.
      * - instagramScopedId: the Instagram professional account id (`17841...`). On Instagram Login accounts it is the same whichever app connected the account, while platformUserId is app-scoped. Facebook Login accounts hold this id as platformUserId.
      *
+     * **LINE accounts:** channelId, basicId (also in username) and webhookUrl.
+     *
+     * **WeChat accounts:** appId (also in username and platformUserId).
+     *
      * **X (Twitter) accounts:**
      *
      * - profileData.extraData.isPremium: whether X reports a paid subscription (Basic, Premium, Premium+, or a blue verified badge), which raises the post length limit from 280 to 25,000 characters. Read live at connect and reconnect, refreshed by the daily follower snapshot.
@@ -18214,7 +18234,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform15 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads';
+export type platform16 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -18281,7 +18301,7 @@ export type StoredEvent = {
     } | null;
 };
 
-export type platform16 = 'googleads' | 'metaads';
+export type platform17 = 'googleads' | 'metaads';
 
 /**
  * A tracking tag's install on a connected store: a Shopify web pixel, a Custom HTML widget on a WordPress site, the Zernio embedded script on a Wix site, or the Zernio custom code script on a Webflow site. Fields marked with a platform are present only for it.
@@ -18382,7 +18402,7 @@ export type StripeSettings = {
     forwardSales: boolean;
 };
 
-export type platform17 = 'stripe';
+export type platform18 = 'stripe';
 
 export type SupportRun = {
     /**
@@ -19215,7 +19235,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform18 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+export type platform19 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -23084,7 +23104,7 @@ export type WebhookPayloadComment = {
 
 export type event41 = 'comment.received';
 
-export type platform19 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform20 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 export type WebhookPayloadCommerceOrder = {
     /**
@@ -24118,7 +24138,7 @@ export type WebhookPayloadMention = {
 
 export type event63 = 'mention.received';
 
-export type platform20 = 'instagram' | 'facebook' | 'linkedin';
+export type platform21 = 'instagram' | 'facebook' | 'linkedin';
 
 /**
  * Null on LinkedIn.
@@ -24148,7 +24168,7 @@ export type WebhookPayloadMessage = {
          * Internal conversation ID
          */
         conversationId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'rcs' | 'twitter' | 'bluesky' | 'reddit' | 'slack' | 'tiktok' | 'imessage';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'sms' | 'rcs' | 'twitter' | 'bluesky' | 'reddit' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
         /**
          * Platform's message ID
          */
@@ -24900,7 +24920,7 @@ export type WebhookPayloadMessageSent = {
         /**
          * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
          */
-        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
         /**
          * Platform's message ID
          */
@@ -25123,7 +25143,7 @@ export type event68 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform21 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
+export type platform22 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
 
 /**
  * WhatsApp send origin. Absent on non-WhatsApp platforms.
@@ -25941,7 +25961,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
 
 export type event83 = 'whatsapp.account.alert_received';
 
-export type platform22 = 'whatsapp';
+export type platform23 = 'whatsapp';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.
@@ -33079,7 +33099,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'hubspot' | 'webflow' | 'googleanalytics';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'hubspot' | 'webflow' | 'googleanalytics' | 'line' | 'wechat';
         /**
          * Filter by profile ID
          */
@@ -38911,6 +38931,121 @@ export type ConnectSlackChannelError = (ErrorResponse | {
     };
 } | unknown);
 
+export type ConnectLineCredentialsData = {
+    body: {
+        /**
+         * The Messaging API channel's Channel ID (digits only).
+         */
+        channelId: string;
+        /**
+         * The Messaging API channel's Channel secret (32 hex characters).
+         */
+        channelSecret: string;
+        /**
+         * Required state formatted as {userId}-{profileId}. Get userId from GET /v1/users and profileId from GET /v1/profiles.
+         */
+        state: string;
+        /**
+         * Optional URL to redirect to after a successful connection.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type ConnectLineCredentialsResponse = ({
+    message?: string;
+    account?: ConnectedMessagingAccount;
+    webhook?: {
+        /**
+         * The webhook URL Zernio set on the channel.
+         */
+        url?: string;
+        /**
+         * Whether LINE accepted the webhook URL. When false, paste `url` into the LINE Developers Console > Messaging API > Webhook URL yourself.
+         */
+        configured?: boolean;
+        /**
+         * Whether LINE's webhook test call reached Zernio.
+         */
+        testSucceeded?: boolean;
+        /**
+         * What LINE answered when the setup or the test did not succeed.
+         */
+        detail?: string;
+        /**
+         * Present when the channel pointed at another webhook URL before this connect. LINE allows one webhook URL per channel, so that URL stopped receiving events once Zernio set its own; `nextSteps` says so too.
+         */
+        previousUrl?: string;
+    };
+    /**
+     * Settings the account owner still has to change in LINE Official Account Manager, led by a warning when `webhook.previousUrl` is set.
+     */
+    nextSteps?: Array<(string)>;
+    redirectUrl?: string;
+});
+
+export type ConnectLineCredentialsError = (ErrorResponse);
+
+export type ConnectWechatCredentialsData = {
+    body: {
+        /**
+         * The Official Account's AppID (starts with wx).
+         */
+        appId: string;
+        /**
+         * The Official Account's AppSecret (32 characters).
+         */
+        appSecret: string;
+        /**
+         * Required state formatted as {userId}-{profileId}. Get userId from GET /v1/users and profileId from GET /v1/profiles.
+         */
+        state: string;
+        /**
+         * Name to show for the account. Defaults to "WeChat Official Account".
+         */
+        displayName?: string;
+        /**
+         * Optional URL to redirect to after a successful connection.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type ConnectWechatCredentialsResponse = ({
+    message?: string;
+    account?: ConnectedMessagingAccount;
+    /**
+     * Values to paste into Server Configuration in the Official Accounts Platform.
+     */
+    server?: {
+        url?: string;
+        token?: string;
+        encodingAESKey?: string;
+        encryptionMode?: 'safe';
+    };
+    /**
+     * IPs that must stay on the account's API IP whitelist.
+     */
+    ipWhitelist?: Array<(string)>;
+    nextSteps?: Array<(string)>;
+    redirectUrl?: string;
+});
+
+export type ConnectWechatCredentialsError = (ErrorResponse);
+
+export type GetWechatIpWhitelistResponse = ({
+    ips: Array<(string)>;
+});
+
+export type GetWechatIpWhitelistError = (ErrorResponse | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+});
+
 export type GetTelegramConnectStatusData = {
     query: {
         /**
@@ -43850,7 +43985,7 @@ export type ListInboxConversationsData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'twitter' | 'bluesky' | 'reddit' | 'telegram' | 'whatsapp' | 'imessage' | 'sms';
+        platform?: 'facebook' | 'instagram' | 'twitter' | 'bluesky' | 'reddit' | 'telegram' | 'whatsapp' | 'imessage' | 'sms' | 'line' | 'wechat';
         /**
          * Filter by profile ID
          */
@@ -44251,7 +44386,7 @@ export type SearchInboxConversationsData = {
         /**
          * Filter by platform (searchable platforms only)
          */
-        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms' | 'rcs' | 'slack' | 'imessage';
+        platform?: 'facebook' | 'instagram' | 'telegram' | 'whatsapp' | 'sms' | 'rcs' | 'slack' | 'imessage' | 'line' | 'wechat';
         /**
          * Filter by profile ID
          */
@@ -55105,7 +55240,7 @@ export type ListContactsData = {
         group?: string;
         isSubscribed?: 'true' | 'false';
         limit?: number;
-        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms';
+        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms' | 'line' | 'wechat';
         /**
          * Filter by profile. Omit to list across all profiles. Matches the profile recorded on the contact itself, which is set when the contact is created and is independent of the profile its account currently belongs to. Filter by accountId to list a contact through its channel instead.
          */
@@ -55176,7 +55311,7 @@ export type CreateContactData = {
         /**
          * Channel platform. Only the enum values support contact channels; any other platform is rejected with code platform_not_supported.
          */
-        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms';
+        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms' | 'line' | 'wechat';
         platformIdentifier?: string;
         displayIdentifier?: string;
     };
@@ -55645,7 +55780,7 @@ export type CreateBroadcastData = {
     body: {
         profileId: string;
         accountId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'sms' | 'slack' | 'imessage';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'sms' | 'slack' | 'imessage' | 'line';
         name: string;
         description?: string;
         message?: {

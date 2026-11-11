@@ -629,6 +629,21 @@ describe('Endpoint Methods', () => {
       expect(client.connect.connectSlackChannel).toBeTypeOf('function');
     });
 
+    it('should have connectLineCredentials method', () => {
+      expect(client.connect.connectLineCredentials).toBeDefined();
+      expect(client.connect.connectLineCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectWechatCredentials method', () => {
+      expect(client.connect.connectWechatCredentials).toBeDefined();
+      expect(client.connect.connectWechatCredentials).toBeTypeOf('function');
+    });
+
+    it('should have getWechatIpWhitelist method', () => {
+      expect(client.connect.getWechatIpWhitelist).toBeDefined();
+      expect(client.connect.getWechatIpWhitelist).toBeTypeOf('function');
+    });
+
     it('should have getPageWebhookSubscription method', () => {
       expect(client.connect.getPageWebhookSubscription).toBeDefined();
       expect(client.connect.getPageWebhookSubscription).toBeTypeOf('function');

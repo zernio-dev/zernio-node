@@ -381,6 +381,7 @@ try {
 | `connect.getSubredditRules()` | Get subreddit rules |
 | `connect.getTelegramConnectStatus()` | Generate Telegram code |
 | `connect.getWebflowConnectUrl()` | Get Webflow OAuth URL |
+| `connect.getWechatIpWhitelist()` | Get WeChat IP whitelist |
 | `connect.getWhatsAppSdkConfig()` | Get Embedded Signup SDK config |
 | `connect.getWixConnectUrl()` | Get Wix site install URL |
 | `connect.getWordPressAuthUrl()` | Get WordPress.com OAuth connect URL |
@@ -406,10 +407,12 @@ try {
 | `connect.connectAds()` | Connect ads for a platform |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |
 | `connect.connectDiscordChannel()` | Connect a Discord channel |
+| `connect.connectLineCredentials()` | Connect LINE Official Account |
 | `connect.connectOpenAIAdsCredentials()` | Connect an OpenAI Ads account |
 | `connect.connectShopifyWithToken()` | Connect a Shopify store with a custom-app Admin token |
 | `connect.connectSlackChannel()` | Connect a Slack channel |
 | `connect.connectWebflowWithSiteToken()` | Connect Webflow with a site API token |
+| `connect.connectWechatCredentials()` | Connect WeChat Official Account |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
 | `connect.connectWhatsAppEmbeddedSignup()` | Connect WhatsApp from Embedded Signup |
 | `connect.connectWhopAdsCredentials()` | Connect a Whop account |
