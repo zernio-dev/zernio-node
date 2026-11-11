@@ -22064,6 +22064,8 @@ export const listBlogArticles = <ThrowOnError extends boolean = false>(options: 
  *
  * Send an Idempotency-Key header to make retries safe. A retry with the same key and body replays the original 201 instead of creating a second article. A retry while the first request is still running returns 409; retry after a short backoff.
  *
+ * If the platform could not be reached during the write, the 502 says the write may have completed and is stored for the key: a retry with the same key replays it. Check the blog for the article, then retry with a new key.
+ *
  */
 export const createBlogArticle = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateBlogArticleData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateBlogArticleResponse, CreateBlogArticleError, ThrowOnError>({
