@@ -11048,7 +11048,11 @@ export type ErrorResponse = {
      *
      * Meta's own error stays in the message and in `platformError`.
      *
-     * **Private replies.** `privateReplyConsumed` appears on the private-reply endpoint's 400 when the comment's single reply is already spent. `privateReplyOutcome: "unknown"` appears on its 502 when Meta answered a server error and the reply may have been delivered.
+     * **Private replies.** The private-reply endpoint adds:
+     *
+     * - `privateReplyConsumed` on a 400: the comment's single reply is already spent.
+     * - `privateReplyOutcome: "unknown"` on a 502: Meta answered a server error and the reply may have been delivered.
+     * - `privateReplyOutcome: "not_sent"` on a 429: Instagram's rate limit refused the reply, so retry later.
      *
      * **Google quota 429.** On a Google Ads or YouTube Analytics 429, `quotaExhausted: true` marks the failure as Google's own quota, not a Zernio rate limit, so you can keep calling other platforms instead of backing off everywhere. When Google names the scope, `quotaScope` is also set:
      *
