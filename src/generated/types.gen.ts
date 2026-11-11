@@ -11978,7 +11978,7 @@ export type ForwardingRule = {
     /**
      * Event sources forwarded to this destination; null forwards events from every source.
      */
-    sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'web')> | null;
+    sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web')> | null;
     createdAt?: string;
 };
 
@@ -18362,6 +18362,28 @@ export type StorePixelInstall = {
  */
 export type method3 = 'wordpress_widget';
 
+export type StripeSettings = {
+    /**
+     * Zernio account ID of the Stripe connection.
+     */
+    _id: string;
+    platform: 'stripe';
+    /**
+     * The connected Stripe account ID (`acct_...`).
+     */
+    stripeAccountId: string;
+    /**
+     * Whether the connection counts live payments (`true`) or test payments (`false`).
+     */
+    livemode: boolean;
+    /**
+     * Whether new customers' first payments go to the profile's forwarding rules.
+     */
+    forwardSales: boolean;
+};
+
+export type platform17 = 'stripe';
+
 export type SupportRun = {
     /**
      * Run id, a 24-character hex string.
@@ -19193,7 +19215,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform17 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+export type platform18 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -23062,7 +23084,7 @@ export type WebhookPayloadComment = {
 
 export type event41 = 'comment.received';
 
-export type platform18 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform19 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 export type WebhookPayloadCommerceOrder = {
     /**
@@ -24096,7 +24118,7 @@ export type WebhookPayloadMention = {
 
 export type event63 = 'mention.received';
 
-export type platform19 = 'instagram' | 'facebook' | 'linkedin';
+export type platform20 = 'instagram' | 'facebook' | 'linkedin';
 
 /**
  * Null on LinkedIn.
@@ -25101,7 +25123,7 @@ export type event68 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform20 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
+export type platform21 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage';
 
 /**
  * WhatsApp send origin. Absent on non-WhatsApp platforms.
@@ -25919,7 +25941,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
 
 export type event83 = 'whatsapp.account.alert_received';
 
-export type platform21 = 'whatsapp';
+export type platform22 = 'whatsapp';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.
@@ -40550,6 +40572,37 @@ export type UpdateHubSpotSettingsResponse = ({
 });
 
 export type UpdateHubSpotSettingsError = (ErrorResponse | unknown);
+
+export type GetStripeSettingsData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetStripeSettingsResponse = ({
+    account?: StripeSettings;
+});
+
+export type GetStripeSettingsError = (ErrorResponse | unknown);
+
+export type UpdateStripeSettingsData = {
+    body: {
+        /**
+         * Send one-off sales as `Purchase`, a subscription's first payment as `Subscribe` and trial starts as `StartTrial` through the profile's forwarding rules that take the `stripe` source. Renewals and refunds are never sent.
+         */
+        forwardSales: boolean;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type UpdateStripeSettingsResponse = ({
+    message?: string;
+    account?: StripeSettings;
+});
+
+export type UpdateStripeSettingsError = (ErrorResponse | unknown);
 
 export type GetSlackSettingsData = {
     path: {
@@ -72195,7 +72248,7 @@ export type CreateForwardingRuleData = {
         /**
          * Forward only events from these sources, such as only `web` for a tracked website. Leave it out to forward events from every source.
          */
-        sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'web')>;
+        sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web')>;
     };
 };
 

@@ -203,11 +203,13 @@ try {
 | `accounts.getInstagramFollowStatus()` | Check whether an Instagram user follows the account |
 | `accounts.getLinkedInMentions()` | Resolve LinkedIn mention |
 | `accounts.getSlackSettings()` | Get Slack account settings |
+| `accounts.getStripeSettings()` | Get Stripe account settings |
 | `accounts.getTikTokCreatorInfo()` | Get TikTok creator info |
 | `accounts.updateAccount()` | Update account |
 | `accounts.updateBlueskySettings()` | Update Bluesky account settings |
 | `accounts.updateHubSpotSettings()` | Update HubSpot account settings |
 | `accounts.updateSlackSettings()` | Update Slack account settings |
+| `accounts.updateStripeSettings()` | Update Stripe account settings |
 | `accounts.deleteAccount()` | Disconnect account |
 | `accounts.deleteGoogleBusinessReviewReply()` | Delete a review reply |
 | `accounts.batchGetGoogleBusinessReviews()` | Batch get reviews |
