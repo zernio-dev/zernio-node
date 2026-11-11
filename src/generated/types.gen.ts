@@ -49993,7 +49993,7 @@ export type ShareBrandedCallingIdentityFormResponse = ({
     expiresAt?: string;
 });
 
-export type ShareBrandedCallingIdentityFormError = (ErrorResponse | unknown);
+export type ShareBrandedCallingIdentityFormError = (ErrorResponse | BalanceRequiredError | unknown);
 
 export type ListBrandedCallingCallReasonsResponse = ({
     callReasons?: Array<(string)>;

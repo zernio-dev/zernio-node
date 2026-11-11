@@ -9666,6 +9666,8 @@ export const deleteBrandedCallingEnterprise = <ThrowOnError extends boolean = fa
  * - `enterpriseId`: a new identity for a registered business.
  * - Neither: the business registers itself and its first identity.
  *
+ * On balance billing, a link that creates an identity needs its first month in the balance first (402 otherwise).
+ *
  * The person opening the link can forward a fresh one to someone else, which retires theirs.
  *
  */
