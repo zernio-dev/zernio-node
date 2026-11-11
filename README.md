@@ -375,6 +375,7 @@ try {
 | `connect.getRedditFlairs()` | List subreddit flairs |
 | `connect.getRedditSubreddits()` | List Reddit subreddits |
 | `connect.getShopifyConnectUrl()` | Get Shopify OAuth connect URL |
+| `connect.getStripeConnectUrl()` | Get Stripe connect URL |
 | `connect.getSubredditRules()` | Get subreddit rules |
 | `connect.getTelegramConnectStatus()` | Generate Telegram code |
 | `connect.getWebflowConnectUrl()` | Get Webflow OAuth URL |

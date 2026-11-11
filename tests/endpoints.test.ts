@@ -469,6 +469,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.getHubSpotConnectUrl).toBeTypeOf('function');
     });
 
+    it('should have getStripeConnectUrl method', () => {
+      expect(client.connect.getStripeConnectUrl).toBeDefined();
+      expect(client.connect.getStripeConnectUrl).toBeTypeOf('function');
+    });
+
     it('should have getWordPressAuthUrl method', () => {
       expect(client.connect.getWordPressAuthUrl).toBeDefined();
       expect(client.connect.getWordPressAuthUrl).toBeTypeOf('function');
