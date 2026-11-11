@@ -6919,7 +6919,7 @@ export const addOrgConnectionMailbox = <ThrowOnError extends boolean = false>(op
  * List conversations
  * Fetch conversations (DMs) from all connected messaging accounts in a single API call. Supports filtering by profile and platform. Results are aggregated and deduplicated.
  *
- * Supported platforms: Facebook, Instagram, X, Bluesky, Reddit, Telegram, WhatsApp, iMessage and SMS.
+ * Supported platforms: Facebook, Instagram, X, Bluesky, Reddit, Telegram, WhatsApp, iMessage, SMS, LINE and WeChat.
  *
  * ### X limitation
  *
@@ -17547,9 +17547,9 @@ export const getAdAccountLiveEntities = <ThrowOnError extends boolean = false>(o
  *
  * ### Meta retries and failures
  *
- * This operation is not idempotent and Zernio never automatically retries it. Unknown body fields are rejected. The Meta flow has no validateOnly or dry-run option.
+ * Zernio never retries creation. Send an Idempotency-Key to make a resend safe: the same key and body replay the original 201 without creating again. Without a key every request creates a new account. Unknown body fields are rejected. The Meta flow has no validateOnly or dry-run option.
  *
- * - After a timeout or a 502 with details.creationStatus=unknown, check the business in Ads Manager before attempting another creation.
+ * - After a timeout or a 502 with details.creationStatus=unknown, check the business in Ads Manager before attempting another creation. An Idempotency-Key does not cover that 502.
  * - A 201 with connectionUpdated=false means the account exists but needs reconnecting via GET /v1/connect/facebook/ads, with adAccountIds containing the returned ID and the previous scoped IDs. Do not repeat the create call.
  *
  * **Google** (send `platform: google`).
@@ -17570,7 +17570,10 @@ export const getAdAccountLiveEntities = <ThrowOnError extends boolean = false>(o
  *
  * `validateOnly: true` asks Google to validate the request without creating anything and returns 200.
  *
- * A real create is not idempotent: after a 502 with details.creationStatus=unknown, check the manager in Google Ads before trying again.
+ * Zernio never retries creation. Send an Idempotency-Key to make a resend safe: the same key and body replay the original 201 without creating again. Without a key every request creates a new account.
+ *
+ * - A validateOnly call and the real create need different keys.
+ * - After a 502 with details.creationStatus=unknown, check the manager in Google Ads before trying again: an Idempotency-Key does not cover that 502.
  *
  */
 export const createAdAccount = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdAccountData, ThrowOnError>) => {

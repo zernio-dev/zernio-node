@@ -32843,7 +32843,7 @@ export type ListAccountsData = {
          */
         adAccountRows?: boolean;
         /**
-         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit, Microsoft), communication = WhatsApp, Telegram, Discord, Slack and iMessage, blogs = Shopify and WordPress, crm = HubSpot, analytics = Google Analytics, social = every other platform.
+         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit, Microsoft), communication = WhatsApp, Telegram, Discord, Slack, iMessage, LINE and WeChat, blogs = Shopify and WordPress, crm = HubSpot, analytics = Google Analytics, social = every other platform.
          */
         category?: 'social' | 'ads' | 'communication' | 'blogs' | 'crm' | 'analytics';
         /**
@@ -45460,7 +45460,7 @@ export type SendInboxMessageResponse = ({
         /**
          * Zernio conversation id, echoed so the thread can be read back or replied to. Omitted when the send succeeded but the conversation could not be resolved to a stored record.
          *
-         * - Telegram, WhatsApp, SMS and Slack: equals the id the list-conversations endpoint returns.
+         * - Telegram, WhatsApp, SMS, Slack, LINE and WeChat: equals the id the list-conversations endpoint returns.
          * - Facebook, Instagram, Bluesky and Reddit: that endpoint returns the platform thread id instead, so do not correlate the two by equality.
          * - X: when the request addressed the conversation by its Twitter dm_conversation_id, that platform id is echoed back instead.
          *
@@ -56276,7 +56276,7 @@ export type CreateWorkflowData = {
     body: {
         profileId: string;
         accountId: string;
-        platform?: 'whatsapp' | 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'tiktok';
+        platform?: 'whatsapp' | 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'tiktok' | 'line' | 'wechat';
         name: string;
         description?: string;
         nodes?: Array<WorkflowNode>;
@@ -56741,7 +56741,7 @@ export type CreateSequenceData = {
     body: {
         profileId: string;
         accountId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'imessage' | 'line' | 'wechat';
         name: string;
         description?: string;
         steps?: Array<{
@@ -66596,6 +66596,21 @@ export type GetAdAccountLiveEntitiesError = (ErrorResponse | unknown);
 
 export type CreateAdAccountData = {
     body: (CreateMetaAdAccountRequest | CreateGoogleAdAccountRequest);
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
 };
 
 export type CreateAdAccountResponse = ({
@@ -66607,7 +66622,7 @@ export type CreateAdAccountResponse = ({
     validateOnly: boolean;
 } | (CreatedMetaAdAccount | CreatedGoogleAdAccount));
 
-export type CreateAdAccountError = (ErrorResponse);
+export type CreateAdAccountError = (ErrorResponse | unknown);
 
 export type ListAdAccountsData = {
     query: {
