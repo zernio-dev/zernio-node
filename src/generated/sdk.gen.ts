@@ -8708,6 +8708,11 @@ export const getWhatsAppCallPermissions = <ThrowOnError extends boolean = false>
  * safe; same key + same body replays the original response instead of
  * dialing (and billing) a second call.
  *
+ * **Balance time limit:** on balance billing the call runs only as long
+ * as the balance, plus what auto top-up can still add this month, funds
+ * (never past the number's `maxCallDurationSeconds`). Under one minute
+ * is refused with 402.
+ *
  */
 export const initiateWhatsAppCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<InitiateWhatsAppCallData, ThrowOnError>) => {
     return (options?.client ?? client).post<InitiateWhatsAppCallResponse, InitiateWhatsAppCallError, ThrowOnError>({
@@ -8842,6 +8847,10 @@ export const getCallRecording = <ThrowOnError extends boolean = false>(options: 
  * The 200 response means the call is dialing. The lifecycle continues asynchronously: track it via `GET /v1/voice/calls/{id}` or the `call.*` webhooks.
  *
  * Outbound calls are capped per rolling hour (429 when hit).
+ *
+ * ### Balance time limit
+ *
+ * On balance billing a call runs only as long as the balance, plus what auto top-up can still add this month, funds at its per-minute price, minus calls already in progress. Then it ends with `hangup_cause: time_limit`. Under one minute is refused with 402.
  *
  * ### Idempotency
  *
@@ -8980,6 +8989,7 @@ export const createVoiceWebSession = <ThrowOnError extends boolean = false>(opti
  *
  * - The call is logged as outbound (from = your number, to = target) and recorded per the number's settings.
  * - `ringTimeoutSeconds` applies to the target's phone, not to the browser.
+ * - On balance billing the call gets the same time limit as `POST /v1/voice/calls`.
  *
  */
 export const dialVoiceWebCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DialVoiceWebCallData, ThrowOnError>) => {
