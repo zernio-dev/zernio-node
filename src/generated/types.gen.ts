@@ -29171,6 +29171,19 @@ export type GetBalanceResponse = ({
      */
     promoCents?: number;
     /**
+     * Balance billing only (absent otherwise). First months set aside from availableCents for phone numbers under review (KYC). Billed when the number activates, returned if it is declined. Not part of availableCents or spendableCents.
+     */
+    held?: {
+        /**
+         * Total held, in USD cents.
+         */
+        cents: number;
+        /**
+         * Numbers with a held first month.
+         */
+        count: number;
+    };
+    /**
      * Always 0. The balance no longer pays creators, so none of it is locked from them.
      * @deprecated
      */
