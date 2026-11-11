@@ -2188,8 +2188,10 @@ export type AdRuleCondition = {
      *
      * `<from>_to_<to>_days_ago` is any range of full days, both ends included, such as `8_to_2_days_ago` to skip the 2 most recent days while their conversions still arrive. `from` is at least `to` and at most 90.
      *
+     * `last_complete_hour`, `last_3h` and `today_so_far` read campaign totals hour by hour, on campaign rules for Meta and Google, and end at the latest hour whose numbers have settled, not at now. They take `spend`, `impressions`, `clicks`, `ctr`, `cpc` and `cpm`, and no `top` or `bottom`.
+     *
      */
-    window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | 'this_month' | 'last_month' | unknown);
+    window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | 'this_month' | 'last_month' | 'last_complete_hour' | 'last_3h' | 'today_so_far' | unknown);
     /**
      * `top` and `bottom` rank the rule's objects by the metric over the window, highest first for `top`, and match the first `value` (a whole number from 1 to 100). Objects with no value are not ranked; the run history shows each one's position.
      */
@@ -2202,14 +2204,31 @@ export type AdRuleCondition = {
      *
      * Spend, impressions, clicks, conversions and reach are compared per day, so windows of different lengths compare fairly; rates such as `cpc` compare as they are. A comparison window with no value never matches.
      *
+     * `usual` compares with the median of the same window on the 4 previous weeks. For an hourly window that is the same hours on the 4 previous same weekdays, and for a window of up to 7 full days (not `today`) the same days moved back 1 to 4 weeks.
+     *
+     * `usual` needs at least 3 of those weeks with a value, and takes no reach, frequency, budget or calendar metric.
+     *
+     * On an hourly window, `compareTo` is `usual`, or for `ctr`, `cpc` and `cpm` a window of full days ending by yesterday and starting at most 35 days ago, read from the same hourly totals.
+     *
+     * For example, `cpc` over `last_complete_hour` `>=` 5 against `last_30d` means the last hour's clicks cost 5 times their 30-day price.
+     *
      */
     compareTo?: string;
+    /**
+     * Reads the usual value of the metric over `window` (as `compareTo: usual` defines it) instead of its current value, such as campaigns that usually get at least 50 impressions in the last 3 hours. Not combined with `compareTo`.
+     */
+    of?: 'usual';
 };
 
 /**
  * `top` and `bottom` rank the rule's objects by the metric over the window, highest first for `top`, and match the first `value` (a whole number from 1 to 100). Objects with no value are not ranked; the run history shows each one's position.
  */
 export type op = '>' | '>=' | '<' | '<=' | 'top' | 'bottom';
+
+/**
+ * Reads the usual value of the metric over `window` (as `compareTo: usual` defines it) instead of its current value, such as campaigns that usually get at least 50 impressions in the last 3 hours. Not combined with `compareTo`.
+ */
+export type of = 'usual';
 
 export type AdRuleConditionItem = AdRuleCondition | AdRuleConditions;
 
