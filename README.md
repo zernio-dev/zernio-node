@@ -1002,7 +1002,10 @@ try {
 ### Conversions
 | Method | Description |
 |--------|-------------|
+| `conversions.listAdConversionAssociations()` | List associated campaigns |
+| `conversions.listAdConversionDestinations()` | List conversion destinations |
 | `conversions.listAdConversionGoals()` | List account conversion goals |
+| `conversions.listAdCustomConversions()` | List custom conversions |
 | `conversions.listConversionActions()` | List conversion actions |
 | `conversions.listConversionAssociations()` | List associated campaigns |
 | `conversions.listConversionDestinations()` | List conversion destinations |
@@ -1010,24 +1013,32 @@ try {
 | `conversions.listEventDestinations()` | List event destinations |
 | `conversions.listEvents()` | List stored events |
 | `conversions.listForwardingRules()` | List forwarding rules |
-| `conversions.createConversionAction()` | Create website conversion action |
+| `conversions.createAdConversionDestination()` | Create a conversion destination |
+| `conversions.createAdCustomConversion()` | Create custom conversion |
+| `conversions.createConversionAction()` | Create conversion action |
 | `conversions.createConversionDestination()` | Create a conversion destination |
 | `conversions.createCustomConversionGoal()` | Create a custom conversion goal |
 | `conversions.createEventDestination()` | Add an event destination |
 | `conversions.createForwardingRule()` | Add a forwarding rule |
+| `conversions.getAdConversionDestination()` | Get a conversion destination |
+| `conversions.getAdConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionDestination()` | Get a conversion destination |
 | `conversions.getConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
 | `conversions.getEvent()` | Get one stored event and its deliveries |
+| `conversions.updateAdConversionDestination()` | Update a conversion destination |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |
 | `conversions.updateConversionAction()` | Update a conversion action's settings |
 | `conversions.updateConversionDestination()` | Update a conversion destination |
 | `conversions.updateCustomConversionGoal()` | Update a custom conversion goal |
+| `conversions.deleteAdConversionDestination()` | Delete a conversion destination |
 | `conversions.deleteConversionDestination()` | Delete a conversion destination |
 | `conversions.deleteEventDestination()` | Remove an event destination |
 | `conversions.deleteForwardingRule()` | Remove a forwarding rule |
+| `conversions.addAdConversionAssociations()` | Associate campaigns |
 | `conversions.addConversionAssociations()` | Associate campaigns |
 | `conversions.adjustConversions()` | Adjust uploaded conversions |
+| `conversions.removeAdConversionAssociations()` | Remove associated campaigns |
 | `conversions.removeConversionAssociations()` | Remove associated campaigns |
 | `conversions.removeCustomConversionGoal()` | Remove a custom conversion goal |
 | `conversions.restateEvent()` | Change a stored event's value |

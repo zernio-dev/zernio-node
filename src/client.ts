@@ -9,6 +9,7 @@ import {
   addAccountCallouts,
   addAccountSitelinks,
   addAccountStructuredSnippets,
+  addAdConversionAssociations,
   addAdKeywords,
   addBroadcastRecipients,
   addBusinessAgentAllowlistEntry,
@@ -111,7 +112,9 @@ import {
   createAdCatalogFeedUpload,
   createAdCatalogProduct,
   createAdCatalogProductSet,
+  createAdConversionDestination,
   createAdCreative,
+  createAdCustomConversion,
   createAdInsightsReport,
   createAdLabel,
   createAdNegativeKeywordList,
@@ -231,6 +234,7 @@ import {
   deleteAdCatalogProduct,
   deleteAdCatalogProductSet,
   deleteAdComment,
+  deleteAdConversionDestination,
   deleteAdCreative,
   deleteAdNegativeKeywordList,
   deleteAdRule,
@@ -366,6 +370,8 @@ import {
   getAdCatalogBatch,
   getAdCatalogProduct,
   getAdComments,
+  getAdConversionDestination,
+  getAdConversionMetrics,
   getAdCreative,
   getAdInsightsReport,
   getAdMedia,
@@ -676,8 +682,11 @@ import {
   listAdCatalogProductSets,
   listAdCatalogProducts,
   listAdCatalogs,
+  listAdConversionAssociations,
+  listAdConversionDestinations,
   listAdConversionGoals,
   listAdCreatives,
+  listAdCustomConversions,
   listAdGroupAssets,
   listAdImages,
   listAdKeywords,
@@ -935,6 +944,7 @@ import {
   removeAccountSitelink,
   removeAccountStructuredSnippet,
   removeAdAccountUser,
+  removeAdConversionAssociations,
   removeAdGroupAssets,
   removeAdKeyword,
   removeAdLabel,
@@ -1116,6 +1126,7 @@ import {
   updateAdCampaignStatus,
   updateAdCatalogProduct,
   updateAdCatalogProductSet,
+  updateAdConversionDestination,
   updateAdConversionGoals,
   updateAdCreative,
   updateAdGroupAssets,
@@ -2924,6 +2935,17 @@ export class Zernio {
     listForwardingRules: this._bind(listForwardingRules),
     createForwardingRule: this._bind(createForwardingRule),
     deleteForwardingRule: this._bind(deleteForwardingRule),
+    listAdConversionDestinations: this._bind(listAdConversionDestinations),
+    createAdConversionDestination: this._bind(createAdConversionDestination),
+    getAdConversionDestination: this._bind(getAdConversionDestination),
+    updateAdConversionDestination: this._bind(updateAdConversionDestination),
+    deleteAdConversionDestination: this._bind(deleteAdConversionDestination),
+    listAdConversionAssociations: this._bind(listAdConversionAssociations),
+    addAdConversionAssociations: this._bind(addAdConversionAssociations),
+    removeAdConversionAssociations: this._bind(removeAdConversionAssociations),
+    getAdConversionMetrics: this._bind(getAdConversionMetrics),
+    listAdCustomConversions: this._bind(listAdCustomConversions),
+    createAdCustomConversion: this._bind(createAdCustomConversion),
     listConversionDestinations: this._bind(listConversionDestinations),
     createConversionDestination: this._bind(createConversionDestination),
     getConversionDestination: this._bind(getConversionDestination),
@@ -3598,6 +3620,28 @@ export class Zernio {
     createForwardingRule: this._bind(createForwardingRule),
     /** @deprecated Use `zernio.conversions.deleteForwardingRule` instead. */
     deleteForwardingRule: this._bind(deleteForwardingRule),
+    /** @deprecated Use `zernio.conversions.listAdConversionDestinations` instead. */
+    listAdConversionDestinations: this._bind(listAdConversionDestinations),
+    /** @deprecated Use `zernio.conversions.createAdConversionDestination` instead. */
+    createAdConversionDestination: this._bind(createAdConversionDestination),
+    /** @deprecated Use `zernio.conversions.getAdConversionDestination` instead. */
+    getAdConversionDestination: this._bind(getAdConversionDestination),
+    /** @deprecated Use `zernio.conversions.updateAdConversionDestination` instead. */
+    updateAdConversionDestination: this._bind(updateAdConversionDestination),
+    /** @deprecated Use `zernio.conversions.deleteAdConversionDestination` instead. */
+    deleteAdConversionDestination: this._bind(deleteAdConversionDestination),
+    /** @deprecated Use `zernio.conversions.listAdConversionAssociations` instead. */
+    listAdConversionAssociations: this._bind(listAdConversionAssociations),
+    /** @deprecated Use `zernio.conversions.addAdConversionAssociations` instead. */
+    addAdConversionAssociations: this._bind(addAdConversionAssociations),
+    /** @deprecated Use `zernio.conversions.removeAdConversionAssociations` instead. */
+    removeAdConversionAssociations: this._bind(removeAdConversionAssociations),
+    /** @deprecated Use `zernio.conversions.getAdConversionMetrics` instead. */
+    getAdConversionMetrics: this._bind(getAdConversionMetrics),
+    /** @deprecated Use `zernio.conversions.listAdCustomConversions` instead. */
+    listAdCustomConversions: this._bind(listAdCustomConversions),
+    /** @deprecated Use `zernio.conversions.createAdCustomConversion` instead. */
+    createAdCustomConversion: this._bind(createAdCustomConversion),
     /** @deprecated Use `zernio.conversions.listConversionDestinations` instead. */
     listConversionDestinations: this._bind(listConversionDestinations),
     /** @deprecated Use `zernio.conversions.createConversionDestination` instead. */

@@ -1601,7 +1601,7 @@ export type AdPromotedObject = {
      * - **TikTok:** TikTok Pixel ID, required for `goal: conversions`.
      * - **Reddit:** Reddit pixel ID (e.g. `a2_abc123`), optional on every goal (see above).
      *
-     * To discover the pixels an ad account can use, call `GET /v1/accounts/{accountId}/tracking-tags?adAccountId=act_...` (each entry carries `kind` and `ownerAdAccountId`) or `GET /v1/accounts/{accountId}/conversion-destinations`.
+     * To discover the pixels an ad account can use, call `GET /v1/accounts/{accountId}/tracking-tags?adAccountId=act_...` (each entry carries `kind` and `ownerAdAccountId`) or `GET /v1/ads/conversions/destinations`.
      *
      * This differs from `GET /v1/ads/{adId}/tracking-tags`, which reads an ad's click-URL params (`url_tags`), not pixels.
      *
@@ -1623,7 +1623,7 @@ export type AdPromotedObject = {
      * - `ON_WEB_REGISTER`: Complete Registration
      * - `ON_WEB_DETAIL`: View Content
      *
-     * **OpenAI (ChatGPT) Ads:** a conversion event from `GET /v1/accounts/{accountId}/conversion-destinations` (`conversionEvents[]`), given as its `id` (exact), its `eventType` (e.g. `order_created`) or its `name` (e.g. `Purchase`), both case-insensitive. It must be `optimizable` (active and not custom).
+     * **OpenAI (ChatGPT) Ads:** a conversion event from `GET /v1/ads/conversions/destinations` (`conversionEvents[]`), given as its `id` (exact), its `eventType` (e.g. `order_created`) or its `name` (e.g. `Purchase`), both case-insensitive. It must be `optimizable` (active and not custom).
      *
      * An unknown, archived or custom event returns a 400 listing the account's optimizable events. A type or name shared by several optimizable events returns a 400 asking for the id. `validateOnly: true` runs the same check and names the resolved event in its `message`.
      *
@@ -71479,9 +71479,9 @@ export type CreateConversionActionData = {
         customerId?: string;
         name: string;
         /**
-         * Only WEBPAGE is supported for creation today.
+         * WEBPAGE for a website tag, UPLOAD_CLICKS for the conversions you send to Zernio.
          */
-        type: 'WEBPAGE';
+        type: 'WEBPAGE' | 'UPLOAD_CLICKS';
         /**
          * Default conversion value used when an event doesn't carry its own value.
          */
@@ -71511,7 +71511,7 @@ export type CreateConversionActionData = {
          */
         viewThroughLookbackWindowDays?: number;
         /**
-         * true = primary (counts toward bidding when its goal is biddable), false = secondary.
+         * true = primary (counts toward bidding when its goal is biddable), false = secondary. Defaults to secondary for UPLOAD_CLICKS.
          */
         primaryForGoal?: boolean;
     };
@@ -71830,7 +71830,7 @@ export type SendEventsData = {
              */
             accountId: string;
             /**
-             * Platform destination, as listed by GET /v1/accounts/{accountId}/conversion-destinations.
+             * Platform destination, as listed by GET /v1/ads/conversions/destinations.
              */
             destinationId: string;
         }>;
@@ -72166,6 +72166,443 @@ export type UpdateCampaignConversionGoalsResponse = ((GoogleCampaignConversionGo
 }));
 
 export type UpdateCampaignConversionGoalsError = (ErrorResponse | unknown);
+
+export type ListAdConversionDestinationsData = {
+    query: {
+        /**
+         * SocialAccount ID (metaads, googleads, linkedinads, tiktokads, openaiads, pinterestads, or redditads).
+         */
+        accountId: string;
+    };
+};
+
+export type ListAdConversionDestinationsResponse = ({
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads';
+    destinations?: Array<{
+        /**
+         * Destination identifier. Meta: pixel ID. Google:
+         * conversion action resource name. LinkedIn:
+         * numeric conversion rule ID. OpenAI Ads: pixel wire
+         * id. Reddit: pixel id (`a2_...`).
+         *
+         */
+        id?: string;
+        name?: string;
+        /**
+         * Present when the platform locks event type to the
+         * destination (Google conversion actions, LinkedIn
+         * conversion rules).
+         *
+         */
+        type?: string;
+        status?: 'active' | 'inactive';
+        /**
+         * Set by adapters whose destinations are scoped to a
+         * specific ad account (LinkedIn, Reddit). On LinkedIn,
+         * pass it back on subsequent CRUD calls.
+         *
+         */
+        adAccountId?: string;
+        /**
+         * OpenAI Ads only: the conversion event settings wired
+         * to this pixel. Pass one's `id`, `eventType` or `name`
+         * as `promotedObject.customEventType` on a
+         * `goal: conversions` create (POST /v1/ads/create or
+         * POST /v1/ads/campaigns) to optimize for it. Without
+         * it, the account's most recently created `optimizable`
+         * event is used; when none is, the create returns 400.
+         *
+         */
+        conversionEvents?: Array<{
+            id?: string;
+            name?: string;
+            /**
+             * OpenAI event type, e.g. order_created, lead_created, or custom.
+             */
+            eventType?: (string) | null;
+            customEventName?: (string) | null;
+            archived?: boolean;
+            /**
+             * Active and standard (not custom). Only these can be a conversions campaign's optimization event.
+             */
+            optimizable?: boolean;
+        }>;
+    }>;
+});
+
+export type ListAdConversionDestinationsError = (unknown | ErrorResponse);
+
+export type CreateAdConversionDestinationData = {
+    body: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        /**
+         * Ad account ID. For LinkedIn: numeric (e.g. "5123456") or
+         * full `urn:li:sponsoredAccount:{id}` URN. For Google: numeric
+         * customer ID (e.g. "1234567890") or `customers/{id}` form.
+         *
+         */
+        adAccountId: string;
+        name: string;
+        /**
+         * Conversion type. Unknown values pass through to the platform.
+         *
+         * - LinkedIn: a unified standard event name (e.g. "Purchase", "Lead", "AddToCart") or a LinkedIn rule type enum (e.g. "PURCHASE", "QUALIFIED_LEAD").
+         * - Google: a unified standard event name (Purchase, Subscribe, CompleteRegistration, Lead, Schedule) or a Google ConversionActionCategory enum value directly (e.g. "PURCHASE", "SUBSCRIBE_PAID", "SIGNUP", "IMPORTED_LEAD", "BOOK_APPOINTMENT").
+         *
+         */
+        type: string;
+        /**
+         * LinkedIn only.
+         */
+        attributionType?: 'LAST_TOUCH_BY_CAMPAIGN' | 'LAST_TOUCH_BY_CONVERSION';
+        /**
+         * LinkedIn only. Default 30. 365 only allowed for LEAD,
+         * PURCHASE, ADD_TO_CART, QUALIFIED_LEAD, SUBMIT_APPLICATION
+         * rule types; the API rejects other combinations locally.
+         *
+         */
+        postClickAttributionWindowSize?: 1 | 7 | 30 | 90 | 365;
+        /**
+         * LinkedIn only. Default 7. Same 365-day-window type
+         * restriction applies as `postClickAttributionWindowSize`.
+         *
+         */
+        viewThroughAttributionWindowSize?: 1 | 7 | 30 | 90 | 365;
+        /**
+         * LinkedIn only. DYNAMIC (default) uses the per-event `value`
+         * from `sendConversions`. FIXED uses the rule's `value` field.
+         * NO_VALUE drops monetary value entirely.
+         *
+         */
+        valueType?: 'DYNAMIC' | 'FIXED' | 'NO_VALUE';
+        /**
+         * LinkedIn only. Static conversion value. Used when
+         * `valueType=FIXED`. The currency should match the ad
+         * account's currency.
+         *
+         */
+        value?: {
+            /**
+             * ISO 4217 (e.g. "USD").
+             */
+            currencyCode: string;
+            /**
+             * Decimal string (e.g. "49.99").
+             */
+            amount: string;
+        };
+        /**
+         * LinkedIn only. Controls campaign association at rule-creation time:
+         *
+         * - ALL_CAMPAIGNS: associate the rule with every active, paused, and draft campaign in the ad account.
+         * - OBJECTIVE_BASED: associate only campaigns whose objective matches the rule's type.
+         * - NONE: don't auto-associate. Manage associations via the `/associations` endpoints below.
+         *
+         * Auto-association runs once at create time; campaigns added after the rule still need explicit association.
+         *
+         */
+        autoAssociationType?: 'ALL_CAMPAIGNS' | 'OBJECTIVE_BASED' | 'NONE';
+        /**
+         * Google Ads only. Whether to count multiple conversions from
+         * the same click (MANY_PER_CLICK) or at most one
+         * (ONE_PER_CLICK). Defaults to MANY_PER_CLICK if omitted.
+         *
+         */
+        countingType?: 'MANY_PER_CLICK' | 'ONE_PER_CLICK';
+        /**
+         * Google Ads only. When true, the conversion action is marked
+         * as primary and immediately influences Smart Bidding. Defaults
+         * to false (secondary, record-only) to avoid unintentionally
+         * steering the customer's campaigns on creation.
+         *
+         */
+        primaryForGoal?: boolean;
+    };
+};
+
+export type CreateAdConversionDestinationResponse = ({
+    platform?: 'linkedinads' | 'googleads';
+    destination?: ConversionDestination;
+});
+
+export type CreateAdConversionDestinationError = (unknown | ErrorResponse);
+
+export type GetAdConversionDestinationData = {
+    path: {
+        destinationId: string;
+    };
+    query: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        /**
+         * Numeric ID or full `urn:li:sponsoredAccount:{id}` URN.
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetAdConversionDestinationResponse = ({
+    platform?: 'linkedinads';
+    destination?: ConversionDestination;
+});
+
+export type GetAdConversionDestinationError = (unknown | ErrorResponse);
+
+export type UpdateAdConversionDestinationData = {
+    body: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        adAccountId: string;
+        name?: string;
+        /**
+         * Setting `false` is equivalent to calling DELETE: the
+         * rule will appear as `inactive` afterwards.
+         *
+         */
+        enabled?: boolean;
+        attributionType?: 'LAST_TOUCH_BY_CAMPAIGN' | 'LAST_TOUCH_BY_CONVERSION';
+        /**
+         * 365 only allowed for LEAD, PURCHASE, ADD_TO_CART,
+         * QUALIFIED_LEAD, SUBMIT_APPLICATION rule types.
+         *
+         */
+        postClickAttributionWindowSize?: 1 | 7 | 30 | 90 | 365;
+        /**
+         * 365 only allowed for LEAD, PURCHASE, ADD_TO_CART,
+         * QUALIFIED_LEAD, SUBMIT_APPLICATION rule types.
+         *
+         */
+        viewThroughAttributionWindowSize?: 1 | 7 | 30 | 90 | 365;
+        valueType?: 'DYNAMIC' | 'FIXED' | 'NO_VALUE';
+        /**
+         * Used when `valueType=FIXED`.
+         */
+        value?: {
+            /**
+             * ISO 4217.
+             */
+            currencyCode?: string;
+            /**
+             * Decimal string (e.g. "49.99").
+             */
+            amount?: string;
+        };
+    };
+    path: {
+        destinationId: string;
+    };
+};
+
+export type UpdateAdConversionDestinationResponse = ({
+    platform?: 'linkedinads';
+    destination?: ConversionDestination;
+});
+
+export type UpdateAdConversionDestinationError = (unknown | ErrorResponse);
+
+export type DeleteAdConversionDestinationData = {
+    path: {
+        destinationId: string;
+    };
+    query: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        /**
+         * Required as query OR in JSON body.
+         */
+        adAccountId?: string;
+    };
+};
+
+export type DeleteAdConversionDestinationResponse = (void);
+
+export type DeleteAdConversionDestinationError = (unknown | ErrorResponse);
+
+export type ListAdConversionAssociationsData = {
+    path: {
+        destinationId: string;
+    };
+    query: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        adAccountId: string;
+    };
+};
+
+export type ListAdConversionAssociationsResponse = ({
+    platform?: 'linkedinads';
+    associations?: Array<{
+        campaignId?: string;
+        conversionId?: string;
+        /**
+         * Epoch ms.
+         */
+        associatedAt?: number;
+    }>;
+});
+
+export type ListAdConversionAssociationsError = (unknown | ErrorResponse);
+
+export type AddAdConversionAssociationsData = {
+    body: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        adAccountId: string;
+        campaignIds: Array<(string)>;
+    };
+    path: {
+        destinationId: string;
+    };
+};
+
+export type AddAdConversionAssociationsResponse = ({
+    platform?: 'linkedinads';
+    /**
+     * Numeric campaign IDs that were successfully associated.
+     */
+    succeeded?: Array<(string)>;
+    failed?: Array<{
+        campaignId?: string;
+        reason?: string;
+    }>;
+});
+
+export type AddAdConversionAssociationsError = (unknown | ErrorResponse);
+
+export type RemoveAdConversionAssociationsData = {
+    path: {
+        destinationId: string;
+    };
+    query: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        adAccountId: string;
+        /**
+         * Comma-separated list of campaign IDs.
+         */
+        campaignIds: string;
+    };
+};
+
+export type RemoveAdConversionAssociationsResponse = ({
+    platform?: 'linkedinads';
+    /**
+     * Numeric campaign IDs that were successfully removed.
+     */
+    succeeded?: Array<(string)>;
+    failed?: Array<{
+        campaignId?: string;
+        reason?: string;
+    }>;
+});
+
+export type RemoveAdConversionAssociationsError = (unknown | ErrorResponse);
+
+export type GetAdConversionMetricsData = {
+    path: {
+        destinationId: string;
+    };
+    query: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        adAccountId: string;
+        endDate?: string;
+        granularity?: 'ALL' | 'DAILY' | 'MONTHLY' | 'YEARLY';
+        startDate: string;
+    };
+};
+
+export type GetAdConversionMetricsResponse = ({
+    platform?: 'linkedinads';
+    granularity?: 'ALL' | 'DAILY' | 'MONTHLY' | 'YEARLY';
+    rows?: Array<{
+        /**
+         * YYYY-MM-DD
+         */
+        start?: string;
+        /**
+         * YYYY-MM-DD (inclusive)
+         */
+        end?: string;
+        metrics?: {
+            [key: string]: (number | string);
+        };
+    }>;
+});
+
+export type GetAdConversionMetricsError = (unknown | ErrorResponse);
+
+export type ListAdCustomConversionsData = {
+    query: {
+        /**
+         * Meta ads SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+    };
+};
+
+export type ListAdCustomConversionsResponse = ({
+    adAccountId?: string;
+    data?: Array<CustomConversion>;
+});
+
+export type ListAdCustomConversionsError = (unknown | ErrorResponse);
+
+export type CreateAdCustomConversionData = {
+    body: {
+        /**
+         * The connected ads account (SocialAccount ID).
+         */
+        accountId: string;
+        /**
+         * Platform ad account id (Meta act_<n>, Google customer id, LinkedIn account id, ...).
+         */
+        adAccountId: string;
+        /**
+         * Also the reuse key, together with pixelId.
+         */
+        name: string;
+        /**
+         * Meta pixel id (event_source_id). From GET /v1/accounts/{accountId}/tracking-tags.
+         */
+        pixelId: string;
+        /**
+         * Meta custom_event_type, e.g. LEAD, PURCHASE, OTHER.
+         */
+        customEventType: string;
+        /**
+         * Meta conversion rule, forwarded verbatim.
+         */
+        rule: {
+            [key: string]: unknown;
+        };
+    };
+};
+
+export type CreateAdCustomConversionResponse = (CustomConversionResult);
+
+export type CreateAdCustomConversionError = (unknown | ErrorResponse);
 
 export type ListConversionDestinationsData = {
     path: {
