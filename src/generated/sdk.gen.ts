@@ -12740,6 +12740,8 @@ export const listCommentAutomations = <ThrowOnError extends boolean = false>(opt
  *
  * That read covers the bound post, or the 5 newest posts for an account-wide automation, up to 20 Graph reads per account per run. A post not fully read is picked up again on the next run. A comment is answered at most once, whichever path sees it first.
  *
+ * An automation answers only comments posted while it is active. A comment posted before the automation was created, or before it was last switched on with `isActive: true`, never fires on either path, even when its webhook arrives late. Creating an automation paused and switching it on later answers only the comments posted after the switch, so existing comments on the post get no DM.
+ *
  * ### Targeting (comment trigger)
  *
  * - Per-post: set `platformPostId` to scope to one specific post (only one active per-post automation is allowed per post).

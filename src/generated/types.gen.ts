@@ -56953,7 +56953,7 @@ export type CreateCommentAutomationData = {
         quickReplies?: Array<CommentAutomationQuickReply>;
         dmMedia?: (CommentAutomationDmMedia | null);
         /**
-         * Create the automation paused with false.
+         * Create the automation paused with false. Once switched on, it answers only comments posted from that moment.
          */
         isActive?: boolean;
     };
@@ -57202,6 +57202,9 @@ export type UpdateCommentAutomationData = {
         commentReplyDelaySeconds?: number;
         audience?: CommentAutomationAudience;
         followGate?: CommentAutomationFollowGate;
+        /**
+         * false pauses the automation. true on a paused automation resumes it for comments posted from that moment: comments left while it was paused get no DM.
+         */
         isActive?: boolean;
         repeatPolicy?: CommentAutomationRepeatPolicy;
         /**
