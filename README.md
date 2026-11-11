@@ -1032,6 +1032,7 @@ try {
 | `conversions.getConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
 | `conversions.getEvent()` | Get one stored event and its deliveries |
+| `conversions.getEventsOverview()` | Get today's tracking overview |
 | `conversions.updateAdConversionDestination()` | Update a conversion destination |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |
 | `conversions.updateConversionAction()` | Update a conversion action's settings |

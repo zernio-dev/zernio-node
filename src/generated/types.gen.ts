@@ -18248,6 +18248,10 @@ export type tiktokAccountType = 'business' | 'personal' | 'unknown';
 
 export type StoredEvent = {
     eventId?: string;
+    /**
+     * Where the event came from: `api`, `relay`, `web`, `shopify`, `woocommerce`, `hubspot`, `meta_leads`, `google_leads`, `linkedin_leads` or `tiktok_leads`.
+     */
+    source?: string;
     eventName?: string;
     eventTime?: string;
     receivedAt?: string;
@@ -72099,7 +72103,18 @@ export type ListEventsData = {
 };
 
 export type ListEventsResponse = ({
-    events?: Array<StoredEvent>;
+    events?: Array<(StoredEvent & {
+    /**
+     * Each destination the event was forwarded to, with its latest send status. The full detail is on GET /v1/events/{eventId}.
+     */
+    deliveries?: Array<{
+        /**
+         * Ad platform of the destination, such as `metaads`; empty when the send failed before the platform was known.
+         */
+        platform?: string;
+        status?: 'sent' | 'retrying' | 'failed';
+    }>;
+})>;
     /**
      * Pass as `cursor` to get the next page; `null` on the last page.
      */
@@ -72226,6 +72241,143 @@ export type SendEventsResponse = ({
 export type SendEventsError = (ErrorResponse | {
     error?: string;
 } | unknown);
+
+export type GetEventsOverviewData = {
+    query: {
+        profileId: string;
+    };
+};
+
+export type GetEventsOverviewResponse = ({
+    today?: {
+        /**
+         * Stored events that occurred today, retracted ones excluded.
+         */
+        conversions?: number;
+        /**
+         * Value of those events in `currency`. Events in other currencies are left out.
+         */
+        value?: number;
+        /**
+         * The currency most of today's valued events use; `null` when none carried a value.
+         */
+        currency?: (string) | null;
+        /**
+         * Event sends to a destination today, one per event and destination.
+         */
+        sent?: number;
+        /**
+         * Those whose latest send the platform accepted.
+         */
+        accepted?: number;
+        /**
+         * Today's events matched to an ad campaign.
+         */
+        matched?: number;
+    };
+    /**
+     * One entry per forwarding rule of the profile.
+     */
+    platforms?: Array<{
+        accountId?: string;
+        /**
+         * Ad platform, such as `metaads` or `googleads`.
+         */
+        platform?: string;
+        accountName?: string;
+        /**
+         * The destination (pixel, dataset or conversion action) id.
+         */
+        destinationName?: string;
+        /**
+         * Events the platform accepted today.
+         */
+        sentToday?: number;
+        /**
+         * Events that failed for good today.
+         */
+        failedToday?: number;
+        /**
+         * Last accepted send in the last 30 days.
+         */
+        lastSentAt?: (string) | null;
+        /**
+         * Name of the event in that send.
+         */
+        lastEventName?: (string) | null;
+        /**
+         * The platform's error on the last failed send in the last 30 days.
+         */
+        lastError?: (string) | null;
+        /**
+         * Where to fix a failing destination. Always `null` for now.
+         */
+        fixUrl?: (string) | null;
+    }>;
+    /**
+     * Each source that stored an event in the last 30 days, most recent first.
+     */
+    sources?: Array<{
+        /**
+         * Source id, such as `web`, `shopify` or `api` (which also covers `relay`).
+         */
+        source?: string;
+        /**
+         * The source in plain words, such as `Shopify orders`.
+         */
+        label?: string;
+        /**
+         * Always `on` for now: the source is sending events.
+         */
+        state?: 'on' | 'available' | 'connect';
+        eventsToday?: number;
+        lastSeenAt?: (string) | null;
+    }>;
+    /**
+     * `null` when the profile has no tracking site. Hit counts are approximate distinct counts.
+     */
+    website?: {
+        /**
+         * The funnel: page views, product views, add to cart, checkouts and purchases today.
+         */
+        steps?: Array<{
+            /**
+             * Event name, such as `PageView`.
+             */
+            name?: string;
+            label?: string;
+            count?: number;
+        }>;
+        /**
+         * Purchases with ad consent for which no browser pixel fired, so only the server reported them.
+         */
+        recovered?: number;
+        /**
+         * Purchases today.
+         */
+        conversions?: number;
+        /**
+         * Page views with ad storage consent.
+         */
+        consented?: number;
+        /**
+         * Page views today.
+         */
+        visits?: number;
+        /**
+         * Page views from bots.
+         */
+        bots?: number;
+        /**
+         * Platforms of the forwarding rules that receive website events.
+         */
+        serverPlatforms?: Array<(string)>;
+    } | null;
+});
+
+export type GetEventsOverviewError = (ErrorResponse | {
+    error?: string;
+});
 
 export type GetEventData = {
     path: {
