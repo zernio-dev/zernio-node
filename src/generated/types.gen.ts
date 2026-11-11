@@ -52418,7 +52418,7 @@ export type CreatePhoneNumberKycLinkResponse = ({
     expiresAt?: string;
 });
 
-export type CreatePhoneNumberKycLinkError = (unknown | ErrorResponse);
+export type CreatePhoneNumberKycLinkError = (unknown | ErrorResponse | BalanceRequiredError);
 
 export type CreatePhoneNumberPortInData = {
     body: {
@@ -53281,7 +53281,7 @@ export type CreateWhatsAppNumberKycLinkResponse = ({
     expiresAt?: string;
 });
 
-export type CreateWhatsAppNumberKycLinkError = (unknown | ErrorResponse);
+export type CreateWhatsAppNumberKycLinkError = (unknown | ErrorResponse | BalanceRequiredError);
 
 export type MoveWhatsAppNumberToProfileData = {
     body: {
