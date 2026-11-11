@@ -11975,6 +11975,10 @@ export type ForwardingRule = {
      * Event names forwarded to this destination; null forwards every event.
      */
     eventNames?: Array<(string)> | null;
+    /**
+     * Event sources forwarded to this destination; null forwards events from every source.
+     */
+    sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'web')> | null;
     createdAt?: string;
 };
 
@@ -72099,6 +72103,10 @@ export type CreateForwardingRuleData = {
          */
         destinationId: string;
         eventNames?: Array<(string)>;
+        /**
+         * Forward only events from these sources, such as only `web` for a tracked website. Leave it out to forward events from every source.
+         */
+        sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'web')>;
     };
 };
 
