@@ -3260,7 +3260,7 @@ export const getHubSpotConnectUrl = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Get Stripe connect URL
- * Initiates Stripe Connect OAuth for the customer's own Stripe account, with read-only access. Stripe is a connect-only sales source: each paid charge becomes a `Purchase` event in `GET /v1/events` (source `stripe`), and refunds lower or retract it.
+ * Initiates Stripe Connect OAuth for the customer's own Stripe account. Zernio only reads its payments. Stripe is a connect-only sales source: each paid charge becomes a `Purchase` event in `GET /v1/events` (source `stripe`), and refunds lower or retract it.
  *
  * One Stripe account can be connected per profile. Connecting a different account to a profile that already has one redirects with `error=stripe_profile_has_account`.
  *
