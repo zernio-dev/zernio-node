@@ -62,15 +62,19 @@ export type AccountWithFollowerStats = SocialAccount & {
      */
     dataPoints?: number;
     /**
-     * Platform-specific account stats from the latest daily snapshot.
-     * Fields vary by platform. Only present if metadata has been captured.
+     * Platform-specific account counters from the latest daily snapshot.
+     * Each platform reports its own subset of the keys below, and no other key is returned. Absent when the platform reports none of them.
      *
      */
     accountStats?: {
         /**
-         * Number of accounts being followed
+         * Number of accounts being followed (TikTok, X, Pinterest, Bluesky)
          */
         followingCount?: number;
+        /**
+         * Number of accounts being followed (Instagram)
+         */
+        followsCount?: number;
         /**
          * Total media posts (Instagram)
          */
@@ -100,9 +104,9 @@ export type AccountWithFollowerStats = SocialAccount & {
          */
         likesCount?: number;
         /**
-         * Monthly profile views (Pinterest)
+         * Monthly profile views (Pinterest). null when Pinterest reports no window
          */
-        monthlyViews?: number;
+        monthlyViews?: (number) | null;
         /**
          * Lists the user appears on (X)
          */
