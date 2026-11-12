@@ -27911,6 +27911,10 @@ export type GetAnalyticsData = {
          * Inclusive upper bound (YYYY-MM-DD). Defaults to today if omitted.
          */
         toDate?: string;
+        /**
+         * full returns the listing as before. summary leaves out the accounts list, each platform entry's copy of analytics, the impressionSources, audienceTypes, audienceCountries and retentionCurve maps, and mediaItems (thumbnailUrl stays). Ignored when postId is set.
+         */
+        view?: 'full' | 'summary';
     };
 };
 
