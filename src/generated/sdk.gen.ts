@@ -5894,7 +5894,7 @@ export const getNextQueueSlot = <ThrowOnError extends boolean = false>(options: 
 
 /**
  * List webhooks
- * Retrieve all configured webhooks for the authenticated user. Supports up to 50 webhooks per user.
+ * Retrieve all configured webhooks for the authenticated user. Supports up to 50 webhooks per user. A profile-scoped API key, or a team member limited to specific profiles, gets 403.
  */
 export const getWebhookSettings = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<unknown, ThrowOnError>) => {
     return (options?.client ?? client).get<GetWebhookSettingsResponse, GetWebhookSettingsError, ThrowOnError>({
@@ -6008,6 +6008,8 @@ export const deleteWebhookSettings = <ThrowOnError extends boolean = false>(opti
  * List webhook delivery logs
  * Retrieve recorded webhook delivery attempts for the authenticated user, most recent first.
  *
+ * A profile-scoped API key, or a team member limited to specific profiles, gets 403.
+ *
  * Logs are retained for 30 days. Supports filtering by status, event type, webhook ID, and event ID, plus offset-based pagination.
  *
  * ### Restricted keys
@@ -6047,6 +6049,8 @@ export const getWebhookLogs = <ThrowOnError extends boolean = false>(options?: O
  * resource-group checks as live delivery, against both the key's groups and the
  * subscription's `disabledResourceGroups`.
  *
+ * A profile-scoped API key, or a team member limited to specific profiles, gets 403.
+ *
  */
 export const redeliverWebhookEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RedeliverWebhookEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<RedeliverWebhookEventResponse, RedeliverWebhookEventError, ThrowOnError>({
@@ -6058,6 +6062,8 @@ export const redeliverWebhookEvent = <ThrowOnError extends boolean = false>(opti
 /**
  * Send test webhook
  * Send a test webhook to verify your endpoint is configured correctly. The test payload includes event: "webhook.test" to distinguish it from real events.
+ *
+ * A profile-scoped API key, or a team member limited to specific profiles, gets 403.
  *
  * ### Sample payload for a specific event
  *
