@@ -2285,7 +2285,7 @@ export type AdRuleEvaluation = {
 };
 
 /**
- * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal`, `days_live` and `budget_level`; an ad set rule also `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
+ * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal`, `days_live`, `days_since_change` and `budget_level`; an ad set rule all but `days_since_change`, plus `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
  */
 export type AdRuleFilters = Array<({
     /**
@@ -2304,6 +2304,11 @@ export type AdRuleFilters = Array<({
     value: 'campaign' | 'adset';
 } | {
     field: 'days_live';
+    op: '>=' | '<';
+    value: number;
+} | {
+    field: 'days_since_change';
+    change: 'budget' | 'bidding' | 'status' | 'goal';
     op: '>=' | '<';
     value: number;
 })>;
@@ -3757,6 +3762,11 @@ export type AutomationAdFilter = {
     op: '>=' | '<';
     value: number;
 } | {
+    field: "days_since_change";
+    change: 'budget' | 'bidding' | 'status' | 'goal';
+    op: '>=' | '<';
+    value: number;
+} | {
     field: "budget_level";
     op: "equals";
     value: 'campaign' | 'adset';
@@ -3765,6 +3775,8 @@ export type AutomationAdFilter = {
 export type field = 'name' | 'campaign_name' | 'adset_name' | 'goal';
 
 export type op2 = 'contains' | 'not_contains' | 'equals' | 'not_equals' | 'starts_with';
+
+export type change = 'budget' | 'bidding' | 'status' | 'goal';
 
 export type value = 'campaign' | 'adset';
 
@@ -34589,8 +34601,8 @@ export type GetConnectUrlData = {
          * - **Copy**: `heading` (up to 120 characters); `trustLine`, `consentLine` and `statusLine` (up to 200 each, `statusLine` being the line above the button); `buttonLabel` (up to 30, the label of the link the button becomes if the redirect stalls).
          * - **Closing page** (shown when there is no `redirect_url`): `successHeading` and `errorHeading` (up to 120), `successBody` and `errorBody` (up to 200). All copy may contain the placeholders `{brand}` and `{platform}`.
          * - **Colors**: `primaryColor` (the button), `accentColor` (the header gradient, built as a scale of that colour, and the icons), `pageColor`, `cardColor` and `textColor`, all as `#RRGGBB`.
-         * - **Style**: `cornerRadius` as an integer from 0 to 24 (pixels); `font` as `sans`, `serif` or `mono`; `bannerStyle` as `halftone` (default), `solid` (a flat tint of `accentColor`) or `plain` (no banner fill).
-         * - **Icons**: `trustLineIcon` (default `shield`) and `consentLineIcon` (default `link`), each one of `shield`, `lock`, `link`, `check`, `user`, `sparkles` or `none`.
+         * - **Style**: `cornerRadius` as an integer from 0 to 24 (pixels); `font` as `sans`, `serif` or `mono`; `bannerStyle` as `waves` (default, halftone waves in `accentColor`), `halftone` (dots in shades of `accentColor` blooming from the corners), `solid` (a flat tint of `accentColor`) or `plain` (no banner fill).
+         * - **Icons**: `trustLineIcon` (default `shield`) and `consentLineIcon` (default `user`), each one of `shield`, `lock`, `link`, `check`, `user`, `sparkles` or `none`.
          * - **Visibility**: `hide`, an array of any of `heading`, `trustLine`, `consentLine`, `statusLine`, `successBody` and `errorBody`, removes those lines from the screens.
          * - **Links**: `termsUrl` and `privacyUrl` (https, up to 2048 characters) add small Terms and Privacy links at the bottom of every hosted screen.
          *
