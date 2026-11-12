@@ -453,6 +453,7 @@ try {
 | `accountSettings.getMessengerIceBreakers()` | Get FB ice breakers |
 | `accountSettings.getMessengerMenu()` | Get persistent menu |
 | `accountSettings.getTelegramCommands()` | Get TG bot commands |
+| `accountSettings.getWechatServerConfig()` | Get WeChat server config |
 | `accountSettings.updateFacebookPageInfo()` | Update a Facebook Page's public info |
 | `accountSettings.deleteInstagramIceBreakers()` | Delete IG ice breakers |
 | `accountSettings.deleteMessengerGetStarted()` | Delete FB Get Started button |

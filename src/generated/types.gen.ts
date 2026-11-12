@@ -47028,6 +47028,25 @@ export type DeleteTelegramCommandsResponse = (unknown);
 
 export type DeleteTelegramCommandsError = (ErrorResponse);
 
+export type GetWechatServerConfigData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetWechatServerConfigResponse = ({
+    server?: {
+        url?: string;
+        token?: string;
+        encodingAESKey?: string;
+        encryptionMode?: 'safe';
+    };
+});
+
+export type GetWechatServerConfigError = (ErrorResponse | {
+    error?: string;
+});
+
 export type GetMessageAttachmentData = {
     path: {
         /**

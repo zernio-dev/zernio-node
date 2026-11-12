@@ -617,6 +617,7 @@ import {
   getWebhookLogs,
   getWebhookSettings,
   getWechatIpWhitelist,
+  getWechatServerConfig,
   getWhatsAppBlockStatus,
   getWhatsAppBlockedUsers,
   getWhatsAppBusinessProfile,
@@ -1971,6 +1972,7 @@ export class Zernio {
     getTelegramCommands: this._bind(getTelegramCommands),
     setTelegramCommands: this._bind(setTelegramCommands),
     deleteTelegramCommands: this._bind(deleteTelegramCommands),
+    getWechatServerConfig: this._bind(getWechatServerConfig),
   };
 
   /**
