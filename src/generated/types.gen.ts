@@ -2194,7 +2194,7 @@ export type AdRuleCondition = {
      *
      * `<from>_to_<to>_days_ago` is any range of full days, both ends included, such as `8_to_2_days_ago` to skip the 2 most recent days while their conversions still arrive. `from` is at least `to` and at most 90.
      *
-     * `last_complete_hour`, `last_3h` and `today_so_far` read campaign totals hour by hour, on campaign rules for Meta and Google, and end at the latest hour whose numbers have settled, not at now. They take `spend`, `impressions`, `clicks`, `ctr`, `cpc` and `cpm`, and no `top` or `bottom`.
+     * `last_complete_hour`, `last_3h` and `today_so_far` read campaign totals hour by hour, on campaign rules for Meta and Google, and end at the latest hour whose numbers have settled, not at now. They take `spend`, `impressions`, `clicks`, `ctr`, `cpc`, `cpm` and `budget_used` (against today's daily budget), and no `top` or `bottom`.
      *
      */
     window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | 'this_month' | 'last_month' | 'last_complete_hour' | 'last_3h' | 'today_so_far' | unknown);
@@ -2212,9 +2212,13 @@ export type AdRuleCondition = {
      *
      * `usual` compares with the median of the same window on the 4 previous weeks. For an hourly window that is the same hours on the 4 previous same weekdays, and for a window of up to 7 full days (not `today`) the same days moved back 1 to 4 weeks.
      *
-     * `usual` needs at least 3 of those weeks with a value, and takes no reach, frequency, budget or calendar metric.
+     * `usual` needs at least 3 of those weeks with a value, and takes no reach, frequency, budget or calendar metric. On an hourly window it takes `budget_used`, against today's daily budget.
      *
-     * On an hourly window, `compareTo` is `usual`, or for `ctr`, `cpc` and `cpm` a window of full days ending by yesterday and starting at most 35 days ago, read from the same hourly totals.
+     * `usual_deviation` makes `value` a distance instead of a ratio: how many median absolute deviations of those weeks the window sits from their median, either way.
+     *
+     * `>=` 3 keeps only a move well outside the campaign's normal swing. It follows the rules of `usual`, and never matches when those weeks all read the same.
+     *
+     * On an hourly window, `compareTo` is `usual` or `usual_deviation`, or for `ctr`, `cpc` and `cpm` a window of full days ending by yesterday and starting at most 35 days ago, read from the same hourly totals.
      *
      * For example, `cpc` over `last_complete_hour` `>=` 5 against `last_30d` means the last hour's clicks cost 5 times their 30-day price.
      *
