@@ -33502,6 +33502,10 @@ export type GetAllAccountsHealthResponse = ({
         canPost?: boolean;
         canFetchAnalytics?: boolean;
         /**
+         * Whether analytics is in scope for this account at all (the platform offers analytics and it was requested at connect). False means canFetchAnalytics is not a problem to fix; true with canFetchAnalytics false means analytics needs a reconnect.
+         */
+        analyticsSupported?: boolean;
+        /**
          * Present when the account connected with `scopes` or through your own OAuth app: each permission area the platform splits, as granted, missing or not_requested. An area never requested does not make the account unhealthy.
          */
         scopeAreas?: {
@@ -33721,6 +33725,10 @@ export type GetAccountHealthResponse = ({
          */
         canPost?: boolean;
         canFetchAnalytics?: boolean;
+        /**
+         * Whether analytics is in scope for this account at all (the platform offers analytics and it was requested at connect). False means canFetchAnalytics is not a problem to fix; true with canFetchAnalytics false means analytics needs a reconnect.
+         */
+        analyticsSupported?: boolean;
         missingRequired?: Array<(string)>;
         /**
          * Present when the account connected with `scopes` or through your own OAuth app: each permission area the platform splits, as granted, missing or not_requested. An area never requested does not make the account unhealthy.
