@@ -924,8 +924,10 @@ try {
 | `commerce.createCommerceCatalogSync()` | Sync a store into a Meta catalog |
 | `commerce.createCommerceCollection()` | Create a collection |
 | `commerce.createCommerceDiscount()` | Create a discount |
+| `commerce.createCommerceDraftOrder()` | Create a draft order |
 | `commerce.createCommerceMenu()` | Create a navigation menu |
 | `commerce.createCommerceMetaobject()` | Create a metaobject |
+| `commerce.createCommerceOrderEdit()` | Edit an order |
 | `commerce.createCommercePage()` | Create a page |
 | `commerce.createCommerceProduct()` | Create a product |
 | `commerce.createCommerceProductOptions()` | Add options |
@@ -936,6 +938,7 @@ try {
 | `commerce.getCommerceCollection()` | Get a collection |
 | `commerce.getCommerceCustomer()` | Get a customer |
 | `commerce.getCommerceDiscount()` | Get a discount |
+| `commerce.getCommerceDraftOrder()` | Get a draft order |
 | `commerce.getCommerceMenu()` | Get a navigation menu |
 | `commerce.getCommerceMetaobject()` | Get a metaobject |
 | `commerce.getCommerceOrder()` | Get an order |
@@ -978,6 +981,7 @@ try {
 | `commerce.reorderCommerceCollectionProducts()` | Reorder products in a collection |
 | `commerce.reorderCommerceProductImages()` | Reorder images |
 | `commerce.runCommerceCatalogSync()` | Run a catalog sync now |
+| `commerce.sendCommerceDraftOrderInvoice()` | Send a draft order invoice |
 | `commerce.setCommerceCollectionMetafields()` | Set collection metafields |
 | `commerce.setCommerceDiscountActive()` | Activate or deactivate a discount |
 | `commerce.setCommercePriceListPrices()` | Set fixed prices |

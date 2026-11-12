@@ -7111,7 +7111,7 @@ export type CommerceAddress = {
 /**
  * An operation a store supports. Calling an operation outside this list answers 400 platform_not_supported.
  */
-export type CommerceCapability = 'products.read' | 'products.create' | 'products.update' | 'products.status' | 'products.price' | 'products.variants' | 'products.images' | 'products.images_remove' | 'collections.read' | 'collections.write' | 'collections.metafields' | 'metafields.read' | 'metafields.write' | 'pages.read' | 'pages.write' | 'inventory.read' | 'inventory.write' | 'channels.read' | 'channels.write' | 'discounts.read' | 'discounts.write' | 'discounts.codes' | 'navigation.read' | 'navigation.write' | 'metaobjects.read' | 'metaobjects.write' | 'markets.read' | 'markets.write' | 'marketing.write' | 'orders.read' | 'orders.refund' | 'orders.cancel' | 'customers.read';
+export type CommerceCapability = 'products.read' | 'products.create' | 'products.update' | 'products.status' | 'products.price' | 'products.variants' | 'products.images' | 'products.images_remove' | 'collections.read' | 'collections.write' | 'collections.metafields' | 'metafields.read' | 'metafields.write' | 'pages.read' | 'pages.write' | 'inventory.read' | 'inventory.write' | 'channels.read' | 'channels.write' | 'discounts.read' | 'discounts.write' | 'discounts.codes' | 'navigation.read' | 'navigation.write' | 'metaobjects.read' | 'metaobjects.write' | 'markets.read' | 'markets.write' | 'marketing.write' | 'orders.read' | 'orders.refund' | 'orders.cancel' | 'customers.read' | 'orders.edit' | 'draft_orders.read' | 'draft_orders.write';
 
 /**
  * A store kept in sync with an ad-platform product catalog.
@@ -7264,6 +7264,56 @@ export type type13 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_ge
 
 export type status23 = 'active' | 'scheduled' | 'expired';
 
+export type CommerceDraftOrder = {
+    id?: string;
+    accountId?: string;
+    platform?: 'shopify' | 'woocommerce';
+    name?: string;
+    status?: 'open' | 'invoice_sent' | 'completed';
+    /**
+     * The checkout link the buyer pays through.
+     */
+    invoiceUrl?: (string) | null;
+    invoiceSentAt?: (string) | null;
+    email?: (string) | null;
+    customerId?: (string) | null;
+    note?: (string) | null;
+    tags?: Array<(string)>;
+    /**
+     * The currency the buyer pays in; every amount uses it.
+     */
+    currency?: string;
+    subtotal?: CommerceMoney;
+    discountTotal?: CommerceMoney;
+    shippingTotal?: CommerceMoney;
+    taxTotal?: CommerceMoney;
+    total?: CommerceMoney;
+    lineItems?: Array<{
+        id?: string;
+        productId?: (string) | null;
+        variantId?: (string) | null;
+        title?: string;
+        variantTitle?: (string) | null;
+        sku?: (string) | null;
+        quantity?: number;
+        unitPrice?: CommerceMoney;
+        /**
+         * After the line discount.
+         */
+        total?: CommerceMoney;
+    }>;
+    shippingAddress?: (CommerceAddress | null);
+    /**
+     * The order it became once completed.
+     */
+    orderId?: (string) | null;
+    createdAt?: string;
+    updatedAt?: string;
+    completedAt?: (string) | null;
+};
+
+export type status24 = 'open' | 'invoice_sent' | 'completed';
+
 export type CommerceImage = {
     /**
      * Media id, used to reorder or remove images. Null for collection images.
@@ -7317,7 +7367,7 @@ export type CommerceMarket = {
     type?: string;
 };
 
-export type status24 = 'active' | 'draft';
+export type status25 = 'active' | 'draft';
 
 export type CommerceMenu = {
     id?: string;
@@ -7553,6 +7603,28 @@ export type CommerceOrderChargeLine = {
     amount?: CommerceMoney;
     discountTotal?: CommerceMoney;
     taxLines?: Array<CommerceTaxLine>;
+};
+
+/**
+ * The order as the edit leaves it. Amounts are in the currency the buyer paid in.
+ */
+export type CommerceOrderEditPreview = {
+    subtotal?: CommerceMoney;
+    total?: CommerceMoney;
+    /**
+     * What the buyer still owes. Negative when the edit leaves them overpaid: refund that with the refunds endpoint.
+     */
+    outstanding?: CommerceMoney;
+    lineItems?: Array<{
+        /**
+         * Null for a line the edit adds.
+         */
+        lineItemId?: (string) | null;
+        variantId?: (string) | null;
+        title?: string;
+        quantity?: number;
+        unitPrice?: CommerceMoney;
+    }>;
 };
 
 export type CommerceOrderRefund = {
@@ -7914,7 +7986,7 @@ export type ConnectHandoff = {
     } | null;
 };
 
-export type status25 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
+export type status26 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
 
 /**
  * Only with `handoff=true`: the link to show as a QR code.
@@ -8143,7 +8215,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status26 = 'active' | 'inactive';
+export type status27 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -8839,7 +8911,7 @@ export type CreatorCampaign = {
 /**
  * draft until activated; active accepts submissions and accrues; paused stops new submissions; closed is final.
  */
-export type status27 = 'draft' | 'active' | 'paused' | 'closed';
+export type status28 = 'draft' | 'active' | 'paused' | 'closed';
 
 /**
  * Same as economics.type.
@@ -9415,7 +9487,7 @@ export type CreatorPortalPayoutSetup = {
  */
 export type mode4 = 'none' | 'external' | 'treasury';
 
-export type status28 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
+export type status29 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
 
 export type CreatorPortalReferral = {
     /**
@@ -10222,7 +10294,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * `adSetId`, the new ads themselves.
  *
  */
-export type status29 = 'ACTIVE' | 'PAUSED';
+export type status30 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults to `status`.
@@ -10636,7 +10708,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status30 = 1 | 2 | 3 | 4;
+export type status31 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -10803,7 +10875,7 @@ export type EmailClean = {
     } | null;
 };
 
-export type status31 = 'stripped' | 'unchanged' | 'fallback';
+export type status32 = 'stripped' | 'unchanged' | 'fallback';
 
 /**
  * A draft in the mailbox. Carries the message fields; `id` is the draft id the drafts endpoints take. Store `id`, not `messageId`.
@@ -11370,7 +11442,7 @@ export type EventCorrection = {
 /**
  * `corrected`: the platform changed its count. `not_supported`: the platform has no API to change a conversion it already counted. `failed`: see `error`.
  */
-export type status32 = 'corrected' | 'not_supported' | 'failed';
+export type status33 = 'corrected' | 'not_supported' | 'failed';
 
 export type EventDestination = {
     /**
@@ -11889,7 +11961,7 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status33 = 'received';
+export type status34 = 'received';
 
 /**
  * A file or folder in a connected Google Drive or OneDrive. Ids are the provider's own.
@@ -12172,7 +12244,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status34 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status35 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -12275,7 +12347,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status35 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status36 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 export type GoogleAdsUserAccessInvitation = {
     invitationId?: string;
@@ -12290,7 +12362,7 @@ export type GoogleAdsUserAccessInvitation = {
 
 export type accessRole = 'ADMIN' | 'STANDARD' | 'READ_ONLY' | 'EMAIL_ONLY' | 'UNKNOWN';
 
-export type status36 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
+export type status37 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
 
 export type GoogleAdsUserAccessInvitationResult = {
     customerId?: string;
@@ -12314,7 +12386,7 @@ export type GoogleAdsUserAccessInvitationResult = {
 /**
  * PENDING once the email is sent; PENDING_APPROVAL while Google waits for a second admin's multi-party approval.
  */
-export type status37 = 'PENDING' | 'PENDING_APPROVAL';
+export type status38 = 'PENDING' | 'PENDING_APPROVAL';
 
 export type GoogleAdsUserInvitationApproval = {
     /**
@@ -13164,7 +13236,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status38 = 'applied' | 'dismissed' | 'failed';
+export type status39 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -13438,7 +13510,7 @@ export type ImessageSandboxContact = {
     createdAt?: string;
 };
 
-export type status39 = 'pending' | 'active';
+export type status40 = 'pending' | 'active';
 
 /**
  * An iMessage sender registered as an account on a profile.
@@ -13513,7 +13585,7 @@ export type region = 'US' | 'GB';
 /**
  * `awaiting_payment`: the first-month charge is still being confirmed by the card; the number is ordered automatically once it is paid (usually under 5 minutes), or the order fails with `failureReason` when the card declines or nothing confirms within 30 minutes.
  */
-export type status40 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status41 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * When inbound messages and comments were first and last seen for the account. Only events matched to this account count. WhatsApp delivery statuses for outbound messages do not count, so the stamps of a number that only sends stay null. The stamps reset on every connect.
@@ -13721,7 +13793,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status41 = 'active' | 'archived';
+export type status42 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -15889,7 +15961,7 @@ export type OAuthApp = {
 /**
  * `ok`: the platform accepted the keys at the last check. `unchecked`: the check could not reach a verdict (see lastError). `invalid`: the platform rejected the keys; connects and token refreshes through this app will fail until the secret is rotated.
  */
-export type status42 = 'ok' | 'unchecked' | 'invalid';
+export type status43 = 'ok' | 'unchecked' | 'invalid';
 
 export type OAuthAppSetup = {
     platform: string;
@@ -15965,7 +16037,7 @@ export type OrgConnection = {
     };
 };
 
-export type status43 = 'pending' | 'active' | 'revoked';
+export type status44 = 'pending' | 'active' | 'revoked';
 
 export type type26 = 'google_domain_wide_delegation' | 'microsoft_admin_consent';
 
@@ -16144,7 +16216,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status44 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status45 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -16285,7 +16357,7 @@ export type PayoutBatch = {
 /**
  * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` during the 7-day card hold and while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
  */
-export type status45 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
+export type status46 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
 export type method2 = 'card';
 
@@ -16328,7 +16400,7 @@ export type PayoutBatchItem = {
 /**
  * `skipped`: payout setup not finished, or the card payment never completed. `failed`: Stripe refused the transfer. `refunded`: failed or skipped after the card hold; its payout, fee and VAT on the fee went back to the card through a credit note. The amount is payable again in every case.
  */
-export type status46 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
+export type status47 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
 
 export type PhoneNumberStockWatch = {
     id: string;
@@ -16446,7 +16518,7 @@ export type PlatformAnalytics = {
     isOwner?: (boolean) | null;
 };
 
-export type status47 = 'published' | 'failed';
+export type status48 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -16716,7 +16788,7 @@ export type Post = {
 /**
  * `cancelled` is set by POST /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts. `pending_approval` (set by `requiresApproval: true`) never publishes until POST /v1/posts/{postId}/review approves it.
  */
-export type status48 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status49 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
 export type visibility4 = 'public' | 'private' | 'unlisted';
 
@@ -17089,7 +17161,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status49 = 'active' | 'draft' | 'archived';
+export type status50 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -17326,7 +17398,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status50 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status51 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -17378,7 +17450,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status51 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status52 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -17465,7 +17537,7 @@ export type RcsCarrierApproval = {
 
 export type scope3 = 'carrier' | 'hub' | 'bot';
 
-export type status52 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status53 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -18061,7 +18133,7 @@ export type ScheduledEmail = {
     createdAt?: string;
 };
 
-export type status53 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
+export type status54 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
 
 export type SendEmailRequest = {
     accountId: string;
@@ -18600,7 +18672,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status54 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status55 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -19567,7 +19639,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status55 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status56 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -19657,7 +19729,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status56 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status57 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -19698,7 +19770,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status57 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status58 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -19889,7 +19961,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status58 = 'pending' | 'completed' | 'expired';
+export type status59 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -20402,7 +20474,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status59 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status60 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel5 = 'sms' | 'whatsapp';
 
@@ -20632,7 +20704,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status60 = 'success' | 'failed';
+export type status61 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -20746,7 +20818,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status61 = 'success' | 'failure';
+export type status62 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -21277,7 +21349,7 @@ export type WebhookPayloadAdReview = {
 
 export type event11 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status62 = 'approved' | 'rejected';
+export type status63 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -21853,7 +21925,7 @@ export type event17 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status63 = 'ready' | 'error';
+export type status64 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -21994,7 +22066,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event20 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status64 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status65 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -25590,7 +25662,7 @@ export type event72 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status65 = 'published' | 'failed' | 'deleted';
+export type status66 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -26156,7 +26228,7 @@ export type event84 = 'whatsapp.account.name_status_updated';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status66 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status67 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -26290,7 +26362,7 @@ export type event86 = 'whatsapp.account.status_updated';
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status67 = 'restricted' | 'active';
+export type status68 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -26506,7 +26578,7 @@ export type event89 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status68 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status69 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -26570,7 +26642,7 @@ export type event90 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status69 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status70 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -26970,7 +27042,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status70 = 'success' | 'failed' | 'pending';
+export type status71 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -76086,6 +76158,59 @@ export type CreateCommerceRefundResponse = ({
 
 export type CreateCommerceRefundError = (ErrorResponse | unknown);
 
+export type CreateCommerceOrderEditData = {
+    body: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        add?: Array<{
+            variantId: string;
+            quantity: number;
+        }>;
+        quantities?: Array<{
+            /**
+             * A line item id from the order.
+             */
+            lineItemId: string;
+            /**
+             * The new quantity; 0 removes the line.
+             */
+            quantity: number;
+            /**
+             * Put removed units back in stock.
+             */
+            restock?: boolean;
+        }>;
+        notifyCustomer?: boolean;
+        staffNote?: string;
+        /**
+         * Return the edited totals without changing the order.
+         */
+        validateOnly?: boolean;
+    };
+    headers?: {
+        /**
+         * Required unless validateOnly is true.
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Platform-native order id.
+         */
+        orderId: string;
+    };
+};
+
+export type CreateCommerceOrderEditResponse = ({
+    validateOnly?: boolean;
+    order?: CommerceOrder;
+    edit?: CommerceOrderEditPreview;
+});
+
+export type CreateCommerceOrderEditError = (ErrorResponse | unknown);
+
 export type CancelCommerceOrderData = {
     body: {
         /**
@@ -76127,6 +76252,141 @@ export type CancelCommerceOrderResponse = ({
 });
 
 export type CancelCommerceOrderError = (ErrorResponse | unknown);
+
+export type CreateCommerceDraftOrderData = {
+    body: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * The customer it is for, from the customers endpoints.
+         */
+        customerId?: string;
+        email?: string;
+        /**
+         * A product variant (variantId) or a custom item (title and price).
+         */
+        lineItems: Array<{
+            variantId?: string;
+            /**
+             * Custom item only.
+             */
+            title?: string;
+            /**
+             * Custom item only, in the store currency.
+             */
+            price?: string;
+            quantity: number;
+            /**
+             * Custom item only.
+             */
+            taxable?: boolean;
+            /**
+             * Custom item only.
+             */
+            requiresShipping?: boolean;
+        }>;
+        /**
+         * A discount on the whole draft.
+         */
+        discount?: {
+            type: 'percentage' | 'fixed';
+            /**
+             * A percentage (at most 100) or an amount in the store currency.
+             */
+            value: number;
+            title?: string;
+        };
+        shipping?: {
+            title: string;
+            price: string;
+        };
+        /**
+         * Where to ship. Without one, the customer's default address is used.
+         */
+        shippingAddress?: {
+            firstName?: string;
+            lastName?: string;
+            company?: string;
+            phone?: string;
+            line1?: string;
+            line2?: string;
+            city?: string;
+            /**
+             * State or province code, e.g. CA.
+             */
+            region?: string;
+            postalCode?: string;
+            /**
+             * ISO 3166 code, e.g. US.
+             */
+            countryCode: string;
+        };
+        note?: string;
+        tags?: Array<(string)>;
+    };
+    headers?: {
+        /**
+         * A retry with the same key returns the first draft instead of creating another.
+         */
+        'Idempotency-Key'?: string;
+    };
+};
+
+export type CreateCommerceDraftOrderResponse = ({
+    draftOrder?: CommerceDraftOrder;
+});
+
+export type CreateCommerceDraftOrderError = (ErrorResponse | unknown);
+
+export type GetCommerceDraftOrderData = {
+    path: {
+        /**
+         * Platform-native draft order id.
+         */
+        draftOrderId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceDraftOrderResponse = ({
+    draftOrder?: CommerceDraftOrder;
+});
+
+export type GetCommerceDraftOrderError = (ErrorResponse | unknown);
+
+export type SendCommerceDraftOrderInvoiceData = {
+    body: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        /**
+         * Defaults to the draft's email.
+         */
+        to?: string;
+        subject?: string;
+        customMessage?: string;
+    };
+    path: {
+        /**
+         * Platform-native draft order id.
+         */
+        draftOrderId: string;
+    };
+};
+
+export type SendCommerceDraftOrderInvoiceResponse = ({
+    draftOrder?: CommerceDraftOrder;
+});
+
+export type SendCommerceDraftOrderInvoiceError = (ErrorResponse | unknown);
 
 export type ListCommerceCustomersData = {
     query: {
