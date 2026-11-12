@@ -1892,7 +1892,7 @@ export type AdRuleAction = {
      */
     type: 'reallocate_budget';
     /**
-     * What objects are ranked by: any condition metric except `day_of_month` and `working_day_of_month`, or a result metric (`result:<key>`) on campaign rules.
+     * What objects are ranked by: any condition metric except `day_of_month`, `working_day_of_month` and the Google impression shares, or a result metric (`result:<key>`) on campaign rules.
      *
      * Objects without a value are not ranked, except one that spent with no result on a metric where lower is best (a CPA with no conversions): it ranks worst and only gives.
      */
@@ -2171,6 +2171,12 @@ export type AdRuleCondition = {
     /**
      * `ctr` is a percentage. `spend`, `cpc`, `cpm` and `cpa` are in the ad account currency. `reach` and `frequency` use the platform's de-duplicated reach, so they are accepted on Meta and TikTok only.
      *
+     * On Google campaign rules, `frequency` reads Google's own average impressions per user over the window.
+     *
+     * `search_impression_share`, `search_budget_lost_impression_share` and `search_rank_lost_impression_share` are Google's Search impression share and the shares lost to budget and to ad rank, in percent. Campaign rules on Google only.
+     *
+     * They are read live from Google, not in groups and not with `usual`. A campaign Google gives no value for (one not on Search) never matches.
+     *
      * `daily_budget` is the object's synced daily budget. `budget_used` is spend over the window as a percent of that budget for each day of the window: `today` `>=` 200 means twice the budget spent.
      *
      * Both read campaigns and ad sets with a daily budget of their own. A lifetime budget never matches.
@@ -2180,7 +2186,7 @@ export type AdRuleCondition = {
      * `result:<key>` reads one of your own results (see [Campaign results](/guides/campaign-results)), on campaign rules only: the values you sent for the window, or a formula over them and the platform's numbers. A campaign with no value for it never matches.
      *
      */
-    metric: ('spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency' | 'daily_budget' | 'budget_used' | 'day_of_month' | 'working_day_of_month' | unknown);
+    metric: ('spend' | 'impressions' | 'clicks' | 'conversions' | 'ctr' | 'cpc' | 'cpm' | 'cpa' | 'roas' | 'reach' | 'frequency' | 'daily_budget' | 'budget_used' | 'day_of_month' | 'working_day_of_month' | 'search_impression_share' | 'search_budget_lost_impression_share' | 'search_rank_lost_impression_share' | unknown);
     /**
      * Days in the ad account's own timezone. `last_7d` is the 7 full days before today; only `today` and `this_month` read the day in progress.
      *
@@ -2289,7 +2295,7 @@ export type AdRuleEvaluation = {
 };
 
 /**
- * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal`, `days_live`, `days_since_change` and `budget_level`; an ad set rule all but `days_since_change`, plus `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
+ * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal`, `days_live`, `days_since_change`, `budget_level` and `channel_type`; an ad set rule all but `days_since_change`, plus `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
  */
 export type AdRuleFilters = Array<({
     /**
@@ -2306,6 +2312,10 @@ export type AdRuleFilters = Array<({
     field: 'budget_level';
     op: 'equals';
     value: 'campaign' | 'adset';
+} | {
+    field: 'channel_type';
+    op: 'in' | 'not_in';
+    values: Array<('SEARCH' | 'DISPLAY' | 'SHOPPING' | 'HOTEL' | 'VIDEO' | 'MULTI_CHANNEL' | 'LOCAL' | 'SMART' | 'PERFORMANCE_MAX' | 'LOCAL_SERVICES' | 'TRAVEL' | 'DEMAND_GEN')>;
 } | {
     field: 'days_live';
     op: '>=' | '<';
@@ -3778,6 +3788,10 @@ export type AutomationAdFilter = {
     field: "budget_level";
     op: "equals";
     value: 'campaign' | 'adset';
+} | {
+    field: "channel_type";
+    op: 'in' | 'not_in';
+    values: Array<('SEARCH' | 'DISPLAY' | 'SHOPPING' | 'HOTEL' | 'VIDEO' | 'MULTI_CHANNEL' | 'LOCAL' | 'SMART' | 'PERFORMANCE_MAX' | 'LOCAL_SERVICES' | 'TRAVEL' | 'DEMAND_GEN')>;
 };
 
 export type field = 'name' | 'campaign_name' | 'adset_name' | 'goal';
@@ -32345,6 +32359,17 @@ export type ListPostsData = {
          *
          */
         updatedSince?: string;
+        /**
+         * `full` returns the whole post. `summary` returns only what an agent needs to read a page of posts:
+         *
+         * - Post: `_id`, `title`, `content`, `status`, `scheduledFor`, `timezone`, `tags`, `createdAt`, `updatedAt`, and `contentNotRetained` when set.
+         * - Each platform: `platform`, `status`, `accountId` (the id), `username`, `scheduledFor`, `publishedAt`, `platformPostId`, `platformPostUrl`, `errorMessage`, `errorCategory`.
+         * - Left out: the author (`userId`), `mediaItems`, `metadata`, `recycling`, and each platform's custom content, custom media and `platformSpecificData`. Null values are left out too.
+         *
+         * Works with both sources. Send either `fields` or `view=summary`: both together return 400.
+         *
+         */
+        view?: 'full' | 'summary';
     };
 };
 
@@ -46727,6 +46752,10 @@ export type ListInboxCommentsData = {
          * Sort order
          */
         sortOrder?: 'asc' | 'desc';
+        /**
+         * full returns every post as before. summary leaves out `picture` and cuts `content` to 280 characters, marking a cut caption with `contentTruncated: true`.
+         */
+        view?: 'full' | 'summary';
     };
 };
 
@@ -46744,6 +46773,10 @@ export type ListInboxCommentsResponse = ({
          * Post media thumbnail. On ad rows this is the ad creative thumbnail.
          */
         picture?: (string) | null;
+        /**
+         * Only with view=summary, and only when `content` was cut to 280 characters.
+         */
+        contentTruncated?: boolean;
         /**
          * Public URL of the post. On ad rows: the Facebook dark-post URL (facebook placement) or the IG media permalink (instagram placement); may be null when unknown.
          */
@@ -46838,6 +46871,15 @@ export type GetInboxPostCommentsData = {
          * (Reddit only) Subreddit name
          */
         subreddit?: string;
+        /**
+         * `full` returns every comment as before. `summary` is a lighter page for agents and large polls:
+         *
+         * - Each comment leaves out `from.picture`, `url`, `platform` and every flag that is false.
+         * - At most 3 nested replies per comment. A comment with more replies than it carries has `repliesHasMore: true`: fetch the rest with `commentId` (Facebook, Instagram, Reddit, TikTok) or with view=full.
+         * - `post` leaves out `thumbnailUrl` and `mediaUrl`.
+         *
+         */
+        view?: 'full' | 'summary';
     };
 };
 
@@ -46879,7 +46921,7 @@ export type GetInboxPostCommentsResponse = ({
          *
          * Fetch the rest by passing the comment id as the `commentId` query parameter to GET /v1/inbox/comments/{postId} (or, for backwards compatibility, as `postId`).
          *
-         * Absent (not false) on every other platform, including Instagram, which has no equivalent signal.
+         * Absent (not false) on every other platform, including Instagram, which has no equivalent signal, except with view=summary, where it is also true on any comment whose `replyCount` is higher than the replies it carries (nested replies are cut to 3 there).
          *
          */
         repliesHasMore?: boolean;
