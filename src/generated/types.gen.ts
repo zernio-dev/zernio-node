@@ -30948,7 +30948,14 @@ export type StartCreatorPayoutsData = {
 };
 
 export type StartCreatorPayoutsResponse = ({
+    /**
+     * Stripe-hosted onboarding page. Send the creator here; Stripe returns them to their Zernio creator page when done. Expires after a few minutes, so request it when the creator clicks.
+     */
     url: string;
+    /**
+     * Account session secret for Stripe's embedded onboarding component. Only usable on Zernio's own creator page; integrations use `url`.
+     */
+    clientSecret: string;
 });
 
 export type StartCreatorPayoutsError = (ErrorResponse);
