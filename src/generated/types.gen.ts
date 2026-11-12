@@ -72906,7 +72906,7 @@ export type CreateForwardingRuleData = {
          */
         sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web')>;
         /**
-         * Google Analytics destinations only, and required for them: the data stream's Measurement Protocol API secret, from GA4 Admin › Data streams › Measurement Protocol API secrets. Checked with one hit to Google's validation server (which cannot confirm the secret itself), stored encrypted and never returned. Change it later with `PATCH /v1/events/forwarding-rules/{ruleId}`.
+         * Google Analytics streams only: the stream's Measurement Protocol API secret (GA4 Admin › Data streams). Optional when the connection has edit access, since Zernio then creates it. Checked against Google's validation server, stored encrypted, never returned. Change it with `PATCH /v1/events/forwarding-rules/{ruleId}`.
          */
         apiSecret?: string;
     };
