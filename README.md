@@ -907,6 +907,7 @@ try {
 | `commerce.listCommerceChannels()` | List sales channels |
 | `commerce.listCommerceCollectionMetafields()` | List collection metafields |
 | `commerce.listCommerceCollections()` | List collections |
+| `commerce.listCommerceCustomers()` | List customers |
 | `commerce.listCommerceDiscounts()` | List discounts |
 | `commerce.listCommerceInventory()` | Get a product's stock |
 | `commerce.listCommerceLocations()` | List locations |
@@ -930,8 +931,10 @@ try {
 | `commerce.createCommerceProductOptions()` | Add options |
 | `commerce.createCommerceProductVariants()` | Add variants |
 | `commerce.createCommerceRedirect()` | Create a URL redirect |
+| `commerce.createCommerceRefund()` | Refund an order |
 | `commerce.getCommerceCatalogSync()` | Get a catalog sync |
 | `commerce.getCommerceCollection()` | Get a collection |
+| `commerce.getCommerceCustomer()` | Get a customer |
 | `commerce.getCommerceDiscount()` | Get a discount |
 | `commerce.getCommerceMenu()` | Get a navigation menu |
 | `commerce.getCommerceMetaobject()` | Get a metaobject |
@@ -963,6 +966,7 @@ try {
 | `commerce.addCommerceDiscountCodes()` | Add codes to a discount |
 | `commerce.addCommerceMarketingEngagement()` | Report daily engagement |
 | `commerce.addCommerceProductImages()` | Add images |
+| `commerce.cancelCommerceOrder()` | Cancel an order |
 | `commerce.changeCommerceCollectionChannels()` | Publish or unpublish a collection |
 | `commerce.changeCommerceCollectionProducts()` | Add or remove products in a collection |
 | `commerce.changeCommerceInventory()` | Set or adjust stock |

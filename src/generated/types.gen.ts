@@ -7099,7 +7099,7 @@ export type CommerceAddress = {
 /**
  * An operation a store supports. Calling an operation outside this list answers 400 platform_not_supported.
  */
-export type CommerceCapability = 'products.read' | 'products.create' | 'products.update' | 'products.status' | 'products.price' | 'products.variants' | 'products.images' | 'products.images_remove' | 'collections.read' | 'collections.write' | 'collections.metafields' | 'metafields.read' | 'metafields.write' | 'pages.read' | 'pages.write' | 'inventory.read' | 'inventory.write' | 'channels.read' | 'channels.write' | 'discounts.read' | 'discounts.write' | 'discounts.codes' | 'navigation.read' | 'navigation.write' | 'metaobjects.read' | 'metaobjects.write' | 'markets.read' | 'markets.write' | 'marketing.write' | 'orders.read';
+export type CommerceCapability = 'products.read' | 'products.create' | 'products.update' | 'products.status' | 'products.price' | 'products.variants' | 'products.images' | 'products.images_remove' | 'collections.read' | 'collections.write' | 'collections.metafields' | 'metafields.read' | 'metafields.write' | 'pages.read' | 'pages.write' | 'inventory.read' | 'inventory.write' | 'channels.read' | 'channels.write' | 'discounts.read' | 'discounts.write' | 'discounts.codes' | 'navigation.read' | 'navigation.write' | 'metaobjects.read' | 'metaobjects.write' | 'markets.read' | 'markets.write' | 'marketing.write' | 'orders.read' | 'orders.refund' | 'orders.cancel' | 'customers.read';
 
 /**
  * A store kept in sync with an ad-platform product catalog.
@@ -7179,6 +7179,23 @@ export type CommerceCollection = {
 export type platform6 = 'shopify' | 'woocommerce';
 
 export type sortOrder = 'manual' | 'best_selling' | 'alpha_asc' | 'alpha_desc' | 'price_asc' | 'price_desc' | 'created' | 'created_desc' | 'most_relevant';
+
+export type CommerceCustomer = {
+    id?: string;
+    accountId?: string;
+    platform?: 'shopify' | 'woocommerce';
+    firstName?: (string) | null;
+    lastName?: (string) | null;
+    email?: (string) | null;
+    phone?: (string) | null;
+    ordersCount?: number;
+    totalSpent?: CommerceMoney;
+    tags?: Array<(string)>;
+    note?: (string) | null;
+    createdAt?: string;
+    updatedAt?: string;
+    defaultAddress?: (CommerceAddress | null);
+};
 
 export type CommerceDiscount = {
     id?: string;
@@ -7473,20 +7490,7 @@ export type CommerceOrder = {
      * Order tax by rate, line items and shipping together.
      */
     taxLines?: Array<CommerceTaxLine>;
-    refunds?: Array<{
-        id?: string;
-        createdAt?: (string) | null;
-        note?: (string) | null;
-        amount?: CommerceMoney;
-        lineItems?: Array<{
-            lineItemId?: string;
-            quantity?: number;
-            /**
-             * Before tax.
-             */
-            amount?: CommerceMoney;
-        }>;
-    }>;
+    refunds?: Array<CommerceOrderRefund>;
     fulfillments?: Array<{
         carrierName?: (string) | null;
         trackingNumber?: (string) | null;
@@ -7537,6 +7541,21 @@ export type CommerceOrderChargeLine = {
     amount?: CommerceMoney;
     discountTotal?: CommerceMoney;
     taxLines?: Array<CommerceTaxLine>;
+};
+
+export type CommerceOrderRefund = {
+    id?: string;
+    createdAt?: (string) | null;
+    note?: (string) | null;
+    amount?: CommerceMoney;
+    lineItems?: Array<{
+        lineItemId?: string;
+        quantity?: number;
+        /**
+         * Before tax.
+         */
+        amount?: CommerceMoney;
+    }>;
 };
 
 /**
@@ -7665,6 +7684,70 @@ export type CommerceRedirect = {
     id?: string;
     path?: string;
     target?: string;
+};
+
+/**
+ * What a refund would return, computed by the platform. Amounts are in the currency the buyer paid in, which refunds are made in.
+ */
+export type CommerceRefundPreview = {
+    amount?: CommerceMoney;
+    maximumRefundable?: CommerceMoney;
+    subtotal?: CommerceMoney;
+    tax?: CommerceMoney;
+    shipping?: CommerceMoney;
+    lineItems?: Array<{
+        lineItemId?: string;
+        quantity?: number;
+        restock?: 'none' | 'restock';
+        amount?: CommerceMoney;
+    }>;
+    /**
+     * The payments the money goes back to.
+     */
+    transactions?: Array<{
+        gateway?: (string) | null;
+        amount?: CommerceMoney;
+    }>;
+};
+
+/**
+ * What to refund. Pass at least one of lineItems, shipping or amount.
+ */
+export type CommerceRefundRequest = {
+    /**
+     * Connected store SocialAccount id.
+     */
+    accountId: string;
+    lineItems?: Array<{
+        /**
+         * A line item id from the order (`lineItems[].id`).
+         */
+        lineItemId: string;
+        quantity: number;
+        /**
+         * Put the units back in stock. Unshipped units are cancelled and shipped ones count as returned.
+         */
+        restock?: boolean;
+    }>;
+    /**
+     * Refund the shipping: `{ "full": true }` for what is left of it, or `{ "amount": "5.00" }` for part of it.
+     */
+    shipping?: ({
+    /**
+     * Must be true.
+     */
+    full: boolean;
+} | {
+    amount: string;
+});
+    /**
+     * Refund this much money instead of what the lines and shipping are worth, for a goodwill refund or a partial one. Taken from the order's payments in order, up to what each can still refund.
+     */
+    amount?: string;
+    /**
+     * The currency your amounts are in. Refused (400) unless it is the one the buyer paid in, which every refund amount uses.
+     */
+    currency?: string;
 };
 
 export type CommerceStore = {
@@ -75864,6 +75947,14 @@ export type ListCommerceOrdersData = {
         createdAfter?: string;
         createdBefore?: string;
         cursor?: string;
+        /**
+         * Only this customer's orders (`customer.id` on an order, or `id` from the customers endpoints).
+         */
+        customerId?: string;
+        /**
+         * Only orders placed with this email. Shopify only; WooCommerce answers 400 platform_not_supported.
+         */
+        email?: string;
         limit?: number;
         /**
          * Only orders changed after this time, oldest change first.
@@ -75899,6 +75990,132 @@ export type GetCommerceOrderResponse = ({
 });
 
 export type GetCommerceOrderError = (ErrorResponse | unknown);
+
+export type CreateCommerceRefundData = {
+    body: (CommerceRefundRequest & {
+    /**
+     * Kept on the refund, visible to staff.
+     */
+    note?: string;
+    /**
+     * Email the buyer about the refund.
+     */
+    notifyCustomer?: boolean;
+    /**
+     * Return the refund the platform would make, without refunding anything.
+     */
+    validateOnly?: boolean;
+});
+    headers?: {
+        /**
+         * Required unless validateOnly is true. A retry with the same key returns the first response and never refunds twice.
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        /**
+         * Platform-native order id.
+         */
+        orderId: string;
+    };
+};
+
+export type CreateCommerceRefundResponse = ({
+    validateOnly?: boolean;
+    refund?: CommerceRefundPreview;
+} | {
+    refund?: CommerceOrderRefund;
+    order?: CommerceOrder;
+});
+
+export type CreateCommerceRefundError = (ErrorResponse | unknown);
+
+export type CancelCommerceOrderData = {
+    body: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        reason: 'customer' | 'declined' | 'fraud' | 'inventory' | 'staff' | 'other';
+        /**
+         * Refund the payments to the original methods. Authorized payments are voided either way.
+         */
+        refund?: boolean;
+        restock?: boolean;
+        notifyCustomer?: boolean;
+        /**
+         * Visible to staff only.
+         */
+        staffNote?: string;
+    };
+    path: {
+        /**
+         * Platform-native order id.
+         */
+        orderId: string;
+    };
+};
+
+export type CancelCommerceOrderResponse = ({
+    order?: CommerceOrder;
+    /**
+     * True: the cancel finished.
+     */
+    cancelled?: boolean;
+} | {
+    order?: CommerceOrder;
+    /**
+     * False: the platform is still cancelling.
+     */
+    cancelled?: boolean;
+});
+
+export type CancelCommerceOrderError = (ErrorResponse | unknown);
+
+export type ListCommerceCustomersData = {
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        cursor?: string;
+        email?: string;
+        limit?: number;
+        phone?: string;
+        /**
+         * Free text matched against name, email and phone.
+         */
+        search?: string;
+    };
+};
+
+export type ListCommerceCustomersResponse = ({
+    customers?: Array<CommerceCustomer>;
+    nextCursor?: (string) | null;
+});
+
+export type ListCommerceCustomersError = (ErrorResponse | unknown);
+
+export type GetCommerceCustomerData = {
+    path: {
+        /**
+         * Platform-native customer id.
+         */
+        customerId: string;
+    };
+    query: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+    };
+};
+
+export type GetCommerceCustomerResponse = ({
+    customer?: CommerceCustomer;
+});
+
+export type GetCommerceCustomerError = (ErrorResponse | unknown);
 
 export type ListCommerceProductsData = {
     query: {
