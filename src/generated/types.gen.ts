@@ -11430,7 +11430,10 @@ export type EventAutomationCheck = {
     id: string;
     automationId: string;
     checkedAt: string;
-    outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
+    /**
+     * `paused`: the team used its free automation runs with no payment method on file, so the check did not run. `error` says why.
+     */
+    outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed' | 'paused';
     evaluated: number;
     event: (string) | null;
     eventId: (string) | null;
@@ -11455,7 +11458,10 @@ export type EventAutomationCheck = {
     error: (string) | null;
 };
 
-export type outcome2 = 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
+/**
+ * `paused`: the team used its free automation runs with no payment method on file, so the check did not run. `error` says why.
+ */
+export type outcome2 = 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed' | 'paused';
 
 /**
  * Runs when something happens in Zernio, such as a post failing, and notifies. Unknown fields are refused.
@@ -18092,7 +18098,10 @@ export type ScheduledAutomationCheck = {
     id: string;
     automationId: string;
     checkedAt: string;
-    outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
+    /**
+     * `paused`: the team used its free automation runs with no payment method on file, so the check did not run. `error` says why.
+     */
+    outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed' | 'paused';
     /**
      * Posts judged.
      */
@@ -22197,7 +22206,10 @@ export type WebhookPayloadAutomationCheckCompleted = {
          * The scheduled time the check ran for.
          */
         slot: string;
-        outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed';
+        /**
+         * `paused`: the team used its free automation runs with no payment method on file, so the check did not run. `error` says why.
+         */
+        outcome: 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed' | 'paused';
         /**
          * How many objects the check read.
          */
@@ -57315,7 +57327,7 @@ export type TriggerApiCallWorkflowResponse = ({
     executionId: string;
 });
 
-export type TriggerApiCallWorkflowError = (ErrorResponse | {
+export type TriggerApiCallWorkflowError = (ErrorResponse | unknown | {
     error?: string;
 });
 
