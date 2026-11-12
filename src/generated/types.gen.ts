@@ -34777,6 +34777,7 @@ export type GetConnectUrlData = {
          * **Success params** are appended with the URL API, so an existing query string is preserved:
          *
          * - Standard mode: connected={platform}&profileId=X&accountId=Y&username=Z.
+         * - X on prepaid-balance billing at a $0 balance: `billingNotice=x_balance_required` is added. The account is connected, but X posts wait or are refused (402 `insufficient_balance`) until the balance is funded.
          * - Headless mode: OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
          *
          * **Failure params:** the browser goes to the same redirect_url with `error` and `platform` appended (always present). `error_message`, `is_user_fixable`, `reason`, `dashboard_url`, `missing_scopes`, `error_reason` and the `platform_error*` params are conditional: treat them as optional.

@@ -1889,6 +1889,8 @@ export const listPosts = <ThrowOnError extends boolean = false>(options?: Option
  * Create post
  * Create a post, and optionally publish it in the same request. A post published immediately (`publishNow: true`) comes back with `platformPostUrl` in the response.
  *
+ * On prepaid-balance billing, X posts are paid from the balance ($0.015 per post, $0.20 with a link). At a $0 balance, publishing to X now returns 402 `insufficient_balance` with `funding_url`, and a post saved for later waits for funds (202).
+ *
  * ## Optional content
  *
  * `content` is optional in four cases:
@@ -2879,6 +2881,8 @@ export const createPlatformInvite = <ThrowOnError extends boolean = false>(optio
  * Get OAuth connect URL
  * Initiate an OAuth connection flow. Returns an authUrl to redirect the user to.
  *
+ * **X on prepaid-balance billing:** connecting is free, but every X post is paid from the balance ($0.015, or $0.20 with a link). At a $0 balance, POST /v1/posts to X returns 402 `insufficient_balance` (or waits for funds when scheduled), so fund the balance before the first post.
+ *
  * ### Modes
  *
  * - Standard flow: Zernio hosts the selection UI, then redirects to your redirect_url.
@@ -2897,10 +2901,6 @@ export const createPlatformInvite = <ThrowOnError extends boolean = false>(optio
  * Every connection now goes through the TikTok for Business app.
  *
  * An authorization that leaves out a permission the connected account needs changes nothing at all and comes back as `missing_tiktok_permissions`. Connect again and accept every permission on TikTok's screen.
- *
- * ### X (Twitter)
- *
- * On prepaid-balance billing, connecting X is free, but every X API call is paid from the balance (a post is $0.015, or $0.20 with a link). At a $0 balance, POST /v1/posts to X returns 402 `insufficient_balance` with `funding_url`: fund the balance before the first post.
  *
  */
 export const getConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetConnectUrlData, ThrowOnError>) => {
