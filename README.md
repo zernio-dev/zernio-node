@@ -344,6 +344,7 @@ try {
 |--------|-------------|
 | `connect.listFacebookPages()` | List Facebook pages |
 | `connect.listGoogleAnalyticsProperties()` | List Google Analytics properties for a pending connect |
+| `connect.listGoogleBusinessCategories()` | List Google Business Profile categories |
 | `connect.listGoogleBusinessLocations()` | List Google Business Profile locations |
 | `connect.listInstagramPages()` | List Pages with a linked Instagram account |
 | `connect.listLinkedInOrganizations()` | List LinkedIn orgs |
@@ -354,6 +355,7 @@ try {
 | `connect.listSlackChannels()` | List Slack channels for the channel picker |
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
 | `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
+| `connect.createGoogleBusinessLocation()` | Create Google Business Profile location |
 | `connect.createGoogleOrgConnection()` | Start a Google Workspace organization connection |
 | `connect.createMicrosoftOrgConnection()` | Start a Microsoft 365 organization connection |
 | `connect.createOAuthApp()` | Add an OAuth app |
@@ -420,6 +422,7 @@ try {
 | `connect.handleOAuthCallback()` | Complete OAuth callback |
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
 | `connect.resyncPageWebhookSubscription()` | Re-subscribe an account to Zernio's webhooks |
+| `connect.searchGoogleBusinessLocations()` | Search existing Google listings |
 | `connect.selectFacebookPage()` | Select Facebook page |
 | `connect.selectGoogleAnalyticsProperty()` | Connect the chosen Google Analytics property |
 | `connect.selectGoogleBusinessLocation()` | Select Google Business Profile location |

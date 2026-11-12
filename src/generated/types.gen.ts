@@ -34500,6 +34500,15 @@ export type GetConnectUrlData = {
     };
     query: {
         /**
+         * Google Business only (`platform=googlebusiness`); any other platform answers 400. Lets a Google account with no Business Profile location finish the connect instead of ending with `error=no_google_locations`.
+         *
+         * The selection step (`step=select_location`, or the hosted page) then lists no locations. Call `POST /v1/connect/googlebusiness/select-location` without `locationId` or `locations` to connect the account with no location (`needsLocation: true`).
+         *
+         * Without it, a sign-in that lists no location still ends with `no_google_locations`. The marker travels in the redirect_url we hand you, so pass that URL back unchanged in headless mode.
+         *
+         */
+        allowNoLocation?: boolean;
+        /**
          * Your product name, for the two branded pages. Trimmed; 1 to 60 characters.
          *
          * - With `signup=hosted` (WhatsApp): replaces Zernio in the page title ("Connect your WhatsApp number to <brandName>").
@@ -36553,7 +36562,7 @@ export type SelectGoogleBusinessLocationData = {
          */
         profileId: string;
         /**
-         * The Google Business Profile location ID selected by the user. Send this or locations, not both.
+         * The Google Business Profile location ID selected by the user. Send this or locations, not both. Omit both to connect with no location (`needsLocation: true`), allowed only when the connect used allowNoLocation=true, the sign-in listed no locations and it is not a reconnect.
          */
         locationId?: string;
         /**
@@ -36574,6 +36583,10 @@ export type SelectGoogleBusinessLocationData = {
          *
          */
         accountId?: string;
+        /**
+         * Only when connecting with no location. The Google Business Profile Account resource name ("accounts/123") to attach. Defaults to the sign-in's personal account, else its first account. Must be one of the accounts the sign-in lists, otherwise 400.
+         */
+        googleAccountId?: string;
         /**
          * Token from the OAuth callback redirect (pendingDataToken query param). Tokens and profile data are retrieved server-side from this token.
          */
@@ -36601,13 +36614,17 @@ export type SelectGoogleBusinessLocationResponse = ({
         displayName?: string;
         isActive?: boolean;
         /**
-         * Human-readable location display name, NOT a resource name. Do not use it to build API paths.
+         * Human-readable location display name, NOT a resource name. Do not use it to build API paths. Null when connected with no location.
          */
-        selectedLocationName?: string;
+        selectedLocationName?: (string) | null;
         /**
-         * Bare Google Business Profile location id. Combine with the Google Business Profile account id as accounts/{gbpAccountId}/locations/{selectedLocationId} to form the location resource names that gmb-reviews/batch expects in locationNames.
+         * Bare Google Business Profile location id. Combine with the Google Business Profile account id as accounts/{gbpAccountId}/locations/{selectedLocationId} to form the location resource names that gmb-reviews/batch expects in locationNames. Null when connected with no location.
          */
-        selectedLocationId?: string;
+        selectedLocationId?: (string) | null;
+        /**
+         * Present and true when the account was connected with no location (allowNoLocation=true). Create one with POST /v1/accounts/{accountId}/gmb-locations before using the location endpoints.
+         */
+        needsLocation?: boolean;
     };
     /**
      * locations with two or more distinct entries only. The connected accounts, same shape as `account`. The redirect_url then carries `accountIds` (comma-separated) and `accountId` of the first.
@@ -37512,6 +37529,56 @@ export type GetGmbAttributeMetadataResponse = ({
 });
 
 export type GetGmbAttributeMetadataError = (ErrorResponse);
+
+export type ListGoogleBusinessCategoriesData = {
+    path: {
+        /**
+         * The Zernio account ID (from /v1/accounts)
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * BCP-47 language code the category names are returned in (e.g. "en", "es").
+         */
+        languageCode: string;
+        /**
+         * Pagination token from a previous response's nextPageToken field.
+         */
+        pageToken?: string;
+        /**
+         * Prefix of the localized category display name.
+         */
+        query?: string;
+        /**
+         * CLDR region code the categories are relevant for (e.g. "US", "ES").
+         */
+        regionCode: string;
+    };
+};
+
+export type ListGoogleBusinessCategoriesResponse = ({
+    success?: boolean;
+    accountId?: string;
+    categories?: Array<{
+        /**
+         * Category resource name, e.g. "categories/gcid:afghani_restaurant".
+         */
+        name?: string;
+        /**
+         * Category name localized to languageCode.
+         */
+        displayName?: string;
+    }>;
+    /**
+     * Present when more categories are available.
+     */
+    nextPageToken?: string;
+});
+
+export type ListGoogleBusinessCategoriesError = (ErrorResponse | {
+    error?: string;
+});
 
 export type GetGoogleBusinessAttributesData = {
     path: {
@@ -40709,6 +40776,181 @@ export type UpdateGmbLocationResponse = ({
 });
 
 export type UpdateGmbLocationError = (unknown | ErrorResponse);
+
+export type CreateGoogleBusinessLocationData = {
+    body: {
+        /**
+         * Business name as shown on Google.
+         */
+        title: string;
+        /**
+         * BCP-47 language of the listing (e.g. "es"). Immutable after creation.
+         */
+        languageCode: string;
+        /**
+         * Category name from GET gmb-categories (e.g. "categories/gcid:cafe"). A bare "gcid:cafe" is also accepted.
+         */
+        primaryCategory: string;
+        /**
+         * Further category names, same format as primaryCategory.
+         */
+        additionalCategories?: Array<(string)>;
+        /**
+         * Physical address of the business. Required unless serviceArea is provided.
+         */
+        storefrontAddress?: {
+            /**
+             * CLDR region code (e.g. "ES").
+             */
+            regionCode: string;
+            languageCode?: string;
+            postalCode?: string;
+            administrativeArea?: string;
+            locality?: string;
+            addressLines: Array<(string)>;
+        };
+        /**
+         * Areas the business serves. Required unless storefrontAddress is provided.
+         */
+        serviceArea?: {
+            businessType: 'CUSTOMER_LOCATION_ONLY' | 'CUSTOMER_AND_BUSINESS_LOCATION';
+            /**
+             * Required when businessType is CUSTOMER_LOCATION_ONLY.
+             */
+            regionCode?: string;
+            places?: {
+                placeInfos?: Array<{
+                    placeName: string;
+                    placeId: string;
+                }>;
+            };
+        };
+        /**
+         * Primary phone number. Required when storefrontAddress is absent and websiteUri is not set.
+         */
+        phone?: string;
+        /**
+         * Website URL. Required when storefrontAddress is absent and phone is not set.
+         */
+        websiteUri?: string;
+        /**
+         * Business description (Google profile.description).
+         */
+        description?: string;
+        /**
+         * Google `regularHours` object (periods with openDay, openTime, closeDay, closeTime).
+         */
+        regularHours?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Validate with Google without creating the listing or attaching anything.
+         */
+        validateOnly?: boolean;
+    };
+    headers?: {
+        /**
+         * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
+         *
+         * - Same key + same body: replays the original response.
+         * - Same key + different body: 422.
+         * - Key still processing: 409.
+         *
+         * A request cut off mid-handler (e.g. by a function timeout) can leave its key in progress, answering 409 until the key expires after 24 hours.
+         *
+         * On the Ads create, boost and duplicate endpoints, a same-body retry runs again once the cut-off request started more than 15 minutes ago.
+         *
+         */
+        'Idempotency-Key'?: string;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type CreateGoogleBusinessLocationResponse = ({
+    success?: boolean;
+    accountId?: string;
+    /**
+     * Present and true when validateOnly was requested.
+     */
+    validateOnly?: boolean;
+    /**
+     * The location as Google returns it. `id` is present on a real create.
+     */
+    location?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Verification state of the new listing; null if Google could not return it.
+     */
+    voiceOfMerchantState?: {
+        [key: string]: unknown;
+    } | null;
+});
+
+export type CreateGoogleBusinessLocationError = (ErrorResponse | {
+    error?: string;
+    code?: 'insufficient_permissions' | 'unclassified_resource';
+    /**
+     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
+     */
+    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
+} | unknown);
+
+export type SearchGoogleBusinessLocationsData = {
+    body: {
+        /**
+         * Free-text search (business name and address). Mutually exclusive with location.
+         */
+        query?: string;
+        /**
+         * Partial Google Business Information location (e.g. title and storefrontAddress). Mutually exclusive with query.
+         */
+        location?: {
+            title: string;
+            storefrontAddress?: {
+                [key: string]: unknown;
+            };
+            [key: string]: unknown | string;
+        };
+        /**
+         * Maximum matches to return. Google defaults to 3.
+         */
+        pageSize?: number;
+    };
+    path: {
+        /**
+         * The Zernio account ID (from /v1/accounts)
+         */
+        accountId: string;
+    };
+};
+
+export type SearchGoogleBusinessLocationsResponse = ({
+    success?: boolean;
+    accountId?: string;
+    googleLocations?: Array<{
+        /**
+         * Google location resource name, e.g. "googleLocations/ChIJ...".
+         */
+        name?: string;
+        /**
+         * The matched location as Google returns it (title, storefrontAddress, categories, ...).
+         */
+        location?: {
+            [key: string]: unknown;
+        };
+        /**
+         * Present only when the listing is already claimed. Link to request admin rights.
+         */
+        requestAdminRightsUri?: string;
+    }>;
+});
+
+export type SearchGoogleBusinessLocationsError = (ErrorResponse | unknown | {
+    error?: string;
+});
 
 export type AssignGoogleBusinessLocationData = {
     body: {

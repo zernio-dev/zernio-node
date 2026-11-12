@@ -529,6 +529,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.selectInstagramAccount).toBeTypeOf('function');
     });
 
+    it('should have listGoogleBusinessCategories method', () => {
+      expect(client.connect.listGoogleBusinessCategories).toBeDefined();
+      expect(client.connect.listGoogleBusinessCategories).toBeTypeOf('function');
+    });
+
     it('should have getConnectHandoff method', () => {
       expect(client.connect.getConnectHandoff).toBeDefined();
       expect(client.connect.getConnectHandoff).toBeTypeOf('function');
@@ -717,6 +722,16 @@ describe('Endpoint Methods', () => {
     it('should have updateGmbLocation method', () => {
       expect(client.connect.updateGmbLocation).toBeDefined();
       expect(client.connect.updateGmbLocation).toBeTypeOf('function');
+    });
+
+    it('should have createGoogleBusinessLocation method', () => {
+      expect(client.connect.createGoogleBusinessLocation).toBeDefined();
+      expect(client.connect.createGoogleBusinessLocation).toBeTypeOf('function');
+    });
+
+    it('should have searchGoogleBusinessLocations method', () => {
+      expect(client.connect.searchGoogleBusinessLocations).toBeDefined();
+      expect(client.connect.searchGoogleBusinessLocations).toBeTypeOf('function');
     });
 
     it('should have assignGoogleBusinessLocation method', () => {
