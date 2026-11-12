@@ -73051,6 +73051,20 @@ export type GetEventsOverviewResponse = ({
          */
         serverPlatforms?: Array<(string)>;
     } | null;
+    /**
+     * Each tracking site of the profile with its activity. Hit counts are approximate distinct counts without bots.
+     */
+    sites?: Array<{
+        siteId?: string;
+        /**
+         * Hits today.
+         */
+        hitsToday?: number;
+        /**
+         * The last day in the past 7 with a hit. `null` when none.
+         */
+        lastActiveOn?: (string) | null;
+    }>;
 });
 
 export type GetEventsOverviewError = (ErrorResponse | {
