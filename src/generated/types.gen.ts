@@ -58050,6 +58050,18 @@ export type ListAdsData = {
          * End of metrics date range (YYYY-MM-DD). Defaults to today. Max 730-day range.
          */
         toDate?: string;
+        /**
+         * `full` (default) returns every field. `summary` is about 80% smaller per ad and keeps only:
+         *
+         * - `_id`, `name`, `platform`, `status`, `platformStatus`, `servingStatuses` (left out when empty), `configuredStatus`, `reviewStatus`, `rejectionReason`, `goal`.
+         * - The platform ids, `accountId`, `profileId`, `campaignName`, `adSetName`, `budget`, `currency`, `isExternal`, `creativeType`, `platformCreatedAt`, `createdAt`.
+         * - `postId` as the post id, not the expanded post.
+         * - `creative` with only `headline`, `body` (cut to 200 characters), `linkUrl`, `callToAction` and `effectiveObjectStoryId`.
+         * - `metrics` without `costPerAction` and without any metric that is 0: an absent metric means 0.
+         *
+         * Read one ad with `platformAdId` and `view=full` for the rest.
+         */
+        view?: 'full' | 'summary';
     };
 };
 
@@ -61008,6 +61020,10 @@ export type ListAdSetsData = {
          * Filter by the ad set's stored `status`, the value each row returns. A live read does not change it. Rows whose `status` is null match no filter.
          */
         status?: AdStatus;
+        /**
+         * `full` returns every field. `summary` leaves `targeting` out of each ad set, which is most of a row's size; read one ad set's targeting with `adSetId` and `view=full`.
+         */
+        view?: 'full' | 'summary';
     };
 };
 
@@ -61917,6 +61933,14 @@ export type GetAdTreeData = {
          * - `ad`: on every ad in `ads[]` as well. Heaviest (a long range × up to 100 ads per ad set); scope with `campaignId` to keep responses small.
          */
         dailyLevel?: 'campaign' | 'adset' | 'ad';
+        /**
+         * How deep the tree goes. Metrics always roll up over every ad, whatever the depth.
+         *
+         * - `ad` (default): campaigns, their ad sets and each ad set's ads.
+         * - `adset`: campaigns and ad sets; every `ads[]` is empty and `adCount` still counts the ads.
+         * - `campaign`: campaigns only; every `adSets[]` is empty and `adSetCount` / `adCount` still count them.
+         */
+        depth?: 'campaign' | 'adset' | 'ad';
         /**
          * Start of the METRICS date range (YYYY-MM-DD). On its own it affects only the spend/impression numbers overlaid on each node, not which campaigns are returned. Pass `hasDelivery` or `minSpend` to also filter the campaign set to this window. Defaults to 90 days ago.
          */
