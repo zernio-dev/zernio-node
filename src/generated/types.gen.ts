@@ -6464,7 +6464,7 @@ export type CampaignResultMetric = {
      */
     formula: (string) | null;
     /**
-     * One of the formulas every team has (`cac_percent`, `cost_per_sale`, `cost_per_qualified_lead`, `lead_to_sale`). Setting the same key replaces it for your team.
+     * One of the formulas every team has (`cac_percent`, `cost_per_sale`, `cost_per_qualified_lead`, `lead_to_sale`, `qualified_rate`). Setting the same key replaces it for your team.
      */
     builtIn: boolean;
 };
