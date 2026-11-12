@@ -72424,6 +72424,10 @@ export type ListEventsData = {
          */
         cursor?: string;
         /**
+         * Only events whose latest send to a destination (of `platform`, when given) was accepted (`sent`) or was not (`failed`: failed or still retrying).
+         */
+        deliveryStatus?: 'sent' | 'failed';
+        /**
          * Only events with this name, such as `Purchase`.
          */
         eventName?: string;
@@ -72432,6 +72436,10 @@ export type ListEventsData = {
          */
         from?: string;
         limit?: number;
+        /**
+         * Only events sent to this ad platform, such as `metaads` or `googleads`.
+         */
+        platform?: string;
         profileId: string;
         /**
          * Only events from this source, such as `stripe` for the payments of a connected Stripe account.
