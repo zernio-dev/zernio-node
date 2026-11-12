@@ -2898,6 +2898,10 @@ export const createPlatformInvite = <ThrowOnError extends boolean = false>(optio
  *
  * An authorization that leaves out a permission the connected account needs changes nothing at all and comes back as `missing_tiktok_permissions`. Connect again and accept every permission on TikTok's screen.
  *
+ * ### X (Twitter)
+ *
+ * On prepaid-balance billing, connecting X is free, but every X API call is paid from the balance (a post is $0.015, or $0.20 with a link). At a $0 balance, POST /v1/posts to X returns 402 `insufficient_balance` with `funding_url`: fund the balance before the first post.
+ *
  */
 export const getConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetConnectUrlData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetConnectUrlResponse, GetConnectUrlError, ThrowOnError>({
