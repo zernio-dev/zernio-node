@@ -25483,10 +25483,10 @@ export type WebhookPayloadNotificationSent = {
     event: 'notification.sent';
     notification: {
         /**
-         * The email notification preference this notification belongs to.
+         * The email notification preference this notification belongs to. securityAlerts has no preference: it is always sent.
          */
-        category: 'postFailures' | 'accountIssues';
-        type: 'post_failed' | 'account_disconnected';
+        category: 'postFailures' | 'accountIssues' | 'securityAlerts';
+        type: 'post_failed' | 'account_disconnected' | 'api_key_handed_over';
         /**
          * The email subject.
          */
@@ -25522,6 +25522,20 @@ export type WebhookPayloadNotificationSent = {
                 username: string;
                 profileId: string;
             };
+            apiKey?: {
+                /**
+                 * The handed-over API key id.
+                 */
+                id: string;
+                /**
+                 * The key prefix and suffix, never the secret.
+                 */
+                keyPreview: (string) | null;
+                /**
+                 * When the handed-over key stops working.
+                 */
+                expiresAt: (string) | null;
+            };
         };
         /**
          * Why the account was disconnected. Only on account_disconnected.
@@ -25552,11 +25566,11 @@ export type WebhookPayloadNotificationSent = {
 export type event70 = 'notification.sent';
 
 /**
- * The email notification preference this notification belongs to.
+ * The email notification preference this notification belongs to. securityAlerts has no preference: it is always sent.
  */
-export type category3 = 'postFailures' | 'accountIssues';
+export type category3 = 'postFailures' | 'accountIssues' | 'securityAlerts';
 
-export type type35 = 'post_failed' | 'account_disconnected';
+export type type35 = 'post_failed' | 'account_disconnected' | 'api_key_handed_over';
 
 /**
  * Webhook payload for phone_number.stock_available events
