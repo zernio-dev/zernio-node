@@ -8291,6 +8291,18 @@ export type ConversionEvent = {
              * Reddit Pixel browser id (the `_rdt_uuid` first-party cookie). Sent to Reddit as `user.uuid`, not hashed.
              */
             rdt_uuid?: string;
+            /**
+             * Axon (AppLovin) click id (the `aleid` URL param Axon adds to ad clicks, kept by its pixel in the `_axeid` cookie). Sent to Axon as `user_data.aleid`, not hashed.
+             */
+            aleid?: string;
+            /**
+             * Axon (AppLovin) attribution token (the `alart` URL param, `_axart` cookie). Sent to Axon as `user_data.alart`, not hashed.
+             */
+            alart?: string;
+            /**
+             * Axon Pixel browser id (the `_axwrt` cookie). Sent to Axon as `user_data.axwrt`, not hashed.
+             */
+            axwrt?: string;
         };
     };
     /**
@@ -18196,7 +18208,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -18342,7 +18354,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform16 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat';
+export type platform16 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -19292,7 +19304,7 @@ export type TrackingTag = {
      */
     events?: Array<TrackingTagEvent>;
     name: string;
-    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     /**
      * Platform-native flavor of the tag (Meta: `pixel`).
      */
@@ -19347,7 +19359,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform19 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+export type platform19 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -33224,7 +33236,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'hubspot' | 'webflow' | 'googleanalytics' | 'line' | 'wechat';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'hubspot' | 'webflow' | 'googleanalytics' | 'line' | 'wechat';
         /**
          * Filter by profile ID
          */
@@ -74907,7 +74919,7 @@ export type ListTrackingTagsData = {
 };
 
 export type ListTrackingTagsResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     tags?: Array<TrackingTag>;
 });
 
@@ -74941,7 +74953,7 @@ export type CreateTrackingTagData = {
 };
 
 export type CreateTrackingTagResponse = ({
-    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     tag?: TrackingTag;
 });
 
@@ -74964,7 +74976,7 @@ export type GetTrackingTagData = {
 };
 
 export type GetTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     tag?: TrackingTag;
 });
 
@@ -75010,7 +75022,7 @@ export type UpdateTrackingTagData = {
 };
 
 export type UpdateTrackingTagResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     tag?: TrackingTag;
 });
 
@@ -75105,7 +75117,7 @@ export type InstallTrackingTagOnStoreData = {
 };
 
 export type InstallTrackingTagOnStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     install?: (StorePixelInstall & {
     /**
      * Shopify, Wix and Webflow only: the pixel this install replaced on the store, if any.
@@ -75158,7 +75170,7 @@ export type GetTrackingTagStoreInstallData = {
 };
 
 export type GetTrackingTagStoreInstallResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only.
@@ -75206,7 +75218,7 @@ export type RemoveTrackingTagFromStoreData = {
 };
 
 export type RemoveTrackingTagFromStoreResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     install?: (StorePixelInstall & {
     /**
      * WordPress only: number of Zernio widgets deleted.
@@ -75425,7 +75437,7 @@ export type GetTrackingTagStatsData = {
 };
 
 export type GetTrackingTagStatsResponse = ({
-    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads';
+    platform?: 'metaads' | 'tiktokads' | 'googleads' | 'xads' | 'openaiads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
     stats?: {
         aggregation?: string;
         startTime?: number;
