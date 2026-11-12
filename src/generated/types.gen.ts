@@ -72452,6 +72452,10 @@ export type GetEventsOverviewResponse = ({
          */
         destinationName?: string;
         /**
+         * The destination (pixel, dataset or conversion action) id, the same as the forwarding rule's destinationId.
+         */
+        destinationId?: string;
+        /**
          * Events the platform accepted today.
          */
         sentToday?: number;
