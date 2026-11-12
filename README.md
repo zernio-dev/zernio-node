@@ -1042,6 +1042,7 @@ try {
 | `conversions.updateConversionAction()` | Update a conversion action's settings |
 | `conversions.updateConversionDestination()` | Update a conversion destination |
 | `conversions.updateCustomConversionGoal()` | Update a custom conversion goal |
+| `conversions.updateForwardingRule()` | Change a forwarding rule's API secret |
 | `conversions.deleteAdConversionDestination()` | Delete a conversion destination |
 | `conversions.deleteConversionDestination()` | Delete a conversion destination |
 | `conversions.deleteEventDestination()` | Remove an event destination |

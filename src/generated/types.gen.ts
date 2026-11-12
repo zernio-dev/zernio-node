@@ -12115,6 +12115,10 @@ export type ForwardingRule = {
      * Event sources forwarded to this destination; null forwards events from every source.
      */
     sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web')> | null;
+    /**
+     * Only when an `apiSecret` was saved by this request. Google Analytics never confirms a Measurement Protocol API secret, so it is `false` there: the first events in GA4 Realtime prove the secret is right.
+     */
+    apiSecretVerified?: boolean;
     createdAt?: string;
 };
 
@@ -72709,7 +72713,7 @@ export type CreateForwardingRuleData = {
          */
         accountId: string;
         /**
-         * The platform destination: a pixel, a conversion action or a conversion rule.
+         * The platform destination: a pixel, a conversion action, a conversion rule, or a GA4 web stream measurement id (`G-…`).
          */
         destinationId: string;
         eventNames?: Array<(string)>;
@@ -72717,6 +72721,10 @@ export type CreateForwardingRuleData = {
          * Forward only events from these sources, such as only `web` for a tracked website. Leave it out to forward events from every source.
          */
         sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web')>;
+        /**
+         * Google Analytics destinations only, and required for them: the data stream's Measurement Protocol API secret, from GA4 Admin › Data streams › Measurement Protocol API secrets. Checked with one hit to Google's validation server (which cannot confirm the secret itself), stored encrypted and never returned. Change it later with `PATCH /v1/events/forwarding-rules/{ruleId}`.
+         */
+        apiSecret?: string;
     };
 };
 
@@ -72725,6 +72733,26 @@ export type CreateForwardingRuleResponse = ({
 });
 
 export type CreateForwardingRuleError = (ErrorResponse | {
+    error?: string;
+});
+
+export type UpdateForwardingRuleData = {
+    body: {
+        apiSecret: string;
+    };
+    path: {
+        /**
+         * The rule `id`.
+         */
+        ruleId: string;
+    };
+};
+
+export type UpdateForwardingRuleResponse = ({
+    forwardingRule?: ForwardingRule;
+});
+
+export type UpdateForwardingRuleError = (ErrorResponse | {
     error?: string;
 });
 

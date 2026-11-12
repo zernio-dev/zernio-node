@@ -1197,6 +1197,7 @@ import {
   updateFacebookPage,
   updateFacebookPageInfo,
   updateFile,
+  updateForwardingRule,
   updateGmbLocation,
   updateGoogleAssetGroup,
   updateGoogleBusinessAttributes,
@@ -2952,6 +2953,7 @@ export class Zernio {
     deleteEventDestination: this._bind(deleteEventDestination),
     listForwardingRules: this._bind(listForwardingRules),
     createForwardingRule: this._bind(createForwardingRule),
+    updateForwardingRule: this._bind(updateForwardingRule),
     deleteForwardingRule: this._bind(deleteForwardingRule),
     listAdConversionDestinations: this._bind(listAdConversionDestinations),
     createAdConversionDestination: this._bind(createAdConversionDestination),
@@ -3642,6 +3644,8 @@ export class Zernio {
     listForwardingRules: this._bind(listForwardingRules),
     /** @deprecated Use `zernio.conversions.createForwardingRule` instead. */
     createForwardingRule: this._bind(createForwardingRule),
+    /** @deprecated Use `zernio.conversions.updateForwardingRule` instead. */
+    updateForwardingRule: this._bind(updateForwardingRule),
     /** @deprecated Use `zernio.conversions.deleteForwardingRule` instead. */
     deleteForwardingRule: this._bind(deleteForwardingRule),
     /** @deprecated Use `zernio.conversions.listAdConversionDestinations` instead. */
