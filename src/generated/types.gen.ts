@@ -2258,6 +2258,10 @@ export type AdRuleEvaluation = {
     timezoneAssumed: boolean;
     currency: (string) | null;
     /**
+     * Where the hourly windows (`last_complete_hour`, `last_3h`, `today_so_far`) ended: the end of the latest hour a sync has settled. Null when the rule has none or they could not be read.
+     */
+    hourlyThrough?: (string) | null;
+    /**
      * How many objects meet every condition.
      */
     matched: number;
@@ -2414,6 +2418,10 @@ export type AdRuleRun = {
         timezone?: string;
         timezoneAssumed?: boolean;
         currency?: (string) | null;
+        /**
+         * Where the run's hourly windows ended. Absent on runs recorded before November 2026.
+         */
+        hourlyThrough?: (string) | null;
         matched?: Array<AdRuleObjectEvaluation>;
         actions?: Array<{
             objectId: string;
@@ -4271,6 +4279,10 @@ export type AutomationPreview = {
      */
     timezoneAssumed: boolean;
     currency: (string) | null;
+    /**
+     * Where the hourly windows (`last_complete_hour`, `last_3h`, `today_so_far`) ended: the end of the latest hour a sync has settled. Null when the rule has none or they could not be read.
+     */
+    hourlyThrough?: (string) | null;
     evaluated: number;
     matched: number;
     /**
