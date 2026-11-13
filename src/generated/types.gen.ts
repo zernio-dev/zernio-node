@@ -10818,6 +10818,13 @@ export type EmailCapabilities = {
         mode?: 'push' | 'poll';
         typicalDelaySeconds?: number;
     };
+    /**
+     * Outlook only: how mail sent from the user's own mail client reaches you (`message.sent`). `poll` while Microsoft will not give Zernio a Sent Items subscription for this mailbox; it switches back to `push` by itself.
+     */
+    sentItems?: {
+        mode?: 'push' | 'poll';
+        typicalDelaySeconds?: number;
+    };
     drafts?: {
         supported?: boolean;
         /**
@@ -33795,6 +33802,10 @@ export type GetAccountHealthResponse = ({
      * Google and Microsoft only: state of the provider change-notification subscriptions behind `message.received` and `calendar.event.*`. `pending` means a granted area has no live subscription yet (retried every 6 hours), `failed` that renewals keep failing (reconnect the account).
      */
     push?: 'active' | 'pending' | 'failed' | 'not_applicable';
+    /**
+     * Microsoft only: how mail sent from the user's own mail client reaches `message.sent`. `poll` while Microsoft will not give Zernio a working Sent Items subscription for this mailbox (read every 5 minutes), `push` otherwise.
+     */
+    sentItemsSync?: 'push' | 'poll';
     username?: string;
     displayName?: string;
     /**
