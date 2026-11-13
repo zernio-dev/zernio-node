@@ -6589,7 +6589,12 @@ export const listCalendars = <ThrowOnError extends boolean = false>(options: Opt
 
 /**
  * List events in a window
- * Recurring series are expanded into their occurrences inside the window by default (`expandRecurring=false` lists the masters instead, including series that started before `from` and still recur in the window). Events that overlap the window edges are included. `title` and `location` are substring matches applied to the fetched page.
+ * Recurring series are expanded into their occurrences inside the window by default. `expandRecurring=false` lists the masters instead, including series that started before `from` and still recur in the window.
+ *
+ * Events that overlap the window edges are included. `title` and `location` are substring matches applied to the fetched page.
+ *
+ * When the provider does not answer, the last list read for the same account and query within the past hour is returned with `stale: true`, `asOf` and an `X-Zernio-Stale-As-Of` header instead of a 502.
+ *
  */
 export const listCalendarEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCalendarEventsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListCalendarEventsResponse, ListCalendarEventsError, ThrowOnError>({

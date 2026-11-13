@@ -44057,6 +44057,14 @@ export type ListCalendarEventsData = {
 export type ListCalendarEventsResponse = ({
     data?: Array<CalendarEvent>;
     pagination?: CursorPagination;
+    /**
+     * Always true when present. Present only when the provider did not answer and this is the last list Zernio read for the same account and query within the past hour.
+     */
+    stale?: boolean;
+    /**
+     * When a stale list was read from the provider. Present only with `stale`.
+     */
+    asOf?: string;
 });
 
 export type ListCalendarEventsError = (ErrorResponse);
