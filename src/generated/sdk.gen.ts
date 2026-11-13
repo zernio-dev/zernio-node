@@ -6625,6 +6625,13 @@ export const listCalendarEvents = <ThrowOnError extends boolean = false>(options
  *
  * `recurrence` takes one RRULE line with FREQ, INTERVAL, COUNT, UNTIL, BYDAY and BYSETPOS. Other parts are rejected with 400 (`param: recurrence`).
  *
+ * ### Reminders
+ *
+ * Each `reminders.overrides` entry is `{ method, minutes }`, with `method` `popup` (default) or `email`.
+ *
+ * - Google takes up to 5 overrides of either method.
+ * - Outlook keeps one popup reminder, the first override. An `email` override answers 400 `reminder_method_unsupported`.
+ *
  */
 export const createCalendarEvent = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateCalendarEventData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateCalendarEventResponse, CreateCalendarEventError, ThrowOnError>({

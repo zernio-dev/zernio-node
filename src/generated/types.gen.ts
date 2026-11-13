@@ -5793,6 +5793,10 @@ export type CalendarEvent = {
     reminders?: {
         useDefault?: boolean;
         overrides?: Array<{
+            /**
+             * Outlook reminders always read as `popup`.
+             */
+            method?: 'popup' | 'email';
             minutes?: number;
         }>;
     };
@@ -5866,9 +5870,22 @@ export type CalendarEventFields = {
      */
     recurrence?: Array<(string)>;
     reminders?: {
+        /**
+         * Use the calendar's default reminders. Ignored when `overrides` has entries.
+         */
         useDefault?: boolean;
+        /**
+         * Google takes up to 5 overrides, `popup` or `email`. Outlook keeps one popup reminder (the first override), and an `email` override answers 400 `reminder_method_unsupported` on a Microsoft account.
+         */
         overrides?: Array<{
-            minutes?: number;
+            /**
+             * `popup` shows a notification in the calendar app. `email` mails the calendar owner (Google only).
+             */
+            method?: 'popup' | 'email';
+            /**
+             * Minutes before the start.
+             */
+            minutes: number;
         }>;
     };
     conferencing?: 'google_meet' | 'teams';
