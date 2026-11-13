@@ -43670,6 +43670,14 @@ export type ListEmailFoldersData = {
 
 export type ListEmailFoldersResponse = ({
     data?: Array<EmailFolder>;
+    /**
+     * Always true when present. Present only when the provider did not answer and `data` is the last folder list Zernio read for the same account within the past 24 hours (`unreadCount` and `totalCount` may be out of date).
+     */
+    stale?: boolean;
+    /**
+     * When a stale list was read from the provider. Present only with `stale`.
+     */
+    asOf?: string;
 });
 
 export type ListEmailFoldersError = (ErrorResponse);

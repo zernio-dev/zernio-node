@@ -6374,6 +6374,9 @@ export const sendEmailDraft = <ThrowOnError extends boolean = false>(options: Op
 /**
  * List mailbox folders
  * On Google, folders are Gmail labels (system labels carry `wellKnown`; `unreadCount` and `totalCount` are present only where Gmail reports them). There is no archive folder on Google; archived mail is listed with `folder=archive`.
+ *
+ * When the provider does not answer, the last list read for the same account within the past 24 hours is returned with `stale: true`, `asOf` and an `X-Zernio-Stale-As-Of` header instead of a 502.
+ *
  */
 export const listEmailFolders = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListEmailFoldersData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListEmailFoldersResponse, ListEmailFoldersError, ThrowOnError>({
