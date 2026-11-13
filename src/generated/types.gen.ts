@@ -60051,6 +60051,27 @@ export type ListAdRuleTemplatesResponse = ({
 
 export type ListAdRuleTemplatesError = (ErrorResponse);
 
+export type GetAdRuleHourlyWindowsData = {
+    query: {
+        /**
+         * The ads connection.
+         */
+        accountId: string;
+        /**
+         * The ad account on that connection.
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetAdRuleHourlyWindowsResponse = ({
+    hourlyWindows: boolean;
+});
+
+export type GetAdRuleHourlyWindowsError = (ErrorResponse | {
+    error?: string;
+});
+
 export type ListAdRuleActivityData = {
     query?: {
         /**

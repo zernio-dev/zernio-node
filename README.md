@@ -691,6 +691,7 @@ try {
 | `adRules.listAdRuleTemplates()` | List ready-made ad rules |
 | `adRules.createAdRule()` | Create an ad rule |
 | `adRules.getAdRule()` | Get an ad rule |
+| `adRules.getAdRuleHourlyWindows()` | Check whether an ad account has hourly windows |
 | `adRules.updateAdRule()` | Update an ad rule |
 | `adRules.deleteAdRule()` | Delete an ad rule |
 | `adRules.previewAdRule()` | Preview an ad rule |
