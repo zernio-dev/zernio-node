@@ -61521,7 +61521,7 @@ export type ListAdSetsResponse = ({
          */
         status?: (string) | null;
         /**
-         * Raw platform ad set status. On TikTok the ad group's own switch `operation_status` (ENABLE / DISABLE), independent of its campaign. On Meta and Reddit the ad set's `effective_status` (e.g. CAMPAIGN_PAUSED).
+         * Raw platform ad set status. On TikTok the ad group's own switch `operation_status` (ENABLE / DISABLE), independent of its campaign. On Meta the ad set's `effective_status` (e.g. CAMPAIGN_PAUSED). On Reddit the ad group's own switch `configured_status` (ACTIVE / PAUSED / ARCHIVED).
          */
         platformAdSetStatus?: (string) | null;
         platformCampaignId?: (string) | null;
@@ -62239,7 +62239,7 @@ export type UpdateAdSetResponse = ({
      */
     status?: 'active' | 'paused';
     /**
-     * The ad set's status read back from the platform, as in PUT /v1/ads/ad-sets/{adSetId}/status (Meta and Reddit return the ad set's effective_status); null when it could not be read.
+     * The ad set's status read back from the platform, as in PUT /v1/ads/ad-sets/{adSetId}/status (Meta returns the ad set's effective_status, Reddit the ad group's configured_status); null when it could not be read.
      */
     platformAdSetStatus?: (string) | null;
     platformCampaignStatus?: (string) | null;
@@ -62358,7 +62358,7 @@ export type UpdateAdSetStatusResponse = ({
      * - Google: ENABLED / PAUSED.
      * - LinkedIn and Pinterest: ACTIVE / PAUSED.
      * - ChatGPT (OpenAI): status.
-     * - Reddit: effective_status, such as CAMPAIGN_PAUSED.
+     * - Reddit: configured_status (ACTIVE / PAUSED / ARCHIVED).
      */
     platformAdSetStatus?: (string) | null;
     /**

@@ -14989,7 +14989,7 @@ export const getAdSetTargeting = <ThrowOnError extends boolean = false>(options:
  *
  * A stored switch never skips a write, and when the platform cannot be read the write always goes out.
  *
- * On Meta and Reddit the check reads the ad set's own switch (`status` / `configured_status`). So a repeated request skips even while `platformAdSetStatus` reads `CAMPAIGN_PAUSED`, `WITH_ISSUES` or `IN_PROCESS`.
+ * On Meta the check reads the ad set's own switch (`status`). So a repeated request skips even while `platformAdSetStatus` reads `CAMPAIGN_PAUSED`, `WITH_ISSUES` or `IN_PROCESS`. On Reddit `platformAdSetStatus` is the ad group's own switch (`configured_status`), so a skipped request returns it as already in the requested state.
  *
  */
 export const updateAdSetStatus = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdSetStatusData, ThrowOnError>) => {
