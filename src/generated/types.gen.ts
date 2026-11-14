@@ -33982,6 +33982,30 @@ export type GetAccountHealthResponse = ({
          */
         inboundWebhookSubscribed?: (boolean) | null;
     };
+    /**
+     * LINE accounts only. Live read of the channel's webhook settings at LINE, performed at request time. Absent while the account is inactive or needs reconnecting.
+     */
+    lineWebhook?: {
+        /**
+         * `false`: Webhooks are turned off in LINE Official Account Manager (LINE Developers Console: Use webhook), so LINE sends no messages to Zernio; turn it on in Settings > Response settings. `null`: LINE could not be read, not evidence either way.
+         */
+        active?: (boolean) | null;
+        /**
+         * Where the channel's webhook URL points.
+         *
+         * - `zernio`: the URL Zernio set for this account.
+         * - `another_zernio_account`: another Zernio account connected to the same channel, which receives its events instead.
+         * - `other`: another integration's URL (reconnect the account to point it back).
+         * - `missing`: no URL is set.
+         * - `null`: LINE could not be read.
+         *
+         */
+        destination?: ('zernio' | 'another_zernio_account' | 'other' | 'missing') | null;
+        /**
+         * When this live read ran (always the current request; never cached)
+         */
+        checkedAt?: string;
+    };
 });
 
 export type GetAccountHealthError = (ErrorResponse | {
@@ -39564,9 +39588,16 @@ export type ConnectLineCredentialsResponse = ({
          */
         configured?: boolean;
         /**
-         * Whether LINE's webhook test call reached Zernio.
+         * Whether LINE's webhook test call reached Zernio. It does not show whether Webhooks is turned on; read `active` for that.
          */
         testSucceeded?: boolean;
+        /**
+         * Whether Webhooks (LINE Developers Console: Use webhook) is turned on for the channel, read after Zernio set its URL.
+         *
+         * `false` means LINE sends no events until the account owner turns it on in LINE Official Account Manager > Settings > Response settings. `null` when LINE did not answer the read, and always when `configured` is `false`.
+         *
+         */
+        active?: (boolean) | null;
         /**
          * What LINE answered when the setup or the test did not succeed.
          */
@@ -39577,7 +39608,7 @@ export type ConnectLineCredentialsResponse = ({
         previousUrl?: string;
     };
     /**
-     * Settings the account owner still has to change in LINE Official Account Manager, led by a warning when `webhook.previousUrl` is set.
+     * Settings the account owner still has to change in LINE Official Account Manager. Led by the turn-on-Webhooks step when `webhook.active` is `false`, then by a warning when `webhook.previousUrl` is set. The turn-on-Webhooks step is left out when `webhook.active` is `true`.
      */
     nextSteps?: Array<(string)>;
     redirectUrl?: string;

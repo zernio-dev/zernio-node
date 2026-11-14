@@ -2589,6 +2589,16 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  * - When Meta reports that the number's inbound message webhook does not reach Zernio, or subscribing the number's WhatsApp Business Account to Zernio's webhooks failed at connect, `platformConnection.inboundWebhookSubscribed` is `false`, an entry is added to `issues`, and the overall `status` is at least `warning`.
  * - When `platformConnection.phoneStatus` is anything other than `CONNECTED`, an entry is added to `issues` and the overall `status` is at least `warning`; `BANNED` makes it `error`. `disconnectReason` stays null, since reconnecting does not lift a Meta status.
  *
+ * ### LINE
+ *
+ * The response also includes `lineWebhook`, a live read of the channel's webhook settings at LINE. It is one LINE call per request, given up after a few seconds, and skipped while the account is inactive or needs reconnecting.
+ *
+ * If LINE rejects the channel credentials during that read, the account is flagged for reconnection and the overall `status` is `error`.
+ *
+ * - `active: false` means Webhooks are turned off in LINE Official Account Manager, so LINE sends nothing to Zernio. An entry is added to `issues` with the fix (Settings > Response settings > Webhooks) and the overall `status` is at least `warning`.
+ * - `destination` is `other` when the channel's webhook URL points at another integration, `another_zernio_account` when the same channel is connected to another Zernio account that now receives its events, and `missing` when none is set. Each adds an entry to `issues` and makes the overall `status` at least `warning`.
+ * - Both are `null` when LINE could not be read; nothing is added to `issues` then.
+ *
  * ### Standalone ads connections (`googleads`, `redditads`, `microsoftads`)
  *
  * A connection that cannot serve requests until a fresh OAuth repairs it adds an entry to `issues`. It also adds a recommendation to call `GET /v1/connect/{platform}/ads`, whose `authUrl` reconnects the same account.
@@ -4350,7 +4360,8 @@ export const connectSlackChannel = <ThrowOnError extends boolean = false>(option
  *
  * Two settings stay on the customer's side, in LINE Official Account Manager > Settings > Response settings. `nextSteps` in the response lists them:
  *
- * - Turn on Webhooks. Until it is on, LINE delivers nothing to Zernio.
+ * - Turn on Webhooks. Until it is on, LINE delivers nothing to Zernio. LINE's API cannot turn it on, so Zernio reads it back as `webhook.active`.
+ * When it is `false`, `message` and the first entry of `nextSteps` say to turn it on. `GET /v1/accounts/{accountId}/health` keeps reporting it after connect.
  * - Turn off auto-response and greeting messages.
  *
  * Reconnecting the same channel on the same profile updates the existing account.
