@@ -18405,7 +18405,7 @@ export type SocialAccount = {
     /**
      * TikTok accounts only. The account type TikTok reported when the account was connected.
      *
-     * - `personal`: cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts). Skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect.
+     * - `personal`: TikTok reported a personal account. TikTok limits Business Messaging to Business Accounts, so sends usually fail with 400 `PLATFORM_LIMITATION`; the send still goes to TikTok, which decides. The fix is switching to a Business Account in the TikTok app, then reconnecting.
      * - `business`: the prerequisite, not a guarantee. Messaging also needs the messaging scopes granted and TikTok's regional availability.
      * - `unknown`: accounts connected before this was captured, or whose grant left out the account-type scope.
      *
@@ -18529,7 +18529,7 @@ export type platform16 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'link
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
  *
- * - `personal`: cannot use TikTok direct messages through the API (TikTok limits Business Messaging to Business Accounts). Skip the inbox for them and tell the user to switch to a Business Account in the TikTok app, then reconnect.
+ * - `personal`: TikTok reported a personal account. TikTok limits Business Messaging to Business Accounts, so sends usually fail with 400 `PLATFORM_LIMITATION`; the send still goes to TikTok, which decides. The fix is switching to a Business Account in the TikTok app, then reconnecting.
  * - `business`: the prerequisite, not a guarantee. Messaging also needs the messaging scopes granted and TikTok's regional availability.
  * - `unknown`: accounts connected before this was captured, or whose grant left out the account-type scope.
  *
