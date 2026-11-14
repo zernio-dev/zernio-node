@@ -72522,12 +72522,16 @@ export type SendConversionsResponse = ({
     }>;
     /**
      * Platform trace ID for debugging. fbtrace_id for Meta,
-     * requestId for Google. Absent for LinkedIn (LinkedIn's
+     * requestId for Google, request_id for TikTok. Absent for LinkedIn (LinkedIn's
      * conversionEvents endpoint does not surface a trace ID),
      * OpenAI Ads and Reddit (no trace ID surfaced).
      *
      */
     traceId?: string;
+    /**
+     * Meta only. Meta's `messages` (warnings about the events it accepted), each distinct one once, at most 20. Absent when Meta sent none.
+     */
+    platformMessages?: Array<(string)>;
     /**
      * The test code sent to the platform, as received (from `testCode` or `test_event_code`). `null` when the request carried none, so the events were sent as production events.
      */
@@ -73117,6 +73121,14 @@ export type SendEventsResponse = ({
          * The destination failed for now (platform error, timeout, rate limit) and the send is queued for retries; its outcome shows on GET /v1/events/{eventId}.
          */
         retrying?: boolean;
+        /**
+         * The platform trace ID of the send (Meta `fbtrace_id`, Google `requestId`, TikTok `request_id`), to quote to the platform support. Absent when the platform returns none.
+         */
+        traceId?: string;
+        /**
+         * Meta's `messages` (warnings about the events it accepted), each distinct one once, at most 20. Absent when the platform sent none.
+         */
+        platformMessages?: Array<(string)>;
     }>;
     /**
      * Destinations whose sends were queued (all of them with `mode: async`, retries with `sync`).
@@ -74533,6 +74545,10 @@ export type SendWhatsAppConversionResponse = ({
      *
      */
     traceId?: string;
+    /**
+     * Meta's `messages` (warnings about the events it accepted), each distinct one once, at most 20. Absent when Meta sent none.
+     */
+    platformMessages?: Array<(string)>;
     /**
      * The test code sent to Meta, or `null` when the request carried none.
      */
