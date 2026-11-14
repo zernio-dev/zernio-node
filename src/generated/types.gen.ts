@@ -48391,7 +48391,7 @@ export type ListInboxMentionsResponse = ({
         accountId?: string;
         accountUsername?: string;
         /**
-         * Text that mentioned you: the post text on LinkedIn, the caption or comment text on Instagram, the post or comment text on Facebook. Empty until it has been read.
+         * Text that mentioned you: the post text on LinkedIn, the caption or comment text on Instagram, the post or comment text on Facebook. Empty until it has been read. Stays empty when Meta refuses to serve the source, for example a comment on media Meta does not treat as organic.
          */
         content?: (string) | null;
         /**
@@ -48403,7 +48403,7 @@ export type ListInboxMentionsResponse = ({
          */
         permalink?: (string) | null;
         /**
-         * LinkedIn URN of the person who mentioned you, the Instagram-scoped ID of the commenter on an Instagram comment mention, or the ID of the Facebook user or Page that mentioned your Page when Meta sends it.
+         * LinkedIn URN of the person who mentioned you, or the ID of the Facebook user or Page that mentioned your Page when Meta sends it. Always null on Instagram: comment mentions carry no commenter, and caption mentions expose the media owner only through authorUsername.
          */
         authorUrn?: (string) | null;
         /**
@@ -48411,7 +48411,7 @@ export type ListInboxMentionsResponse = ({
          */
         authorName?: (string) | null;
         /**
-         * LinkedIn vanity name of the author (the slug in their profile URL), or the Instagram username of the commenter or media owner.
+         * LinkedIn vanity name of the author (the slug in their profile URL), or the Instagram username of the media owner on a caption mention once its caption has been read. Null on Instagram comment mentions.
          */
         authorUsername?: (string) | null;
         /**
