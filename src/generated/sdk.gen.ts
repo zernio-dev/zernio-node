@@ -9063,7 +9063,7 @@ export const transferVoiceCall = <ThrowOnError extends boolean = false>(options:
  * Estimate call cost
  * Pre-call cost estimate for a PSTN call: the carrier leg plus optional recording and transcription add-ons.
  *
- * It uses the same billing formula as the post-call invoice, so the quote and the final charge can't disagree.
+ * The per-minute figure is the most a minute can cost to that destination, so the final charge can be lower.
  *
  * The carrier figure follows the carrier's per-destination rate card: a call dialed from a number in the destination country uses the local mobile rate, and a `tel:` forward destination is quoted as a second carrier leg billed from the same number.
  *
