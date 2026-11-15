@@ -6924,9 +6924,9 @@ export const createMicrosoftOrgConnection = <ThrowOnError extends boolean = fals
 
 /**
  * List organization connections
- * The Google Workspace and Microsoft 365 organization connections on a profile, newest first.
+ * The Google Workspace and Microsoft 365 organization connections, newest first. Pass `profileId` to list one profile; omit it to list every profile the API key can access (a profile-restricted key or team member only sees its own profiles).
  */
-export const listOrgConnections = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListOrgConnectionsData, ThrowOnError>) => {
+export const listOrgConnections = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListOrgConnectionsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListOrgConnectionsResponse, ListOrgConnectionsError, ThrowOnError>({
         ...options,
         url: '/v1/org-connections'

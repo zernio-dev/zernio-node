@@ -44689,8 +44689,11 @@ export type CreateMicrosoftOrgConnectionResponse = ({
 export type CreateMicrosoftOrgConnectionError = (ErrorResponse);
 
 export type ListOrgConnectionsData = {
-    query: {
-        profileId: string;
+    query?: {
+        /**
+         * Limit the list to one profile. Omit to list across every accessible profile.
+         */
+        profileId?: string;
     };
 };
 
