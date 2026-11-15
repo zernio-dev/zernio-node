@@ -19722,14 +19722,16 @@ export const removeCustomConversionGoal = <ThrowOnError extends boolean = false>
 
 /**
  * List stored events
- * Lists the conversion events stored for a profile by `POST /v1/events`, newest first. Personal data is never
- * returned: `hasEmail`, `hasPhone` and `hasExternalId` only say whether the event carried that identifier.
+ * Lists the conversion events stored by `POST /v1/events`, newest first: for one profile, or for every profile you can
+ * access when `profileId` is omitted.
+ *
+ * Personal data is never returned: `hasEmail`, `hasPhone` and `hasExternalId` only say whether the event carried that identifier.
  * Events sent with `testCode` are not stored, so they never appear here.
  *
  * Paginate with `cursor`: pass the `nextCursor` of the previous page until it comes back `null`.
  *
  */
-export const listEvents = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListEventsData, ThrowOnError>) => {
+export const listEvents = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListEventsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListEventsResponse, ListEventsError, ThrowOnError>({
         ...options,
         url: '/v1/events'
@@ -19768,10 +19770,11 @@ export const sendEvents = <ThrowOnError extends boolean = false>(options: Option
  * Get today's tracking overview
  * How a profile's conversion tracking is doing today (UTC day): events stored, how many reached the ad platforms,
  * each forwarding rule's destination, each event source and, when the profile has a tracking site, the site's funnel.
- * Requires the Ads add-on.
+ *
+ * Without `profileId` it covers every profile you can access, summed across them. Requires the Ads add-on.
  *
  */
-export const getEventsOverview = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetEventsOverviewData, ThrowOnError>) => {
+export const getEventsOverview = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetEventsOverviewData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetEventsOverviewResponse, GetEventsOverviewError, ThrowOnError>({
         ...options,
         url: '/v1/events/overview'

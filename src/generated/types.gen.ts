@@ -18561,6 +18561,10 @@ export type tiktokAccountType = 'business' | 'personal' | 'unknown';
 export type StoredEvent = {
     eventId?: string;
     /**
+     * The profile the event was stored under.
+     */
+    profileId?: string;
+    /**
      * Where the event came from: `api`, `relay`, `web`, `shopify`, `woocommerce`, `hubspot`, `meta_leads`, `google_leads`, `linkedin_leads` or `tiktok_leads`.
      */
     source?: string;
@@ -73028,7 +73032,7 @@ export type RemoveCustomConversionGoalResponse = ({
 export type RemoveCustomConversionGoalError = (ErrorResponse | unknown);
 
 export type ListEventsData = {
-    query: {
+    query?: {
         /**
          * `nextCursor` from the previous page.
          */
@@ -73050,7 +73054,10 @@ export type ListEventsData = {
          * Only events sent to this ad platform, such as `metaads` or `googleads`.
          */
         platform?: string;
-        profileId: string;
+        /**
+         * The profile to list. Omit to cover every profile you can access.
+         */
+        profileId?: string;
         /**
          * Only events from this source, such as `stripe` for the payments of a connected Stripe account.
          */
@@ -73211,8 +73218,11 @@ export type SendEventsError = (ErrorResponse | {
 } | unknown);
 
 export type GetEventsOverviewData = {
-    query: {
-        profileId: string;
+    query?: {
+        /**
+         * The profile to read. Omit to cover every profile you can access, summed across them.
+         */
+        profileId?: string;
     };
 };
 
@@ -73244,9 +73254,13 @@ export type GetEventsOverviewResponse = ({
         matched?: number;
     };
     /**
-     * One entry per forwarding rule of the profile.
+     * One entry per forwarding rule of the profiles covered.
      */
     platforms?: Array<{
+        /**
+         * The profile the forwarding rule belongs to.
+         */
+        profileId?: string;
         accountId?: string;
         /**
          * Ad platform, such as `metaads` or `googleads`.
@@ -73306,7 +73320,7 @@ export type GetEventsOverviewResponse = ({
         lastSeenAt?: (string) | null;
     }>;
     /**
-     * `null` when the profile has no tracking site. Hit counts are approximate distinct counts.
+     * `null` when no profile covered has a tracking site. Hit counts are approximate distinct counts.
      */
     website?: {
         /**
@@ -73346,10 +73360,14 @@ export type GetEventsOverviewResponse = ({
         serverPlatforms?: Array<(string)>;
     } | null;
     /**
-     * Each tracking site of the profile with its activity. Hit counts are approximate distinct counts without bots.
+     * Each tracking site of the profiles covered, with its activity. Hit counts are approximate distinct counts without bots.
      */
     sites?: Array<{
         siteId?: string;
+        /**
+         * The profile the site belongs to.
+         */
+        profileId?: string;
         /**
          * Hits today.
          */
