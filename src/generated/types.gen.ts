@@ -16298,6 +16298,10 @@ export type OwnedPhoneNumber = {
      */
     pstnVoiceEnabled?: boolean;
     pstnForwardTo?: string;
+    /**
+     * Inbound calls ring the owner's open dashboard tabs first, then take the forward or voicemail.
+     */
+    ringInBrowser?: boolean;
     voicemailEnabled?: boolean;
     voicemailGreeting?: string;
     businessHoursEnabled?: boolean;
@@ -49765,6 +49769,17 @@ export type CreateVoiceWebSessionResponse = ({
 
 export type CreateVoiceWebSessionError = (ErrorResponse | unknown);
 
+export type CreateVoiceWebInboundSessionResponse = ({
+    enabled?: boolean;
+    /**
+     * Login token for the browser WebRTC SDK. Present when enabled.
+     */
+    token?: string;
+    sdk?: string;
+});
+
+export type CreateVoiceWebInboundSessionError = (ErrorResponse | unknown);
+
 export type DialVoiceWebCallData = {
     body: {
         /**
@@ -54621,6 +54636,10 @@ export type EnableVoiceOnNumberData = {
          * tel:+E164, sip:..., or wss://... destination for inbound calls. Empty string clears the forward (outbound-only); omitted preserves the current one.
          */
         forwardTo?: string;
+        /**
+         * Ring the owner's open Zernio dashboard tabs first (registered via POST /v1/voice/calls/web/inbound). Unanswered after 20 seconds, declined, or with no tab open, the call takes the forward destination, else voicemail. Superseded by an active IVR.
+         */
+        ringInBrowser?: boolean;
         recordingEnabled?: boolean;
         transcriptionEnabled?: boolean;
         transcriptionLanguage?: 'auto' | 'en' | 'es';
@@ -54682,6 +54701,7 @@ export type EnableVoiceOnNumberResponse = ({
     enabled?: boolean;
     phoneNumber?: string;
     pstnForwardTo?: (string) | null;
+    ringInBrowser?: boolean;
     recordingEnabled?: boolean;
     transcriptionEnabled?: boolean;
     transcriptionLanguage?: 'auto' | 'en' | 'es';

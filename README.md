@@ -1624,6 +1624,7 @@ try {
 | `voice.listVoiceCalls()` | List phone calls |
 | `voice.createSipTrunk()` | Create a SIP trunk |
 | `voice.createVoiceCall()` | Place an outbound phone call |
+| `voice.createVoiceWebInboundSession()` | Register a browser to receive calls |
 | `voice.createVoiceWebSession()` | Mint a browser softphone session |
 | `voice.getSipTrunk()` | Get a SIP trunk |
 | `voice.getVoiceCall()` | Get a phone call |
