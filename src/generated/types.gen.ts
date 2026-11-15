@@ -7300,6 +7300,10 @@ export type CommerceDiscount = {
     } | null;
     usageLimit?: (number) | null;
     oncePerCustomer?: boolean;
+    /**
+     * True when only the customers chosen at creation (customerIds) can use the code.
+     */
+    limitedToCustomers?: boolean;
     usageCount?: number;
     startsAt?: string;
     endsAt?: (string) | null;
@@ -7608,10 +7612,28 @@ export type CommerceOrder = {
      */
     taxLines?: Array<CommerceTaxLine>;
     refunds?: Array<CommerceOrderRefund>;
+    /**
+     * One entry per tracking number. A shipment without tracking still has one entry, with the tracking fields null. Always empty on WooCommerce.
+     */
     fulfillments?: Array<{
+        /**
+         * The shipment (fulfillment) id. Entries of one shipment with several tracking numbers share it.
+         */
+        id?: string;
         carrierName?: (string) | null;
         trackingNumber?: (string) | null;
         trackingUrl?: (string) | null;
+        /**
+         * Where the shipment is. pending means no carrier scan yet. Null when the platform has no delivery tracking for it. Shopify only knows it when the carrier sends tracking events.
+         */
+        deliveryStatus?: ('pending' | 'in_transit' | 'delayed' | 'out_for_delivery' | 'ready_for_pickup' | 'attempted_delivery' | 'delivered' | 'failed' | 'cancelled') | null;
+        /**
+         * The platform's raw value, e.g. Shopify ATTEMPTED_DELIVERY.
+         */
+        platformDeliveryStatus?: (string) | null;
+        estimatedDeliveryAt?: (string) | null;
+        inTransitAt?: (string) | null;
+        deliveredAt?: (string) | null;
     }>;
     /**
      * Platform-only fields. Null when the platform has none.
@@ -76796,6 +76818,10 @@ export type ListCommerceOrdersData = {
         email?: string;
         limit?: number;
         /**
+         * The order number a buyer quotes, with or without the "#" (`number` on an order). Shopify only; on WooCommerce the number is the order id, so read GET /v1/commerce/orders/{orderId} (this filter answers 400 platform_not_supported).
+         */
+        number?: string;
+        /**
          * Only orders changed after this time, oldest change first.
          */
         updatedAfter?: string;
@@ -76829,6 +76855,45 @@ export type GetCommerceOrderResponse = ({
 });
 
 export type GetCommerceOrderError = (ErrorResponse | unknown);
+
+export type UpdateCommerceOrderData = {
+    body: {
+        /**
+         * Connected store SocialAccount id.
+         */
+        accountId: string;
+        shippingAddress: {
+            firstName?: (string) | null;
+            lastName?: (string) | null;
+            company?: (string) | null;
+            phone?: (string) | null;
+            line1?: (string) | null;
+            line2?: (string) | null;
+            city?: (string) | null;
+            /**
+             * State or province code, e.g. "CA".
+             */
+            region?: (string) | null;
+            postalCode?: (string) | null;
+            /**
+             * ISO 3166 code, e.g. "US".
+             */
+            countryCode: string;
+        };
+    };
+    path: {
+        /**
+         * Platform-native order id.
+         */
+        orderId: string;
+    };
+};
+
+export type UpdateCommerceOrderResponse = ({
+    order?: CommerceOrder;
+});
+
+export type UpdateCommerceOrderError = (ErrorResponse | unknown);
 
 export type CreateCommerceRefundData = {
     body: (CommerceRefundRequest & {
@@ -78100,6 +78165,10 @@ export type CreateCommerceDiscountData = {
         endsAt?: (string) | null;
         productIds?: Array<(string)>;
         collectionIds?: Array<(string)>;
+        /**
+         * Only these customers can use the code (`customer.id` on an order, or `id` from the customers endpoints). Code discounts on Shopify only; WooCommerce answers 400.
+         */
+        customerIds?: Array<(string)>;
     };
 };
 

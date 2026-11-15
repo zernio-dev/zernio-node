@@ -954,6 +954,7 @@ try {
 | `commerce.updateCommerceDiscount()` | Update a discount |
 | `commerce.updateCommerceMenu()` | Replace a navigation menu |
 | `commerce.updateCommerceMetaobject()` | Update a metaobject |
+| `commerce.updateCommerceOrder()` | Update an order's shipping address |
 | `commerce.updateCommercePage()` | Update a page |
 | `commerce.updateCommerceProduct()` | Update a product |
 | `commerce.updateCommerceProductPrices()` | Update variant prices |
