@@ -1512,8 +1512,10 @@ try {
 | `sms.listSmsOptOuts()` | List SMS opt-outs |
 | `sms.listSmsRegistrations()` | List carrier registrations |
 | `sms.listSmsSenderIds()` | List alphanumeric sender IDs |
+| `sms.createSmsOptOut()` | Record an SMS opt-out |
 | `sms.createSmsSenderId()` | Create an alphanumeric sender ID |
 | `sms.getSmsRegistration()` | Get a carrier registration |
+| `sms.deleteSmsOptOut()` | Remove an SMS opt-out |
 | `sms.deleteSmsSenderId()` | Delete an alphanumeric sender ID |
 | `sms.appealSmsRegistration()` | Appeal a rejected campaign |
 | `sms.deactivateSmsRegistration()` | Deactivate a brand/campaign registration |

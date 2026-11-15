@@ -18357,6 +18357,17 @@ export type SlackPlatformData = {
     iconUrl?: string;
 };
 
+export type SmsOptOutRequest = {
+    /**
+     * ID of the SMS number account the opt-out applies to (from `GET /v1/accounts`).
+     */
+    accountId: string;
+    /**
+     * Recipient phone number in E.164 format, e.g. +13105559999.
+     */
+    phone: string;
+};
+
 /**
  * An open change request written as points. Answer each point with POST /v1/sms/registrations/{id}/respond: `answer` says what each point needs (text, a link, a hosted document, or a link or a document).
  */
@@ -50562,11 +50573,53 @@ export type ListSmsOptOutsResponse = ({
          * Which of your numbers the recipient opted out from.
          */
         from?: (string) | null;
+        /**
+         * `inbound_stop` when the recipient texted an opt-out keyword, `api` when recorded with `POST /v1/sms/opt-outs`. Null when unknown.
+         */
+        source?: ('inbound_stop' | 'api') | null;
     }>;
     count?: number;
 });
 
 export type ListSmsOptOutsError = (ErrorResponse);
+
+export type CreateSmsOptOutData = {
+    body: SmsOptOutRequest;
+};
+
+export type CreateSmsOptOutResponse = ({
+    accountId?: string;
+    phoneNumber?: string;
+    /**
+     * Always true.
+     */
+    optedOut?: boolean;
+    /**
+     * What set the current opt-out.
+     */
+    source?: 'api' | 'inbound_stop';
+});
+
+export type CreateSmsOptOutError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteSmsOptOutData = {
+    body: SmsOptOutRequest;
+};
+
+export type DeleteSmsOptOutResponse = ({
+    accountId?: string;
+    phoneNumber?: string;
+    /**
+     * Always false.
+     */
+    optedOut?: boolean;
+});
+
+export type DeleteSmsOptOutError = (ErrorResponse | {
+    error?: string;
+});
 
 export type CreateSmsSenderIdData = {
     body: {
