@@ -13178,6 +13178,10 @@ export type GooglePmaxAssetGroup = {
          */
         fieldType: string;
         status: string;
+        /**
+         * Who added the asset: ADVERTISER, or AUTOMATICALLY_CREATED when Google generated it. Empty when Google does not say.
+         */
+        source?: string;
         text?: string;
         imageUrl?: string;
         youtubeVideoId?: string;
@@ -61371,13 +61375,13 @@ export type BulkUpdateAdCampaignStatusError = (unknown | ErrorResponse);
 
 export type DuplicateAdCampaignData = {
     body: {
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'google';
         /**
          * Copy child ad sets + ads + creatives + targeting
          */
         deepCopy?: boolean;
         /**
-         * ACTIVE = launch the clone immediately (spends the moment LinkedIn approves it). PAUSED = clone stays DRAFT, safe default. INHERITED_FROM_SOURCE = mirror each entity's source status per-entity. Duplicating an ACTIVE campaign this way starts a second front of spend.
+         * ACTIVE = launch the clone immediately (spends the moment LinkedIn approves it). PAUSED = clone stays DRAFT, safe default. Google only accepts PAUSED. INHERITED_FROM_SOURCE = mirror each entity's source status per-entity. Duplicating an ACTIVE campaign this way starts a second front of spend.
          *
          */
         statusOption?: 'ACTIVE' | 'PAUSED' | 'INHERITED_FROM_SOURCE';
@@ -61386,6 +61390,7 @@ export type DuplicateAdCampaignData = {
          *
          * - Meta and TikTok: a value without an offset (`YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS` or `YYYY-MM-DDTHH:MM:SS`) is read in the ad account timezone.
          * - LinkedIn: ad accounts carry no timezone, so it is read as UTC.
+         * - Google: the date is used as a whole day in the customer timezone.
          */
         startTime?: string;
         /**
@@ -61397,7 +61402,7 @@ export type DuplicateAdCampaignData = {
          *
          * - `DEEP_RENAME`: renames the copied campaign and every copied child (ad sets, ads) with `renamePrefix` / `renameSuffix`.
          * - `ONLY_TOP_LEVEL_RENAME`: renames only the copied campaign; children keep their source names.
-         * - `NO_RENAME`: keeps every source name.
+         * - `NO_RENAME`: keeps every source name. Google returns 400, since its campaign names are unique per account.
          *
          * With no rename option at all, Meta appends its own ` - Copy` suffix; LinkedIn defaults to `DEEP_RENAME` (its campaign group and campaigns are renamed). Ignored on TikTok, where `renamePrefix` / `renameSuffix` apply to every copied object.
          *
@@ -61408,7 +61413,7 @@ export type DuplicateAdCampaignData = {
          */
         renamePrefix?: string;
         /**
-         * Text appended to each renamed object's name. On LinkedIn an omitted suffix defaults to ` (Copy)`.
+         * Text appended to each renamed object's name. On LinkedIn and Google an omitted suffix defaults to ` (Copy)` when no prefix is sent.
          */
         renameSuffix?: string;
         /**
@@ -61443,13 +61448,13 @@ export type DuplicateAdCampaignResponse = ({
      */
     copiedCampaignId?: string;
     /**
-     * Meta only: source ad set ID to copied ad set ID. Empty when `deepCopy` is false.
+     * Meta: source ad set ID to copied ad set ID. Empty when `deepCopy` is false. Google: source asset group ID to copied asset group ID.
      */
     adSetIdMap?: {
         [key: string]: (string);
     };
     /**
-     * Meta only: source ad ID to copied ad ID, across every copied ad set. Empty when `deepCopy` is false.
+     * Meta: source ad ID to copied ad ID, across every copied ad set. Empty when `deepCopy` is false. Google: the same map as `adSetIdMap`, since a Performance Max asset group is its ad.
      */
     adIdMap?: {
         [key: string]: (string);
