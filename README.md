@@ -607,7 +607,7 @@ try {
 | `adCampaigns.updateAdCampaign()` | Update a campaign |
 | `adCampaigns.updateAdCampaignStatus()` | Pause or resume a campaign |
 | `adCampaigns.updateAdGroupAssets()` | Update ad-group assets |
-| `adCampaigns.updateAdKeyword()` | Pause or enable a Search keyword |
+| `adCampaigns.updateAdKeyword()` | Update a Search keyword |
 | `adCampaigns.updateAdSet()` | Update an ad set |
 | `adCampaigns.updateAdSetStatus()` | Pause or resume a single ad set |
 | `adCampaigns.updateAdStatus()` | Pause or resume a single ad |

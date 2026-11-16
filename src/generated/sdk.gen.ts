@@ -13423,11 +13423,14 @@ export const addAdKeywords = <ThrowOnError extends boolean = false>(options: Opt
 };
 
 /**
- * Pause or enable a Search keyword
- * Pauses or re-enables a single Google Search keyword.
+ * Update a Search keyword
+ * Pauses, re-enables or sets the bid of a single Google Search keyword. Send `status`, `cpcBid` or both.
  *
- * Changes `ad_group_criterion.status` for one keyword criterion (M.140).
- * Negative keywords have no status on Google and cannot be paused or enabled.
+ * Changes `ad_group_criterion.status` (M.140) and `ad_group_criterion.cpc_bid_micros` for one keyword criterion.
+ *
+ * `cpcBid` is in the ad account currency and takes effect only under Manual CPC bidding. A keyword with no bid of its own reads back `cpcBid: null` and uses its ad group bid.
+ *
+ * Negative keywords have no status or bid on Google and cannot be paused, enabled or given a bid.
  *
  */
 export const updateAdKeyword = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdKeywordData, ThrowOnError>) => {

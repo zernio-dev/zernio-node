@@ -1158,6 +1158,10 @@ export type AdKeyword = {
     status?: 'active' | 'paused';
     negative?: boolean;
     /**
+     * Max CPC bid set on this keyword, in the ad account currency. Null when the keyword uses its ad group bid. Takes effect only under Manual CPC bidding.
+     */
+    cpcBid?: (number) | null;
+    /**
      * Deprecated, use `quality.score`. Google Quality Score, 1-10. Null when unrated.
      */
     qualityScore?: (number) | null;
@@ -59403,7 +59407,11 @@ export type AddAdKeywordsError = (ErrorResponse | unknown);
 
 export type UpdateAdKeywordData = {
     body: {
-        status: 'active' | 'paused';
+        status?: 'active' | 'paused';
+        /**
+         * Max CPC bid for this keyword, in the ad account currency. Takes effect only under Manual CPC bidding.
+         */
+        cpcBid?: number;
     };
     path: {
         /**
