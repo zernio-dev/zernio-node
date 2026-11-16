@@ -8964,7 +8964,9 @@ export const getCallRecording = <ThrowOnError extends boolean = false>(options: 
  *
  * The 200 response means the call is dialing. The lifecycle continues asynchronously: track it via `GET /v1/voice/calls/{id}` or the `call.*` webhooks.
  *
- * Outbound calls are capped per rolling hour (429 when hit).
+ * Calls are not capped by count. Each team runs at most 10 calls at once (outbound calls plus calls forwarded to a phone) and has a daily safety limit on calling spend over the last 24 hours.
+ *
+ * Past a limit the call is refused with 429 `call_limit_reached`, and `details.limit` names it.
  *
  * ### Balance time limit
  *
