@@ -2408,6 +2408,14 @@ export type AdRuleObjectEvaluation = {
     actual: (number) | null;
     met: boolean;
 })>;
+    /**
+     * On a matched object: spend, impressions and clicks over each window its conditions read, and the other search impression shares when a condition reads one. Left out where a condition already reads the value.
+     */
+    readings?: Array<{
+        metric: string;
+        window: string;
+        actual: (number) | null;
+    }>;
 };
 
 export type AdRuleRun = {
