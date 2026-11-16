@@ -34032,6 +34032,18 @@ export type GetAccountHealthResponse = ({
      */
     push?: 'active' | 'pending' | 'failed' | 'not_applicable';
     /**
+     * Microsoft only: present while the login has no Exchange Online mailbox (no Exchange license, inactive, soft-deleted or on-premises). Mail and calendar requests then answer 412 `mailbox_not_available`; files are not affected. Absent when the mailbox works. `status` is also `warning`, with the reason in `issues`.
+     */
+    mailbox?: {
+        status?: 'unavailable';
+        reason?: 'no_mailbox';
+        message?: string;
+        /**
+         * When Microsoft last answered that the login has no mailbox.
+         */
+        detectedAt?: string;
+    };
+    /**
      * Microsoft only: how mail sent from the user's own mail client reaches `message.sent`. `poll` while Microsoft will not give Zernio a working Sent Items subscription for this mailbox (read every 5 minutes), `push` otherwise.
      */
     sentItemsSync?: 'push' | 'poll';
@@ -34986,6 +34998,7 @@ export type GetConnectUrlData = {
          * - A LinkedIn connect through an app saves the member's own profile: organization pages, and mention lookups, stay on Zernio's app.
          * - The connect requests the app's `scopeAreas`. `scopes` may narrow them but not add an area the app does not enable (400).
          * - If the user does not grant every requested area, the account still connects and the redirect carries `missing_permissions=<areas>` (the headless POST returns `missingPermissions`).
+         * - A Microsoft login that connected with `email` or `calendar` but has no Exchange Online mailbox still connects (files work), and the redirect carries `mailboxNotice=mailbox_not_available`. Mail and calendar requests then answer 412 `mailbox_not_available`.
          * - If the platform refuses a permission your app is not approved for, the redirect carries `error=oauth_app_scope_not_allowed`.
          *
          * The account remembers the app, and token refresh, publishing and inbox run on it. Reconnecting through another app, or without one, moves the account to that app.
