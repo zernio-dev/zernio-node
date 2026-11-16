@@ -16169,6 +16169,10 @@ export type type26 = 'google_domain_wide_delegation' | 'microsoft_admin_consent'
 export type OwnedPhoneNumber = {
     _id?: string;
     phoneNumber?: string;
+    /**
+     * The specific number you asked for at purchase (`phoneNumber` in the purchase body). Absent when you did not pick one. When it differs from `phoneNumber`, WhatsApp refused the picked number (it was likely registered on WhatsApp before), so a different number was issued.
+     */
+    requestedPhoneNumber?: string;
     country?: string;
     /**
      * For example local, mobile, national or toll_free.
