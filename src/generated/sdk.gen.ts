@@ -18139,6 +18139,7 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * - PMax rejects ACTIVE creation, portfolio bidding, bid caps, legacy creative fields and attach shapes.
  * - Geo and language targeting are supported; omitted geo targets all locations.
  * - PMax does not require top-level goal, headline, body or linkUrl.
+ * - `merchantCenter` links the campaign to a Merchant Center feed and adds one all-products listing group to the asset group. Google rejects the whole create (nothing is created) when the ad account is not linked to that Merchant Center.
  *
  * Supported bidding:
  *

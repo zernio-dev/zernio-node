@@ -69991,6 +69991,23 @@ export type CreateStandaloneAdData = {
          */
         locationTargetingType?: (GoogleLocationTargetingType);
         assetGroup?: GooglePmaxAssetGroupInput;
+        /**
+         * Google Performance Max only; any other campaign type returns 400. Links the new campaign to a Merchant Center account. Google rejects the create, and nothing is created, when the ad account is not linked to that Merchant Center.
+         */
+        merchantCenter?: {
+            /**
+             * Numeric Merchant Center id.
+             */
+            merchantId: string;
+            /**
+             * Feed label to use. Omitted, every feed of the Merchant Center is used.
+             */
+            feedLabel?: string;
+            /**
+             * Set to `vehicles` for vehicle listings. Omitted, the campaign is a retail Performance Max campaign. Vehicle ads require Google to allowlist the ad account; otherwise Google rejects the create.
+             */
+            listingType?: 'vehicles';
+        };
         demandGen?: GoogleDemandGenInput;
         /**
          * Google Search only. Keywords on the new ad group; entries are strings (BROAD) or { text, matchType }. Editable later via PUT /v1/ads/{adId} targeting.keywords.
