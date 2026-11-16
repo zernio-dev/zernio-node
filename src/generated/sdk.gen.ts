@@ -19473,8 +19473,10 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
 };
 
 /**
- * Send conversion events
- * Sends conversion events, such as purchases or leads, from your server to an ad platform so it can attribute and optimize ads.
+ * Send conversion events to one destination (legacy)
+ * Legacy: use [`POST /v1/events`](/conversions/send-events) instead. It sends each event once to every saved destination, retries failures, stores the event and reports what each platform answered. This endpoint keeps working and is not being removed.
+ *
+ * Sends conversion events, such as purchases or leads, from your server to one ad platform destination so it can attribute and optimize ads.
  *
  * Relays one or more events to the target ad platform's native Conversions API. The platform is inferred from the provided `accountId`. Requires the Ads add-on.
  *
@@ -19813,7 +19815,7 @@ export const listEvents = <ThrowOnError extends boolean = false>(options?: Optio
 
 /**
  * Send events to every destination
- * Sends conversion events once and forwards them to every ad platform destination saved for the profile (see `POST /v1/events/destinations`), or to the `destinations` given in the request. Requires the Ads add-on.
+ * The recommended way to send conversions. Sends conversion events once and forwards them to every ad platform destination saved for the profile (see `POST /v1/events/destinations`), or to the `destinations` given in the request. Requires the Ads add-on.
  *
  * ### Forwarding
  *
@@ -20123,8 +20125,8 @@ export const updateCampaignConversionGoals = <ThrowOnError extends boolean = fal
  *
  * Returns the list of pixels (Meta), conversion actions (Google),
  * conversion rules (LinkedIn), pixels (OpenAI Ads, Reddit) or ad accounts
- * (Pinterest) accessible to the connected ads account. Use the returned `id` as `destinationId` when
- * posting to `POST /v1/ads/conversions`.
+ * (Pinterest) accessible to the connected ads account. Save the returned `id` as a destination with
+ * `POST /v1/events/destinations` (or pass it in `destinations` on `POST /v1/events`).
  *
  * For Google and LinkedIn, each destination's `type` reflects the
  * conversion type (PURCHASE, LEAD, SIGN_UP, etc.), and the event type is

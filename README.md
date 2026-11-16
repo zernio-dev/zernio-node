@@ -1073,7 +1073,7 @@ try {
 | `conversions.restateEvent()` | Change a stored event's value |
 | `conversions.retractEvent()` | Retract a stored event |
 | `conversions.rotateTrackingSiteKey()` | Rotate a tracking site's key |
-| `conversions.sendConversions()` | Send conversion events |
+| `conversions.sendConversions()` | Send conversion events to one destination (legacy) |
 | `conversions.sendEvents()` | Send events to every destination |
 
 ### Creator Campaigns
