@@ -28293,6 +28293,9 @@ export type GetYouTubeChannelInsightsData = {
          * - averageViewDuration          (ratio - weighted mean computed across days)
          * - subscribersGained
          * - subscribersLost
+         * - likes
+         * - comments
+         * - shares
          *
          * Zernio-synthesized from daily follower snapshots (cross-platform parity):
          * - followers_gained
