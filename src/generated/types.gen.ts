@@ -4842,11 +4842,11 @@ export type AutoRecharge = {
      */
     enabled: boolean;
     /**
-     * Auto top-up charges the card when the balance drops below this, in cents.
+     * The below amount, in cents: when the balance drops below this, auto top-up brings it back to toCents.
      */
     belowCents: number;
     /**
-     * Top back up to this, in cents. The charge is toCents minus the balance, plus tax.
+     * The back-to amount, in cents. The charge is toCents minus the balance, plus tax.
      */
     toCents: number;
     /**
@@ -29996,15 +29996,15 @@ export type UpdateAutoRechargeData = {
          */
         enabled?: boolean;
         /**
-         * Auto top-up charges the card when the balance drops below this, in cents. At least $5.
+         * The below amount, in cents: when the balance drops below this, auto top-up brings it back to toCents. At least $5.
          */
         belowCents?: number;
         /**
-         * Top back up to this, in cents. At least $5 above belowCents, so at least $10.
+         * The back-to amount, in cents. At least $5 above belowCents, so at least $10.
          */
         toCents?: number;
         /**
-         * Most auto top-up may add per calendar month (UTC), before tax. At least toCents while auto top-up is on. Null for no limit.
+         * Most auto top-up may add per calendar month (UTC), before tax. At least the back-to amount (toCents) while auto top-up is on. Null for no limit.
          */
         monthlyLimitCents?: (number) | null;
         /**

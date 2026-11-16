@@ -735,7 +735,7 @@ export const getBalance = <ThrowOnError extends boolean = false>(options?: Optio
 
 /**
  * Get auto top-up settings
- * Your balance's auto top-up rule: when the balance drops below `belowCents`, the billing owner's saved card is charged back up to `toCents`, tax added on top as for any top-up.
+ * Your balance's auto top-up rule: when your balance drops below `belowCents`, we bring it back to `toCents` from the billing owner's saved card, tax added on top as for any top-up.
  *
  * Account credit you held when you moved to the balance pays an auto top-up first, without a card charge or invoice (see `recentCreditRecharges` on `GET /v1/balance`). The card is charged only once that credit is used up, and only while the balance is still below `belowCents`.
  *
@@ -765,7 +765,7 @@ export const getAutoRecharge = <ThrowOnError extends boolean = false>(options?: 
  *
  * When this month's auto top-ups plus the next one would pass `monthlyLimitCents`, the card is not charged and you get one email that month. At $0, pay-per-use then answers 402 `usage_limit_reached`.
  *
- * - 400: a field is out of range, `toCents` is less than $5 above `belowCents`, or, while auto top-up is on, `monthlyLimitCents` is lower than `toCents` (one top-up from $0 would pass it, so it could never charge). Omitted fields are checked with their stored values.
+ * - 400: a field is out of range, `toCents` is not at least $5 above `belowCents`, or, while auto top-up is on, `monthlyLimitCents` is lower than the back-to amount `toCents` (one top-up from $0 would pass it, so it could never charge). Omitted fields are checked with their stored values.
  * - 409 `balance_billing_required`: the account is not on the prepaid balance.
  *
  * Needs an owner, admin or billing admin, signed in or through a full-access key they created.
