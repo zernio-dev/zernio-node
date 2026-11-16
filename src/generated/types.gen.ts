@@ -2183,6 +2183,8 @@ export type AdRuleCondition = {
      *
      * `search_impression_share`, `search_budget_lost_impression_share` and `search_rank_lost_impression_share` are Google's Search impression share and the shares lost to budget and to ad rank, in percent. Campaign rules on Google only.
      *
+     * Google reports a share under 10% as 9.99 and a lost share over 90% as 90.01, so a threshold under 10 on the share, or over 90 on a lost share, is refused.
+     *
      * They are read live from Google, not in groups and not with `usual`. A campaign Google gives no value for (one not on Search) never matches.
      *
      * `daily_budget` is the object's synced daily budget. `budget_used` is spend over the window as a percent of that budget for each day of the window: `today` `>=` 200 means twice the budget spent.
@@ -2203,6 +2205,8 @@ export type AdRuleCondition = {
      * `<from>_to_<to>_days_ago` is any range of full days, both ends included, such as `8_to_2_days_ago` to skip the 2 most recent days while their conversions still arrive. `from` is at least `to` and at most 90.
      *
      * `last_complete_hour`, `last_3h` and `today_so_far` read campaign totals hour by hour, on campaign rules for Meta and Google, and end at the latest hour whose numbers have settled, not at now. They take `spend`, `impressions`, `clicks`, `ctr`, `cpc`, `cpm` and `budget_used` (against today's daily budget), and no `top` or `bottom`.
+     *
+     * They are saved only on an ad account the hourly sync covers (`GET /v1/ads/rules/hourly-windows`); on any other the rule is refused with a 400.
      *
      */
     window: ('today' | 'yesterday' | 'last_3d' | 'last_7d' | 'last_14d' | 'last_30d' | 'this_month' | 'last_month' | 'last_complete_hour' | 'last_3h' | 'today_so_far' | unknown);
@@ -60578,6 +60582,10 @@ export type ListAdRuleAlertsResponse = ({
         consecutiveMatches: number;
         openedAt: (string) | null;
         lastMatchedAt: string;
+        /**
+         * When a run last evaluated the object of this alert. Older than the latest run means that run did not evaluate it.
+         */
+        lastEvaluatedAt: string;
         resolvedAt: (string) | null;
         resolvedReason: ('condition_cleared' | 'action_applied' | 'not_evaluated' | 'automation_changed' | 'automation_off') | null;
     }>;
@@ -64922,7 +64930,7 @@ export type GetAdsActivityLogData = {
          */
         objectId?: string;
         /**
-         * Start of range (YYYY-MM-DD). Google: at most 29 days ago, the default.
+         * Start of range (YYYY-MM-DD). Google: at most 28 days ago, the default.
          */
         since?: string;
         /**

@@ -13947,7 +13947,7 @@ export const listAdRuleTemplates = <ThrowOnError extends boolean = false>(option
  * Check whether an ad account has hourly windows
  * Hourly windows (`last_complete_hour`, `last_3h`, `today_so_far`) read campaign totals hour by hour, which Zernio syncs only for some Meta and Google ad accounts.
  *
- * On an ad account without them, an hourly condition always reads as unknown and never matches. `hourlyWindows` says which case applies.
+ * A rule with an hourly condition is saved only on an ad account that has them: on any other, creating or editing it returns 400. `hourlyWindows` says which case applies.
  *
  */
 export const getAdRuleHourlyWindows = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdRuleHourlyWindowsData, ThrowOnError>) => {
@@ -16238,7 +16238,7 @@ export const dismissAdsAlert = <ThrowOnError extends boolean = false>(options: O
  *
  * Reads the customer's `change_event` history, newest first. `adAccountId` is the numeric customer id.
  *
- * Google keeps 30 days of it, so `since` defaults to 29 days ago and an older `since` returns 400. `until` defaults to today.
+ * Google keeps 30 days of it, counted to the hour, so `since` defaults to 28 days ago on the account's clock, the oldest whole day always inside them, and an older `since` returns 400. `until` defaults to today.
  *
  * Each change is mapped onto the Meta row shape:
  *
