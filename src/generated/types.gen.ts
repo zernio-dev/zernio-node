@@ -20296,6 +20296,14 @@ export type UsageAttributionGroup = UsageAttributionSlice & {
      * Profile id or account id, per `groupBy`.
      */
     key: string;
+    /**
+     * With `groupBy=profile` only: the profile id (same as `key`).
+     */
+    profileId?: string;
+    /**
+     * With `groupBy=profile` only: the externalId set on the profile, null when it has none.
+     */
+    externalId?: (string) | null;
 };
 
 export type UsageAttributionSlice = {
@@ -20469,11 +20477,9 @@ export type UsageMetering = {
         restricted?: boolean;
     };
     /**
-     * Present with `profileId` / `accountId`: echoes the group the payload was projected onto.
+     * Present with `profileId` / `externalId` / `accountId`: echoes the group the payload was projected onto. A profile scope carries both ids.
      */
-    scope?: ({
-    profileId: string;
-} | {
+    scope?: (UsageProfileRef | {
     accountId: string;
 });
 };
@@ -20486,6 +20492,14 @@ export type granularity = 'day' | 'month' | 'total';
 export type source5 = 'cycle' | 'window';
 
 export type groupBy = 'profile' | 'account';
+
+export type UsageProfileRef = {
+    profileId: string;
+    /**
+     * The externalId set on the profile, null when it has none.
+     */
+    externalId: (string) | null;
+};
 
 /**
  * Plan and usage stats. The response shape depends on `billingSystem`:
@@ -20589,6 +20603,25 @@ export type UsageStats = {
             [key: string]: (number);
         };
     };
+    /**
+     * Profile-scoped API keys and members only, without a filter: one block per profile the caller can see, shaped like `profile`.
+     */
+    profiles?: Array<(UsageProfileRef & {
+    usage?: {
+        connectedAccounts?: number;
+    };
+})>;
+    /**
+     * Present with `profileId` / `externalId` on `GET /v1/usage-stats`: the per-profile counters. Everything outside this block stays team-level.
+     */
+    profile?: (UsageProfileRef & {
+    usage?: {
+        /**
+         * Billable connected accounts on this profile, counted like the team-level figure.
+         */
+        connectedAccounts?: number;
+    };
+});
     /**
      * Usage-based billing only. Current-period spend summary.
      */
@@ -32531,9 +32564,13 @@ export type GetXApiPricingError = (ErrorResponse);
 export type GetUsageData = {
     query?: {
         /**
-         * Metering mode (pair with `range`). Project the payload onto this account's attributed share. Mutually exclusive with `profileId`, and `groupBy` (if given) must be `account`; 404 when the account is not visible to the caller.
+         * Metering mode (pair with `range`). Project the payload onto this account's attributed share. Mutually exclusive with `profileId` and `externalId`, and `groupBy` (if given) must be `account`; 404 when the account is not visible to the caller.
          */
         accountId?: string;
+        /**
+         * Metering mode (pair with `range`). Same as `profileId`, naming the profile by the `externalId` you set on it. Ignored without metering params. 404 when none of your visible profiles carries it; 400 when two of them do (externalId is unique per user, not per team), then filter by `profileId`.
+         */
+        externalId?: string;
         /**
          * Inclusive start (UTC date). Required when `range=custom`.
          */
@@ -32550,7 +32587,7 @@ export type GetUsageData = {
          */
         groupBy?: 'profile' | 'account';
         /**
-         * Metering mode (pair with `range`). Project the payload onto this profile's attributed share. Mutually exclusive with `accountId`, and `groupBy` (if given) must be `profile`; 404 when the profile is not in your team (or outside a scoped key's profiles).
+         * Metering mode (pair with `range`). Project the payload onto this profile's attributed share. Mutually exclusive with `externalId` and `accountId`, and `groupBy` (if given) must be `profile`; 404 when the profile is not in your team (or outside a scoped key's profiles).
          */
         profileId?: string;
         /**
@@ -32577,12 +32614,18 @@ export type GetUsageData = {
 
 export type GetUsageResponse = ((UsageStats | UsageMetering));
 
-export type GetUsageError = (unknown | ErrorResponse | {
-    error?: string;
-});
+export type GetUsageError = (unknown | ErrorResponse);
 
 export type GetUsageStatsData = {
     query?: {
+        /**
+         * Same as `profileId`, naming the profile by the `externalId` you set on it. 404 when none of your visible profiles carries it; 400 when two of them do.
+         */
+        externalId?: string;
+        /**
+         * Add the `profile` block for this profile. Mutually exclusive with `externalId`. 404 when the profile is not in your team or outside a scoped key's profiles.
+         */
+        profileId?: string;
         /**
          * For Stripe subscription users, `true` forces a subscription
          * reconciliation pass even when cached plan data looks complete.
@@ -32597,18 +32640,24 @@ export type GetUsageStatsData = {
 
 export type GetUsageStatsResponse = (UsageStats);
 
-export type GetUsageStatsError = (unknown | ErrorResponse | {
-    error?: string;
-});
+export type GetUsageStatsError = (unknown | ErrorResponse);
 
 export type GetCallsUsageData = {
     query?: {
         channel?: 'whatsapp' | 'pstn';
-        groupBy?: 'day' | 'number' | 'channel';
+        /**
+         * Same as `profileId`, naming the profile by the `externalId` you set on it. 404 when none of your visible profiles carries it; 400 when two of them do.
+         */
+        externalId?: string;
+        groupBy?: 'day' | 'number' | 'channel' | 'profile';
         /**
          * Scope to calls involving this number (typically one of YOUR numbers). E.164, leading + optional.
          */
         number?: string;
+        /**
+         * Scope to the calls of this profile. Mutually exclusive with `externalId`. 404 when the profile is not in your team or outside a scoped key's profiles.
+         */
+        profileId?: string;
         /**
          * Start of the window (inclusive). Default 30 days before `until`.
          */
@@ -32623,7 +32672,11 @@ export type GetCallsUsageData = {
 export type GetCallsUsageResponse = ({
     since?: string;
     until?: string;
-    groupBy?: ('day' | 'number' | 'channel') | null;
+    groupBy?: ('day' | 'number' | 'channel' | 'profile') | null;
+    /**
+     * Present with `profileId` / `externalId`: the profile the figures are scoped to.
+     */
+    profile?: UsageProfileRef;
     totals?: {
         calls?: number;
         answered?: number;
@@ -32650,9 +32703,17 @@ export type GetCallsUsageResponse = ({
      */
     groups?: Array<{
         /**
-         * The group key: a `YYYY-MM-DD` UTC day, one of your numbers, or a channel.
+         * The group key: a `YYYY-MM-DD` UTC day, one of your numbers, a channel, or a profile id.
          */
         key?: string;
+        /**
+         * With `groupBy=profile` only: the profile id (same as `key`).
+         */
+        profileId?: string;
+        /**
+         * With `groupBy=profile` only: the externalId set on the profile, null when it has none.
+         */
+        externalId?: (string) | null;
         calls?: number;
         answered?: number;
         minutes?: number;
@@ -32667,11 +32728,19 @@ export type GetCallsUsageError = (unknown | ErrorResponse);
 
 export type GetSmsUsageData = {
     query?: {
-        groupBy?: 'day' | 'number';
+        /**
+         * Same as `profileId`, naming the profile by the `externalId` you set on it. 404 when none of your visible profiles carries it; 400 when two of them do.
+         */
+        externalId?: string;
+        groupBy?: 'day' | 'number' | 'profile';
         /**
          * Scope to one of YOUR SMS-enabled numbers (E.164, leading + optional).
          */
         number?: string;
+        /**
+         * Scope to the messages of this profile. Mutually exclusive with `externalId`. 404 when the profile is not in your team or outside a scoped key's profiles.
+         */
+        profileId?: string;
         /**
          * Start of the window (inclusive). Default 30 days before `until`.
          */
@@ -32686,7 +32755,11 @@ export type GetSmsUsageData = {
 export type GetSmsUsageResponse = ({
     since?: string;
     until?: string;
-    groupBy?: ('day' | 'number') | null;
+    groupBy?: ('day' | 'number' | 'profile') | null;
+    /**
+     * Present with `profileId` / `externalId`: the profile the counts are scoped to.
+     */
+    profile?: UsageProfileRef;
     totals?: {
         sent?: number;
         received?: number;
@@ -32697,9 +32770,17 @@ export type GetSmsUsageResponse = ({
      */
     groups?: Array<{
         /**
-         * A `YYYY-MM-DD` UTC day or one of your numbers.
+         * A `YYYY-MM-DD` UTC day, one of your numbers, or a profile id.
          */
         key?: string;
+        /**
+         * With `groupBy=profile` only: the profile id (same as `key`).
+         */
+        profileId?: string;
+        /**
+         * With `groupBy=profile` only: the externalId set on the profile, null when it has none.
+         */
+        externalId?: (string) | null;
         sent?: number;
         received?: number;
         total?: number;
@@ -49938,11 +50019,19 @@ export type ListVoiceCallsData = {
     query?: {
         before?: string;
         direction?: 'inbound' | 'outbound';
+        /**
+         * Same as `profileId`, naming the profile by the `externalId` you set on it. 404 when none of your visible profiles carries it; 400 when two of them do.
+         */
+        externalId?: string;
         limit?: number;
         /**
          * Exact filter: calls involving this number (typically one of your DIDs). E.164, leading + optional.
          */
         number?: string;
+        /**
+         * Only calls of this profile. Mutually exclusive with `externalId`. 404 when the profile is not in your team or outside a scoped key's profiles.
+         */
+        profileId?: string;
         status?: 'ringing' | 'answered' | 'ended' | 'failed';
     };
 };
@@ -49952,7 +50041,7 @@ export type ListVoiceCallsResponse = ({
     nextCursor?: (string) | null;
 });
 
-export type ListVoiceCallsError = (ErrorResponse);
+export type ListVoiceCallsError = (unknown | ErrorResponse);
 
 export type GetVoiceCallData = {
     path: {

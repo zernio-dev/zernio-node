@@ -1788,8 +1788,13 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  * - `peaks`, `callUsage` and `tax` are then `null` (team-level facts).
  * - Projected `days` spread the group's period share over each day (usage is attributed per period, not per day).
  * - `profileId` / `accountId` on their own do not select metering mode: pair them with `range`.
+ * - `externalId` names the profile by the id you set on it (`POST /v1/profiles`), so you can bill a tenant without storing our profile id.
+ *
+ * With `groupBy=profile`, each group also carries `profileId` and `externalId`.
  *
  * Profile-scoped API keys and members only see their profiles' groups (`attribution.restricted: true`, with `totals` summing the visible groups). Credits, 10DLC fees and Verify are always unattributed.
+ *
+ * Since 1.630.0 a profile-scoped key or member never gets the team payload in metering mode: without `groupBy` or a filter, `days`, `totals` and `lineItems` are projected onto its visible profiles, `peaks`, `callUsage` and `tax` are `null`, and no `attribution` is returned. Full-access keys and sessions keep the team payload.
  *
  * ### Related endpoints
  *
@@ -1825,6 +1830,14 @@ export const getUsage = <ThrowOnError extends boolean = false>(options?: Options
  *
  * The legacy `usage.xApiCalls` 3-tier aggregate is still emitted for back-compat. It excludes the $0.200 URL tier and any future tiers, so new clients should consume `xApiCallsByOperation` only.
  *
+ * ### Per profile
+ *
+ * `profileId` or `externalId` adds a `profile` block with the counters that are meaningful per profile (`usage.connectedAccounts`). Everything else (plan, limits, uploads, X usage, spend, payment state) stays team-level. These filters work on this path only: a bare `GET /v1/usage` ignores them.
+ *
+ * Since 1.630.0 a profile-scoped API key or member gets a `profiles` array with one block per profile it can see (or the single `profile` block when it filters), and `usage.connectedAccounts` / `usage.profiles` count only those profiles.
+ *
+ * Plan, billing and payment fields are unchanged. Full-access keys and sessions keep the team counts and get no `profiles` array.
+ *
  */
 export const getUsageStats = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetUsageStatsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetUsageStatsResponse, GetUsageStatsError, ThrowOnError>({
@@ -1845,8 +1858,18 @@ export const getUsageStats = <ThrowOnError extends boolean = false>(options?: Op
  * `metaUSD` is the WhatsApp per-minute charge Meta bills directly to
  * your WABA (display only, never billed by Zernio).
  *
- * Optional `groupBy` returns a breakdown by UTC day, by your number, or
- * by channel. Defaults to the last 30 days.
+ * Optional `groupBy` returns a breakdown by UTC day, by your number, by
+ * channel, or by profile. Defaults to the last 30 days.
+ *
+ * ### Per profile
+ *
+ * A call belongs to the profile of the account (number) it was placed
+ * on.
+ *
+ * - `profileId` or `externalId` scopes every figure to one profile.
+ * - `groupBy=profile` returns one group per profile carrying its `profileId` and `externalId`.
+ * - Calls on numbers outside any of your profiles count in `totals` but in no group.
+ * - A profile-scoped API key or member only ever sees its own profiles' calls, with or without a filter (since 1.630.0), so `totals` and every group cover those profiles only. Full-access keys and sessions see the whole team.
  *
  */
 export const getCallsUsage = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetCallsUsageData, ThrowOnError>) => {
@@ -1865,6 +1888,15 @@ export const getCallsUsage = <ThrowOnError extends boolean = false>(options?: Op
  * Volumes only, deliberately: SMS cost is carrier-rated asynchronously
  * and billed to your invoice, so per-message cost is not available here.
  * Calling usage (GET /v1/usage/calls) does include billable cost.
+ *
+ * ### Per profile
+ *
+ * A message belongs to the profile of the SMS number it went through.
+ *
+ * - `profileId` or `externalId` scopes the counts to one profile. Combined with `number`, only that number's messages on that profile count.
+ * - `groupBy=profile` returns one group per profile carrying its `profileId` and `externalId`.
+ * - Alphanumeric sender IDs sit on no profile, so their messages count in `totals` but in no group.
+ * - A profile-scoped API key or member only ever sees its own profiles' messages, with or without a filter (since 1.630.0). Full-access keys and sessions see every number.
  *
  */
 export const getSmsUsage = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetSmsUsageData, ThrowOnError>) => {
@@ -9008,6 +9040,13 @@ export const createVoiceCall = <ThrowOnError extends boolean = false>(options: O
  * pagination: pass the returned `nextCursor` as `before` for the next
  * page. For a history that also includes WhatsApp calls, use
  * `GET /v1/calls`.
+ *
+ * `profileId` or `externalId` lists one profile's calls: a call belongs
+ * to the profile of the account (number) it was placed on.
+ *
+ * A profile-scoped API key or member only ever lists its own profiles'
+ * calls, with or without a filter (since 1.630.0). Full-access keys and
+ * sessions list the whole team's.
  *
  */
 export const listVoiceCalls = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListVoiceCallsData, ThrowOnError>) => {
