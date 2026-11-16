@@ -8411,6 +8411,15 @@ export type ConversionEvent = {
          */
         leadId?: string;
         /**
+         * The Zernio tag's visitor id, from the `_zid` cookie the tag sets on your site. Zernio adds the click ids
+         * and browser ids of that visit that the event lacks, before storing and forwarding it.
+         *
+         * Without it, Zernio finds the visit by the `email`, `phone` or `externalId` the tag saw. Ids you send
+         * always win. Never sent to a platform. Read only by `POST /v1/events`, for a profile with a tracking site.
+         *
+         */
+        visitorId?: string;
+        /**
          * Platform click identifiers captured from the originating ad click.
          */
         clickIds?: {
