@@ -225,6 +225,7 @@ try {
 | `profiles.listProfiles()` | List profiles |
 | `profiles.createProfile()` | Create profile |
 | `profiles.getProfile()` | Get profile |
+| `profiles.getProfileLimits()` | Get profile call limits |
 | `profiles.updateProfile()` | Update profile |
 | `profiles.deleteProfile()` | Delete profile |
 

@@ -576,6 +576,7 @@ import {
   getPostingFrequency,
   getProduct,
   getProfile,
+  getProfileLimits,
   getRcsAgent,
   getRcsCapabilities,
   getRedditFeed,
@@ -1654,6 +1655,7 @@ export class Zernio {
     getProfile: this._bind(getProfile),
     updateProfile: this._bind(updateProfile),
     deleteProfile: this._bind(deleteProfile),
+    getProfileLimits: this._bind(getProfileLimits),
   };
 
   /**

@@ -17361,6 +17361,18 @@ export type Profile = {
      * The mode that applies to this profile: `none` when the profile or the whole team uses zero content retention.
      */
     effectiveContentRetention?: 'standard' | 'none';
+    /**
+     * Most outbound calls placed from this profile's numbers in any rolling hour. Null means only the team limits apply.
+     */
+    maxOutboundCallsPerHour?: (number) | null;
+    /**
+     * Most billed spend, in USD, on outbound calls and calls forwarded to a phone from this profile's numbers in any rolling 24 hours. Null means only the team limits apply.
+     */
+    maxDailyCallSpendUsd?: (number) | null;
+    /**
+     * Most minutes of inbound calls forwarded to a phone from this profile's numbers in any rolling 24 hours. Null means only the team limits apply.
+     */
+    maxForwardedMinutesPerDay?: (number) | null;
     isDefault?: boolean;
     /**
      * Only present when includeOverLimit=true. Indicates if this profile exceeds the plan limit.
@@ -17382,6 +17394,57 @@ export type contentRetention = 'standard' | 'none';
  * The mode that applies to this profile: `none` when the profile or the whole team uses zero content retention.
  */
 export type effectiveContentRetention = 'standard' | 'none';
+
+export type ProfileCallLimit = {
+    /**
+     * The limit, or null when none is set at this level.
+     */
+    limit: (number) | null;
+    /**
+     * Used in the current window, calls still in progress included.
+     */
+    used: number;
+    /**
+     * What is left before the limit; null when there is no limit.
+     */
+    remaining: (number) | null;
+    /**
+     * `concurrent` counts calls in progress now; the rolling windows end now.
+     */
+    window: 'concurrent' | 'rolling_hour' | 'rolling_24h';
+};
+
+/**
+ * `concurrent` counts calls in progress now; the rolling windows end now.
+ */
+export type window = 'concurrent' | 'rolling_hour' | 'rolling_24h';
+
+export type ProfileCallLimitsResponse = {
+    profileId: string;
+    /**
+     * The limits set on this profile. They apply inside the team limits, never above them.
+     */
+    profile: {
+        outboundCallsPerHour?: ProfileCallLimit;
+        dailyCallSpendUsd?: ProfileCallLimit;
+        forwardedMinutesPerDay?: ProfileCallLimit;
+    };
+    /**
+     * The limits of the whole team (every profile and member). Contact support to raise them.
+     */
+    team: {
+        concurrentCalls?: ProfileCallLimit;
+        /**
+         * Billed spend (USD) on outbound calls and calls forwarded to a phone across the team over the rolling 24 hours, in the same unit as `maxDailyCallSpendUsd`.
+         */
+        dailyCallSpendUsd?: (ProfileCallLimit);
+        /**
+         * Billed spend (USD) on calls forwarded to a phone across the team over the rolling 24 hours.
+         */
+        dailyForwardSpendUsd?: (ProfileCallLimit);
+        forwardedMinutesPerHour?: ProfileCallLimit;
+    };
+};
 
 export type ProfileCreateResponse = {
     message?: string;
@@ -33430,6 +33493,18 @@ export type CreateProfileData = {
          * Set `none` to create the profile with zero content retention, so nothing of its accounts is stored from the first sync. Only the team owner can, with a session or a full-access key; anyone else gets 403.
          */
         contentRetention?: 'standard' | 'none';
+        /**
+         * Caps outbound calls from this profile's numbers per rolling hour, inside the team limits. Omit for no profile cap.
+         */
+        maxOutboundCallsPerHour?: number;
+        /**
+         * Caps billed call spend (USD) from this profile's numbers per rolling 24 hours, inside the team limits. Omit for no profile cap.
+         */
+        maxDailyCallSpendUsd?: number;
+        /**
+         * Caps minutes forwarded to a phone from this profile's numbers per rolling 24 hours, inside the team limits. Omit for no profile cap.
+         */
+        maxForwardedMinutesPerDay?: number;
     };
     headers?: {
         /**
@@ -33540,6 +33615,18 @@ export type UpdateProfileData = {
          * Turns zero content retention on (`none`) or off (`standard`) for this profile only, for new data within about a minute. Only the team owner can change it. `standard` answers 409 while the whole team has it on; `none` answers 409 during a WhatsApp verification of a number of this profile.
          */
         contentRetention?: 'standard' | 'none';
+        /**
+         * Caps outbound calls from this profile's numbers per rolling hour, inside the team limits. Null clears it.
+         */
+        maxOutboundCallsPerHour?: (number) | null;
+        /**
+         * Caps billed call spend (USD) from this profile's numbers per rolling 24 hours, inside the team limits. Null clears it.
+         */
+        maxDailyCallSpendUsd?: (number) | null;
+        /**
+         * Caps minutes forwarded to a phone from this profile's numbers per rolling 24 hours, inside the team limits. Null clears it.
+         */
+        maxForwardedMinutesPerDay?: (number) | null;
     };
     path: {
         profileId: string;
@@ -33561,6 +33648,18 @@ export type DeleteProfileData = {
 export type DeleteProfileResponse = (ProfileDeleteResponse);
 
 export type DeleteProfileError = (unknown | ErrorResponse | {
+    error?: string;
+});
+
+export type GetProfileLimitsData = {
+    path: {
+        profileId: string;
+    };
+};
+
+export type GetProfileLimitsResponse = (ProfileCallLimitsResponse);
+
+export type GetProfileLimitsError = (ErrorResponse | unknown | {
     error?: string;
 });
 

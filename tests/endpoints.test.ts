@@ -1035,6 +1035,11 @@ describe('Endpoint Methods', () => {
       expect(client.profiles.deleteProfile).toBeTypeOf('function');
     });
 
+    it('should have getProfileLimits method', () => {
+      expect(client.profiles.getProfileLimits).toBeDefined();
+      expect(client.profiles.getProfileLimits).toBeTypeOf('function');
+    });
+
   });
 
   describe('queue', () => {
