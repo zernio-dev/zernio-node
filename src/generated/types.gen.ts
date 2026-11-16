@@ -19493,6 +19493,80 @@ export type materialType = 'spark_post' | 'video' | 'carousel' | 'catalog_carous
  */
 export type TikTokSmartPlusReviewStatus = 'approved' | 'partially_approved' | 'rejected' | 'unknown';
 
+export type TrackingSite = {
+    id?: string;
+    profileId?: string;
+    name?: string;
+    status?: 'active' | 'paused' | 'removing';
+    install?: {
+        /**
+         * How the tag is installed. `snippet` means you paste it.
+         */
+        method?: 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
+        storeAccountId?: (string) | null;
+        /**
+         * The script tag to paste, already pointing at the custom subdomain once it is active.
+         */
+        snippet?: string;
+    };
+    /**
+     * True when the store's orders reach Zernio from the store itself, so website purchases are forwarded but not counted twice.
+     */
+    storeOrders?: boolean;
+    /**
+     * Public key that names the site in the snippet, such as `zs_...`.
+     */
+    siteKey?: string;
+    domains?: Array<(string)>;
+    customHostname?: {
+        hostname?: string;
+        status?: 'pending' | 'active' | 'failed';
+        dnsRecord?: {
+            type?: 'CNAME';
+            /**
+             * The record name relative to your domain, such as `t`.
+             */
+            name?: string;
+            target?: string;
+        };
+    } | null;
+    consentMode?: TrackingSiteConsentMode;
+    /**
+     * One per setup step: `script` for the install, then one per ad account the site sends to, keyed by its platform and ids.
+     */
+    checks?: Array<{
+        key?: string;
+        status?: 'pending' | 'passed' | 'failed';
+        /**
+         * What to do when the check has not passed.
+         */
+        detail?: (string) | null;
+        checkedAt?: string;
+    }>;
+    setup?: {
+        /**
+         * `failed` when any check failed, `ready` when all passed.
+         */
+        status?: 'pending' | 'ready' | 'failed';
+    };
+    createdAt?: string;
+    updatedAt?: string;
+};
+
+export type status56 = 'active' | 'paused' | 'removing';
+
+/**
+ * How the tag is installed. `snippet` means you paste it.
+ */
+export type method4 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
+
+export type type30 = 'CNAME';
+
+/**
+ * How a visitor with no consent signal is treated. `eu_opt_in` (default): no consent in the EU, UK and other countries that require it, consent elsewhere. `opt_in`: no consent anywhere. `opt_out`: consent everywhere.
+ */
+export type TrackingSiteConsentMode = 'eu_opt_in' | 'opt_in' | 'opt_out';
+
 /**
  * A platform measurement tag: the thing you create, install on a website, send events to, and target ads against. On Meta this is a Pixel (`kind: pixel`).
  *
@@ -19762,7 +19836,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status56 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status57 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -19842,7 +19916,7 @@ export type TreasuryTopup = {
     hasInvoice?: boolean;
 };
 
-export type method4 = 'card' | 'bank_transfer';
+export type method5 = 'card' | 'bank_transfer';
 
 /**
  * `balance` funds your balance; `payout_batch` is the card payment of one payout batch, which pays its creators directly.
@@ -19852,7 +19926,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status57 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status58 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -19893,7 +19967,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status58 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status59 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -20075,7 +20149,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type30 = 'image' | 'video' | 'document';
+export type type31 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -20084,7 +20158,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status59 = 'pending' | 'completed' | 'expired';
+export type status60 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -20597,7 +20671,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status60 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status61 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel5 = 'sms' | 'whatsapp';
 
@@ -20827,7 +20901,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status61 = 'success' | 'failed';
+export type status62 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -20941,7 +21015,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status62 = 'success' | 'failure';
+export type status63 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -21472,7 +21546,7 @@ export type WebhookPayloadAdReview = {
 
 export type event11 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status63 = 'approved' | 'rejected';
+export type status64 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -22048,7 +22122,7 @@ export type event17 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status64 = 'ready' | 'error';
+export type status65 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -22189,7 +22263,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event20 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status65 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status66 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -23549,7 +23623,7 @@ export type WebhookPayloadCommerceOrder = {
 
 export type event43 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
 
-export type type31 = 'order';
+export type type32 = 'order';
 
 export type WebhookPayloadCommerceProduct = {
     /**
@@ -23592,7 +23666,7 @@ export type WebhookPayloadCommerceProduct = {
 
 export type event44 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
-export type type32 = 'product';
+export type type33 = 'product';
 
 /**
  * Webhook payload for contact.updated and contact.deleted, fired after a provider contacts sync (Google Contacts, Outlook) changed a contact. contact.updated also fires after a WhatsApp coexistence address-book change (WhatsApp never fires contact.deleted). Read the contact with `GET /v1/contacts/{id}`.
@@ -23993,7 +24067,7 @@ export type event52 = 'email.bounced';
 /**
  * `hard`: 5.x.x, the address does not take mail. `soft`: 4.x.x, a temporary refusal the sending server gave up on. `undetermined`: the report gave no status.
  */
-export type type33 = 'hard' | 'soft' | 'undetermined';
+export type type34 = 'hard' | 'soft' | 'undetermined';
 
 export type category2 = 'user_unknown' | 'mailbox_full' | 'domain_not_found' | 'policy_blocked' | 'spam_blocked' | 'blocklisted' | 'message_too_large' | 'content_rejected' | 'auth_failure' | 'rate_limited' | 'other';
 
@@ -24541,7 +24615,7 @@ export type platform21 = 'instagram' | 'facebook' | 'linkedin';
 /**
  * Null on LinkedIn.
  */
-export type type34 = 'caption' | 'post' | 'comment';
+export type type35 = 'caption' | 'post' | 'comment';
 
 /**
  * Webhook payload for message received events
@@ -25655,7 +25729,7 @@ export type event70 = 'notification.sent';
  */
 export type category3 = 'postFailures' | 'accountIssues' | 'securityAlerts';
 
-export type type35 = 'post_failed' | 'account_disconnected' | 'api_key_handed_over';
+export type type36 = 'post_failed' | 'account_disconnected' | 'api_key_handed_over';
 
 /**
  * Webhook payload for phone_number.stock_available events
@@ -25950,7 +26024,7 @@ export type event74 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status66 = 'published' | 'failed' | 'deleted';
+export type status67 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -26516,7 +26590,7 @@ export type event86 = 'whatsapp.account.name_status_updated';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status67 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status68 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -26650,7 +26724,7 @@ export type event88 = 'whatsapp.account.status_updated';
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status68 = 'restricted' | 'active';
+export type status69 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -26866,7 +26940,7 @@ export type event91 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status69 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status70 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -26930,7 +27004,7 @@ export type event92 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status70 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status71 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -27206,7 +27280,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type36 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type37 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -27248,7 +27322,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type37 = 'platform_error';
+export type type38 = 'platform_error';
 
 export type code4 = 'platform_api_error';
 
@@ -27330,7 +27404,7 @@ export type WorkflowExecutionEvent = {
 
 export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status71 = 'success' | 'failed' | 'pending';
+export type status72 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -27476,7 +27550,7 @@ export type WorkflowNode = {
  * integrations (webhook, hubspot_upsert_contact, ai, handoff, start_call).
  *
  */
-export type type38 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type39 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -27612,7 +27686,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type39 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type40 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -27691,7 +27765,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type40 = 'divider' | 'latex';
+export type type41 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -73680,6 +73754,133 @@ export type DeleteForwardingRuleResponse = ({
 });
 
 export type DeleteForwardingRuleError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListTrackingSitesData = {
+    query?: {
+        /**
+         * `pagination.nextCursor` from the previous page.
+         */
+        cursor?: string;
+        limit?: number;
+        profileId?: string;
+    };
+};
+
+export type ListTrackingSitesResponse = ({
+    sites?: Array<TrackingSite>;
+    pagination?: {
+        /**
+         * Pass as `cursor` for the next page; null on the last page.
+         */
+        nextCursor?: (string) | null;
+    };
+});
+
+export type ListTrackingSitesError = (ErrorResponse);
+
+export type CreateTrackingSiteData = {
+    body: ({
+    profileId: string;
+    /**
+     * A Shopify, WordPress, Wix or Webflow account connected to the profile.
+     */
+    storeAccountId: string;
+    /**
+     * The store's public address, when it differs from the one the store reports.
+     */
+    url?: string;
+} | {
+    profileId: string;
+    /**
+     * The website, such as `https://brand.com`. A bare domain also allows its `www.` host.
+     */
+    url: string;
+});
+    headers: {
+        /**
+         * A unique key per site you create, such as a UUID. A retry with the same key and body returns the same site.
+         */
+        'Idempotency-Key': string;
+    };
+};
+
+export type CreateTrackingSiteResponse = ({
+    site?: TrackingSite;
+});
+
+export type CreateTrackingSiteError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetTrackingSiteData = {
+    path: {
+        siteId: string;
+    };
+};
+
+export type GetTrackingSiteResponse = ({
+    site?: TrackingSite;
+});
+
+export type GetTrackingSiteError = (ErrorResponse);
+
+export type UpdateTrackingSiteData = {
+    body: {
+        name?: string;
+        /**
+         * Hosts allowed to send events, such as `brand.com`. Events from any other origin are dropped.
+         */
+        domains?: Array<(string)>;
+        consentMode?: TrackingSiteConsentMode;
+        /**
+         * A subdomain of one of the site's domains, never the domain itself. `null` removes it.
+         */
+        customHostname?: (string) | null;
+    };
+    path: {
+        siteId: string;
+    };
+};
+
+export type UpdateTrackingSiteResponse = ({
+    site?: TrackingSite;
+});
+
+export type UpdateTrackingSiteError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DeleteTrackingSiteData = {
+    path: {
+        siteId: string;
+    };
+};
+
+export type DeleteTrackingSiteResponse = (void);
+
+export type DeleteTrackingSiteError = (ErrorResponse | {
+    error?: string;
+});
+
+export type RotateTrackingSiteKeyData = {
+    headers: {
+        /**
+         * A unique key per rotation, such as a UUID.
+         */
+        'Idempotency-Key': string;
+    };
+    path: {
+        siteId: string;
+    };
+};
+
+export type RotateTrackingSiteKeyResponse = ({
+    site?: TrackingSite;
+});
+
+export type RotateTrackingSiteKeyError = (ErrorResponse | {
     error?: string;
 });
 

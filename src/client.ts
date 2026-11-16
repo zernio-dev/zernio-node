@@ -211,6 +211,7 @@ import {
   createStandaloneAd,
   createTestLead,
   createTopup,
+  createTrackingSite,
   createTrackingTag,
   createTrackingTagEvent,
   createTransfer,
@@ -316,6 +317,7 @@ import {
   deleteSmsSenderId,
   deleteTelegramCommands,
   deleteTestLead,
+  deleteTrackingSite,
   deleteTrackingTagEvent,
   deleteValueRuleSet,
   deleteWebhookSettings,
@@ -602,6 +604,7 @@ import {
   getTopupInvoice,
   getTopupReceipt,
   getTopupStatement,
+  getTrackingSite,
   getTrackingTag,
   getTrackingTagDiagnostics,
   getTrackingTagStats,
@@ -889,6 +892,7 @@ import {
   listTikTokCommercialMusic,
   listTikTokSmartPlusReviews,
   listTopups,
+  listTrackingSites,
   listTrackingTagEvents,
   listTrackingTagPartners,
   listTrackingTagSharedAccounts,
@@ -1033,6 +1037,7 @@ import {
   revokeBusinessPartner,
   revokeConnectedApp,
   rotateSipTrunkCredentials,
+  rotateTrackingSiteKey,
   rsvpCalendarEvent,
   runBusinessAgentConnectorTool,
   runCommerceCatalogSync,
@@ -1237,6 +1242,7 @@ import {
   updateSequence,
   updateSlackSettings,
   updateStripeSettings,
+  updateTrackingSite,
   updateTrackingTag,
   updateTrackingTagEvent,
   updateValueRuleSet,
@@ -2976,6 +2982,12 @@ export class Zernio {
     createForwardingRule: this._bind(createForwardingRule),
     updateForwardingRule: this._bind(updateForwardingRule),
     deleteForwardingRule: this._bind(deleteForwardingRule),
+    listTrackingSites: this._bind(listTrackingSites),
+    createTrackingSite: this._bind(createTrackingSite),
+    getTrackingSite: this._bind(getTrackingSite),
+    updateTrackingSite: this._bind(updateTrackingSite),
+    deleteTrackingSite: this._bind(deleteTrackingSite),
+    rotateTrackingSiteKey: this._bind(rotateTrackingSiteKey),
     listAdConversionDestinations: this._bind(listAdConversionDestinations),
     createAdConversionDestination: this._bind(createAdConversionDestination),
     getAdConversionDestination: this._bind(getAdConversionDestination),
@@ -3674,6 +3686,18 @@ export class Zernio {
     updateForwardingRule: this._bind(updateForwardingRule),
     /** @deprecated Use `zernio.conversions.deleteForwardingRule` instead. */
     deleteForwardingRule: this._bind(deleteForwardingRule),
+    /** @deprecated Use `zernio.conversions.listTrackingSites` instead. */
+    listTrackingSites: this._bind(listTrackingSites),
+    /** @deprecated Use `zernio.conversions.createTrackingSite` instead. */
+    createTrackingSite: this._bind(createTrackingSite),
+    /** @deprecated Use `zernio.conversions.getTrackingSite` instead. */
+    getTrackingSite: this._bind(getTrackingSite),
+    /** @deprecated Use `zernio.conversions.updateTrackingSite` instead. */
+    updateTrackingSite: this._bind(updateTrackingSite),
+    /** @deprecated Use `zernio.conversions.deleteTrackingSite` instead. */
+    deleteTrackingSite: this._bind(deleteTrackingSite),
+    /** @deprecated Use `zernio.conversions.rotateTrackingSiteKey` instead. */
+    rotateTrackingSiteKey: this._bind(rotateTrackingSiteKey),
     /** @deprecated Use `zernio.conversions.listAdConversionDestinations` instead. */
     listAdConversionDestinations: this._bind(listAdConversionDestinations),
     /** @deprecated Use `zernio.conversions.createAdConversionDestination` instead. */

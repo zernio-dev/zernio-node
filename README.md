@@ -1033,6 +1033,7 @@ try {
 | `conversions.listEventDestinations()` | List event destinations |
 | `conversions.listEvents()` | List stored events |
 | `conversions.listForwardingRules()` | List forwarding rules |
+| `conversions.listTrackingSites()` | List tracking sites |
 | `conversions.createAdConversionDestination()` | Create a conversion destination |
 | `conversions.createAdCustomConversion()` | Create custom conversion |
 | `conversions.createConversionAction()` | Create conversion action |
@@ -1040,6 +1041,7 @@ try {
 | `conversions.createCustomConversionGoal()` | Create a custom conversion goal |
 | `conversions.createEventDestination()` | Add an event destination |
 | `conversions.createForwardingRule()` | Add a forwarding rule |
+| `conversions.createTrackingSite()` | Turn on server-side tracking for a website |
 | `conversions.getAdConversionDestination()` | Get a conversion destination |
 | `conversions.getAdConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionDestination()` | Get a conversion destination |
@@ -1047,16 +1049,19 @@ try {
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
 | `conversions.getEvent()` | Get one stored event and its deliveries |
 | `conversions.getEventsOverview()` | Get today's tracking overview |
+| `conversions.getTrackingSite()` | Get a tracking site |
 | `conversions.updateAdConversionDestination()` | Update a conversion destination |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |
 | `conversions.updateConversionAction()` | Update a conversion action's settings |
 | `conversions.updateConversionDestination()` | Update a conversion destination |
 | `conversions.updateCustomConversionGoal()` | Update a custom conversion goal |
 | `conversions.updateForwardingRule()` | Change a forwarding rule's API secret |
+| `conversions.updateTrackingSite()` | Update a tracking site |
 | `conversions.deleteAdConversionDestination()` | Delete a conversion destination |
 | `conversions.deleteConversionDestination()` | Delete a conversion destination |
 | `conversions.deleteEventDestination()` | Remove an event destination |
 | `conversions.deleteForwardingRule()` | Remove a forwarding rule |
+| `conversions.deleteTrackingSite()` | Delete a tracking site |
 | `conversions.addAdConversionAssociations()` | Associate campaigns |
 | `conversions.addConversionAssociations()` | Associate campaigns |
 | `conversions.adjustConversions()` | Adjust uploaded conversions |
@@ -1065,6 +1070,7 @@ try {
 | `conversions.removeCustomConversionGoal()` | Remove a custom conversion goal |
 | `conversions.restateEvent()` | Change a stored event's value |
 | `conversions.retractEvent()` | Retract a stored event |
+| `conversions.rotateTrackingSiteKey()` | Rotate a tracking site's key |
 | `conversions.sendConversions()` | Send conversion events |
 | `conversions.sendEvents()` | Send events to every destination |
 
