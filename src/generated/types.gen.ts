@@ -19576,6 +19576,32 @@ export type type30 = 'CNAME';
 export type TrackingSiteConsentMode = 'eu_opt_in' | 'opt_in' | 'opt_out';
 
 /**
+ * A tracking site's page views over a period, as approximate distinct counts.
+ */
+export type TrackingSitePeriodTotals = {
+    /**
+     * Page views without bots.
+     */
+    visits?: number;
+    /**
+     * Page views from bots.
+     */
+    bots?: number;
+    /**
+     * Page views with ad storage consent, at most `visits`.
+     */
+    consented?: number;
+    /**
+     * Purchases recorded on the site.
+     */
+    purchases?: number;
+    /**
+     * Purchases with ad consent for which no browser pixel fired, so only the server reported them.
+     */
+    recovered?: number;
+};
+
+/**
  * A platform measurement tag: the thing you create, install on a website, send events to, and target ads against. On Meta this is a Pixel (`kind: pixel`).
  *
  * The shape is platform-neutral so other platforms (Pinterest Tag, LinkedIn Insight Tag, etc.) can be added without changing the contract. Platform-specific fields are absent where a platform has no equivalent.
@@ -73556,10 +73582,112 @@ export type GetEventsOverviewResponse = ({
          * The last day in the past 7 with a hit. `null` when none.
          */
         lastActiveOn?: (string) | null;
+        /**
+         * The site's page views per period (`today`, `7d`, `30d`), each ending today (UTC).
+         */
+        totals?: {
+            today?: TrackingSitePeriodTotals;
+            '7d'?: TrackingSitePeriodTotals;
+            '30d'?: TrackingSitePeriodTotals;
+        };
     }>;
 });
 
 export type GetEventsOverviewError = (ErrorResponse | {
+    error?: string;
+});
+
+export type GetEventsOverviewDailyData = {
+    query?: {
+        /**
+         * The days to cover, each ending today (UTC): `today`, the last 7 days or the last 30 days.
+         */
+        period?: 'today' | '7d' | '30d';
+        /**
+         * The profile to read. Omit to cover every profile you can access, summed across them.
+         */
+        profileId?: string;
+    };
+};
+
+export type GetEventsOverviewDailyResponse = ({
+    period?: 'today' | '7d' | '30d';
+    /**
+     * The period's figures, shaped like the overview's `today`.
+     */
+    totals?: {
+        /**
+         * Stored events that occurred in the period, retracted ones excluded.
+         */
+        conversions?: number;
+        /**
+         * Value of those events in `currency`. Events in other currencies are left out.
+         */
+        value?: number;
+        /**
+         * The currency most of the period's events use; `null` when none carried a value.
+         */
+        currency?: (string) | null;
+        /**
+         * Events first sent to a destination in the period, one per event and destination.
+         */
+        sent?: number;
+        /**
+         * Those whose latest send the platform accepted.
+         */
+        accepted?: number;
+        /**
+         * The period's events matched to an ad campaign.
+         */
+        matched?: number;
+    };
+    /**
+     * Every day of the period, oldest first, zero where nothing happened.
+     */
+    days?: Array<{
+        day?: string;
+        /**
+         * Stored events that occurred that day.
+         */
+        conversions?: number;
+        /**
+         * Events first sent to a destination that day.
+         */
+        sent?: number;
+        /**
+         * Those the platform accepted.
+         */
+        accepted?: number;
+    }>;
+});
+
+export type GetEventsOverviewDailyError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ListEventNamesData = {
+    query?: {
+        /**
+         * The profile to read. Omit to cover every profile you can access.
+         */
+        profileId?: string;
+    };
+};
+
+export type ListEventNamesResponse = ({
+    names?: Array<{
+        /**
+         * Event name, such as `Purchase` or `demo_booked`.
+         */
+        name?: string;
+        /**
+         * Events stored with this name in the last 30 days.
+         */
+        events?: number;
+    }>;
+});
+
+export type ListEventNamesError = (ErrorResponse | {
     error?: string;
 });
 

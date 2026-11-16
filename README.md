@@ -1031,6 +1031,7 @@ try {
 | `conversions.listConversionDestinations()` | List conversion destinations |
 | `conversions.listCustomConversionGoals()` | List custom conversion goals |
 | `conversions.listEventDestinations()` | List event destinations |
+| `conversions.listEventNames()` | List stored event names |
 | `conversions.listEvents()` | List stored events |
 | `conversions.listForwardingRules()` | List forwarding rules |
 | `conversions.listTrackingSites()` | List tracking sites |
@@ -1049,6 +1050,7 @@ try {
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
 | `conversions.getEvent()` | Get one stored event and its deliveries |
 | `conversions.getEventsOverview()` | Get today's tracking overview |
+| `conversions.getEventsOverviewDaily()` | Get daily tracking figures |
 | `conversions.getTrackingSite()` | Get a tracking site |
 | `conversions.updateAdConversionDestination()` | Update a conversion destination |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |

@@ -487,6 +487,7 @@ import {
   getEmailThread,
   getEvent,
   getEventsOverview,
+  getEventsOverviewDaily,
   getFacebookDemographics,
   getFacebookPageInfo,
   getFacebookPageInsights,
@@ -816,6 +817,7 @@ import {
   listEmailSignatures,
   listEmailThreads,
   listEventDestinations,
+  listEventNames,
   listEvents,
   listFacebookPages,
   listFacebookTaggedPosts,
@@ -2972,6 +2974,8 @@ export class Zernio {
     listEvents: this._bind(listEvents),
     sendEvents: this._bind(sendEvents),
     getEventsOverview: this._bind(getEventsOverview),
+    getEventsOverviewDaily: this._bind(getEventsOverviewDaily),
+    listEventNames: this._bind(listEventNames),
     getEvent: this._bind(getEvent),
     restateEvent: this._bind(restateEvent),
     retractEvent: this._bind(retractEvent),
@@ -3666,6 +3670,10 @@ export class Zernio {
     sendEvents: this._bind(sendEvents),
     /** @deprecated Use `zernio.conversions.getEventsOverview` instead. */
     getEventsOverview: this._bind(getEventsOverview),
+    /** @deprecated Use `zernio.conversions.getEventsOverviewDaily` instead. */
+    getEventsOverviewDaily: this._bind(getEventsOverviewDaily),
+    /** @deprecated Use `zernio.conversions.listEventNames` instead. */
+    listEventNames: this._bind(listEventNames),
     /** @deprecated Use `zernio.conversions.getEvent` instead. */
     getEvent: this._bind(getEvent),
     /** @deprecated Use `zernio.conversions.restateEvent` instead. */
