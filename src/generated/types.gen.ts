@@ -30000,7 +30000,7 @@ export type UpdateAutoRechargeData = {
          */
         belowCents?: number;
         /**
-         * Top back up to this, in cents. More than $5 above belowCents.
+         * Top back up to this, in cents. At least $5 above belowCents, so at least $10.
          */
         toCents?: number;
         /**
