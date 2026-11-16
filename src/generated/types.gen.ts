@@ -34023,7 +34023,19 @@ export type GetAccountHealthResponse = ({
      * Google and Microsoft only: today's outbound mail allowance for the mailbox.
      */
     sendCap?: {
+        /**
+         * Today's cap: the base cap, doubled after 14 days of sending with no spam signal.
+         */
         limit?: number;
+        /**
+         * The cap before doubling.
+         */
+        baseLimit?: number;
+        doubled?: boolean;
+        /**
+         * When the cap doubles if the mailbox sends every day from now on and raises no spam signal. Null once doubled, with a manual limit, and on IMAP.
+         */
+        doublesAt?: (string) | null;
         used?: number;
         resetsAt?: string;
     };
