@@ -35307,6 +35307,13 @@ export type GetConnectUrlData = {
          */
         brandName?: string;
         /**
+         * WhatsApp with `signup=hosted` only; ignored on other flows. The number (E.164) the user must connect. If they pick a different number in Meta's popup, the hosted page ends with a 409 `NUMBER_MISMATCH` naming the number they picked, and nothing is saved.
+         *
+         * Use it to reconnect a known number safely. For a number bought from Zernio, the hosted page already expects that number and this value is ignored.
+         *
+         */
+        expectedPhoneNumber?: string;
+        /**
          * Only connect if the login lands on this platform account. Any other account ends the flow with `error=account_mismatch` (a 409 `account_mismatch` on POST /v1/connect/instagram/select-account) and nothing is written.
          *
          * Compared with every id the platform reports for the authorized account:
