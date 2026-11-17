@@ -23666,6 +23666,7 @@ export type WebhookPayloadComment = {
              *
              * - Instagram and Facebook realtime webhooks: populated (Meta re-delivers the account's own replies as comments events).
              * - TikTok: inferred. Comments created through this API are always flagged, and once the account's own author identifier is known (from one of those or from a comments listing), every author is compared against it.
+             * - LinkedIn: populated when author.id is present; true when it equals the actor URN Zernio comments as for this account (organization URN for a page, urn:li:person URN for a member).
              *
              */
             isOwnAccount?: boolean;
