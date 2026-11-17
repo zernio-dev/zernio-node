@@ -2125,7 +2125,7 @@ export type AdRuleAutomationCheck = {
     id: string;
     automationId: string;
     checkedAt: string;
-    outcome: 'triggered' | 'cooldown' | 'no_match' | 'failed';
+    outcome: 'triggered' | 'cooldown' | 'daily_limit' | 'no_match' | 'failed' | 'paused';
     /**
      * Objects judged.
      */
@@ -2151,7 +2151,7 @@ export type AdRuleAutomationCheck = {
     error: (string) | null;
 };
 
-export type outcome = 'triggered' | 'cooldown' | 'no_match' | 'failed';
+export type outcome = 'triggered' | 'cooldown' | 'daily_limit' | 'no_match' | 'failed' | 'paused';
 
 export type status4 = 'done' | 'failed';
 
@@ -2426,11 +2426,13 @@ export type AdRuleRun = {
      *
      * - `triggered`: the rule acted on at least one object (`error` is set if the webhook could not be sent afterwards).
      * - `cooldown`: objects matched but all were in cooldown.
+     * - `daily_limit`: objects matched but the rule had used its `maxChangesPerDay`.
+     * - `paused`: the run did not happen: the team used its free automation runs with no payment method on file (see `error`).
      * - `no_match`: nothing matched.
      * - `failed`: the metrics could not be read, every action failed, or the webhook of a notify-only rule could not be sent (see `error`).
      *
      */
-    outcome: 'triggered' | 'cooldown' | 'no_match' | 'failed';
+    outcome: 'triggered' | 'cooldown' | 'daily_limit' | 'no_match' | 'failed' | 'paused';
     objectsEvaluated: number;
     actedObjectIds: Array<(string)>;
     /**
@@ -11528,11 +11530,6 @@ export type EventAutomationCheck = {
     actions: Array<AutomationRunResult>;
     error: (string) | null;
 };
-
-/**
- * `paused`: the team used its free automation runs with no payment method on file, so the check did not run. `error` says why.
- */
-export type outcome2 = 'triggered' | 'no_match' | 'cooldown' | 'daily_limit' | 'failed' | 'paused';
 
 /**
  * Runs when something happens in Zernio, such as a post failing, and notifies. Unknown fields are refused.
