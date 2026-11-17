@@ -13656,7 +13656,10 @@ export type ImapDiscovery = {
     }>;
     reconnectCause?: (string) | null;
     reason?: (string) | null;
-    unsupportedReason?: ('proton_requires_bridge') | null;
+    /**
+     * proton_requires_bridge: Proton Mail only works through its local bridge. forwarding_only: the domain forwards mail (Cloudflare Email Routing) and stores none, so connect the mailbox it forwards to.
+     */
+    unsupportedReason?: ('proton_requires_bridge' | 'forwarding_only') | null;
     /**
      * Google only: Gmail over IMAP with an app password, for accounts whose admin blocks Google sign-in for other apps.
      */
@@ -13676,7 +13679,10 @@ export type confidence = 'high' | 'medium' | 'low';
 
 export type kind11 = 'password' | 'app_password' | 'oauth';
 
-export type unsupportedReason = 'proton_requires_bridge';
+/**
+ * proton_requires_bridge: Proton Mail only works through its local bridge. forwarding_only: the domain forwards mail (Cloudflare Email Routing) and stores none, so connect the mailbox it forwards to.
+ */
+export type unsupportedReason = 'proton_requires_bridge' | 'forwarding_only';
 
 export type ImessageAudienceContact = {
     conversationId?: string;
