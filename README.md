@@ -685,6 +685,7 @@ try {
 ### Ad Rules
 | Method | Description |
 |--------|-------------|
+| `adRules.listAdAccountRuleAlerts()` | List an ad account's open alerts |
 | `adRules.listAdRuleActivity()` | List every change ad rules made |
 | `adRules.listAdRuleAlerts()` | List a rule's alerts |
 | `adRules.listAdRuleRuns()` | List an ad rule's runs |

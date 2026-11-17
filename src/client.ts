@@ -694,6 +694,7 @@ import {
   listAccountSitelinks,
   listAccountStructuredSnippets,
   listAccounts,
+  listAdAccountRuleAlerts,
   listAdAccountUserInvitationApprovals,
   listAdAccountUserInvitations,
   listAdAccountUsers,
@@ -2728,6 +2729,7 @@ export class Zernio {
     updateAdRule: this._bind(updateAdRule),
     deleteAdRule: this._bind(deleteAdRule),
     previewAdRule: this._bind(previewAdRule),
+    listAdAccountRuleAlerts: this._bind(listAdAccountRuleAlerts),
     listAdRuleAlerts: this._bind(listAdRuleAlerts),
     listAdRuleRuns: this._bind(listAdRuleRuns),
   };

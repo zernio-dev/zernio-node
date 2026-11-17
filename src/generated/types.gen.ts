@@ -1781,7 +1781,7 @@ export type AdRuleAction = {
 })>;
 } | {
     /**
-     * Pause the campaign, ad set or ad.
+     * Pause the campaign, ad set, ad or Google keyword.
      */
     type: 'pause';
     /**
@@ -1794,7 +1794,7 @@ export type AdRuleAction = {
     maxChangesPerObject?: number;
 } | {
     /**
-     * Reactivate a campaign, ad set or ad a rule paused, once `cooldownMinutes` has passed since the pause. Objects you paused yourself are left alone unless `includeManuallyPaused` is true.
+     * Reactivate a campaign, ad set or ad a rule paused, once `cooldownMinutes` has passed since the pause. A rule on set times (`schedule.times`) does not wait: it restarts only what a rule on set times paused. Objects you paused yourself are left alone unless `includeManuallyPaused` is true.
      */
     type: 'activate';
     /**
@@ -2059,9 +2059,9 @@ export type AdRuleActivityEntry = {
      */
     accountId: string;
     adAccountId: string;
-    level: 'campaign' | 'adset';
+    level: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
     /**
-     * Platform ID of the campaign or ad set.
+     * Platform ID of the campaign, ad set or ad. A keyword is `{adGroupId}~{criterionId}`.
      */
     objectId: string;
     /**
@@ -2107,7 +2107,7 @@ export type AdRuleActivityEntry = {
     currency: (string) | null;
 };
 
-export type level = 'campaign' | 'adset';
+export type level = 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
 
 export type type3 = 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'adjust_target' | 'reallocate_budget' | 'duplicate' | 'edit_name';
 
@@ -2290,7 +2290,7 @@ export type AdRuleEvaluation = {
      */
     matched: number;
     /**
-     * Every delivering campaign or ad set in scope (for an `activate` rule, the rule-paused ones it may reactivate).
+     * Every delivering campaign, ad set or ad in scope, or every serving keyword and listed search term (for an `activate` rule, the rule-paused objects it may reactivate).
      */
     objects: Array<AdRuleObjectEvaluation>;
     /**
@@ -2365,7 +2365,9 @@ export type AdRuleFilters = Array<({
  *
  * The conditions are judged once per group, and a matching group acts on each of its campaigns, each with its own cooldown and daily cap. Paused campaigns count toward a group's totals; only the ones the rule may act on are changed.
  *
- * A group with no filters holds every campaign the rule checks: the whole ad account. A campaign in several groups is acted on once per run, by the first matching group. Reach and frequency cannot be added up across campaigns, so a rule with groups cannot use them.
+ * A group with no filters holds every campaign the rule checks: the whole ad account. A campaign in several groups is acted on once per run, by the first matching group.
+ *
+ * Reach, frequency and the Google impression shares cannot be added up across campaigns, so a rule with groups cannot use them. It cannot use hourly windows either.
  *
  * A campaign with no results sent for the window adds its spend and no results to its group. A result sent as a rate (kind `percent` or `ratio`, no formula) reads as unknown for a group; define it as a formula over counts.
  *
@@ -2381,12 +2383,12 @@ export type AdRuleGroups = Array<{
 /**
  * Whether the rule checks campaigns, ad sets, single ads, Google keywords or Google search terms. Each one is evaluated on its own.
  *
- * `keyword` and `search_term` read Google Search, on Google Ads accounts only. A keyword's id is `<adGroupId>~<criterionId>`, as `PATCH /v1/ads/keywords/{keywordId}` takes it. A search term is one per ad group, its id `<adGroupId>~<term>`.
+ * `keyword` and `search_term` read Google Search, on Google Ads accounts only. A keyword's id is `<adGroupId>~<criterionId>`, as `PATCH /v1/ads/keywords/{keywordId}` takes it. A search term is judged once per campaign, summed across the ad groups it showed in, its id `<campaignId>~<term>`.
  *
  * - They read a daily history Zernio fetches from Google. A day keeps its 50,000 rows that spent most.
  * - Every daily window works, `today` included: today is refreshed at most once an hour.
- * - A new rule's first runs load its days a few at a time, and fail until all are in.
- * - A keyword rule judges every serving keyword, one with no traffic at zero. Paused keywords are not judged.
+ * - The history starts loading when the rule is saved, about 10 days a minute. A run or a preview before it is complete does not evaluate: the run fails and the preview returns 409 `history_loading`.
+ * - A keyword rule judges every serving keyword, one with no traffic at zero. Zernio syncs the keywords Google has not removed; paused keywords are not judged.
  * - Google lists only search terms that showed at least once, so a search term rule takes `impressions` with `>` or `>=`, never `<` or `<=`.
  *
  * They take `spend`, `impressions`, `clicks`, `conversions`, `ctr`, `cpc`, `cpm`, `cpa` and `roas` over whole days, no `usual`, `of`, `top` or `bottom`, and `compareTo` only as `campaign`. A keyword rule can `notify` or `pause`; a search term rule only notifies.
@@ -2416,7 +2418,7 @@ export type AdRuleLifecycle = {
 
 export type AdRuleObjectEvaluation = {
     /**
-     * Platform ID of the campaign, ad set or ad. A keyword is `{adGroupId}~{criterionId}`, a search term `{adGroupId}~{term}`.
+     * Platform ID of the campaign, ad set or ad. A keyword is `{adGroupId}~{criterionId}`, a search term `{campaignId}~{term}`.
      */
     id: string;
     /**
@@ -2544,8 +2546,6 @@ export type AdRuleRun = {
     error: (string) | null;
 };
 
-export type level2 = 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
-
 /**
  * Either `everyMinutes` or `times`. Sending a schedule replaces the rule's whole timing. Without one, a new rule runs every 60 minutes.
  */
@@ -2632,7 +2632,7 @@ export type kind = 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limite
 
 export type severity = 'error' | 'warning' | 'info';
 
-export type level3 = 'ad_account' | 'campaign' | 'ad_set' | 'ad';
+export type level2 = 'ad_account' | 'campaign' | 'ad_set' | 'ad';
 
 /**
  * One ad schedule window as Google stores it. Half-open: it is exclusive of the end minute, so 09:00-12:00 and 12:00-17:00 are adjacent, not overlapping.
@@ -4205,7 +4205,7 @@ export type AutomationControls = {
 /**
  * An automation of one of three kinds, told apart by its shape:
  *
- * - **Ad rule**: a `schedule` trigger over campaigns, ad sets or ads, with metric `conditions` and ad `steps`.
+ * - **Ad rule**: a `schedule` trigger over campaigns, ad sets, ads, Google keywords or Google search terms, with metric `conditions` and ad `steps`.
  * - **Event**: a Zernio event in `trigger.type`, narrowed by `trigger.filter`, with notify steps, or none to only record each matching event as a check.
  * - **Scheduled**: a `schedule` trigger over `subjects.each: post`, narrowed by `filter`, with notify and boost steps.
  *
@@ -4296,7 +4296,7 @@ export type AutomationLimits = {
      */
     maxChangesPerDay?: number;
     /**
-     * Most times the rule may change one object, over its whole history. Needs an `ads.*` step.
+     * Most times the rule may change one object, counted over the last 400 days. Needs an `ads.*` step.
      */
     maxChangesPerObject?: number;
 };
@@ -4666,7 +4666,7 @@ export type AutomationSubjects = {
     /**
      * Judges campaigns together (campaign rules only): each group's numbers are summed and its rates computed on the totals, and a matching group acts on each of its campaigns.
      *
-     * A group with no filters holds every campaign the rule checks. `reach` and `frequency` cannot be used with groups.
+     * A group with no filters holds every campaign the rule checks. `reach`, `frequency`, the Google impression shares and hourly windows cannot be used with groups.
      *
      */
     groups?: Array<{
@@ -13140,7 +13140,7 @@ export type GoogleListingGroupDimension = {
     };
 };
 
-export type level4 = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
+export type level3 = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
 
 export type condition = 'NEW' | 'REFURBISHED' | 'USED';
 
@@ -21699,7 +21699,7 @@ export type event10 = 'ad.created';
 /**
  * Always `AD`.
  */
-export type level5 = 'AD';
+export type level4 = 'AD';
 
 /**
  * Where the ad was created. `zernio` for ads created through Zernio, `platform` for ads the sync detected.
@@ -21843,7 +21843,7 @@ export type status64 = 'approved' | 'rejected';
 /**
  * Webhook payload for the `ad_rule.triggered` event.
  *
- * Fires when a scheduled run of a rule with a `notify` action finds campaigns, ad sets or ads that meet every condition of the rule.
+ * Fires when a scheduled run of a rule with a `notify` action finds campaigns, ad sets, ads, Google keywords or Google search terms that meet every condition of the rule.
  *
  * Each object is announced at most once per rule cooldown, so `objects` lists only the objects the run acted on, never the ones still in cooldown. A run where every matching object is still in cooldown sends nothing.
  *
@@ -21904,11 +21904,11 @@ export type WebhookPayloadAdRuleTriggered = {
         currency: (string) | null;
     };
     /**
-     * The campaigns, ad sets or ads this run acted on, at the rule's `level`, including those whose action failed. Objects still in cooldown are left out.
+     * The objects this run acted on, at the rule's `level` (campaigns, ad sets, ads, keywords or search terms), including those whose action failed. Objects still in cooldown are left out.
      */
     objects: Array<{
         /**
-         * Platform-native ID of the campaign or ad set.
+         * Platform-native ID of the campaign, ad set or ad. A keyword is `{adGroupId}~{criterionId}`, a search term `{campaignId}~{term}`.
          */
         platformId: string;
         /**
@@ -22069,7 +22069,7 @@ export type event14 = 'ad_set.created';
 /**
  * Always `AD_SET`.
  */
-export type level6 = 'AD_SET';
+export type level5 = 'AD_SET';
 
 /**
  * Webhook payload for the `ad_set.updated` event. Fires when an ad set is edited through Zernio (API, MCP or dashboard), after the platform and Zernio both accepted the edit, once per user who can see the ad set. It also fires when the sync detects an edit made outside Zernio.
@@ -22263,7 +22263,7 @@ export type event16 = 'ad.status_changed';
 /**
  * Hierarchy level the status applies to. Mirrors Meta's `level`. Creative-level events are not forwarded.
  */
-export type level7 = 'CAMPAIGN' | 'AD_SET' | 'AD';
+export type level6 = 'CAMPAIGN' | 'AD_SET' | 'AD';
 
 /**
  * Webhook payload for the `ad.updated` event. Fires when an ad is edited through Zernio (API, MCP or dashboard), after the platform and Zernio both accepted the edit, or when the sync detects an edit made outside Zernio. It is sent once, to the owner of the edited ad.
@@ -23224,7 +23224,7 @@ export type event34 = 'campaign.budget.depleted';
 /**
  * Always `CAMPAIGN`.
  */
-export type level8 = 'CAMPAIGN';
+export type level7 = 'CAMPAIGN';
 
 /**
  * Webhook payload for the `campaign.created` event. Fires when a campaign is created through Zernio (API, MCP or dashboard) or detected by the sync, once per campaign, after its row is recorded so `GET /v1/ads/campaigns/{campaignId}` finds it.
@@ -60859,6 +60859,58 @@ export type PreviewAdRuleError = (ErrorResponse | {
     error?: string;
 });
 
+export type ListAdAccountRuleAlertsData = {
+    query: {
+        /**
+         * The connected ads account the rules run on.
+         */
+        accountId: string;
+        /**
+         * The platform ad account ID.
+         */
+        adAccountId: string;
+        /**
+         * `nextCursor` from the previous page.
+         */
+        cursor?: string;
+        limit?: number;
+    };
+};
+
+export type ListAdAccountRuleAlertsResponse = ({
+    alerts: Array<{
+        /**
+         * The rule the alert belongs to.
+         */
+        ruleId: string;
+        id: string;
+        /**
+         * Platform campaign, ad set or ad ID, or the id of the keyword or search term.
+         */
+        objectId: string;
+        state: 'open';
+        severity: ('warning' | 'critical') | null;
+        consecutiveMatches: number;
+        openedAt: (string) | null;
+        lastMatchedAt: string;
+        /**
+         * When a run last evaluated the object of this alert. Older than the latest run of its rule means that run did not evaluate it.
+         */
+        lastEvaluatedAt: string;
+        /**
+         * Always null here: only open alerts are listed.
+         */
+        resolvedAt: (string) | null;
+        /**
+         * Always null here: only open alerts are listed.
+         */
+        resolvedReason: (string) | null;
+    }>;
+    nextCursor: (string) | null;
+});
+
+export type ListAdAccountRuleAlertsError = (ErrorResponse);
+
 export type ListAdRuleAlertsData = {
     path: {
         ruleId: string;
@@ -60877,7 +60929,7 @@ export type ListAdRuleAlertsResponse = ({
     alerts: Array<{
         id: string;
         /**
-         * Platform campaign, ad set or ad ID.
+         * Platform campaign, ad set or ad ID, or the id of the keyword or search term.
          */
         objectId: string;
         state: 'pending' | 'open' | 'resolved';
