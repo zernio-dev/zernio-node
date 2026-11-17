@@ -3086,6 +3086,8 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
  * Starts the Google Ads OAuth flow and creates a standalone ads SocialAccount (googleads) with no parent.
  *
  * - If the account already exists and has at least one discovered Google Ads customer account, returns alreadyConnected: true.
+ * - When the profile's accounts are already one per ad account of a single Google login, it also returns alreadyConnected: true and adds an account per new `adAccountIds` entry. Existing accounts are never de-scoped, and `accountId` is a reused account.
+ * - Accounts of several Google logins return an authUrl to sign in again.
  * - When the existing connection has zero customer accounts (metadata.googleAdsCustomerIds is empty) or is flagged needsReconnection, it returns an authUrl instead. Completing it reconnects the same account (same accountId) and re-runs ad account discovery.
  *
  * Discovery includes the client accounts under every manager (MCC) the Google user can reach. It also includes Google Ads test accounts, which Google always reports with status CLOSED.

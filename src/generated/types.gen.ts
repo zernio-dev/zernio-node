@@ -35714,7 +35714,7 @@ export type ConnectAdsData = {
         /**
          * Scope ad sync to multiple platform ad accounts (same platform support and id shapes as `adAccountId`). Repeat the param (`?adAccountIds=act_1&adAccountIds=act_2`) or comma-separate (`?adAccountIds=act_1,act_2`).
          *
-         * - Persisted server-side; the latest call wins. De-scoped ad accounts have their synced ads, campaigns, ad sets and keywords removed.
+         * - Persisted server-side; the latest call wins. De-scoped ad accounts have their synced ads, campaigns, ad sets and keywords removed. Where ad accounts are already split into one account each, the call only adds accounts for new ids and never removes one (disconnect that account instead).
          * - On Meta only the scoped ad accounts get webhook subscriptions, including when the call starts a fresh OAuth.
          * - On Meta, ad accounts left out of the scope are unsubscribed from Zernio's ad-account webhooks (unless another connection still holds them) and are no longer stored, so syncs do not add them back. `GET /v1/ads/accounts` lists them (`selected: false`) only with `live=true`; passing them again reselects them.
          * - On TikTok, advertisers left out of the scope are no longer synced or stored either, and are listed (`selected: false`) only with `live=true`.
