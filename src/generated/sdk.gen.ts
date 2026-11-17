@@ -4121,6 +4121,8 @@ export const testOAuthApp = <ThrowOnError extends boolean = false>(options: Opti
  *
  * The redirect carries a `pendingDataToken` instead of the full payload. The response includes the corresponding selection array (e.g. `boards` for Pinterest).
  *
+ * For LinkedIn, add `pendingDataOnly=true` to your `redirect_url` to keep `tempToken`, `userProfile` and `organizations` out of the redirect: it then carries only `pendingDataToken`, and this endpoint returns `tempToken`, `refreshToken`, `userProfile` and `organizations` for POST /v1/connect/linkedin/select-organization. Other platforms ignore it.
+ *
  * WhatsApp, Facebook and other platforms pass selection state directly via URL query params on the redirect (`profileId`, `tempToken`, `step`), and no pending record is created. So this endpoint will return 404 for those flows. Use the platform-specific selection endpoint instead (e.g. `/v1/connect/whatsapp/select-phone-number`).
  *
  * ### Token lifetime
