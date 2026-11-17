@@ -57099,7 +57099,7 @@ export type ListContactsData = {
         group?: string;
         isSubscribed?: 'true' | 'false';
         limit?: number;
-        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms' | 'line' | 'wechat';
+        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms' | 'rcs' | 'tiktok' | 'line' | 'wechat';
         /**
          * Filter by profile. Omit to list across all profiles. Matches the profile recorded on the contact itself, which is set when the contact is created and is independent of the profile its account currently belongs to. Filter by accountId to list a contact through its channel instead.
          */
@@ -57170,7 +57170,7 @@ export type CreateContactData = {
         /**
          * Channel platform. Only the enum values support contact channels; any other platform is rejected with code platform_not_supported.
          */
-        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms' | 'line' | 'wechat';
+        platform?: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms' | 'rcs' | 'tiktok' | 'line' | 'wechat';
         platformIdentifier?: string;
         displayIdentifier?: string;
     };
