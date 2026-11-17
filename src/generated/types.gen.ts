@@ -36617,7 +36617,7 @@ export type GetEmailConnectUrlData = {
         name?: string;
         profileId: string;
         /**
-         * Opens the reconnect variant for an IMAP account: only the new password is asked for, and the accountId stays the same.
+         * An IMAP, Google or Microsoft account on this profile to reconnect; its accountId stays the same. IMAP asks only for the new password. Google and Microsoft open that provider's sign-in with the address as the hint and the held areas asked again. Other platforms answer 400, unknown ids 404.
          */
         reconnectAccountId?: string;
         /**
