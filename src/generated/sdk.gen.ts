@@ -22476,7 +22476,7 @@ export const listBlogArticles = <ThrowOnError extends boolean = false>(options: 
  *
  * ### Wix
  *
- * Wix stores rich content. `bodyHtml` is converted on write (each top-level HTML element must fit 30,000 characters), and images in the body are imported into the site's Media Manager.
+ * Wix stores rich content. `bodyHtml` is converted on write (each top-level HTML element must fit 30,000 characters), and images in the body are imported into the site's Media Manager. On Wix, `<figure>` width (px or %) and float, and `<figcaption>`, are kept.
  *
  * ### Idempotency
  *
