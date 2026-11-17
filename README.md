@@ -411,6 +411,7 @@ try {
 | `connect.completeWhatsAppPhoneSelection()` | Complete number selection |
 | `connect.configureTikTokAdsBrandIdentity()` | Set TikTok brand identity |
 | `connect.connectAds()` | Connect ads for a platform |
+| `connect.connectAppLovinAdsCredentials()` | Connect an AppLovin Axon account |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |
 | `connect.connectDiscordChannel()` | Connect a Discord channel |
 | `connect.connectLineCredentials()` | Connect LINE Official Account |
