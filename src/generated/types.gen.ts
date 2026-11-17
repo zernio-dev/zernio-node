@@ -18771,6 +18771,10 @@ export type StoredEvent = {
     hasPhone?: boolean;
     hasExternalId?: boolean;
     /**
+     * In a `GET /v1/events` page: the other copy of the same conversion, when a website tag (`web`) and a server send both stored it under different event ids (same event name, a shared identifier, at most 30 minutes apart). `null` otherwise, and always `null` from `GET /v1/events/{eventId}`.
+     */
+    pairedEventId?: (string) | null;
+    /**
      * The ad behind the event, when Zernio can name it. Google: from the click behind `clickIds.gclid` (synced daily from Google Ads click_view for clicks up to 14 days before the event; gbraid/wbraid clicks are not resolved). Meta: from the `zrn` ad id, for Meta ads Zernio holds. `null` otherwise.
      */
     ad?: {
