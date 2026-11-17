@@ -13516,6 +13516,24 @@ export type HubSpotSettings = {
      */
     logDeliveryStatus: boolean;
     /**
+     * Values Zernio sets on contacts it creates, keyed by HubSpot internal property name, for properties the portal requires on create (for example `lifecyclestage: lead`). The contact's own name, email and phone win. Empty object when none.
+     */
+    contactDefaults: {
+        [key: string]: (string);
+    };
+    /**
+     * Set while the portal refuses to create contacts because it requires properties Zernio does not fill. People already in HubSpot are still matched and their messages logged. Cleared by the next created contact or a change to `contactDefaults`. The account's health shows it too.
+     */
+    syncIssue: {
+        code: 'REQUIRED_CONTACT_PROPERTIES';
+        /**
+         * The required contact properties HubSpot named.
+         */
+        properties: Array<(string)>;
+        message: string;
+        at: string;
+    } | null;
+    /**
      * Whether Zernio sends closed-won deals as Purchase events to the profile's event destinations.
      */
     reportDeals: boolean;
@@ -13526,6 +13544,8 @@ export type HubSpotSettings = {
 };
 
 export type platform10 = 'hubspot';
+
+export type code2 = 'REQUIRED_CONTACT_PROPERTIES';
 
 export type ImapConnectResult = {
     dryRun?: boolean;
@@ -15208,7 +15228,7 @@ export type LinkedInMentionIssue = {
 /**
  * Why it failed.
  */
-export type code2 = 'linkedin_mention_unresolvable' | 'linkedin_mention_requires_page_admin' | 'linkedin_mention_name_unavailable' | 'linkedin_mentions_limit_exceeded' | 'rate_limited' | 'reconnect_required' | 'temporarily_unavailable';
+export type code3 = 'linkedin_mention_unresolvable' | 'linkedin_mention_requires_page_admin' | 'linkedin_mention_name_unavailable' | 'linkedin_mentions_limit_exceeded' | 'rate_limited' | 'reconnect_required' | 'temporarily_unavailable';
 
 /**
  * LinkedIn post options.
@@ -22818,7 +22838,7 @@ export type event25 = 'balance.empty';
 /**
  * The 402 code pay-per-use calls get until the balance is funded. `usage_limit_reached` when the auto top-up monthly limit is what keeps it at $0.
  */
-export type code3 = 'insufficient_balance' | 'usage_limit_reached';
+export type code4 = 'insufficient_balance' | 'usage_limit_reached';
 
 export type WebhookPayloadBalanceLow = {
     /**
@@ -27683,7 +27703,7 @@ export type WhatsAppTemplateLookupError = {
 
 export type type39 = 'platform_error';
 
-export type code4 = 'platform_api_error';
+export type code5 = 'platform_api_error';
 
 export type phase = 'template_lookup';
 
@@ -42211,6 +42231,12 @@ export type UpdateHubSpotSettingsData = {
          * Add the delivery status of each outgoing WhatsApp, SMS or RCS message to its timeline entry and update it as the message is delivered, read or fails. A failure shows the reason and its code. Only applies while `logMessages` is on.
          */
         logDeliveryStatus?: boolean;
+        /**
+         * Values for contact properties your portal requires on create, keyed by HubSpot internal name (lowercase letters, digits, underscores), for example `{"lifecyclestage": "lead"}`. Replaces the whole map; send `{}` to clear it. Clears `syncIssue` until the next contact create tells whether the portal accepts them.
+         */
+        contactDefaults?: {
+            [key: string]: (string);
+        };
         /**
          * Send each deal that becomes closed won as a Purchase to the profile's event destinations, about once an hour. Requires the portal to have granted `crm.objects.deals.read`; otherwise 400. Deals closed before it was turned on are not sent.
          */
