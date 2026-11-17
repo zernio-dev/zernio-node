@@ -12384,7 +12384,7 @@ export type ForwardingRule = {
     /**
      * Event sources forwarded to this destination; null forwards events from every source.
      */
-    sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web')> | null;
+    sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce')> | null;
     /**
      * Only when an `apiSecret` was saved by this request. Google Analytics never confirms a Measurement Protocol API secret, so it is `false` there: the first events in GA4 Realtime prove the secret is right.
      */
@@ -18380,6 +18380,14 @@ export type SalesforceSettings = {
         message: string;
         at: string;
     } | null;
+    /**
+     * Whether closed-won Opportunities count as sales (Amount, in the Opportunity's or the org's currency) on the ad campaign named by their Primary Campaign Source, in campaign results and ad rules. Lost or reopened Opportunities stop counting.
+     */
+    useOpportunitiesInResults: boolean;
+    /**
+     * Whether Zernio sends newly closed-won Opportunities as Purchase events (source `salesforce`) to the profile's event destinations.
+     */
+    reportOpportunitiesToAds: boolean;
 };
 
 export type platform16 = 'salesforce';
@@ -18833,7 +18841,7 @@ export type StoredEvent = {
      */
     profileId?: string;
     /**
-     * Where the event came from: `api`, `relay`, `web`, `shopify`, `woocommerce`, `hubspot`, `meta_leads`, `google_leads`, `linkedin_leads` or `tiktok_leads`.
+     * Where the event came from: `api`, `relay`, `web`, `shopify`, `woocommerce`, `stripe`, `hubspot`, `salesforce`, `meta_leads`, `google_leads`, `linkedin_leads` or `tiktok_leads`.
      */
     source?: string;
     eventName?: string;
@@ -24267,7 +24275,7 @@ export type WebhookPayloadConversion = {
         eventTime: string;
         receivedAt: string;
         /**
-         * Who sent it: `api`, `relay`, a lead form (`meta_leads`, `google_leads`, `linkedin_leads`, `tiktok_leads`), a store (`shopify`, `woocommerce`), `stripe` or `hubspot`.
+         * Who sent it: `api`, `relay`, a lead form (`meta_leads`, `google_leads`, `linkedin_leads`, `tiktok_leads`), a store (`shopify`, `woocommerce`), `stripe`, `hubspot` or `salesforce`.
          */
         source: string;
         actionSource?: (string) | null;
@@ -27733,6 +27741,7 @@ export type WorkflowEdge = {
      * - **wait_for_reply**: `'reply'` (contact replied) | `'timeout'` (no reply in window)
      * - **webhook**: `'success'` (2xx) | `'error'` (non-2xx / fetch failed)
      * - **hubspot_upsert_contact**: `'success'` | `'error'` (not connected / HubSpot refused)
+     * - **salesforce_upsert_contact**: `'success'` | `'error'` (not connected / Salesforce refused)
      * - **ai**: `'success'` (text/JSON response) | `'tool:<toolName>'` (model invoked that tool) | `'error'` (upstream failure / non-JSON in JSON mode)
      * - **start_call**: `'success'` | `'permission_required'` | `'failed'`
      * - **a_b_split**: `'a'` | `'b'`
@@ -27800,14 +27809,14 @@ export type WorkflowNode = {
      */
     id: string;
     /**
-     * Node kind. The 17 supported types break into four groups:
+     * Node kind. The 18 supported types break into four groups:
      * messaging (send_message),
      * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
      * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
-     * integrations (webhook, hubspot_upsert_contact, ai, handoff, start_call).
+     * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, ai, handoff, start_call).
      *
      */
-    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
     /**
      * Type-specific settings. Every string field supports `{{variable}}` interpolation against the run's variable bag, resolved at execution time.
      *
@@ -27895,6 +27904,16 @@ export type WorkflowNode = {
      * - Saves `{ id, created }` (or `{ error }`) to `vars[saveAs]` (default `hubspotContact`).
      * - Edges: `'success'` | `'error'` (HubSpot not connected, or HubSpot refused the write).
      *
+     * **salesforce_upsert_contact**: `{ email, phone, firstName, lastName, properties, createAs, saveAs }`. Creates or updates the run contact as a Lead or Contact in the profile's connected Salesforce org.
+     *
+     * - Updates the record already linked by inbox sync, else one matching by email, then phone (any phone field; Contacts before open Leads); otherwise creates one.
+     * - An existing record gets only the fields the node sets (a value that resolves to an empty string is skipped).
+     * - A new one also takes the Zernio contact's name, email and phone for anything left out. A missing LastName falls back to the email or phone, and a new Lead gets Company `[not provided]` unless `properties` sets it.
+     * - `phone` is written to `MobilePhone`. `properties` maps Salesforce field API names (`LeadSource`, `Title`, `Custom__c`) to values (at most 50).
+     * - `createAs`: `lead` | `contact`, what a person new to Salesforce becomes (default: the connection's `createAs` setting).
+     * - Saves `{ id, type, created }` (`type` is `Lead` or `Contact`), or `{ error }`, to `vars[saveAs]` (default `salesforceContact`).
+     * - Edges: `'success'` | `'error'` (Salesforce not connected, or Salesforce refused the write, such as a validation rule or a required field).
+     *
      * **ai**: `{ provider: anthropic|openai|google|mistral|groq|openrouter, model, preset: smart|tools|cheap, systemPrompt, userPromptTemplate, saveAs, temperature, maxTokens, outputType: text|json, tools:[{ name, description, parameters }] }`. Set `provider` + `model` for BYOK (uses your stored API key); omit `provider` for the legacy Telnyx path. Edges: `'success'`, `'tool:<name>'` (model picked a tool), `'error'`.
      *
      * **handoff**: `{ note, assignTo }`. Terminates the run as `exited` and flags the conversation for a human operator.
@@ -27929,14 +27948,14 @@ export type WorkflowNode = {
 };
 
 /**
- * Node kind. The 17 supported types break into four groups:
+ * Node kind. The 18 supported types break into four groups:
  * messaging (send_message),
  * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
  * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
- * integrations (webhook, hubspot_upsert_contact, ai, handoff, start_call).
+ * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, ai, handoff, start_call).
  *
  */
-export type type40 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type40 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 /**
  * A single X API operation with its per-call price and the Zernio platform methods that trigger it.
@@ -42394,6 +42413,14 @@ export type UpdateSalesforceSettingsData = {
          * Mark sent messages in the transcript as delivered, read or failed.
          */
         logDeliveryStatus?: boolean;
+        /**
+         * Count closed-won Opportunities as sales on the ad campaign named by their Primary Campaign Source, in campaign results and ad rules. Turning it on also fills in the Opportunities won in the last 90 days. Lost or reopened Opportunities stop counting.
+         */
+        useOpportunitiesInResults?: boolean;
+        /**
+         * Send each newly closed-won Opportunity once as a Purchase event (source `salesforce`, event id `salesforce_opp_{orgId}_{opportunityId}`) to the profile's event destinations, with the email and phone of its primary contact role, else the first Contact of its Account. Opportunities won before it was turned on are not sent.
+         */
+        reportOpportunitiesToAds?: boolean;
     };
     path: {
         accountId: string;
@@ -74062,7 +74089,7 @@ export type ListEventsData = {
         /**
          * Only events from this source, such as `stripe` for the payments of a connected Stripe account.
          */
-        source?: 'api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web';
+        source?: 'api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce';
         /**
          * Only events before this time (ISO 8601, on the event time).
          */
@@ -74657,7 +74684,7 @@ export type CreateForwardingRuleData = {
         /**
          * Forward only events from these sources, such as only `web` for a tracked website. Leave it out to forward events from every source.
          */
-        sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web')>;
+        sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce')>;
         /**
          * Google Analytics streams only: the stream's Measurement Protocol API secret (GA4 Admin › Data streams). Optional when the connection has edit access, since Zernio then creates it. Checked against Google's validation server, stored encrypted, never returned. Change it with `PATCH /v1/events/forwarding-rules/{ruleId}`.
          */
