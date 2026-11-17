@@ -39560,16 +39560,24 @@ export type ListWhatsAppPhoneNumbersData = {
          * Alternative auth for API users' end customers (used when the bearer token is scoped to a different user)
          */
         'X-Connect-Token'?: string;
+        /**
+         * The OAuth user token, in place of the tempToken query parameter. Prefer it: a query string is written to request logs along the way.
+         */
+        'X-Temp-Token'?: string;
     };
     query: {
+        /**
+         * Set by the Zernio-hosted picker, whose user token stays in an httpOnly cookie. Integrators send tempToken instead.
+         */
+        connectFlow?: string;
         /**
          * The Zernio profile ID from the headless redirect
          */
         profileId: string;
         /**
-         * The temporary access token from the headless redirect
+         * The temporary access token from the headless redirect. Required unless sent in the X-Temp-Token header.
          */
-        tempToken: string;
+        tempToken?: string;
     };
 };
 
@@ -39627,9 +39635,13 @@ export type CompleteWhatsAppPhoneSelectionData = {
          */
         wabaId: string;
         /**
-         * The temporary access token from the headless redirect
+         * The temporary access token from the headless redirect. Required unless sent in the X-Temp-Token header.
          */
-        tempToken: string;
+        tempToken?: string;
+        /**
+         * Set by the Zernio-hosted picker, whose user token stays in an httpOnly cookie. Integrators send tempToken instead.
+         */
+        connectFlow?: string;
         /**
          * Optional user profile data (passthrough)
          */
@@ -39646,6 +39658,10 @@ export type CompleteWhatsAppPhoneSelectionData = {
          * Alternative auth for API users' end customers
          */
         'X-Connect-Token'?: string;
+        /**
+         * The OAuth user token, in place of the tempToken query parameter. Prefer it: a query string is written to request logs along the way.
+         */
+        'X-Temp-Token'?: string;
     };
 };
 
