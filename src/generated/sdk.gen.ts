@@ -741,7 +741,7 @@ export const getBalance = <ThrowOnError extends boolean = false>(options?: Optio
  *
  * The first read gives the default rule, sized from your last 30 days of pay-per-use: below about a week of spend (at least $5), back up by about two more weeks (at least $20).
  *
- * - 409 `balance_billing_required`: the account is not on the prepaid balance.
+ * - 409 `balance_billing_required`: the account is not on the prepaid balance, nor moved onto it at a date still ahead. An account moved onto it can read and change its rule before that date; nothing is charged until it.
  *
  * A profile-scoped key answers 403.
  *
@@ -766,7 +766,7 @@ export const getAutoRecharge = <ThrowOnError extends boolean = false>(options?: 
  * When this month's auto top-ups plus the next one would pass `monthlyLimitCents`, the card is not charged and you get one email that month. At $0, pay-per-use then answers 402 `usage_limit_reached`.
  *
  * - 400: a field is out of range, `toCents` is not at least $5 above `belowCents`, or, while auto top-up is on, `monthlyLimitCents` is lower than the back-to amount `toCents` (one top-up from $0 would pass it, so it could never charge). Omitted fields are checked with their stored values.
- * - 409 `balance_billing_required`: the account is not on the prepaid balance.
+ * - 409 `balance_billing_required`: the account is not on the prepaid balance, nor moved onto it at a date still ahead. An account moved onto it can read and change its rule before that date; nothing is charged until it.
  *
  * Needs an owner, admin or billing admin, signed in or through a full-access key they created.
  *
