@@ -27761,12 +27761,13 @@ export type WorkflowNode = {
      *
      * Template `variableMapping` entries with `field: custom` interpolate `{{...}}` in `customValue`. An array or object interpolated into text renders as JSON.
      *
-     * **send_message**: `{ messageType: text|template|media|interactive|cards, text, template, media:{mediaType:image|video|audio|document, url,caption}, interactive, buttons, quickReplies, messageTag }`.
+     * **send_message**: `{ messageType: text|template|media|interactive|cards, text, template, media:{mediaType:image|video|audio|document, url,caption,filename}, interactive, buttons, quickReplies, messageTag }`.
      *
      * - `template` is `{name,language,variableMapping}` for `messageType: template`, and `{ type: generic, elements:[{ title, subtitle, imageUrl, buttons }] }` (1 to 10 cards) for `messageType: cards`.
      * - `template` and `interactive` are WhatsApp-only. `interactive.type` is inferred from the payload shape when omitted; payloads with neither `type` nor an inferable shape are rejected.
      * - Facebook and Instagram only (a 400 on other platforms; WhatsApp keeps `interactive`): `cards`, `buttons` on `text` (cards carry their own buttons), and `quickReplies` / `messageTag` on `text`, `media` and `cards`.
      * - `media` takes no `buttons` (a 400 at save).
+     * - `media.filename` (WhatsApp documents only): the file name the recipient sees, including its extension (e.g. Brochure.pdf). Without it WhatsApp names the file itself and it may not open.
      * - `buttons:[{ type: url|postback|phone, title, url, payload, phone, workflowId }]`: 1 to 3, text only (the text then 640 characters at most), sent as Meta's button_template, not inside cards. `phone` is Facebook-only.
      * - `quickReplies:[{ title, payload, imageUrl, workflowId }]`: 1 to 13, not combined with `buttons`.
      * - `messageTag` is not available: a workflow only sends within the 24h window, and `HUMAN_AGENT` is rejected with a 400 because it is only for replies typed by a person.
