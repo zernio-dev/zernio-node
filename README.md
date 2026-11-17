@@ -202,12 +202,14 @@ try {
 | `accounts.getHubSpotSettings()` | Get HubSpot account settings |
 | `accounts.getInstagramFollowStatus()` | Check whether an Instagram user follows the account |
 | `accounts.getLinkedInMentions()` | Resolve LinkedIn mention |
+| `accounts.getSalesforceSettings()` | Get Salesforce account settings |
 | `accounts.getSlackSettings()` | Get Slack account settings |
 | `accounts.getStripeSettings()` | Get Stripe account settings |
 | `accounts.getTikTokCreatorInfo()` | Get TikTok creator info |
 | `accounts.updateAccount()` | Update account |
 | `accounts.updateBlueskySettings()` | Update Bluesky account settings |
 | `accounts.updateHubSpotSettings()` | Update HubSpot account settings |
+| `accounts.updateSalesforceSettings()` | Update Salesforce account settings |
 | `accounts.updateSlackSettings()` | Update Slack account settings |
 | `accounts.updateStripeSettings()` | Update Stripe account settings |
 | `accounts.deleteAccount()` | Disconnect account |
@@ -379,6 +381,7 @@ try {
 | `connect.getPinterestBoards()` | List Pinterest boards |
 | `connect.getRedditFlairs()` | List subreddit flairs |
 | `connect.getRedditSubreddits()` | List Reddit subreddits |
+| `connect.getSalesforceConnectUrl()` | Get Salesforce OAuth connect URL |
 | `connect.getShopifyConnectUrl()` | Get Shopify OAuth connect URL |
 | `connect.getStripeConnectUrl()` | Get Stripe connect URL |
 | `connect.getSubredditRules()` | Get subreddit rules |

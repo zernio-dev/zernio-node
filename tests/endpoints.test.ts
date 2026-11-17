@@ -150,6 +150,16 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.updateHubSpotSettings).toBeTypeOf('function');
     });
 
+    it('should have getSalesforceSettings method', () => {
+      expect(client.accounts.getSalesforceSettings).toBeDefined();
+      expect(client.accounts.getSalesforceSettings).toBeTypeOf('function');
+    });
+
+    it('should have updateSalesforceSettings method', () => {
+      expect(client.accounts.updateSalesforceSettings).toBeDefined();
+      expect(client.accounts.updateSalesforceSettings).toBeTypeOf('function');
+    });
+
     it('should have getStripeSettings method', () => {
       expect(client.accounts.getStripeSettings).toBeDefined();
       expect(client.accounts.getStripeSettings).toBeTypeOf('function');
@@ -477,6 +487,11 @@ describe('Endpoint Methods', () => {
     it('should have getHubSpotConnectUrl method', () => {
       expect(client.connect.getHubSpotConnectUrl).toBeDefined();
       expect(client.connect.getHubSpotConnectUrl).toBeTypeOf('function');
+    });
+
+    it('should have getSalesforceConnectUrl method', () => {
+      expect(client.connect.getSalesforceConnectUrl).toBeDefined();
+      expect(client.connect.getSalesforceConnectUrl).toBeTypeOf('function');
     });
 
     it('should have getStripeConnectUrl method', () => {

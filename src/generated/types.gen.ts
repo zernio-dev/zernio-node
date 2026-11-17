@@ -18301,6 +18301,73 @@ export type RfPrediction = {
     expiresAt?: (string) | null;
 };
 
+export type SalesforceSettings = {
+    /**
+     * Zernio account ID of the Salesforce connection.
+     */
+    _id: string;
+    platform: 'salesforce';
+    /**
+     * 18-character Salesforce organization ID.
+     */
+    orgId: string;
+    /**
+     * The org's name, when the connected user can read it.
+     */
+    orgName: (string) | null;
+    /**
+     * Whether the org was connected through login.salesforce.com or test.salesforce.com.
+     */
+    environment: 'production' | 'sandbox';
+    /**
+     * The org's API host, for example `https://acme.my.salesforce.com`.
+     */
+    instanceUrl: string;
+    /**
+     * Email or username of the Salesforce user who connected the org.
+     */
+    installedBy: (string) | null;
+    /**
+     * Whether Zernio creates a Lead or Contact (per `createAs`) for an inbox contact that matches nobody by phone or email.
+     */
+    syncContacts: boolean;
+    /**
+     * Whether Zernio logs inbox messages. Each person, channel and UTC day gets one completed Task (subject `WhatsApp conversation · 2026-11-17`) whose Description holds the transcript; a day past 32,000 characters continues in a Task marked "(part 2)".
+     */
+    logMessages: boolean;
+    /**
+     * What a person new to Salesforce is created as.
+     */
+    createAs: 'lead' | 'contact';
+    /**
+     * Whether sent messages in the transcript are marked delivered, read or failed.
+     */
+    logDeliveryStatus: boolean;
+    /**
+     * Set while the org refuses Zernio's writes for a reason only its admin can fix (field-level security, a validation rule, a duplicate rule); cleared by the next accepted write. The account's health shows it too.
+     */
+    syncIssue: {
+        /**
+         * The Salesforce error code, such as `FIELD_CUSTOM_VALIDATION_EXCEPTION`.
+         */
+        code: string;
+        message: string;
+        at: string;
+    } | null;
+};
+
+export type platform16 = 'salesforce';
+
+/**
+ * Whether the org was connected through login.salesforce.com or test.salesforce.com.
+ */
+export type environment = 'production' | 'sandbox';
+
+/**
+ * What a person new to Salesforce is created as.
+ */
+export type createAs = 'lead' | 'contact';
+
 /**
  * One check of a scheduled automation.
  */
@@ -18575,7 +18642,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -18721,7 +18788,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform16 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe';
+export type platform17 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -18800,7 +18867,7 @@ export type StoredEvent = {
     } | null;
 };
 
-export type platform17 = 'googleads' | 'metaads';
+export type platform18 = 'googleads' | 'metaads';
 
 /**
  * A tracking tag's install on a connected store: a Shopify web pixel, a Custom HTML widget on a WordPress site, the Zernio embedded script on a Wix site, or the Zernio custom code script on a Webflow site. Fields marked with a platform are present only for it.
@@ -18901,7 +18968,7 @@ export type StripeSettings = {
     forwardSales: boolean;
 };
 
-export type platform18 = 'stripe';
+export type platform19 = 'stripe';
 
 export type SupportRun = {
     /**
@@ -19847,7 +19914,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform19 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
+export type platform20 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -23868,7 +23935,7 @@ export type WebhookPayloadComment = {
 
 export type event43 = 'comment.received';
 
-export type platform20 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform21 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 export type WebhookPayloadCommerceOrder = {
     /**
@@ -24902,7 +24969,7 @@ export type WebhookPayloadMention = {
 
 export type event65 = 'mention.received';
 
-export type platform21 = 'instagram' | 'facebook' | 'linkedin';
+export type platform22 = 'instagram' | 'facebook' | 'linkedin';
 
 /**
  * Null on LinkedIn.
@@ -25907,7 +25974,7 @@ export type event70 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform22 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
+export type platform23 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
 
 /**
  * WhatsApp send origin. Absent on non-WhatsApp platforms.
@@ -26827,7 +26894,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
 
 export type event86 = 'whatsapp.account.alert_received';
 
-export type platform23 = 'whatsapp';
+export type platform24 = 'whatsapp';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.
@@ -33832,7 +33899,7 @@ export type ListAccountsData = {
          */
         adAccountRows?: boolean;
         /**
-         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit, Microsoft), communication = WhatsApp, Telegram, Discord, Slack, iMessage, LINE and WeChat, blogs = Shopify and WordPress, crm = HubSpot, analytics = Google Analytics, social = every other platform.
+         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit, Microsoft), communication = WhatsApp, Telegram, Discord, Slack, iMessage, LINE and WeChat, blogs = Shopify and WordPress, crm = HubSpot and Salesforce, analytics = Google Analytics, social = every other platform.
          */
         category?: 'social' | 'ads' | 'communication' | 'blogs' | 'crm' | 'analytics';
         /**
@@ -36213,6 +36280,91 @@ export type GetHubSpotConnectUrlResponse = ({
 });
 
 export type GetHubSpotConnectUrlError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | unknown);
+
+export type GetSalesforceConnectUrlData = {
+    query: {
+        /**
+         * Sign in at login.salesforce.com (`production`, also Developer Edition orgs) or test.salesforce.com (`sandbox`).
+         */
+        environment?: 'production' | 'sandbox';
+        /**
+         * Your Zernio profile ID (get from /v1/profiles).
+         */
+        profileId: string;
+        /**
+         * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type GetSalesforceConnectUrlResponse = ({
+    /**
+     * Salesforce URL to open in the user agent.
+     */
+    authUrl: string;
+    /**
+     * Authenticated, expiring OAuth state handled by the callback.
+     */
+    state: string;
+});
+
+export type GetSalesforceConnectUrlError = (ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -42079,6 +42231,49 @@ export type UpdateHubSpotSettingsResponse = ({
 });
 
 export type UpdateHubSpotSettingsError = (ErrorResponse | unknown);
+
+export type GetSalesforceSettingsData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetSalesforceSettingsResponse = ({
+    account?: SalesforceSettings;
+});
+
+export type GetSalesforceSettingsError = (ErrorResponse | unknown);
+
+export type UpdateSalesforceSettingsData = {
+    body: {
+        /**
+         * Create a Lead or Contact for an inbox contact that matches nobody by phone (any phone field) or email. A match is linked as it is and never updated.
+         */
+        syncContacts?: boolean;
+        /**
+         * Log inbound and outbound inbox messages as one conversation Task per person, channel and day.
+         */
+        logMessages?: boolean;
+        /**
+         * What a person new to Salesforce is created as. Leads get Company `[not provided]`.
+         */
+        createAs?: 'lead' | 'contact';
+        /**
+         * Mark sent messages in the transcript as delivered, read or failed.
+         */
+        logDeliveryStatus?: boolean;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type UpdateSalesforceSettingsResponse = ({
+    message?: string;
+    account?: SalesforceSettings;
+});
+
+export type UpdateSalesforceSettingsError = (ErrorResponse | unknown);
 
 export type GetStripeSettingsData = {
     path: {
