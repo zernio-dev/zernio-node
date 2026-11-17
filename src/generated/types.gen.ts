@@ -19686,6 +19686,19 @@ export type TrackingSite = {
             target?: string;
         };
     } | null;
+    /**
+     * The path your server forwards to the collector, so the tag runs from the site's own domain. Null when it has none.
+     */
+    proxy?: {
+        /**
+         * Such as `/zt`: the snippet loads `https://<first domain>/zt/z.js`.
+         */
+        path?: string;
+        /**
+         * Signs the visitor's IP and country your proxy forwards. Only on reading or updating one site.
+         */
+        secret?: (string) | null;
+    } | null;
     consentMode?: TrackingSiteConsentMode;
     /**
      * One per setup step: `script` for the install, then one per ad account the site sends to, keyed by its platform and ids.
@@ -74384,6 +74397,10 @@ export type UpdateTrackingSiteData = {
          * A subdomain of one of the site's domains, never the domain itself. `null` removes it.
          */
         customHostname?: (string) | null;
+        /**
+         * The path your server forwards to the collector, such as `/zt`. `null` removes it.
+         */
+        proxyPath?: (string) | null;
     };
     path: {
         siteId: string;

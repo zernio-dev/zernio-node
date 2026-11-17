@@ -20115,9 +20115,11 @@ export const getTrackingSite = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Update a tracking site
- * Changes the site's name, domains, consent mode or custom subdomain. Send at least one field.
+ * Changes the site's name, domains, consent mode, custom subdomain or own-domain path. Send at least one field.
  *
  * `customHostname` sets a subdomain of the site, such as `t.brand.com`; create the CNAME in `customHostname.dnsRecord`. The snippet switches to it once its status is `active`. `null` removes it.
+ *
+ * `proxyPath` serves the tag from a path of the site itself, such as `brand.com/zt`, through a proxy on your server. The response's `proxy.secret` signs what the proxy forwards. `null` removes it.
  *
  */
 export const updateTrackingSite = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingSiteData, ThrowOnError>) => {
