@@ -40869,6 +40869,10 @@ export type ListInstagramStoriesResponse = ({
             shares?: number;
             follows?: number;
             profileVisits?: number;
+            /**
+             * Taps on links in the story (the link sticker). Facebook Login accounts only; always 0 for Instagram Login accounts. Taps on other stickers (mentions, hashtags, locations) are not reported by Meta.
+             */
+            linkClicks?: number;
             lastUpdated?: (string) | null;
         } | null;
     }>;
@@ -41120,6 +41124,10 @@ export type GetInstagramStoryInsightsResponse = ({
             follows: number;
             reposts: number;
             totalInteractions: number;
+            /**
+             * Taps on links in the story (the link sticker). Facebook Login accounts only; always 0 for Instagram Login accounts. Taps on other stickers (mentions, hashtags, locations) are not reported by Meta.
+             */
+            linkClicks: number;
         };
     };
 });
