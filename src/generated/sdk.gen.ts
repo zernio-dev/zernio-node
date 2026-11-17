@@ -13954,13 +13954,13 @@ export const listAdRules = <ThrowOnError extends boolean = false>(options?: Opti
 
 /**
  * Create an ad rule
- * Creates a rule that checks the campaigns or ad sets of one ad account on a schedule and acts on each one that meets every condition.
+ * Creates a rule that checks the campaigns, ad sets, ads, keywords or search terms of one ad account on a schedule and acts on each one that meets every condition.
  *
- * Rules support Meta, Google, TikTok, LinkedIn, Pinterest, X and Reddit ads connections. Use `POST /v1/ads/rules/{ruleId}/preview` to see what a rule would match before enabling it.
+ * Rules support Meta, Google, TikTok, LinkedIn, Pinterest, X and Reddit ads connections. Keyword and search term rules are Google only. Use `POST /v1/ads/rules/{ruleId}/preview` to see what a rule would match before enabling it.
  *
  * ### Evaluation
  *
- * Each campaign or ad set is evaluated on its own, over the ad account's calendar days, from the metrics Zernio syncs.
+ * Each object is evaluated on its own, over the ad account's calendar days. Campaigns, ad sets and ads read the metrics Zernio syncs; keywords and search terms are summed from the daily history Zernio keeps of them.
  *
  * ### Actions
  *
@@ -13969,6 +13969,8 @@ export const listAdRules = <ThrowOnError extends boolean = false>(options?: Opti
  * - `pause`
  * - `activate`
  * - `adjust_budget`
+ *
+ * A keyword rule can notify and pause; a search term rule only notifies.
  *
  * ### Cooldown
  *

@@ -2234,6 +2234,8 @@ export type AdRuleCondition = {
      *
      * For example, `cpc` over `last_complete_hour` `>=` 5 against `last_30d` means the last hour's clicks cost 5 times their 30-day price.
      *
+     * `campaign`, on `keyword` and `search_term` rules only, divides by the object's campaign over the same window, from the synced campaign totals. `cpc` `>=` 5 against `campaign` means a click costs 5 times the campaign's average; `spend` `>=` 0.2 means a fifth of the campaign's spend.
+     *
      */
     compareTo?: string;
     /**
@@ -2312,6 +2314,9 @@ export type AdRuleEvaluation = {
 
 /**
  * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal`, `days_live`, `days_since_change`, `budget_level` and `channel_type`; an ad set rule all but `days_since_change`, plus `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
+ *
+ * A keyword rule reads `name` (the keyword text), `campaign_name`, `adset_name`, `campaign_id`, `adset_id` and `match_type`. A search term rule reads those (`name` is the term) plus `search_term_status` and `blocked_by_negative`.
+ *
  */
 export type AdRuleFilters = Array<({
     /**
@@ -2341,6 +2346,18 @@ export type AdRuleFilters = Array<({
     change: 'budget' | 'bidding' | 'status' | 'goal';
     op: '>=' | '<';
     value: number;
+} | {
+    field: 'match_type';
+    op: 'in' | 'not_in';
+    values: Array<('EXACT' | 'PHRASE' | 'BROAD')>;
+} | {
+    field: 'search_term_status';
+    op: 'in' | 'not_in';
+    values: Array<('ADDED' | 'EXCLUDED' | 'ADDED_EXCLUDED' | 'NONE')>;
+} | {
+    field: 'blocked_by_negative';
+    op: 'equals';
+    value: boolean;
 })>;
 
 /**
@@ -2362,9 +2379,20 @@ export type AdRuleGroups = Array<{
 }> | null;
 
 /**
- * Whether the rule checks campaigns, ad sets or single ads. Each one is evaluated on its own.
+ * Whether the rule checks campaigns, ad sets, single ads, Google keywords or Google search terms. Each one is evaluated on its own.
+ *
+ * `keyword` and `search_term` read Google Search, on Google Ads accounts only. A keyword's id is `<adGroupId>~<criterionId>`, as `PATCH /v1/ads/keywords/{keywordId}` takes it. A search term is one per ad group, its id `<adGroupId>~<term>`.
+ *
+ * - They read a daily history Zernio fetches from Google. A day keeps its 50,000 rows that spent most.
+ * - Every daily window works, `today` included: today is refreshed at most once an hour.
+ * - A new rule's first runs load its days a few at a time, and fail until all are in.
+ * - Paused keywords are not judged.
+ * - Google lists only what showed at least once, so `impressions` takes `>` or `>=`, never `<` or `<=`.
+ *
+ * They take `spend`, `impressions`, `clicks`, `conversions`, `ctr`, `cpc`, `cpm`, `cpa` and `roas` over whole days, no `usual`, `of`, `top` or `bottom`, and `compareTo` only as `campaign`. A keyword rule can `notify` or `pause`; a search term rule only notifies.
+ *
  */
-export type AdRuleLevel = 'campaign' | 'adset' | 'ad';
+export type AdRuleLevel = 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
 
 /**
  * Turns matches into alerts. An object acts and notifies only after `confirmChecks` matching runs in a row; its alert stays open while it matches or `hold` holds, and resolves on its own (a day after the object stops delivering). Cooldown and caps still decide repeat actions.
@@ -2388,11 +2416,18 @@ export type AdRuleLifecycle = {
 
 export type AdRuleObjectEvaluation = {
     /**
-     * Platform ID of the campaign or ad set.
+     * Platform ID of the campaign, ad set or ad. A keyword is `{adGroupId}~{criterionId}`, a search term `{adGroupId}~{term}`.
      */
     id: string;
+    /**
+     * The object's name: the keyword text or the search term.
+     */
     name: string;
     campaignId: (string) | null;
+    /**
+     * Absent on runs recorded before November 2026.
+     */
+    campaignName?: (string) | null;
     /**
      * True when every condition holds.
      */
@@ -2448,7 +2483,7 @@ export type AdRuleRun = {
             accountId?: string;
             platform?: string;
             platformAdAccountId?: string;
-            level?: 'campaign' | 'adset';
+            level?: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
         };
         today?: string;
         timezone?: string;
@@ -2458,7 +2493,14 @@ export type AdRuleRun = {
          * Where the run's hourly windows ended. Absent on runs recorded before November 2026.
          */
         hourlyThrough?: (string) | null;
+        /**
+         * The matched objects, at most 200. `matchedTotal` has the full count.
+         */
         matched?: Array<AdRuleObjectEvaluation>;
+        /**
+         * How many objects matched, including those past the 200 recorded. Absent on runs recorded before November 2026.
+         */
+        matchedTotal?: number;
         actions?: Array<{
             objectId: string;
             type: 'pause' | 'activate' | 'adjust_budget' | 'adjust_bid' | 'adjust_target' | 'reallocate_budget' | 'duplicate' | 'edit_name';
@@ -2494,6 +2536,8 @@ export type AdRuleRun = {
     } | null;
     error: (string) | null;
 };
+
+export type level2 = 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
 
 /**
  * Either `everyMinutes` or `times`. Sending a schedule replaces the rule's whole timing. Without one, a new rule runs every 60 minutes.
@@ -2581,7 +2625,7 @@ export type kind = 'ad_rejected' | 'delivery_issue' | 'payment' | 'budget_limite
 
 export type severity = 'error' | 'warning' | 'info';
 
-export type level2 = 'ad_account' | 'campaign' | 'ad_set' | 'ad';
+export type level3 = 'ad_account' | 'campaign' | 'ad_set' | 'ad';
 
 /**
  * One ad schedule window as Google stores it. Half-open: it is exclusive of the end minute, so 09:00-12:00 and 12:00-17:00 are adjacent, not overlapping.
@@ -3728,7 +3772,7 @@ export type AutomationAction = AutomationActionResult & {
     automationName: string;
     checkId: string;
     subject: {
-        kind?: 'campaign' | 'adset' | 'ad';
+        kind?: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
         id?: string;
         name?: (string) | null;
     };
@@ -3741,7 +3785,7 @@ export type AutomationAction = AutomationActionResult & {
     createdAt: string;
 };
 
-export type kind2 = 'campaign' | 'adset' | 'ad';
+export type kind2 = 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
 
 /**
  * What an ad rule did to one object, as an absolute change: a budget change reads as the budget it set.
@@ -3818,6 +3862,18 @@ export type AutomationAdFilter = {
     field: "channel_type";
     op: 'in' | 'not_in';
     values: Array<('SEARCH' | 'DISPLAY' | 'SHOPPING' | 'HOTEL' | 'VIDEO' | 'MULTI_CHANNEL' | 'LOCAL' | 'SMART' | 'PERFORMANCE_MAX' | 'LOCAL_SERVICES' | 'TRAVEL' | 'DEMAND_GEN')>;
+} | {
+    field: "match_type";
+    op: 'in' | 'not_in';
+    values: Array<('EXACT' | 'PHRASE' | 'BROAD')>;
+} | {
+    field: "search_term_status";
+    op: 'in' | 'not_in';
+    values: Array<('ADDED' | 'EXCLUDED' | 'ADDED_EXCLUDED' | 'NONE')>;
+} | {
+    field: "blocked_by_negative";
+    op: "equals";
+    value: boolean;
 };
 
 export type field = 'name' | 'campaign_name' | 'adset_name' | 'goal';
@@ -3885,7 +3941,7 @@ export type status7 = 'pending' | 'approved' | 'rejected' | 'expired' | 'cancell
 export type AutomationApprovalChange = {
     actionId: string;
     subject: {
-        kind: 'campaign' | 'adset' | 'ad';
+        kind: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
         id: string;
         name: (string) | null;
     };
@@ -4037,7 +4093,7 @@ export type AutomationBacktestDay = {
     heldBack: number;
     actions: Array<{
         subject: {
-            kind: 'campaign' | 'adset' | 'ad';
+            kind: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
             id: string;
             name: string;
             campaignId: (string) | null;
@@ -4334,7 +4390,7 @@ export type AutomationPreview = {
      */
     subjects: Array<{
         subject: {
-            kind?: 'campaign' | 'adset' | 'ad';
+            kind?: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
             /**
              * Platform ID.
              */
@@ -4576,7 +4632,7 @@ export type AutomationSubjects = {
     /**
      * The objects judged one by one.
      */
-    each: 'campaign' | 'adset' | 'ad';
+    each: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
     /**
      * The ad account to check. One per ad rule, and an edit cannot move it to another.
      */
@@ -4618,7 +4674,7 @@ export type AutomationSubjects = {
 /**
  * The objects judged one by one.
  */
-export type each = 'campaign' | 'adset' | 'ad';
+export type each = 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
 
 export type AutomationTemplate = {
     /**
@@ -13077,7 +13133,7 @@ export type GoogleListingGroupDimension = {
     };
 };
 
-export type level3 = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
+export type level4 = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
 
 export type condition = 'NEW' | 'REFURBISHED' | 'USED';
 
@@ -21619,7 +21675,7 @@ export type event10 = 'ad.created';
 /**
  * Always `AD`.
  */
-export type level4 = 'AD';
+export type level5 = 'AD';
 
 /**
  * Where the ad was created. `zernio` for ads created through Zernio, `platform` for ads the sync detected.
@@ -21789,9 +21845,9 @@ export type WebhookPayloadAdRuleTriggered = {
         id: string;
         name: string;
         /**
-         * Whether the rule evaluates campaigns, ad sets or ads.
+         * Whether the rule evaluates campaigns, ad sets, ads, Google keywords or Google search terms.
          */
-        level: 'campaign' | 'adset' | 'ad';
+        level: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
         /**
          * Platform-native ad account ID the rule watches.
          */
@@ -21931,11 +21987,6 @@ export type WebhookPayloadAdRuleTriggered = {
 };
 
 export type event13 = 'ad_rule.triggered';
-
-/**
- * Whether the rule evaluates campaigns, ad sets or ads.
- */
-export type level5 = 'campaign' | 'adset' | 'ad';
 
 /**
  * Webhook payload for the `ad_set.created` event. Fires when an ad set is created through Zernio (API, MCP or dashboard) or detected by the sync, once per ad set, after its row is recorded so `GET /v1/ads/ad-sets/{adSetId}` finds it.
@@ -59916,7 +59967,7 @@ export type GetAutomationCatalogResponse = ({
      * Ad rule subjects.
      */
     subjects: Array<{
-        each?: 'campaign' | 'adset' | 'ad';
+        each?: 'campaign' | 'adset' | 'ad' | 'keyword' | 'search_term';
         platforms?: Array<(string)>;
         metrics?: Array<{
             metric?: string;
@@ -60566,7 +60617,7 @@ export type CreateAdRuleData = {
         adAccountId: string;
         level: AdRuleLevel;
         /**
-         * Only check these platform campaign IDs (or their ad sets). Leave out to check the whole ad account.
+         * Only check these platform campaign IDs (or what sits in them). Leave out to check the whole ad account.
          */
         campaignIds?: Array<(string)>;
         filters?: AdRuleFilters;
