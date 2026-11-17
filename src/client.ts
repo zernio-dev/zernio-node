@@ -163,6 +163,8 @@ import {
   createConversionDestination,
   createCreatorCampaign,
   createCreatorPayoutLogin,
+  createCrmActivity,
+  createCrmContact,
   createCtwaAd,
   createCustomConversion,
   createCustomConversionGoal,
@@ -474,6 +476,8 @@ import {
   getCreatorPayoutStatement,
   getCreatorPayouts,
   getCreatorPortal,
+  getCrmContact,
+  getCrmDeal,
   getDailyMetrics,
   getDiscordChannels,
   getDiscordGuildMember,
@@ -806,6 +810,8 @@ import {
   listConversionAssociations,
   listConversionDestinations,
   listCreatorCampaigns,
+  listCrmDeals,
+  listCrmOwners,
   listCustomConversionGoals,
   listCustomConversions,
   listCustomFields,
@@ -1056,6 +1062,7 @@ import {
   searchAdTargeting,
   searchAvailablePhoneNumbers,
   searchAvailableWhatsAppNumbers,
+  searchCrmContacts,
   searchDiscordGuildMembers,
   searchGoogleBusinessLocations,
   searchInboxConversations,
@@ -1211,6 +1218,8 @@ import {
   updateConversionAction,
   updateConversionDestination,
   updateCreatorCampaign,
+  updateCrmContact,
+  updateCrmDeal,
   updateCustomConversionGoal,
   updateCustomField,
   updateDiscordScheduledEvent,
@@ -2014,6 +2023,21 @@ export class Zernio {
     getInstagramMentionedMedia: this._bind(getInstagramMentionedMedia),
     getInstagramMentionedComment: this._bind(getInstagramMentionedComment),
     getInstagramStoryInsights: this._bind(getInstagramStoryInsights),
+  };
+
+  /**
+   * crm API
+   */
+  crm = {
+    searchCrmContacts: this._bind(searchCrmContacts),
+    createCrmContact: this._bind(createCrmContact),
+    getCrmContact: this._bind(getCrmContact),
+    updateCrmContact: this._bind(updateCrmContact),
+    createCrmActivity: this._bind(createCrmActivity),
+    listCrmDeals: this._bind(listCrmDeals),
+    getCrmDeal: this._bind(getCrmDeal),
+    updateCrmDeal: this._bind(updateCrmDeal),
+    listCrmOwners: this._bind(listCrmOwners),
   };
 
   /**

@@ -1148,6 +1148,19 @@ try {
 | `creatorPortal.submitCreatorDraft()` | Submit a draft for review |
 | `creatorPortal.submitCreatorPost()` | Submit a post |
 
+### CRM
+| Method | Description |
+|--------|-------------|
+| `crm.listCrmDeals()` | List CRM deals |
+| `crm.listCrmOwners()` | List CRM owners |
+| `crm.createCrmActivity()` | Log a CRM activity |
+| `crm.createCrmContact()` | Create a CRM contact |
+| `crm.getCrmContact()` | Get a CRM contact |
+| `crm.getCrmDeal()` | Get a CRM deal |
+| `crm.updateCrmContact()` | Update a CRM contact |
+| `crm.updateCrmDeal()` | Update a CRM deal |
+| `crm.searchCrmContacts()` | Search CRM contacts |
+
 ### Custom Fields
 | Method | Description |
 |--------|-------------|

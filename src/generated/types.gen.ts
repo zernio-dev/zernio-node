@@ -9754,6 +9754,150 @@ export type CreatorPortalSubmission = {
     draftId: (string) | null;
 };
 
+export type CrmActivity = {
+    id: string;
+    /**
+     * HubSpot `note` or `communication` (WhatsApp, SMS); Salesforce `task`.
+     */
+    objectType: 'note' | 'communication' | 'task';
+    contactId: string;
+    channel: 'whatsapp' | 'sms' | 'email' | 'call' | 'meeting' | 'instagram' | 'messenger' | 'telegram' | 'other';
+    direction: ('inbound' | 'outbound') | null;
+    subject: (string) | null;
+    body: string;
+    occurredAt: string;
+    /**
+     * The Salesforce Task, or the HubSpot contact whose timeline shows it.
+     */
+    url: string;
+};
+
+/**
+ * HubSpot `note` or `communication` (WhatsApp, SMS); Salesforce `task`.
+ */
+export type objectType = 'note' | 'communication' | 'task';
+
+export type channel4 = 'whatsapp' | 'sms' | 'email' | 'call' | 'meeting' | 'instagram' | 'messenger' | 'telegram' | 'other';
+
+/**
+ * A person in the connected CRM, in the same shape for HubSpot and Salesforce.
+ */
+export type CrmContact = {
+    /**
+     * The CRM's own id.
+     */
+    id: string;
+    /**
+     * `lead` only on Salesforce.
+     */
+    objectType: 'contact' | 'lead';
+    firstName: (string) | null;
+    lastName: (string) | null;
+    email: (string) | null;
+    /**
+     * The phone, else the mobile phone, as stored in the CRM.
+     */
+    phone: (string) | null;
+    /**
+     * HubSpot `company`; Salesforce Lead `Company` or Contact Account name.
+     */
+    company: (string) | null;
+    ownerId: (string) | null;
+    createdAt: (string) | null;
+    updatedAt: (string) | null;
+    /**
+     * Opens the record in the CRM.
+     */
+    url: string;
+    /**
+     * The native fields asked for with `properties`, by name.
+     */
+    properties: {
+        [key: string]: unknown;
+    };
+    /**
+     * The CRM's own record, only with `includeRaw=true`.
+     */
+    raw?: {
+        [key: string]: unknown;
+    };
+};
+
+/**
+ * `lead` only on Salesforce.
+ */
+export type objectType2 = 'contact' | 'lead';
+
+/**
+ * Unified fields, mapped to HubSpot `firstname`, `lastname`, `email`, `phone`, `company`, `hubspot_owner_id` and Salesforce `FirstName`, `LastName`, `Email`, `Phone`, `Company` (Leads), `OwnerId`.
+ */
+export type CrmContactInput = {
+    firstName?: (string) | null;
+    lastName?: (string) | null;
+    email?: (string) | null;
+    phone?: (string) | null;
+    company?: (string) | null;
+    /**
+     * An id from `GET /v1/crm/{accountId}/owners`.
+     */
+    ownerId?: (string) | null;
+    properties?: CrmNativeProperties;
+};
+
+/**
+ * A HubSpot deal or a Salesforce Opportunity.
+ */
+export type CrmDeal = {
+    id: string;
+    objectType: 'deal' | 'opportunity';
+    name: (string) | null;
+    /**
+     * HubSpot stage id (`closedwon`) or Salesforce `StageName` (`Closed Won`).
+     */
+    stage: (string) | null;
+    amount: (number) | null;
+    /**
+     * ISO 4217. HubSpot sets it on multi-currency portals only. Salesforce gives the Opportunity's currency on multi-currency orgs, else the org currency read from its Currency Locale.
+     */
+    currency: (string) | null;
+    closeDate: (string) | null;
+    ownerId: (string) | null;
+    /**
+     * Associated HubSpot contacts, or the Opportunity's contact roles (primary first).
+     */
+    contactIds: Array<(string)>;
+    createdAt: (string) | null;
+    updatedAt: (string) | null;
+    url: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    raw?: {
+        [key: string]: unknown;
+    };
+};
+
+export type objectType3 = 'deal' | 'opportunity';
+
+/**
+ * Native fields by internal name (HubSpot `lifecyclestage`, Salesforce `LeadSource` or `Industry__c`). A unified field of the same request wins over its native twin. `null` clears a field.
+ */
+export type CrmNativeProperties = {
+    [key: string]: ((string | number | boolean) | null);
+};
+
+export type CrmOwner = {
+    id: string;
+    firstName: (string) | null;
+    lastName: (string) | null;
+    name: (string) | null;
+    email: (string) | null;
+    active: boolean;
+    raw?: {
+        [key: string]: unknown;
+    };
+};
+
 /**
  * Besides the `required` list, the request must use EXACTLY ONE of these shapes:
  *
@@ -13144,7 +13288,7 @@ export type level3 = 'LEVEL1' | 'LEVEL2' | 'LEVEL3' | 'LEVEL4' | 'LEVEL5';
 
 export type condition = 'NEW' | 'REFURBISHED' | 'USED';
 
-export type channel4 = 'ONLINE' | 'LOCAL';
+export type channel5 = 'ONLINE' | 'LOCAL';
 
 export type index = 'INDEX0' | 'INDEX1' | 'INDEX2' | 'INDEX3' | 'INDEX4';
 
@@ -16493,6 +16637,38 @@ export type ParameterCatalogTokenAccountId = string;
  * A participant token or an open invite token. A malformed token answers 404 like an unknown one.
  */
 export type ParameterCreatorPortalToken = string;
+
+/**
+ * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+ */
+export type ParameterCrmAccountId = string;
+
+/**
+ * The CRM's own id. HubSpot contact id, or Salesforce Contact (`003...`) or Lead (`00Q...`) id.
+ */
+export type ParameterCrmContactId = string;
+
+/**
+ * The `nextCursor` of the previous page, unchanged.
+ */
+export type ParameterCrmCursor = string;
+
+/**
+ * HubSpot deal id or Salesforce Opportunity id (`006...`).
+ */
+export type ParameterCrmDealId = string;
+
+/**
+ * Also return the CRM's own record as `raw`.
+ */
+export type ParameterCrmIncludeRaw = boolean;
+
+export type ParameterCrmLimit = number;
+
+/**
+ * Comma-separated native field names to return in `properties` (at most 50), for example `lifecyclestage,hs_lead_status` or `LeadSource,Industry__c`.
+ */
+export type ParameterCrmProperties = string;
 
 /**
  * The connected Google, Microsoft or IMAP account.
@@ -21010,7 +21186,7 @@ export type Verification = {
 
 export type status61 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
-export type channel5 = 'sms' | 'whatsapp';
+export type channel6 = 'sms' | 'whatsapp';
 
 /**
  * WhatsApp only. What Meta reported for the latest send, null until it reports. Returned by GET /v1/verify/verifications/{verificationId} (null on create and check responses).
@@ -42433,6 +42609,292 @@ export type UpdateSalesforceSettingsResponse = ({
 });
 
 export type UpdateSalesforceSettingsError = (ErrorResponse | unknown);
+
+export type SearchCrmContactsData = {
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * The `nextCursor` of the previous page, unchanged.
+         */
+        cursor?: string;
+        email?: string;
+        /**
+         * Also return the CRM's own record as `raw`.
+         */
+        includeRaw?: boolean;
+        limit?: number;
+        /**
+         * International number with its country code, for example `+14155550100`.
+         */
+        phone?: string;
+        /**
+         * Comma-separated native field names to return in `properties` (at most 50), for example `lifecyclestage,hs_lead_status` or `LeadSource,Industry__c`.
+         */
+        properties?: string;
+        /**
+         * Free text, at least 2 characters.
+         */
+        q?: string;
+    };
+};
+
+export type SearchCrmContactsResponse = ({
+    contacts: Array<CrmContact>;
+    /**
+     * Pass back as `cursor` for the next page; null on the last page.
+     */
+    nextCursor: (string) | null;
+});
+
+export type SearchCrmContactsError = (ErrorResponse);
+
+export type CreateCrmContactData = {
+    body: (CrmContactInput & {
+    /**
+     * Salesforce only. Defaults to the connection's `createAs` setting. Ignored on HubSpot.
+     */
+    createAs?: 'lead' | 'contact';
+});
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+    };
+};
+
+export type CreateCrmContactResponse = ({
+    contact: CrmContact;
+});
+
+export type CreateCrmContactError = (ErrorResponse);
+
+export type GetCrmContactData = {
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+        /**
+         * The CRM's own id. HubSpot contact id, or Salesforce Contact (`003...`) or Lead (`00Q...`) id.
+         */
+        contactId: string;
+    };
+    query?: {
+        /**
+         * Also return the CRM's own record as `raw`.
+         */
+        includeRaw?: boolean;
+        /**
+         * Comma-separated native field names to return in `properties` (at most 50), for example `lifecyclestage,hs_lead_status` or `LeadSource,Industry__c`.
+         */
+        properties?: string;
+    };
+};
+
+export type GetCrmContactResponse = ({
+    contact: CrmContact;
+});
+
+export type GetCrmContactError = (ErrorResponse);
+
+export type UpdateCrmContactData = {
+    body: CrmContactInput;
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+        /**
+         * The CRM's own id. HubSpot contact id, or Salesforce Contact (`003...`) or Lead (`00Q...`) id.
+         */
+        contactId: string;
+    };
+};
+
+export type UpdateCrmContactResponse = ({
+    contact: CrmContact;
+});
+
+export type UpdateCrmContactError = (ErrorResponse);
+
+export type CreateCrmActivityData = {
+    body: {
+        /**
+         * The text to log.
+         */
+        body: string;
+        /**
+         * Salesforce Task subject (default `<Channel> activity (<direction>)`); on HubSpot, the bold first line.
+         */
+        subject?: string;
+        channel?: 'whatsapp' | 'sms' | 'email' | 'call' | 'meeting' | 'instagram' | 'messenger' | 'telegram' | 'other';
+        direction?: 'inbound' | 'outbound';
+        /**
+         * When it happened. Defaults to now.
+         */
+        occurredAt?: string;
+    };
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+        /**
+         * The CRM's own id. HubSpot contact id, or Salesforce Contact (`003...`) or Lead (`00Q...`) id.
+         */
+        contactId: string;
+    };
+};
+
+export type CreateCrmActivityResponse = ({
+    activity: CrmActivity;
+});
+
+export type CreateCrmActivityError = (ErrorResponse);
+
+export type ListCrmDealsData = {
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * The `nextCursor` of the previous page, unchanged.
+         */
+        cursor?: string;
+        /**
+         * Also return the CRM's own record as `raw`.
+         */
+        includeRaw?: boolean;
+        limit?: number;
+        /**
+         * Comma-separated native field names to return in `properties` (at most 50), for example `lifecyclestage,hs_lead_status` or `LeadSource,Industry__c`.
+         */
+        properties?: string;
+        /**
+         * Only deals in this stage. HubSpot takes the stage's internal id (`closedwon`, `appointmentscheduled`); Salesforce the `StageName` (`Closed Won`).
+         */
+        stage?: string;
+        /**
+         * Only deals changed at or after this time.
+         */
+        updatedSince?: string;
+    };
+};
+
+export type ListCrmDealsResponse = ({
+    deals: Array<CrmDeal>;
+    /**
+     * Pass back as `cursor` for the next page; null on the last page.
+     */
+    nextCursor: (string) | null;
+});
+
+export type ListCrmDealsError = (ErrorResponse);
+
+export type GetCrmDealData = {
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+        /**
+         * HubSpot deal id or Salesforce Opportunity id (`006...`).
+         */
+        dealId: string;
+    };
+    query?: {
+        /**
+         * Also return the CRM's own record as `raw`.
+         */
+        includeRaw?: boolean;
+        /**
+         * Comma-separated native field names to return in `properties` (at most 50), for example `lifecyclestage,hs_lead_status` or `LeadSource,Industry__c`.
+         */
+        properties?: string;
+    };
+};
+
+export type GetCrmDealResponse = ({
+    deal: CrmDeal;
+});
+
+export type GetCrmDealError = (ErrorResponse);
+
+export type UpdateCrmDealData = {
+    body: {
+        name?: string;
+        /**
+         * HubSpot stage id or Salesforce `StageName`.
+         */
+        stage?: string;
+        amount?: (number) | null;
+        /**
+         * ISO 4217 code. Multi-currency portals and orgs only.
+         */
+        currency?: string;
+        closeDate?: (string) | null;
+        /**
+         * An id from `GET /v1/crm/{accountId}/owners`.
+         */
+        ownerId?: string;
+        properties?: CrmNativeProperties;
+    };
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+        /**
+         * HubSpot deal id or Salesforce Opportunity id (`006...`).
+         */
+        dealId: string;
+    };
+};
+
+export type UpdateCrmDealResponse = ({
+    deal: CrmDeal;
+});
+
+export type UpdateCrmDealError = (ErrorResponse);
+
+export type ListCrmOwnersData = {
+    path: {
+        /**
+         * The connected HubSpot or Salesforce account (`GET /v1/accounts?platform=hubspot` or `salesforce`).
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * The `nextCursor` of the previous page, unchanged.
+         */
+        cursor?: string;
+        /**
+         * Also return the CRM's own record as `raw`.
+         */
+        includeRaw?: boolean;
+        limit?: number;
+    };
+};
+
+export type ListCrmOwnersResponse = ({
+    owners: Array<CrmOwner>;
+    /**
+     * Pass back as `cursor` for the next page; null on the last page.
+     */
+    nextCursor: (string) | null;
+});
+
+export type ListCrmOwnersError = (ErrorResponse);
 
 export type GetStripeSettingsData = {
     path: {
