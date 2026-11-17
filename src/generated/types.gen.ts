@@ -13512,6 +13512,10 @@ export type HubSpotSettings = {
      */
     logMessages: boolean;
     /**
+     * Whether Zernio keeps the delivery status (sent, delivered, read, played, failed) of logged outgoing messages up to date on their HubSpot timeline entries. Only applies while `logMessages` is on. Defaults to `true`.
+     */
+    logDeliveryStatus: boolean;
+    /**
      * Whether Zernio sends closed-won deals as Purchase events to the profile's event destinations.
      */
     reportDeals: boolean;
@@ -42051,6 +42055,10 @@ export type UpdateHubSpotSettingsData = {
          * Log inbound and outbound inbox messages on the contact's HubSpot timeline.
          */
         logMessages?: boolean;
+        /**
+         * Add the delivery status of each outgoing WhatsApp, SMS or RCS message to its timeline entry and update it as the message is delivered, read or fails. A failure shows the reason and its code. Only applies while `logMessages` is on.
+         */
+        logDeliveryStatus?: boolean;
         /**
          * Send each deal that becomes closed won as a Purchase to the profile's event destinations, about once an hour. Requires the portal to have granted `crm.objects.deals.read`; otherwise 400. Deals closed before it was turned on are not sent.
          */
