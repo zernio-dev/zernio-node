@@ -2315,7 +2315,7 @@ export type AdRuleEvaluation = {
 /**
  * Narrows the objects the rule checks. Every filter must hold. A campaign rule reads `name`, `campaign_id`, `goal`, `days_live`, `days_since_change`, `budget_level` and `channel_type`; an ad set rule all but `days_since_change`, plus `campaign_name` and `adset_id`; an ad rule also `adset_name` and `ad_id`.
  *
- * A keyword rule reads `name` (the keyword text), `campaign_name`, `adset_name`, `campaign_id`, `adset_id` and `match_type`. A search term rule reads those (`name` is the term) plus `search_term_status` and `blocked_by_negative`.
+ * A keyword rule reads `name` (the keyword text), `campaign_name`, `adset_name`, `campaign_id`, `adset_id`, `match_type` and `blocked_by_negative`. A search term rule reads those (`name` is the term) plus `search_term_status`.
  *
  */
 export type AdRuleFilters = Array<({
@@ -2386,8 +2386,8 @@ export type AdRuleGroups = Array<{
  * - They read a daily history Zernio fetches from Google. A day keeps its 50,000 rows that spent most.
  * - Every daily window works, `today` included: today is refreshed at most once an hour.
  * - A new rule's first runs load its days a few at a time, and fail until all are in.
- * - Paused keywords are not judged.
- * - Google lists only what showed at least once, so `impressions` takes `>` or `>=`, never `<` or `<=`.
+ * - A keyword rule judges every serving keyword, one with no traffic at zero. Paused keywords are not judged.
+ * - Google lists only search terms that showed at least once, so a search term rule takes `impressions` with `>` or `>=`, never `<` or `<=`.
  *
  * They take `spend`, `impressions`, `clicks`, `conversions`, `ctr`, `cpc`, `cpm`, `cpa` and `roas` over whole days, no `usual`, `of`, `top` or `bottom`, and `compareTo` only as `campaign`. A keyword rule can `notify` or `pause`; a search term rule only notifies.
  *
