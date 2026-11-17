@@ -38907,15 +38907,21 @@ export type GetPendingOAuthDataResponse = ({
 export type GetPendingOAuthDataError = (ErrorResponse);
 
 export type ListLinkedInOrganizationsData = {
+    headers?: {
+        /**
+         * The OAuth user token, in place of the tempToken query parameter. Prefer it: a query string is written to request logs along the way.
+         */
+        'X-Temp-Token'?: string;
+    };
     query: {
         /**
          * Comma-separated list of organization IDs to fetch details for (max 100)
          */
         orgIds: string;
         /**
-         * The temporary LinkedIn access token from the OAuth redirect
+         * The temporary LinkedIn access token from the OAuth redirect. Required unless sent in the X-Temp-Token header.
          */
-        tempToken: string;
+        tempToken?: string;
     };
 };
 
