@@ -2468,12 +2468,19 @@ export type AdRuleRun = {
      *
      */
     outcome: 'triggered' | 'cooldown' | 'daily_limit' | 'no_match' | 'failed' | 'paused';
+    /**
+     * Objects the rule judged. 0 means its campaigns and filters matched nothing that is running.
+     */
     objectsEvaluated: number;
     actedObjectIds: Array<(string)>;
     /**
-     * The matched objects with their condition values, and what each action did.
+     * The matched objects with their condition values, and what each action did. Null on a run that matched nothing, unless some objects could not be read.
      */
     evaluation: {
+        /**
+         * On a run that matched nothing: how many objects had a condition whose value could not be read, so they could not match. A campaign with under 3 of the 4 previous weeks of data has no `usual` yet.
+         */
+        unreadObjects?: number;
         /**
          * The rule as it was when this run happened, so its actions stay readable after the rule is renamed or deleted. Absent on runs recorded before October 2026.
          */
