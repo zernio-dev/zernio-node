@@ -75513,6 +75513,25 @@ export type GetEventResponse = ({
         errorCode?: (string) | null;
         sentAt?: string;
     }>;
+    /**
+     * The touches of the person before the event that its credit is split across, oldest first: website visits from somewhere (an ad click, search, a tagged link) and earlier lead forms or sales. Empty when the event counts whole for its own campaign under every model.
+     */
+    touches?: Array<{
+        at?: string;
+        kind?: 'ad_click' | 'paid' | 'email' | 'social' | 'campaign' | 'organic_search' | 'ai_assistant' | 'referral' | 'lead_form' | 'event';
+        platform?: (string) | null;
+        adAccountId?: (string) | null;
+        /**
+         * The campaign the touch resolved to; null for a touch that named none (search, referral).
+         */
+        campaignId?: (string) | null;
+        /**
+         * The share of the event (0 to 1) this touch gets per model: first_touch, last_non_direct, linear, position_based, time_decay.
+         */
+        credit?: {
+            [key: string]: (number);
+        };
+    }>;
 });
 
 export type GetEventError = (ErrorResponse | {
