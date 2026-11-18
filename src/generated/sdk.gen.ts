@@ -20461,6 +20461,8 @@ export const getTrackingSite = <ThrowOnError extends boolean = false>(options: O
  *
  * `proxyPath` serves the tag from a path of the site itself, such as `brand.com/zt`, through a proxy on your server. The response's `proxy.secret` signs what the proxy forwards. `null` removes it.
  *
+ * `googleTagIds` lists the site's own Google tags that the same proxy relays to Google's tag gateway. Load each from its `proxy.googleTags[].src` instead of googletagmanager.com. `null` or an empty list removes them.
+ *
  */
 export const updateTrackingSite = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateTrackingSiteData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateTrackingSiteResponse, UpdateTrackingSiteError, ThrowOnError>({

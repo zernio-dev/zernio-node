@@ -19999,7 +19999,24 @@ export type TrackingSite = {
          * Signs the visitor's IP and country your proxy forwards. Only on reading or updating one site.
          */
         secret?: (string) | null;
+        /**
+         * The loader of each of `googleTagIds` on the site's own domain. Use `src` in place of the tag's googletagmanager.com address.
+         */
+        googleTags?: Array<{
+            /**
+             * The Google tag id, such as `GTM-XXXXXXX` or `G-XXXXXXXXXX`.
+             */
+            id?: string;
+            /**
+             * Such as `https://brand.com/zt/gtg/<hex>/?id=GTM-XXXXXXX`.
+             */
+            src?: string;
+        }>;
     } | null;
+    /**
+     * The site's own Google tags (Tag Manager, GA4, Google Ads) its own-domain path relays to Google, so they load and measure from the site's domain.
+     */
+    googleTagIds?: Array<(string)>;
     consentMode?: TrackingSiteConsentMode;
     /**
      * One per setup step: `script` for the install, then one per ad account the site sends to, keyed by its platform and ids.
@@ -75624,6 +75641,10 @@ export type UpdateTrackingSiteData = {
          * The path your server forwards to the collector, such as `/zt`. `null` removes it.
          */
         proxyPath?: (string) | null;
+        /**
+         * Google tag ids such as `GTM-XXXXXXX`, `G-XXXXXXXXXX` or `AW-XXXXXXXXXX`, up to 10. `null` or `[]` removes them.
+         */
+        googleTagIds?: Array<(string)> | null;
     };
     path: {
         siteId: string;
