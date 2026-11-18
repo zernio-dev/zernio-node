@@ -556,6 +556,7 @@ import {
   getLinkedInPostAnalytics,
   getLinkedInPostReactions,
   getLinkedInSupplyForecast,
+  getLtvCohorts,
   getMediaPresignedUrl,
   getMessageAttachment,
   getMessengerGetStarted,
@@ -3027,6 +3028,7 @@ export class Zernio {
     listEvents: this._bind(listEvents),
     sendEvents: this._bind(sendEvents),
     getConversionPaths: this._bind(getConversionPaths),
+    getLtvCohorts: this._bind(getLtvCohorts),
     getEventsOverview: this._bind(getEventsOverview),
     getEventsOverviewDaily: this._bind(getEventsOverviewDaily),
     listEventNames: this._bind(listEventNames),
@@ -3724,6 +3726,8 @@ export class Zernio {
     sendEvents: this._bind(sendEvents),
     /** @deprecated Use `zernio.conversions.getConversionPaths` instead. */
     getConversionPaths: this._bind(getConversionPaths),
+    /** @deprecated Use `zernio.conversions.getLtvCohorts` instead. */
+    getLtvCohorts: this._bind(getLtvCohorts),
     /** @deprecated Use `zernio.conversions.getEventsOverview` instead. */
     getEventsOverview: this._bind(getEventsOverview),
     /** @deprecated Use `zernio.conversions.getEventsOverviewDaily` instead. */

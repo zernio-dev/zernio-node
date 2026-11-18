@@ -1066,6 +1066,7 @@ try {
 | `conversions.getEvent()` | Get one stored event and its deliveries |
 | `conversions.getEventsOverview()` | Get today's tracking overview |
 | `conversions.getEventsOverviewDaily()` | Get daily tracking figures |
+| `conversions.getLtvCohorts()` | Get buyer cohorts by first purchase month and first channel |
 | `conversions.getTrackingSite()` | Get a tracking site |
 | `conversions.updateAdConversionDestination()` | Update a conversion destination |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |

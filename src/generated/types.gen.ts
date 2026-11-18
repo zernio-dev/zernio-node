@@ -75207,6 +75207,40 @@ export type GetConversionPathsResponse = ({
 
 export type GetConversionPathsError = (ErrorResponse);
 
+export type GetLtvCohortsData = {
+    query: {
+        fromMonth: string;
+        /**
+         * The profile to read. Omit for every profile you can access.
+         */
+        profileId?: string;
+        toMonth: string;
+    };
+};
+
+export type GetLtvCohortsResponse = ({
+    fromMonth: string;
+    toMonth: string;
+    cohorts: Array<{
+        cohort?: string;
+        channel?: string;
+        currency?: string;
+        customers?: number;
+        /**
+         * Revenue from the cohort up to N months after its first purchase month, cumulative.
+         */
+        revenue?: {
+            m0?: number;
+            m1?: number;
+            m3?: number;
+            m6?: number;
+            m12?: number;
+        };
+    }>;
+});
+
+export type GetLtvCohortsError = (ErrorResponse);
+
 export type GetEventsOverviewData = {
     query?: {
         /**
