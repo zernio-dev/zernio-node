@@ -8554,6 +8554,14 @@ export type ConversionEvent = {
              * Axon Pixel browser id (the `_axwrt` cookie). Sent to Axon as `user_data.axwrt`, not hashed.
              */
             axwrt?: string;
+            /**
+             * X click ID (the `twclid` URL param X adds to ad clicks). Sent to X as a `twclid` identifier, not hashed.
+             */
+            twclid?: string;
+            /**
+             * Microsoft Advertising click ID (the `msclkid` URL param Microsoft adds to ad clicks). Sent to Microsoft as `MicrosoftClickId`, not hashed.
+             */
+            msclkid?: string;
         };
     };
     /**
@@ -75797,7 +75805,9 @@ export type ListAdConversionDestinationsResponse = ({
          * Destination identifier. Meta: pixel ID. Google:
          * conversion action resource name. LinkedIn:
          * numeric conversion rule ID. OpenAI Ads: pixel wire
-         * id. Reddit: pixel id (`a2_...`).
+         * id. Reddit: pixel id (`a2_...`). Microsoft
+         * Advertising: `accounts/{id}/conversionGoals/{id}`.
+         * X Ads: pixel event id (`tw-...`).
          *
          */
         id?: string;
@@ -76234,7 +76244,9 @@ export type ListConversionDestinationsResponse = ({
          * Destination identifier. Meta: pixel ID. Google:
          * conversion action resource name. LinkedIn:
          * numeric conversion rule ID. OpenAI Ads: pixel wire
-         * id. Reddit: pixel id (`a2_...`).
+         * id. Reddit: pixel id (`a2_...`). Microsoft
+         * Advertising: `accounts/{id}/conversionGoals/{id}`.
+         * X Ads: pixel event id (`tw-...`).
          *
          */
         id?: string;
