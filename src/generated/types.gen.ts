@@ -62276,6 +62276,10 @@ export type ListCampaignResultsData = {
          */
         limit?: number;
         /**
+         * Attribution model your stored sales and leads count under. `last_click` (default) counts each event whole for the campaign it matched. The others split it across the campaigns of its earlier touches, so counts and revenue can be fractional. Uploads read the same under every model.
+         */
+        model?: 'last_click' | 'first_touch' | 'last_non_direct' | 'linear' | 'position_based' | 'time_decay';
+        /**
          * Inclusive. At most 400 days after `fromDate`.
          */
         toDate: string;
@@ -62285,6 +62289,10 @@ export type ListCampaignResultsData = {
 export type ListCampaignResultsResponse = ({
     fromDate: string;
     toDate: string;
+    /**
+     * The attribution model the results are counted under.
+     */
+    model: string;
     campaigns: Array<{
         platform: string;
         adAccountId: string;
@@ -62342,6 +62350,10 @@ export type GetCampaignResultsTotalsData = {
         adAccountIds?: string;
         fromDate: string;
         /**
+         * Attribution model your stored sales and leads count under. `last_click` (default) counts each event whole for the campaign it matched. The others split it across the campaigns of its earlier touches, so counts and revenue can be fractional. Uploads read the same under every model.
+         */
+        model?: 'last_click' | 'first_touch' | 'last_non_direct' | 'linear' | 'position_based' | 'time_decay';
+        /**
          * Inclusive. At most 400 days after `fromDate`.
          */
         toDate: string;
@@ -62351,6 +62363,10 @@ export type GetCampaignResultsTotalsData = {
 export type GetCampaignResultsTotalsResponse = ({
     fromDate: string;
     toDate: string;
+    /**
+     * The attribution model the results are counted under.
+     */
+    model: string;
     totals: {
         [key: string]: (number);
     };
