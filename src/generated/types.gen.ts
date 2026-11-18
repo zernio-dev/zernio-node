@@ -64460,6 +64460,10 @@ export type GetAdTreeData = {
          */
         minSpend?: number;
         /**
+         * With `results=true`: the attribution model your stored sales and leads count under in `results`. Uploaded values are the same under every model.
+         */
+        model?: 'last_click' | 'first_touch' | 'last_non_direct' | 'linear' | 'position_based' | 'time_decay';
+        /**
          * Page number (1-based)
          */
         page?: number;
