@@ -75385,6 +75385,10 @@ export type GetEventsOverviewDailyResponse = ({
          * The period's events that count as campaign results, the ones looked up for a campaign.
          */
         counted?: number;
+        /**
+         * Of the counted events, those that came from an ad: they named a campaign or carried a UTM campaign, a Google click id or a Zernio ad id (`zrn`), their own or the website visit's behind them. `matched` over `fromAds` is the share tied to a campaign.
+         */
+        fromAds?: number;
     };
     /**
      * Every day of the period, oldest first, zero where nothing happened.
