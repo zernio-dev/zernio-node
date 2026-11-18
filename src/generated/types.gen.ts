@@ -8824,7 +8824,7 @@ export type CreateEmailDraftRequest = {
     html?: string;
     attachments?: Array<EmailAttachmentInput>;
     /**
-     * Custom `X-` headers only.
+     * Same headers as on `POST /v1/email/messages`: `X-` names plus `List-Unsubscribe`, `List-Unsubscribe-Post`, `List-Id`, `Precedence` and `Auto-Submitted`. Outlook drafts leave out all but `X-` headers.
      */
     headers?: {
         [key: string]: (string);
@@ -18746,7 +18746,11 @@ export type SendEmailRequest = {
         contentId?: string;
     }>;
     /**
-     * Custom `X-` headers only. `List-Unsubscribe` is dropped on Microsoft and reported in `metadata.droppedHeaders`.
+     * Custom headers: `X-` names, plus `List-Unsubscribe`, `List-Unsubscribe-Post`, `List-Id`, `Precedence` and `Auto-Submitted`. Other names, values with line breaks and header lines over 998 characters answer 400.
+     *
+     * `List-Unsubscribe` takes one or more `<https://...>` or `<mailto:...>` URIs separated by commas. `List-Unsubscribe-Post` must be exactly `List-Unsubscribe=One-Click` and needs an https URI in `List-Unsubscribe` (RFC 8058).
+     *
+     * Gmail and IMAP send them all. Outlook sends only `X-` headers: the others are left out and named in `metadata.droppedHeaders` on the sent message.
      */
     headers?: {
         [key: string]: (string);
