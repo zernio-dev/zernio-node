@@ -81353,6 +81353,10 @@ export type ListChangelogData = {
          */
         before?: string;
         /**
+         * Same as `before`, for clients that send `nextCursor` back as `cursor`. `before` wins when both are set.
+         */
+        cursor?: string;
+        /**
          * Only entries with this impact. `action_required` lists the changes an integration may need to act on.
          */
         impact?: 'none' | 'additive' | 'action_required';
