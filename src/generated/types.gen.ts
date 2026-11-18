@@ -12016,7 +12016,7 @@ export type FacebookPageInfo = {
 /**
  * Facebook post settings.
  *
- * - Feed posts: up to 10 images (no mixed video+image).
+ * - Feed posts: up to 20 images (no mixed video+image).
  * - Stories: single media (24h, no captions).
  * - Reels: a single vertical video (9:16). The Zernio API does not preflight Reel duration; Meta's Reels publishing guide documents 3-90 seconds.
  * - Geo-restriction: a hard visibility restriction (users outside the specified countries cannot see the post). Not supported for stories.
