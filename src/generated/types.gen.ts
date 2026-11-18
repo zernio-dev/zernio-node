@@ -49191,11 +49191,13 @@ export type GetInboxPostCommentsResponse = ({
             [key: string]: unknown;
         }>;
         /**
-         * Facebook only. True when replies[] (capped at 10) does not hold the comment's full reply thread.
+         * Facebook and Instagram. True when replies[] does not hold the comment's full reply thread: Facebook caps it at 10, Instagram at the first page Meta returns (25).
          *
          * Fetch the rest by passing the comment id as the `commentId` query parameter to GET /v1/inbox/comments/{postId} (or, for backwards compatibility, as `postId`).
          *
-         * Absent (not false) on every other platform, including Instagram, which has no equivalent signal, except with view=summary, where it is also true on any comment whose `replyCount` is higher than the replies it carries (nested replies are cut to 3 there).
+         * On Instagram, `replyCount` counts only the replies carried in replies[], so read this flag (not `replyCount`) to know whether the thread is complete.
+         *
+         * Absent (not false) on every other platform, except with view=summary, where it is also true on any comment whose `replyCount` is higher than the replies it carries (nested replies are cut to 3 there).
          *
          */
         repliesHasMore?: boolean;
