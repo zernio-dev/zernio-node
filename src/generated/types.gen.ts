@@ -36564,6 +36564,18 @@ export type ConnectShopifyWithTokenError = (unknown | ErrorResponse | {
 export type GetGoogleAnalyticsConnectUrlData = {
     query: {
         /**
+         * Welcome screen only: your product name in its heading. Same rules as on GET /v1/connect/{platform}.
+         */
+        brandName?: string;
+        /**
+         * Welcome screen only: https URL of your square logo. Rejected with 400 `INVALID_FIELD_VALUE` when the welcome screen is not shown.
+         */
+        logoUrl?: string;
+        /**
+         * Welcome screen only: hex colour (`#RRGGBB`) of its button.
+         */
+        primaryColor?: string;
+        /**
          * Your Zernio profile ID (get from /v1/profiles).
          */
         profileId: string;
@@ -36575,6 +36587,19 @@ export type GetGoogleAnalyticsConnectUrlData = {
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
         redirect_url?: string;
+        /**
+         * When `true`, `authUrl` opens on the Zernio-hosted welcome screen with your brand, as on GET /v1/connect/{platform}, naming Google Analytics.
+         *
+         * - With no `redirect_url`, the flow ends on the branded result page instead of the Zernio dashboard.
+         * - When left out, the screen shows if the workspace saved it as on by default (`PUT /v1/connect/welcome-screen`). Pass `false` to skip it.
+         * - Cannot be combined with `headless=true` in `redirect_url` (400 `INVALID_FIELD_VALUE`).
+         *
+         */
+        welcome?: boolean;
+        /**
+         * Welcome screen only: a URL-encoded JSON object restyling and rewording the welcome screen and the result page, with the keys documented on GET /v1/connect/{platform}. Rejected when the welcome screen is not shown.
+         */
+        welcomeTheme?: string;
     };
 };
 
@@ -36706,6 +36731,18 @@ export type SelectGoogleAnalyticsPropertyError = (ErrorResponse | unknown);
 export type GetGoogleSearchConsoleConnectUrlData = {
     query: {
         /**
+         * Welcome screen only: your product name in its heading. Same rules as on GET /v1/connect/{platform}.
+         */
+        brandName?: string;
+        /**
+         * Welcome screen only: https URL of your square logo. Rejected with 400 `INVALID_FIELD_VALUE` when the welcome screen is not shown.
+         */
+        logoUrl?: string;
+        /**
+         * Welcome screen only: hex colour (`#RRGGBB`) of its button.
+         */
+        primaryColor?: string;
+        /**
          * Your Zernio profile ID (get from /v1/profiles).
          */
         profileId: string;
@@ -36717,6 +36754,19 @@ export type GetGoogleSearchConsoleConnectUrlData = {
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
         redirect_url?: string;
+        /**
+         * When `true`, `authUrl` opens on the Zernio-hosted welcome screen with your brand, as on GET /v1/connect/{platform}, naming Google Search Console.
+         *
+         * - With no `redirect_url`, the flow ends on the branded result page instead of the Zernio dashboard.
+         * - When left out, the screen shows if the workspace saved it as on by default (`PUT /v1/connect/welcome-screen`). Pass `false` to skip it.
+         * - Cannot be combined with `headless=true` in `redirect_url` (400 `INVALID_FIELD_VALUE`).
+         *
+         */
+        welcome?: boolean;
+        /**
+         * Welcome screen only: a URL-encoded JSON object restyling and rewording the welcome screen and the result page, with the keys documented on GET /v1/connect/{platform}. Rejected when the welcome screen is not shown.
+         */
+        welcomeTheme?: string;
     };
 };
 
