@@ -28898,7 +28898,7 @@ export type GetAnalyticsError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -28940,7 +28940,7 @@ export type GetAnalyticsDeltaError = (ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -29877,7 +29877,7 @@ export type GetDailyMetricsError = (ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -29955,7 +29955,7 @@ export type GetAnalyticsDashboardError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -30011,7 +30011,7 @@ export type GetBestTimeToPostError = (ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -30067,7 +30067,7 @@ export type GetContentDecayError = (unknown | ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -30124,7 +30124,7 @@ export type GetPostingFrequencyError = (ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -31922,7 +31922,7 @@ export type GetPostTimelineError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32255,7 +32255,7 @@ export type ListTrackingWindowsError = (ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32277,7 +32277,7 @@ export type GetTrackingWindowError = (ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32333,7 +32333,7 @@ export type GetPostSamplesError = (ErrorResponse | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32583,7 +32583,7 @@ export type GetInboxVolumeError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32630,7 +32630,7 @@ export type GetInboxHeatmapError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32674,7 +32674,7 @@ export type GetInboxSourceBreakdownError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32727,7 +32727,7 @@ export type GetInboxResponseTimeError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32781,7 +32781,7 @@ export type GetInboxTopAccountsError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32851,7 +32851,7 @@ export type ListInboxConversationAnalyticsError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -32918,7 +32918,7 @@ export type GetInboxConversationAnalyticsError = ({
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -60381,7 +60381,7 @@ export type ListAdsError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -62400,7 +62400,7 @@ export type ListAdCampaignsError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -64417,7 +64417,7 @@ export type GetAdTreeError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -64468,7 +64468,7 @@ export type ListAdsByPerformanceError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -64515,7 +64515,7 @@ export type GetAdsTimelineError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -66038,7 +66038,7 @@ export type GetAdAnalyticsError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
@@ -66405,7 +66405,7 @@ export type ListAdsAlertsError = (ErrorResponse | unknown | {
         currentCount?: number;
         limit?: number;
         retryAfterSeconds?: number;
-        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics';
+        scope?: 'campaign-analytics' | 'ad-analytics' | 'ads-listings' | 'post-analytics' | 'account-insights' | 'account_route';
         window?: string;
     };
 });
