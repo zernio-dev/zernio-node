@@ -13801,9 +13801,19 @@ export type ImapDiscovery = {
     reconnectCause?: (string) | null;
     reason?: (string) | null;
     /**
-     * proton_requires_bridge: Proton Mail only works through its local bridge. forwarding_only: the domain forwards mail (Cloudflare Email Routing) and stores none, so connect the mailbox it forwards to.
+     * Why an `unsupported` route cannot connect:
+     *
+     * - `proton_requires_bridge`: Proton Mail only works through its local bridge.
+     * - `forwarding_only`: the domain forwards mail (Cloudflare Email Routing) and stores none, so connect the mailbox it forwards to.
+     * - `domain_typo`: the domain takes no mail and looks like a mistyped consumer domain. `suggestedEmail` has the likely address.
+     * - `no_mail_domain`: the domain has no MX and no address, so it cannot receive email.
+     *
      */
-    unsupportedReason?: ('proton_requires_bridge' | 'forwarding_only') | null;
+    unsupportedReason?: ('proton_requires_bridge' | 'forwarding_only' | 'domain_typo' | 'no_mail_domain') | null;
+    /**
+     * With unsupportedReason domain_typo: the address the user most likely meant, such as ana7275@gmail.com for ana@7275gmail.com. Run discovery again with it once the user confirms.
+     */
+    suggestedEmail?: (string) | null;
     /**
      * Google only: Gmail over IMAP with an app password, for accounts whose admin blocks Google sign-in for other apps.
      */
@@ -13824,9 +13834,15 @@ export type confidence = 'high' | 'medium' | 'low';
 export type kind11 = 'password' | 'app_password' | 'oauth';
 
 /**
- * proton_requires_bridge: Proton Mail only works through its local bridge. forwarding_only: the domain forwards mail (Cloudflare Email Routing) and stores none, so connect the mailbox it forwards to.
+ * Why an `unsupported` route cannot connect:
+ *
+ * - `proton_requires_bridge`: Proton Mail only works through its local bridge.
+ * - `forwarding_only`: the domain forwards mail (Cloudflare Email Routing) and stores none, so connect the mailbox it forwards to.
+ * - `domain_typo`: the domain takes no mail and looks like a mistyped consumer domain. `suggestedEmail` has the likely address.
+ * - `no_mail_domain`: the domain has no MX and no address, so it cannot receive email.
+ *
  */
-export type unsupportedReason = 'proton_requires_bridge' | 'forwarding_only';
+export type unsupportedReason = 'proton_requires_bridge' | 'forwarding_only' | 'domain_typo' | 'no_mail_domain';
 
 export type ImessageAudienceContact = {
     conversationId?: string;
