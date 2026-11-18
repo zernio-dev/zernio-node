@@ -62356,6 +62356,24 @@ export type GetCampaignResultsTotalsResponse = ({
 
 export type GetCampaignResultsTotalsError = (ErrorResponse);
 
+export type GetCampaignResultEventsResponse = ({
+    eventNames: Array<(string)>;
+});
+
+export type GetCampaignResultEventsError = (ErrorResponse);
+
+export type SetCampaignResultEventsData = {
+    body: {
+        eventNames: Array<(string)> | null;
+    };
+};
+
+export type SetCampaignResultEventsResponse = ({
+    eventNames: Array<(string)>;
+});
+
+export type SetCampaignResultEventsError = (ErrorResponse);
+
 export type ListCampaignResultMetricsResponse = ({
     metrics: Array<CampaignResultMetric>;
 });
@@ -75161,6 +75179,10 @@ export type GetEventsOverviewResponse = ({
          * Today's events matched to an ad campaign.
          */
         matched?: number;
+        /**
+         * Today's events that count as campaign results (see `GET /v1/ads/campaign-results/events`), the ones looked up for a campaign.
+         */
+        counted?: number;
     };
     /**
      * One entry per forwarding rule of the profiles covered.
@@ -75343,6 +75365,10 @@ export type GetEventsOverviewDailyResponse = ({
          * The period's events matched to an ad campaign.
          */
         matched?: number;
+        /**
+         * The period's events that count as campaign results, the ones looked up for a campaign.
+         */
+        counted?: number;
     };
     /**
      * Every day of the period, oldest first, zero where nothing happened.

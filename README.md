@@ -571,8 +571,10 @@ try {
 |--------|-------------|
 | `adCampaignResults.listCampaignResultMetrics()` | List your result metrics |
 | `adCampaignResults.listCampaignResults()` | List your results per campaign |
+| `adCampaignResults.getCampaignResultEvents()` | List the events that count as campaign results |
 | `adCampaignResults.getCampaignResultsTotals()` | Get your results totals |
 | `adCampaignResults.getCampaignResultsUpload()` | Check a results upload |
+| `adCampaignResults.setCampaignResultEvents()` | Choose the events that count as campaign results |
 | `adCampaignResults.setCampaignResultMetric()` | Name a result metric or define a formula |
 | `adCampaignResults.uploadCampaignResults()` | Upload your results per campaign |
 
