@@ -236,6 +236,7 @@ try {
 |--------|-------------|
 | `analytics.listFacebookTaggedPosts()` | List the posts a Facebook Page is tagged in |
 | `analytics.listFacebookVisitorPosts()` | List visitor posts on a Facebook Page |
+| `analytics.listGoogleSearchConsoleSitemaps()` | List Google Search Console sitemaps |
 | `analytics.listPostAuthenticity()` | List authenticity scores |
 | `analytics.listTrackingWindows()` | List tracking windows |
 | `analytics.getAnalytics()` | Get post analytics |
@@ -273,7 +274,9 @@ try {
 | `analytics.getYouTubeDemographics()` | Get YouTube demographics |
 | `analytics.getYouTubeVideoRetention()` | Get YouTube video retention curve |
 | `analytics.cancelTrackingWindow()` | Cancel a tracking window |
+| `analytics.inspectGoogleSearchConsoleUrl()` | Inspect a URL in Google Search Console |
 | `analytics.openTrackingWindow()` | Open a tracking window |
+| `analytics.queryGoogleSearchConsoleSearchAnalytics()` | Query Google Search Console search analytics |
 | `analytics.runGoogleAnalyticsRealtimeReport()` | Run a Google Analytics (GA4) realtime report |
 | `analytics.runGoogleAnalyticsReport()` | Run a Google Analytics (GA4) report |
 | `analytics.syncExternalPosts()` | Sync an external post |
@@ -349,6 +352,7 @@ try {
 | `connect.listGoogleAnalyticsProperties()` | List Google Analytics properties for a pending connect |
 | `connect.listGoogleBusinessCategories()` | List Google Business Profile categories |
 | `connect.listGoogleBusinessLocations()` | List Google Business Profile locations |
+| `connect.listGoogleSearchConsoleSites()` | List Search Console sites for a pending connect |
 | `connect.listInstagramPages()` | List Pages with a linked Instagram account |
 | `connect.listLinkedInOrganizations()` | List LinkedIn orgs |
 | `connect.listOAuthApps()` | List your OAuth apps |
@@ -372,6 +376,7 @@ try {
 | `connect.getFacebookPages()` | List Facebook pages |
 | `connect.getGmbLocations()` | List Google Business Profile locations |
 | `connect.getGoogleAnalyticsConnectUrl()` | Get Google Analytics OAuth connect URL |
+| `connect.getGoogleSearchConsoleConnectUrl()` | Get Google Search Console OAuth connect URL |
 | `connect.getHubSpotConnectUrl()` | Get HubSpot OAuth connect URL |
 | `connect.getLinkedInOrganizations()` | List LinkedIn orgs |
 | `connect.getOAuthApp()` | Get an OAuth app |
@@ -431,6 +436,7 @@ try {
 | `connect.selectFacebookPage()` | Select Facebook page |
 | `connect.selectGoogleAnalyticsProperty()` | Connect the chosen Google Analytics property |
 | `connect.selectGoogleBusinessLocation()` | Select Google Business Profile location |
+| `connect.selectGoogleSearchConsoleSite()` | Connect the chosen Search Console site |
 | `connect.selectInstagramAccount()` | Select the Page whose Instagram account to connect |
 | `connect.selectLinkedInOrganization()` | Select LinkedIn org |
 | `connect.selectPinterestBoard()` | Select Pinterest board |

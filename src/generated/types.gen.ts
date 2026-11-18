@@ -18852,7 +18852,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -18998,7 +18998,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform17 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe';
+export type platform17 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -31994,6 +31994,167 @@ export type GetGoogleAnalyticsMetadataError = (ErrorResponse | unknown | {
     error?: string;
 });
 
+export type QueryGoogleSearchConsoleSearchAnalyticsData = {
+    body: {
+        /**
+         * Zernio account ID of the Google Search Console connection.
+         */
+        accountId: string;
+        fromDate?: string;
+        toDate?: string;
+        dimensions?: Array<('date' | 'hour' | 'query' | 'page' | 'country' | 'device' | 'searchAppearance')>;
+        /**
+         * Which Google surface to read. Defaults to `web`.
+         */
+        type?: 'web' | 'image' | 'video' | 'news' | 'discover' | 'googleNews';
+        dimensionFilterGroups?: Array<{
+            groupType?: 'and';
+            filters: Array<{
+                /**
+                 * Narrow dates with startDate and endDate instead.
+                 */
+                dimension: 'query' | 'page' | 'country' | 'device' | 'searchAppearance';
+                /**
+                 * Defaults to `equals`.
+                 */
+                operator?: 'equals' | 'notEquals' | 'contains' | 'notContains' | 'includingRegex' | 'excludingRegex';
+                /**
+                 * The value to match. Countries are ISO 3166-1 alpha-3 codes (`usa`), devices `DESKTOP`, `MOBILE` or `TABLET`.
+                 */
+                expression: string;
+            }>;
+        }>;
+        aggregationType?: 'auto' | 'byPage' | 'byProperty';
+        /**
+         * Defaults to 1000.
+         */
+        rowLimit?: number;
+        /**
+         * Row offset for paging past `rowLimit`.
+         */
+        startRow?: number;
+        /**
+         * `final` (default) leaves out the last two or three days; `all` includes them while Google is still filling them in; `hourly_all` is required with the `hour` dimension.
+         */
+        dataState?: 'final' | 'all' | 'hourly_all';
+    };
+};
+
+export type QueryGoogleSearchConsoleSearchAnalyticsResponse = ({
+    data?: Array<{
+        /**
+         * One value per requested dimension in the same order. Absent when no dimensions were requested.
+         */
+        keys?: Array<(string)>;
+        clicks?: number;
+        impressions?: number;
+        /**
+         * Clicks divided by impressions, from 0 to 1.
+         */
+        ctr?: number;
+        /**
+         * Average position in results (1 is the top).
+         */
+        position?: number;
+    }>;
+    pagination?: {
+        /**
+         * True when the page is full, so Google may hold more rows. Google does not say for sure.
+         */
+        hasMore?: boolean;
+        /**
+         * The startRow for the next page, or null when hasMore is false.
+         */
+        nextStartRow?: (number) | null;
+    };
+    meta?: {
+        accountId?: string;
+        siteUrl?: string;
+        fromDate?: string;
+        toDate?: string;
+        aggregationType?: (string) | null;
+    };
+});
+
+export type QueryGoogleSearchConsoleSearchAnalyticsError = (ErrorResponse | unknown | {
+    error?: string;
+});
+
+export type ListGoogleSearchConsoleSitemapsData = {
+    query: {
+        /**
+         * Zernio account ID of the Google Search Console connection.
+         */
+        accountId: string;
+    };
+};
+
+export type ListGoogleSearchConsoleSitemapsResponse = ({
+    meta?: {
+        accountId?: string;
+        siteUrl?: string;
+    };
+    data?: Array<{
+        path?: string;
+        lastSubmitted?: string;
+        lastDownloaded?: string;
+        isPending?: boolean;
+        isSitemapsIndex?: boolean;
+        type?: string;
+        /**
+         * Count as a string, as Google sends it.
+         */
+        warnings?: string;
+        /**
+         * Count as a string, as Google sends it.
+         */
+        errors?: string;
+        contents?: Array<{
+            type?: string;
+            submitted?: string;
+            indexed?: string;
+        }>;
+    }>;
+});
+
+export type ListGoogleSearchConsoleSitemapsError = (ErrorResponse | unknown | {
+    error?: string;
+});
+
+export type InspectGoogleSearchConsoleUrlData = {
+    body: {
+        /**
+         * Zernio account ID of the Google Search Console connection.
+         */
+        accountId: string;
+        inspectionUrl: string;
+        /**
+         * Language of the issue messages (BCP-47, for example `en-US`). Defaults to English.
+         */
+        languageCode?: string;
+    };
+};
+
+export type InspectGoogleSearchConsoleUrlResponse = ({
+    data?: {
+        inspectionUrl?: string;
+        /**
+         * Google's `inspectionResult`: `inspectionResultLink`, `indexStatusResult` (verdict, coverageState, lastCrawlTime, googleCanonical…), `mobileUsabilityResult`, `richResultsResult` and `ampResult`, each present when Google has it.
+         */
+        result?: {
+            [key: string]: unknown;
+        };
+    };
+    meta?: {
+        accountId?: string;
+        siteUrl?: string;
+    };
+});
+
+export type InspectGoogleSearchConsoleUrlError = (ErrorResponse | unknown | {
+    error?: string;
+});
+
 export type OpenTrackingWindowData = {
     body: {
         /**
@@ -34120,7 +34281,7 @@ export type ListAccountsData = {
          */
         adAccountRows?: boolean;
         /**
-         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit, Microsoft), communication = WhatsApp, Telegram, Discord, Slack, iMessage, LINE and WeChat, blogs = Shopify and WordPress, crm = HubSpot and Salesforce, analytics = Google Analytics, social = every other platform.
+         * Only accounts of this kind. ads = ad accounts (Meta, Google, LinkedIn, Pinterest, TikTok, X, OpenAI, Reddit, Microsoft), communication = WhatsApp, Telegram, Discord, Slack, iMessage, LINE and WeChat, blogs = Shopify and WordPress, crm = HubSpot and Salesforce, analytics = Google Analytics, Search Console, Stripe, Tag Manager and Axon, social = every other platform.
          */
         category?: 'social' | 'ads' | 'communication' | 'blogs' | 'crm' | 'analytics';
         /**
@@ -34376,7 +34537,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'hubspot' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'hubspot' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager' | 'googlesearchconsole';
         /**
          * Filter by profile ID
          */
@@ -36490,6 +36651,143 @@ export type SelectGoogleAnalyticsPropertyResponse = ({
 });
 
 export type SelectGoogleAnalyticsPropertyError = (ErrorResponse | unknown);
+
+export type GetGoogleSearchConsoleConnectUrlData = {
+    query: {
+        /**
+         * Your Zernio profile ID (get from /v1/profiles).
+         */
+        profileId: string;
+        /**
+         * Zernio account ID of the Google Search Console account being reconnected. Picking a different site then fails instead of adding a second account.
+         */
+        reconnectAccountId?: string;
+        /**
+         * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type GetGoogleSearchConsoleConnectUrlResponse = ({
+    /**
+     * Google URL to open in the user agent.
+     */
+    authUrl: string;
+    /**
+     * Authenticated, expiring OAuth state handled by the callback.
+     */
+    state: string;
+});
+
+export type GetGoogleSearchConsoleConnectUrlError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | unknown);
+
+export type ListGoogleSearchConsoleSitesData = {
+    query: {
+        /**
+         * Token from the headless redirect.
+         */
+        pendingDataToken: string;
+    };
+};
+
+export type ListGoogleSearchConsoleSitesResponse = ({
+    sites?: Array<{
+        /**
+         * `sc-domain:` plus the domain for a Domain property, the full URL prefix otherwise.
+         */
+        siteUrl?: string;
+        permissionLevel?: 'siteOwner' | 'siteFullUser' | 'siteRestrictedUser';
+    }>;
+});
+
+export type ListGoogleSearchConsoleSitesError = (ErrorResponse | unknown);
+
+export type SelectGoogleSearchConsoleSiteData = {
+    body: {
+        /**
+         * Token from the headless redirect.
+         */
+        pendingDataToken: string;
+        /**
+         * A siteUrl from the sites list.
+         */
+        siteUrl: string;
+    };
+};
+
+export type SelectGoogleSearchConsoleSiteResponse = ({
+    /**
+     * Where to send the user next.
+     */
+    redirect_url?: string;
+    /**
+     * The connected account, or null when the connect was refused.
+     */
+    account?: {
+        accountId?: string;
+        platform?: string;
+        username?: string;
+        displayName?: string;
+    } | null;
+});
+
+export type SelectGoogleSearchConsoleSiteError = (ErrorResponse | unknown);
 
 export type GetHubSpotConnectUrlData = {
     query: {

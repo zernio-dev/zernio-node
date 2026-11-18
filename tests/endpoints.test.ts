@@ -328,6 +328,21 @@ describe('Endpoint Methods', () => {
       expect(client.analytics.getGoogleAnalyticsMetadata).toBeTypeOf('function');
     });
 
+    it('should have queryGoogleSearchConsoleSearchAnalytics method', () => {
+      expect(client.analytics.queryGoogleSearchConsoleSearchAnalytics).toBeDefined();
+      expect(client.analytics.queryGoogleSearchConsoleSearchAnalytics).toBeTypeOf('function');
+    });
+
+    it('should have listGoogleSearchConsoleSitemaps method', () => {
+      expect(client.analytics.listGoogleSearchConsoleSitemaps).toBeDefined();
+      expect(client.analytics.listGoogleSearchConsoleSitemaps).toBeTypeOf('function');
+    });
+
+    it('should have inspectGoogleSearchConsoleUrl method', () => {
+      expect(client.analytics.inspectGoogleSearchConsoleUrl).toBeDefined();
+      expect(client.analytics.inspectGoogleSearchConsoleUrl).toBeTypeOf('function');
+    });
+
     it('should have openTrackingWindow method', () => {
       expect(client.analytics.openTrackingWindow).toBeDefined();
       expect(client.analytics.openTrackingWindow).toBeTypeOf('function');
@@ -482,6 +497,21 @@ describe('Endpoint Methods', () => {
     it('should have selectGoogleAnalyticsProperty method', () => {
       expect(client.connect.selectGoogleAnalyticsProperty).toBeDefined();
       expect(client.connect.selectGoogleAnalyticsProperty).toBeTypeOf('function');
+    });
+
+    it('should have getGoogleSearchConsoleConnectUrl method', () => {
+      expect(client.connect.getGoogleSearchConsoleConnectUrl).toBeDefined();
+      expect(client.connect.getGoogleSearchConsoleConnectUrl).toBeTypeOf('function');
+    });
+
+    it('should have listGoogleSearchConsoleSites method', () => {
+      expect(client.connect.listGoogleSearchConsoleSites).toBeDefined();
+      expect(client.connect.listGoogleSearchConsoleSites).toBeTypeOf('function');
+    });
+
+    it('should have selectGoogleSearchConsoleSite method', () => {
+      expect(client.connect.selectGoogleSearchConsoleSite).toBeDefined();
+      expect(client.connect.selectGoogleSearchConsoleSite).toBeTypeOf('function');
     });
 
     it('should have getHubSpotConnectUrl method', () => {
