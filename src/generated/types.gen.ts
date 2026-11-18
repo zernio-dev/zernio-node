@@ -35504,6 +35504,14 @@ export type GetConnectUrlData = {
         /**
          * WhatsApp with `signup=hosted` only; ignored on other flows. The number (E.164) the user must connect. If they pick a different number in Meta's popup, the hosted page ends with a 409 `NUMBER_MISMATCH` naming the number they picked, and nothing is saved.
          *
+         * The full international number is compared, country code included. A number that differs only in its country code, or shares only its last digits, is a mismatch.
+         *
+         * The only spellings treated as the same number are national re-spellings of one line, such as a Brazilian mobile with or without its ninth digit, or a Mexican mobile with or without the `1` after `+52`.
+         *
+         * The pin is held server-side on the connect token, not in the hosted page URL, so removing it from the URL does not lift it.
+         *
+         * It is also enforced on late completions: when the browser closes before the signup finishes, Zernio only connects the number in the background if it matches.
+         *
          * Use it to reconnect a known number safely. For a number bought from Zernio, the hosted page already expects that number and this value is ignored.
          *
          */
@@ -40201,7 +40209,7 @@ export type ConnectWhatsAppEmbeddedSignupData = {
          */
         isCoexistence?: boolean;
         /**
-         * Rejects the connect when Meta returns a different number
+         * Rejects the connect when Meta returns a different number (full international number). With a connect token minted with a pinned number, the pinned number applies instead.
          */
         expectedPhoneNumber?: string;
         /**
