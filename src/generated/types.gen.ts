@@ -33441,7 +33441,7 @@ export type ListPostsData = {
          */
         profileId?: string;
         /**
-         * Search posts by text content.
+         * Search posts by text content. Not available with `source=external` (400).
          */
         search?: string;
         /**
