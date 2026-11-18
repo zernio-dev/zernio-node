@@ -18542,7 +18542,7 @@ export type SalesforceSettings = {
      */
     createAs: 'lead' | 'contact';
     /**
-     * Whether sent messages in the transcript are marked delivered, read or failed.
+     * Whether sent WhatsApp, SMS and RCS messages in the transcript are marked sent, delivered, read, played or failed.
      */
     logDeliveryStatus: boolean;
     /**
@@ -42594,11 +42594,11 @@ export type UpdateSalesforceSettingsData = {
          */
         createAs?: 'lead' | 'contact';
         /**
-         * Mark sent messages in the transcript as delivered, read or failed.
+         * Mark sent WhatsApp, SMS and RCS messages in the transcript as sent, delivered, read, played or failed.
          */
         logDeliveryStatus?: boolean;
         /**
-         * Count closed-won Opportunities as sales on the ad campaign named by their Primary Campaign Source, in campaign results and ad rules. Turning it on also fills in the Opportunities won in the last 90 days. Lost or reopened Opportunities stop counting.
+         * Count closed-won Opportunities as sales on the ad campaign named by their Primary Campaign Source, in campaign results and ad rules. Turning it on also fills in the Opportunities won in the last 90 days, never sent to the ad platforms. Lost or reopened Opportunities stop counting.
          */
         useOpportunitiesInResults?: boolean;
         /**
