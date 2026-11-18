@@ -32002,29 +32002,39 @@ export type QueryGoogleSearchConsoleSearchAnalyticsData = {
         accountId: string;
         fromDate?: string;
         toDate?: string;
-        dimensions?: Array<('date' | 'hour' | 'query' | 'page' | 'country' | 'device' | 'searchAppearance')>;
+        dimensions?: Array<('date' | 'hour' | 'query' | 'page' | 'country' | 'device' | 'searchAppearance' | 'brandedClassification')>;
         /**
-         * Which Google surface to read. Defaults to `web`.
+         * Which Google surface to read. Defaults to `web`. `webMultimodal` is Google Lens, Circle to Search and image uploads.
          */
-        type?: 'web' | 'image' | 'video' | 'news' | 'discover' | 'googleNews';
+        type?: 'web' | 'image' | 'video' | 'news' | 'discover' | 'googleNews' | 'webMultimodal';
         dimensionFilterGroups?: Array<{
             groupType?: 'and';
-            filters: Array<{
+            filters?: Array<{
                 /**
-                 * Narrow dates with startDate and endDate instead.
+                 * Narrow dates with fromDate and toDate instead.
                  */
-                dimension: 'query' | 'page' | 'country' | 'device' | 'searchAppearance';
+                dimension: 'query' | 'page' | 'country' | 'device' | 'searchAppearance' | 'brandedClassification';
                 /**
                  * Defaults to `equals`.
                  */
                 operator?: 'equals' | 'notEquals' | 'contains' | 'notContains' | 'includingRegex' | 'excludingRegex';
                 /**
-                 * The value to match. Countries are ISO 3166-1 alpha-3 codes (`usa`), devices `DESKTOP`, `MOBILE` or `TABLET`.
+                 * The value to match. Countries are ISO 3166-1 alpha-3 codes (`usa`), devices `DESKTOP`, `MOBILE` or `TABLET`, brandedClassification `BRANDED` or `NON_BRANDED`.
                  */
                 expression: string;
             }>;
+            /**
+             * Matches a row whose value is any of the expressions. A dimension goes in filters or in filterLists, not both.
+             */
+            filterLists?: Array<{
+                dimension: 'country' | 'device';
+                expressions: Array<(string)>;
+            }>;
         }>;
-        aggregationType?: 'auto' | 'byPage' | 'byProperty';
+        /**
+         * byNewsShowcasePanel needs a NEWS_SHOWCASE searchAppearance filter and type discover or googleNews.
+         */
+        aggregationType?: 'auto' | 'byPage' | 'byProperty' | 'byNewsShowcasePanel';
         /**
          * Defaults to 1000.
          */
@@ -32073,6 +32083,14 @@ export type QueryGoogleSearchConsoleSearchAnalyticsResponse = ({
         fromDate?: string;
         toDate?: string;
         aggregationType?: (string) | null;
+        /**
+         * From this Pacific day on the numbers can still change. Sent with dataState all when grouped by date.
+         */
+        firstIncompleteDate?: (string) | null;
+        /**
+         * The same for hours, with dataState hourly_all when grouped by hour.
+         */
+        firstIncompleteHour?: (string) | null;
     };
 });
 
