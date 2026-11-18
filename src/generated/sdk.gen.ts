@@ -3308,7 +3308,7 @@ export const selectGoogleAnalyticsProperty = <ThrowOnError extends boolean = fal
  *
  * Reconnecting the same portal and profile updates the stored connection in place and keeps its settings.
  *
- * Requested scopes: `oauth`, `crm.objects.contacts.read`, `crm.objects.contacts.write`.
+ * Requested scopes: `oauth`, `crm.objects.contacts.read`, `crm.objects.contacts.write`. Optional: `crm.objects.deals.read` (deals in ad results), `automation` (the Send WhatsApp template workflow action), `crm.objects.deals.write` and `crm.objects.owners.read` (the CRM API). A portal connected before an optional scope existed reconnects to grant it.
  *
  */
 export const getHubSpotConnectUrl = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetHubSpotConnectUrlData, ThrowOnError>) => {
