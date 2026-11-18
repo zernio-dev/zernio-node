@@ -75325,18 +75325,30 @@ export type GetEventsOverviewError = (ErrorResponse | {
 export type GetEventsOverviewDailyData = {
     query?: {
         /**
-         * The days to cover, each ending today (UTC): `today`, the last 7 days or the last 30 days.
+         * Only events of this name, such as `Purchase`.
          */
-        period?: 'today' | '7d' | '30d';
+        eventName?: string;
+        /**
+         * The days to cover, each ending today (UTC): `today`, the last 7, 30 or 90 days.
+         */
+        period?: 'today' | '7d' | '30d' | '90d';
+        /**
+         * Only sends to this platform (`metaads`, `googleads`...), and only the events sent to it.
+         */
+        platform?: string;
         /**
          * The profile to read. Omit to cover every profile you can access, summed across them.
          */
         profileId?: string;
+        /**
+         * Comma-separated sources (`web`, `shopify`, `stripe`, `api`...). Only events from them.
+         */
+        sources?: string;
     };
 };
 
 export type GetEventsOverviewDailyResponse = ({
-    period?: 'today' | '7d' | '30d';
+    period?: 'today' | '7d' | '30d' | '90d';
     /**
      * The period's figures, shaped like the overview's `today`.
      */
@@ -75349,6 +75361,10 @@ export type GetEventsOverviewDailyResponse = ({
          * Value of those events in `currency`. Events in other currencies are left out.
          */
         value?: number;
+        /**
+         * Value in `currency` of those events at least one platform accepted.
+         */
+        valueSent?: number;
         /**
          * The currency most of the period's events use; `null` when none carried a value.
          */
@@ -75387,7 +75403,50 @@ export type GetEventsOverviewDailyResponse = ({
          * Those the platform accepted.
          */
         accepted?: number;
+        /**
+         * The day's stored events per event name.
+         */
+        byEvent?: {
+            [key: string]: (number);
+        };
     }>;
+    /**
+     * The event names stored in the period, most events first.
+     */
+    eventNames?: Array<(string)>;
+    /**
+     * Each platform events were sent to in the period, most sends first.
+     */
+    platforms?: Array<{
+        /**
+         * Such as `metaads` or `googleads`.
+         */
+        platform?: string;
+        /**
+         * Events first sent to it in the period.
+         */
+        sent?: number;
+        /**
+         * Those it accepted.
+         */
+        accepted?: number;
+        /**
+         * Every day of the period, oldest first.
+         */
+        days?: Array<{
+            day?: string;
+            sent?: number;
+            accepted?: number;
+        }>;
+    }>;
+    /**
+     * For each platform sent to in the period, the website conversions of people who allowed ad cookies (bots left out) and how many its browser pixel missed, which Zernio sent from its server. Most missed first; `null` without a tracked website in scope.
+     */
+    pixelMissed?: Array<{
+        platform?: string;
+        conversions?: number;
+        missed?: number;
+    }> | null;
 });
 
 export type GetEventsOverviewDailyError = (ErrorResponse | {

@@ -20298,9 +20298,9 @@ export const getEventsOverview = <ThrowOnError extends boolean = false>(options?
 
 /**
  * Get daily tracking figures
- * The tracking figures of a period, day by day (UTC): events stored, events sent to the ad platforms and how many they accepted, plus the period's totals in the same shape as the overview's `today`.
+ * The tracking figures of a period, day by day (UTC): events stored per event name, events sent to each ad platform and how many it accepted, the period's totals in the same shape as the overview's `today`, and how many website conversions each platform's browser pixel missed.
  *
- * An event sent to a destination counts once, on the day of its first send, by its latest outcome. Without `profileId` it covers every profile you can access. Requires the Ads add-on.
+ * An event sent to a destination counts once, on the day of its first send, by its latest outcome. Without `profileId` it covers every profile you can access. `eventName`, `sources` and `platform` narrow every figure. Requires the Ads add-on.
  *
  */
 export const getEventsOverviewDaily = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<GetEventsOverviewDailyData, ThrowOnError>) => {
