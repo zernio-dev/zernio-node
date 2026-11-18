@@ -75146,6 +75146,47 @@ export type SendEventsError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
+export type GetConversionPathsData = {
+    query: {
+        fromDate: string;
+        limit?: number;
+        /**
+         * The profile to read. Omit for every profile you can access.
+         */
+        profileId?: string;
+        /**
+         * Inclusive. At most 400 days after `fromDate`.
+         */
+        toDate: string;
+    };
+};
+
+export type GetConversionPathsResponse = ({
+    fromDate: string;
+    toDate: string;
+    paths: Array<{
+        /**
+         * Each touch as its kind, or `kind:platform` when it named a campaign.
+         */
+        steps?: Array<(string)>;
+        conversions?: number;
+        /**
+         * How many were purchases.
+         */
+        sales?: number;
+        /**
+         * The value of the purchases, as sent.
+         */
+        revenue?: number;
+        /**
+         * Average days from the first touch to the conversion.
+         */
+        avgDays?: number;
+    }>;
+});
+
+export type GetConversionPathsError = (ErrorResponse);
+
 export type GetEventsOverviewData = {
     query?: {
         /**

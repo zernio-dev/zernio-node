@@ -1061,6 +1061,7 @@ try {
 | `conversions.getAdConversionMetrics()` | Get attribution metrics |
 | `conversions.getConversionDestination()` | Get a conversion destination |
 | `conversions.getConversionMetrics()` | Get attribution metrics |
+| `conversions.getConversionPaths()` | List the touch paths that lead to conversions |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
 | `conversions.getEvent()` | Get one stored event and its deliveries |
 | `conversions.getEventsOverview()` | Get today's tracking overview |

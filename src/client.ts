@@ -472,6 +472,7 @@ import {
   getContentRetention,
   getConversionDestination,
   getConversionMetrics,
+  getConversionPaths,
   getConversionsQuality,
   getCreatorCampaign,
   getCreatorPayoutStatement,
@@ -3025,6 +3026,7 @@ export class Zernio {
     removeCustomConversionGoal: this._bind(removeCustomConversionGoal),
     listEvents: this._bind(listEvents),
     sendEvents: this._bind(sendEvents),
+    getConversionPaths: this._bind(getConversionPaths),
     getEventsOverview: this._bind(getEventsOverview),
     getEventsOverviewDaily: this._bind(getEventsOverviewDaily),
     listEventNames: this._bind(listEventNames),
@@ -3720,6 +3722,8 @@ export class Zernio {
     listEvents: this._bind(listEvents),
     /** @deprecated Use `zernio.conversions.sendEvents` instead. */
     sendEvents: this._bind(sendEvents),
+    /** @deprecated Use `zernio.conversions.getConversionPaths` instead. */
+    getConversionPaths: this._bind(getConversionPaths),
     /** @deprecated Use `zernio.conversions.getEventsOverview` instead. */
     getEventsOverview: this._bind(getEventsOverview),
     /** @deprecated Use `zernio.conversions.getEventsOverviewDaily` instead. */
