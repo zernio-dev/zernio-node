@@ -3875,6 +3875,8 @@ export const selectGoogleSearchConsoleSite = <ThrowOnError extends boolean = fal
 
 /**
  * Get Campaign Manager 360 OAuth connect URL
+ * **Coming soon.** Google is still verifying the `dfatrafficking` permission Zernio requests. Until it approves, connecting may not work for your Google account.
+ *
  * Starts Google OAuth for Campaign Manager 360 (Floodlight). Each connected CM360 user profile becomes an account with platform `campaignmanager360`; it receives the conversions you forward to its Floodlight activities and does not post.
  *
  * Requested scopes: `https://www.googleapis.com/auth/datamanager` (conversions go through Google's Data Manager API) and `https://www.googleapis.com/auth/dfatrafficking` (only to list advertisers and Floodlight activities; Campaign Manager has no read-only trafficking scope).
@@ -20973,7 +20975,7 @@ export const getConversionsQuality = <ThrowOnError extends boolean = false>(opti
  * - Attentive (`attentive`) via the eCommerce and Custom Events APIs
  * - Impact (`impact`) via the Conversions API (`POST /Advertisers/{AccountSID}/Conversions`)
  * - Awin (`awin`) via the Conversion API (`POST /s2s/advertiser/{advertiserId}/orders`)
- * - Campaign Manager 360 (`campaignmanager360`) via the Data Manager API `ingestEvents`, to a Floodlight activity
+ * - Campaign Manager 360 (`campaignmanager360`, coming soon: pending Google's verification of the `dfatrafficking` permission) via the Data Manager API `ingestEvents`, to a Floodlight activity
  * - The Trade Desk (`tradedeskads`) via the Real-Time Conversions API (`POST https://insight.adsrvr.org/track/realtimeconversion`)
  * - Amazon Ads (`amazonads`) via the Amazon Ads Conversions API (`POST /adsApi/v1/create/events`)
  *
