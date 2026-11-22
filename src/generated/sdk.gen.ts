@@ -21553,6 +21553,12 @@ export const listForwardingRules = <ThrowOnError extends boolean = false>(option
  *
  * Pick `destinationId` from `GET /v1/ads/conversions/destinations`. Set `eventNames` to forward only those events, such as only `Purchase`; leave it out to forward every event.
  *
+ * - `eventNameMap` renames events for this destination (send your `Lead` as its `Purchase`).
+ * - `valueOverride` changes the value it gets (a fixed amount or a percent of the event's value).
+ * - `valueCondition` forwards only events above, below or equal to a value.
+ *
+ * Each applies to this rule only: the event is stored, and sent to other rules, as received.
+ *
  */
 export const createForwardingRule = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateForwardingRuleData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateForwardingRuleResponse, CreateForwardingRuleError, ThrowOnError>({
@@ -21562,8 +21568,10 @@ export const createForwardingRule = <ThrowOnError extends boolean = false>(optio
 };
 
 /**
- * Change a forwarding rule's API secret
- * Replaces the `apiSecret` of a rule whose destination needs one, such as a Google Analytics data stream's Measurement Protocol API secret. Before saving, Zernio sends one hit to Google's validation server; Google does not confirm the secret itself, so check GA4 Realtime after the next events.
+ * Update a forwarding rule
+ * Changes the fields you send and keeps the others. Send `eventNameMap: null` to stop renaming, `valueOverride: { "mode": "original" }` to send the event's own value again, and `valueCondition: null` to forward whatever the value.
+ *
+ * `apiSecret` replaces the secret of a rule whose destination needs one, such as a Google Analytics data stream's Measurement Protocol API secret. Before saving, Zernio sends one hit to Google's validation server; Google does not confirm the secret itself, so check GA4 Realtime after the next events.
  *
  */
 export const updateForwardingRule = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateForwardingRuleData, ThrowOnError>) => {

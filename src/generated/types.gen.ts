@@ -13666,8 +13666,53 @@ export type ForwardingRule = {
      * Only when an `apiSecret` was saved by this request. Google Analytics never confirms a Measurement Protocol API secret, so it is `false` there: the first events in GA4 Realtime prove the secret is right.
      */
     apiSecretVerified?: boolean;
+    /**
+     * Renames events for this destination, such as `{ "Lead": "Purchase" }`; null sends every event under its own name.
+     */
+    eventNameMap?: {
+        [key: string]: (string);
+    } | null;
+    valueOverride?: ForwardingRuleValueOverride;
+    /**
+     * Forwards only events whose value matches; null forwards whatever the value.
+     */
+    valueCondition?: (ForwardingRuleValueCondition | null);
     createdAt?: string;
 };
+
+/**
+ * Your event name to the name this destination gets, such as `{ "Lead": "Purchase" }`. Names not in the map are sent unchanged.
+ *
+ * A target spelled like a standard event in another case or form (`purchase`, `generate_lead`) is saved as the standard name (`Purchase`, `Lead`), so each platform gets its own standard event.
+ *
+ * `eventNames` and `valueCondition` are checked against the name and value as received, before renaming. The event id is never changed, so deduplication still works.
+ */
+export type ForwardingRuleEventNameMap = {
+    [key: string]: (string);
+};
+
+/**
+ * Forward only events whose value is greater than (`gt`), less than (`lt`) or equal to (`eq`) `amount`. An event without a value counts as 0. Checked on the value as received, before `valueOverride`.
+ */
+export type ForwardingRuleValueCondition = {
+    operator: 'gt' | 'lt' | 'eq';
+    amount: number;
+};
+
+export type operator = 'gt' | 'lt' | 'eq';
+
+/**
+ * The value this destination gets. `original` sends the event's own value; `fixed` sends `amount` for every event; `percent` sends `amount` percent of the event's value (30 sends 30%, rounded to cents), and leaves an event without a value without one. The currency is kept.
+ */
+export type ForwardingRuleValueOverride = {
+    mode: 'original' | 'fixed' | 'percent';
+    /**
+     * Required for `fixed` and `percent` (at most 1000 for `percent`); null for `original`.
+     */
+    amount?: (number) | null;
+};
+
+export type mode7 = 'original' | 'fixed' | 'percent';
 
 /**
  * Why this account, calendar or address could not be read. The provider's code when it gave one.
@@ -23768,7 +23813,7 @@ export type criteriaType = 'AGE' | 'GENDER' | 'OS_TYPE' | 'DEVICE_PLATFORM' | 'L
 /**
  * Required on every criterion. `CONTAINS` is currently the only value Meta supports.
  */
-export type operator = 'CONTAINS';
+export type operator2 = 'CONTAINS';
 
 /**
  * A named set of bid-adjustment rules on an ad account. Attach it to an ad set with
@@ -31165,7 +31210,7 @@ export type XArticle = {
 /**
  * Publish creates an X Article draft and then publishes it. Draft stops after draft creation and returns the X draft ID without a public URL.
  */
-export type mode7 = 'publish' | 'draft';
+export type mode8 = 'publish' | 'draft';
 
 export type XArticleBlock = {
     type: 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
@@ -81812,6 +81857,9 @@ export type CreateForwardingRuleData = {
          * Forward only events from these sources, such as only `web` for a tracked website. Leave it out to forward events from every source.
          */
         sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce' | 'gohighlevel' | 'postback' | 'form_leads')>;
+        eventNameMap?: ForwardingRuleEventNameMap;
+        valueOverride?: ForwardingRuleValueOverride;
+        valueCondition?: ForwardingRuleValueCondition;
         /**
          * Google Analytics streams only: the stream's Measurement Protocol API secret (GA4 Admin › Data streams). Optional when the connection has edit access, since Zernio then creates it. Checked against Google's validation server, stored encrypted, never returned. Change it with `PATCH /v1/events/forwarding-rules/{ruleId}`.
          */
@@ -81829,7 +81877,10 @@ export type CreateForwardingRuleError = (ErrorResponse | {
 
 export type UpdateForwardingRuleData = {
     body: {
-        apiSecret: string;
+        apiSecret?: string;
+        eventNameMap?: (ForwardingRuleEventNameMap | null);
+        valueOverride?: ForwardingRuleValueOverride;
+        valueCondition?: (ForwardingRuleValueCondition | null);
     };
     path: {
         /**
