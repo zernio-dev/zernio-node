@@ -192,11 +192,16 @@ try {
 | `accounts.getAllAccountsHealth()` | Check accounts health |
 | `accounts.listAccounts()` | List accounts |
 | `accounts.listBusinessPartners()` | List partner businesses of the Page |
+| `accounts.listGohighlevelAudienceSyncs()` | List HighLevel tag audience syncs |
+| `accounts.listHubSpotContactProperties()` | List HubSpot contact properties |
 | `accounts.listTikTokCommercialMusic()` | List trending commercial music |
+| `accounts.getAccount()` | Get account |
 | `accounts.getAccountHealth()` | Check account health |
 | `accounts.getAccountPosts()` | List posts published on the platform |
 | `accounts.getBlueskySettings()` | Get Bluesky account settings |
 | `accounts.getFollowerStats()` | Get follower stats |
+| `accounts.getGohighlevelFunnelTracking()` | Get HighLevel funnel tracking |
+| `accounts.getGohighlevelSettings()` | Get HighLevel account settings |
 | `accounts.getGoogleBusinessReview()` | Get a review |
 | `accounts.getGoogleBusinessReviews()` | Get reviews |
 | `accounts.getHubSpotSettings()` | Get HubSpot account settings |
@@ -208,6 +213,7 @@ try {
 | `accounts.getTikTokCreatorInfo()` | Get TikTok creator info |
 | `accounts.updateAccount()` | Update account |
 | `accounts.updateBlueskySettings()` | Update Bluesky account settings |
+| `accounts.updateGohighlevelSettings()` | Update HighLevel account settings |
 | `accounts.updateHubSpotSettings()` | Update HubSpot account settings |
 | `accounts.updateSalesforceSettings()` | Update Salesforce account settings |
 | `accounts.updateSlackSettings()` | Update Slack account settings |
@@ -220,6 +226,10 @@ try {
 | `accounts.replyToGoogleBusinessReview()` | Reply to a review |
 | `accounts.revokeBusinessPartner()` | Revoke a partner business from the Page |
 | `accounts.searchTikTokLocations()` | Search TikTok location tags |
+| `accounts.sendGohighlevelPastWonDeals()` | Send past HighLevel won deals as conversions |
+| `accounts.startGohighlevelAudienceSync()` | Sync a HighLevel tag to ad audiences |
+| `accounts.stopGohighlevelAudienceSync()` | Stop a HighLevel tag audience sync |
+| `accounts.verifyGohighlevelFunnelTracking()` | Check the Zernio tag on a HighLevel funnel page |
 
 ### Profiles
 | Method | Description |
@@ -328,7 +338,9 @@ try {
 | Method | Description |
 |--------|-------------|
 | `users.listUsers()` | List users |
+| `users.getCurrentUser()` | Get the current user |
 | `users.getUser()` | Get user |
+| `users.removeUser()` | Remove member |
 
 ### Usage
 | Method | Description |
@@ -348,6 +360,7 @@ try {
 ### Connect (OAuth)
 | Method | Description |
 |--------|-------------|
+| `connect.listCampaignManagerProfiles()` | List Campaign Manager 360 profiles for a pending connect |
 | `connect.listFacebookPages()` | List Facebook pages |
 | `connect.listGoogleAnalyticsProperties()` | List Google Analytics properties for a pending connect |
 | `connect.listGoogleBusinessCategories()` | List Google Business Profile categories |
@@ -369,12 +382,15 @@ try {
 | `connect.createPinterestBoard()` | Create Pinterest board |
 | `connect.createPlatformInvite()` | Create a connect link |
 | `connect.createYoutubePlaylist()` | Create YouTube playlist |
+| `connect.getAmazonAdsConnectUrl()` | Get Amazon Ads OAuth connect URL |
+| `connect.getCampaignManagerConnectUrl()` | Get Campaign Manager 360 OAuth connect URL |
 | `connect.getConnectHandoff()` | Get a phone handoff |
 | `connect.getConnectUrl()` | Get OAuth connect URL |
 | `connect.getConnectWelcomeScreen()` | Get the saved welcome screen |
 | `connect.getEmailConnectUrl()` | Get a hosted link to connect any mailbox |
 | `connect.getFacebookPages()` | List Facebook pages |
 | `connect.getGmbLocations()` | List Google Business Profile locations |
+| `connect.getGohighlevelConnectUrl()` | Get HighLevel OAuth connect URL |
 | `connect.getGoogleAnalyticsConnectUrl()` | Get Google Analytics OAuth connect URL |
 | `connect.getGoogleSearchConsoleConnectUrl()` | Get Google Search Console OAuth connect URL |
 | `connect.getHubSpotConnectUrl()` | Get HubSpot OAuth connect URL |
@@ -417,12 +433,19 @@ try {
 | `connect.configureTikTokAdsBrandIdentity()` | Set TikTok brand identity |
 | `connect.connectAds()` | Connect ads for a platform |
 | `connect.connectAppLovinAdsCredentials()` | Connect an AppLovin Axon account |
+| `connect.connectAttentiveCredentials()` | Connect an Attentive company |
+| `connect.connectAwinCredentials()` | Connect an Awin advertiser |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |
 | `connect.connectDiscordChannel()` | Connect a Discord channel |
+| `connect.connectImpactCredentials()` | Connect an Impact program |
+| `connect.connectKlaviyoCredentials()` | Connect a Klaviyo account |
 | `connect.connectLineCredentials()` | Connect LINE Official Account |
 | `connect.connectOpenAIAdsCredentials()` | Connect an OpenAI Ads account |
 | `connect.connectShopifyWithToken()` | Connect a Shopify store with a custom-app Admin token |
 | `connect.connectSlackChannel()` | Connect a Slack channel |
+| `connect.connectSnapchatAdsCredentials()` | Connect a Snapchat Ads pixel |
+| `connect.connectTaboolaAdsCredentials()` | Connect a Taboola account |
+| `connect.connectTradeDeskAdsCredentials()` | Connect a Trade Desk tracking tag |
 | `connect.connectWebflowWithSiteToken()` | Connect Webflow with a site API token |
 | `connect.connectWechatCredentials()` | Connect WeChat Official Account |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
@@ -433,6 +456,7 @@ try {
 | `connect.initiateTelegramConnect()` | Connect Telegram directly |
 | `connect.resyncPageWebhookSubscription()` | Re-subscribe an account to Zernio's webhooks |
 | `connect.searchGoogleBusinessLocations()` | Search existing Google listings |
+| `connect.selectCampaignManagerProfile()` | Connect the chosen Campaign Manager 360 profile |
 | `connect.selectFacebookPage()` | Select Facebook page |
 | `connect.selectGoogleAnalyticsProperty()` | Connect the chosen Google Analytics property |
 | `connect.selectGoogleBusinessLocation()` | Select Google Business Profile location |
@@ -539,6 +563,7 @@ try {
 | `adAccounts.assignPageUser()` | Assign a user to a Page |
 | `adAccounts.attachAdLabel()` | Attach a Google Ads label |
 | `adAccounts.detachAdLabel()` | Detach a Google Ads label |
+| `adAccounts.editAdNegativeKeywordListKeywords()` | Add or remove negative list keywords |
 | `adAccounts.hideAdComment()` | Hide or unhide an ad comment |
 | `adAccounts.inviteAdAccountToManager()` | Invite a client account to a manager |
 | `adAccounts.inviteAdAccountUser()` | Invite a user to an ad account by email |
@@ -572,10 +597,14 @@ try {
 | `adCampaignResults.listCampaignResultMetrics()` | List your result metrics |
 | `adCampaignResults.listCampaignResults()` | List your results per campaign |
 | `adCampaignResults.getCampaignResultEvents()` | List the events that count as campaign results |
+| `adCampaignResults.getCampaignResultProfit()` | Get your profit setting |
 | `adCampaignResults.getCampaignResultsTotals()` | Get your results totals |
 | `adCampaignResults.getCampaignResultsUpload()` | Check a results upload |
+| `adCampaignResults.getTagNewAds()` | Get the Tag new ads setting |
 | `adCampaignResults.setCampaignResultEvents()` | Choose the events that count as campaign results |
 | `adCampaignResults.setCampaignResultMetric()` | Name a result metric or define a formula |
+| `adCampaignResults.setCampaignResultProfit()` | Set your margin and cost per order |
+| `adCampaignResults.setTagNewAds()` | Turn Tag new ads on or off |
 | `adCampaignResults.uploadCampaignResults()` | Upload your results per campaign |
 
 ### Ad Campaigns
@@ -643,6 +672,8 @@ try {
 | `adCampaigns.duplicateAd()` | Duplicate an ad |
 | `adCampaigns.duplicateAdCampaign()` | Duplicate a campaign |
 | `adCampaigns.duplicateAdSet()` | Duplicate an ad set |
+| `adCampaigns.editCampaignNegativeKeywordLists()` | Attach or detach campaign negative lists |
+| `adCampaigns.editCampaignNegativeKeywords()` | Add or remove campaign-level negative keywords |
 | `adCampaigns.editGoogleAssetGroupAssets()` | Link or unlink asset group assets |
 | `adCampaigns.removeAdGroupAssets()` | Remove ad-group assets |
 | `adCampaigns.removeAdKeyword()` | Remove a Search keyword |
@@ -755,6 +786,7 @@ try {
 | `automations.previewAutomation()` | Preview a saved automation |
 | `automations.previewAutomationDraft()` | Preview an unsaved automation |
 | `automations.rejectAutomationApproval()` | Reject an approval request |
+| `automations.takeOverAutomation()` | Take over an automation |
 
 ### Blogs
 | Method | Description |
@@ -1033,6 +1065,16 @@ try {
 | `contentRetention.getContentRetention()` | Get content retention mode |
 | `contentRetention.updateContentRetention()` | Turn zero content retention on or off |
 
+### Conversion Audit
+| Method | Description |
+|--------|-------------|
+| `conversionAudit.listConversionAuditMonitors()` | List watched domains |
+| `conversionAudit.createConversionAuditMonitor()` | Watch a domain |
+| `conversionAudit.getLatestConversionAudit()` | Get a host's latest stored conversion audit |
+| `conversionAudit.getMetaConversionAudit()` | Audit a connected Meta pixel from inside Events Manager |
+| `conversionAudit.deleteConversionAuditMonitor()` | Stop watching a domain |
+| `conversionAudit.auditConversionTracking()` | Audit a site's ad conversion tracking |
+
 ### Conversions
 | Method | Description |
 |--------|-------------|
@@ -1064,9 +1106,11 @@ try {
 | `conversions.getConversionPaths()` | List the touch paths that lead to conversions |
 | `conversions.getConversionsQuality()` | Get Event Match Quality |
 | `conversions.getEvent()` | Get one stored event and its deliveries |
+| `conversions.getEventsAccuracy()` | Get delivery accuracy per destination |
 | `conversions.getEventsOverview()` | Get today's tracking overview |
 | `conversions.getEventsOverviewDaily()` | Get daily tracking figures |
 | `conversions.getLtvCohorts()` | Get buyer cohorts by first purchase month and first channel |
+| `conversions.getSurveyAnswers()` | Get post-purchase survey answers |
 | `conversions.getTrackingSite()` | Get a tracking site |
 | `conversions.updateAdConversionDestination()` | Update a conversion destination |
 | `conversions.updateAdConversionGoals()` | Update account conversion goals |
@@ -1083,6 +1127,7 @@ try {
 | `conversions.addAdConversionAssociations()` | Associate campaigns |
 | `conversions.addConversionAssociations()` | Associate campaigns |
 | `conversions.adjustConversions()` | Adjust uploaded conversions |
+| `conversions.checkTrackingSiteProxy()` | Check a tracking site's own-domain path |
 | `conversions.removeAdConversionAssociations()` | Remove associated campaigns |
 | `conversions.removeConversionAssociations()` | Remove associated campaigns |
 | `conversions.removeCustomConversionGoal()` | Remove a custom conversion goal |
@@ -1372,6 +1417,7 @@ try {
 | `leadGen.listFormLeads()` | List leads for a single form |
 | `leadGen.listLeadForms()` | List lead forms |
 | `leadGen.listLeads()` | List submitted leads |
+| `leadGen.createLead()` | Create a lead from your own form |
 | `leadGen.createLeadForm()` | Create a lead form |
 | `leadGen.createTestLead()` | Create a test lead |
 | `leadGen.getLeadForm()` | Get a lead form |
@@ -1426,6 +1472,22 @@ try {
 | `messagingAds.createCallAd()` | Create Click-to-Call ad |
 | `messagingAds.createCtwaAd()` | Create CTWA ad (deprecated) |
 | `messagingAds.createMessagingAd()` | Create messaging ad |
+
+### Metrics
+| Method | Description |
+|--------|-------------|
+| `metrics.getAccountMetrics()` | Read follower and post totals per account, platform or scope over time |
+| `metrics.getAdAccountMetrics()` | Read the uploaded results summed across ad accounts |
+| `metrics.getAdMetrics()` | Read ad metrics by id, or one ad day by day with breakdowns |
+| `metrics.getCampaignMetrics()` | Read the uploaded results of each campaign over a window |
+| `metrics.getInboxMetrics()` | Read message volume and response times |
+| `metrics.getInsightMetrics()` | Read live account or post insights from the platform |
+| `metrics.getMetricsCatalog()` | List the metrics, groupings and limits of each metrics endpoint |
+| `metrics.getPostMetrics()` | Read post metrics by id, day by day, as a list, or grouped |
+| `metrics.queryGoogleAds()` | Run a Google Ads Query Language search on one customer |
+| `metrics.queryGoogleAnalytics()` | Run a GA4 standard or realtime report on one property |
+| `metrics.queryMetaAds()` | Run a Meta Marketing API insights query on one ad account |
+| `metrics.queryTikTokAds()` | Run a TikTok Marketing API report on one advertiser |
 
 ### Phone Numbers
 | Method | Description |
@@ -1577,6 +1639,17 @@ try {
 | `supportAssistant.listSupportAnswers()` | List a thread's support answers |
 | `supportAssistant.getSupportAnswer()` | Get a support answer |
 | `supportAssistant.askSupportQuestion()` | Ask a support question |
+
+### Tracking links
+| Method | Description |
+|--------|-------------|
+| `trackingLinks.listTrackingLinks()` | List tracking links |
+| `trackingLinks.createTrackingLink()` | Create a tracking link |
+| `trackingLinks.getTrackingLink()` | Get a tracking link |
+| `trackingLinks.getTrackingLinkStats()` | Get a tracking link's results |
+| `trackingLinks.updateTrackingLink()` | Update a tracking link |
+| `trackingLinks.deleteTrackingLink()` | Delete a tracking link |
+| `trackingLinks.rotateTrackingLinkPostbackToken()` | Rotate a tracking link's postback URL |
 
 ### Tracking Tags
 | Method | Description |
@@ -1818,8 +1891,19 @@ try {
 | `workflows.duplicateWorkflow()` | Duplicate a workflow |
 | `workflows.pauseWorkflow()` | Pause workflow |
 | `workflows.restoreWorkflowVersion()` | Restore a workflow version |
+| `workflows.takeOverWorkflow()` | Take over a workflow |
 | `workflows.triggerApiCallWorkflow()` | Start an API-triggered workflow |
 | `workflows.triggerWorkflow()` | Manually start a workflow run |
+
+### Workspaces
+| Method | Description |
+|--------|-------------|
+| `workspaces.listWorkspaces()` | List workspaces |
+| `workspaces.createWorkspace()` | Create workspace |
+| `workspaces.createWorkspaceApiKey()` | Create workspace key |
+| `workspaces.getWorkspace()` | Get workspace |
+| `workspaces.updateWorkspace()` | Rename workspace |
+| `workspaces.deleteWorkspace()` | Delete workspace |
 
 ### Invites
 | Method | Description |

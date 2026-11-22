@@ -45,6 +45,11 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.getFollowerStats).toBeTypeOf('function');
     });
 
+    it('should have getAccount method', () => {
+      expect(client.accounts.getAccount).toBeDefined();
+      expect(client.accounts.getAccount).toBeTypeOf('function');
+    });
+
     it('should have updateAccount method', () => {
       expect(client.accounts.updateAccount).toBeDefined();
       expect(client.accounts.updateAccount).toBeTypeOf('function');
@@ -148,6 +153,51 @@ describe('Endpoint Methods', () => {
     it('should have updateHubSpotSettings method', () => {
       expect(client.accounts.updateHubSpotSettings).toBeDefined();
       expect(client.accounts.updateHubSpotSettings).toBeTypeOf('function');
+    });
+
+    it('should have listHubSpotContactProperties method', () => {
+      expect(client.accounts.listHubSpotContactProperties).toBeDefined();
+      expect(client.accounts.listHubSpotContactProperties).toBeTypeOf('function');
+    });
+
+    it('should have getGohighlevelSettings method', () => {
+      expect(client.accounts.getGohighlevelSettings).toBeDefined();
+      expect(client.accounts.getGohighlevelSettings).toBeTypeOf('function');
+    });
+
+    it('should have updateGohighlevelSettings method', () => {
+      expect(client.accounts.updateGohighlevelSettings).toBeDefined();
+      expect(client.accounts.updateGohighlevelSettings).toBeTypeOf('function');
+    });
+
+    it('should have listGohighlevelAudienceSyncs method', () => {
+      expect(client.accounts.listGohighlevelAudienceSyncs).toBeDefined();
+      expect(client.accounts.listGohighlevelAudienceSyncs).toBeTypeOf('function');
+    });
+
+    it('should have startGohighlevelAudienceSync method', () => {
+      expect(client.accounts.startGohighlevelAudienceSync).toBeDefined();
+      expect(client.accounts.startGohighlevelAudienceSync).toBeTypeOf('function');
+    });
+
+    it('should have stopGohighlevelAudienceSync method', () => {
+      expect(client.accounts.stopGohighlevelAudienceSync).toBeDefined();
+      expect(client.accounts.stopGohighlevelAudienceSync).toBeTypeOf('function');
+    });
+
+    it('should have getGohighlevelFunnelTracking method', () => {
+      expect(client.accounts.getGohighlevelFunnelTracking).toBeDefined();
+      expect(client.accounts.getGohighlevelFunnelTracking).toBeTypeOf('function');
+    });
+
+    it('should have verifyGohighlevelFunnelTracking method', () => {
+      expect(client.accounts.verifyGohighlevelFunnelTracking).toBeDefined();
+      expect(client.accounts.verifyGohighlevelFunnelTracking).toBeTypeOf('function');
+    });
+
+    it('should have sendGohighlevelPastWonDeals method', () => {
+      expect(client.accounts.sendGohighlevelPastWonDeals).toBeDefined();
+      expect(client.accounts.sendGohighlevelPastWonDeals).toBeTypeOf('function');
     });
 
     it('should have getSalesforceSettings method', () => {
@@ -514,9 +564,34 @@ describe('Endpoint Methods', () => {
       expect(client.connect.selectGoogleSearchConsoleSite).toBeTypeOf('function');
     });
 
+    it('should have getCampaignManagerConnectUrl method', () => {
+      expect(client.connect.getCampaignManagerConnectUrl).toBeDefined();
+      expect(client.connect.getCampaignManagerConnectUrl).toBeTypeOf('function');
+    });
+
+    it('should have listCampaignManagerProfiles method', () => {
+      expect(client.connect.listCampaignManagerProfiles).toBeDefined();
+      expect(client.connect.listCampaignManagerProfiles).toBeTypeOf('function');
+    });
+
+    it('should have selectCampaignManagerProfile method', () => {
+      expect(client.connect.selectCampaignManagerProfile).toBeDefined();
+      expect(client.connect.selectCampaignManagerProfile).toBeTypeOf('function');
+    });
+
+    it('should have getAmazonAdsConnectUrl method', () => {
+      expect(client.connect.getAmazonAdsConnectUrl).toBeDefined();
+      expect(client.connect.getAmazonAdsConnectUrl).toBeTypeOf('function');
+    });
+
     it('should have getHubSpotConnectUrl method', () => {
       expect(client.connect.getHubSpotConnectUrl).toBeDefined();
       expect(client.connect.getHubSpotConnectUrl).toBeTypeOf('function');
+    });
+
+    it('should have getGohighlevelConnectUrl method', () => {
+      expect(client.connect.getGohighlevelConnectUrl).toBeDefined();
+      expect(client.connect.getGohighlevelConnectUrl).toBeTypeOf('function');
     });
 
     it('should have getSalesforceConnectUrl method', () => {
@@ -637,6 +712,41 @@ describe('Endpoint Methods', () => {
     it('should have connectAppLovinAdsCredentials method', () => {
       expect(client.connect.connectAppLovinAdsCredentials).toBeDefined();
       expect(client.connect.connectAppLovinAdsCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectSnapchatAdsCredentials method', () => {
+      expect(client.connect.connectSnapchatAdsCredentials).toBeDefined();
+      expect(client.connect.connectSnapchatAdsCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectKlaviyoCredentials method', () => {
+      expect(client.connect.connectKlaviyoCredentials).toBeDefined();
+      expect(client.connect.connectKlaviyoCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectAttentiveCredentials method', () => {
+      expect(client.connect.connectAttentiveCredentials).toBeDefined();
+      expect(client.connect.connectAttentiveCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectImpactCredentials method', () => {
+      expect(client.connect.connectImpactCredentials).toBeDefined();
+      expect(client.connect.connectImpactCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectAwinCredentials method', () => {
+      expect(client.connect.connectAwinCredentials).toBeDefined();
+      expect(client.connect.connectAwinCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectTradeDeskAdsCredentials method', () => {
+      expect(client.connect.connectTradeDeskAdsCredentials).toBeDefined();
+      expect(client.connect.connectTradeDeskAdsCredentials).toBeTypeOf('function');
+    });
+
+    it('should have connectTaboolaAdsCredentials method', () => {
+      expect(client.connect.connectTaboolaAdsCredentials).toBeDefined();
+      expect(client.connect.connectTaboolaAdsCredentials).toBeTypeOf('function');
     });
 
     it('should have connectWhopAdsCredentials method', () => {
@@ -1182,9 +1292,19 @@ describe('Endpoint Methods', () => {
       expect(client.users.listUsers).toBeTypeOf('function');
     });
 
+    it('should have getCurrentUser method', () => {
+      expect(client.users.getCurrentUser).toBeDefined();
+      expect(client.users.getCurrentUser).toBeTypeOf('function');
+    });
+
     it('should have getUser method', () => {
       expect(client.users.getUser).toBeDefined();
       expect(client.users.getUser).toBeTypeOf('function');
+    });
+
+    it('should have removeUser method', () => {
+      expect(client.users.removeUser).toBeDefined();
+      expect(client.users.removeUser).toBeTypeOf('function');
     });
 
   });

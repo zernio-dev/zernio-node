@@ -49,6 +49,7 @@ import {
   attachBrandedCallingNumbers,
   attachCampaignAssets,
   attachNumberToSipTrunk,
+  auditConversionTracking,
   autocompleteContacts,
   backtestAutomation,
   backtestAutomationDraft,
@@ -80,6 +81,7 @@ import {
   changeCommerceProductTags,
   checkPhoneNumberAvailability,
   checkPhoneNumberPortability,
+  checkTrackingSiteProxy,
   checkVerification,
   checkWhatsAppNumberAvailability,
   clearContactFieldValue,
@@ -94,12 +96,19 @@ import {
   confirmTopup,
   connectAds,
   connectAppLovinAdsCredentials,
+  connectAttentiveCredentials,
+  connectAwinCredentials,
   connectBlueskyCredentials,
   connectDiscordChannel,
+  connectImpactCredentials,
+  connectKlaviyoCredentials,
   connectLineCredentials,
   connectOpenAiAdsCredentials,
   connectShopifyWithToken,
   connectSlackChannel,
+  connectSnapchatAdsCredentials,
+  connectTaboolaAdsCredentials,
+  connectTradeDeskAdsCredentials,
   connectWebflowWithSiteToken,
   connectWechatCredentials,
   connectWhatsAppCredentials,
@@ -160,6 +169,7 @@ import {
   createCommerceRefund,
   createContact,
   createConversionAction,
+  createConversionAuditMonitor,
   createConversionDestination,
   createCreatorCampaign,
   createCreatorPayoutLogin,
@@ -191,6 +201,7 @@ import {
   createInboxConversation,
   createInboxLabel,
   createInviteToken,
+  createLead,
   createLeadForm,
   createMessagingAd,
   createMicrosoftOrgConnection,
@@ -214,6 +225,7 @@ import {
   createStandaloneAd,
   createTestLead,
   createTopup,
+  createTrackingLink,
   createTrackingSite,
   createTrackingTag,
   createTrackingTagEvent,
@@ -232,6 +244,8 @@ import {
   createWhatsAppSandboxSession,
   createWhatsAppTemplate,
   createWorkflow,
+  createWorkspace,
+  createWorkspaceApiKey,
   createYoutubePlaylist,
   crosspostDiscordMessage,
   deactivateRcsAgent,
@@ -284,6 +298,7 @@ import {
   deleteCommerceProductVariants,
   deleteCommerceRedirect,
   deleteContact,
+  deleteConversionAuditMonitor,
   deleteConversionDestination,
   deleteCustomField,
   deleteDiscordGuildRole,
@@ -320,6 +335,7 @@ import {
   deleteSmsSenderId,
   deleteTelegramCommands,
   deleteTestLead,
+  deleteTrackingLink,
   deleteTrackingSite,
   deleteTrackingTagEvent,
   deleteValueRuleSet,
@@ -332,6 +348,7 @@ import {
   deleteWhatsAppTemplateById,
   deleteWhatsappBusinessUsername,
   deleteWorkflow,
+  deleteWorkspace,
   denyCampaignParticipant,
   deprecateWhatsAppFlow,
   detachAdLabel,
@@ -352,6 +369,9 @@ import {
   duplicateAdSet,
   duplicateCommerceProduct,
   duplicateWorkflow,
+  editAdNegativeKeywordListKeywords,
+  editCampaignNegativeKeywordLists,
+  editCampaignNegativeKeywords,
   editDiscordGuildRole,
   editGoogleAssetGroupAssets,
   editInboxComment,
@@ -370,7 +390,9 @@ import {
   generateAdPreviews,
   generateKeywordHistoricalMetrics,
   generateKeywordIdeas,
+  getAccount,
   getAccountHealth,
+  getAccountMetrics,
   getAccountPosts,
   getAd,
   getAdAccountBilling,
@@ -378,6 +400,7 @@ import {
   getAdAccountHealth,
   getAdAccountHierarchy,
   getAdAccountLiveEntities,
+  getAdAccountMetrics,
   getAdAnalytics,
   getAdAudience,
   getAdCampaignDetails,
@@ -390,6 +413,7 @@ import {
   getAdCreative,
   getAdInsightsReport,
   getAdMedia,
+  getAdMetrics,
   getAdNegativeKeywordList,
   getAdPreviews,
   getAdReview,
@@ -404,6 +428,7 @@ import {
   getAdsSearchTerms,
   getAdsTimeline,
   getAllAccountsHealth,
+  getAmazonAdsConnectUrl,
   getAnalytics,
   getAnalyticsDashboard,
   getAnalyticsDelta,
@@ -444,9 +469,12 @@ import {
   getCampaignBidding,
   getCampaignConversionGoals,
   getCampaignDraft,
+  getCampaignManagerConnectUrl,
+  getCampaignMetrics,
   getCampaignParticipant,
   getCampaignReport,
   getCampaignResultEvents,
+  getCampaignResultProfit,
   getCampaignResultsTotals,
   getCampaignResultsUpload,
   getCampaignSubmission,
@@ -480,6 +508,7 @@ import {
   getCreatorPortal,
   getCrmContact,
   getCrmDeal,
+  getCurrentUser,
   getDailyMetrics,
   getDiscordChannels,
   getDiscordGuildMember,
@@ -493,6 +522,7 @@ import {
   getEmailSignature,
   getEmailThread,
   getEvent,
+  getEventsAccuracy,
   getEventsOverview,
   getEventsOverviewDaily,
   getFacebookDemographics,
@@ -506,6 +536,9 @@ import {
   getFollowerStats,
   getGmbAttributeMetadata,
   getGmbLocations,
+  getGohighlevelConnectUrl,
+  getGohighlevelFunnelTracking,
+  getGohighlevelSettings,
   getGoogleAnalyticsConnectUrl,
   getGoogleAnalyticsMetadata,
   getGoogleAssetGroup,
@@ -527,11 +560,13 @@ import {
   getInboxConversationAnalytics,
   getInboxConversationMessages,
   getInboxHeatmap,
+  getInboxMetrics,
   getInboxPostComments,
   getInboxResponseTime,
   getInboxSourceBreakdown,
   getInboxTopAccounts,
   getInboxVolume,
+  getInsightMetrics,
   getInstagramAccountInsights,
   getInstagramAudio,
   getInstagramBusinessDiscovery,
@@ -545,6 +580,7 @@ import {
   getInstagramPublishingLimit,
   getInstagramStoryInsights,
   getIosFourteenCampaignLimits,
+  getLatestConversionAudit,
   getLeadForm,
   getLedgerBalances,
   getLinkedInAggregateAnalytics,
@@ -563,6 +599,8 @@ import {
   getMessengerGreeting,
   getMessengerIceBreakers,
   getMessengerMenu,
+  getMetaConversionAudit,
+  getMetricsCatalog,
   getNextQueueSlot,
   getOAuthApp,
   getOrgConnection,
@@ -580,6 +618,7 @@ import {
   getPinterestBoards,
   getPost,
   getPostAuthenticity,
+  getPostMetrics,
   getPostSamples,
   getPostTimeline,
   getPostingFrequency,
@@ -607,6 +646,8 @@ import {
   getStripeSettings,
   getSubredditRules,
   getSupportAnswer,
+  getSurveyAnswers,
+  getTagNewAds,
   getTelegramCommands,
   getTelegramConnectStatus,
   getTikTokAccountInsights,
@@ -617,6 +658,8 @@ import {
   getTopupInvoice,
   getTopupReceipt,
   getTopupStatement,
+  getTrackingLink,
+  getTrackingLinkStats,
   getTrackingSite,
   getTrackingTag,
   getTrackingTagDiagnostics,
@@ -674,6 +717,7 @@ import {
   getWordPressAuthUrl,
   getWorkflow,
   getWorkflowVersion,
+  getWorkspace,
   getXApiPricing,
   getYouTubeChannelInsights,
   getYouTubeDailyViews,
@@ -776,6 +820,7 @@ import {
   listCampaignAssets,
   listCampaignDrafts,
   listCampaignLedger,
+  listCampaignManagerProfiles,
   listCampaignNegativeKeywordLists,
   listCampaignNegativeKeywords,
   listCampaignOrders,
@@ -813,6 +858,7 @@ import {
   listConversationLabels,
   listConversionActions,
   listConversionAssociations,
+  listConversionAuditMonitors,
   listConversionDestinations,
   listCreatorCampaigns,
   listCrmDeals,
@@ -841,6 +887,7 @@ import {
   listFiles,
   listFormLeads,
   listForwardingRules,
+  listGohighlevelAudienceSyncs,
   listGoogleAnalyticsProperties,
   listGoogleAssetGroups,
   listGoogleBusinessCategories,
@@ -851,6 +898,7 @@ import {
   listGoogleSearchConsoleSitemaps,
   listGoogleSearchConsoleSites,
   listHighDemandPeriods,
+  listHubSpotContactProperties,
   listImessageAudience,
   listImessageAvailableNumbers,
   listImessageSandboxContacts,
@@ -912,6 +960,7 @@ import {
   listTikTokCommercialMusic,
   listTikTokSmartPlusReviews,
   listTopups,
+  listTrackingLinks,
   listTrackingSites,
   listTrackingTagEvents,
   listTrackingTagPartners,
@@ -939,6 +988,7 @@ import {
   listWorkflowExecutions,
   listWorkflowVersions,
   listWorkflows,
+  listWorkspaces,
   lookupSmsNumber,
   markConversationRead,
   moveAccountToProfile,
@@ -968,7 +1018,11 @@ import {
   purchasePhoneNumber,
   purchaseWhatsAppPhoneNumber,
   queryAdInsights,
+  queryGoogleAds,
+  queryGoogleAnalytics,
   queryGoogleSearchConsoleSearchAnalytics,
+  queryMetaAds,
+  queryTikTokAds,
   raiseCreatorCampaignBudget,
   readBusinessAgentEvals,
   recoverCreatorPortalLinks,
@@ -1012,6 +1066,7 @@ import {
   removeTrackingTagFromStore,
   removeTrackingTagSharedAccount,
   removeTrackingTagUser,
+  removeUser,
   removeUsersFromAdAudience,
   removeWhatsAppGroupParticipants,
   reopenCampaignSubmission,
@@ -1058,6 +1113,7 @@ import {
   revokeBusinessPartner,
   revokeConnectedApp,
   rotateSipTrunkCredentials,
+  rotateTrackingLinkPostbackToken,
   rotateTrackingSiteKey,
   rsvpCalendarEvent,
   runBusinessAgentConnectorTool,
@@ -1078,6 +1134,7 @@ import {
   searchReddit,
   searchTikTokLocations,
   searchTweets,
+  selectCampaignManagerProfile,
   selectFacebookPage,
   selectGoogleAnalyticsProperty,
   selectGoogleBusinessLocation,
@@ -1095,6 +1152,7 @@ import {
   sendEmailDraft,
   sendEmailMessage,
   sendEvents,
+  sendGohighlevelPastWonDeals,
   sendInboxMessage,
   sendPrivateReplyToComment,
   sendRcsMessage,
@@ -1105,6 +1163,7 @@ import {
   setBusinessAgentConnectorCredentials,
   setCampaignResultEvents,
   setCampaignResultMetric,
+  setCampaignResultProfit,
   setCommentModeration,
   setCommerceCollectionMetafields,
   setCommerceDiscountActive,
@@ -1121,6 +1180,7 @@ import {
   setMessengerMenu,
   setPartnershipAdPermission,
   setRedditPostFlair,
+  setTagNewAds,
   setTelegramCommands,
   setUpAdAccountBilling,
   setWhatsAppConversationalAutomation,
@@ -1133,10 +1193,12 @@ import {
   startBusinessAgentEvalRun,
   startCreatorConnect,
   startCreatorPayouts,
+  startGohighlevelAudienceSync,
   startGoogleBusinessVerification,
   startMicrosoftAdminConsent,
   startSmsRegistration,
   startWhatsAppCallerIdVerification,
+  stopGohighlevelAudienceSync,
   submitCreatorDraft,
   submitCreatorPost,
   submitFeedback,
@@ -1144,6 +1206,8 @@ import {
   submitWhatsAppNumberKyc,
   suspendCampaignParticipant,
   syncExternalPosts,
+  takeOverAutomation,
+  takeOverWorkflow,
   testOAuthApp,
   testWebhook,
   transferVoiceCall,
@@ -1243,6 +1307,7 @@ import {
   updateFile,
   updateForwardingRule,
   updateGmbLocation,
+  updateGohighlevelSettings,
   updateGoogleAssetGroup,
   updateGoogleBusinessAttributes,
   updateGoogleBusinessFoodMenus,
@@ -1269,6 +1334,7 @@ import {
   updateSequence,
   updateSlackSettings,
   updateStripeSettings,
+  updateTrackingLink,
   updateTrackingSite,
   updateTrackingTag,
   updateTrackingTagEvent,
@@ -1284,6 +1350,7 @@ import {
   updateWhatsAppTemplate,
   updateWhatsAppTemplateById,
   updateWorkflow,
+  updateWorkspace,
   updateYoutubeDefaultPlaylist,
   uploadAdImage,
   uploadAdVideo,
@@ -1307,6 +1374,7 @@ import {
   validateSubreddit,
   validateWhatsAppNumberKycAddress,
   verifyCredential,
+  verifyGohighlevelFunnelTracking,
   verifyOrgConnection,
   verifySmsRegistrationOtp,
   verifyWhatsAppCallerId,
@@ -1490,6 +1558,24 @@ export class Zernio {
   };
 
   /**
+   * metrics API
+   */
+  metrics = {
+    getMetricsCatalog: this._bind(getMetricsCatalog),
+    getPostMetrics: this._bind(getPostMetrics),
+    getAccountMetrics: this._bind(getAccountMetrics),
+    getInsightMetrics: this._bind(getInsightMetrics),
+    getInboxMetrics: this._bind(getInboxMetrics),
+    getAdMetrics: this._bind(getAdMetrics),
+    getCampaignMetrics: this._bind(getCampaignMetrics),
+    getAdAccountMetrics: this._bind(getAdAccountMetrics),
+    queryMetaAds: this._bind(queryMetaAds),
+    queryGoogleAds: this._bind(queryGoogleAds),
+    queryTikTokAds: this._bind(queryTikTokAds),
+    queryGoogleAnalytics: this._bind(queryGoogleAnalytics),
+  };
+
+  /**
    * Analytics API - Get performance metrics
    */
   analytics = {
@@ -1670,7 +1756,9 @@ export class Zernio {
    */
   users = {
     listUsers: this._bind(listUsers),
+    getCurrentUser: this._bind(getCurrentUser),
     getUser: this._bind(getUser),
+    removeUser: this._bind(removeUser),
   };
 
   /**
@@ -1691,6 +1779,7 @@ export class Zernio {
   accounts = {
     listAccounts: this._bind(listAccounts),
     getFollowerStats: this._bind(getFollowerStats),
+    getAccount: this._bind(getAccount),
     updateAccount: this._bind(updateAccount),
     moveAccountToProfile: this._bind(moveAccountToProfile),
     deleteAccount: this._bind(deleteAccount),
@@ -1712,6 +1801,15 @@ export class Zernio {
     getLinkedInMentions: this._bind(getLinkedInMentions),
     getHubSpotSettings: this._bind(getHubSpotSettings),
     updateHubSpotSettings: this._bind(updateHubSpotSettings),
+    listHubSpotContactProperties: this._bind(listHubSpotContactProperties),
+    getGohighlevelSettings: this._bind(getGohighlevelSettings),
+    updateGohighlevelSettings: this._bind(updateGohighlevelSettings),
+    listGohighlevelAudienceSyncs: this._bind(listGohighlevelAudienceSyncs),
+    startGohighlevelAudienceSync: this._bind(startGohighlevelAudienceSync),
+    stopGohighlevelAudienceSync: this._bind(stopGohighlevelAudienceSync),
+    getGohighlevelFunnelTracking: this._bind(getGohighlevelFunnelTracking),
+    verifyGohighlevelFunnelTracking: this._bind(verifyGohighlevelFunnelTracking),
+    sendGohighlevelPastWonDeals: this._bind(sendGohighlevelPastWonDeals),
     getSalesforceSettings: this._bind(getSalesforceSettings),
     updateSalesforceSettings: this._bind(updateSalesforceSettings),
     getStripeSettings: this._bind(getStripeSettings),
@@ -1795,6 +1893,18 @@ export class Zernio {
   };
 
   /**
+   * workspaces API
+   */
+  workspaces = {
+    listWorkspaces: this._bind(listWorkspaces),
+    createWorkspace: this._bind(createWorkspace),
+    getWorkspace: this._bind(getWorkspace),
+    updateWorkspace: this._bind(updateWorkspace),
+    deleteWorkspace: this._bind(deleteWorkspace),
+    createWorkspaceApiKey: this._bind(createWorkspaceApiKey),
+  };
+
+  /**
    * contentretention API
    */
   contentretention = {
@@ -1834,7 +1944,12 @@ export class Zernio {
     getGoogleSearchConsoleConnectUrl: this._bind(getGoogleSearchConsoleConnectUrl),
     listGoogleSearchConsoleSites: this._bind(listGoogleSearchConsoleSites),
     selectGoogleSearchConsoleSite: this._bind(selectGoogleSearchConsoleSite),
+    getCampaignManagerConnectUrl: this._bind(getCampaignManagerConnectUrl),
+    listCampaignManagerProfiles: this._bind(listCampaignManagerProfiles),
+    selectCampaignManagerProfile: this._bind(selectCampaignManagerProfile),
+    getAmazonAdsConnectUrl: this._bind(getAmazonAdsConnectUrl),
     getHubSpotConnectUrl: this._bind(getHubSpotConnectUrl),
+    getGohighlevelConnectUrl: this._bind(getGohighlevelConnectUrl),
     getSalesforceConnectUrl: this._bind(getSalesforceConnectUrl),
     getStripeConnectUrl: this._bind(getStripeConnectUrl),
     getWordPressAuthUrl: this._bind(getWordPressAuthUrl),
@@ -1859,6 +1974,13 @@ export class Zernio {
     getPendingOAuthData: this._bind(getPendingOAuthData),
     connectOpenAIAdsCredentials: this._bind(connectOpenAiAdsCredentials),
     connectAppLovinAdsCredentials: this._bind(connectAppLovinAdsCredentials),
+    connectSnapchatAdsCredentials: this._bind(connectSnapchatAdsCredentials),
+    connectKlaviyoCredentials: this._bind(connectKlaviyoCredentials),
+    connectAttentiveCredentials: this._bind(connectAttentiveCredentials),
+    connectImpactCredentials: this._bind(connectImpactCredentials),
+    connectAwinCredentials: this._bind(connectAwinCredentials),
+    connectTradeDeskAdsCredentials: this._bind(connectTradeDeskAdsCredentials),
+    connectTaboolaAdsCredentials: this._bind(connectTaboolaAdsCredentials),
     connectWhopAdsCredentials: this._bind(connectWhopAdsCredentials),
     connectWhatsAppCredentials: this._bind(connectWhatsAppCredentials),
     listWhatsAppPhoneNumbers: this._bind(listWhatsAppPhoneNumbers),
@@ -2595,6 +2717,7 @@ export class Zernio {
     deleteWorkflow: this._bind(deleteWorkflow),
     activateWorkflow: this._bind(activateWorkflow),
     pauseWorkflow: this._bind(pauseWorkflow),
+    takeOverWorkflow: this._bind(takeOverWorkflow),
     listWorkflowExecutions: this._bind(listWorkflowExecutions),
     triggerWorkflow: this._bind(triggerWorkflow),
     triggerApiCallWorkflow: this._bind(triggerApiCallWorkflow),
@@ -2661,6 +2784,7 @@ export class Zernio {
     deleteAdCampaign: this._bind(deleteAdCampaign),
     listCampaignNegativeKeywords: this._bind(listCampaignNegativeKeywords),
     replaceCampaignNegativeKeywords: this._bind(replaceCampaignNegativeKeywords),
+    editCampaignNegativeKeywords: this._bind(editCampaignNegativeKeywords),
     bulkUpdateAdCampaignStatus: this._bind(bulkUpdateAdCampaignStatus),
     duplicateAdCampaign: this._bind(duplicateAdCampaign),
     getCampaignTargeting: this._bind(getCampaignTargeting),
@@ -2696,6 +2820,7 @@ export class Zernio {
     listTikTokSmartPlusReviews: this._bind(listTikTokSmartPlusReviews),
     listCampaignNegativeKeywordLists: this._bind(listCampaignNegativeKeywordLists),
     replaceCampaignNegativeKeywordLists: this._bind(replaceCampaignNegativeKeywordLists),
+    editCampaignNegativeKeywordLists: this._bind(editCampaignNegativeKeywordLists),
     boostPost: this._bind(boostPost),
     listGoogleAssetGroups: this._bind(listGoogleAssetGroups),
     createGoogleAssetGroup: this._bind(createGoogleAssetGroup),
@@ -2741,6 +2866,7 @@ export class Zernio {
     deleteAutomation: this._bind(deleteAutomation),
     activateAutomation: this._bind(activateAutomation),
     pauseAutomation: this._bind(pauseAutomation),
+    takeOverAutomation: this._bind(takeOverAutomation),
     previewAutomation: this._bind(previewAutomation),
     listAutomationTemplates: this._bind(listAutomationTemplates),
     createAutomationTemplate: this._bind(createAutomationTemplate),
@@ -2792,6 +2918,10 @@ export class Zernio {
     getCampaignResultsTotals: this._bind(getCampaignResultsTotals),
     getCampaignResultEvents: this._bind(getCampaignResultEvents),
     setCampaignResultEvents: this._bind(setCampaignResultEvents),
+    getTagNewAds: this._bind(getTagNewAds),
+    setTagNewAds: this._bind(setTagNewAds),
+    getCampaignResultProfit: this._bind(getCampaignResultProfit),
+    setCampaignResultProfit: this._bind(setCampaignResultProfit),
     listCampaignResultMetrics: this._bind(listCampaignResultMetrics),
     setCampaignResultMetric: this._bind(setCampaignResultMetric),
   };
@@ -2887,6 +3017,7 @@ export class Zernio {
     updateAdNegativeKeywordList: this._bind(updateAdNegativeKeywordList),
     deleteAdNegativeKeywordList: this._bind(deleteAdNegativeKeywordList),
     replaceAdNegativeKeywordListKeywords: this._bind(replaceAdNegativeKeywordListKeywords),
+    editAdNegativeKeywordListKeywords: this._bind(editAdNegativeKeywordListKeywords),
     listAccountCallouts: this._bind(listAccountCallouts),
     addAccountCallouts: this._bind(addAccountCallouts),
     updateAccountCallouts: this._bind(updateAccountCallouts),
@@ -2942,6 +3073,7 @@ export class Zernio {
     listLeads: this._bind(listLeads),
     countLeads: this._bind(countLeads),
     updateLead: this._bind(updateLead),
+    createLead: this._bind(createLead),
     listLeadForms: this._bind(listLeadForms),
     createLeadForm: this._bind(createLeadForm),
     getLeadForm: this._bind(getLeadForm),
@@ -3028,7 +3160,9 @@ export class Zernio {
     listEvents: this._bind(listEvents),
     sendEvents: this._bind(sendEvents),
     getConversionPaths: this._bind(getConversionPaths),
+    getSurveyAnswers: this._bind(getSurveyAnswers),
     getLtvCohorts: this._bind(getLtvCohorts),
+    getEventsAccuracy: this._bind(getEventsAccuracy),
     getEventsOverview: this._bind(getEventsOverview),
     getEventsOverviewDaily: this._bind(getEventsOverviewDaily),
     listEventNames: this._bind(listEventNames),
@@ -3048,6 +3182,7 @@ export class Zernio {
     updateTrackingSite: this._bind(updateTrackingSite),
     deleteTrackingSite: this._bind(deleteTrackingSite),
     rotateTrackingSiteKey: this._bind(rotateTrackingSiteKey),
+    checkTrackingSiteProxy: this._bind(checkTrackingSiteProxy),
     listAdConversionDestinations: this._bind(listAdConversionDestinations),
     createAdConversionDestination: this._bind(createAdConversionDestination),
     getAdConversionDestination: this._bind(getAdConversionDestination),
@@ -3068,6 +3203,19 @@ export class Zernio {
     addConversionAssociations: this._bind(addConversionAssociations),
     removeConversionAssociations: this._bind(removeConversionAssociations),
     getConversionMetrics: this._bind(getConversionMetrics),
+  };
+
+  /**
+   * trackinglinks API
+   */
+  trackinglinks = {
+    listTrackingLinks: this._bind(listTrackingLinks),
+    createTrackingLink: this._bind(createTrackingLink),
+    getTrackingLink: this._bind(getTrackingLink),
+    updateTrackingLink: this._bind(updateTrackingLink),
+    deleteTrackingLink: this._bind(deleteTrackingLink),
+    rotateTrackingLinkPostbackToken: this._bind(rotateTrackingLinkPostbackToken),
+    getTrackingLinkStats: this._bind(getTrackingLinkStats),
   };
 
   /**
@@ -3266,6 +3414,18 @@ export class Zernio {
   };
 
   /**
+   * conversionaudit API
+   */
+  conversionaudit = {
+    auditConversionTracking: this._bind(auditConversionTracking),
+    getLatestConversionAudit: this._bind(getLatestConversionAudit),
+    getMetaConversionAudit: this._bind(getMetaConversionAudit),
+    listConversionAuditMonitors: this._bind(listConversionAuditMonitors),
+    createConversionAuditMonitor: this._bind(createConversionAuditMonitor),
+    deleteConversionAuditMonitor: this._bind(deleteConversionAuditMonitor),
+  };
+
+  /**
    * changelog API
    */
   changelog = {
@@ -3376,6 +3536,8 @@ export class Zernio {
     listCampaignNegativeKeywords: this._bind(listCampaignNegativeKeywords),
     /** @deprecated Use `zernio.adcampaigns.replaceCampaignNegativeKeywords` instead. */
     replaceCampaignNegativeKeywords: this._bind(replaceCampaignNegativeKeywords),
+    /** @deprecated Use `zernio.adcampaigns.editCampaignNegativeKeywords` instead. */
+    editCampaignNegativeKeywords: this._bind(editCampaignNegativeKeywords),
     /** @deprecated Use `zernio.adcampaigns.bulkUpdateAdCampaignStatus` instead. */
     bulkUpdateAdCampaignStatus: this._bind(bulkUpdateAdCampaignStatus),
     /** @deprecated Use `zernio.adcampaigns.duplicateAdCampaign` instead. */
@@ -3446,6 +3608,8 @@ export class Zernio {
     listCampaignNegativeKeywordLists: this._bind(listCampaignNegativeKeywordLists),
     /** @deprecated Use `zernio.adcampaigns.replaceCampaignNegativeKeywordLists` instead. */
     replaceCampaignNegativeKeywordLists: this._bind(replaceCampaignNegativeKeywordLists),
+    /** @deprecated Use `zernio.adcampaigns.editCampaignNegativeKeywordLists` instead. */
+    editCampaignNegativeKeywordLists: this._bind(editCampaignNegativeKeywordLists),
     /** @deprecated Use `zernio.adcampaigns.boostPost` instead. */
     boostPost: this._bind(boostPost),
     /** @deprecated Use `zernio.adcampaigns.listGoogleAssetGroups` instead. */
@@ -3538,6 +3702,8 @@ export class Zernio {
     deleteAdNegativeKeywordList: this._bind(deleteAdNegativeKeywordList),
     /** @deprecated Use `zernio.adaccounts.replaceAdNegativeKeywordListKeywords` instead. */
     replaceAdNegativeKeywordListKeywords: this._bind(replaceAdNegativeKeywordListKeywords),
+    /** @deprecated Use `zernio.adaccounts.editAdNegativeKeywordListKeywords` instead. */
+    editAdNegativeKeywordListKeywords: this._bind(editAdNegativeKeywordListKeywords),
     /** @deprecated Use `zernio.adaccounts.listAccountCallouts` instead. */
     listAccountCallouts: this._bind(listAccountCallouts),
     /** @deprecated Use `zernio.adaccounts.addAccountCallouts` instead. */
@@ -3726,8 +3892,12 @@ export class Zernio {
     sendEvents: this._bind(sendEvents),
     /** @deprecated Use `zernio.conversions.getConversionPaths` instead. */
     getConversionPaths: this._bind(getConversionPaths),
+    /** @deprecated Use `zernio.conversions.getSurveyAnswers` instead. */
+    getSurveyAnswers: this._bind(getSurveyAnswers),
     /** @deprecated Use `zernio.conversions.getLtvCohorts` instead. */
     getLtvCohorts: this._bind(getLtvCohorts),
+    /** @deprecated Use `zernio.conversions.getEventsAccuracy` instead. */
+    getEventsAccuracy: this._bind(getEventsAccuracy),
     /** @deprecated Use `zernio.conversions.getEventsOverview` instead. */
     getEventsOverview: this._bind(getEventsOverview),
     /** @deprecated Use `zernio.conversions.getEventsOverviewDaily` instead. */
@@ -3766,6 +3936,8 @@ export class Zernio {
     deleteTrackingSite: this._bind(deleteTrackingSite),
     /** @deprecated Use `zernio.conversions.rotateTrackingSiteKey` instead. */
     rotateTrackingSiteKey: this._bind(rotateTrackingSiteKey),
+    /** @deprecated Use `zernio.conversions.checkTrackingSiteProxy` instead. */
+    checkTrackingSiteProxy: this._bind(checkTrackingSiteProxy),
     /** @deprecated Use `zernio.conversions.listAdConversionDestinations` instead. */
     listAdConversionDestinations: this._bind(listAdConversionDestinations),
     /** @deprecated Use `zernio.conversions.createAdConversionDestination` instead. */
@@ -3826,6 +3998,8 @@ export class Zernio {
     countLeads: this._bind(countLeads),
     /** @deprecated Use `zernio.leadgen.updateLead` instead. */
     updateLead: this._bind(updateLead),
+    /** @deprecated Use `zernio.leadgen.createLead` instead. */
+    createLead: this._bind(createLead),
     /** @deprecated Use `zernio.leadgen.listLeadForms` instead. */
     listLeadForms: this._bind(listLeadForms),
     /** @deprecated Use `zernio.leadgen.createLeadForm` instead. */
