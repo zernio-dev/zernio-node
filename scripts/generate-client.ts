@@ -157,7 +157,8 @@ function organizeConnectNamespace(operations: OperationInfo[]): { flat: Operatio
     let foundSub = false;
 
     for (const sub of subNamespaces) {
-      if (pathLower.includes(`/connect/${sub}`)) {
+      // Whole path segment only: /connect/snapchat-ads/* is an ads connector and stays flat on connect.
+      if (new RegExp(`/connect/${sub}(/|$)`).test(pathLower)) {
         const subName = sub === 'googlebusiness' ? 'googleBusiness' : sub;
         if (!nested.has(subName)) {
           nested.set(subName, []);
