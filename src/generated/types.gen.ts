@@ -9110,9 +9110,9 @@ export type ConversionAuditReport = {
          */
         serverTool?: string;
         /**
-         * `good` = server-side, `warn` = browser-only (the leak), `missing` = not tracked, `not-firing` = the tag is installed but sent nothing during a full visit.
+         * `good`: server-side. `warn`: browser-only (the leak). `missing`: not tracked. `not-firing`: installed but sent nothing during a full visit. `configured`: only in a Google Tag Manager container and not seen firing on a visit where silence proves nothing, so not counted as tracked.
          */
-        status: 'good' | 'warn' | 'missing' | 'not-firing';
+        status: 'good' | 'warn' | 'missing' | 'not-firing' | 'configured';
         /**
          * Share of conversions typically lost when this platform runs browser-only, 0-1.
          */
@@ -9237,6 +9237,13 @@ export type ConversionAuditReport = {
      * Ad networks found that the score does not cover. `relaySupported` is true when Zernio can send them conversions.
      */
     otherNetworks?: Array<{
+        name: string;
+        relaySupported: boolean;
+    }>;
+    /**
+     * Rendered scans: unscored ad networks found only in a Google Tag Manager container that the visit never saw load or send. Not counted in `otherNetworks`.
+     */
+    otherNetworksConfigured?: Array<{
         name: string;
         relaySupported: boolean;
     }>;
