@@ -13607,7 +13607,7 @@ export type ForwardingRule = {
     /**
      * Event sources forwarded to this destination; null forwards events from every source.
      */
-    sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce' | 'postback' | 'form_leads')> | null;
+    sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce' | 'gohighlevel' | 'postback' | 'form_leads')> | null;
     /**
      * Only when an `apiSecret` was saved by this request. Google Analytics never confirms a Measurement Protocol API secret, so it is `false` there: the first events in GA4 Realtime prove the secret is right.
      */
@@ -21362,7 +21362,7 @@ export type StoredEvent = {
      */
     profileId?: string;
     /**
-     * Where the event came from: `api`, `relay`, `web`, `shopify`, `woocommerce`, `stripe`, `hubspot`, `salesforce`, `meta_leads`, `google_leads`, `linkedin_leads`, `tiktok_leads` or `postback` (an affiliate network's postback to a tracking link).
+     * Where the event came from: `api`, `relay`, `web`, `shopify`, `woocommerce`, `stripe`, `hubspot`, `salesforce`, `gohighlevel`, `meta_leads`, `google_leads`, `linkedin_leads`, `tiktok_leads`, `form_leads` (a website form or `POST /v1/leads`) or `postback` (an affiliate network's postback to a tracking link).
      */
     source?: string;
     eventName?: string;
@@ -27208,7 +27208,7 @@ export type WebhookPayloadConversion = {
         eventTime: string;
         receivedAt: string;
         /**
-         * Who sent it: `api`, `relay`, a lead form (`meta_leads`, `google_leads`, `linkedin_leads`, `tiktok_leads`), a store (`shopify`, `woocommerce`), `stripe`, `hubspot`, `salesforce`, `web` or `postback` (an affiliate network's postback to a tracking link).
+         * Who sent it: `api`, `relay`, a lead form (`meta_leads`, `google_leads`, `linkedin_leads`, `tiktok_leads`, `form_leads`), a store (`shopify`, `woocommerce`), `stripe`, `hubspot`, `salesforce`, `gohighlevel`, `web` or `postback` (an affiliate network's postback to a tracking link).
          */
         source: string;
         actionSource?: (string) | null;
@@ -81757,7 +81757,7 @@ export type CreateForwardingRuleData = {
         /**
          * Forward only events from these sources, such as only `web` for a tracked website. Leave it out to forward events from every source.
          */
-        sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce' | 'postback' | 'form_leads')>;
+        sources?: Array<('api' | 'relay' | 'hubspot' | 'meta_leads' | 'google_leads' | 'linkedin_leads' | 'tiktok_leads' | 'shopify' | 'woocommerce' | 'stripe' | 'web' | 'salesforce' | 'gohighlevel' | 'postback' | 'form_leads')>;
         /**
          * Google Analytics streams only: the stream's Measurement Protocol API secret (GA4 Admin › Data streams). Optional when the connection has edit access, since Zernio then creates it. Checked against Google's validation server, stored encrypted, never returned. Change it with `PATCH /v1/events/forwarding-rules/{ruleId}`.
          */
