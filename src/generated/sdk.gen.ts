@@ -25477,6 +25477,9 @@ export const prepareMedia = <ThrowOnError extends boolean = false>(options: Opti
  * - `report.visibility: "limited"` means some pixels load through a tag manager or a store platform, so only part of the setup is visible from outside. It does not mean the tracking failed or is missing.
  * - `status: "warn"` (browser-only) is the leak: the platform is tracked in the browser but not server-side.
  * - `status: "good"` (server-side) means conversions reach the platform server-side, which recovers most of that signal.
+ * - `networks` and `topFixes` are the per-network setup, leak and ordered fixes exactly as the public report page
+ * computes them; read them instead of deriving your own from `report`.
+ *
  * - `fixPrompt` is the same fix prompt the Conversion Leak Report page shows: this scan's findings, then the steps to send conversions server-side with `POST /v1/events` and to verify them.
  * - To fix the leak with Zernio, follow https://docs.zernio.com/products/server-side-tracking/fix-with-agent: a tracking site, its tag, a forwarding rule per network to the pixel the page runs, then a rescan. A network turns `good` once the site's events reached that pixel in the last 7 days.
  * - `publicReport` links the host's public page on is-bleeding.com. A homepage scan that could read the site's pixels becomes that page's snapshot, the same as a scan on is-bleeding.com. Any other scan links the stored snapshot, taken at `scannedAt`, or returns null when the host has none.

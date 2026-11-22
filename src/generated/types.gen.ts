@@ -8977,6 +8977,52 @@ export type ConversionAction = {
 export type ConversionAuditAnswer = {
     report: ConversionAuditReport;
     /**
+     * Each ad network with its final setup and leak, computed exactly as the public report page shows them, best setup first.
+     */
+    networks: Array<{
+        /**
+         * Stable platform key (meta, google, tiktok, ...), as in `report.platforms`.
+         */
+        key: string;
+        /**
+         * Short network name (Meta, Google, TikTok, ...).
+         */
+        name: string;
+        /**
+         * How the network gets its conversions: `verified`, `likely` or `possible` server path, `not-visible` (browser pixel, no server path visible), `not-firing` (installed, sent nothing), `configured` (tag manager only, never seen firing, not at risk) or `missing`.
+         */
+        setup: 'verified' | 'likely' | 'possible' | 'not-visible' | 'not-firing' | 'configured' | 'missing';
+        /**
+         * Share of this network's conversions at risk, 0-100 (0 once a server path is verified). Null when the network has no working browser pixel to measure.
+         */
+        leakPct: (number) | null;
+        /**
+         * `zernio-tag` when the pixel comes from the Zernio site tag's settings (it loads the pixel after consent) rather than from the page itself, on a scan that read the page source only.
+         */
+        loadedBy: ('zernio-tag') | null;
+    }>;
+    /**
+     * The few fixes that matter most, in the order the public report page lists them.
+     */
+    topFixes: Array<{
+        /**
+         * The action to take.
+         */
+        title: string;
+        /**
+         * Why it matters on this site.
+         */
+        why: string;
+        /**
+         * Points the score gains when this fix alone lands, or null when the scan can't tell.
+         */
+        points: (number) | null;
+        /**
+         * True when what's at stake is data sent without consent rather than lost signal.
+         */
+        compliance: boolean;
+    }>;
+    /**
      * A prompt to paste into a coding agent. It lists the report's findings, then connecting Zernio, sending conversions server-side and verifying them.
      */
     fixPrompt: string;
@@ -9102,6 +9148,10 @@ export type ConversionAuditReport = {
          */
         relayedBy?: 'zernio-tag';
         /**
+         * On a scan that read the page source only: the pixel comes from the Zernio site tag's settings, which load it after consent, not from the page. Its ids are not reported.
+         */
+        loadedBy?: 'zernio-tag';
+        /**
          * The Zernio site tag on the page belongs to an account whose destination for this platform accepted the site's events in the last 7 days.
          */
         serverSideVerified?: boolean;
@@ -9208,6 +9258,10 @@ export type ConversionAuditReport = {
             evidence: string;
         }>;
         note: string;
+        /**
+         * The server-side path that collects on the site's own domain, when the scan saw one.
+         */
+        firstPartyCollection?: string;
     };
     consent?: {
         /**
