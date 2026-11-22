@@ -80276,7 +80276,7 @@ export type SendConversionsData = {
 };
 
 export type SendConversionsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
     /**
      * Events accepted by the platform.
      */
@@ -80901,7 +80901,7 @@ export type SendEventsResponse = ({
     destinations?: Array<{
         accountId?: string;
         destinationId?: string;
-        platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads';
+        platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
         /**
          * Events the platform accepted.
          */
@@ -81638,7 +81638,7 @@ export type GetEventResponse = ({
     deliveries?: Array<{
         accountId?: string;
         destinationId?: string;
-        platform?: ('metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads') | null;
+        platform?: ('metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads') | null;
         /**
          * `dropped`: not sent because the visitor did not consent; `errorCode` says why (`consent_denied` or `consent_missing`).
          */
@@ -82258,7 +82258,7 @@ export type ListAdConversionDestinationsData = {
 };
 
 export type ListAdConversionDestinationsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
     destinations?: Array<{
         /**
          * Destination identifier. Meta: pixel ID. Google:
@@ -82700,7 +82700,7 @@ export type ListConversionDestinationsData = {
 };
 
 export type ListConversionDestinationsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
     destinations?: Array<{
         /**
          * Destination identifier. Meta: pixel ID. Google:
