@@ -64367,9 +64367,21 @@ export type ListBroadcastsResponse = ({
         startedAt?: string;
         completedAt?: string;
         recipientCount?: number;
+        /**
+         * Recipients whose latest status is `sent`: the platform accepted the message and has not confirmed delivery yet. Each recipient counts once, under its latest status, so everyone the broadcast went out to is sentCount + deliveredCount + readCount.
+         */
         sentCount?: number;
+        /**
+         * Recipients whose latest status is `delivered`, not read yet. Everyone it was delivered to is deliveredCount + readCount.
+         */
         deliveredCount?: number;
+        /**
+         * Recipients whose latest status is `read`.
+         */
         readCount?: number;
+        /**
+         * Recipients whose send failed.
+         */
         failedCount?: number;
         createdAt?: string;
     }>;
@@ -64491,9 +64503,21 @@ export type GetBroadcastResponse = ({
         startedAt?: string;
         completedAt?: string;
         recipientCount?: number;
+        /**
+         * Recipients whose latest status is `sent`: the platform accepted the message and has not confirmed delivery yet. Each recipient counts once, under its latest status, so everyone the broadcast went out to is sentCount + deliveredCount + readCount.
+         */
         sentCount?: number;
+        /**
+         * Recipients whose latest status is `delivered`, not read yet. Everyone it was delivered to is deliveredCount + readCount.
+         */
         deliveredCount?: number;
+        /**
+         * Recipients whose latest status is `read`.
+         */
         readCount?: number;
+        /**
+         * Recipients whose send failed.
+         */
         failedCount?: number;
         createdAt?: string;
         updatedAt?: string;
@@ -64696,7 +64720,7 @@ export type ListBroadcastRecipientsResponse = ({
         hasMore?: boolean;
     };
     /**
-     * Delivery totals across all recipients in the broadcast, independent of pagination and status filtering.
+     * Delivery totals across all recipients in the broadcast, independent of pagination and status filtering. Each recipient counts once, under its latest status, so `sent + delivered + read` is everyone the broadcast went out to.
      */
     summary?: {
         total?: number;
