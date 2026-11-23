@@ -20905,10 +20905,11 @@ export const deleteAdAudience = <ThrowOnError extends boolean = false>(options: 
  *
  * ### Large lists
  *
- * Send lists over 10,000 people as several requests to the same audience: each one adds to it, except on LinkedIn.
+ * Send lists over 10,000 people as several requests to the same audience: each one adds to it.
  *
  * - **TikTok and Pinterest**: the first upload creates the audience on the platform, later uploads add to it. TikTok allows 24 updates per audience per day.
- * - **LinkedIn**: each upload replaces the whole list (a list-upload segment holds one list), so send the full list in one request.
+ * - **LinkedIn**: LinkedIn takes a list as one file, so Zernio keeps the hashed emails sent to each list and uploads the whole list about a minute after the requests stop (every 15 minutes while they keep coming).
+ * - **LinkedIn limits**: a list holds at most 300,000 contacts (more returns 422 and changes nothing). LinkedIn matches each upload in up to 48 hours. A list last uploaded before 2026-11-23 starts again from its next upload.
  *
  * ### Reddit
  *
@@ -20930,13 +20931,14 @@ export const addUsersToAdAudience = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Remove users from audience
- * Removes people from a Meta or Reddit customer list audience. Same body as
+ * Removes people from a Meta, Reddit or LinkedIn customer list audience. Same body as
  * `POST /v1/ads/audiences/{audienceId}/users`: plaintext keys are normalized and SHA-256 hashed
  * exactly like an upload and hashed keys are sent as is, so a row removes the person it added.
  *
- * Meta and Reddit only, customer_list only. Every other platform returns 422 with code `feature_not_available`,
- * and every other audience type returns 422. Max 10,000 users per request. The platform applies the removal
- * asynchronously, so the audience size does not drop immediately. On Reddit `invalidEntrySamples` is always empty.
+ * - Meta, Reddit and LinkedIn customer_list audiences only. Every other platform returns 422 with code `feature_not_available`, and every other audience type returns 422.
+ * - Max 10,000 users per request. The platform applies the removal asynchronously, so the audience size does not drop immediately.
+ * - LinkedIn removes them from the list Zernio keeps and uploads what is left about a minute later.
+ * - On Reddit `invalidEntrySamples` is always empty.
  *
  */
 export const removeUsersFromAdAudience = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveUsersFromAdAudienceData, ThrowOnError>) => {
