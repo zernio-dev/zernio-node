@@ -432,7 +432,7 @@ try {
 | `connect.completeWhatsAppPhoneSelection()` | Complete number selection |
 | `connect.configureTikTokAdsBrandIdentity()` | Set TikTok brand identity |
 | `connect.connectAds()` | Connect ads for a platform |
-| `connect.connectAppLovinAdsCredentials()` | Connect an AppLovin Axon account |
+| `connect.connectAppLovinAdsCredentials()` | Connect an AppLovin account |
 | `connect.connectAttentiveCredentials()` | Connect an Attentive company |
 | `connect.connectAwinCredentials()` | Connect an Awin advertiser |
 | `connect.connectBlueskyCredentials()` | Connect Bluesky account |

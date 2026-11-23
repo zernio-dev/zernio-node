@@ -4322,6 +4322,131 @@ export type scope = 'full' | 'profiles';
 export type permission = 'read-write' | 'read';
 
 /**
+ * AppLovin options in platformSpecificData. Campaign fields apply to a new campaign; assets, languages and brandInfo to the creative set (the ad).
+ */
+export type AppLovinAdsPlatformData = {
+    /**
+     * Required for a new campaign.
+     */
+    campaignType?: 'APP' | 'WEB';
+    /**
+     * APP campaigns. Required.
+     */
+    os?: 'IOS' | 'ANDROID';
+    /**
+     * APP campaigns. Required.
+     */
+    packageName?: string;
+    /**
+     * iOS APP campaigns. Required.
+     */
+    itunesId?: number;
+    /**
+     * WEB campaigns. Required unless linkUrl is sent.
+     */
+    websiteUrl?: string;
+    /**
+     * Defaults to CPI billing for a CPI goal, CPM billing otherwise. TARGET_GOAL_WITH_CPI_BILLING takes an APP campaign with a CPI goal only. Set at creation only.
+     */
+    biddingStrategy?: 'TARGET_GOAL_WITH_CPI_BILLING' | 'AUTO_BIDDING_WITH_CPM_BILLING';
+    /**
+     * APP takes all, WEB takes CPE, CPP and CHK_ROAS. Defaults from goal: app_promotion is CPI, conversions CPP, lead_generation CPE. Set at creation only.
+     */
+    goalType?: 'CPI' | 'CPE' | 'CPP' | 'AD_ROAS' | 'CHK_ROAS' | 'BLD_ROAS';
+    /**
+     * The goal for every country (a cost, or a ROAS ratio). APP limits: CPI below 200, CPE and CPP below 500, AD_ROAS at least 0.1, CHK_ROAS at least 0.01, BLD_ROAS at least 0.05. Send this or countryGoalValues.
+     */
+    goalValue?: number;
+    /**
+     * Per-country goal values for targeted countries.
+     */
+    countryGoalValues?: {
+        [key: string]: (number);
+    };
+    /**
+     * Required for ROAS goals (and WEB CPP). APP takes DAY7 or DAY28, WEB DAY0 or DAY7.
+     */
+    roasDayTarget?: 'DAY0' | 'DAY7' | 'DAY28';
+    /**
+     * Required for a CPE goal.
+     */
+    eventTarget?: string;
+    /**
+     * Per-country daily budgets, instead of budgetAmount. AppLovin budgets are daily only.
+     */
+    countryBudgets?: {
+        [key: string]: (number);
+    };
+    /**
+     * APP campaigns. Required.
+     */
+    tracking?: {
+        method: 'ADJUST' | 'APPSFLYER' | 'APSALAR' | 'BRANCH' | 'KOCHAVA' | 'TENJIN';
+        impressionUrl: string;
+        clickUrl: string;
+    };
+    /**
+     * WEB campaigns.
+     */
+    audienceStrategy?: 'UNIVERSAL' | 'PROSPECTING' | 'DISCOVERY';
+    /**
+     * The creative set media: URLs Zernio uploads to AppLovin, or ids of assets already there. Needs a HOSTED_HTML asset, or an IMG_INTER_P image plus a VID_LONG_P or VID_SHORT_P video.
+     */
+    assets?: Array<({
+    type: 'HOSTED_HTML' | 'VID_LONG_P' | 'VID_SHORT_P' | 'IMG_BANNER' | 'IMG_INTER_P';
+    url: string;
+} | {
+    id: string;
+})>;
+    /**
+     * Creative set languages as AppLovin names them. All languages by default.
+     */
+    languages?: Array<(string)>;
+    /**
+     * WEB creative sets. Omitted means the account-level brand info.
+     */
+    brandInfo?: {
+        title: string;
+        description: string;
+        buttonLabel: string;
+        buttonColor: string;
+        iconUrl: string;
+    };
+};
+
+/**
+ * Required for a new campaign.
+ */
+export type campaignType = 'APP' | 'WEB';
+
+/**
+ * APP campaigns. Required.
+ */
+export type os = 'IOS' | 'ANDROID';
+
+/**
+ * Defaults to CPI billing for a CPI goal, CPM billing otherwise. TARGET_GOAL_WITH_CPI_BILLING takes an APP campaign with a CPI goal only. Set at creation only.
+ */
+export type biddingStrategy2 = 'TARGET_GOAL_WITH_CPI_BILLING' | 'AUTO_BIDDING_WITH_CPM_BILLING';
+
+/**
+ * APP takes all, WEB takes CPE, CPP and CHK_ROAS. Defaults from goal: app_promotion is CPI, conversions CPP, lead_generation CPE. Set at creation only.
+ */
+export type goalType = 'CPI' | 'CPE' | 'CPP' | 'AD_ROAS' | 'CHK_ROAS' | 'BLD_ROAS';
+
+/**
+ * Required for ROAS goals (and WEB CPP). APP takes DAY7 or DAY28, WEB DAY0 or DAY7.
+ */
+export type roasDayTarget = 'DAY0' | 'DAY7' | 'DAY28';
+
+export type method = 'ADJUST' | 'APPSFLYER' | 'APSALAR' | 'BRANCH' | 'KOCHAVA' | 'TENJIN';
+
+/**
+ * WEB campaigns.
+ */
+export type audienceStrategy = 'UNIVERSAL' | 'PROSPECTING' | 'DISCOVERY';
+
+/**
  * One person. Each key is plaintext or its SHA-256 hash (64 hex characters). At least one key is required; see the endpoint description for which keys each platform uses.
  */
 export type AudienceUploadUser = {
@@ -8275,7 +8400,7 @@ export type CommerceDiscount = {
 
 export type platform7 = 'shopify';
 
-export type method = 'code' | 'automatic';
+export type method2 = 'code' | 'automatic';
 
 export type type14 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
 
@@ -19094,7 +19219,7 @@ export type PayoutBatch = {
  */
 export type status49 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
-export type method2 = 'card';
+export type method3 = 'card';
 
 export type PayoutBatchItem = {
     id: string;
@@ -21899,7 +22024,7 @@ export type StorePixelInstall = {
 /**
  * WordPress only.
  */
-export type method3 = 'wordpress_widget';
+export type method4 = 'wordpress_widget';
 
 export type StripeSettings = {
     /**
@@ -22952,7 +23077,7 @@ export type status59 = 'active' | 'paused' | 'removing';
 /**
  * How the tag is installed. `snippet` means you paste it.
  */
-export type method4 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
+export type method5 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
 
 export type type32 = 'CNAME';
 
@@ -23350,7 +23475,7 @@ export type TreasuryTopup = {
     bonusCents?: (number) | null;
 };
 
-export type method5 = 'card' | 'bank_transfer';
+export type method6 = 'card' | 'bank_transfer';
 
 /**
  * `balance` funds your balance; `payout_batch` is the card payment of one payout batch, which pays its creators directly.
@@ -44558,13 +44683,25 @@ export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown | {
 export type ConnectAppLovinAdsCredentialsData = {
     body: {
         /**
-         * Conversion API key from the Keys page of Axon Ads Manager.
+         * Conversion API key from the Keys page of AppLovin Axon Ads Manager. Sent with eventKey.
          */
-        apiKey: string;
+        apiKey?: string;
         /**
-         * Event Key from the Keys page of Axon Ads Manager: 8 to 128 letters, digits, dots, dashes or underscores.
+         * Event Key from the Keys page of AppLovin Axon Ads Manager: 8 to 128 letters, digits, dots, dashes or underscores. Sent with apiKey.
          */
-        eventKey: string;
+        eventKey?: string;
+        /**
+         * Campaign Management API key from the Keys page of ads.axon.ai (visible to account Admins only). Sent with accountId. Lets Zernio read, create and manage campaigns and creative sets.
+         */
+        campaignApiKey?: string;
+        /**
+         * Numeric AppLovin account id (Account menu, then Go to settings, in ads.axon.ai). Sent with campaignApiKey.
+         */
+        accountId?: string;
+        /**
+         * The Zernio id of the AppLovin connection being reconnected (a connection on this profile). The keys sent update that connection, which keeps its identity, instead of creating one: send it to add or replace keys on an existing connection.
+         */
+        reconnectAccountId?: string;
         /**
          * Optional Report Key from the Keys page of your AppLovin account. With it, Zernio syncs AppLovin spend per campaign.
          */
@@ -44590,7 +44727,14 @@ export type ConnectAppLovinAdsCredentialsData = {
 
 export type ConnectAppLovinAdsCredentialsResponse = ({
     accountId?: string;
+    /**
+     * Present when the request sent the conversion keys.
+     */
     eventKey?: string;
+    /**
+     * The AppLovin account id. Present when the request sent the Campaign Management keys.
+     */
+    axonAccountId?: string;
     accountName?: string;
     redirectUrl?: string;
 });
@@ -68199,17 +68343,33 @@ export type CreateAdCampaignData = {
         budgetType?: 'daily' | 'lifetime';
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Reddit and Amazon only (400 elsewhere). Campaign start (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (`budgetAmount` + `budgetType`, 400 otherwise). Defaults to now.
+         * Reddit, Amazon and AppLovin only (400 elsewhere). Campaign start (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (`budgetAmount` + `budgetType`, 400 otherwise). AppLovin reads it in UTC and refuses a start before today. Defaults to now.
          */
         startDate?: string;
         /**
-         * Reddit and Amazon only (400 elsewhere). Campaign end (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (400 otherwise), and is required for `budgetType: lifetime`.
+         * Reddit, Amazon and AppLovin only (400 elsewhere). Campaign end (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (400 otherwise), and is required for `budgetType: lifetime`. On AppLovin no endDate means continuous delivery.
          */
         endDate?: string;
         /**
-         * Amazon Ads only (400 elsewhere), and required there: the ad product and its campaign settings.
+         * AppLovin only (400 elsewhere), where the campaign carries the targeting: the countries it serves, at least one.
          */
-        platformSpecificData?: (AmazonAdsCampaignPlatformData);
+        countries?: Array<(string)>;
+        /**
+         * AppLovin only (400 elsewhere). US state codes (`CA` or `US-CA`), with `US` in countries. Never together with metros.
+         */
+        regions?: Array<{
+            key: string;
+        }>;
+        /**
+         * AppLovin only (400 elsewhere). AppLovin metro names, with `US` in countries. Never together with regions.
+         */
+        metros?: Array<{
+            key: string;
+        }>;
+        /**
+         * Amazon Ads (required there: the ad product and its campaign settings) and AppLovin (the campaign type, app or website, goal, bidding and tracking; its creative set fields do not apply here) only, 400 elsewhere.
+         */
+        platformSpecificData?: (AmazonAdsCampaignPlatformData | AppLovinAdsPlatformData);
         /**
          * Google only (400 elsewhere). Written on the new campaign.
          */
@@ -68553,20 +68713,23 @@ export type UpdateAdCampaignData = {
          */
         accountId?: string;
         /**
-         * **Meta + Google.**
+         * **Meta, Google and AppLovin.**
          *
          * - Meta: the campaign default that ad sets inherit unless they override it.
          * - Google: the campaign's own bidding strategy. LOWEST_COST_WITHOUT_CAP = Maximize Conversions, COST_CAP + bidAmount = Target CPA, LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor = Target ROAS, LOWEST_COST_WITH_BID_CAP + bidAmount = Maximize Clicks with a CPC ceiling.
          * - Google: portfolioBidStrategyId attaches a portfolio strategy instead.
+         * - AppLovin: sets the campaign goal value; the goal type itself cannot change. COST_CAP + bidAmount for a CPI, CPE or CPP goal, LOWEST_COST_WITH_MIN_ROAS + roasAverageFloor for a ROAS goal.
+         * - AppLovin app limits, checked before AppLovin is called: CPI below 200, CPE and CPP below 500, AD_ROAS at least 0.1, CHK_ROAS at least 0.01, BLD_ROAS at least 0.05.
+         * - AppLovin: a goal set per country, or the other goal family, is a 422.
          *
          */
         bidStrategy?: (BidStrategy);
         /**
-         * **Google only.** Whole currency units (USD: 12 = $12.00). Max CPC for LOWEST_COST_WITH_BID_CAP, CPA target for COST_CAP; required for both.
+         * **Google and AppLovin.** Whole currency units (USD: 12 = $12.00). Google: max CPC for LOWEST_COST_WITH_BID_CAP, CPA target for COST_CAP; required for both. AppLovin: the CPI, CPE or CPP goal value, with COST_CAP.
          */
         bidAmount?: number;
         /**
-         * **Google only.** Decimal ROAS multiplier (2.0 = 2.0x), required for LOWEST_COST_WITH_MIN_ROAS.
+         * **Google and AppLovin.** Decimal ROAS multiplier (2.0 = 2.0x), required for LOWEST_COST_WITH_MIN_ROAS. AppLovin: the ROAS goal value.
          */
         roasAverageFloor?: number;
         /**
@@ -68606,7 +68769,7 @@ export type UpdateAdCampaignData = {
             type: 'daily' | 'lifetime';
         };
         /**
-         * **Meta and Reddit.** Rename the campaign.
+         * **Meta, Reddit and AppLovin.** Rename the campaign.
          */
         name?: string;
         /**
@@ -70364,7 +70527,7 @@ export type ListAdsByPerformanceData = {
         /**
          * Restrict to one platform.
          */
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'applovin';
         /**
          * Metric the ads are ranked by, highest first.
          */
@@ -78053,9 +78216,14 @@ export type CreateStandaloneAdData = {
          */
         valueRulesApplied?: boolean;
         /**
-         * Platform-specific options. The platform is derived from `accountId`; options for a different platform return a 400. LinkedIn (campaign bidding and delivery controls), Meta (the bid trio) and Amazon Ads (required: the ad product, products, creative and targeting) have options today.
+         * Platform-specific options. The platform is derived from `accountId`; options for a different platform return a 400. LinkedIn (campaign bidding and delivery controls), Meta (the bid trio) Amazon Ads (required: the ad product, products, creative and targeting) and AppLovin (the campaign and creative set) have options today.
          *
          * **Amazon Ads**: see `AmazonAdsPlatformData`. Amazon has no dry run, so `validateOnly` returns a 501.
+         *
+         * **AppLovin**
+         *
+         * - A new campaign needs `campaignType` (`APP` or `WEB`), the goal and, for an app, `os`, `packageName` and `tracking`. With `existingCampaignId`, only the creative set fields (`assets`, `languages`, `brandInfo`) apply.
+         * - Zernio checks every documented AppLovin rule (goal value limits, ROAS day targets, US-only regions and metros, the asset combination, brand info lengths) before calling AppLovin, because 100 refused calls in five minutes lock the AppLovin account for a day. `validateOnly` runs those checks and calls nothing.
          *
          * **Meta**
          *
@@ -78064,7 +78232,7 @@ export type CreateStandaloneAdData = {
          * - `dailyMinSpendTarget` / `lifetimeMinSpendTarget` set the new ad set's minimum spend and live here only; also rejected in `adSetId` attach mode.
          *
          */
-        platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData | AmazonAdsPlatformData);
+        platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData | AmazonAdsPlatformData | AppLovinAdsPlatformData);
         /**
          * Legal entity that benefits from the ad. Required when targeting EU users
          * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
