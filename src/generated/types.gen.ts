@@ -55153,17 +55153,20 @@ export type ReplyToInboxPostData = {
          */
         message: string;
         /**
-         * (Facebook, Bluesky, LinkedIn and Threads) URL of an image to attach to the comment or reply. The URL must be publicly fetchable. Returns 400 for other platforms.
+         * (Facebook, Bluesky, LinkedIn, Threads and X) URL of an image to attach to the comment or reply. The URL must be publicly fetchable. Returns 400 for other platforms.
          */
         attachmentUrl?: string;
         /**
-         * (Facebook and Threads, optional) How `attachmentUrl` is published. Requires `attachmentUrl`; returns 400 on other platforms.
+         * (Facebook, Threads and X, optional) How `attachmentUrl` is published. Requires `attachmentUrl`; returns 400 on other platforms.
          *
-         * - Omitted: a GIF is detected and posted animated. Detection uses GIPHY links (page, media, embed, sticker; `gph.is` on Threads), `.gif` paths, and an `image/gif` response on Threads.
+         * - Omitted: a GIF is detected and posted animated. Detection uses GIPHY links (page, media, embed, sticker; `gph.is` on Threads and X), `.gif` paths, and an `image/gif` response on Threads and X.
          * - `image`: forces a still photo. Threads converts a GIF or WebP to JPEG or PNG.
          * - `gif`: forces an animated GIF.
          * - Threads GIFs must come from GIPHY, otherwise the request returns 400 `invalid_field_value`.
-         * - Facebook gets a GIPHY link as its direct GIF.
+         * - Facebook and X get a GIPHY link as their direct GIF.
+         * - X takes one image or GIF from any host, and returns 400 for video or HTML URLs.
+         * - On X, images over 5 MB are compressed and a GIF over 15 MB posts as a still image.
+         * - On X, a GIF always posts animated, even with `attachmentType: image`.
          *
          */
         attachmentType?: 'image' | 'gif';
