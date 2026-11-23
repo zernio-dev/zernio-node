@@ -3100,6 +3100,10 @@ export type AdsTimelineResponse = {
          */
         currency?: (string) | null;
         /**
+         * Only with `breakdown=adAccount`. The platform ad account of this row (e.g. Meta `act_…`); null for rows ingested before 2026-05-13. Added 2026-11-23.
+         */
+        adAccountId?: (string) | null;
+        /**
          * Native currency units (matches /ads/tree convention), in `currency`.
          */
         spend?: number;
@@ -70693,6 +70697,10 @@ export type GetAdsTimelineData = {
          * Optional platform-native ad account ID (e.g. Meta `act_…`, TikTok advertiser ID). Use when the connection wraps multiple platform ad accounts and the chart should show one only. Note: rows ingested before 2026-05-13 don't carry this column; the recurring 7-day re-sync repopulates them naturally.
          */
         adAccountId?: string;
+        /**
+         * Set to `adAccount` to keep one row per day and platform ad account, each carrying its `adAccountId`, instead of one row per day and currency. Two connections that reach the same ad account both return it: add their timelines per `adAccountId` to count it once.
+         */
+        breakdown?: 'adAccount';
         /**
          * Set to `previous` to also return `previousRows` for the period of the same length that ends the day before `fromDate`, with that period as `previousRange`. Needs a `fromDate` (sent or defaulted); `toDate` alone answers 400.
          */
