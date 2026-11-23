@@ -8977,7 +8977,7 @@ export type ConversionAction = {
 export type ConversionAuditAnswer = {
     report: ConversionAuditReport;
     /**
-     * Each ad network with its final setup and leak, computed exactly as the public report page shows them, best setup first.
+     * Each ad network with its final setup and leak, computed exactly as the public report page shows them, best setup first. Empty when `report.scannerBlocked` is set: the scan could not see any network.
      */
     networks: Array<{
         /**
@@ -9204,6 +9204,10 @@ export type ConversionAuditReport = {
      * `full` = pixels were visible, `limited` = tags load dynamically so not all are visible, `none` = nothing found.
      */
     visibility: 'full' | 'limited' | 'none';
+    /**
+     * Always `true` when present: set when the site served our page fetch a bot wall and showed no pixel. The report is a partial, source-only read, so `score` and `grade` are placeholders, not a verdict, and `networks` is empty.
+     */
+    scannerBlocked?: boolean;
     /**
      * Site tech recognized (Shopify, WooCommerce, ...).
      */
