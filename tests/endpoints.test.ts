@@ -754,6 +754,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.connectTaboolaAdsCredentials).toBeTypeOf('function');
     });
 
+    it('should have connectOutbrainAdsCredentials method', () => {
+      expect(client.connect.connectOutbrainAdsCredentials).toBeDefined();
+      expect(client.connect.connectOutbrainAdsCredentials).toBeTypeOf('function');
+    });
+
     it('should have connectWhopAdsCredentials method', () => {
       expect(client.connect.connectWhopAdsCredentials).toBeDefined();
       expect(client.connect.connectWhopAdsCredentials).toBeTypeOf('function');

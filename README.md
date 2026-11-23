@@ -441,6 +441,7 @@ try {
 | `connect.connectKlaviyoCredentials()` | Connect a Klaviyo account |
 | `connect.connectLineCredentials()` | Connect LINE Official Account |
 | `connect.connectOpenAIAdsCredentials()` | Connect an OpenAI Ads account |
+| `connect.connectOutbrainAdsCredentials()` | Connect an Outbrain marketer |
 | `connect.connectShopifyWithToken()` | Connect a Shopify store with a custom-app Admin token |
 | `connect.connectSlackChannel()` | Connect a Slack channel |
 | `connect.connectSnapchatAdsCredentials()` | Connect a Snapchat Ads pixel |

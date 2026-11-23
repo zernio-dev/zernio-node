@@ -10112,6 +10112,10 @@ export type ConversionEvent = {
              */
             tblci?: string;
             /**
+             * Outbrain click ID (the `ob_click_id` URL param, filled by the `{{ob_click_id}}` macro you add to the campaign's Track box). Sent to Outbrain as `ob_click_id`, not hashed.
+             */
+            ob_click_id?: string;
+            /**
              * Impact partner click id (the `irclickid` URL param Impact adds to partner links). Sent to Impact as `ClickId`.
              */
             irclickid?: string;
@@ -21850,7 +21854,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads' | 'gohighlevel';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads' | 'gohighlevel';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -21996,7 +22000,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform18 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads' | 'gohighlevel';
+export type platform18 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads' | 'gohighlevel';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -38791,7 +38795,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'hubspot' | 'salesforce' | 'gohighlevel' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager' | 'googlesearchconsole' | 'stripe' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'hubspot' | 'salesforce' | 'gohighlevel' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager' | 'googlesearchconsole' | 'stripe' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads';
         /**
          * Filter by profile ID
          */
@@ -45765,6 +45769,95 @@ export type ConnectTaboolaAdsCredentialsResponse = ({
 });
 
 export type ConnectTaboolaAdsCredentialsError = (ErrorResponse | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+} | unknown);
+
+export type ConnectOutbrainAdsCredentialsData = {
+    body: {
+        /**
+         * Outbrain marketer id from Amplify, letters and digits.
+         */
+        outbrainMarketerId: string;
+        /**
+         * Optional display name for the marketer.
+         */
+        name?: string;
+        /**
+         * Your Zernio profile ID
+         */
+        profileId: string;
+        /**
+         * Optional state passthrough for the connect flow.
+         */
+        state?: string;
+        /**
+         * Optional URL to redirect to after a successful connection, echoed back as redirectUrl.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type ConnectOutbrainAdsCredentialsResponse = ({
+    accountId?: string;
+    outbrainMarketerId?: string;
+    accountName?: string;
+    redirectUrl?: string;
+});
+
+export type ConnectOutbrainAdsCredentialsError = (ErrorResponse | {
     /**
      * Human-readable error message suitable for end-user display.
      */
@@ -81290,7 +81383,7 @@ export type SendConversionsData = {
 };
 
 export type SendConversionsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
     /**
      * Events accepted by the platform.
      */
@@ -81919,7 +82012,7 @@ export type SendEventsResponse = ({
     destinations?: Array<{
         accountId?: string;
         destinationId?: string;
-        platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+        platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
         /**
          * Events the platform accepted.
          */
@@ -82673,7 +82766,7 @@ export type GetEventResponse = ({
     deliveries?: Array<{
         accountId?: string;
         destinationId?: string;
-        platform?: ('metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads') | null;
+        platform?: ('metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads') | null;
         /**
          * `dropped`: not sent because the visitor did not consent; `errorCode` says why (`consent_denied` or `consent_missing`).
          */
@@ -83293,7 +83386,7 @@ export type ListAdConversionDestinationsData = {
 };
 
 export type ListAdConversionDestinationsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
     destinations?: Array<{
         /**
          * Destination identifier. Meta: pixel ID. Google:
@@ -83304,7 +83397,7 @@ export type ListAdConversionDestinationsResponse = ({
          * or `accounts/{id}/uetTags/{id}`.
          * X Ads: pixel event id (`tw-...`). Snapchat:
          * Snap Pixel ID (a UUID). Taboola: numeric
-         * Account ID.
+         * Account ID. Outbrain: marketer id.
          *
          */
         id?: string;
@@ -83735,7 +83828,7 @@ export type ListConversionDestinationsData = {
 };
 
 export type ListConversionDestinationsResponse = ({
-    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+    platform?: 'metaads' | 'googleads' | 'linkedinads' | 'tiktokads' | 'openaiads' | 'pinterestads' | 'redditads' | 'applovinads' | 'microsoftads' | 'xads' | 'snapchatads' | 'taboolaads' | 'outbrainads' | 'googleanalytics' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
     destinations?: Array<{
         /**
          * Destination identifier. Meta: pixel ID. Google:
@@ -83746,7 +83839,7 @@ export type ListConversionDestinationsResponse = ({
          * or `accounts/{id}/uetTags/{id}`.
          * X Ads: pixel event id (`tw-...`). Snapchat:
          * Snap Pixel ID (a UUID). Taboola: numeric
-         * Account ID.
+         * Account ID. Outbrain: marketer id.
          *
          */
         id?: string;
