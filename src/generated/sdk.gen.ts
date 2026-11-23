@@ -21220,11 +21220,11 @@ export const sendConversions = <ThrowOnError extends boolean = false>(options: O
 
 /**
  * Adjust uploaded conversions
- * Retracts, restates the value of, or enhances conversions you already sent to Google Ads or Impact, for refunds or late customer data. To change Zernio's stored event too, and every platform at once, use `PATCH` or `DELETE /v1/events/{eventId}`.
+ * Retracts, restates the value of, or enhances conversions you already sent to Google Ads, Impact or a Microsoft Ads offline conversion goal, for refunds or late customer data. To change Zernio's stored event too, and every platform at once, use `PATCH` or `DELETE /v1/events/{eventId}`.
  *
  * It adjusts conversions previously uploaded via `POST /v1/ads/conversions`: retract them, restate their value, or enhance them with first-party data. Requires the Ads add-on.
  *
- * ### Google Ads and Impact only
+ * ### Google Ads, Impact and Microsoft Ads only
  *
  * Google handles adjustments through the classic Google Ads API (`ConversionAdjustmentUploadService`). The Data Manager `ingestEvents` path used for sending conversions is ingest-only.
  *
@@ -21233,6 +21233,11 @@ export const sendConversions = <ThrowOnError extends boolean = false>(options: O
  * - `RETRACTION` reverses the action and `RESTATEMENT` sets its sale amount. Impact has no `ENHANCEMENT`.
  * - The action is found by the `destinationId` event type and `orderId`: the `platformData.order_id` the conversion was sent with, or its `eventId` when it had none.
  * - Impact applies changes asynchronously and refuses them on its side past the action's locking date.
+ *
+ * On Microsoft Ads (`ApplyOfflineConversionAdjustments`), only offline conversion goals take changes; a UET tag refuses them:
+ *
+ * - `RETRACTION` retracts the conversion and `RESTATEMENT` sets its new value. Microsoft has no `ENHANCEMENT`.
+ * - Microsoft has no order id: send `msclkid` and `conversionTime`, the click id and time the conversion was sent with.
  *
  * Other platforms have no equivalent, so this endpoint returns `405` for them.
  *
@@ -21248,10 +21253,11 @@ export const sendConversions = <ThrowOnError extends boolean = false>(options: O
  *
  * - `orderId`: the transaction ID you sent as `eventId` on the original conversion. Recommended, and **required** for `ENHANCEMENT`.
  * - `gclid` + `conversionTime`: the click ID and the original conversion's time (unix seconds). Not available for `ENHANCEMENT`.
+ * - `msclkid` + `conversionTime`: the only key on Microsoft Ads.
  *
  * ### Other fields
  *
- * - `destinationId` is the same value you send to `POST /v1/ads/conversions`: the conversion action resource name on Google, e.g. `customers/1234567890/conversionActions/987654321`, and `<program id>:<event type id>` on Impact.
+ * - `destinationId` is the same value you send to `POST /v1/ads/conversions`: the conversion action resource name on Google, e.g. `customers/1234567890/conversionActions/987654321`, `<program id>:<event type id>` on Impact, and `accounts/{adAccountId}/conversionGoals/{goalId}` on Microsoft Ads.
  * - PII in `user` is hashed with SHA-256 server-side (Gmail-specific normalization included). Send plaintext.
  * - Times are unix seconds; we convert to Google's required `yyyy-MM-dd HH:mm:ss+00:00` format.
  *

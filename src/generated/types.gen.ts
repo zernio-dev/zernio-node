@@ -81049,11 +81049,11 @@ export type SendConversionsError = (unknown | ErrorResponse);
 export type AdjustConversionsData = {
     body: {
         /**
-         * SocialAccount ID. Must be a `googleads` or `impact` account.
+         * SocialAccount ID. Must be a `googleads`, `impact` or `microsoftads` account.
          */
         accountId: string;
         /**
-         * Conversion action resource name on Google, e.g. `customers/1234567890/conversionActions/987654321`; `<program id>:<event type id>` on Impact.
+         * Conversion action resource name on Google, e.g. `customers/1234567890/conversionActions/987654321`; `<program id>:<event type id>` on Impact; `accounts/{adAccountId}/conversionGoals/{goalId}` on Microsoft Ads.
          */
         destinationId: string;
         adjustments: Array<{
@@ -81071,9 +81071,13 @@ export type AdjustConversionsData = {
              */
             gclid?: string;
             /**
-             * The original conversion's time, unix seconds. Required when identifying by `gclid`.
+             * The original conversion's time, unix seconds. Required when identifying by `gclid` or `msclkid`.
              */
             conversionTime?: number;
+            /**
+             * Microsoft Ads only, and required there. The click ID the conversion was sent with. Pair with `conversionTime`.
+             */
+            msclkid?: string;
             /**
              * RESTATEMENT only. The corrected TOTAL conversion value.
              */
@@ -81098,7 +81102,7 @@ export type AdjustConversionsData = {
 };
 
 export type AdjustConversionsResponse = ({
-    platform?: 'googleads' | 'impact';
+    platform?: 'googleads' | 'impact' | 'microsoftads';
     /**
      * Adjustments accepted by the platform.
      */
