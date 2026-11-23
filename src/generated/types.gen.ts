@@ -9120,9 +9120,13 @@ export type ConversionAuditReport = {
         high: number;
     };
     /**
-     * Average share of conversions at risk on the networks with no visible server-side path, 0-100.
+     * Share of the conversions across every network that fires which is at risk if the networks without a verified server path run browser-only, 0-100. A verified network counts as 0. Consent checks and tags that never fire are not counted here; `gradeReason` says how they affect the grade.
      */
     estimatedSignalLossPct: number;
+    /**
+     * One plain line tying the grade to `estimatedSignalLossPct`: whether the grade comes mostly from the conversions at risk or from what that share leaves out (consent, tags not firing, matching), named. Absent when the score lost no points.
+     */
+    gradeReason?: string;
     /**
      * One finding per ad platform the scan looked for.
      */
