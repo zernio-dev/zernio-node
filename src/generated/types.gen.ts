@@ -65908,7 +65908,7 @@ export type ListAdsData = {
          * Meta only: Facebook Page ID. Returns only ads whose creative is backed by this Page (a Meta ad account serves ads for every Page in the Business Manager). Matches each ad's `creative.pageId`; ads with no page signal (rare IG-only creatives) never match. Mirrors the same filter on /v1/ads/campaigns and /v1/ads/tree.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
         /**
          * Meta ad ID. Returns the ad with this platform-side ad ID.
          */
@@ -68124,7 +68124,7 @@ export type ListAdCampaignsData = {
          * Meta only: Facebook Page ID. Campaigns have no Page of their own, so this keeps campaigns having at least one ad backed by this Page, with adCount and metrics computed over those ads only. Mirrors the same filter on /v1/ads and /v1/ads/tree.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
         /**
          * Profile ID
          */
@@ -68298,7 +68298,7 @@ export type CreateAdCampaignError = (unknown | ErrorResponse);
 export type UpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
     };
     headers?: {
         /**
@@ -68547,7 +68547,7 @@ export type UpdateAdCampaignData = {
         /**
          * Required: platform campaign IDs are not globally unique.
          */
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
         /**
          * **Meta only.** Zernio SocialAccount id owning the ad account. Needed only for an EMPTY campaign (zero ads); ignored otherwise.
          */
@@ -68674,7 +68674,7 @@ export type UpdateAdCampaignError = (unknown | ErrorResponse);
 
 export type DeleteAdCampaignData = {
     body: {
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
         /**
          * Zernio SocialAccount id owning the ad account. Required only to delete an EMPTY campaign (zero ads), which has no local Ad documents to resolve a token from.
          */
@@ -70138,7 +70138,7 @@ export type GetAdSetTargetingError = (ErrorResponse | unknown);
 export type UpdateAdSetStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
     };
     headers?: {
         /**
@@ -70273,7 +70273,7 @@ export type GetAdTreeData = {
          * Meta only: Facebook Page ID. Prunes the tree to ads whose creative is backed by this Page: campaigns and ad sets with no ad on the Page drop out, and rolled-up metrics cover only the Page's ads. Mirrors the same filter on /v1/ads and /v1/ads/campaigns.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
         /**
          * Profile ID
          */
