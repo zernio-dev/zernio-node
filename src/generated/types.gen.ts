@@ -39183,11 +39183,15 @@ export type GetAccountHealthResponse = ({
          */
         canSendMessage?: (string) | null;
         /**
-         * The health_status entities that are not `AVAILABLE`, one item per Meta error, with calling-only signals (138024, 138025) removed. `null` when the read failed.
+         * The reasons on health_status entities that are not `AVAILABLE`. `null` when the read failed.
+         *
+         * - One item per Meta error, with calling-only signals (138024, 138025) removed.
+         * - A `LIMITED` entity also gets one item per line of its `additional_info`, where Meta writes most reasons for a limit (for example a quality warning). These have `code` null.
+         *
          */
         messagingBlockers?: Array<{
             /**
-             * Meta entity the error is on (for example WABA, BUSINESS)
+             * Meta entity the reason is on (for example PHONE_NUMBER, WABA, BUSINESS)
              */
             entityType?: (string) | null;
             /**
@@ -39195,11 +39199,11 @@ export type GetAccountHealthResponse = ({
              */
             canSendMessage?: string;
             /**
-             * Meta error code
+             * Meta error code. `null` for an `additional_info` line.
              */
             code?: (number) | null;
             /**
-             * Meta's error description
+             * Meta's error description, or the `additional_info` line as Meta wrote it
              */
             description?: string;
             /**
