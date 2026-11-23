@@ -55007,11 +55007,18 @@ export type ReplyToInboxPostData = {
          */
         message: string;
         /**
-         * (Facebook, Bluesky and LinkedIn) URL of an image to attach to the comment or reply. The URL must be publicly fetchable. Returns 400 for other platforms.
+         * (Facebook, Bluesky, LinkedIn and Threads) URL of an image to attach to the comment or reply. The URL must be publicly fetchable. Returns 400 for other platforms.
          */
         attachmentUrl?: string;
         /**
-         * (Facebook only) How Facebook publishes `attachmentUrl`: `image` (default) as a photo comment, `gif` as an animated GIF comment. A GIF sent as `image` is stored as a still photo. Requires `attachmentUrl`. Returns 400 on other platforms.
+         * (Facebook and Threads, optional) How `attachmentUrl` is published. Requires `attachmentUrl`; returns 400 on other platforms.
+         *
+         * - Omitted: a GIF is detected and posted animated. Detection uses GIPHY links (page, media, embed, sticker; `gph.is` on Threads), `.gif` paths, and an `image/gif` response on Threads.
+         * - `image`: forces a still photo. Threads converts a GIF or WebP to JPEG or PNG.
+         * - `gif`: forces an animated GIF.
+         * - Threads GIFs must come from GIPHY, otherwise the request returns 400 `invalid_field_value`.
+         * - Facebook gets a GIPHY link as its direct GIF.
+         *
          */
         attachmentType?: 'image' | 'gif';
         /**
