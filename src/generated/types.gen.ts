@@ -5832,6 +5832,35 @@ export type AutomationTemplateTargetResult = {
 export type status11 = 'created' | 'failed';
 
 /**
+ * What the automation would do with the sample, decided by the code its live runs use.
+ */
+export type AutomationTestDecision = {
+    wouldRun: boolean;
+    /**
+     * Why it would not run: keyword_miss, keyword_excluded, other_post, trigger_miss, not_first_message, account_not_listened, filter_miss, no_match, subject_not_matched, post_not_matched, no_accounts, no_subscribed_channel, unsubscribed, already_enrolled, runs_paused, paused or draft.
+     */
+    reason?: string;
+    /**
+     * What the sample met, such as a keyword, a filter condition, the trigger, a post or an ad.
+     */
+    matched: Array<{
+        type: string;
+        value: string;
+    }>;
+    /**
+     * The steps it would take, in order. A flow lists its first steps up to the first branch.
+     */
+    plannedSteps: Array<{
+        type: string;
+        summary: string;
+    }>;
+    /**
+     * A scheduled automation's next check.
+     */
+    nextRunAt?: (string) | null;
+};
+
+/**
  * When the automation runs. Its shape decides the kind:
  *
  * - A Zernio event name in `type` makes an event automation.
@@ -67378,6 +67407,55 @@ export type GetAutomationRunResponse = ({
 });
 
 export type GetAutomationRunError = (ErrorResponse | {
+    error?: string;
+});
+
+export type TestAutomationData = {
+    body?: {
+        /**
+         * The sample event, shaped by the automation's kind.
+         */
+        event?: {
+            [key: string]: unknown;
+        };
+        /**
+         * A sequence's contact, a scheduled automation's post or an ad rule's object.
+         */
+        subjectId?: string;
+    };
+    path: {
+        automationId: string;
+    };
+};
+
+export type TestAutomationResponse = ({
+    decision: AutomationTestDecision;
+});
+
+export type TestAutomationError = ((ErrorResponse & {
+    details?: AutomationProblems;
+}) | ErrorResponse | {
+    error?: string;
+});
+
+export type GetAutomationTestSampleData = {
+    path: {
+        automationId: string;
+    };
+};
+
+export type GetAutomationTestSampleResponse = ({
+    kind: 'ad_rule' | 'event' | 'scheduled' | 'sequence' | 'comment' | 'workflow';
+    sample: {
+        event?: {
+            [key: string]: unknown;
+        };
+        subjectId?: string;
+        description: string;
+    };
+});
+
+export type GetAutomationTestSampleError = (ErrorResponse | {
     error?: string;
 });
 

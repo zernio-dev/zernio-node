@@ -770,6 +770,7 @@ try {
 | `automations.getAutomationControls()` | Get automation controls |
 | `automations.getAutomationRun()` | Get one run of an automation |
 | `automations.getAutomationTemplate()` | Get an automation template |
+| `automations.getAutomationTestSample()` | Get a sample test body for an automation |
 | `automations.getSharedAutomationTemplate()` | Get a shared automation template |
 | `automations.getZernioAutomationTemplate()` | Get a Zernio automation template |
 | `automations.updateAutomation()` | Edit an automation |
@@ -790,6 +791,7 @@ try {
 | `automations.previewAutomationDraft()` | Preview an unsaved automation |
 | `automations.rejectAutomationApproval()` | Reject an approval request |
 | `automations.takeOverAutomation()` | Take over an automation |
+| `automations.testAutomation()` | Test an automation on a sample event |
 
 ### Blogs
 | Method | Description |
