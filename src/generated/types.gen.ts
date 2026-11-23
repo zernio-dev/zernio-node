@@ -78442,7 +78442,12 @@ export type CreateStandaloneAdData = {
             imageUrl: string;
         };
         /**
-         * TikTok: the identity the ad runs as, from GET /v1/ads/tiktok-identities. Overrides the connected account's own identity; must be authorized on the advertiser.
+         * The profile the ad runs as.
+         *
+         * - TikTok: the identity from GET /v1/ads/tiktok-identities. Overrides the connected account's own identity; must be authorized on the advertiser.
+         * - Snapchat: the Public Profile ID (a UUID), required on most organizations. Without it the create answers 422 on identityId and uploads nothing.
+         * - To find a Snapchat Public Profile ID: in Snapchat Business Manager, open Public Profiles, select the profile and copy its ID.
+         *
          */
         identityId?: string;
         /**
