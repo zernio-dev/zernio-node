@@ -5047,6 +5047,49 @@ export type AutomationControls = {
 export type AutomationDefinition = AdRuleAutomationDefinition | EventAutomationDefinition | ScheduledAutomationDefinition | SequenceAutomationDefinition | CommentAutomationDefinition | FlowAutomationDefinition;
 
 /**
+ * A step of an event automation that acts on its own. `messages.send`, `contacts.tag` and `sequences.enroll` need an event about a conversation or a call: they act on that person.
+ *
+ * `workflows.start` also takes an order event, reaching its customer by the phone the store holds. A step that does not fit its event is refused at its `type`.
+ *
+ * Only `webhook.call` and `notify.send` run on `message.sent` and `message.failed`, which an automation's own messages fire.
+ *
+ */
+export type AutomationEventActionStep = {
+    id?: string;
+    type: "messages.send";
+    text: string;
+} | {
+    id?: string;
+    type: "workflows.start";
+    workflowId: string;
+} | {
+    id?: string;
+    type: "sequences.enroll";
+    sequenceId: string;
+} | {
+    id?: string;
+    type: "webhook.call";
+    url: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+    headers?: {
+        [key: string]: (string);
+    };
+    /**
+     * May read `{{event.<fact>}}`.
+     */
+    body?: string;
+} | {
+    id?: string;
+    type: "contacts.tag";
+    action: 'add' | 'remove';
+    tag: string;
+};
+
+export type method2 = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+
+export type action = 'add' | 'remove';
+
+/**
  * The limits of an event or scheduled automation.
  */
 export type AutomationEventLimits = {
@@ -5383,7 +5426,7 @@ export type AutomationRunDetail = AutomationRun & {
 };
 
 export type AutomationRunResult = {
-    type: 'notify.send' | 'ads.boost_post';
+    type: 'notify.send' | 'ads.boost_post' | 'messages.send' | 'workflows.start' | 'sequences.enroll' | 'webhook.call' | 'contacts.tag';
     /**
      * `unknown` when the platform never answered, so the outcome is not known.
      */
@@ -5391,7 +5434,7 @@ export type AutomationRunResult = {
     reason: (string) | null;
 };
 
-export type type7 = 'notify.send' | 'ads.boost_post';
+export type type7 = 'notify.send' | 'ads.boost_post' | 'messages.send' | 'workflows.start' | 'sequences.enroll' | 'webhook.call' | 'contacts.tag';
 
 /**
  * When an ad rule runs: `every` an interval or at set weekly `times` (send one), optionally only between `startsAt` and `endsAt` and never inside `quietHours`. Times and quiet hours are in the ad account timezone.
@@ -8544,7 +8587,7 @@ export type CommerceDiscount = {
 
 export type platform7 = 'shopify';
 
-export type method2 = 'code' | 'automatic';
+export type method3 = 'code' | 'automatic';
 
 export type type14 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
 
@@ -13326,12 +13369,15 @@ export type EventAutomationCheck = {
         [key: string]: unknown;
     } | null;
     filter: Array<AutomationFactResult>;
+    /**
+     * One per step, in order, with what it did. A step refused for good, such as a closed WhatsApp window, is `skipped` with its reason.
+     */
     actions: Array<AutomationRunResult>;
     error: (string) | null;
 };
 
 /**
- * Runs when something happens in Zernio, such as a post failing, and notifies. Unknown fields are refused.
+ * Runs when something happens in Zernio, such as a post failing or a call missed: it notifies, messages the person, starts a flow, and more. Unknown fields are refused.
  */
 export type EventAutomationDefinition = {
     name: string;
@@ -13343,7 +13389,7 @@ export type EventAutomationDefinition = {
     /**
      * May be empty: an automation with no steps only records each event it matches as a check with outcome `triggered` and no action. `limits.cooldown` and `limits.maxChangesPerDay` count actions, so they do nothing for it.
      */
-    steps: Array<AutomationNotifyStep>;
+    steps: Array<(AutomationNotifyStep | AutomationEventActionStep)>;
     limits?: AutomationEventLimits;
 };
 
@@ -19377,7 +19423,7 @@ export type PayoutBatch = {
  */
 export type status50 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
-export type method3 = 'card';
+export type method4 = 'card';
 
 export type PayoutBatchItem = {
     id: string;
@@ -22186,7 +22232,7 @@ export type StorePixelInstall = {
 /**
  * WordPress only.
  */
-export type method4 = 'wordpress_widget';
+export type method5 = 'wordpress_widget';
 
 export type StripeSettings = {
     /**
@@ -23239,7 +23285,7 @@ export type status60 = 'active' | 'paused' | 'removing';
 /**
  * How the tag is installed. `snippet` means you paste it.
  */
-export type method5 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
+export type method6 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
 
 export type type32 = 'CNAME';
 
@@ -23637,7 +23683,7 @@ export type TreasuryTopup = {
     bonusCents?: (number) | null;
 };
 
-export type method6 = 'card' | 'bank_transfer';
+export type method7 = 'card' | 'bank_transfer';
 
 /**
  * `balance` funds your balance; `payout_batch` is the card payment of one payout batch, which pays its creators directly.
@@ -30169,7 +30215,7 @@ export type WebhookPayloadReaction = {
 
 export type event81 = 'reaction.received';
 
-export type action = 'added' | 'removed';
+export type action2 = 'added' | 'removed';
 
 /**
  * Webhook payload for referral received events (Instagram, Facebook Messenger)
@@ -31442,7 +31488,7 @@ export type WorkflowExecutionEvent = {
     at?: string;
 };
 
-export type action2 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
+export type action3 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
 export type status76 = 'success' | 'failed' | 'pending';
 
@@ -67349,6 +67395,9 @@ export type GetAutomationCatalogResponse = ({
             [key: string]: unknown;
         };
         filterOperators?: Array<(string)>;
+        /**
+         * The step types the trigger takes. For an event, only those its subject can reach.
+         */
         steps?: Array<(string)>;
         /**
          * Scheduled trigger only: the platforms, goals, most days and most boosts a day of `ads.boost_post`.
