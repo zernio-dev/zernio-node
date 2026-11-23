@@ -70365,15 +70365,17 @@ export type UpdateAdData = {
              */
             squareImageUrl?: string;
             /**
-             * Primary text. On a Meta asset_feed creative it replaces the feed's only body option (422 when it has several: send `bodies`).
+             * Primary text. On a Meta asset_feed creative it replaces the feed's only body option and the story text (422 when it has several: send `bodies`). Sent with `bodies`, it sets the story's fallback primary text (`link_data.message` or `video_data.message`) while `bodies` replaces the options.
              */
             body?: string;
             /**
-             * Meta only. The primary text options of an asset_feed creative, one text per option in the order GET /v1/ads/{adId} returns them. Each replaces the option in its position and keeps its rule. A different count returns 422, as does a single-text creative (send `body`). Not with `body`.
+             * Meta only. The primary text options of an asset_feed creative, one text per option in the order GET /v1/ads/{adId} returns them. Each replaces the option in its position and keeps its rule.
+             *
+             * A different count returns 422, as does a single-text creative (send `body`). Add `body` to set the story's fallback text as well.
              */
             bodies?: Array<(string)>;
             /**
-             * Meta only. Same as `bodies`, for the headline options (Meta `asset_feed_spec.titles`). Cannot be sent with `headline`. Not the top-level Google `headlines`.
+             * Meta only. Same as `bodies`, for the headline options (Meta `asset_feed_spec.titles`). Add `headline` to set the story's fallback title. Not the top-level Google `headlines`.
              */
             headlines?: Array<(string)>;
             /**
@@ -70381,7 +70383,7 @@ export type UpdateAdData = {
              */
             description?: string;
             /**
-             * Meta only. Same as `bodies`, for the description options. Cannot be sent with `description`. Not the top-level Google `descriptions`.
+             * Meta only. Same as `bodies`, for the description options. Add `description` to set the story's fallback description. Not the top-level Google `descriptions`.
              */
             descriptions?: Array<(string)>;
             callToAction?: string;
