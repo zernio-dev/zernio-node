@@ -3942,7 +3942,11 @@ export const selectCampaignManagerProfile = <ThrowOnError extends boolean = fals
 
 /**
  * Get Amazon Ads OAuth connect URL
- * Starts Login with Amazon for Amazon Ads (scope `advertising::campaign_management`). The Amazon login becomes an account with platform `amazonads`; every advertiser profile it reaches, in the NA, EU and FE regions, is a conversions destination (`GET /v1/ads/conversions/destinations`).
+ * Starts Login with Amazon for Amazon Ads (scope `advertising::campaign_management`). The Amazon login becomes an account with platform `amazonads`.
+ *
+ * Every seller and vendor advertiser profile it reaches, in the NA, EU and FE regions, is an ad account (`GET /v1/ads/accounts`) and a conversions destination (`GET /v1/ads/conversions/destinations`).
+ *
+ * Pass `region` so the user signs in on their own region's Amazon consent page; the connection still reaches the profiles of every region.
  *
  * Errors on the redirect: `amazonads_no_profiles` (the login reaches no advertiser), `amazonads_no_refresh_token`.
  *
@@ -14620,6 +14624,10 @@ export const listLocalServicesLeadConversations = <ThrowOnError extends boolean 
  * - A customer synced for the first time is populated on the next discovery pass rather than waiting for its daily slot.
  * - Connecting an account or triggering a manual sync refreshes it immediately.
  *
+ * ### Amazon
+ *
+ * Amazon Sponsored Products and Sponsored Brands keywords and ad group negatives are listed too (`platform: amazon`), refreshed about every six hours with their trailing 30-day metrics from the targeting reports. `resourceName` is `{adGroupId}~{keywordId}` there. Campaign-level negatives are under `GET /v1/ads/campaigns/{campaignId}/negative-keywords`.
+ *
  */
 export const listAdKeywords = <ThrowOnError extends boolean = false>(options?: OptionsLegacyParser<ListAdKeywordsData, ThrowOnError>) => {
     return (options?.client ?? client).get<ListAdKeywordsResponse, ListAdKeywordsError, ThrowOnError>({
@@ -14637,6 +14645,10 @@ export const listAdKeywords = <ThrowOnError extends boolean = false>(options?: O
  * `PUT /v1/ads/{adId}`, `keywords`/`negativeKeywords` in `platformSpecificData`,
  * which replaces the set). Set `negative: true` to add ad-group-level negatives
  * instead of positive keywords.
+ *
+ * ### Amazon
+ *
+ * On an Amazon Ads connection the keywords go to a Sponsored Products or Sponsored Brands ad group (a Sponsored Display ad group returns 422). Positives bid the ad group default. Negatives match exact or phrase: a negative sent without `matchType` is exact, and a broad negative returns 422.
  *
  */
 export const addAdKeywords = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<AddAdKeywordsData, ThrowOnError>) => {
@@ -14656,6 +14668,10 @@ export const addAdKeywords = <ThrowOnError extends boolean = false>(options: Opt
  *
  * Negative keywords have no status or bid on Google and cannot be paused, enabled or given a bid.
  *
+ * ### Amazon
+ *
+ * Amazon keywords take `status` and `cpcBid`. Amazon negative keywords take `status` only (a `cpcBid` on one returns 422), and a Sponsored Brands negative cannot be paused (422).
+ *
  */
 export const updateAdKeyword = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateAdKeywordData, ThrowOnError>) => {
     return (options?.client ?? client).patch<UpdateAdKeywordResponse, UpdateAdKeywordError, ThrowOnError>({
@@ -14669,6 +14685,10 @@ export const updateAdKeyword = <ThrowOnError extends boolean = false>(options: O
  * Removes a single keyword or negative keyword from a Google Search ad group.
  *
  * Removes one keyword criterion (positive or negative) from its ad group (M.140).
+ *
+ * ### Amazon
+ *
+ * On Amazon the keyword is archived, which is Amazon's delete: it stays in reports and can never be enabled again.
  *
  */
 export const removeAdKeyword = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RemoveAdKeywordData, ThrowOnError>) => {
@@ -15578,6 +15598,10 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
  * - `startDate` / `endDate` set the campaign's schedule and need that campaign budget (400 without one).
  * - Without a budget, each ad set carries its own budget and dates.
  *
+ * ### Amazon Ads
+ *
+ * `platformSpecificData` (required) names the ad product and its campaign settings (`AmazonAdsCampaignPlatformData`), and the campaign needs a budget. `goal` must fit the product. `startDate` / `endDate` are calendar days in the profile time zone. Ad groups join it with `existingCampaignId` on POST /v1/ads/create.
+ *
  */
 export const createAdCampaign = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdCampaignData, ThrowOnError>) => {
     return (options?.client ?? client).post<CreateAdCampaignResponse, CreateAdCampaignError, ThrowOnError>({
@@ -15761,8 +15785,8 @@ export const getAdCampaignDetails = <ThrowOnError extends boolean = false>(optio
  * | `networkSettings` | 400 | Search only | 400 |
  * | `trackingUrlTemplate`, `finalUrlSuffix` | 400 | Yes | 400 |
  * | `sharedBudgetId` | 400 | Yes | 400 |
- * | `budget` (CBO; ABO returns 409) | Yes | Daily only | OpenAI and Reddit: daily or lifetime; others 501 |
- * | `name` | Yes | 501 | Reddit: Yes; others 501 |
+ * | `budget` (CBO; ABO returns 409) | Yes | Daily only | OpenAI and Reddit: daily or lifetime; Amazon: daily, or the lifetime type a Sponsored Brands campaign was created with; others 501 |
+ * | `name` | Yes | 501 | Reddit and Amazon: Yes; others 501 |
  * | `platformSpecificData.spendCap` | Yes | 400 | 400 |
  * | `accountId` (empty campaigns) | Yes | - | - |
  *
@@ -15834,6 +15858,8 @@ export const updateAdCampaign = <ThrowOnError extends boolean = false>(options: 
  * - Meta, Google, TikTok, LinkedIn and X delete it.
  * - OpenAI, Reddit and Pinterest have no campaign delete and archive it instead (see below).
  *
+ * - Amazon archives the campaign: archiving is Amazon's delete, it is permanent, and the campaign stays in reports.
+ *
  * Locally, all Ad documents for this campaign are marked `status: cancelled`.
  *
  * ### Empty campaigns
@@ -15892,7 +15918,11 @@ export const deleteAdCampaign = <ThrowOnError extends boolean = false>(options: 
  *
  * ### Platform
  *
- * The platform is always discovered from the campaign itself. A non-Google campaign returns 501 rather than 404, whether or not `platform` was passed.
+ * The platform is always discovered from the campaign itself. A campaign on another platform than Google or Amazon returns 501 rather than 404, whether or not `platform` was passed.
+ *
+ * ### Amazon
+ *
+ * Amazon Sponsored Products campaigns hold campaign-level negative keywords (exact or phrase), read live with no cache (`cachedAt` null). Sponsored Brands and Sponsored Display campaigns have none and return 422.
  *
  */
 export const listCampaignNegativeKeywords = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListCampaignNegativeKeywordsData, ThrowOnError>) => {
@@ -15915,8 +15945,12 @@ export const listCampaignNegativeKeywords = <ThrowOnError extends boolean = fals
  * - Send the same request again to finish a failed replace.
  * - Send an empty array to clear every campaign negative.
  *
- * The platform is always discovered from the campaign itself; a non-Google
- * campaign returns 501 rather than 404, whether or not `platform` was sent.
+ * The platform is always discovered from the campaign itself; a campaign on another
+ * platform than Google or Amazon returns 501 rather than 404, whether or not `platform` was sent.
+ *
+ * ### Amazon
+ *
+ * On an Amazon Sponsored Products campaign the missing negatives are created and the rest archived. A negative without `matchType` is exact; broad returns 422.
  *
  */
 export const replaceCampaignNegativeKeywords = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ReplaceCampaignNegativeKeywordsData, ThrowOnError>) => {
@@ -15934,8 +15968,12 @@ export const replaceCampaignNegativeKeywords = <ThrowOnError extends boolean = f
  * - Keywords already on the campaign are not added twice; keywords not on it are skipped on remove.
  * - Changes go to Google in `create`/`remove` mutates of up to 5,000 operations, like the full replace.
  *
- * The platform is always discovered from the campaign itself; a non-Google
- * campaign returns 501 rather than 404, whether or not `platform` was sent.
+ * The platform is always discovered from the campaign itself; a campaign on another
+ * platform than Google or Amazon returns 501 rather than 404, whether or not `platform` was sent.
+ *
+ * ### Amazon
+ *
+ * On an Amazon Sponsored Products campaign `add` creates the missing negatives and `remove` archives the matching ones (text and match type, case-insensitive). A negative without `matchType` is exact; broad returns 422.
  *
  */
 export const editCampaignNegativeKeywords = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<EditCampaignNegativeKeywordsData, ThrowOnError>) => {
@@ -16408,7 +16446,7 @@ export const updateAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * `status: cancelled`.
  *
  * Delete is soft on platforms that have no hard delete: LinkedIn moves the
- * campaign to `PENDING_DELETION`, Pinterest and Reddit archive the ad group, and X
+ * campaign to `PENDING_DELETION`, Pinterest, Reddit and Amazon archive the ad group (permanent on Amazon), and X
  * soft-flags the line item. Google removes the ad group. All remain readable
  * for reporting.
  *
@@ -16421,10 +16459,10 @@ export const deleteAdSet = <ThrowOnError extends boolean = false>(options: Optio
 };
 
 /**
- * Read a Reddit ad group's targeting and schedule
+ * Read an ad group's targeting and schedule
  * Shows a Reddit ad group's live targeting and schedule in the same shape PUT /v1/ads/ad-sets/{adSetId} takes, so you can prefill an editor.
  *
- * It is read live from Reddit on every call. Reddit only; every other platform returns 501.
+ * It is read live from the platform on every call. Reddit and Amazon only; every other platform returns 501.
  *
  * ### How fields come back
  *
@@ -16432,6 +16470,10 @@ export const deleteAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * - Excluded DMAs are listed under `excludedLocations.regions`, since excluded locations have no metro list.
  * - Languages come back as lowercase ISO 639-1 codes.
  * - Targeting Zernio cannot edit (devices, platforms, carriers, automated expansion) is left out and kept on every edit.
+ *
+ * ### Amazon
+ *
+ * On Amazon it reads the ad group's live targets and negative targets in Amazon's own expression shape: `targeting` is `{ product, targets, negativeTargets }`, each target with `targetId`, `state`, `expressionType`, `expression` and `bid`. Keywords are read through `GET /v1/ads/keywords`. Editing Amazon targets is not available yet.
  *
  */
 export const getAdSetTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdSetTargetingData, ThrowOnError>) => {
@@ -16750,6 +16792,8 @@ export const updateAd = <ThrowOnError extends boolean = false>(options: OptionsL
  *
  * - OpenAI Ads has no delete API: the ad is archived instead (a terminal state, the closest equivalent).
  * - Reddit Ads has no delete either: the ad is archived (`configured_status` ARCHIVED).
+ *
+ * - Amazon Ads archives the ad (state ARCHIVED). Archiving is permanent.
  *
  * To delete a whole campaign on purpose use `DELETE /v1/ads/campaigns/{campaignId}`.
  *
@@ -19570,7 +19614,7 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * Create standalone ad
  * Creates a paid ad with your own creative, building the campaign and ad set it needs or adding it to existing ones.
  *
- * Works across Meta, Google Ads, Pinterest, TikTok, X, LinkedIn, OpenAI Ads (ChatGPT Ads), Reddit Ads and Microsoft Ads. Per-platform required fields, budget minimums, and video-ad rules are documented on each property below.
+ * Works across Meta, Google Ads, Pinterest, TikTok, X, LinkedIn, OpenAI Ads (ChatGPT Ads), Reddit Ads, Microsoft Ads and Amazon Ads (Sponsored Products, Sponsored Brands and Sponsored Display, see `AmazonAdsPlatformData`). Per-platform required fields, budget minimums, and video-ad rules are documented on each property below.
  *
  * ### Request shapes
  *

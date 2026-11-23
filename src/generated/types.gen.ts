@@ -169,7 +169,7 @@ export type AccountWithFollowerStats = SocialAccount & {
 export type Ad = {
     _id?: string;
     name?: string;
-    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
     /**
      * Profile the row belongs to: the profile of its owning connection (`accountId`); when that connection no longer exists, the requested profile (`profileId` filter) that reaches the row ad account, else the profile of the oldest connection of the row owner that reaches it.
      */
@@ -714,7 +714,7 @@ export type Ad = {
     updatedAt?: string;
 };
 
-export type platform = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+export type platform = 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
 
 export type adType = 'boost' | 'standalone';
 
@@ -912,7 +912,7 @@ export type AdBudget = {
 
 export type AdCampaign = {
     platformCampaignId?: string;
-    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
     campaignName?: string;
     /**
      * Delivery status derived from child ad statuses. Distinct from `reviewStatus`.
@@ -3336,7 +3336,7 @@ export type AdTreeCampaign = {
         [key: string]: (number);
     };
     platformCampaignId?: string;
-    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+    platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
     campaignName?: string;
     /**
      * Earliest `platformCreatedAt` across every ad in the campaign (platform ad creation time; falls back to `createdAt`, Zernio's sync time, for ads synced before that field existed).
@@ -3509,6 +3509,243 @@ export type AdTreeResponse = {
      */
     backfillPending?: boolean;
 };
+
+/**
+ * Amazon Ads: the ad product of the campaign and its settings. Unknown keys return a 400.
+ *
+ * The unified `goal` maps onto the product: Sponsored Products takes `conversions`; Sponsored Brands takes `traffic` (PAGE_VISIT), `awareness` (BRAND_IMPRESSION_SHARE), `video_views` (AD_VIEWS) and `conversions` (ACQUIRE_NEW_CUSTOMERS); Sponsored Display takes `traffic` (optimizes for clicks), `conversions` and `awareness` (optimizes for reach and bills by viewable impressions).
+ *
+ */
+export type AmazonAdsCampaignPlatformData = AmazonSponsoredProductsCampaignData | AmazonSponsoredBrandsCampaignData | AmazonSponsoredDisplayCampaignData;
+
+/**
+ * Amazon Ads (required): the ad product and everything the unified fields do not cover. Unknown keys return a 400.
+ *
+ * Unified fields that apply:
+ *
+ * - `name`, `campaignName`, `adSetName`, `adName`, `goal` and the status fields.
+ * - `budgetAmount` / `budgetType`: the campaign budget in whole currency units; lifetime on Sponsored Brands only.
+ * - `startDate` / `endDate`: calendar days in the profile time zone.
+ * - `keywords` and `negativeKeywords` (Sponsored Products and Brands), `campaignNegativeKeywords` (Sponsored Products).
+ * - `existingCampaignId`: a new ad group under an existing campaign of the same product, which keeps its goal when `goal` is omitted.
+ * - `adSetId`: new ads in an existing ad group.
+ *
+ * Creative and audience fields (headline, body, linkUrl, imageUrl, countries, interests...) return a 400.
+ *
+ * Goals per product are listed on `AmazonAdsCampaignPlatformData`. If anything after the campaign fails, the campaign is archived (Amazon's delete) and the error names the refused item, e.g. `keywords[2]`.
+ *
+ */
+export type AmazonAdsPlatformData = AmazonSponsoredProductsAdData | AmazonSponsoredBrandsAdData | AmazonSponsoredDisplayAdData;
+
+export type AmazonAdvertisedProducts = {
+    /**
+     * Vendor profiles: the ASINs to advertise, one product ad each.
+     */
+    asins?: Array<(string)>;
+    /**
+     * Seller profiles: the SKUs to advertise, one product ad each. Sending the identifier the profile does not use returns a 400.
+     */
+    skus?: Array<(string)>;
+};
+
+export type AmazonAutoTargetGroup = {
+    enabled?: boolean;
+    bid?: number;
+};
+
+export type AmazonSponsoredBrandsAdData = AmazonSponsoredBrandsCampaignData & {
+    /**
+     * Required. The ad, by format. Assets (logo, video) are Creative Asset Library ids. The product collection format is not offered: Amazon retires it in January 2027 (use manualCollection).
+     */
+    ad?: ({
+    format: 'manualCollection';
+    brandName: string;
+    brandLogoAssetId?: string;
+    title?: string;
+    asins: Array<(string)>;
+    landingPage?: {
+        pageType: 'PRODUCT_LIST' | 'STORE';
+        url?: string;
+    };
+} | {
+    format: 'storeSpotlight';
+    brandName: string;
+    brandLogoAssetId?: string;
+    headline?: string;
+    /**
+     * The Store home page the ad lands on.
+     */
+    storeUrl: string;
+    subpages: [
+        {
+            pageTitle: string;
+            asin: string;
+            url: string;
+        },
+        {
+            pageTitle: string;
+            asin: string;
+            url: string;
+        },
+        {
+            pageTitle: string;
+            asin: string;
+            url: string;
+        }
+    ];
+} | {
+    format: 'video';
+    videoAssetId: string;
+    asin: string;
+    brandName?: string;
+    brandLogoAssetId?: string;
+    headline?: string;
+});
+    /**
+     * Bid of the keywords and product targets without their own. With goal traffic (cost per click), US: 0.10 to 49, video 0.25 to 49.
+     */
+    defaultBid?: number;
+    productTargets?: Array<{
+        expressions: Array<{
+            type: 'asinSameAs' | 'asinCategorySameAs' | 'asinBrandSameAs' | 'asinPriceLessThan' | 'asinPriceBetween' | 'asinPriceGreaterThan' | 'asinReviewRatingLessThan' | 'asinReviewRatingBetween' | 'asinReviewRatingGreaterThan';
+            value: string;
+        }>;
+        bid?: number;
+    }>;
+    negativeProductTargets?: Array<{
+        type: 'asinSameAs' | 'asinBrandSameAs';
+        value: string;
+    }>;
+};
+
+export type format2 = 'manualCollection';
+
+export type pageType = 'PRODUCT_LIST' | 'STORE';
+
+export type AmazonSponsoredBrandsCampaignData = {
+    adProduct: 'SPONSORED_BRANDS';
+    /**
+     * The brand (Brand Registry entity) the campaign advertises. Sellers need one.
+     */
+    brandEntityId?: string;
+    /**
+     * Amazon adjusts placement bids itself. Send false to set placementAdjustments.
+     */
+    bidOptimization?: boolean;
+    /**
+     * Only with bidOptimization false (400 otherwise).
+     */
+    placementAdjustments?: Array<{
+        placement: 'TOP_OF_SEARCH' | 'DETAIL_PAGE' | 'HOME' | 'OTHER';
+        percentage: number;
+    }>;
+    portfolioId?: string;
+};
+
+export type AmazonSponsoredDisplayAdData = AmazonSponsoredDisplayCampaignData & AmazonAdvertisedProducts & {
+    /**
+     * US: 0.02 to 1000 per click, 1 to 1000 per thousand viewable impressions (goal awareness).
+     */
+    defaultBid?: number;
+    /**
+     * Required for a new ad group. Each entry is one Amazon targeting clause, in Amazon's own shape:
+     *
+     * - Contextual: `{ type: similarProduct }`, `{ type: asinSameAs, value: B0... }`, `{ type: asinCategorySameAs, value: "12345" }` with optional brand, price or rating refinements in the same expression, `{ type: contentCategorySameAs, value: "amzn1.iab-content.325" }`.
+     * - Audiences (tactic T00030 only): `{ type: views | purchases, value: [{ type: exactProduct | similarProduct | relatedProduct | asinCategorySameAs ... }, { type: lookback, value: "30" }] }`, or `{ type: audience, value: [{ type: audienceSameAs, value: "<audience id>" }] }` for in-market and lifestyle audiences.
+     *
+     */
+    targets?: Array<{
+        expression: Array<{
+            type: string;
+            value?: (string | Array<{
+    type: string;
+    value?: string;
+}>);
+        }>;
+        bid?: number;
+    }>;
+    negativeTargets?: Array<{
+        type: 'asinSameAs' | 'asinBrandSameAs';
+        value: string;
+    }>;
+};
+
+export type AmazonSponsoredDisplayCampaignData = {
+    adProduct: 'SPONSORED_DISPLAY';
+    /**
+     * Required for a new campaign. T00020 targets products and categories; T00030 also targets audiences (views, purchases, audience).
+     */
+    tactic?: 'T00020' | 'T00030';
+    portfolioId?: string;
+};
+
+/**
+ * Required for a new campaign. T00020 targets products and categories; T00030 also targets audiences (views, purchases, audience).
+ */
+export type tactic = 'T00020' | 'T00030';
+
+export type AmazonSponsoredProductsAdData = AmazonSponsoredProductsCampaignData & AmazonAdvertisedProducts & {
+    /**
+     * Required for a new ad group. Whole currency units; keywords and targets without their own bid use it. US: 0.02 to 1000.
+     */
+    defaultBid?: number;
+    /**
+     * MANUAL campaigns. Each entry is one Amazon targeting clause: a product (ASIN_SAME_AS), a category (ASIN_CATEGORY_SAME_AS) optionally refined by brand, price, rating or Prime in the same expression.
+     */
+    productTargets?: Array<{
+        expression: Array<{
+            type: 'ASIN_SAME_AS' | 'ASIN_CATEGORY_SAME_AS' | 'ASIN_BRAND_SAME_AS' | 'ASIN_PRICE_LESS_THAN' | 'ASIN_PRICE_GREATER_THAN' | 'ASIN_PRICE_BETWEEN' | 'ASIN_REVIEW_RATING_LESS_THAN' | 'ASIN_REVIEW_RATING_GREATER_THAN' | 'ASIN_REVIEW_RATING_BETWEEN' | 'ASIN_IS_PRIME_SHIPPING_ELIGIBLE' | 'ASIN_AGE_RANGE_SAME_AS' | 'ASIN_GENRE_SAME_AS' | 'ASIN_EXPANDED_FROM';
+            /**
+             * Ranges use a hyphen, e.g. "50-120".
+             */
+            value?: string;
+        }>;
+        bid?: number;
+    }>;
+    negativeProductTargets?: Array<{
+        type: 'ASIN_SAME_AS' | 'ASIN_BRAND_SAME_AS';
+        value: string;
+    }>;
+    /**
+     * AUTO campaigns. Amazon adds the four auto target groups to the ad group itself; this switches them off or bids on them. A group Amazon had not added yet is reported in `warnings`.
+     */
+    autoTargeting?: {
+        closeMatch?: AmazonAutoTargetGroup;
+        looseMatch?: AmazonAutoTargetGroup;
+        substitutes?: AmazonAutoTargetGroup;
+        complements?: AmazonAutoTargetGroup;
+    };
+};
+
+export type AmazonSponsoredProductsCampaignData = {
+    adProduct: 'SPONSORED_PRODUCTS';
+    /**
+     * Required for a new campaign. MANUAL targets keywords and productTargets; AUTO lets Amazon match searches and products (tune them with autoTargeting). Immutable.
+     */
+    targetingType?: 'MANUAL' | 'AUTO';
+    /**
+     * Dynamic bidding: LEGACY_FOR_SALES lowers bids when a sale is unlikely, AUTO_FOR_SALES raises and lowers them (up to +100%), MANUAL keeps them fixed.
+     */
+    biddingStrategy?: 'LEGACY_FOR_SALES' | 'AUTO_FOR_SALES' | 'MANUAL';
+    /**
+     * Bid increase per placement, added on top of the bid (50 on a 1.00 bid gives 1.50 at the top of search).
+     */
+    placementBidding?: Array<{
+        placement: 'PLACEMENT_TOP' | 'PLACEMENT_PRODUCT_PAGE' | 'PLACEMENT_REST_OF_SEARCH';
+        percentage: number;
+    }>;
+    portfolioId?: string;
+};
+
+/**
+ * Required for a new campaign. MANUAL targets keywords and productTargets; AUTO lets Amazon match searches and products (tune them with autoTargeting). Immutable.
+ */
+export type targetingType = 'MANUAL' | 'AUTO';
+
+/**
+ * Dynamic bidding: LEGACY_FOR_SALES lowers bids when a sale is unlikely, AUTO_FOR_SALES raises and lowers them (up to +100%), MANUAL keeps them fixed.
+ */
+export type biddingStrategy = 'LEGACY_FOR_SALES' | 'AUTO_FOR_SALES' | 'MANUAL';
 
 export type AnalyticsDashboardFollowers = {
     /**
@@ -19604,7 +19841,7 @@ export type PostMetricFormat = {
 /**
  * gif counts as image, document as text.
  */
-export type format2 = 'image' | 'video' | 'carousel' | 'text';
+export type format3 = 'image' | 'video' | 'carousel' | 'text';
 
 export type PostMetricGroup = {
     postId: (string) | null;
@@ -30646,7 +30883,7 @@ export type WhatsAppHeaderComponent = {
     };
 };
 
-export type format3 = 'text' | 'image' | 'video' | 'gif' | 'document' | 'location';
+export type format4 = 'text' | 'image' | 'video' | 'gif' | 'document' | 'location';
 
 export type WhatsAppLimitedTimeOfferComponent = {
     type: 'limited_time_offer';
@@ -40869,6 +41106,10 @@ export type GetAmazonAdsConnectUrlData = {
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme.
          */
         redirect_url?: string;
+        /**
+         * Amazon region whose consent page the user signs in on: NA (amazon.com), EU (Europe, Middle East, India) or FE (Japan, Australia, Singapore).
+         */
+        region?: 'NA' | 'EU' | 'FE';
     };
 };
 
@@ -65525,7 +65766,7 @@ export type ListAdsData = {
          * Meta only: Facebook Page ID. Returns only ads whose creative is backed by this Page (a Meta ad account serves ads for every Page in the Business Manager). Matches each ad's `creative.pageId`; ads with no page signal (rare IG-only creatives) never match. Mirrors the same filter on /v1/ads/campaigns and /v1/ads/tree.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
         /**
          * Meta ad ID. Returns the ad with this platform-side ad ID.
          */
@@ -67741,7 +67982,7 @@ export type ListAdCampaignsData = {
          * Meta only: Facebook Page ID. Campaigns have no Page of their own, so this keeps campaigns having at least one ad backed by this Page, with adCount and metrics computed over those ads only. Mirrors the same filter on /v1/ads and /v1/ads/tree.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
         /**
          * Profile ID
          */
@@ -67816,13 +68057,17 @@ export type CreateAdCampaignData = {
         budgetType?: 'daily' | 'lifetime';
         status?: 'ACTIVE' | 'PAUSED';
         /**
-         * Reddit only (400 elsewhere). Campaign start (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (`budgetAmount` + `budgetType`, 400 otherwise). Defaults to now.
+         * Reddit and Amazon only (400 elsewhere). Campaign start (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (`budgetAmount` + `budgetType`, 400 otherwise). Defaults to now.
          */
         startDate?: string;
         /**
-         * Reddit only (400 elsewhere). Campaign end (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (400 otherwise), and is required for `budgetType: lifetime`.
+         * Reddit and Amazon only (400 elsewhere). Campaign end (ISO 8601); a value without an offset is read in the ad account time zone. Requires a campaign budget (400 otherwise), and is required for `budgetType: lifetime`.
          */
         endDate?: string;
+        /**
+         * Amazon Ads only (400 elsewhere), and required there: the ad product and its campaign settings.
+         */
+        platformSpecificData?: (AmazonAdsCampaignPlatformData);
         /**
          * Google only (400 elsewhere). Written on the new campaign.
          */
@@ -67911,7 +68156,7 @@ export type CreateAdCampaignError = (unknown | ErrorResponse);
 export type UpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
     };
     headers?: {
         /**
@@ -68160,7 +68405,7 @@ export type UpdateAdCampaignData = {
         /**
          * Required: platform campaign IDs are not globally unique.
          */
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
         /**
          * **Meta only.** Zernio SocialAccount id owning the ad account. Needed only for an EMPTY campaign (zero ads); ignored otherwise.
          */
@@ -68287,7 +68532,7 @@ export type UpdateAdCampaignError = (unknown | ErrorResponse);
 
 export type DeleteAdCampaignData = {
     body: {
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
         /**
          * Zernio SocialAccount id owning the ad account. Required only to delete an EMPTY campaign (zero ads), which has no local Ad documents to resolve a token from.
          */
@@ -69726,7 +69971,7 @@ export type GetAdSetTargetingData = {
         /**
          * Disambiguates when the same adSetId string exists on more than one connected platform.
          */
-        platform?: 'reddit';
+        platform?: 'reddit' | 'amazon';
     };
 };
 
@@ -69751,7 +69996,7 @@ export type GetAdSetTargetingError = (ErrorResponse | unknown);
 export type UpdateAdSetStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
     };
     headers?: {
         /**
@@ -69886,7 +70131,7 @@ export type GetAdTreeData = {
          * Meta only: Facebook Page ID. Prunes the tree to ads whose creative is backed by this Page: campaigns and ad sets with no ad on the Page drop out, and rolled-up metrics cover only the Page's ads. Mirrors the same filter on /v1/ads and /v1/ads/campaigns.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
         /**
          * Profile ID
          */
@@ -69977,7 +70222,7 @@ export type ListAdsByPerformanceData = {
         /**
          * Restrict to one platform.
          */
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
         /**
          * Metric the ads are ranked by, highest first.
          */
@@ -70028,7 +70273,7 @@ export type GetAdsTimelineData = {
         /**
          * Restrict to one platform.
          */
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
         /**
          * Inclusive end of metrics range (YYYY-MM-DD). Defaults to today. Max 730-day range.
          */
@@ -77486,15 +77731,15 @@ export type CreateStandaloneAdData = {
         };
         demandGen?: GoogleDemandGenInput;
         /**
-         * Google Search only. Keywords on the new ad group; entries are strings (BROAD) or { text, matchType }. Editable later via PUT /v1/ads/{adId} targeting.keywords.
+         * Google Search, Microsoft Ads, and Amazon Sponsored Products (MANUAL campaigns) and Sponsored Brands. Keywords on the new ad group; entries are strings (BROAD) or { text, matchType }. Editable later via PUT /v1/ads/{adId} targeting.keywords.
          */
         keywords?: Array<KeywordEntry>;
         /**
-         * Google Search only; other platforms return 400. Ad-group-level negative keywords on the new ad group. Editable later via PUT /v1/ads/{adId} targeting.negativeKeywords.
+         * Google Search and Amazon Sponsored Products and Sponsored Brands (EXACT or PHRASE only); other platforms return 400. Ad-group-level negative keywords on the new ad group. Editable later via PUT /v1/ads/{adId} targeting.negativeKeywords.
          */
         negativeKeywords?: Array<KeywordEntry>;
         /**
-         * Google Search only; other platforms return 400. Campaign-level negative keywords (campaign_criterion.negative), created alongside the ad group. Editable later via PUT /v1/ads/campaigns/{campaignId}/negative-keywords.
+         * Google Search and Amazon Sponsored Products; other platforms return 400. Campaign-level negative keywords (campaign_criterion.negative on Google), created alongside the ad group. Editable later via PUT /v1/ads/campaigns/{campaignId}/negative-keywords.
          */
         campaignNegativeKeywords?: Array<KeywordEntry>;
         /**
@@ -77666,7 +77911,9 @@ export type CreateStandaloneAdData = {
          */
         valueRulesApplied?: boolean;
         /**
-         * Platform-specific options. The platform is derived from `accountId`; options for a different platform return a 400. LinkedIn (campaign bidding and delivery controls) and Meta (the bid trio) have options today.
+         * Platform-specific options. The platform is derived from `accountId`; options for a different platform return a 400. LinkedIn (campaign bidding and delivery controls), Meta (the bid trio) and Amazon Ads (required: the ad product, products, creative and targeting) have options today.
+         *
+         * **Amazon Ads**: see `AmazonAdsPlatformData`. Amazon has no dry run, so `validateOnly` returns a 501.
          *
          * **Meta**
          *
@@ -77675,7 +77922,7 @@ export type CreateStandaloneAdData = {
          * - `dailyMinSpendTarget` / `lifetimeMinSpendTarget` set the new ad set's minimum spend and live here only; also rejected in `adSetId` attach mode.
          *
          */
-        platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData);
+        platformSpecificData?: (LinkedInAdsPlatformData | MetaAdsPlatformData | AmazonAdsPlatformData);
         /**
          * Legal entity that benefits from the ad. Required when targeting EU users
          * (EU DSA, Article 26). Optional if the ad account has a default beneficiary:
