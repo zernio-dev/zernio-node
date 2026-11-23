@@ -41347,6 +41347,10 @@ export type GetHubSpotConnectUrlData = {
          */
         profileId: string;
         /**
+         * The HubSpot portal connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same portal.
+         */
+        reconnectAccountId?: string;
+        /**
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
         redirect_url?: string;
@@ -41428,6 +41432,10 @@ export type GetGohighlevelConnectUrlData = {
          */
         profileId: string;
         /**
+         * The GoHighLevel location connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same location.
+         */
+        reconnectAccountId?: string;
+        /**
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
         redirect_url?: string;
@@ -41457,6 +41465,10 @@ export type GetSalesforceConnectUrlData = {
          * Your Zernio profile ID (get from /v1/profiles).
          */
         profileId: string;
+        /**
+         * The Salesforce org connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same org.
+         */
+        reconnectAccountId?: string;
         /**
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
@@ -41624,6 +41636,10 @@ export type GetWordPressAuthUrlData = {
          */
         profileId: string;
         /**
+         * The WordPress site connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same site.
+         */
+        reconnectAccountId?: string;
+        /**
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
         redirect_url?: string;
@@ -41705,6 +41721,10 @@ export type GetWixConnectUrlData = {
          */
         profileId: string;
         /**
+         * The Wix site connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same site.
+         */
+        reconnectAccountId?: string;
+        /**
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
         redirect_url?: string;
@@ -41785,6 +41805,10 @@ export type GetWebflowConnectUrlData = {
          * Your Zernio profile ID (get from /v1/profiles).
          */
         profileId: string;
+        /**
+         * The Webflow site connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same site.
+         */
+        reconnectAccountId?: string;
         /**
          * Custom redirect after connection. Must be an absolute http(s) URL or custom app scheme such as `myapp://callback`; relative and unsafe URLs return 400.
          */
@@ -41870,6 +41894,10 @@ export type ConnectWebflowWithSiteTokenData = {
          * Webflow site API token with Sites read and CMS read and write access.
          */
         siteToken: string;
+        /**
+         * The Webflow site connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same site.
+         */
+        reconnectAccountId?: string;
     };
 };
 
@@ -41993,6 +42021,10 @@ export type ConnectWordPressWithApplicationPasswordData = {
          * Application password created for the WordPress user. Spaces in WordPress display formatting are accepted.
          */
         applicationPassword: string;
+        /**
+         * The WordPress site connection being reconnected. In a workspace with no billing set up, the connect is allowed only when it returns to that same site.
+         */
+        reconnectAccountId?: string;
     };
 };
 
