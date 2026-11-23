@@ -31354,6 +31354,7 @@ export type WorkflowEdge = {
      * - **hubspot_upsert_contact**: `'success'` | `'error'` (not connected / HubSpot refused)
      * - **salesforce_upsert_contact**: `'success'` | `'error'` (not connected / Salesforce refused)
      * - **gohighlevel_upsert_contact**: `'success'` | `'error'` (not connected / HighLevel refused)
+     * - **crm_upsert_deal**, **crm_add_note**, **crm_create_task**: `'success'` | `'error'` (not connected / the CRM refused)
      * - **ai**: `'success'` (text/JSON response) | `'tool:<toolName>'` (model invoked that tool) | `'error'` (upstream failure / non-JSON in JSON mode)
      * - **start_call**: `'success'` | `'permission_required'` | `'failed'`
      * - **a_b_split**: `'a'` | `'b'`
@@ -31421,14 +31422,14 @@ export type WorkflowNode = {
      */
     id: string;
     /**
-     * Node kind. The 19 supported types break into four groups:
+     * Node kind. The 22 supported types break into four groups:
      * messaging (send_message),
      * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
      * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
-     * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, ai, handoff, start_call).
+     * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, crm_upsert_deal, crm_add_note, crm_create_task, ai, handoff, start_call).
      *
      */
-    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
     /**
      * Type-specific settings. Every string field supports `{{variable}}` interpolation against the run's variable bag, resolved at execution time.
      *
@@ -31535,6 +31536,33 @@ export type WorkflowNode = {
      * - Saves `{ id, created }`, or `{ error }`, to `vars[saveAs]` (default `gohighlevelContact`).
      * - Edges: `'success'` | `'error'` (HighLevel not connected, or HighLevel refused the write).
      *
+     * **CRM record steps** (`crm_upsert_deal`, `crm_add_note`, `crm_create_task`) take `crm` (`hubspot` | `salesforce` | `gohighlevel`) and write to the profile's connected CRM.
+     *
+     * - `contactId` is the CRM record id (such as `{{hubspotContact.id}}`). Empty means the run contact's record, found the way that CRM's contact step finds it (linked, email, phone) and created when missing.
+     * - A value that resolves to an empty string is left out.
+     * - Edges: `'success'` | `'error'` (CRM not connected, a value it refused, its rate limit, or a reconnect it needs). The error is saved as `{ error }` to `vars[saveAs]`.
+     *
+     * **crm_upsert_deal**: `{ crm, contactId, dealId, name, stage, pipeline, amount, closeDate, ownerId, properties, saveAs }`. HubSpot and Salesforce only.
+     *
+     * - Without `dealId` it creates a HubSpot deal (in `pipeline`, default `default`) or a Salesforce Opportunity, associated with the contact. `name` and `stage` are required, and Salesforce also needs `closeDate`.
+     * - A Salesforce Opportunity goes on the Contact's Account with the Contact as its primary contact role. A Lead cannot hold one.
+     * - With `dealId` it updates that deal with the fields set.
+     * - `amount` is a number and `closeDate` is `YYYY-MM-DD`, both after interpolation. `stage` and `pipeline` are the CRM's ids, and `ownerId` is a CRM user id. `properties` maps native field names to values (at most 50).
+     * - Saves `{ id, created, stage, url }` to `vars[saveAs]` (default `crmDeal`).
+     *
+     * **crm_add_note**: `{ crm, contactId, dealId, subject, body, includeTranscript, transcriptMessages, saveAs }`. Logs a note on the contact, or on `dealId` (HubSpot and Salesforce).
+     *
+     * - HubSpot logs a note. Salesforce logs a completed Task, and HighLevel a contact note.
+     * - `includeTranscript` appends the last `transcriptMessages` (1 to 50, default 20) messages of the run's conversation.
+     * - A profile that keeps no message content gets the note without them, and a note that would be empty is not written (`vars[saveAs]` is `{ skipped }`).
+     * - Needs `body` or `includeTranscript`. Saves `{ id, contactId }` or `{ id, dealId }` to `vars[saveAs]` (default `crmNote`).
+     *
+     * **crm_create_task**: `{ crm, contactId, subject, body, dueInDays, ownerId, priority, saveAs }`. Creates an open task on the contact.
+     *
+     * - The task is due `dueInDays` (0 to 365, default 0) after the step runs and is assigned to `ownerId` (a CRM user id) when set.
+     * - `priority` is `low` | `medium` | `high`.
+     * - Saves `{ id, contactId, dueAt }` to `vars[saveAs]` (default `crmTask`).
+     *
      * **ai**: `{ provider: anthropic|openai|google|mistral|groq|openrouter, model, preset: smart|tools|cheap, systemPrompt, userPromptTemplate, saveAs, temperature, maxTokens, outputType: text|json, tools:[{ name, description, parameters }] }`. Set `provider` + `model` for BYOK (uses your stored API key); omit `provider` for the legacy Telnyx path. Edges: `'success'`, `'tool:<name>'` (model picked a tool), `'error'`.
      *
      * **handoff**: `{ note, assignTo }`. Terminates the run as `exited` and flags the conversation for a human operator.
@@ -31569,14 +31597,14 @@ export type WorkflowNode = {
 };
 
 /**
- * Node kind. The 19 supported types break into four groups:
+ * Node kind. The 22 supported types break into four groups:
  * messaging (send_message),
  * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
  * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
- * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, ai, handoff, start_call).
+ * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, crm_upsert_deal, crm_add_note, crm_create_task, ai, handoff, start_call).
  *
  */
-export type type42 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type42 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 export type Workspace = {
     id?: string;
