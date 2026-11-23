@@ -239,10 +239,12 @@ export const getAdMetrics = <ThrowOnError extends boolean = false>(options: Opti
 };
 
 /**
- * Read the uploaded results of each campaign over a window
- * Sums, per campaign, each result metric you uploaded (one key per metric, as `GET /v1/ads/campaign-results/metrics` lists them), with `cac_percent`, `cost_per_sale`, `cost_per_qualified_lead`, `lead_to_sale` and `qualified_rate` next to them, over `fromDate` to `toDate` (both required, at most 400 days).
+ * Read the delivery metrics or the uploaded results of each campaign over a window
+ * Without `metrics`, sums per campaign each result metric you uploaded (one key per metric, as `GET /v1/ads/campaign-results/metrics` lists them), with `cac_percent`, `cost_per_sale`, `cost_per_qualified_lead`, `lead_to_sale` and `qualified_rate` next to them, over `fromDate` to `toDate` (both required, at most 400 days). Filter with `campaignId` (platform campaign ids); pages with `cursor`.
  *
- * Filter with `campaignId` (platform campaign ids); pages with `cursor`.
+ * With `metrics` (for example `metrics=spend,impressions,clicks,ctr`), sums the delivery metrics of every ad of each campaign in `campaignId` (required, up to 100) from the stored daily rows. Every campaign comes on one page with its `currency`, and `granularity=day` adds one point per day.
+ *
+ * A query reads at most 9,200 campaign days (100 campaigns for 92 days, 23 for 400) and answers 422 `query_too_large` beyond that. Breakdowns stay live in the platform queries, such as `POST /v1/metrics/platform-queries/meta-ads`.
  */
 export const getCampaignMetrics = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetCampaignMetricsData, ThrowOnError>) => {
     return (options?.client ?? client).get<GetCampaignMetricsResponse, GetCampaignMetricsError, ThrowOnError>({

@@ -7141,11 +7141,33 @@ export type CampaignMetricRow = {
     adAccountId: string;
     campaignId: string;
     /**
-     * Each uploaded result metric summed over the range, by metric key.
+     * Without metrics, each uploaded result metric summed over the range, by metric key.
      */
-    results: {
+    results?: {
         [key: string]: (number);
     };
+    /**
+     * With metrics, the campaign name. null before its first sync.
+     */
+    name?: (string) | null;
+    /**
+     * With metrics, the ad account currency every money metric of this campaign is in. Campaigns of different ad accounts are never summed together.
+     */
+    currency?: (string) | null;
+    /**
+     * With metrics, only the asked metrics, summed over every ad of the campaign with rates recomputed from the sums. reach is deduplicated across the range for Meta and TikTok when the platform returns it.
+     */
+    metrics?: (AdMetrics);
+    /**
+     * With granularity=day, one point per day with delivery, each carrying date and the asked metrics.
+     */
+    daily?: Array<(AdMetrics & {
+    date: string;
+})>;
+    /**
+     * With metrics, when the newest daily row of the campaign was synced.
+     */
+    lastSyncedAt?: (string) | null;
 };
 
 export type CampaignMetricsResponse = {
@@ -7154,6 +7176,10 @@ export type CampaignMetricsResponse = {
     meta: ({
     fromDate: string;
     toDate: string;
+    /**
+     * With metrics, asked campaignIds that are not campaigns the caller can see.
+     */
+    missingIds?: Array<(string)>;
 } & MetricsFreshness);
 };
 
@@ -32390,7 +32416,7 @@ export type GetAdMetricsError = (ErrorResponse | (ErrorResponse & {
 export type GetCampaignMetricsData = {
     query: {
         /**
-         * Comma-separated platform campaign ids.
+         * Comma-separated platform campaign ids. Required with metrics, up to 100.
          */
         campaignId?: string;
         /**
@@ -32402,9 +32428,17 @@ export type GetCampaignMetricsData = {
          */
         fromDate: string;
         /**
+         * day adds one point per day to each campaign. Needs metrics.
+         */
+        granularity?: 'total' | 'day';
+        /**
          * Rows per page, 50 by default, 100 at most.
          */
         limit?: number;
+        /**
+         * Comma-separated delivery metrics, as GET /v1/metrics/catalog?entity=campaigns lists them (spend, impressions, reach, clicks, ctr, cpc, cpm, conversions, roas, actions, funnel, video counts...).
+         */
+        metrics?: string;
         /**
          * Last day, inclusive. The range is at most 400 days.
          */
