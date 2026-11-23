@@ -3057,6 +3057,7 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  * - When Meta reports that the number's inbound message webhook does not reach Zernio, or subscribing the number's WhatsApp Business Account to Zernio's webhooks failed at connect, `platformConnection.inboundWebhookSubscribed` is `false`, an entry is added to `issues`, and the overall `status` is at least `warning`.
  * - When `platformConnection.phoneStatus` is anything other than `CONNECTED`, an entry is added to `issues` and the overall `status` is at least `warning`; `BANNED` makes it `error`. `disconnectReason` stays null, since reconnecting does not lift a Meta status.
  * - When Meta reports `platformConnection.canSendMessage` as `BLOCKED` (for example a payment-method error on the WhatsApp Business Account), an entry is added to `issues` with Meta's own reason, the recommendation is Meta's suggested fix, and the overall `status` is at least `warning`. `LIMITED` does not change `status`. Reconnecting does not lift it.
+ * - When sends to one country keep failing with error 130497 (3 failures within 7 days, none delivered there since), an entry naming the country is added to `issues` and `status` is at least `warning`. The recommendation says how Meta lifts it. A delivered send there clears it.
  *
  * ### LINE
  *
@@ -8603,6 +8604,8 @@ export const getInboxConversationMessages = <ThrowOnError extends boolean = fals
  * - A key still in flight: returns 409.
  *
  * Only successful (2xx) responses are stored for replay. If the request throws or returns a non-2xx status, the key is released so the same key can be retried once the problem is fixed. The header therefore protects the "request succeeded but the response was lost" case.
+ *
+ * Exception: a WhatsApp send that Meta answers with a server error (5xx, e.g. code 131000) is stored and replayed as its `502`, since the message may have been delivered. Send it again with a new key only if a duplicate is acceptable.
  *
  * For an ambiguous failure (a 5xx or a network timeout), reconcile before retrying. A failure after the platform already accepted the message also releases the key, so a blind retry could send it twice.
  *
