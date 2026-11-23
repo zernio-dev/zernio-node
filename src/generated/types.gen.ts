@@ -81551,6 +81551,23 @@ export type GetEventsAccuracyResponse = ({
          * `match.identified / match.events`. `null` with nothing sent.
          */
         matchRate?: (number) | null;
+        /**
+         * Why the destination refused events in the period, by refusal code, most events first (at most 5). Empty when it refused none.
+         */
+        failureReasons?: Array<{
+            /**
+             * The refusal code: the platform's own, or Zernio's (such as `INVALID_EVENT` or `INVALID_EVENT_TIME`).
+             */
+            code?: string;
+            /**
+             * One refusal message of this code, as the platform worded it.
+             */
+            example?: string;
+            /**
+             * Events refused with this code.
+             */
+            events?: number;
+        }>;
     }>;
 });
 
