@@ -54913,11 +54913,11 @@ export type ReplyToInboxPostData = {
          */
         message: string;
         /**
-         * (Facebook only) URL of an image to attach, publishing a photo comment alongside the text. The URL must be publicly accessible so Meta can fetch it. Returns 400 for other platforms.
+         * (Facebook, Bluesky and LinkedIn) URL of an image to attach to the comment or reply. The URL must be publicly fetchable. Returns 400 for other platforms.
          */
         attachmentUrl?: string;
         /**
-         * (Facebook only) How Facebook publishes `attachmentUrl`: `image` (default) as a photo comment, `gif` as an animated GIF comment. A GIF sent as `image` is stored as a still photo. Requires `attachmentUrl`.
+         * (Facebook only) How Facebook publishes `attachmentUrl`: `image` (default) as a photo comment, `gif` as an animated GIF comment. A GIF sent as `image` is stored as a still photo. Requires `attachmentUrl`. Returns 400 on other platforms.
          */
         attachmentType?: 'image' | 'gif';
         /**
