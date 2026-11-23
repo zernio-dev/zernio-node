@@ -54603,6 +54603,10 @@ export type ReplyToInboxPostData = {
          */
         attachmentUrl?: string;
         /**
+         * (Facebook only) How Facebook publishes `attachmentUrl`: `image` (default) as a photo comment, `gif` as an animated GIF comment. A GIF sent as `image` is stored as a still photo. Requires `attachmentUrl`.
+         */
+        attachmentType?: 'image' | 'gif';
+        /**
          * Reply to specific comment (optional)
          */
         commentId?: string;
