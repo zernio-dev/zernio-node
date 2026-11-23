@@ -12859,8 +12859,9 @@ export const getSipTrunk = <ThrowOnError extends boolean = false>(options: Optio
 
 /**
  * Delete a SIP trunk
- * Tears down the trunk and its carrier-side objects. Refused while any
- * number is still attached: detach them first.
+ * Detaches every number still attached to the trunk (their inbound calls
+ * go back to Zernio calling), then tears down the trunk and its
+ * carrier-side objects. Its credentials stop working immediately.
  *
  */
 export const deleteSipTrunk = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<DeleteSipTrunkData, ThrowOnError>) => {

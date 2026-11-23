@@ -62385,6 +62385,10 @@ export type DeleteSipTrunkData = {
 
 export type DeleteSipTrunkResponse = ({
     deleted?: boolean;
+    /**
+     * Numbers (E.164) that were attached to the trunk and are now detached.
+     */
+    detachedNumbers?: Array<(string)>;
 });
 
 export type DeleteSipTrunkError = (ErrorResponse | unknown);
