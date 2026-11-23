@@ -20173,6 +20173,10 @@ export type PostMetricsResponse = {
      */
     total: (number | null);
     /**
+     * On a list of posts: the accounts this read queued for a fresh sync, because they were never synced or their stored numbers are over 90 minutes old. The answer holds the stored numbers; the synced ones arrive within minutes.
+     */
+    syncRequestedAccountIds?: Array<(string)>;
+    /**
      * With groupBy=format: how many of the newest posts the metrics sum, and the most it reads. Below limit, every post of the range is counted.
      */
     metricsSample?: {
