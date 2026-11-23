@@ -21296,7 +21296,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'amazonads' | 'gohighlevel';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -21442,7 +21442,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform18 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+export type platform18 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'amazonads' | 'gohighlevel';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -38153,7 +38153,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'hubspot' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'hubspot' | 'salesforce' | 'gohighlevel' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager' | 'googlesearchconsole' | 'stripe' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
         /**
          * Filter by profile ID
          */
