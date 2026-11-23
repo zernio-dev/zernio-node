@@ -57149,6 +57149,10 @@ export type TransferVoiceCallData = {
          * +E164 phone number (tel: prefix optional) or a sip: URI. wss:// is not a valid transfer target.
          */
         to: string;
+        /**
+         * Caller ID shown on the transfer leg. `business` is your own number. `caller` is the original caller's number, for inbound calls only. The carrier may refuse `caller` on some routes: you get a 422, then retry with `business`.
+         */
+        callerId?: 'business' | 'caller';
     };
     path: {
         id: string;

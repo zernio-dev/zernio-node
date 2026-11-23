@@ -10308,7 +10308,7 @@ export const getVoiceCallRecording = <ThrowOnError extends boolean = false>(opti
  * Blind-transfer a live call
  * Moves the call's current leg to a new destination (a phone number or a SIP endpoint).
  *
- * This is a BLIND transfer: control of the leg is handed off and the call ends normally when the transferred leg hangs up. The caller ID presented on the transfer leg is always your own number.
+ * This is a BLIND transfer: control of the leg is handed off and the call ends normally when the transferred leg hangs up. The caller ID presented on the transfer leg is your own number unless you pass `callerId: "caller"` on an inbound call, which presents the original caller's number.
  *
  */
 export const transferVoiceCall = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<TransferVoiceCallData, ThrowOnError>) => {
