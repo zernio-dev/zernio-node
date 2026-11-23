@@ -21567,7 +21567,7 @@ export type contentType3 = 'story' | 'saved_story' | 'spotlight';
 
 export type SocialAccount = {
     _id: string;
-    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'amazonads' | 'gohighlevel';
+    platform: 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads' | 'gohighlevel';
     profileId: (string | Profile);
     username?: string;
     displayName?: string;
@@ -21713,7 +21713,7 @@ export type SocialAccount = {
     };
 };
 
-export type platform18 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'amazonads' | 'gohighlevel';
+export type platform18 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'linkedin' | 'twitter' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'sms' | 'phone' | 'rcs' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'google' | 'microsoft' | 'imap' | 'hubspot' | 'salesforce' | 'webflow' | 'googleanalytics' | 'imessage' | 'tiktokshop' | 'microsoftads' | 'line' | 'wechat' | 'googletagmanager' | 'stripe' | 'googlesearchconsole' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads' | 'gohighlevel';
 
 /**
  * TikTok accounts only. The account type TikTok reported when the account was connected.
@@ -38432,7 +38432,7 @@ export type GetAllAccountsHealthData = {
         /**
          * Filter by platform
          */
-        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'hubspot' | 'salesforce' | 'gohighlevel' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager' | 'googlesearchconsole' | 'stripe' | 'campaignmanager360' | 'tradedeskads' | 'amazonads';
+        platform?: 'facebook' | 'instagram' | 'linkedin' | 'twitter' | 'tiktok' | 'youtube' | 'threads' | 'pinterest' | 'reddit' | 'bluesky' | 'googlebusiness' | 'telegram' | 'snapchat' | 'discord' | 'slack' | 'whatsapp' | 'shopify' | 'wordpress' | 'wix' | 'linkedinads' | 'metaads' | 'pinterestads' | 'tiktokads' | 'xads' | 'googleads' | 'openaiads' | 'redditads' | 'microsoftads' | 'whopads' | 'applovinads' | 'snapchatads' | 'taboolaads' | 'klaviyo' | 'attentive' | 'impact' | 'awin' | 'hubspot' | 'salesforce' | 'gohighlevel' | 'webflow' | 'googleanalytics' | 'line' | 'wechat' | 'googletagmanager' | 'googlesearchconsole' | 'stripe' | 'campaignmanager360' | 'tradedeskads' | 'tradedeskdsp' | 'amazonads';
         /**
          * Filter by profile ID
          */
@@ -45211,6 +45211,110 @@ export type ConnectTradeDeskAdsCredentialsError = (ErrorResponse | {
         effective_account_limit?: number;
     };
 } | unknown);
+
+export type ConnectTradeDeskAdsPartnerData = {
+    body: {
+        /**
+         * Trade Desk Partner ID, a short code such as `ptn1234`. Stored and echoed lowercased.
+         */
+        partnerId: string;
+        /**
+         * API token of a Trade Desk user with API access to the partner.
+         */
+        apiToken: string;
+        /**
+         * Advertiser ids to keep. Left out or empty, a new connection keeps every advertiser and a reconnect keeps its saved selection.
+         */
+        adAccountIds?: Array<(string)>;
+        /**
+         * Optional display name for the account.
+         */
+        name?: string;
+        /**
+         * Your Zernio profile ID
+         */
+        profileId: string;
+        /**
+         * Optional state passthrough for the connect flow.
+         */
+        state?: string;
+        /**
+         * Optional URL to redirect to after a successful connection, echoed back as redirectUrl.
+         */
+        redirect_url?: string;
+    };
+};
+
+export type ConnectTradeDeskAdsPartnerResponse = ({
+    accountId?: string;
+    partnerId?: string;
+    accountName?: string;
+    /**
+     * Every advertiser the token reaches under the partner, whatever adAccountIds keeps.
+     */
+    advertisers?: Array<{
+        id?: string;
+        name?: string;
+    }>;
+    redirectUrl?: string;
+});
+
+export type ConnectTradeDeskAdsPartnerError = (ErrorResponse | unknown | {
+    /**
+     * Human-readable error message suitable for end-user display.
+     */
+    error: string;
+    /**
+     * Machine-readable error code. Stable across versions.
+     */
+    code: 'PAYMENT_REQUIRED';
+    /**
+     * Discriminator for which gate fired.
+     */
+    reason: 'free_tier_exceeded' | 'twitter_passthrough' | 'enterprise_required' | 'card_verification_required';
+    /**
+     * Link to the relevant documentation page.
+     */
+    documentation_url?: string;
+    /**
+     * Deep-link to send the end-user to. For
+     * `free_tier_exceeded` and `twitter_passthrough` this opens
+     * the add-payment-method drawer on the Zernio billing page.
+     * For `enterprise_required` this is the Zernio enterprise
+     * contact page.
+     *
+     */
+    dashboard_url?: string;
+    /**
+     * Structured context for SDK clients that want to render their own UX. Keys vary by `reason`.
+     */
+    details?: {
+        /**
+         * How many accounts the free tier allows. Only set when reason=free_tier_exceeded.
+         */
+        free_tier_account_limit?: number;
+        /**
+         * How many accounts the team currently has connected. Set when reason=free_tier_exceeded or reason=enterprise_required.
+         */
+        current_account_count?: number;
+        /**
+         * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
+         */
+        has_payment_method?: boolean;
+        /**
+         * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
+         */
+        verification_amount_cents?: number;
+        /**
+         * The negotiated connected-account cap from the
+         * team's enterprise contract. Self-service teams
+         * have no cap and never receive this reason. Only
+         * set when reason=enterprise_required.
+         *
+         */
+        effective_account_limit?: number;
+    };
+});
 
 export type ConnectTaboolaAdsCredentialsData = {
     body: {

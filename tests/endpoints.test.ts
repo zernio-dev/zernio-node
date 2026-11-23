@@ -744,6 +744,11 @@ describe('Endpoint Methods', () => {
       expect(client.connect.connectTradeDeskAdsCredentials).toBeTypeOf('function');
     });
 
+    it('should have connectTradeDeskAdsPartner method', () => {
+      expect(client.connect.connectTradeDeskAdsPartner).toBeDefined();
+      expect(client.connect.connectTradeDeskAdsPartner).toBeTypeOf('function');
+    });
+
     it('should have connectTaboolaAdsCredentials method', () => {
       expect(client.connect.connectTaboolaAdsCredentials).toBeDefined();
       expect(client.connect.connectTaboolaAdsCredentials).toBeTypeOf('function');

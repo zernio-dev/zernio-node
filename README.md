@@ -446,6 +446,7 @@ try {
 | `connect.connectSnapchatAdsCredentials()` | Connect a Snapchat Ads pixel |
 | `connect.connectTaboolaAdsCredentials()` | Connect a Taboola account |
 | `connect.connectTradeDeskAdsCredentials()` | Connect a Trade Desk tracking tag |
+| `connect.connectTradeDeskAdsPartner()` | Connect a Trade Desk partner for ads management |
 | `connect.connectWebflowWithSiteToken()` | Connect Webflow with a site API token |
 | `connect.connectWechatCredentials()` | Connect WeChat Official Account |
 | `connect.connectWhatsAppCredentials()` | Connect WhatsApp via credentials |
