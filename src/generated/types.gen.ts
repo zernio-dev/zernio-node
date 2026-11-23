@@ -40228,12 +40228,13 @@ export type GetConnectUrlData = {
          * - X Ads (platform=xads): `x_ads_denied`, `x_ads_auth_failed`, `x_ads_config_error`, `x_ads_account_not_found`, `x_ads_state_error`, `x_ads_token_failed`, `x_ads_token_missing`, `x_ads_callback_error`.
          * - Reddit Ads (platform=redditads): `reddit_ads_auth_failed`, `reddit_ads_invalid_state`, `reddit_ads_access_denied`, `reddit_ads_scope_not_granted`, `reddit_ads_no_ad_accounts`, `reddit_ads_callback_error`.
          * - Microsoft Ads (platform=microsoftads): `microsoft_ads_auth_failed`, `microsoft_ads_invalid_state`, `microsoft_ads_access_denied`, `microsoft_ads_scope_not_granted`, `microsoft_ads_unknown_user`, `microsoft_ads_no_ad_accounts`, `microsoft_ads_callback_error`.
+         * - Snapchat Ads (platform=snapchatads): `snapchat_ads_auth_failed`, `snapchat_ads_invalid_state`, `snapchat_ads_access_denied`, `snapchat_ads_no_ad_accounts`, `snapchat_ads_callback_error`.
          * - Shopify (platform=shopify): `shopify_auth_failed`, `shopify_config_error`, `shopify_invalid_state`, `shopify_invalid_hmac`, `shopify_invalid_shop`, `shopify_missing_scopes`, `shopify_callback_error`.
          *
          * Notes:
          *
          * 1. On this endpoint every upstream OAuth error collapses into `oauth_denied`, with the provider's values in the `platform_error*` params. The dedicated ads flows differ: they use their own denial slugs, and `google_ads_auth_failed` and `tiktok_ads_auth_failed` may carry the provider's raw error string in `error_message`.
-         * 2. On the tiktok and twitter ads flows `platform` carries the ads platform id (`tiktokads`, `xads`), not the value in the request path. The googleads, redditads, microsoftads and shopify flows report `googleads`, `redditads`, `microsoftads` and `shopify`.
+         * 2. On the tiktok and twitter ads flows `platform` carries the ads platform id (`tiktokads`, `xads`), not the value in the request path. The googleads, redditads, microsoftads, snapchatads and shopify flows report `googleads`, `redditads`, `microsoftads`, `snapchatads` and `shopify`.
          * 3. `missing_tiktok_permissions`: the TikTok authorization left out a permission the already-connected account needs, so nothing changed and it keeps working as before. User-fixable: connect again and accept every permission on TikTok's screen.
          * 4. `instagram_login_method_mismatch`: an Instagram Login authorization landed on a profile whose Instagram account is connected through Facebook Login, so nothing changed. To refresh it, connect again with `loginMethod=facebook_login`. To move it to Instagram Login, disconnect it first.
          *
@@ -40514,7 +40515,7 @@ export type ConnectAdsData = {
          * instagram_login flow no ads account can be created; do not use this value for those accounts.
          *
          */
-        platform: 'facebook' | 'instagram' | 'linkedin' | 'tiktok' | 'twitter' | 'pinterest' | 'googleads' | 'redditads' | 'microsoftads';
+        platform: 'facebook' | 'instagram' | 'linkedin' | 'tiktok' | 'twitter' | 'pinterest' | 'googleads' | 'redditads' | 'microsoftads' | 'snapchatads';
     };
     query: {
         /**
@@ -40523,7 +40524,7 @@ export type ConnectAdsData = {
          * - `twitter` (X Ads): required.
          * - `tiktok`: optional. Omit it for ads-only mode (no TikTok posting account linked; ad creation uses a Brand Identity instead of a TT_USER).
          * - Same-token platforms (`facebook`, `instagram`, `linkedin`, `pinterest`): picks which posting account the ads connection uses when the profile holds several of that platform. With one, it can be omitted.
-         * - Standalone platforms (`googleads`, `redditads`, `microsoftads`): ignored.
+         * - Standalone platforms (`googleads`, `redditads`, `microsoftads`, `snapchatads`): ignored.
          *
          * On same-token platforms, an id that names no active account of the platform on the profile is ignored. Exception: with `force=true`, when it names the posting account the profile's ads connection hangs off, that account is no longer connected.
          *
@@ -40541,6 +40542,7 @@ export type ConnectAdsData = {
          * - `googleads`: bare customer id digits.
          * - `redditads`: Reddit ad account id, `a2_<id>` or `t2_<id>`.
          * - `microsoftads`: bare numeric account id (the Id, not the account number).
+         * - `snapchatads`: Snapchat ad account UUID.
          * - `twitter` (X Ads): base36 account id.
          * - `tiktok` (TikTok Ads): numeric advertiser id.
          *
@@ -40556,7 +40558,7 @@ export type ConnectAdsData = {
          *
          * **Through OAuth**: on Meta the scope is kept when this call returns an `authUrl`, so the Meta Ads account created after OAuth is scoped (only its scoped ad accounts synced and subscribed) from the start.
          *
-         * On `googleads`, `redditads` and `microsoftads` it is kept through OAuth when `redirect_url` is set, so the new connection syncs only scoped ad accounts from the first sync.
+         * On `googleads`, `redditads`, `microsoftads` and `snapchatads` it is kept through OAuth when `redirect_url` is set, so the new connection syncs only scoped ad accounts from the first sync.
          *
          * On `tiktok` it is kept through OAuth with or without `redirect_url`. The TikTok Ads connection holds only the scoped advertisers from the first sync, and is named after the first of them. Its `platformUserId` and cached Brand Identity follow that advertiser too.
          *
@@ -40641,12 +40643,12 @@ export type ConnectAdsData = {
          * On success:
          *
          * - `tiktok`: lands on the URL unchanged.
-         * - `twitter`, `googleads`, `redditads` and `microsoftads`: append `connected` (the ads platform id: `xads`, `googleads`, `redditads` or `microsoftads`), `profileId`, `accountId` (the ads connection) and `username`.
+         * - `twitter`, `googleads`, `redditads`, `microsoftads` and `snapchatads`: append `connected` (the ads platform id: `xads`, `googleads`, `redditads`, `microsoftads` or `snapchatads`), `profileId`, `accountId` (the ads connection) and `username`.
          * - Same-token platforms (`facebook`, `instagram`, `linkedin`, `pinterest`): append `connected`, `profileId`, `accountId`, `username` and, on API-key calls, `connect_token`.
          *
          * On failure the same error contract applies as on GET /v1/connect/{platform}: `error` and `platform` are always appended, other params are optional, and the value list there is not exhaustive.
          *
-         * On the tiktok, twitter, googleads, redditads and microsoftads flows, `platform` carries the ads platform id (`tiktokads`, `xads`, `googleads`, `redditads`, `microsoftads`), not the value used in the request path.
+         * On the tiktok, twitter, googleads, redditads, microsoftads and snapchatads flows, `platform` carries the ads platform id (`tiktokads`, `xads`, `googleads`, `redditads`, `microsoftads`, `snapchatads`), not the value used in the request path.
          *
          */
         redirect_url?: string;
@@ -66193,7 +66195,7 @@ export type ListAdsData = {
          * Meta only: Facebook Page ID. Returns only ads whose creative is backed by this Page (a Meta ad account serves ads for every Page in the Business Manager). Matches each ad's `creative.pageId`; ads with no page signal (rare IG-only creatives) never match. Mirrors the same filter on /v1/ads/campaigns and /v1/ads/tree.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
          * Meta ad ID. Returns the ad with this platform-side ad ID.
          */
@@ -68409,7 +68411,7 @@ export type ListAdCampaignsData = {
          * Meta only: Facebook Page ID. Campaigns have no Page of their own, so this keeps campaigns having at least one ad backed by this Page, with adCount and metrics computed over those ads only. Mirrors the same filter on /v1/ads and /v1/ads/tree.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
          * Profile ID
          */
@@ -68599,7 +68601,7 @@ export type CreateAdCampaignError = (unknown | ErrorResponse);
 export type UpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
     };
     headers?: {
         /**
@@ -68848,7 +68850,7 @@ export type UpdateAdCampaignData = {
         /**
          * Required: platform campaign IDs are not globally unique.
          */
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
          * **Meta only.** Zernio SocialAccount id owning the ad account. Needed only for an EMPTY campaign (zero ads); ignored otherwise.
          */
@@ -68978,7 +68980,7 @@ export type UpdateAdCampaignError = (unknown | ErrorResponse);
 
 export type DeleteAdCampaignData = {
     body: {
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
          * Zernio SocialAccount id owning the ad account. Required only to delete an EMPTY campaign (zero ads), which has no local Ad documents to resolve a token from.
          */
@@ -69161,7 +69163,7 @@ export type BulkUpdateAdCampaignStatusData = {
             /**
              * The ad platform, e.g. `google` for Google Ads. The ads connection slug (`googleads`, `tiktokads`, ...) is accepted as an alias. `metaads` is not: send `facebook` or `instagram`.
              */
-            platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'googleads' | 'tiktokads' | 'linkedinads' | 'pinterestads' | 'xads' | 'openaiads' | 'redditads' | 'microsoftads';
+            platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'googleads' | 'tiktokads' | 'linkedinads' | 'pinterestads' | 'xads' | 'openaiads' | 'redditads' | 'microsoftads' | 'snapchat' | 'snapchatads';
         }>;
     };
     headers?: {
@@ -69582,7 +69584,7 @@ export type ListAdSetsData = {
          */
         live?: boolean;
         page?: number;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'snapchat';
         /**
          * Filter by the ad set's stored `status`, the value each row returns. A live read does not change it. Rows whose `status` is null match no filter.
          */
@@ -69750,9 +69752,9 @@ export type CreateAdSetData = {
          */
         accountId: string;
         /**
-         * "google" and "reddit" are implemented; every other value returns 501.
+         * "google", "reddit" and "snapchat" are implemented; every other value returns 501.
          */
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'snapchat';
         /**
          * Platform campaign ID the ad group is created under (numeric on Google).
          */
@@ -70050,7 +70052,7 @@ export type GetAdSetDetailsError = (unknown | ErrorResponse);
 
 export type UpdateAdSetData = {
     body: {
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'snapchat';
         /**
          * Omit if not updating budget
          */
@@ -70417,7 +70419,7 @@ export type GetAdSetTargetingData = {
         /**
          * Disambiguates when the same adSetId string exists on more than one connected platform.
          */
-        platform?: 'reddit' | 'amazon';
+        platform?: 'reddit' | 'amazon' | 'snapchat';
     };
 };
 
@@ -70442,7 +70444,7 @@ export type GetAdSetTargetingError = (ErrorResponse | unknown);
 export type UpdateAdSetStatusData = {
     body: {
         status: 'active' | 'paused';
-        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
+        platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
     };
     headers?: {
         /**
@@ -70577,7 +70579,7 @@ export type GetAdTreeData = {
          * Meta only: Facebook Page ID. Prunes the tree to ads whose creative is backed by this Page: campaigns and ad sets with no ad on the Page drop out, and rolled-up metrics cover only the Page's ads. Mirrors the same filter on /v1/ads and /v1/ads/campaigns.
          */
         pageId?: string;
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
          * Profile ID
          */
@@ -70668,7 +70670,7 @@ export type ListAdsByPerformanceData = {
         /**
          * Restrict to one platform.
          */
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'applovin';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'applovin' | 'snapchat';
         /**
          * Metric the ads are ranked by, highest first.
          */
@@ -70723,7 +70725,7 @@ export type GetAdsTimelineData = {
         /**
          * Restrict to one platform.
          */
-        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon';
+        platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'snapchat';
         /**
          * Inclusive end of metrics range (YYYY-MM-DD). Defaults to today. Max 730-day range.
          */
@@ -80488,7 +80490,7 @@ export type ListAdAudiencesData = {
          * Platform ad account ID
          */
         adAccountId: string;
-        platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads' | 'redditads';
+        platform?: 'facebook' | 'instagram' | 'googleads' | 'tiktok' | 'tiktokads' | 'pinterest' | 'linkedin' | 'linkedinads' | 'twitter' | 'xads' | 'redditads' | 'snapchatads';
         /**
          * Filter to one audience type. `saved_targeting` returns stored TargetingSpec audiences and needs no adAccountId; the other types keep only the platform audiences of that type (an empty list when the platform has none). Meta ENGAGEMENT audiences are `meta_engagement`.
          */
