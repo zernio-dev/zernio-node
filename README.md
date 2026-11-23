@@ -1480,6 +1480,7 @@ try {
 | `metrics.getAccountMetrics()` | Read follower and post totals per account, platform or scope over time |
 | `metrics.getAdAccountMetrics()` | Read the uploaded results summed across ad accounts |
 | `metrics.getAdMetrics()` | Read ad metrics by id, or one ad day by day with breakdowns |
+| `metrics.getAdSetMetrics()` | Read the delivery metrics of ad sets over a window |
 | `metrics.getCampaignMetrics()` | Read the delivery metrics or the uploaded results of each campaign over a window |
 | `metrics.getInboxMetrics()` | Read message volume and response times |
 | `metrics.getInsightMetrics()` | Read live account or post insights from the platform |

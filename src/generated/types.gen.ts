@@ -2958,6 +2958,48 @@ export type startMinute = 0 | 15 | 30 | 45;
 
 export type endMinute = 0 | 15 | 30 | 45;
 
+export type AdSetMetricRow = {
+    platform: string;
+    adAccountId: string;
+    campaignId: (string) | null;
+    adSetId: string;
+    /**
+     * The ad set name. null before its first sync.
+     */
+    name: (string) | null;
+    /**
+     * The ad account currency every money metric of this ad set is in. Ad sets of different ad accounts are never summed together.
+     */
+    currency: (string) | null;
+    /**
+     * Only the asked metrics, summed over every ad of the ad set with rates recomputed from the sums. reach is deduplicated across the range for Meta and TikTok when the platform returns it.
+     */
+    metrics: (AdMetrics);
+    /**
+     * With granularity=day, one point per day with delivery, each carrying date and the asked metrics.
+     */
+    daily?: Array<(AdMetrics & {
+    date: string;
+})>;
+    /**
+     * When the newest daily row of the ad set was synced.
+     */
+    lastSyncedAt: (string) | null;
+};
+
+export type AdSetMetricsResponse = {
+    data: Array<AdSetMetricRow>;
+    pagination: MetricsPagination;
+    meta: ({
+    fromDate: string;
+    toDate: string;
+    /**
+     * With adSetId, asked ids that are not ad sets the caller can see.
+     */
+    missingIds?: Array<(string)>;
+} & MetricsFreshness);
+};
+
 export type AdsListResponse = {
     ads?: Array<Ad>;
     pagination?: Pagination;
@@ -32574,6 +32616,54 @@ export type GetCampaignMetricsData = {
 export type GetCampaignMetricsResponse = (CampaignMetricsResponse);
 
 export type GetCampaignMetricsError = (ErrorResponse | (ErrorResponse & {
+    details?: {
+        scope?: 'post-analytics' | 'account-insights' | 'ad-analytics' | 'campaign-analytics' | 'account_route' | 'team_budget' | 'in_flight';
+        limit?: number;
+        window?: string;
+        retryAfterSeconds?: number;
+    };
+}));
+
+export type GetAdSetMetricsData = {
+    query: {
+        /**
+         * Comma-separated platform ad set ids, up to 100. Send adSetId or campaignId.
+         */
+        adSetId?: string;
+        /**
+         * One platform campaign id, for its ad sets. Send adSetId or campaignId.
+         */
+        campaignId?: string;
+        /**
+         * With campaignId, pagination.nextCursor of the previous page, sent with the same query.
+         */
+        cursor?: string;
+        /**
+         * First day, inclusive.
+         */
+        fromDate: string;
+        /**
+         * day adds one point per day to each ad set.
+         */
+        granularity?: 'total' | 'day';
+        /**
+         * With campaignId, ad sets per page, 50 by default, 100 at most.
+         */
+        limit?: number;
+        /**
+         * Comma-separated delivery metrics, as GET /v1/metrics/catalog?entity=ad-sets lists them (spend, impressions, reach, clicks, ctr, cpc, cpm, conversions, roas...).
+         */
+        metrics: string;
+        /**
+         * Last day, inclusive. The range is at most 400 days.
+         */
+        toDate: string;
+    };
+};
+
+export type GetAdSetMetricsResponse = (AdSetMetricsResponse);
+
+export type GetAdSetMetricsError = (ErrorResponse | (ErrorResponse & {
     details?: {
         scope?: 'post-analytics' | 'account-insights' | 'ad-analytics' | 'campaign-analytics' | 'account_route' | 'team_budget' | 'in_flight';
         limit?: number;
