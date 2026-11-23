@@ -64851,7 +64851,7 @@ export type CreateWorkflowData = {
     body: {
         profileId: string;
         accountId: string;
-        platform?: 'whatsapp' | 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'tiktok' | 'line' | 'wechat';
+        platform?: 'whatsapp' | 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'tiktok' | 'line' | 'wechat' | 'sms' | 'rcs' | 'imessage';
         name: string;
         description?: string;
         nodes?: Array<WorkflowNode>;
@@ -65345,7 +65345,7 @@ export type CreateSequenceData = {
     body: {
         profileId: string;
         accountId: string;
-        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'imessage' | 'line' | 'wechat';
+        platform: 'instagram' | 'facebook' | 'telegram' | 'twitter' | 'bluesky' | 'reddit' | 'whatsapp' | 'slack' | 'sms' | 'rcs' | 'imessage' | 'line' | 'wechat';
         name: string;
         description?: string;
         steps?: Array<{
