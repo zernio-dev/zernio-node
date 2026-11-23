@@ -759,6 +759,7 @@ try {
 | `automations.listAutomationActions()` | List automation actions |
 | `automations.listAutomationApprovals()` | List an automation's approval requests |
 | `automations.listAutomationChecks()` | List an automation's checks |
+| `automations.listAutomationRuns()` | List an automation's runs |
 | `automations.listAutomations()` | List automations |
 | `automations.listAutomationTemplates()` | List automation templates |
 | `automations.createAutomation()` | Create an automation |
@@ -767,6 +768,7 @@ try {
 | `automations.getAutomationApproval()` | Get an approval request |
 | `automations.getAutomationCatalog()` | Get the automations catalog |
 | `automations.getAutomationControls()` | Get automation controls |
+| `automations.getAutomationRun()` | Get one run of an automation |
 | `automations.getAutomationTemplate()` | Get an automation template |
 | `automations.getSharedAutomationTemplate()` | Get a shared automation template |
 | `automations.getZernioAutomationTemplate()` | Get a Zernio automation template |
