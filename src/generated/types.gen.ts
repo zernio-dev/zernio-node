@@ -81047,11 +81047,11 @@ export type SendConversionsError = (unknown | ErrorResponse);
 export type AdjustConversionsData = {
     body: {
         /**
-         * SocialAccount ID. Must be a `googleads` account.
+         * SocialAccount ID. Must be a `googleads` or `impact` account.
          */
         accountId: string;
         /**
-         * Conversion action resource name, e.g. `customers/1234567890/conversionActions/987654321`.
+         * Conversion action resource name on Google, e.g. `customers/1234567890/conversionActions/987654321`; `<program id>:<event type id>` on Impact.
          */
         destinationId: string;
         adjustments: Array<{
@@ -81096,9 +81096,9 @@ export type AdjustConversionsData = {
 };
 
 export type AdjustConversionsResponse = ({
-    platform?: 'googleads';
+    platform?: 'googleads' | 'impact';
     /**
-     * Adjustments accepted by Google.
+     * Adjustments accepted by the platform.
      */
     adjustmentsReceived?: number;
     /**
