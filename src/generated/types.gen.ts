@@ -451,6 +451,10 @@ export type Ad = {
          */
         caption?: string;
         /**
+         * Meta: the `GET_DIRECTIONS` map location sent as `callToActionLink` on POST /v1/ads/create, the same value as that input. Absent on ads created without it; null once PUT /v1/ads/{adId} changed the call to action, which points the button back at `linkUrl`.
+         */
+        callToActionLink?: (string) | null;
+        /**
          * Meta: the ad image hash (`image_hash`), reusable as `imageHash` on POST /v1/ads/create within the same ad account. `thumbnailUrl` and `mediaUrls` carry its stable full resolution permalink when Meta resolves it.
          */
         imageHash?: string;
@@ -18050,6 +18054,16 @@ export type MetaBusinessUser = {
      */
     role?: string;
 };
+
+/**
+ * Meta only. The `GET_DIRECTIONS` button's map location, sent as the creative's `call_to_action.value.link` while `linkUrl` stays `link_data.link`. Requires `callToAction: GET_DIRECTIONS`, and a `GET_DIRECTIONS` image ad requires it.
+ *
+ * - Meta's location format `fbgeo://<latitude>, <longitude>, "<address>"`.
+ * - Meta refuses a website or https map URL on this button ("call_to_action[value][link] should represent a valid URL") and an fbgeo location as the ad link (subcode 2061006), so the ad link and the button link are two fields.
+ * - Every other call to action opens `linkUrl`, as Meta requires the button link to match the ad link.
+ *
+ */
+export type MetaCallToActionLink = string;
 
 export type MetaCatalogProduct = {
     /**
@@ -73931,6 +73945,10 @@ export type CreateAdCreativeData = {
         callToAction?: string;
         linkUrl: string;
         /**
+         * The map location a `GET_DIRECTIONS` button opens, while `linkUrl` stays the creative's website link. Requires `callToAction: GET_DIRECTIONS` and an image creative (`imageUrl` or `imageHash`), 400 otherwise; a `GET_DIRECTIONS` image creative without it is a 400 too.
+         */
+        callToActionLink?: MetaCallToActionLink;
+        /**
          * Publicly reachable image; uploaded to the account's library server-side.
          */
         imageUrl?: string;
@@ -77462,6 +77480,15 @@ export type CreateStandaloneAdData = {
          * - **Reddit:** required on image and video ads (the post's destination and the ad's click URL), the fallback for carousel cards without their own, and refused with 400 on text ads.
          */
         linkUrl?: string;
+        /**
+         * Meta only. The map location a `GET_DIRECTIONS` button opens, while `linkUrl` stays the ad's website link.
+         *
+         * - Single image ads, with or without `bodies` / `headlines`, also on the adSetId attach shape and with `validateOnly`. Required on a `GET_DIRECTIONS` image ad (400 without it).
+         * - 400 with any other `callToAction`, with `video`, `carouselCards`, `creatives[]`, `dynamicCreative`, `placementAssets`, `translations`, catalog ads, `leadGenFormId`, goal `page_likes` or `existingCreativeId`, and on other networks.
+         * - Stored on the ad and returned as `creative.callToActionLink`.
+         *
+         */
+        callToActionLink?: MetaCallToActionLink;
         /**
          * Lead Gen form ID to attach to the ad's creative. REQUIRED when `goal` is `lead_generation`. Create one via POST /v1/ads/lead-forms.
          *
