@@ -71227,6 +71227,15 @@ export type UpdateAdData = {
              * Meta only. The display link shown on link (image) ads, Meta link_data.caption. Returns 422 on video creatives and on asset feeds without a link.
              */
             caption?: string;
+            /**
+             * Meta only. The map location the `GET_DIRECTIONS` button opens, while the ad link stays as it is. Send it with `callToAction: GET_DIRECTIONS`.
+             *
+             * - 400 with any other `callToAction`, with a value that is not an `fbgeo://` location, and on other networks.
+             * - 422 on video ads (their only link is the button, so change `linkUrl`), on lead ads, and on asset feed creatives that list their calls to action in the feed.
+             * - Required with `callToAction: GET_DIRECTIONS` on a full image creative (headline, body, callToAction, linkUrl, imageUrl), and on a partial edit of an image ad whose button has no location yet. Without it the request is a 400, and no other field of it reaches Meta.
+             *
+             */
+            callToActionLink?: MetaCallToActionLink;
         };
         /**
          * Rename the ad. Now propagated to Meta (POST /{ad-id}); non-Meta platforms return 501.
@@ -72529,6 +72538,10 @@ export type UpdateAdTrackingTagsData = {
             linkUrl: string;
             imageUrl: string;
             videoUrl?: string;
+            /**
+             * The Get Directions button location, required to rebuild a `GET_DIRECTIONS` image creative (400 without it). Only with `callToAction: GET_DIRECTIONS`.
+             */
+            callToActionLink?: MetaCallToActionLink;
         };
         /**
          * Google only. Full tracking template (must contain {lpurl}).
@@ -76670,6 +76683,10 @@ export type BoostPostData = {
          * `VIEW_INSTAGRAM_PROFILE`, `WHATSAPP_MESSAGE`, `MESSAGE_PAGE`,
          * and `INSTAGRAM_MESSAGE`. VIEW_INSTAGRAM_PROFILE requires linkUrl;
          * the messaging CTAs select their destination automatically.
+         *
+         * **Meta** `GET_DIRECTIONS` is a 400: Meta opens that button on a map location,
+         * and a boost's only button link is `linkUrl`, a website. Create the ad
+         * with POST /v1/ads/create and `callToActionLink` instead.
          *
          * **TikTok**: pass-through to `call_to_action` on the Spark Ad creative; the
          * platform validates the value. See TikTok's "Enumeration - Call-to-Action".
