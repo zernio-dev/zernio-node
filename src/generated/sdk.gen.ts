@@ -16492,6 +16492,7 @@ export const createAdSet = <ThrowOnError extends boolean = false>(options: Optio
  * - So an ad set with any number of ads copies: Meta refuses a single deep copy of 3 or more objects.
  * - `statusOption` applies to the ad set and every ad.
  * - If an ad copy fails, the partial ad set copy is deleted and the request fails with Meta's error.
+ * - The copy keeps the source's placements. Meta refuses a source whose `instagram_positions` include `explore_home` without `explore`, and its copy takes no placements. That is a 400 with nothing copied: edit the source's `targeting.placements` with PUT /v1/ads/ad-sets/{adSetId} first.
  * - A sync discovery starts automatically and runs after the response (`syncAfter: false` to skip). The copy is readable through Zernio once it finishes, usually within a few minutes. Until then, calls that take a copied id return 404, so retry them.
  * - `websiteOnly: true` rebuilds each ad (new creative on `/adcreatives`, new ad) instead of copying it, so the creative carries `applink_treatment: web_only`.
  *
