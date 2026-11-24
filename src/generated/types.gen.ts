@@ -29333,10 +29333,11 @@ export type event71 = 'message.deleted';
  *
  * **Platform support:**
  *
- * - message.delivered: WhatsApp, Facebook Messenger, SMS, RCS.
+ * - message.delivered: WhatsApp, Facebook Messenger, SMS, RCS, iMessage.
  * - message.read: WhatsApp, Facebook Messenger, Instagram, RCS. Not SMS (carriers report delivery, never read).
  * - message.played: WhatsApp only, voice messages.
- * - message.failed: WhatsApp, SMS and RCS (other platforms don't expose per-message failure via webhook). On SMS, `error.code` is the carrier's numeric code and `error.message` its reason.
+ * - message.failed: WhatsApp, SMS, RCS and iMessage (other platforms don't expose per-message failure via webhook). On SMS, `error.code` is the carrier's numeric code and `error.message` its reason.
+ * - On iMessage, message.failed can follow message.delivered for the same message: the provider delivered it on iMessage, then reported its SMS or RCS fallback failed. The failure is final.
  *
  */
 export type WebhookPayloadMessageDeliveryStatus = {
@@ -53363,6 +53364,7 @@ export type GetInboxConversationMessagesResponse = ({
          * - `metaInteractive`: outgoing Instagram/Facebook buttons, quickReplies and template, as sent.
          * - `interactiveType` / `interactiveId`: for inbound interactive taps.
          * - `source`: where the message reached us from, not who produced it (read `sentVia` for that). `whatsapp_business_app` / `coexistence_history` on a WhatsApp Coexistence number, `bulk-api` on a POST /v1/whatsapp/bulk send.
+         * - `deliveryChannel`: on an outgoing iMessage, the channel of the latest delivery status (`imessage`, `sms`, `rcs` or `whatsapp`). A message delivered on `imessage` turns `failed` when the provider then reports its `sms` fallback failed.
          *
          */
         metadata?: {
