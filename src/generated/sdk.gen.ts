@@ -17182,8 +17182,9 @@ export const getCampaignAnalytics = <ThrowOnError extends boolean = false>(optio
  * Render pre-create ad previews
  * Shows how a Meta creative will look in each placement before you create the ad, as embeddable previews.
  *
- * Renders how a creative would look per placement BEFORE any ad exists, via Meta's
- * `/generatepreviews`. Provide exactly one creative source: `existingCreativeId` or `creativeSpec`.
+ * Renders how a creative would look per placement BEFORE any ad exists. Provide exactly one
+ * creative source: `creativeSpec` renders via Meta's `/generatepreviews`, `existingCreativeId`
+ * via Meta's `/{creative_id}/previews`.
  * Each preview is an HTML `<iframe>` snippet embeddable directly. Unknown `formats` values
  * return Meta's 400 verbatim.
  *
