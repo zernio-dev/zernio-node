@@ -82608,6 +82608,10 @@ export type GetEventsOverviewResponse = ({
          */
         lastActiveOn?: (string) | null;
         /**
+         * Each event name people (not bots) sent the site in the last 7 days, sorted. Names the site sends that are neither standard nor in its `customEvents` are left out.
+         */
+        eventNamesLastWeek?: Array<(string)>;
+        /**
          * The site's page views per period (`today`, `7d`, `30d`), each ending today (UTC).
          */
         totals?: {
