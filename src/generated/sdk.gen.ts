@@ -3579,6 +3579,10 @@ export const handleOAuthCallback = <ThrowOnError extends boolean = false>(option
  *
  * Subsequent classic requests can change the ad-account scope using the business token. force=true (or disconnecting the business connection first) switches the profile to the standard Facebook login; the ads account is then held by the user token.
  *
+ * When the profile's accounts are already one per ad account of a single business login, `adAccountIds` adds an account per new entry. Existing accounts are never de-scoped: disconnect an account to remove its ad account.
+ *
+ * With several of those accounts, disconnect each of them instead of passing force=true to switch to the standard Facebook login.
+ *
  * ### Same-token platforms (facebook, instagram, linkedin, pinterest)
  *
  * The ads SocialAccount (metaads, linkedinads, pinterestads) reuses the OAuth token of the parent posting account, but only when:
