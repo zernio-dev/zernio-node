@@ -80010,6 +80010,9 @@ export type ListFormLeadsData = {
     };
     query: {
         accountId: string;
+        /**
+         * The pagination.cursor of the previous page.
+         */
         cursor?: string;
         limit?: number;
         /**
@@ -80047,6 +80050,9 @@ export type ListFormLeadsResponse = ({
     }>;
     pagination?: {
         hasMore?: boolean;
+        /**
+         * Send it as cursor to read the next page. Absent when hasMore is false.
+         */
         cursor?: (string) | null;
     };
     meta?: {
@@ -80054,11 +80060,11 @@ export type ListFormLeadsResponse = ({
         accountId?: string;
         formId?: string;
         /**
-         * persisted: leads stored from the webhook and the reconcile pass. live: read from Meta because none are stored for this form yet.
+         * persisted: leads stored from the webhook and the recovery pass. live: read from Meta because none are stored for this form yet, or because content is not retained.
          */
         source?: 'persisted' | 'live';
         /**
-         * When Zernio last read this form's leads from Meta. For persisted leads, the last reconcile pass for the Page (null before the first one). For live reads, when the cached Graph read was made.
+         * For persisted leads, when the recovery pass last finished for the Page (null before the first one). It does not prove every lead is stored. For live reads, when Meta was read.
          */
         lastCheckedAt?: (string) | null;
         lastUpdated?: string;
