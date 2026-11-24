@@ -24310,7 +24310,7 @@ export type UsageMetering = {
         groupBy?: 'profile' | 'account';
         groups?: Array<UsageAttributionGroup>;
         /**
-         * Spend no profile/account can claim: credits, 10DLC fees, Verify, and usage whose record no longer resolves to an account. Zero for a restricted principal.
+         * Spend no profile/account of your workspace can claim: credits, 10DLC fees, Verify, usage whose record no longer resolves to an account, and the share measured outside your workspace. Zero for a restricted principal.
          */
         unattributed?: UsageAttributionSlice;
         /**

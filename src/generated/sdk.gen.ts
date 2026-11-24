@@ -2145,6 +2145,8 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  *
  * Profile-scoped API keys and members only see their profiles' groups (`attribution.restricted: true`, with `totals` summing the visible groups). Credits, 10DLC fees and Verify are always unattributed.
  *
+ * A caller that sees the whole workspace gets `restricted: false` and the same `totals` as without `groupBy`. Shares are measured over everything the bill and its members carry, so `unattributed` can include spend outside the workspace, never named.
+ *
  * Since 1.630.0 a profile-scoped key or member never gets the team payload in metering mode: without `groupBy` or a filter, `days`, `totals` and `lineItems` are projected onto its visible profiles, `peaks`, `callUsage` and `tax` are `null`, and no `attribution` is returned. Full-access keys and sessions keep the team payload.
  *
  * ### Related endpoints
