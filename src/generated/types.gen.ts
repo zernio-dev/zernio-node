@@ -56547,6 +56547,9 @@ export type ListInboxReviewsData = {
          * One account id, or several comma-separated.
          */
         accountId?: string;
+        /**
+         * Pass back pagination.nextCursor of the previous page unchanged, with the same sortBy and sortOrder.
+         */
         cursor?: string;
         /**
          * Filter by reply status
