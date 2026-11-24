@@ -19720,7 +19720,7 @@ export type PlatformTarget = {
      * - `account_issue`: config problems
      * - `platform_rejected`: policy violation
      * - `platform_error`: 5xx/maintenance
-     * - `platform_rate_limit`: platform throttling, retried automatically
+     * - `platform_rate_limit`: platform throttling. Retried for a few minutes before the entry fails, except Facebook's Page anti-spam block (code 368, subcode 1390008), which fails at once. Retry a failed entry later.
      * - `quota_exhausted`: a shared quota pool the integration draws on is empty, including our own capacity gate in front of one. Not caused by your content or account, and safe to retry once the pool frees up.
      * - `system_error`: Zernio infra
      * - `unknown`
@@ -19748,7 +19748,7 @@ export type trialGraduationStrategy = 'MANUAL' | 'SS_PERFORMANCE';
  * - `account_issue`: config problems
  * - `platform_rejected`: policy violation
  * - `platform_error`: 5xx/maintenance
- * - `platform_rate_limit`: platform throttling, retried automatically
+ * - `platform_rate_limit`: platform throttling. Retried for a few minutes before the entry fails, except Facebook's Page anti-spam block (code 368, subcode 1390008), which fails at once. Retry a failed entry later.
  * - `quota_exhausted`: a shared quota pool the integration draws on is empty, including our own capacity gate in front of one. Not caused by your content or account, and safe to retry once the pool frees up.
  * - `system_error`: Zernio infra
  * - `unknown`
