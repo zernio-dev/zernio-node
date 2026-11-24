@@ -78154,6 +78154,7 @@ export type CreateStandaloneAdData = {
          * - **LinkedIn:** required for `traffic` ads, optional for `engagement` / `awareness`. `imageUrl` + `linkUrl` publishes an ARTICLE-content creative (LinkedIn's article ad format), with the image as thumbnail and `longHeadline` as description.
          * - **OpenAI Ads:** required (the chat card's target_url).
          * - **Reddit:** required on image and video ads (the post's destination and the ad's click URL), the fallback for carousel cards without their own, and refused with 400 on text ads.
+         * - **TikTok:** not required with goal `engagement` or `app_promotion`. With `smartPlus: true` and `adSetId`, required unless that ad group's campaign promotes an app.
          */
         linkUrl?: string;
         /**
@@ -78289,7 +78290,7 @@ export type CreateStandaloneAdData = {
          *
          * **Platforms.** Supported on Meta (facebook, instagram), Google Ads, TikTok, LinkedIn and Reddit Ads.
          *
-         * - TikTok: `adSetId` is the ad group ID; the new ad inherits the ad group's bid, budget and targeting.
+         * - TikTok: `adSetId` is the ad group ID; the new ad inherits the ad group's bid, budget and targeting. For an ad group of an Upgraded Smart+ campaign, also send `smartPlus: true` (see `smartPlus`).
          * - LinkedIn: `adSetId` is the LinkedIn Campaign ID (numeric). We attach a new Creative to that Campaign, so its `platformSpecificData` bidding, targeting, budget and schedule are inherited (passing those fields returns 400).
          * - Reddit Ads: `adSetId` is the AD GROUP id. Only the post and the ad are created; the ad group keeps its budget, schedule, targeting, bid and optimization. `goal` is not required. An ad group of another ad account returns 404.
          * - Reddit Ads, rejected with 400: `budgetAmount`, `budgetType`, `startDate`, `endDate`, targeting fields, `promotedObject`, `tracking.pixelId` and `optimizationGoal`.
@@ -79157,7 +79158,14 @@ export type CreateStandaloneAdData = {
          *
          * Targeting works like on any TikTok ad (defaults to `countries: ["US"]` when omitted), and TikTok automates delivery within it.
          *
-         * The budget lives on the Smart+ campaign (Campaign Budget Optimization). A `lifetime` budget without `endDate` ends 7 days after it starts. Smart+ needs `goal` sent; it is never inferred. Cannot be combined with `adSetId`.
+         * The budget lives on the Smart+ campaign (Campaign Budget Optimization). A `lifetime` budget without `endDate` ends 7 days after it starts. Smart+ needs `goal` sent; it is never inferred.
+         *
+         * **Adding a creative to an existing Smart+ ad group.** With `adSetId` (an ad group of an Upgraded Smart+ campaign), the uploaded video (`imageUrl`) and `body` become one more Smart+ ad in that ad group, under `identityType` / `identityId`.
+         *
+         * - The campaign keeps its goal, budget and bid, so `goal`, `promotedObject` and the budget fields are not needed. Targeting stays the ad group's (`smartTargeting` returns 400).
+         * - `linkUrl` is required unless the campaign is `app_promotion`, where the app is the destination and `linkUrl` is not used. Ad groups that use a TikTok Instant Form are not supported.
+         * - An ad group outside a Smart+ campaign returns 400 on `adSetId`.
+         * - `status: PAUSED` leaves the new ad paused. `validateOnly` is not supported with `adSetId`.
          *
          */
         smartPlus?: boolean;
