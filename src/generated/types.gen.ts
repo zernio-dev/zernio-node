@@ -22054,6 +22054,7 @@ export type SocialAccount = {
      * - **Instagram Login accounts:** the app-scoped user id (the professional account id is in `metadata.instagramScopedId`).
      * - **Instagram via Facebook Login:** the professional account id (`17841...`).
      * - **TikTok:** the open_id of Zernio's TikTok app, which differs from the open_id any other app sees for the same user.
+     * - **Google Business Profile:** `<googleUserId>:location:<locationId>`, the Google user that connected it and the selected location. The location part is empty until a location is selected.
      *
      * Either value can be passed back as `expectedPlatformUserId` on GET /v1/connect/{platform}.
      *
@@ -56552,10 +56553,19 @@ export type ListInboxReviewsData = {
          */
         hasReply?: boolean;
         limit?: number;
+        /**
+         * Reviews without a star rating (Facebook recommendations) never match.
+         */
         maxRating?: number;
+        /**
+         * Reviews without a star rating (Facebook recommendations) never match.
+         */
         minRating?: number;
         platform?: 'facebook' | 'googlebusiness';
         profileId?: string;
+        /**
+         * rating puts reviews without a star rating last in both orders.
+         */
         sortBy?: 'date' | 'rating';
         sortOrder?: 'asc' | 'desc';
     };
@@ -56584,7 +56594,10 @@ export type ListInboxReviewsResponse = ({
             name?: string;
             profileImage?: (string) | null;
         };
-        rating?: number;
+        /**
+         * Star rating the reviewer gave, 1 to 5. Null for a Facebook recommendation without stars (see recommendationType).
+         */
+        rating?: (number) | null;
         /**
          * Facebook recommendation: positive means recommends, negative means does not recommend. Null or absent when unavailable; absent for other platforms. Independent of the numeric rating.
          */
@@ -56606,11 +56619,23 @@ export type ListInboxReviewsResponse = ({
         photos?: Array<{
             url?: string;
         }>;
+        /**
+         * The reply from the Page or business. Absent when hasReply is false.
+         */
         reply?: {
+            /**
+             * Reply id. On Google Business Profile it is the review id.
+             */
             id?: string;
+            /**
+             * Reply text.
+             */
             text?: string;
+            /**
+             * When the reply was written (on Google Business Profile, last updated).
+             */
             created?: string;
-        } | null;
+        };
         reviewUrl?: (string) | null;
     }>;
     pagination?: {
@@ -56650,8 +56675,17 @@ export type ListInboxReviewsResponse = ({
             platform?: string;
         }>;
     };
+    /**
+     * Computed over every review matching the filters, before pagination. A Facebook Page contributes the Page-wide count and average Facebook reports, which ignore the filters. Google Business Profile locations are computed over the reviews read, partial for accounts in meta.truncatedAccounts.
+     */
     summary?: {
+        /**
+         * Includes reviews without a star rating.
+         */
         totalReviews?: number;
+        /**
+         * Mean star rating rounded to one decimal, leaving out reviews without a star rating. Null when none has one.
+         */
         averageRating?: (number) | null;
     };
 });
