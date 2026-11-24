@@ -7944,6 +7944,39 @@ export type CampaignSubmissionFlag = {
 export type code = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap' | 'paid_views' | 'organic_unverified';
 
 /**
+ * The outcome of the latest chat history request Zernio sent Meta for a WhatsApp coexistence number, read from the account (not a live probe).
+ */
+export type CoexistenceHistorySync = {
+    /**
+     * - `requested`: Meta accepted the request and has not sent history yet, which can take a while.
+     * - `imported`: Meta sent chat history to this account, including history a reconnect kept.
+     * - `declined`: the business chose not to share its chat history in Meta's window.
+     * - `already_synced`: Meta refused the request because an earlier connection already used the number's one history share. Disconnecting inside the WhatsApp Business app (Settings > Account > Business Platform), then connecting again gets a new import.
+     * - `refused`: Meta refused it for another reason.
+     *
+     */
+    status?: 'requested' | 'imported' | 'declined' | 'already_synced' | 'refused';
+    /**
+     * The id of the last history request Meta accepted, kept across reconnects. Quote it in a Meta support case.
+     */
+    requestId?: (string) | null;
+    /**
+     * When Meta refused the latest request. Null when it was accepted.
+     */
+    refusedAt?: (string) | null;
+};
+
+/**
+ * - `requested`: Meta accepted the request and has not sent history yet, which can take a while.
+ * - `imported`: Meta sent chat history to this account, including history a reconnect kept.
+ * - `declined`: the business chose not to share its chat history in Meta's window.
+ * - `already_synced`: Meta refused the request because an earlier connection already used the number's one history share. Disconnecting inside the WhatsApp Business app (Settings > Account > Business Platform), then connecting again gets a new import.
+ * - `refused`: Meta refused it for another reason.
+ *
+ */
+export type status24 = 'requested' | 'imported' | 'declined' | 'already_synced' | 'refused';
+
+/**
  * The media on a comment or reply, one per comment (the first item when the platform returns several).
  * `type` is the platform's own media kind:
  *
@@ -8292,7 +8325,7 @@ export type source = 'comment' | 'live_comment' | 'story_reply' | 'story_mention
  * - 'gated': the follow-gate confirmation DM went out and we are waiting for the tap. It flips to 'sent' or 'skipped' when they tap.
  * - 'skipped': also covers repeatPolicy, cooldown and dedupeSameTextHours suppressions, with the reason in error.
  */
-export type status24 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
+export type status25 = 'pending' | 'sent' | 'failed' | 'skipped' | 'gated';
 
 /**
  * How the audience rule resolved. Null on automations without one.
@@ -8601,7 +8634,7 @@ export type method3 = 'code' | 'automatic';
 
 export type type14 = 'percentage' | 'fixed_amount' | 'free_shipping' | 'buy_x_get_y' | 'app';
 
-export type status25 = 'active' | 'scheduled' | 'expired';
+export type status26 = 'active' | 'scheduled' | 'expired';
 
 export type CommerceDraftOrder = {
     id?: string;
@@ -8651,7 +8684,7 @@ export type CommerceDraftOrder = {
     completedAt?: (string) | null;
 };
 
-export type status26 = 'open' | 'invoice_sent' | 'completed';
+export type status27 = 'open' | 'invoice_sent' | 'completed';
 
 export type CommerceImage = {
     /**
@@ -8706,7 +8739,7 @@ export type CommerceMarket = {
     type?: string;
 };
 
-export type status27 = 'active' | 'draft';
+export type status28 = 'active' | 'draft';
 
 export type CommerceMenu = {
     id?: string;
@@ -9350,7 +9383,7 @@ export type ConnectHandoff = {
     } | null;
 };
 
-export type status28 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
+export type status29 = 'waiting' | 'opened' | 'connected' | 'failed' | 'expired';
 
 /**
  * Only with `handoff=true`: the link to show as a QR code.
@@ -9919,7 +9952,7 @@ export type visibility3 = 'full' | 'limited' | 'none';
  */
 export type scanMode = 'static' | 'rendered';
 
-export type status29 = 'detected' | 'likely' | 'not-visible';
+export type status30 = 'detected' | 'likely' | 'not-visible';
 
 export type googleConsentMode = 'v2' | 'v1' | 'not-seen';
 
@@ -9963,7 +9996,7 @@ export type ConversionDestination = {
  * For LinkedIn, `inactive` means the rule is soft-deleted (`enabled: false`).
  *
  */
-export type status30 = 'active' | 'inactive';
+export type status31 = 'active' | 'inactive';
 
 /**
  * A single conversion event to relay to the ad platform. All PII fields
@@ -10720,7 +10753,7 @@ export type CreatorCampaign = {
 /**
  * draft until activated; active accepts submissions and accrues; paused stops new submissions; closed is final.
  */
-export type status31 = 'draft' | 'active' | 'paused' | 'closed';
+export type status32 = 'draft' | 'active' | 'paused' | 'closed';
 
 /**
  * Same as economics.type.
@@ -11296,7 +11329,7 @@ export type CreatorPortalPayoutSetup = {
  */
 export type mode5 = 'none' | 'external' | 'treasury';
 
-export type status32 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
+export type status33 = 'not_started' | 'pending' | 'enabled' | 'not_applicable';
 
 export type CreatorPortalReferral = {
     /**
@@ -12250,7 +12283,7 @@ export type objective = 'OUTCOME_ENGAGEMENT' | 'OUTCOME_SALES' | 'OUTCOME_LEADS'
  * `adSetId`, the new ads themselves.
  *
  */
-export type status33 = 'ACTIVE' | 'PAUSED';
+export type status34 = 'ACTIVE' | 'PAUSED';
 
 /**
  * Campaign-level status, same semantics as `POST /v1/ads/create`. Defaults to `status`.
@@ -12664,7 +12697,7 @@ export type privacy_level = 2;
 /**
  * 1=SCHEDULED, 2=ACTIVE, 3=COMPLETED, 4=CANCELED
  */
-export type status34 = 1 | 2 | 3 | 4;
+export type status35 = 1 | 2 | 3 | 4;
 
 /**
  * 1=STAGE_INSTANCE, 2=VOICE, 3=EXTERNAL
@@ -12838,7 +12871,7 @@ export type EmailClean = {
     } | null;
 };
 
-export type status35 = 'stripped' | 'unchanged' | 'fallback';
+export type status36 = 'stripped' | 'unchanged' | 'fallback';
 
 /**
  * A draft in the mailbox. Carries the message fields; `id` is the draft id the drafts endpoints take. Store `id`, not `messageId`.
@@ -13465,7 +13498,7 @@ export type EventCorrection = {
 /**
  * `corrected`: the platform changed its count. `not_supported`: the platform has no API to change a conversion it already counted. `failed`: see `error`.
  */
-export type status36 = 'corrected' | 'not_supported' | 'failed';
+export type status37 = 'corrected' | 'not_supported' | 'failed';
 
 export type EventDestination = {
     /**
@@ -13992,7 +14025,7 @@ export type FeedbackReceipt = {
     duplicate?: boolean;
 };
 
-export type status37 = 'received';
+export type status38 = 'received';
 
 /**
  * A file or folder in a connected Google Drive or OneDrive. Ids are the provider's own.
@@ -14357,7 +14390,7 @@ export type GohighlevelAudienceSync = {
     }>;
 };
 
-export type status38 = 'syncing' | 'ready' | 'error';
+export type status39 = 'syncing' | 'ready' | 'error';
 
 export type GohighlevelAudienceSyncOverview = {
     /**
@@ -14493,7 +14526,7 @@ export type GoogleAdLabel = {
     description?: (string) | null;
 };
 
-export type status39 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
+export type status40 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
 
 /**
  * At least one id across the four target lists. Up to 1000 ids per list.
@@ -14596,7 +14629,7 @@ export type GoogleAdsManagerLink = {
 /**
  * Status the link has after this call.
  */
-export type status40 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
+export type status41 = 'PENDING' | 'ACTIVE' | 'REFUSED' | 'CANCELED' | 'INACTIVE';
 
 export type GoogleAdsPlatformQueryBody = {
     /**
@@ -14630,7 +14663,7 @@ export type GoogleAdsUserAccessInvitation = {
 
 export type accessRole = 'ADMIN' | 'STANDARD' | 'READ_ONLY' | 'EMAIL_ONLY' | 'UNKNOWN';
 
-export type status41 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
+export type status42 = 'PENDING' | 'DECLINED' | 'EXPIRED' | 'UNKNOWN';
 
 export type GoogleAdsUserAccessInvitationResult = {
     customerId?: string;
@@ -14654,7 +14687,7 @@ export type GoogleAdsUserAccessInvitationResult = {
 /**
  * PENDING once the email is sent; PENDING_APPROVAL while Google waits for a second admin's multi-party approval.
  */
-export type status42 = 'PENDING' | 'PENDING_APPROVAL';
+export type status43 = 'PENDING' | 'PENDING_APPROVAL';
 
 export type GoogleAdsUserInvitationApproval = {
     /**
@@ -15653,7 +15686,7 @@ export type GoogleRecommendationResult = {
     error?: string;
 };
 
-export type status43 = 'applied' | 'dismissed' | 'failed';
+export type status44 = 'applied' | 'dismissed' | 'failed';
 
 export type GoogleRsaDescription = {
     text: string;
@@ -16019,7 +16052,7 @@ export type ImessageSandboxContact = {
     createdAt?: string;
 };
 
-export type status44 = 'pending' | 'active';
+export type status45 = 'pending' | 'active';
 
 /**
  * An iMessage sender registered as an account on a profile.
@@ -16094,7 +16127,7 @@ export type region = 'US' | 'GB';
 /**
  * `awaiting_payment`: the first-month charge is still being confirmed by the card; the number is ordered automatically once it is paid (usually under 5 minutes), or the order fails with `failureReason` when the card declines or nothing confirms within 30 minutes.
  */
-export type status45 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
+export type status46 = 'ordering' | 'awaiting_payment' | 'activating' | 'active' | 'suspended' | 'canceled' | 'failed';
 
 /**
  * When inbound messages and comments were first and last seen for the account. Only events matched to this account count. WhatsApp delivery statuses for outbound messages do not count, so the stamps of a number that only sends stay null. The stamps reset on every connect.
@@ -16393,7 +16426,7 @@ export type InboxWebhookConversation = {
     contactId?: string;
 };
 
-export type status46 = 'active' | 'archived';
+export type status47 = 'active' | 'archived';
 
 /**
  * The conversation object included in conversation lifecycle webhook payloads (conversation.started, conversation.control_changed).
@@ -18991,7 +19024,7 @@ export type OAuthApp = {
 /**
  * `ok`: the platform accepted the keys at the last check. `unchecked`: the check could not reach a verdict (see lastError). `invalid`: the platform rejected the keys; connects and token refreshes through this app will fail until the secret is rotated.
  */
-export type status47 = 'ok' | 'unchecked' | 'invalid';
+export type status48 = 'ok' | 'unchecked' | 'invalid';
 
 export type OAuthAppSetup = {
     platform: string;
@@ -19067,7 +19100,7 @@ export type OrgConnection = {
     };
 };
 
-export type status48 = 'pending' | 'active' | 'revoked';
+export type status49 = 'pending' | 'active' | 'revoked';
 
 export type type28 = 'google_domain_wide_delegation' | 'microsoft_admin_consent';
 
@@ -19258,7 +19291,7 @@ export type OwnedPhoneNumber = {
     }>;
 };
 
-export type status49 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
+export type status50 = 'pending_payment' | 'pending_regulatory' | 'regulatory_declined' | 'provisioning' | 'verifying' | 'active' | 'suspended' | 'releasing' | 'released';
 
 export type metaVerificationStatus = 'pending' | 'code_requested' | 'verified' | 'expired';
 
@@ -19431,7 +19464,7 @@ export type PayoutBatch = {
 /**
  * `awaiting_payment` until the card charge succeeds (3D Secure included); `paying` during the 7-day card hold and while transfers go out; then `paid`, `partially_failed` (some items failed or were skipped), `failed` (the card was declined, or none paid) or `expired` (the payment was cancelled unpaid, every amount is payable again).
  */
-export type status50 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
+export type status51 = 'awaiting_payment' | 'paying' | 'paid' | 'partially_failed' | 'failed' | 'expired';
 
 export type method4 = 'card';
 
@@ -19474,7 +19507,7 @@ export type PayoutBatchItem = {
 /**
  * `skipped`: payout setup not finished, or the card payment never completed. `failed`: Stripe refused the transfer. `refunded`: failed or skipped after the card hold; its payout, fee and VAT on the fee went back to the card through a credit note. The amount is payable again in every case.
  */
-export type status51 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
+export type status52 = 'pending' | 'paid' | 'failed' | 'skipped' | 'refunded';
 
 export type PhoneNumberStockWatch = {
     id: string;
@@ -19592,7 +19625,7 @@ export type PlatformAnalytics = {
     isOwner?: (boolean) | null;
 };
 
-export type status52 = 'published' | 'failed';
+export type status53 = 'published' | 'failed';
 
 /**
  * Sync state of analytics for this platform
@@ -19890,7 +19923,7 @@ export type Post = {
 /**
  * `cancelled` is set by POST /v1/posts/{postId}/unpublish once every platform entry has been removed from its platform (a post with published entries left becomes `partial`); cancelled posts can be edited and rescheduled like drafts. `pending_approval` (set by `requiresApproval: true`) never publishes until POST /v1/posts/{postId}/review approves it.
  */
-export type status53 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
+export type status54 = 'draft' | 'pending_approval' | 'scheduled' | 'publishing' | 'published' | 'partial' | 'failed' | 'cancelled';
 
 export type visibility5 = 'public' | 'private' | 'unlisted';
 
@@ -20580,7 +20613,7 @@ export type Product = {
     publishedAt?: (string) | null;
 };
 
-export type status54 = 'active' | 'draft' | 'archived';
+export type status55 = 'active' | 'draft' | 'archived';
 
 export type ProductImage = {
     url?: string;
@@ -20880,7 +20913,7 @@ export type RcsAgent = {
     createdAt?: string;
 };
 
-export type status55 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
+export type status56 = 'requested' | 'changes_requested' | 'brand_vetting' | 'agent_review' | 'testing' | 'launch_review' | 'launching' | 'live' | 'rejected' | 'deactivated';
 
 export type useCase = 'MULTI_USE' | 'PROMOTIONAL' | 'TRANSACTIONAL' | 'OTP';
 
@@ -20932,7 +20965,7 @@ export type RcsBrand = RcsBrandInput & {
 /**
  * draft = not filed yet (still editable).
  */
-export type status56 = 'draft' | 'vetting' | 'verified' | 'rejected';
+export type status57 = 'draft' | 'vetting' | 'verified' | 'rejected';
 
 export type RcsBrandInput = {
     displayName: string;
@@ -21019,7 +21052,7 @@ export type RcsCarrierApproval = {
 
 export type scope3 = 'carrier' | 'hub' | 'bot';
 
-export type status57 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
+export type status58 = 'PENDING' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
 
 /**
  * Message content. `suggestions` (max 11) render as chips under the message.
@@ -21702,7 +21735,7 @@ export type ScheduledEmail = {
     createdAt?: string;
 };
 
-export type status58 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
+export type status59 = 'scheduled' | 'sending' | 'sent' | 'failed' | 'cancelled';
 
 export type SendEmailRequest = {
     accountId: string;
@@ -22322,7 +22355,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status59 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status60 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -23290,7 +23323,7 @@ export type TrackingSite = {
     updatedAt?: string;
 };
 
-export type status60 = 'active' | 'paused' | 'removing';
+export type status61 = 'active' | 'paused' | 'removing';
 
 /**
  * How the tag is installed. `snippet` means you paste it.
@@ -23609,7 +23642,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status61 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status62 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -23703,7 +23736,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status62 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status63 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -23744,7 +23777,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status63 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status64 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -23935,7 +23968,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status64 = 'pending' | 'completed' | 'expired';
+export type status65 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -24481,7 +24514,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status65 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status66 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel6 = 'sms' | 'whatsapp';
 
@@ -24740,7 +24773,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status66 = 'success' | 'failed';
+export type status67 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -24854,7 +24887,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status67 = 'success' | 'failure';
+export type status68 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -25537,7 +25570,7 @@ export type WebhookPayloadAdReview = {
 
 export type event14 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status68 = 'approved' | 'rejected';
+export type status69 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -26108,7 +26141,7 @@ export type event20 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status69 = 'ready' | 'error';
+export type status70 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -26249,7 +26282,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event23 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status70 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status71 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -30094,7 +30127,7 @@ export type event79 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status71 = 'published' | 'failed' | 'deleted';
+export type status72 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -30684,7 +30717,7 @@ export type event92 = 'whatsapp.account.name_status_updated';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status72 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status73 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -30818,7 +30851,7 @@ export type event94 = 'whatsapp.account.status_updated';
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status73 = 'restricted' | 'active';
+export type status74 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -31034,7 +31067,7 @@ export type event97 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status74 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status75 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -31098,7 +31131,7 @@ export type event98 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status75 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status76 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -31501,7 +31534,7 @@ export type WorkflowExecutionEvent = {
 
 export type action3 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status76 = 'success' | 'failed' | 'pending';
+export type status77 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -38944,6 +38977,10 @@ export type GetAllAccountsHealthResponse = ({
          */
         inboundActivity?: (InboundActivity | null);
         /**
+         * WhatsApp accounts only. On `already_synced` an entry with the steps for a new import is added to `issues`, which never changes status. Null when no request ran for the current connection, and on numbers that are not in coexistence.
+         */
+        coexistenceHistorySync?: (CoexistenceHistorySync | null);
+        /**
          * Set when the last 3 finished publishes failed with the same account-level error (suspended, restricted, a verification check, an expired login). The next successful publish or a reconnect clears it. While set, status is at least `warning`. Null when the account publishes normally.
          */
         publishingRestriction?: {
@@ -39257,27 +39294,9 @@ export type GetAccountHealthResponse = ({
         pausedUntil?: (string) | null;
     } | null;
     /**
-     * WhatsApp accounts only. The outcome of the latest chat history request Zernio sent Meta for a coexistence number, read from the account (not a live probe). Null when no request ran for the current connection, and on numbers that are not in coexistence.
+     * WhatsApp accounts only. Null when no request ran for the current connection, and on numbers that are not in coexistence.
      */
-    coexistenceHistorySync?: {
-        /**
-         * - `requested`: Meta accepted the request and has not sent history yet, which can take a while.
-         * - `imported`: Meta sent chat history to this account, including history a reconnect kept.
-         * - `declined`: the business chose not to share its chat history in Meta's window.
-         * - `already_synced`: Meta refused the request because an earlier connection already used the number's one history share. The description above says how to get a new import.
-         * - `refused`: Meta refused it for another reason.
-         *
-         */
-        status?: 'requested' | 'imported' | 'declined' | 'already_synced' | 'refused';
-        /**
-         * The id of the last history request Meta accepted, kept across reconnects. Quote it in a Meta support case.
-         */
-        requestId?: (string) | null;
-        /**
-         * When Meta refused the latest request. Null when it was accepted.
-         */
-        refusedAt?: (string) | null;
-    } | null;
+    coexistenceHistorySync?: (CoexistenceHistorySync | null);
     /**
      * WhatsApp accounts only. Live probe of the Meta link behind the channel, performed at request time (the same read as GET /v1/whatsapp/number-info).
      */
