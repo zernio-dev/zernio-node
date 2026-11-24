@@ -39920,6 +39920,10 @@ export type VerifyCredentialResponse = ({
      * Granted OAuth scopes, space-separated. Null for API keys.
      */
     scope?: (string) | null;
+    /**
+     * Resource the OAuth token was issued for (RFC 8707), for example https://mcp.zernio.com/mcp. Null for API keys and for tokens issued without one.
+     */
+    audience?: (string) | null;
 });
 
 export type VerifyCredentialError = (ErrorResponse);
