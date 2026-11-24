@@ -24453,6 +24453,10 @@ export type UsageMetering = {
         restricted?: boolean;
     };
     /**
+     * Check it before rebilling. Present and true when a read behind the split failed: a group's spend can then be lower than the real one (it is `unattributed` in a full breakdown, missing from a view of some profiles or accounts). Retry in a minute.
+     */
+    incomplete?: boolean;
+    /**
      * Present with `profileId` / `externalId` / `accountId`: echoes the group the payload was projected onto. A profile scope carries both ids.
      */
     scope?: (UsageProfileRef | {
