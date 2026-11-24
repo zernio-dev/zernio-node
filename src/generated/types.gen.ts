@@ -4107,6 +4107,9 @@ export type AnalyticsOff = {
      *
      */
     code: 'X_ANALYTICS_NOT_ENABLED' | 'X_ANALYTICS_PAUSED' | 'PAYMENT_REQUIRED';
+    /**
+     * The reason in words. X_ANALYTICS_NOT_ENABLED also says how to turn it on.
+     */
     message: string;
 };
 
@@ -4172,7 +4175,7 @@ export type AnalyticsSinglePostResponse = {
      */
     syncStatus?: 'synced' | 'pending' | 'partial' | 'unavailable';
     /**
-     * Human-readable status message for pending, partial, or failed states
+     * Human-readable status message for pending, partial, or failed states. When a pending X entry waits on an account in analyticsOff, it gives the reason and, when X analytics is not enabled, how to turn it on.
      */
     message?: (string) | null;
     /**
