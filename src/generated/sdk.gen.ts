@@ -21780,6 +21780,7 @@ export const listForwardingRules = <ThrowOnError extends boolean = false>(option
  * - `eventNameMap` renames events for this destination (send your `Lead` as its `Purchase`).
  * - `valueOverride` changes the value it gets (a fixed amount or a percent of the event's value).
  * - `valueCondition` forwards only events above, below or equal to a value.
+ * - `eventValues` sets the value of each event name (a `Lead` worth 20 EUR, a `QualifiedLead` worth 150 EUR) and wins over `valueOverride` for the names it lists.
  *
  * Each applies to this rule only: the event is stored, and sent to other rules, as received.
  *
@@ -21793,7 +21794,7 @@ export const createForwardingRule = <ThrowOnError extends boolean = false>(optio
 
 /**
  * Update a forwarding rule
- * Changes the fields you send and keeps the others. Send `eventNameMap: null` to stop renaming, `valueOverride: { "mode": "original" }` to send the event's own value again, and `valueCondition: null` to forward whatever the value.
+ * Changes the fields you send and keeps the others. Send `eventNameMap: null` to stop renaming, `valueOverride: { "mode": "original" }` to send the event's own value again, and `valueCondition: null` to forward whatever the value. `eventValues` replaces the whole map; `null` or `{}` clears it.
  *
  * `apiSecret` replaces the secret of a rule whose destination needs one, such as a Google Analytics data stream's Measurement Protocol API secret. Before saving, Zernio sends one hit to Google's validation server; Google does not confirm the secret itself, so check GA4 Realtime after the next events.
  *

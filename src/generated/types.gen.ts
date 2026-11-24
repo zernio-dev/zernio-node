@@ -14318,6 +14318,10 @@ export type ForwardingRule = {
      * Forwards only events whose value matches; null forwards whatever the value.
      */
     valueCondition?: (ForwardingRuleValueCondition | null);
+    /**
+     * The value each listed event is sent with; null sends every event with the value `valueOverride` gives it.
+     */
+    eventValues?: (ForwardingRuleEventValues | null);
     createdAt?: string;
 };
 
@@ -14330,6 +14334,32 @@ export type ForwardingRule = {
  */
 export type ForwardingRuleEventNameMap = {
     [key: string]: (string);
+};
+
+/**
+ * How one event is valued. `original` sends its own value. `fixed` sends `amount` in `currency`, even when the event came without a value. `percent` sends `amount` percent of its own value (10 sends 10%, rounded to cents) in its own currency, and leaves an event without a value without one.
+ */
+export type ForwardingRuleEventValue = {
+    mode: "original";
+} | {
+    mode: "fixed";
+    amount: number;
+    /**
+     * ISO 4217 code, saved in capitals.
+     */
+    currency: string;
+} | {
+    mode: "percent";
+    amount: number;
+};
+
+/**
+ * The value this destination gets for each event name, keyed by the name as received (before `eventNameMap` renames it), such as a `Lead` worth 20 EUR and a `QualifiedLead` worth 150 EUR. An event listed here ignores `valueOverride`; events not listed keep it.
+ *
+ * The dashboard's Value sent section (Ads, Conversions, a destination) sets this map.
+ */
+export type ForwardingRuleEventValues = {
+    [key: string]: ForwardingRuleEventValue;
 };
 
 /**
@@ -82890,6 +82920,14 @@ export type GetEventResponse = ({
         error?: (string) | null;
         errorCode?: (string) | null;
         sentAt?: string;
+        /**
+         * The value this destination got, after its forwarding rule's `eventValues` or `valueOverride`. Null when it got none, and on sends before 2026-11-24.
+         */
+        valueSent?: (number) | null;
+        /**
+         * The currency sent with `valueSent`.
+         */
+        currencySent?: (string) | null;
     }>;
     /**
      * The touches the event is split across, oldest first: website visits (an ad click, search, a tagged link), the first and latest visits HubSpot recorded for a deal, earlier lead forms or sales, and a Shopify buyer's post-purchase survey answer. Empty when the event counts whole for its own campaign.
@@ -83100,6 +83138,7 @@ export type CreateForwardingRuleData = {
         eventNameMap?: ForwardingRuleEventNameMap;
         valueOverride?: ForwardingRuleValueOverride;
         valueCondition?: ForwardingRuleValueCondition;
+        eventValues?: ForwardingRuleEventValues;
         /**
          * Google Analytics streams only: the stream's Measurement Protocol API secret (GA4 Admin › Data streams). Optional when the connection has edit access, since Zernio then creates it. Checked against Google's validation server, stored encrypted, never returned. Change it with `PATCH /v1/events/forwarding-rules/{ruleId}`.
          */
@@ -83121,6 +83160,7 @@ export type UpdateForwardingRuleData = {
         eventNameMap?: (ForwardingRuleEventNameMap | null);
         valueOverride?: ForwardingRuleValueOverride;
         valueCondition?: (ForwardingRuleValueCondition | null);
+        eventValues?: (ForwardingRuleEventValues | null);
     };
     path: {
         /**
