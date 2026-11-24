@@ -56543,7 +56543,7 @@ export type ReplyToMentionError = (unknown | ErrorResponse);
 export type ListInboxReviewsData = {
     query?: {
         /**
-         * Filter by specific account ID
+         * One account id, or several comma-separated.
          */
         accountId?: string;
         cursor?: string;
@@ -56639,6 +56639,13 @@ export type ListInboxReviewsResponse = ({
          * Connected accounts that were not queried: their platform does not support this feature, or the account is not enabled for it
          */
         accountsSkipped?: Array<{
+            accountId?: string;
+            platform?: string;
+        }>;
+        /**
+         * Accounts whose listing hit the read budget with pages left: their reviews in data, and the Google Business Profile summary, are partial. Empty when every account was read in full.
+         */
+        truncatedAccounts?: Array<{
             accountId?: string;
             platform?: string;
         }>;
