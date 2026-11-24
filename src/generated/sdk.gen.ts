@@ -9824,6 +9824,8 @@ export const listInboxReviews = <ThrowOnError extends boolean = false>(options?:
  * Reply to review
  * Post a reply to a review. Requires accountId in request body.
  *
+ * Google Business Profile replies are limited to 4096 bytes (UTF-8), which is fewer than 4096 characters when the text has multi-byte characters such as emoji or accents. A longer reply returns 400 `invalid_field_value`.
+ *
  * ### Idempotency
  *
  * Send an `Idempotency-Key` header to make retries safe (e.g. after a client-side timeout where delivery is unknown).

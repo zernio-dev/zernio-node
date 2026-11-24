@@ -30779,7 +30779,7 @@ export type event85 = 'review.restored';
  *
  * When a reply is present, review.hasReply is true and review.reply is populated.
  *
- * On Facebook Pages it fires when the reviewer edits their review and when the Page adds or edits a reply, with the review read live from the Page. A reply sent through the API may be followed by a second delivery.
+ * On Facebook Pages it fires when the reviewer edits their review and when the Page adds or edits a reply, with the review read live from the Page. A reply sent through the API produces only the review.updated from Meta's webhook, with no immediate delivery.
  *
  */
 export type WebhookPayloadReviewUpdated = {
