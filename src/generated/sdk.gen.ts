@@ -15460,6 +15460,10 @@ export const discardAdChange = <ThrowOnError extends boolean = false>(options: O
  *
  * A refusal before anything is written leaves the change `staged`, so the confirm can be sent again: `403` `ads_allowance_exceeded`, or on a one-field change a `429` from Zernio's own limits. Any other failed write ends the change as `failed`.
  *
+ * ### Creates
+ *
+ * A staged create is sent once. The ad network checks at confirm whatever it did not check at staging, and media is fetched here. A create that fails ends as `failed` and is not retried: `error.details` keeps what the create reported about objects it had already made.
+ *
  */
 export const confirmAdChange = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConfirmAdChangeData, ThrowOnError>) => {
     return (options?.client ?? client).post<ConfirmAdChangeResponse, ConfirmAdChangeError, ThrowOnError>({
@@ -15784,6 +15788,8 @@ export const listAdCampaigns = <ThrowOnError extends boolean = false>(options?: 
  * Created `PAUSED` (TikTok `DISABLE`) unless `status: ACTIVE` where the platform supports it.
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
+ *
+ * **Staging:** send `stage: true` to store the create as an ad change instead of sending it. The response is `202`, and POST /v1/ads/changes/{changeId}/confirm creates the campaign later. Meta and Google only. The network is not called at staging and checks the campaign at confirm.
  *
  * ### Field support
  *
@@ -16462,6 +16468,8 @@ export const listAdSets = <ThrowOnError extends boolean = false>(options?: Optio
  * It can be read, edited and deleted through `/v1/ads/ad-sets/{adSetId}` right away (targeting, schedule, name, `status`, `budget` and bid fields). A budget on an ad group that spends its campaign budget returns 422.
  *
  * **Idempotency:** send an `Idempotency-Key` header to make retries safe.
+ *
+ * **Staging:** send `stage: true` to store the create as an ad change instead of sending it. The response is `202`, and POST /v1/ads/changes/{changeId}/confirm creates the ad group later. Google only: Reddit and Snapchat return 400. Google checks the ad group at confirm.
  *
  */
 export const createAdSet = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<CreateAdSetData, ThrowOnError>) => {
@@ -19985,6 +19993,14 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * - `existingCampaignId` adds a new ad squad and ad to a campaign; `adSetId` adds the ad to an existing ad squad. `validateOnly` returns 501.
  *
  * Without `status`, every level is switched on: send `status: PAUSED` to create it paused. A failed step deletes what the call created.
+ *
+ * ### Staging
+ *
+ * Send `stage: true` to store the create as an ad change instead of sending it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm creates the ad later. Meta and Google only.
+ *
+ * Google validates a staged Performance Max or Demand Gen create. Meta is not called at staging, and neither is Google for a search or display ad: the network checks those at confirm.
+ *
+ * Media is fetched at confirm. An upload in Zernio's temporary storage is copied to permanent storage at staging, and the staged change points at the copy. A presigned URL returns 400 with `stage`.
  *
  * ### Idempotency
  *

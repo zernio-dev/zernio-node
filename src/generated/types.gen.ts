@@ -22198,9 +22198,9 @@ export type StagedAdChange = {
      */
     id: string;
     /**
-     * Which write was staged: a status route, or the update route of a campaign, an ad set or an ad.
+     * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
      */
-    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update';
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'ad_create' | 'campaign_create' | 'ad_set_create';
     /**
      * The ad platform of the object, as the write route names it.
      */
@@ -22214,9 +22214,13 @@ export type StagedAdChange = {
      */
     adAccountId: string;
     /**
-     * The object the change applies to: the platform campaign id, the platform ad set id, or the Zernio ad id.
+     * The object the change applies to: the platform campaign id, the platform ad set id, or the Zernio ad id. Null for a create, whose object does not exist yet.
      */
     targetId: (string) | null;
+    /**
+     * Present and true when the change creates a new object. Every diff entry then has `before: null` and `beforeAvailable: false`.
+     */
+    creates?: boolean;
     /**
      * - `staged`: waiting to be confirmed or discarded.
      * - `confirming`: a confirm is running. A change that stays here has an unknown outcome and is never applied again automatically.
@@ -22248,7 +22252,7 @@ export type StagedAdChange = {
          */
         after: unknown;
         /**
-         * False when the live read of the object does not return this field, so `before` is unknown. The field is still staged.
+         * False when `before` is unknown: the live read of the object does not return this field, or the change creates the object. The field is still staged.
          */
         beforeAvailable: boolean;
         /**
@@ -22284,13 +22288,19 @@ export type StagedAdChange = {
          */
         code?: string;
         message?: (string) | null;
+        /**
+         * Creates only. What the failed create reported, such as objects it had already made on the ad network.
+         */
+        details?: {
+            [key: string]: unknown;
+        };
     };
 };
 
 /**
- * Which write was staged: a status route, or the update route of a campaign, an ad set or an ad.
+ * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
  */
-export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update';
+export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'ad_create' | 'campaign_create' | 'ad_set_create';
 
 /**
  * - `staged`: waiting to be confirmed or discarded.
@@ -69200,6 +69210,10 @@ export type ListAdCampaignsError = (ErrorResponse | unknown | {
 export type CreateAdCampaignData = {
     body: {
         /**
+         * Send true to stage this create instead of sending it. Nothing is created on the ad network; the response is `202` with the staged change. Create it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
@@ -69344,6 +69358,8 @@ export type CreateAdCampaignResponse = ({
      */
     objective?: string;
     status?: 'ACTIVE' | 'PAUSED';
+} | {
+    change: StagedAdChange;
 });
 
 export type CreateAdCampaignError = (unknown | ErrorResponse);
@@ -70510,6 +70526,10 @@ export type ListAdSetsError = (ErrorResponse | unknown);
 export type CreateAdSetData = {
     body: {
         /**
+         * Send true to stage this create instead of sending it. Nothing is created on the ad network; the response is `202` with the staged change. Create it with POST /v1/ads/changes/{changeId}/confirm. Google only: `platform: reddit` or `snapchat` returns 400 `staging_not_supported`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id owning the Google Ads or Reddit Ads connection.
          */
         accountId: string;
@@ -70603,6 +70623,8 @@ export type CreateAdSetResponse = ({
      */
     adSetId?: string;
     campaignId?: string;
+} | {
+    change: StagedAdChange;
 });
 
 export type CreateAdSetError = (ErrorResponse | unknown);
@@ -77876,6 +77898,10 @@ export type ReplaceGoogleListingGroupFiltersError = (ErrorResponse | {
 
 export type CreateStandaloneAdData = {
     body: {
+        /**
+         * Send true to stage this create instead of sending it. Nothing is created on the ad network; the response is `202` with the staged change. Create it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; not with `validateOnly` or a presigned media URL.
+         */
+        stage?: boolean;
         accountId: string;
         adAccountId: string;
         /**
@@ -79365,7 +79391,9 @@ export type CreateStandaloneAdResponse = ({
      *
      */
     warnings?: Array<(string)>;
-}));
+}) | {
+    change: StagedAdChange;
+});
 
 export type CreateStandaloneAdError = (unknown | ErrorResponse);
 
