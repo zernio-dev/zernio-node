@@ -82282,10 +82282,13 @@ export type SendEventsData = {
         events: Array<ConversionEvent>;
         /**
          * Send to these destinations instead of the saved ones (every event goes to each).
+         *
+         * A Google Analytics stream is sent to with the Measurement Protocol API secret saved on a forwarding rule for the same account and stream: the rule of this `profileId`, else the most recently changed one in your other profiles. With none saved, the destination's `error` says how to save one.
+         *
          */
         destinations?: Array<{
             /**
-             * Connected ads account ID (metaads, googleads, linkedinads, tiktokads, openaiads, pinterestads or redditads).
+             * ID of the connected account that owns the destination (metaads, googleads, googleanalytics or any other account POST /v1/events sends to).
              */
             accountId: string;
             /**
