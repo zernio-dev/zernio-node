@@ -4027,15 +4027,20 @@ export type AnalyticsListResponse = {
         isAd?: boolean;
         profileId?: (string) | null;
         /**
-         * Cover image URL. Facebook, Instagram and TikTok covers whose platform CDN link expired are re-read from the platform and served from Zernio storage, so that URL does not expire and can be cached.
+         * Cover image URL. A Facebook, Instagram or TikTok cover whose signed CDN link is still valid is served as that link, which expires (Meta `oe=`, TikTok `x-expires=`): download the image rather than storing the link.
+         *
+         * Once the link expires, Zernio re-reads the cover from the platform and serves it from Zernio storage, a URL that does not expire.
+         *
+         * Null while that re-read is pending (read again shortly) or when the platform no longer returns the post, never an expired link.
          */
-        thumbnailUrl?: string;
+        thumbnailUrl?: (string) | null;
         mediaType?: 'image' | 'video' | 'gif' | 'document' | 'carousel' | 'text';
         /**
          * All media items for this post. Carousel posts contain one entry per slide.
          *
          * - Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring).
          * - Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
+         * - A `url` or `thumbnail` whose platform link expired and could not be re-read yet is null, never the expired link.
          *
          */
         mediaItems?: Array<{
@@ -4043,11 +4048,11 @@ export type AnalyticsListResponse = {
             /**
              * Direct URL to the media
              */
-            url?: string;
+            url?: (string) | null;
             /**
              * Thumbnail URL (same as url for images)
              */
-            thumbnail?: string;
+            thumbnail?: (string) | null;
             /**
              * Accessibility alt text set on the media, when present.
              */
@@ -4137,7 +4142,11 @@ export type AnalyticsSinglePostResponse = {
      */
     message?: (string) | null;
     /**
-     * Cover image URL. Facebook, Instagram and TikTok covers whose platform CDN link expired are re-read from the platform and served from Zernio storage, so that URL does not expire and can be cached.
+     * Cover image URL. A Facebook, Instagram or TikTok cover whose signed CDN link is still valid is served as that link, which expires (Meta `oe=`, TikTok `x-expires=`): download the image rather than storing the link.
+     *
+     * Once the link expires, Zernio re-reads the cover from the platform and serves it from Zernio storage, a URL that does not expire.
+     *
+     * Null while that re-read is pending (read again shortly) or when the platform no longer returns the post, never an expired link.
      */
     thumbnailUrl?: (string) | null;
     mediaType?: ('image' | 'video' | 'carousel' | 'text') | null;
@@ -4146,6 +4155,7 @@ export type AnalyticsSinglePostResponse = {
      *
      * - Facebook and Instagram images and video covers whose Meta CDN links expired are re-read and served from Zernio storage (non-expiring).
      * - Facebook and Instagram video file URLs, and LinkedIn media URLs, stay the platform's signed links and are refreshed on read once they lapse.
+     * - A `url` or `thumbnail` whose platform link expired and could not be re-read yet is null, never the expired link.
      *
      */
     mediaItems?: Array<{
