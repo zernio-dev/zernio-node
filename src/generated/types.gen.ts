@@ -82631,6 +82631,17 @@ export type SendEventsResponse = ({
          */
         eventsDropped?: number;
         drops?: Array<ConsentDrop>;
+        /**
+         * Events not sent again because this destination already accepted them (same eventId and eventName within 48 hours), another request is sending them right now, or an earlier event in this request has the same eventId and eventName.
+         */
+        eventsSkipped?: number;
+        skipped?: Array<{
+            /**
+             * Position of the event in the request's `events` array, counted from 0.
+             */
+            eventIndex?: number;
+            eventId?: string;
+        }>;
         failures?: Array<{
             /**
              * Position of the event in the request's `events` array, counted from 0, also when repeats or events this destination does not take were left out.
