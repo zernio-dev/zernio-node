@@ -21573,13 +21573,17 @@ export type ReviewWebhookReview = {
      */
     id: string;
     /**
-     * Platform the review originated on. Currently Google Business Profile only.
+     * Platform the review originated on (Google Business Profile or Facebook Pages).
      */
-    platform: 'googlebusiness';
+    platform: 'googlebusiness' | 'facebook';
     /**
-     * Star rating the reviewer gave.
+     * Star rating the reviewer gave. Null for a Facebook recommendation without stars.
      */
-    rating: number;
+    rating: (number) | null;
+    /**
+     * Facebook only. Whether the reviewer recommended the Page.
+     */
+    recommendationType?: 'positive' | 'negative';
     /**
      * Review text content. May be empty if the reviewer left only a rating.
      */
@@ -21607,9 +21611,14 @@ export type ReviewWebhookReview = {
 };
 
 /**
- * Platform the review originated on. Currently Google Business Profile only.
+ * Platform the review originated on (Google Business Profile or Facebook Pages).
  */
-export type platform16 = 'googlebusiness';
+export type platform16 = 'googlebusiness' | 'facebook';
+
+/**
+ * Facebook only. Whether the reviewer recommended the Page.
+ */
+export type recommendationType = 'positive' | 'negative';
 
 /**
  * A Meta Reach & Frequency prediction. Money values in whole units of the ad account currency.
@@ -30675,6 +30684,8 @@ export type WebhookPayloadReviewDeleted = {
 
 export type event83 = 'review.deleted';
 
+export type platform27 = 'googlebusiness';
+
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
  */
@@ -30941,7 +30952,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
 
 export type event91 = 'whatsapp.account.alert_received';
 
-export type platform27 = 'whatsapp';
+export type platform28 = 'whatsapp';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.

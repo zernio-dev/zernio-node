@@ -2153,6 +2153,10 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  *
  * A caller that sees the whole workspace gets `restricted: false` and the same `totals` as without `groupBy`. Shares are measured over everything the bill and its members carry, so `unattributed` can include spend outside the workspace, never named.
  *
+ * Since 1.817.0 every billed account has one even price: the window's `accounts` total, after tiers and the monthly credit, divided by the billed accounts your members have connected now. Before, the oldest accounts took the credit and could show $0. Your invoice did not change.
+ *
+ * Example: 5 accounts cost $30 minus the $12 credit, $18, so $3.60 each. A profile with 2 of them shows $7.20. In a contract's first month, a credit carried over is unattributed instead, so they show $6.00 each.
+ *
  * Since 1.630.0 a profile-scoped key or member never gets the team payload in metering mode: without `groupBy` or a filter, `days`, `totals` and `lineItems` are projected onto its visible profiles, `peaks`, `callUsage` and `tax` are `null`, and no `attribution` is returned. Full-access keys and sessions keep the team payload.
  *
  * ### Related endpoints
