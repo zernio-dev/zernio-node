@@ -12134,7 +12134,10 @@ export type CtwaAdRequestBody = {
      */
     advantageAudience?: 0 | 1;
     /**
-     * Defaults to `OUTCOME_ENGAGEMENT`. `OUTCOME_SALES` and `OUTCOME_LEADS` require
+     * Defaults to `OUTCOME_ENGAGEMENT` on POST /v1/ads/ctwa and POST /v1/ads/messaging,
+     * and to `OUTCOME_LEADS` on POST /v1/ads/call and on POST /v1/ads/messaging with
+     * `optimizationGoal: LEAD_GENERATION` (which accepts only `OUTCOME_LEADS`).
+     * `OUTCOME_SALES` and `OUTCOME_LEADS` require
      * additional account configuration (Dataset linked to the WABA
      * for sales) and may be rejected by Meta if missing.
      *
@@ -12179,8 +12182,9 @@ export type CtwaAdRequestBody = {
      * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
      * `LOWEST_COST_WITH_BID_CAP` and `COST_CAP` require
      * `bidAmount`. `LOWEST_COST_WITH_MIN_ROAS` requires
-     * `roasAverageFloor`. CTWA's `optimization_goal` is fixed to
-     * `CONVERSATIONS`, but the bid strategy is independent.
+     * `roasAverageFloor`. The ad set `optimization_goal` comes from the endpoint
+     * (`CONVERSATIONS` on POST /v1/ads/ctwa, `QUALITY_CALL` on POST /v1/ads/call, the
+     * `optimizationGoal` field on POST /v1/ads/messaging); the bid strategy is independent.
      *
      */
     bidStrategy?: 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
@@ -12270,7 +12274,10 @@ export type incomeTier = 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
 export type advantageAudience = 0 | 1;
 
 /**
- * Defaults to `OUTCOME_ENGAGEMENT`. `OUTCOME_SALES` and `OUTCOME_LEADS` require
+ * Defaults to `OUTCOME_ENGAGEMENT` on POST /v1/ads/ctwa and POST /v1/ads/messaging,
+ * and to `OUTCOME_LEADS` on POST /v1/ads/call and on POST /v1/ads/messaging with
+ * `optimizationGoal: LEAD_GENERATION` (which accepts only `OUTCOME_LEADS`).
+ * `OUTCOME_SALES` and `OUTCOME_LEADS` require
  * additional account configuration (Dataset linked to the WABA
  * for sales) and may be rejected by Meta if missing.
  *
@@ -12311,8 +12318,9 @@ export type adSetStatus = 'ACTIVE' | 'PAUSED';
  * `LOWEST_COST_WITHOUT_CAP` (auto-bid) when omitted.
  * `LOWEST_COST_WITH_BID_CAP` and `COST_CAP` require
  * `bidAmount`. `LOWEST_COST_WITH_MIN_ROAS` requires
- * `roasAverageFloor`. CTWA's `optimization_goal` is fixed to
- * `CONVERSATIONS`, but the bid strategy is independent.
+ * `roasAverageFloor`. The ad set `optimization_goal` comes from the endpoint
+ * (`CONVERSATIONS` on POST /v1/ads/ctwa, `QUALITY_CALL` on POST /v1/ads/call, the
+ * `optimizationGoal` field on POST /v1/ads/messaging); the bid strategy is independent.
  *
  */
 export type bidStrategy = 'LOWEST_COST_WITHOUT_CAP' | 'LOWEST_COST_WITH_BID_CAP' | 'COST_CAP' | 'LOWEST_COST_WITH_MIN_ROAS';
@@ -84488,6 +84496,15 @@ export type CreateMessagingAdData = {
      *
      */
     destinations?: Array<('whatsapp' | 'messenger' | 'instagram_direct')>;
+    /**
+     * What the ad set optimizes for. Defaults to `CONVERSATIONS`. Cannot be combined with `adSetId` (the existing ad set owns its goal).
+     *
+     * - `LEAD_GENERATION` needs a single `destination: whatsapp` (a 400 with `destinations` or another destination) and runs the campaign under `OUTCOME_LEADS`.
+     * - `objective`, when sent with `LEAD_GENERATION`, must be `OUTCOME_LEADS`.
+     * - With `existingCampaignId` the campaign must be `OUTCOME_LEADS` (a 400 otherwise).
+     *
+     */
+    optimizationGoal?: 'CONVERSATIONS' | 'LEAD_GENERATION';
     /**
      * A different image or video per placement on one messaging ad, e.g. a 4:5 image on Feed and a 9:16 image on Stories/Reels. Works on the single-creative shape and on attach (`adSetId`).
      *

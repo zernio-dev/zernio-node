@@ -22475,7 +22475,7 @@ export const sendWhatsAppConversion = <ThrowOnError extends boolean = false>(opt
  *
  * `destinations` puts two or three of them on one ad set and lets Meta pick the app per viewer.
  *
- * The ad set is created with the matching destination_type and CONVERSATIONS optimization. The campaign objective defaults to OUTCOME_ENGAGEMENT.
+ * The ad set is created with the matching destination_type and CONVERSATIONS optimization by default (see `optimizationGoal` for LEAD_GENERATION). The campaign objective defaults to OUTCOME_ENGAGEMENT (OUTCOME_LEADS with LEAD_GENERATION).
  *
  * This endpoint supersedes POST /v1/ads/ctwa (deprecated, equivalent to `destination: whatsapp`).
  *
