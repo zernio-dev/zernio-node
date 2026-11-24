@@ -40435,6 +40435,8 @@ export type GetConnectUrlData = {
          *
          * - Standard mode: connected={platform}&profileId=X&accountId=Y&username=Z.
          * - X on prepaid-balance billing at a $0 balance: `billingNotice=x_balance_required` is added. The account is connected, but X posts wait or are refused (402 `insufficient_balance`) until the balance is funded.
+         * - The login landed on an account the profile already had connected, on a connect that named none (no `reconnectAccountId`, `expectedUsername` or `expectedPlatformUserId`): `accountNotice=already_connected` is added. No new account was added: `accountId` is that account, with its connection refreshed.
+         * - Platforms sign in whoever is logged in on the device, so to connect a different account the user logs out of the platform first, or uses a private window. On Instagram Login, `forceReauth=true` asks for the credentials of the account to connect instead.
          * - Headless mode: OAuth data params for platforms requiring selection (e.g. LinkedIn orgs, Facebook pages). If no selection is needed, the account is created directly and the redirect includes accountId.
          *
          * **Failure params:** the browser goes to the same redirect_url with `error` and `platform` appended (always present). `error_message`, `is_user_fixable`, `reason`, `dashboard_url`, `missing_scopes`, `error_reason` and the `platform_error*` params are conditional: treat them as optional.
