@@ -31517,6 +31517,7 @@ export type WorkflowEdge = {
      * - **gohighlevel_upsert_contact**: `'success'` | `'error'` (not connected / HighLevel refused)
      * - **crm_upsert_deal**, **crm_add_note**, **crm_create_task**: `'success'` | `'error'` (not connected / the CRM refused)
      * - **ai**: `'success'` (text/JSON response) | `'tool:<toolName>'` (model invoked that tool) | `'error'` (upstream failure / non-JSON in JSON mode)
+     * - **agent**: `'complete'` | `'handoff'` (only with `handoffPolicy: follow_edge`) | `'timeout'` | `'error'`
      * - **start_call**: `'success'` | `'permission_required'` | `'failed'`
      * - **a_b_split**: `'a'` | `'b'`
      * - **enroll_sequence**: `'success'` | `'error'`
@@ -31583,14 +31584,14 @@ export type WorkflowNode = {
      */
     id: string;
     /**
-     * Node kind. The 22 supported types break into four groups:
+     * Node kind. The 23 supported types break into four groups:
      * messaging (send_message),
      * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
      * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
-     * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, crm_upsert_deal, crm_add_note, crm_create_task, ai, handoff, start_call).
+     * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, crm_upsert_deal, crm_add_note, crm_create_task, ai, agent, handoff, start_call).
      *
      */
-    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+    type: 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'agent' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
     /**
      * Type-specific settings. Every string field supports `{{variable}}` interpolation against the run's variable bag, resolved at execution time.
      *
@@ -31726,6 +31727,16 @@ export type WorkflowNode = {
      *
      * **ai**: `{ provider: anthropic|openai|google|mistral|groq|openrouter, model, preset: smart|tools|cheap, systemPrompt, userPromptTemplate, saveAs, temperature, maxTokens, outputType: text|json, tools:[{ name, description, parameters }] }`. Set `provider` + `model` for BYOK (uses your stored API key); omit `provider` for the legacy Telnyx path. Edges: `'success'`, `'tool:<name>'` (model picked a tool), `'error'`.
      *
+     * **agent**: `{ provider, model, instructions, allowedTools:[lookup_order|add_tag|remove_tag|set_field|handoff_to_human], writableFields:[string], maxTurns:int (1-20, default 6), timeoutMinutes:int (max 43200, default 1440), outputSchema:[{ name, type: string|number|boolean, description, required }], handoffPolicy: end_run|follow_edge, saveAs }`. An AI agent that holds a conversation with the contact using your stored provider key (BYOK, as `ai`).
+     *
+     * - Each answer is sent to the contact, then the run waits for their reply (up to `timeoutMinutes`) and the agent continues with it.
+     * - `instructions` is the system prompt and supports `{{variable}}`. The agent is offered only `allowedTools` plus `complete`; `set_field` writes only the fields in `writableFields`.
+     * - `lookup_order` reads the connected store: an order found by number is returned only when it belongs to the contact (email or phone).
+     * - `complete` writes the `outputSchema` fields to `vars[saveAs]` (default `agent`). `handoff_to_human` flags the conversation for a person and ends the run (`end_run`) or follows the `'handoff'` edge (`follow_edge`).
+     * - After `maxTurns` answers the agent hands off when it can (`handoff_to_human` allowed with `end_run`, or a `'handoff'` edge with `follow_edge`), else it exits on `'error'`. 150,000 tokens also end it on `'error'`.
+     * - Run variables starting with `__` (the agent's transcript while it is active) are never sent by a webhook or filled into another step's text. For teams that keep no message content, the run history records tool names and outcomes only.
+     * - Edges: `'complete'`, `'handoff'`, `'timeout'` (no reply in time), `'error'` (`vars[saveAs + '_error']` says why, such as `max_turns`).
+     *
      * **handoff**: `{ note, assignTo }`. Terminates the run as `exited` and flags the conversation for a human operator.
      *
      * **start_call**: `{ to, forwardTo, requirePermissionFirst, recordingEnabled, saveAs }`. WhatsApp-only. `forwardTo` can be `tel:+E164`, `sip:user@host`, or `wss://…` (AI voice agent). Edges: `'success'`, `'permission_required'`, `'failed'`.
@@ -31758,14 +31769,14 @@ export type WorkflowNode = {
 };
 
 /**
- * Node kind. The 22 supported types break into four groups:
+ * Node kind. The 23 supported types break into four groups:
  * messaging (send_message),
  * control flow (trigger, condition, delay, wait_for_reply, a_b_split, end),
  * data ops (set_variable, set_field, add_tag, remove_tag, enroll_sequence),
- * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, crm_upsert_deal, crm_add_note, crm_create_task, ai, handoff, start_call).
+ * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, crm_upsert_deal, crm_add_note, crm_create_task, ai, agent, handoff, start_call).
  *
  */
-export type type42 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type42 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'agent' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 export type Workspace = {
     id?: string;
