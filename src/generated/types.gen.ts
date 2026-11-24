@@ -10154,6 +10154,14 @@ export type ConversionEvent = {
              */
             li_fat_id?: string;
             /**
+             * TikTok click ID (the `ttclid` URL param TikTok adds to ad clicks). Sent to TikTok pixel destinations as `user.ttclid`, not hashed.
+             */
+            ttclid?: string;
+            /**
+             * TikTok Pixel browser id (the `_ttp` cookie). Sent to TikTok pixel destinations as `user.ttp`, not hashed. Offline Event Sets match on email and phone only.
+             */
+            ttp?: string;
+            /**
              * Pinterest click ID (the `epik` URL param or `_epik` cookie). Sent to Pinterest as `click_id`, not hashed.
              */
             epik?: string;
