@@ -22211,9 +22211,9 @@ export type StagedAdChange = {
      */
     id: string;
     /**
-     * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
+     * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, the campaign targeting route, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
      */
-    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'ad_create' | 'campaign_create' | 'ad_set_create';
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create';
     /**
      * The ad platform of the object, as the write route names it.
      */
@@ -22311,9 +22311,9 @@ export type StagedAdChange = {
 };
 
 /**
- * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
+ * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, the campaign targeting route, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
  */
-export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'ad_create' | 'campaign_create' | 'ad_set_create';
+export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create';
 
 /**
  * - `staged`: waiting to be confirmed or discarded.
@@ -22335,7 +22335,7 @@ export type StagedAdChangeSummary = {
     /**
      * Which write was staged.
      */
-    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'ad_create' | 'campaign_create' | 'ad_set_create';
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create';
     /**
      * The ad platform of the object, as the write route names it.
      */
@@ -70322,6 +70322,10 @@ export type GetCampaignTargetingError = (ErrorResponse | unknown);
 
 export type UpdateCampaignTargetingData = {
     body: {
+        /**
+         * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Cannot be combined with `validateOnly` or `dryRun`.
+         */
+        stage?: boolean;
         platform: 'google';
         targeting: {
             /**
@@ -70457,6 +70461,8 @@ export type UpdateCampaignTargetingResponse = ({
         id?: string;
         name?: string;
     }>;
+} | {
+    change: StagedAdChange;
 });
 
 export type UpdateCampaignTargetingError = (ErrorResponse | unknown);

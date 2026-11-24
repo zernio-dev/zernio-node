@@ -16392,6 +16392,16 @@ export const getCampaignTargeting = <ThrowOnError extends boolean = false>(optio
  * - `devices` and `locationTargetingType` stay campaign-level.
  * - `excludedLocations` is not available on Demand Gen yet and returns 400.
  *
+ * ### Staging
+ *
+ * Send `stage: true` to store the edit as an ad change of type `campaign_targeting` instead of applying it. The answer is `202` with the change.
+ *
+ * Its diff has one entry per value under `targeting`. `before` comes from the campaign's devices, locations, excluded locations, languages and location targeting type, read live from Google.
+ *
+ * Confirm reads them again and answers `409` if any of them changed.
+ *
+ * A Demand Gen campaign's targeting cannot be staged yet: its locations and languages live on its ad groups, which that read does not cover. `stage: true` on one returns `400` with code `staging_not_supported` before anything is stored.
+ *
  */
 export const updateCampaignTargeting = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<UpdateCampaignTargetingData, ThrowOnError>) => {
     return (options?.client ?? client).put<UpdateCampaignTargetingResponse, UpdateCampaignTargetingError, ThrowOnError>({
