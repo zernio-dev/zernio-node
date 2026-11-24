@@ -22139,6 +22139,101 @@ export type platform18 = 'tiktok' | 'instagram' | 'facebook' | 'youtube' | 'link
  */
 export type tiktokAccountType = 'business' | 'personal' | 'unknown';
 
+/**
+ * An ad write that was validated and stored with `stage: true`, waiting to be confirmed or discarded.
+ */
+export type StagedAdChange = {
+    /**
+     * The change id, used in /v1/ads/changes/{changeId}.
+     */
+    id: string;
+    /**
+     * Which write was staged.
+     */
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status';
+    /**
+     * The ad platform of the object, as the write route names it.
+     */
+    platform: string;
+    /**
+     * The connected account the write goes through.
+     */
+    accountId: string;
+    /**
+     * The ad account id on the platform.
+     */
+    adAccountId: string;
+    /**
+     * The object the change applies to: the platform campaign id, the platform ad set id, or the Zernio ad id.
+     */
+    targetId: (string) | null;
+    /**
+     * - `staged`: waiting to be confirmed or discarded.
+     * - `confirming`: a confirm is running. A change that stays here has an unknown outcome and is never applied again automatically.
+     * - `confirmed`: applied. `result` holds what the write returned.
+     * - `failed`: not applied. `error` says why.
+     *
+     */
+    status: 'staged' | 'confirming' | 'confirmed' | 'failed';
+    /**
+     * One entry per field of the staged request.
+     */
+    diff: Array<{
+        field: string;
+        /**
+         * The value on the ad network when the change was staged. Null when `beforeAvailable` is false.
+         */
+        before: unknown;
+        /**
+         * The value the change will write.
+         */
+        after: unknown;
+        /**
+         * False when the live read of the object does not return this field, so `before` is unknown.
+         */
+        beforeAvailable: boolean;
+    }>;
+    /**
+     * The user who staged the change.
+     */
+    createdBy: string;
+    createdAt: string;
+    /**
+     * When the confirm ended, as `confirmed` or `failed`. A finished change is deleted 7 days later.
+     */
+    finishedAt: (string) | null;
+    /**
+     * Present once `confirmed`: the response body of the write.
+     */
+    result?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Present once `failed`.
+     */
+    error?: {
+        /**
+         * An error code, or `target_changed` when the object changed on the ad network after staging.
+         */
+        code?: string;
+        message?: (string) | null;
+    };
+};
+
+/**
+ * Which write was staged.
+ */
+export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status';
+
+/**
+ * - `staged`: waiting to be confirmed or discarded.
+ * - `confirming`: a confirm is running. A change that stays here has an unknown outcome and is never applied again automatically.
+ * - `confirmed`: applied. `result` holds what the write returned.
+ * - `failed`: not applied. `error` says why.
+ *
+ */
+export type status60 = 'staged' | 'confirming' | 'confirmed' | 'failed';
+
 export type StoredEvent = {
     eventId?: string;
     /**
@@ -22393,7 +22488,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status60 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status61 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -23361,14 +23456,14 @@ export type TrackingSite = {
     updatedAt?: string;
 };
 
-export type status61 = 'active' | 'paused' | 'removing';
+export type status62 = 'active' | 'paused' | 'removing';
 
 /**
  * How the tag is installed. `snippet` means you paste it.
  */
 export type method6 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
 
-export type type32 = 'CNAME';
+export type type33 = 'CNAME';
 
 /**
  * How a visitor with no consent signal is treated. `eu_opt_in` (default): no consent in the EU, UK and other countries that require it, consent elsewhere. `opt_in`: no consent anywhere. `opt_out`: consent everywhere.
@@ -23680,7 +23775,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status62 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status63 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -23774,7 +23869,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status63 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status64 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -23815,7 +23910,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status64 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status65 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -23997,7 +24092,7 @@ export type UploadedFile = {
     mimeType?: string;
 };
 
-export type type33 = 'image' | 'video' | 'document';
+export type type34 = 'image' | 'video' | 'document';
 
 export type UploadTokenResponse = {
     token?: string;
@@ -24006,7 +24101,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status65 = 'pending' | 'completed' | 'expired';
+export type status66 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -24552,7 +24647,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status66 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status67 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel6 = 'sms' | 'whatsapp';
 
@@ -24811,7 +24906,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status67 = 'success' | 'failed';
+export type status68 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -24925,7 +25020,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status68 = 'success' | 'failure';
+export type status69 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -25232,7 +25327,7 @@ export type event7 = 'account.privacy_request';
  *
  * shop_redact: erase the data you hold about the whole shop. Sent 48 hours after the merchant uninstalled the app.
  */
-export type type34 = 'customer_data_request' | 'customer_redact' | 'shop_redact';
+export type type35 = 'customer_data_request' | 'customer_redact' | 'shop_redact';
 
 /**
  * Webhook payload for account.rate_limited: a mailbox entered a sending cooldown.
@@ -25608,7 +25703,7 @@ export type WebhookPayloadAdReview = {
 
 export type event14 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status69 = 'approved' | 'rejected';
+export type status70 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -26179,7 +26274,7 @@ export type event20 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status70 = 'ready' | 'error';
+export type status71 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -26320,7 +26415,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event23 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status71 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status72 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -27733,7 +27828,7 @@ export type WebhookPayloadCommerceOrder = {
 
 export type event48 = 'commerce.order.created' | 'commerce.order.updated' | 'commerce.order.refunded';
 
-export type type35 = 'order';
+export type type36 = 'order';
 
 export type WebhookPayloadCommerceProduct = {
     /**
@@ -27776,7 +27871,7 @@ export type WebhookPayloadCommerceProduct = {
 
 export type event49 = 'commerce.product.created' | 'commerce.product.updated' | 'commerce.product.deleted';
 
-export type type36 = 'product';
+export type type37 = 'product';
 
 /**
  * Webhook payload for contact.updated and contact.deleted, fired after a provider contacts sync (Google Contacts, Outlook) changed a contact. contact.updated also fires after a WhatsApp coexistence address-book change (WhatsApp never fires contact.deleted). Read the contact with `GET /v1/contacts/{id}`.
@@ -28177,7 +28272,7 @@ export type event57 = 'email.bounced';
 /**
  * `hard`: 5.x.x, the address does not take mail. `soft`: 4.x.x, a temporary refusal the sending server gave up on. `undetermined`: the report gave no status.
  */
-export type type37 = 'hard' | 'soft' | 'undetermined';
+export type type38 = 'hard' | 'soft' | 'undetermined';
 
 export type category2 = 'user_unknown' | 'mailbox_full' | 'domain_not_found' | 'policy_blocked' | 'spam_blocked' | 'blocklisted' | 'message_too_large' | 'content_rejected' | 'auth_failure' | 'rate_limited' | 'other';
 
@@ -28730,7 +28825,7 @@ export type platform25 = 'instagram' | 'facebook' | 'linkedin';
 /**
  * Null on LinkedIn.
  */
-export type type38 = 'caption' | 'post' | 'comment';
+export type type39 = 'caption' | 'post' | 'comment';
 
 /**
  * Webhook payload for message received events
@@ -29870,7 +29965,7 @@ export type event75 = 'notification.sent';
  */
 export type category3 = 'postFailures' | 'accountIssues' | 'securityAlerts';
 
-export type type39 = 'post_failed' | 'account_disconnected' | 'conversions_failing' | 'api_key_handed_over' | 'whatsapp_inbound_lost';
+export type type40 = 'post_failed' | 'account_disconnected' | 'conversions_failing' | 'api_key_handed_over' | 'whatsapp_inbound_lost';
 
 /**
  * Webhook payload for phone_number.stock_available events
@@ -30165,7 +30260,7 @@ export type event79 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status72 = 'published' | 'failed' | 'deleted';
+export type status73 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -30755,7 +30850,7 @@ export type event92 = 'whatsapp.account.name_status_updated';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status73 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status74 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -30889,7 +30984,7 @@ export type event94 = 'whatsapp.account.status_updated';
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status74 = 'restricted' | 'active';
+export type status75 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -31105,7 +31200,7 @@ export type event97 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status75 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status76 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -31169,7 +31264,7 @@ export type event98 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status76 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status77 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -31445,7 +31540,7 @@ export type WhatsAppTemplateButton = {
     navigate_screen?: string;
 };
 
-export type type40 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
+export type type41 = 'quick_reply' | 'url' | 'phone_number' | 'otp' | 'copy_code' | 'flow' | 'mpm' | 'catalog';
 
 /**
  * Required when type is otp
@@ -31487,7 +31582,7 @@ export type WhatsAppTemplateLookupError = {
     };
 };
 
-export type type41 = 'platform_error';
+export type type42 = 'platform_error';
 
 export type code5 = 'platform_api_error';
 
@@ -31573,7 +31668,7 @@ export type WorkflowExecutionEvent = {
 
 export type action3 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status77 = 'success' | 'failed' | 'pending';
+export type status78 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -31776,7 +31871,7 @@ export type WorkflowNode = {
  * integrations (webhook, hubspot_upsert_contact, salesforce_upsert_contact, gohighlevel_upsert_contact, crm_upsert_deal, crm_add_note, crm_create_task, ai, agent, handoff, start_call).
  *
  */
-export type type42 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'agent' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
+export type type43 = 'trigger' | 'send_message' | 'wait_for_reply' | 'condition' | 'set_variable' | 'delay' | 'webhook' | 'hubspot_upsert_contact' | 'salesforce_upsert_contact' | 'gohighlevel_upsert_contact' | 'crm_upsert_deal' | 'crm_add_note' | 'crm_create_task' | 'ai' | 'agent' | 'handoff' | 'start_call' | 'a_b_split' | 'set_field' | 'enroll_sequence' | 'add_tag' | 'remove_tag' | 'end';
 
 export type Workspace = {
     id?: string;
@@ -31951,7 +32046,7 @@ export type XArticleBlock = {
     entity_ranges?: Array<XArticleEntityRange>;
 };
 
-export type type43 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
+export type type44 = 'unstyled' | 'header-one' | 'header-two' | 'header-three' | 'unordered-list-item' | 'ordered-list-item' | 'blockquote' | 'atomic';
 
 /**
  * X's snake_case content-state shape. Standard DraftJS camelCase fields such as entityMap, inlineStyleRanges, and entityRanges are rejected.
@@ -32030,7 +32125,7 @@ export type XArticleEntity = {
 
 export type mutability = 'immutable' | 'mutable' | 'segmented';
 
-export type type44 = 'divider' | 'latex';
+export type type45 = 'divider' | 'latex';
 
 /**
  * The referenced entity must exist, and offset plus length must not exceed the containing block's text length.
@@ -68434,6 +68529,55 @@ export type UndoAdRuleActivityResponse = ({
 
 export type UndoAdRuleActivityError = (ErrorResponse);
 
+export type GetAdChangeData = {
+    path: {
+        /**
+         * The id of the staged change.
+         */
+        changeId: string;
+    };
+};
+
+export type GetAdChangeResponse = ({
+    change: StagedAdChange;
+});
+
+export type GetAdChangeError = (ErrorResponse | {
+    error?: string;
+});
+
+export type DiscardAdChangeData = {
+    path: {
+        /**
+         * The id of the staged change.
+         */
+        changeId: string;
+    };
+};
+
+export type DiscardAdChangeResponse = (void);
+
+export type DiscardAdChangeError = (ErrorResponse | {
+    error?: string;
+});
+
+export type ConfirmAdChangeData = {
+    path: {
+        /**
+         * The id of the staged change.
+         */
+        changeId: string;
+    };
+};
+
+export type ConfirmAdChangeResponse = ({
+    [key: string]: unknown;
+});
+
+export type ConfirmAdChangeError = (ErrorResponse | {
+    error?: string;
+});
+
 export type GetAdRuleData = {
     path: {
         ruleId: string;
@@ -69113,6 +69257,10 @@ export type UpdateAdCampaignStatusData = {
     body: {
         status: 'active' | 'paused';
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
+        /**
+         * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; cannot be combined with `validateOnly` or `dryRun`.
+         */
+        stage?: boolean;
     };
     headers?: {
         /**
@@ -69164,6 +69312,8 @@ export type UpdateAdCampaignStatusResponse = ({
      * Why the write was skipped, for example "Campaign already switched off".
      */
     skippedReasons?: Array<(string)>;
+} | {
+    change: StagedAdChange;
 });
 
 export type UpdateAdCampaignStatusError = (unknown);
@@ -70956,6 +71106,10 @@ export type UpdateAdSetStatusData = {
     body: {
         status: 'active' | 'paused';
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
+        /**
+         * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; cannot be combined with `validateOnly` or `dryRun`.
+         */
+        stage?: boolean;
     };
     headers?: {
         /**
@@ -71016,6 +71170,8 @@ export type UpdateAdSetStatusResponse = ({
      * Why the write was skipped, for example "Ad set already switched off".
      */
     skippedReasons?: Array<(string)>;
+} | {
+    change: StagedAdChange;
 });
 
 export type UpdateAdSetStatusError = (unknown | ErrorResponse);
@@ -71671,6 +71827,10 @@ export type DeleteAdError = (ErrorResponse);
 export type UpdateAdStatusData = {
     body: {
         status: 'active' | 'paused';
+        /**
+         * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; cannot be combined with `validateOnly` or `dryRun`.
+         */
+        stage?: boolean;
     };
     headers?: {
         /**
@@ -71716,6 +71876,8 @@ export type UpdateAdStatusResponse = ({
      * Human-readable summary (present only when skipped), e.g. "No change: the ad's own switch is already off"
      */
     message?: string;
+} | {
+    change: StagedAdChange;
 });
 
 export type UpdateAdStatusError = (unknown | ErrorResponse);

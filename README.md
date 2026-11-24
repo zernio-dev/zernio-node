@@ -685,6 +685,13 @@ try {
 | `adCampaigns.replaceCampaignNegativeKeywords()` | Replace campaign-level negative keywords |
 | `adCampaigns.replaceGoogleListingGroupFilters()` | Replace an asset group's listing-group tree |
 
+### Ad Changes
+| Method | Description |
+|--------|-------------|
+| `adChanges.getAdChange()` | Get a staged ad change |
+| `adChanges.confirmAdChange()` | Confirm a staged ad change |
+| `adChanges.discardAdChange()` | Discard a staged ad change |
+
 ### Ad Creatives
 | Method | Description |
 |--------|-------------|

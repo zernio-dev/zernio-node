@@ -91,6 +91,7 @@ import {
   completeTelegramConnect,
   completeWhatsAppPhoneSelection,
   configureTikTokAdsBrandIdentity,
+  confirmAdChange,
   confirmBrandedCallingAuthorizerEmail,
   confirmPayoutBatch,
   confirmTopup,
@@ -361,6 +362,7 @@ import {
   disableVoiceOnNumber,
   disableWhatsAppCalling,
   disableWhatsAppCallingLegacy,
+  discardAdChange,
   discoverImapSettings,
   dismissAdsAlert,
   dismissGoogleRecommendations,
@@ -409,6 +411,7 @@ import {
   getAdCatalog,
   getAdCatalogBatch,
   getAdCatalogProduct,
+  getAdChange,
   getAdComments,
   getAdConversionDestination,
   getAdConversionMetrics,
@@ -2920,6 +2923,15 @@ export class Zernio {
     listAdAccountRuleAlerts: this._bind(listAdAccountRuleAlerts),
     listAdRuleAlerts: this._bind(listAdRuleAlerts),
     listAdRuleRuns: this._bind(listAdRuleRuns),
+  };
+
+  /**
+   * adchanges API
+   */
+  adchanges = {
+    getAdChange: this._bind(getAdChange),
+    discardAdChange: this._bind(discardAdChange),
+    confirmAdChange: this._bind(confirmAdChange),
   };
 
   /**
