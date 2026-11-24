@@ -9420,7 +9420,7 @@ export type ConnectWelcomeScreen = {
  */
 export type ConsentDrop = {
     /**
-     * Index into the events sent to this destination.
+     * Position of the event in the request's `events` array, counted from 0, also when repeats or events this destination does not take were left out.
      */
     eventIndex?: number;
     eventId?: string;
@@ -82167,7 +82167,7 @@ export type SendEventsResponse = ({
         drops?: Array<ConsentDrop>;
         failures?: Array<{
             /**
-             * Index into the events sent to this destination.
+             * Position of the event in the request's `events` array, counted from 0, also when repeats or events this destination does not take were left out.
              */
             eventIndex?: number;
             eventId?: string;
