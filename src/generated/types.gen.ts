@@ -23614,6 +23614,14 @@ export type TrackingSitePeriodTotals = {
      * Purchases with ad consent for which no browser pixel fired, so only the server reported them.
      */
     recovered?: number;
+    /**
+     * Leads recorded on the site without bots.
+     */
+    leads?: number;
+    /**
+     * Checkouts started on the site without bots.
+     */
+    checkouts?: number;
 };
 
 export type TrackingSitePixel = {
@@ -83010,6 +83018,10 @@ export type GetEventsOverviewResponse = ({
             '7d'?: TrackingSitePeriodTotals;
             '30d'?: TrackingSitePeriodTotals;
         };
+        /**
+         * Whether no forwarding rule of the profile to an ad platform uses the site (its own events, or server events its visits complete) and its tag fires no ad pixel in the browser.
+         */
+        sendsNowhere?: boolean;
     }>;
     /**
      * Each event name stored in the 30 days before today and where it comes from. When a name comes from both the website tag and a server source, only the server copies count (in this overview, the daily overview and campaign results).
