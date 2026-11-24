@@ -4088,7 +4088,41 @@ export type AnalyticsListResponse = {
      * Whether user has analytics add-on access
      */
     hasAnalyticsAccess?: boolean;
+    /**
+     * The X accounts this list covers (after its platform, profile and account filters) whose analytics sync does not run: their numbers stay as of the last read. Also sent with `view=summary`. Absent when there are none.
+     */
+    analyticsOff?: Array<AnalyticsOffAccount>;
 };
+
+/**
+ * X only: why no analytics sync runs for the account, so its numbers stay as of the last read (one read is made when the account connects).
+ */
+export type AnalyticsOff = {
+    /**
+     * - X_ANALYTICS_NOT_ENABLED: `xCapabilities.analytics` is off on the account. It is opt-in on usage-based billing. Turn it on with `PUT /v1/accounts/{accountId}`, or in the account's X settings in the dashboard.
+     * - X_ANALYTICS_PAUSED: it was on, and the monthly X spend cap turned it off.
+     * - PAYMENT_REQUIRED: X access is paused because billing on this account failed.
+     *
+     * New values may be added.
+     *
+     */
+    code: 'X_ANALYTICS_NOT_ENABLED' | 'X_ANALYTICS_PAUSED' | 'PAYMENT_REQUIRED';
+    message: string;
+};
+
+/**
+ * - X_ANALYTICS_NOT_ENABLED: `xCapabilities.analytics` is off on the account. It is opt-in on usage-based billing. Turn it on with `PUT /v1/accounts/{accountId}`, or in the account's X settings in the dashboard.
+ * - X_ANALYTICS_PAUSED: it was on, and the monthly X spend cap turned it off.
+ * - PAYMENT_REQUIRED: X access is paused because billing on this account failed.
+ *
+ * New values may be added.
+ *
+ */
+export type code = 'X_ANALYTICS_NOT_ENABLED' | 'X_ANALYTICS_PAUSED' | 'PAYMENT_REQUIRED';
+
+export type AnalyticsOffAccount = {
+    accountId: string;
+} & AnalyticsOff;
 
 export type AnalyticsOverview = {
     totalPosts?: number;
@@ -4141,6 +4175,10 @@ export type AnalyticsSinglePostResponse = {
      * Human-readable status message for pending, partial, or failed states
      */
     message?: (string) | null;
+    /**
+     * The X accounts of this post whose analytics sync does not run: synced numbers stay as of the last read, and a pending X entry stays pending. Absent when there are none.
+     */
+    analyticsOff?: Array<AnalyticsOffAccount>;
     /**
      * Cover image URL. A Facebook, Instagram or TikTok cover whose signed CDN link is still valid is served as that link, which expires (Meta `oe=`, TikTok `x-expires=`): download the image rather than storing the link.
      *
@@ -7941,7 +7979,7 @@ export type CampaignSubmissionFlag = {
     raisedAt: string;
 };
 
-export type code = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap' | 'paid_views' | 'organic_unverified';
+export type code2 = 'duplicate_media' | 'duplicate_post' | 'view_spike' | 'linked_accounts' | 'cross_operator' | 'unreachable' | 'post_deleted' | 'account_restricted' | 'low_authenticity' | 'x_read_cap' | 'paid_views' | 'organic_unverified';
 
 /**
  * The outcome of the latest chat history request Zernio sent Meta for a WhatsApp coexistence number, read from the account (not a live probe).
@@ -15889,7 +15927,7 @@ export type HubSpotSettings = {
 
 export type platform11 = 'hubspot';
 
-export type code2 = 'REQUIRED_CONTACT_PROPERTIES';
+export type code3 = 'REQUIRED_CONTACT_PROPERTIES';
 
 export type ImapConnectResult = {
     dryRun?: boolean;
@@ -17820,7 +17858,7 @@ export type LinkedInMentionIssue = {
 /**
  * Why it failed.
  */
-export type code3 = 'linkedin_mention_unresolvable' | 'linkedin_mention_requires_page_admin' | 'linkedin_mention_name_unavailable' | 'linkedin_mentions_limit_exceeded' | 'rate_limited' | 'reconnect_required' | 'temporarily_unavailable';
+export type code4 = 'linkedin_mention_unresolvable' | 'linkedin_mention_requires_page_admin' | 'linkedin_mention_name_unavailable' | 'linkedin_mentions_limit_exceeded' | 'rate_limited' | 'reconnect_required' | 'temporarily_unavailable';
 
 /**
  * LinkedIn post options.
@@ -20423,6 +20461,10 @@ export type PostMetricsResponse = {
      * On a list of posts: the accounts this read queued for a fresh sync, because they were never synced or their stored numbers are over 90 minutes old. The answer holds the stored numbers; the synced ones arrive within minutes.
      */
     syncRequestedAccountIds?: Array<(string)>;
+    /**
+     * The X accounts read whose analytics sync does not run: their stored numbers are not refreshed, and their posts without any stay pending. On a list, on the first page. Absent when there are none, and on the groupBy and changedSince reads other than groupBy=post.
+     */
+    analyticsOff?: Array<AnalyticsOffAccount>;
     /**
      * With groupBy=format: how many of the newest posts the metrics sum, and the most it reads. Below limit, every post of the range is counted.
      */
@@ -24160,6 +24202,7 @@ export type UsageAttributionSlice = {
         accounts?: number;
         numbers?: number;
         imessage?: number;
+        rcs?: number;
         calls?: number;
         sms?: number;
         messages?: number;
@@ -24167,6 +24210,8 @@ export type UsageAttributionSlice = {
         dlc?: number;
         xApi?: number;
         ads?: number;
+        automations?: number;
+        websiteEvents?: number;
         credits?: number;
         other?: number;
     };
@@ -24195,6 +24240,10 @@ export type UsageMetering = {
          * iMessage sender fees.
          */
         imessage?: number;
+        /**
+         * RCS agent and message fees.
+         */
+        rcs?: number;
         calls?: number;
         sms?: number;
         /**
@@ -24215,6 +24264,14 @@ export type UsageMetering = {
          */
         ads?: number;
         /**
+         * Automation run and ad automation fees.
+         */
+        automations?: number;
+        /**
+         * Website event fees.
+         */
+        websiteEvents?: number;
+        /**
          * Applied credits/discounts (negative).
          */
         credits?: number;
@@ -24227,6 +24284,7 @@ export type UsageMetering = {
         accounts?: number;
         numbers?: number;
         imessage?: number;
+        rcs?: number;
         calls?: number;
         sms?: number;
         messages?: number;
@@ -24234,6 +24292,8 @@ export type UsageMetering = {
         dlc?: number;
         xApi?: number;
         ads?: number;
+        automations?: number;
+        websiteEvents?: number;
         credits?: number;
         other?: number;
         total?: number;
@@ -24243,7 +24303,7 @@ export type UsageMetering = {
      */
     lineItems?: Array<{
         name?: string;
-        product?: 'accounts' | 'numbers' | 'imessage' | 'calls' | 'sms' | 'messages' | 'verify' | 'dlc' | 'xApi' | 'ads' | 'credits' | 'other';
+        product?: 'accounts' | 'numbers' | 'imessage' | 'rcs' | 'calls' | 'sms' | 'messages' | 'verify' | 'dlc' | 'xApi' | 'ads' | 'automations' | 'websiteEvents' | 'credits' | 'other';
         totalUsd?: number;
         quantity?: number;
         /**
@@ -24310,7 +24370,7 @@ export type UsageMetering = {
         groupBy?: 'profile' | 'account';
         groups?: Array<UsageAttributionGroup>;
         /**
-         * Spend no profile/account of your workspace can claim: credits, 10DLC fees, Verify, usage whose record no longer resolves to an account, and the share measured outside your workspace. Zero for a restricted principal.
+         * Spend no profile/account of your workspace can claim: credits, managed messages, RCS messages, ad automations, Verify, website events, 10DLC registrations that name no profile, usage whose record no longer resolves, and the share measured outside your workspace. Zero for a restricted principal.
          */
         unattributed?: UsageAttributionSlice;
         /**
@@ -26637,7 +26697,7 @@ export type event27 = 'balance.empty';
 /**
  * The 402 code pay-per-use calls get until the balance is funded. `usage_limit_reached` when the auto top-up monthly limit is what keeps it at $0.
  */
-export type code4 = 'insufficient_balance' | 'usage_limit_reached';
+export type code5 = 'insufficient_balance' | 'usage_limit_reached';
 
 export type WebhookPayloadBalanceLow = {
     /**
@@ -31609,7 +31669,7 @@ export type WhatsAppTemplateLookupError = {
 
 export type type42 = 'platform_error';
 
-export type code5 = 'platform_api_error';
+export type code6 = 'platform_api_error';
 
 export type phase = 'template_lookup';
 
@@ -36274,6 +36334,10 @@ export type GetPostTimelineResponse = ({
             [key: string]: (number);
         };
     }>;
+    /**
+     * The X accounts of this post whose analytics sync does not run, so their rows stop at the last read. Absent when there are none.
+     */
+    analyticsOff?: Array<AnalyticsOffAccount>;
 });
 
 export type GetPostTimelineError = ({
@@ -39141,6 +39205,7 @@ export type GetAllAccountsHealthResponse = ({
              */
             lastSyncedAt?: (string) | null;
         };
+        analyticsOff?: AnalyticsOff;
         /**
          * Present on WhatsApp, Instagram and Facebook accounts. An active WhatsApp number with no inbound message or comment 24 hours after its latest connect gets an entry in issues, which never changes status. Null for accounts connected before tracking shipped, until their first inbound event or next connect.
          */
@@ -39416,6 +39481,7 @@ export type GetAccountHealthResponse = ({
          */
         lastSyncedAt?: (string) | null;
     };
+    analyticsOff?: AnalyticsOff;
     /**
      * Present on WhatsApp, Instagram and Facebook accounts. An active WhatsApp number with no inbound message or comment 24 hours after its latest connect gets an entry in issues, which never changes status. Null for accounts connected before tracking shipped, until their first inbound event or next connect.
      */

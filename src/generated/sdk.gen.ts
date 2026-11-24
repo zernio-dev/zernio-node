@@ -2124,7 +2124,7 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  *
  * ### With `range`, `granularity`, `from`, or `to`
  *
- * Returns usage METERING: billed spend (USD) by product family over the window, at `day` / `month` / `total` granularity. Product families: `accounts`, `numbers`, `imessage`, `calls`, `sms`, `messages`, `verify`, `dlc`, `xApi`, `ads`, `credits`, `other`.
+ * Returns usage METERING: billed spend (USD) by product family over the window, at `day` / `month` / `total` granularity. Product families: `accounts`, `numbers`, `imessage`, `rcs`, `calls`, `sms`, `messages`, `verify`, `dlc`, `xApi`, `ads`, `automations`, `websiteEvents`, `credits`, `other`.
  *
  * Data comes from the usage-based invoice breakdown (the CHARGE view, which always reconciles with what gets billed). Also served at `GET /v1/usage/daily`.
  *
@@ -2143,7 +2143,13 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  *
  * With `groupBy=profile`, each group also carries `profileId` and `externalId`.
  *
- * Profile-scoped API keys and members only see their profiles' groups (`attribution.restricted: true`, with `totals` summing the visible groups). Credits, 10DLC fees and Verify are always unattributed.
+ * Profile-scoped API keys and members only see their profiles' groups (`attribution.restricted: true`, with `totals` summing the visible groups).
+ *
+ * Credits, managed messages, RCS messages, ad automations, Verify and website events are always unattributed.
+ *
+ * iMessage sender and RCS agent fees go to the profile of the sender or agent. Automation runs split each day's fee by that day's runs.
+ *
+ * A 10DLC fee goes to a profile only when its registration names one. Registrations filed by API or dashboard belong to the owner and stay unattributed.
  *
  * A caller that sees the whole workspace gets `restricted: false` and the same `totals` as without `groupBy`. Shares are measured over everything the bill and its members carry, so `unattributed` can include spend outside the workspace, never named.
  *
@@ -2172,6 +2178,7 @@ export const getUsage = <ThrowOnError extends boolean = false>(options?: Options
  * ### Related endpoints
  *
  * - Billed spend by product: call `GET /v1/usage` with `range` / `granularity` params.
+ * - Billed spend per profile, by your own `externalId`: `GET /v1/usage?range=cycle&groupBy=profile` ([what each customer costs you](/multi-tenant)).
  * - The statement view (balance, credits, caps, payment status) lives at `GET /v1/billing`.
  *
  * ### Response shape
@@ -2977,6 +2984,8 @@ export const deleteAccount = <ThrowOnError extends boolean = false>(options: Opt
  * Check accounts health
  * Returns health status of all connected accounts including token validity, permissions, and issues needing attention. A failing or stalled analytics sync (see `analyticsSync`) raises a healthy account to at least warning.
  *
+ * An X account whose analytics is off has `analyticsOff` with the reason. It never changes `status`: `analyticsSync` then keeps the date of the last read.
+ *
  * An account the platform has restricted or banned (for example a WhatsApp number Meta reports as BANNED) is `error`, with the platform's reason in `issues`. `needsReconnect` stays false, since reconnecting does not lift it.
  *
  */
@@ -3040,6 +3049,8 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  * Returns detailed health info for a specific account including token status, permissions, and recommendations.
  *
  * A failing or stalled analytics sync (see `analyticsSync`) raises a healthy account to at least `warning`.
+ *
+ * An X account whose analytics is off has `analyticsOff` with the reason. It never changes `status`: `analyticsSync` then keeps the date of the last read.
  *
  * An account the platform has restricted or banned is `error`, with the platform's reason in `issues` and a recommendation that says reconnecting does not lift it.
  *
