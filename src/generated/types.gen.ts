@@ -22148,9 +22148,9 @@ export type StagedAdChange = {
      */
     id: string;
     /**
-     * Which write was staged.
+     * Which write was staged: a status route, or the update route of a campaign, an ad set or an ad.
      */
-    type: 'campaign_status' | 'ad_set_status' | 'ad_status';
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update';
     /**
      * The ad platform of the object, as the write route names it.
      */
@@ -22176,22 +22176,39 @@ export type StagedAdChange = {
      */
     status: 'staged' | 'confirming' | 'confirmed' | 'failed';
     /**
-     * One entry per field of the staged request.
+     * One entry per value of the staged request that the write would change.
+     *
+     * - A nested field is flattened: each leaf is one entry under its dotted path (`budget.amount`, `targeting.ageMin`, `creative.headline`).
+     * - A list is one entry.
+     * - A leaf whose value on the ad network already equals the requested value is left out, so the list can be empty.
+     * - `stage` and other flags that only steer the write are never listed.
+     *
      */
     diff: Array<{
+        /**
+         * The dotted path of the value in the request body.
+         */
         field: string;
         /**
-         * The value on the ad network when the change was staged. Null when `beforeAvailable` is false.
+         * The value on the ad network when the change was staged, in the units and shape of the request body. Null when `beforeAvailable` is false, and also when the object holds no value there.
          */
         before: unknown;
         /**
-         * The value the change will write.
+         * The value the change will write. Null or an empty string clears the field where the write route allows that.
          */
         after: unknown;
         /**
-         * False when the live read of the object does not return this field, so `before` is unknown.
+         * False when the live read of the object does not return this field, so `before` is unknown. The field is still staged.
          */
         beforeAvailable: boolean;
+        /**
+         * Only on a list of plain values (strings or numbers) with `beforeAvailable` true: the values in `after` that are not in `before`. Order is ignored.
+         */
+        added?: Array<unknown>;
+        /**
+         * Only on a list of plain values (strings or numbers) with `beforeAvailable` true: the values in `before` that are not in `after`. Order is ignored.
+         */
+        removed?: Array<unknown>;
     }>;
     /**
      * The user who staged the change.
@@ -22221,9 +22238,9 @@ export type StagedAdChange = {
 };
 
 /**
- * Which write was staged.
+ * Which write was staged: a status route, or the update route of a campaign, an ad set or an ad.
  */
-export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status';
+export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update';
 
 /**
  * - `staged`: waiting to be confirmed or discarded.
@@ -69513,6 +69530,10 @@ export type GetAdCampaignDetailsError = (ErrorResponse | unknown);
 export type UpdateAdCampaignData = {
     body: {
         /**
+         * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; cannot be combined with `validateOnly` or `dryRun`.
+         */
+        stage?: boolean;
+        /**
          * Required: platform campaign IDs are not globally unique.
          */
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
@@ -69639,6 +69660,8 @@ export type UpdateAdCampaignResponse = ({
     platformSpecificData?: {
         [key: string]: unknown;
     };
+} | {
+    change: StagedAdChange;
 });
 
 export type UpdateAdCampaignError = (unknown | ErrorResponse);
@@ -70717,6 +70740,10 @@ export type GetAdSetDetailsError = (unknown | ErrorResponse);
 
 export type UpdateAdSetData = {
     body: {
+        /**
+         * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; cannot be combined with `validateOnly` or `dryRun`.
+         */
+        stage?: boolean;
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'snapchat';
         /**
          * Omit if not updating budget
@@ -71050,6 +71077,8 @@ export type UpdateAdSetResponse = ({
      * Reddit: the end_time written, a UTC instant, or null when the end date was removed. Present when `endDate` was sent.
      */
     endDate?: (string) | null;
+} | {
+    change: StagedAdChange;
 });
 
 export type UpdateAdSetError = (unknown | ErrorResponse);
@@ -71522,6 +71551,10 @@ export type GetAdError = (ErrorResponse | {
 export type UpdateAdData = {
     body: {
         /**
+         * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta and Google only; cannot be combined with `validateOnly` or `dryRun`.
+         */
+        stage?: boolean;
+        /**
          * Google Search and Display only. Replaces the complete headline list. Search takes 3-15, Display 1-5 and rejects pinnedField; the count is checked once the ad's channel is known. No padding or truncation on update.
          */
         headlines?: Array<GoogleRsaHeadline>;
@@ -71812,6 +71845,8 @@ export type UpdateAdData = {
 export type UpdateAdResponse = ({
     ad?: Ad;
     message?: string;
+} | {
+    change: StagedAdChange;
 });
 
 export type UpdateAdError = (unknown | ErrorResponse);

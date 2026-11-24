@@ -15441,6 +15441,8 @@ export const discardAdChange = <ThrowOnError extends boolean = false>(options: O
  *
  * A change is applied at most once. Confirming a change that is already `confirmed` returns its stored result again. A change that failed answers `409` `change_not_staged`: stage a new one.
  *
+ * A refusal before anything is written leaves the change `staged`, so the confirm can be sent again: `403` `ads_allowance_exceeded`, or on a one-field change a `429` from Zernio's own limits. Any other failed write ends the change as `failed`.
+ *
  */
 export const confirmAdChange = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ConfirmAdChangeData, ThrowOnError>) => {
     return (options?.client ?? client).post<ConfirmAdChangeResponse, ConfirmAdChangeError, ThrowOnError>({
