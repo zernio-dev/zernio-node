@@ -770,6 +770,7 @@ import {
   listAdCatalogProductSets,
   listAdCatalogProducts,
   listAdCatalogs,
+  listAdChanges,
   listAdConversionAssociations,
   listAdConversionDestinations,
   listAdConversionGoals,
@@ -2929,6 +2930,7 @@ export class Zernio {
    * adchanges API
    */
   adchanges = {
+    listAdChanges: this._bind(listAdChanges),
     getAdChange: this._bind(getAdChange),
     discardAdChange: this._bind(discardAdChange),
     confirmAdChange: this._bind(confirmAdChange),

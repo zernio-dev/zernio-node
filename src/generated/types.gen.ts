@@ -22311,6 +22311,49 @@ export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campai
  */
 export type status60 = 'staged' | 'confirming' | 'confirmed' | 'failed';
 
+/**
+ * A staged ad change as the list returns it: what it targets and who staged it, without the diff.
+ */
+export type StagedAdChangeSummary = {
+    /**
+     * The change id, used in /v1/ads/changes/{changeId}.
+     */
+    id: string;
+    /**
+     * Which write was staged.
+     */
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'ad_create' | 'campaign_create' | 'ad_set_create';
+    /**
+     * The ad platform of the object, as the write route names it.
+     */
+    platform: string;
+    /**
+     * The connected account the write goes through.
+     */
+    accountId: string;
+    /**
+     * The ad account id on the platform.
+     */
+    adAccountId: string;
+    /**
+     * The object the change applies to. Null for a create, whose object does not exist yet.
+     */
+    targetId: (string) | null;
+    /**
+     * The name of the object when the change was staged, or the name a create will give it. Null when it is not known.
+     */
+    targetName: (string) | null;
+    /**
+     * True when the change creates a new object.
+     */
+    creates: boolean;
+    /**
+     * The user who staged the change.
+     */
+    createdBy: string;
+    createdAt: string;
+};
+
 export type StoredEvent = {
     eventId?: string;
     /**
@@ -68633,6 +68676,29 @@ export type UndoAdRuleActivityResponse = ({
 } | unknown);
 
 export type UndoAdRuleActivityError = (ErrorResponse);
+
+export type ListAdChangesData = {
+    query?: {
+        /**
+         * The `nextCursor` of the previous page, unchanged.
+         */
+        cursor?: string;
+        /**
+         * How many changes to return.
+         */
+        limit?: number;
+    };
+};
+
+export type ListAdChangesResponse = ({
+    changes: Array<StagedAdChangeSummary>;
+    /**
+     * Pass it as `cursor` to read the next page. Null on the last page.
+     */
+    nextCursor: (string) | null;
+});
+
+export type ListAdChangesError = (ErrorResponse);
 
 export type GetAdChangeData = {
     path: {

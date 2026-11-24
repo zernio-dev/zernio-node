@@ -688,6 +688,7 @@ try {
 ### Ad Changes
 | Method | Description |
 |--------|-------------|
+| `adChanges.listAdChanges()` | List staged ad changes |
 | `adChanges.getAdChange()` | Get a staged ad change |
 | `adChanges.confirmAdChange()` | Confirm a staged ad change |
 | `adChanges.discardAdChange()` | Discard a staged ad change |
