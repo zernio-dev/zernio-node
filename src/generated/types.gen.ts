@@ -79321,7 +79321,7 @@ export type CreateStandaloneAdData = {
          */
         isSkadnetworkAttribution?: boolean;
         /**
-         * Meta ad-set attribution. Required as SKADNETWORK for iOS 14+ app promotion or a SKAdNetwork campaign. Requires AUCTION buying. Standalone Meta ad-set creation is not supported; use this field on /v1/ads/create.
+         * Meta ad-set attribution. SKADNETWORK for a SKAdNetwork campaign, AEM for an iOS 14+ AEM campaign without isSkadnetworkAttribution. With existingCampaignId, omit it to follow the campaign; a value that conflicts with the campaign is rejected. Requires AUCTION buying. Use this field on /v1/ads/create.
          */
         campaignAttribution?: 'AEM' | 'SKADNETWORK';
         promotedObject?: AdPromotedObject;
