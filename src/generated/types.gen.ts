@@ -39257,6 +39257,28 @@ export type GetAccountHealthResponse = ({
         pausedUntil?: (string) | null;
     } | null;
     /**
+     * WhatsApp accounts only. The outcome of the latest chat history request Zernio sent Meta for a coexistence number, read from the account (not a live probe). Null when no request ran for the current connection, and on numbers that are not in coexistence.
+     */
+    coexistenceHistorySync?: {
+        /**
+         * - `requested`: Meta accepted the request and has not sent history yet, which can take a while.
+         * - `imported`: Meta sent chat history to this account, including history a reconnect kept.
+         * - `declined`: the business chose not to share its chat history in Meta's window.
+         * - `already_synced`: Meta refused the request because an earlier connection already used the number's one history share. The description above says how to get a new import.
+         * - `refused`: Meta refused it for another reason.
+         *
+         */
+        status?: 'requested' | 'imported' | 'declined' | 'already_synced' | 'refused';
+        /**
+         * The id of the last history request Meta accepted, kept across reconnects. Quote it in a Meta support case.
+         */
+        requestId?: (string) | null;
+        /**
+         * When Meta refused the latest request. Null when it was accepted.
+         */
+        refusedAt?: (string) | null;
+    } | null;
+    /**
      * WhatsApp accounts only. Live probe of the Meta link behind the channel, performed at request time (the same read as GET /v1/whatsapp/number-info).
      */
     platformConnection?: {

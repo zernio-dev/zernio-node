@@ -3058,6 +3058,9 @@ export const verifyWhatsAppNumber = <ThrowOnError extends boolean = false>(optio
  * - When `platformConnection.phoneStatus` is anything other than `CONNECTED`, an entry is added to `issues` and the overall `status` is at least `warning`; `BANNED` makes it `error`. `disconnectReason` stays null, since reconnecting does not lift a Meta status.
  * - When Meta reports `platformConnection.canSendMessage` as `BLOCKED` (for example a payment-method error on the WhatsApp Business Account), an entry is added to `issues` with Meta's own reason, the recommendation is Meta's suggested fix, and the overall `status` is at least `warning`. `LIMITED` does not change `status`. Reconnecting does not lift it.
  * - When sends to one country keep failing with error 130497 (3 failures within 7 days, none delivered there since), an entry naming the country is added to `issues` and `status` is at least `warning`. The recommendation says how Meta lifts it. A delivered send there clears it.
+ * - `coexistenceHistorySync` reports the latest chat history request of a coexistence number. Meta shares a number's chat history only once until the number is disconnected inside the WhatsApp Business app.
+ * - When Meta refused because an earlier connection already used it (Meta error 135000, or 4 after rapid reconnects) and this account holds no imported history, `coexistenceHistorySync.status` is `already_synced` and an entry is added to `issues`. It never changes the overall `status`.
+ * - The recommendation then gives the steps that get a new import: disconnect inside the WhatsApp Business app (Settings > Account > Business Platform), then connect the number again. Removing the account in Zernio and connecting it again does not.
  *
  * ### LINE
  *
