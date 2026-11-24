@@ -2151,9 +2151,15 @@ export const getXApiPricing = <ThrowOnError extends boolean = false>(options?: O
  *
  * A 10DLC fee goes to a profile only when its registration names one. Registrations filed by API or dashboard belong to the owner and stay unattributed.
  *
- * A caller that sees the whole workspace gets `restricted: false` and the same `totals` as without `groupBy`. Shares are measured over everything the bill and its members carry, so `unattributed` can include spend outside the workspace, never named.
+ * A caller that sees the whole workspace gets `restricted: false` and the same `totals` as without `groupBy`.
  *
- * Since 1.817.0 every billed account has one even price: the window's `accounts` total, after tiers and the monthly credit, divided by the billed accounts your members have connected now. Before, the oldest accounts took the credit and could show $0. Your invoice did not change.
+ * Since 1.822.0, shares are measured over what the workspace's bill carries (before, over everything its members held in any workspace):
+ *
+ * - Its own profiles count, whoever connected their accounts. What its members hold on other bills takes no share.
+ * - A profile moved between workspaces counts on each bill for the days it was there.
+ * - What the bill carried for a profile that moved out, or still carries from outside the workspace, is `unattributed` and never named.
+ *
+ * Since 1.817.0 every billed account has one even price: the window's `accounts` total, after tiers and the monthly credit, divided by the accounts connected now (since 1.822.0, the ones the bill carries). Before, the oldest accounts took the credit and could show $0. Your invoice did not change.
  *
  * Example: 5 accounts cost $30 minus the $12 credit, $18, so $3.60 each. A profile with 2 of them shows $7.20. In a contract's first month, a credit carried over is unattributed instead, so they show $6.00 each.
  *
