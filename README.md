@@ -361,6 +361,7 @@ try {
 | Method | Description |
 |--------|-------------|
 | `connect.listCampaignManagerProfiles()` | List Campaign Manager 360 profiles for a pending connect |
+| `connect.listConnectCustomDomains()` | List the workspace's custom domains |
 | `connect.listFacebookPages()` | List Facebook pages |
 | `connect.listGoogleAnalyticsProperties()` | List Google Analytics properties for a pending connect |
 | `connect.listGoogleBusinessCategories()` | List Google Business Profile categories |
@@ -375,6 +376,7 @@ try {
 | `connect.listSlackChannels()` | List Slack channels for the channel picker |
 | `connect.listSnapchatProfiles()` | List Snapchat profiles |
 | `connect.listWhatsAppPhoneNumbers()` | List numbers for selection |
+| `connect.createConnectCustomDomain()` | Add a custom domain |
 | `connect.createGoogleBusinessLocation()` | Create Google Business Profile location |
 | `connect.createGoogleOrgConnection()` | Start a Google Workspace organization connection |
 | `connect.createMicrosoftOrgConnection()` | Start a Microsoft 365 organization connection |
@@ -384,6 +386,7 @@ try {
 | `connect.createYoutubePlaylist()` | Create YouTube playlist |
 | `connect.getAmazonAdsConnectUrl()` | Get Amazon Ads OAuth connect URL |
 | `connect.getCampaignManagerConnectUrl()` | Get Campaign Manager 360 OAuth connect URL |
+| `connect.getConnectCustomDomain()` | Get a custom domain |
 | `connect.getConnectHandoff()` | Get a phone handoff |
 | `connect.getConnectUrl()` | Get OAuth connect URL |
 | `connect.getConnectWelcomeScreen()` | Get the saved welcome screen |
@@ -414,6 +417,7 @@ try {
 | `connect.getWordPressAuthUrl()` | Get WordPress.com OAuth connect URL |
 | `connect.getYoutubeCaptions()` | Get a YouTube video transcript |
 | `connect.getYoutubePlaylists()` | List YouTube playlists |
+| `connect.updateConnectCustomDomain()` | Turn a custom domain on or off for connect |
 | `connect.updateConnectWelcomeScreen()` | Save the welcome screen |
 | `connect.updateFacebookPage()` | Update Facebook page |
 | `connect.updateGmbLocation()` | Update Google Business Profile location |
@@ -423,6 +427,7 @@ try {
 | `connect.updatePinterestBoards()` | Set default Pinterest board |
 | `connect.updateRedditSubreddits()` | Set default subreddit |
 | `connect.updateYoutubeDefaultPlaylist()` | Set default YouTube playlist |
+| `connect.deleteConnectCustomDomain()` | Remove a custom domain |
 | `connect.deleteOAuthApp()` | Remove an OAuth app |
 | `connect.deleteOrgConnection()` | Delete an organization connection |
 | `connect.addOrgConnectionMailbox()` | Add a mailbox from an organization connection |
@@ -470,6 +475,7 @@ try {
 | `connect.setRedditPostFlair()` | Set Reddit post flair |
 | `connect.startMicrosoftAdminConsent()` | Admin-consent link for a Microsoft tenant |
 | `connect.testOAuthApp()` | Check an OAuth app's keys |
+| `connect.verifyConnectCustomDomain()` | Check a custom domain's DNS records now |
 | `connect.verifyOrgConnection()` | Verify an organization connection |
 | `connect.voteRedditThing()` | Vote on a Reddit post or comment |
 

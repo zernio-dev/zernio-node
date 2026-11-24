@@ -669,6 +669,36 @@ describe('Endpoint Methods', () => {
       expect(client.connect.updateConnectWelcomeScreen).toBeTypeOf('function');
     });
 
+    it('should have listConnectCustomDomains method', () => {
+      expect(client.connect.listConnectCustomDomains).toBeDefined();
+      expect(client.connect.listConnectCustomDomains).toBeTypeOf('function');
+    });
+
+    it('should have createConnectCustomDomain method', () => {
+      expect(client.connect.createConnectCustomDomain).toBeDefined();
+      expect(client.connect.createConnectCustomDomain).toBeTypeOf('function');
+    });
+
+    it('should have getConnectCustomDomain method', () => {
+      expect(client.connect.getConnectCustomDomain).toBeDefined();
+      expect(client.connect.getConnectCustomDomain).toBeTypeOf('function');
+    });
+
+    it('should have updateConnectCustomDomain method', () => {
+      expect(client.connect.updateConnectCustomDomain).toBeDefined();
+      expect(client.connect.updateConnectCustomDomain).toBeTypeOf('function');
+    });
+
+    it('should have deleteConnectCustomDomain method', () => {
+      expect(client.connect.deleteConnectCustomDomain).toBeDefined();
+      expect(client.connect.deleteConnectCustomDomain).toBeTypeOf('function');
+    });
+
+    it('should have verifyConnectCustomDomain method', () => {
+      expect(client.connect.verifyConnectCustomDomain).toBeDefined();
+      expect(client.connect.verifyConnectCustomDomain).toBeTypeOf('function');
+    });
+
     it('should have listOAuthApps method', () => {
       expect(client.connect.listOAuthApps).toBeDefined();
       expect(client.connect.listOAuthApps).toBeTypeOf('function');
