@@ -71685,9 +71685,9 @@ export type GetAdTreeData = {
          */
         search?: string;
         /**
-         * Campaign-level sort order. `newest` (default) / `oldest` order by the campaign's newest-ad createdAt. `spend_desc` / `spend_asc` order by aggregated spend in the requested date range; campaigns with no spend land at the end.
+         * Campaign order. `newest` (default) / `oldest`: by the newest ad's createdAt. `spend_*`: by spend in the date range. `results_*` / `cost_per_result_*`: by results, or spend per result, for each campaign's objective (reach summed across its ads); no-result campaigns end a cost order.
          */
-        sort?: 'newest' | 'oldest' | 'spend_desc' | 'spend_asc';
+        sort?: 'newest' | 'oldest' | 'spend_desc' | 'spend_asc' | 'results_desc' | 'results_asc' | 'cost_per_result_asc' | 'cost_per_result_desc';
         /**
          * `all` (default) returns both Zernio-created ads and those discovered from the platform's ad manager. Matches the web UI's default view. Pass `zernio` to restrict to isExternal=false only. Status is NOT filtered by default; use the `status` param for that.
          */
