@@ -71315,6 +71315,15 @@ export type UpdateAdSetData = {
         platformSpecificData?: {
             /**
              * Meta ad-set optimization_goal (e.g. OFFSITE_CONVERSIONS, LANDING_PAGE_VIEWS).
+             *
+             * Meta fixes an ad set's attribution window (`attribution_spec`) at creation. A goal that needs another window cannot be set here:
+             *
+             * - OFFSITE_CONVERSIONS to LANDING_PAGE_VIEWS needs a 1-day click window.
+             * - Meta answers subcode 1885560, and this returns 400 with `param: platformSpecificData.optimizationGoal`.
+             * - Instead, create a new ad set with POST /v1/ads/create, sending the new `optimizationGoal` and its `attributionSpec`, and pause this one.
+             *
+             * `attributionSpec` is not accepted here for the same reason (400 with `param: platformSpecificData.attributionSpec`).
+             *
              */
             optimizationGoal?: string;
             /**
