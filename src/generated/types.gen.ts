@@ -73744,7 +73744,7 @@ export type ReplyToAdCommentData = {
          */
         adId: string;
         /**
-         * TikTok comment ID from the ad comment listing.
+         * TikTok comment ID from the ad comment listing. A Meta comment ID (post_comment) answers 501 with the inbox comment endpoints to use.
          */
         commentId: string;
     };
@@ -73783,7 +73783,7 @@ export type HideAdCommentData = {
          */
         adId: string;
         /**
-         * TikTok comment ID from the ad comment listing.
+         * TikTok comment ID from the ad comment listing. A Meta comment ID (post_comment) answers 501 with the inbox comment endpoints to use.
          */
         commentId: string;
     };
@@ -73820,7 +73820,7 @@ export type DeleteAdCommentData = {
          */
         adId: string;
         /**
-         * TikTok comment ID from the ad comment listing.
+         * TikTok comment ID from the ad comment listing. A Meta comment ID (post_comment) answers 501 with the inbox comment endpoints to use.
          */
         commentId: string;
     };
