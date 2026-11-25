@@ -17460,7 +17460,7 @@ export type InstagramTaggedMedia = {
 export type InstagramVideoFallback = {
     kind: 'instagram_video_reuploaded' | 'instagram_video_rehosted_copy';
     /**
-     * True when the ad still references the original Instagram post and keeps its engagement.
+     * True when the ad still references the original Instagram post and keeps its engagement. The ad's creative may still report an effective_instagram_media_id and permalink different from the boosted media: Instagram's boosted rendition of the same post, which shares its likes and comments.
      */
     linkedToOriginalPost: boolean;
     /**
