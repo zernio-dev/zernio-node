@@ -6556,11 +6556,34 @@ export type BusinessAgentBusinessInformation = {
     } | null;
 };
 
-export type BusinessAgentConnector = BusinessAgentConnectorInput & {
+/**
+ * Secret values are never returned: auth_config and mtls_config leave out client_secret, client_key, private_key and every API key value. Send them again with the credentials call to rotate them.
+ */
+export type BusinessAgentConnector = {
     id: string;
+    name: string;
+    description?: string;
+    base_url: string;
+    connector_protocol?: string;
+    auth_type: 'OAUTH2_CLIENT_CREDENTIALS' | 'API_KEY' | 'NONE';
+    /**
+     * What Meta stores for the connector's auth (for example oauth2_client_credentials with token_url and client_id), without secret values.
+     */
+    auth_config?: {
+        [key: string]: unknown;
+    };
+    user_auth_injection_config?: {
+        location?: string;
+        field_name?: string;
+        prefix?: string;
+    };
+    requires_certificate?: boolean;
     mcp_tool_sync?: {
         [key: string]: unknown;
     };
+    /**
+     * Certificate details, without client_key or private_key.
+     */
     mtls_config?: {
         [key: string]: unknown;
     };
@@ -6572,6 +6595,8 @@ export type BusinessAgentConnector = BusinessAgentConnectorInput & {
         error_message?: string;
     };
 };
+
+export type auth_type = 'OAUTH2_CLIENT_CREDENTIALS' | 'API_KEY' | 'NONE';
 
 export type BusinessAgentConnectorInput = {
     /**
@@ -6599,8 +6624,6 @@ export type BusinessAgentConnectorInput = {
     };
     requires_certificate?: boolean;
 };
-
-export type auth_type = 'OAUTH2_CLIENT_CREDENTIALS' | 'API_KEY' | 'NONE';
 
 export type BusinessAgentConnectorTool = BusinessAgentConnectorToolInput & {
     id: string;
