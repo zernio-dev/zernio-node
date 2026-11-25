@@ -55401,6 +55401,9 @@ export type ListInboxCommentsData = {
          *
          */
         accountId?: string;
+        /**
+         * Pass back `pagination.nextCursor` of the previous page unchanged, with the same `sortBy` and `sortOrder`.
+         */
         cursor?: string;
         limit?: number;
         /**

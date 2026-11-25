@@ -9340,7 +9340,7 @@ export const getMessageAttachment = <ThrowOnError extends boolean = false>(optio
  *
  * Pagination walks each account's platform listing. Following `nextCursor` reaches past the first page on Facebook, Instagram, Threads, LinkedIn and YouTube, the platforms that support a server-side date window. On the others the listing stops at its first page.
  *
- * Cursor pagination is only coherent for the default sort (`sortBy=date`, `sortOrder=desc`). With `sortOrder=asc`, or with `sortBy=comments`, the cursor filter does not match the sort order and the second page is unreliable.
+ * With `sortOrder=asc` or `sortBy=comments`, the pages cover the newest posts of each account that the first page is drawn from, in the requested order; following `nextCursor` does not reach older posts.
  *
  * `minComments` is applied to each page after pagination. A page can hold fewer than `limit` posts, even none, while `hasMore` is true; keep following `nextCursor`.
  *
