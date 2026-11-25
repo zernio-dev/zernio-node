@@ -22304,12 +22304,16 @@ export type StagedAdChange = {
      */
     targetId: (string) | null;
     /**
+     * The name of the object when the change was staged, or the name a create will give it. Null when it is not known.
+     */
+    targetName?: (string) | null;
+    /**
      * Present and true when the change creates a new object. Every diff entry then has `before: null` and `beforeAvailable: false`.
      */
     creates?: boolean;
     /**
      * - `staged`: waiting to be confirmed or discarded.
-     * - `confirming`: a confirm is running. A change that stays here has an unknown outcome and is never applied again automatically.
+     * - `confirming`: a confirm is running. A change left here for 15 minutes ends as `failed` with error code `change_outcome_unknown`, and is never applied again automatically.
      * - `confirmed`: applied. `result` holds what the write returned.
      * - `failed`: not applied. `error` says why.
      *
@@ -22354,9 +22358,17 @@ export type StagedAdChange = {
      * The user who staged the change.
      */
     createdBy: string;
+    /**
+     * The user who confirmed the change. Null while nobody has, and after a confirm that left the change staged.
+     */
+    confirmedBy?: (string) | null;
+    /**
+     * Present and true on a staged change whose last confirm was refused with `change_target_changed`. `error` then says why. Discard it and stage it again from the current values.
+     */
+    stale?: boolean;
     createdAt: string;
     /**
-     * When the confirm ended, as `confirmed` or `failed`. A finished change is deleted 7 days later.
+     * When the confirm ended, as `confirmed` or `failed`. A finished change is deleted 7 days later, a failed create 30 days later.
      */
     finishedAt: (string) | null;
     /**
@@ -22366,7 +22378,7 @@ export type StagedAdChange = {
         [key: string]: unknown;
     };
     /**
-     * Present once `failed`.
+     * Present once `failed`, and on a staged change marked `stale`.
      */
     error?: {
         /**
@@ -22390,7 +22402,7 @@ export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campai
 
 /**
  * - `staged`: waiting to be confirmed or discarded.
- * - `confirming`: a confirm is running. A change that stays here has an unknown outcome and is never applied again automatically.
+ * - `confirming`: a confirm is running. A change left here for 15 minutes ends as `failed` with error code `change_outcome_unknown`, and is never applied again automatically.
  * - `confirmed`: applied. `result` holds what the write returned.
  * - `failed`: not applied. `error` says why.
  *

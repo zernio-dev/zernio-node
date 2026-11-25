@@ -15520,7 +15520,7 @@ export const listAdChanges = <ThrowOnError extends boolean = false>(options?: Op
  * Get a staged ad change
  * Returns one ad change with its before/after diff. A change is created by sending a supported ad write with `stage: true`.
  *
- * A staged change does not expire. A confirmed or failed change stays readable for 7 days.
+ * A staged change does not expire. A confirmed or failed change stays readable for 7 days, a failed create for 30 days. Disconnecting the connection of a staged change deletes it.
  *
  */
 export const getAdChange = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetAdChangeData, ThrowOnError>) => {
@@ -15554,7 +15554,9 @@ export const discardAdChange = <ThrowOnError extends boolean = false>(options: O
  *
  * Before writing, the object is read from the ad network again and compared with what it held when the change was staged.
  *
- * If it changed in between, nothing is written, the change ends as `failed` and the answer is `409` `change_target_changed` with the current values in `details.current`. Stage the change again from those values.
+ * If it changed in between, nothing is written and the answer is `409` `change_target_changed` with the current values in `details.current`. The change stays `staged` and reads `stale: true`. Discard it and stage the change again from those values.
+ *
+ * After a confirm, the other staged changes on the same object are read again, so confirming one of two changes on an object does not refuse the other.
  *
  * ### Retrying
  *
