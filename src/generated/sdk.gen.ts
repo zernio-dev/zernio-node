@@ -15228,7 +15228,9 @@ export const installSharedAutomationTemplate = <ThrowOnError extends boolean = f
 
 /**
  * Get a Zernio automation template
- * Returns one of Zernio's ready-made ad rule templates in the same shape as your own. Each threshold and budget or bid amount is an input with the template's own value as its default, so an install can change it or leave it.
+ * Returns one of Zernio's ready-made templates in the same shape as your own: an ad rule (like `stop_losers`), a comment to DM (`comment-keyword-dm`, `comment-keyword-dm-follow-gate`) or a sequence (`sequence-welcome-series`, `sequence-nurture`).
+ *
+ * In an ad rule, each threshold and budget or bid amount is an input with the template's own value as its default, so an install can change it or leave it. A comment to DM or a sequence asks for a profile and one account of it.
  *
  */
 export const getZernioAutomationTemplate = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<GetZernioAutomationTemplateData, ThrowOnError>) => {

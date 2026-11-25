@@ -5831,9 +5831,11 @@ export type AutomationTemplateInput = {
      */
     key: string;
     /**
-     * What the value is. `ad_account`: `{ accountId, adAccountId }`. `profile`: a profile id. `social_accounts`: an array of social account ids. `notify_destination`: an array of `{ accountId, to?, channelId? }`. `number`, `money` (in the ad account's currency) and `percent`: a number within the bounds below. `choice`: one of `options[].value`.
+     * What the value is. `ad_account`: `{ accountId, adAccountId }`. `profile`: a profile id. `social_account`: one social account id of that profile (a comment to DM or a sequence).
+     *
+     * `social_accounts`: an array of social account ids. `notify_destination`: an array of `{ accountId, to?, channelId? }`. `number`, `money` (in the ad account's currency) and `percent`: a number within the bounds below. `choice`: one of `options[].value`.
      */
-    type: 'ad_account' | 'profile' | 'social_accounts' | 'notify_destination' | 'number' | 'money' | 'percent' | 'choice';
+    type: 'ad_account' | 'profile' | 'social_account' | 'social_accounts' | 'notify_destination' | 'number' | 'money' | 'percent' | 'choice';
     label: string;
     /**
      * True when an install may leave it out. A field that points at a left-out input is dropped.
@@ -5863,9 +5865,11 @@ export type AutomationTemplateInput = {
 };
 
 /**
- * What the value is. `ad_account`: `{ accountId, adAccountId }`. `profile`: a profile id. `social_accounts`: an array of social account ids. `notify_destination`: an array of `{ accountId, to?, channelId? }`. `number`, `money` (in the ad account's currency) and `percent`: a number within the bounds below. `choice`: one of `options[].value`.
+ * What the value is. `ad_account`: `{ accountId, adAccountId }`. `profile`: a profile id. `social_account`: one social account id of that profile (a comment to DM or a sequence).
+ *
+ * `social_accounts`: an array of social account ids. `notify_destination`: an array of `{ accountId, to?, channelId? }`. `number`, `money` (in the ad account's currency) and `percent`: a number within the bounds below. `choice`: one of `options[].value`.
  */
-export type type9 = 'ad_account' | 'profile' | 'social_accounts' | 'notify_destination' | 'number' | 'money' | 'percent' | 'choice';
+export type type9 = 'ad_account' | 'profile' | 'social_account' | 'social_accounts' | 'notify_destination' | 'number' | 'money' | 'percent' | 'choice';
 
 export type AutomationTemplateInstallation = {
     templateId: string;
