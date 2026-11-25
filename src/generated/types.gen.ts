@@ -30689,6 +30689,7 @@ export type event82 = 'referral.received';
  * - If the review comes back, review.restored fires. A review Google hides and later restores produces review.deleted and then review.restored.
  * - A review.updated can arrive for a review reported by review.deleted. The next check restores it.
  * - It may arrive for a review id you never received review.new for. Ignore ids you do not know.
+ * - On Facebook Pages it fires when Meta reports a removed recommendation with its review id. Best effort: Meta does not document the id on removals, so some removals produce no event.
  *
  */
 export type WebhookPayloadReviewDeleted = {
@@ -30704,20 +30705,20 @@ export type WebhookPayloadReviewDeleted = {
     event: 'review.deleted';
     review: {
         /**
-         * Full review name, matching review.id on the review.new event ("accounts/123/locations/456/reviews/789").
+         * Google: full review name. Facebook: the review id from review.new.
          */
         id: string;
-        platform: 'googlebusiness';
+        platform: 'googlebusiness' | 'facebook';
         /**
          * Star rating the reviewer gave. Null when it was never recorded.
          */
         rating: (number) | null;
         /**
-         * When the reviewer posted the review. Null when it was never recorded.
+         * When the reviewer posted the review. Null when it was never recorded. Always null on Facebook.
          */
         createdAt: (string) | null;
         /**
-         * Last time Zernio saw Google return this review.
+         * Last time Zernio saw Google return this review. On Facebook, when Meta's removal notice arrived.
          */
         lastSeenAt: string;
     };
@@ -30737,8 +30738,6 @@ export type WebhookPayloadReviewDeleted = {
 };
 
 export type event83 = 'review.deleted';
-
-export type platform27 = 'googlebusiness';
 
 /**
  * Webhook payload for the review.new event (new review posted on a connected account).
@@ -30825,7 +30824,7 @@ export type event85 = 'review.restored';
  *
  * When a reply is present, review.hasReply is true and review.reply is populated.
  *
- * On Facebook Pages it fires when the reviewer edits their review and when the Page adds or edits a reply, with the review read live from the Page. A reply sent through the API produces only the review.updated from Meta's webhook, with no immediate delivery.
+ * On Facebook Pages it fires when the reviewer edits their review and when the Page adds, edits or removes a reply, with the review read live from the Page. A reply sent through the API produces only the review.updated from Meta's webhook, with no immediate delivery.
  *
  */
 export type WebhookPayloadReviewUpdated = {
@@ -31008,7 +31007,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
 
 export type event91 = 'whatsapp.account.alert_received';
 
-export type platform28 = 'whatsapp';
+export type platform27 = 'whatsapp';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.
