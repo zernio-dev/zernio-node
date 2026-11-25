@@ -43541,11 +43541,11 @@ export type StartGoogleBusinessVerificationData = {
          */
         emailAddress?: string;
         /**
-         * For ADDRESS (postcard) verification.
+         * For ADDRESS (postcard) verification. The contact name Google prints on the postcard; an object is also accepted.
          */
-        mailerContact?: {
-            [key: string]: unknown;
-        };
+        mailerContact?: (string | {
+    [key: string]: unknown;
+});
         /**
          * ServiceBusinessContext (e.g. service address). Required for service-area businesses.
          */
