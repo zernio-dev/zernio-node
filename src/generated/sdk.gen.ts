@@ -19465,8 +19465,9 @@ export const getAdAccountFinance = <ThrowOnError extends boolean = false>(option
  *
  * - `ready` is `false` when a create or boost would be refused. `blockers` lists why, each with the `code` a refused create returns (`ad_account_unusable`, `ad_account_payment_required`, `linked_account_required`, `meta_security_check_required`, `ad_account_policy_not_accepted`, ...), a `hint` and a `fix` link.
  * - `status` is `blocked` when any check is `error`, `attention` when one is `warning`, else `ok`. It also counts problems that stop delivery but not a create, such as a reached spending limit, so `status` can be `blocked` while `ready` is `true`.
- * - A check that is not `ok` carries the `code` of the create refusal it explains, when there is one: `whatsapp` (`missing`) carries `whatsapp_number_not_linked` and `lead_terms` (`missing`) carries `lead_ads_terms_not_accepted`, which only click-to-WhatsApp ads and lead ads hit.
- * - `missing` marks an optional asset that is not set up (a pixel, a WhatsApp number): only the ads that need it are affected.
+ * - A check that is not `ok` carries the `code` of the create refusal it explains, when there is one: `lead_terms` (`missing`) carries `lead_ads_terms_not_accepted`, which only lead ads hit.
+ * - `missing` marks an optional asset that is not set up (a pixel): only the ads that need it are affected.
+ * - `whatsapp` is `ok` with the number when Meta returns it, else `unknown`: Meta does not share a Page's WhatsApp number with every app, so an empty field is not proof that no number is linked.
  * - An unsettled balance (`account_status` 3) is a `warning`: Meta still accepts creates on it while a payment method is set.
  * - A `fix.url` is either a Meta page or a Zernio dashboard path (starting with `/`).
  *
