@@ -5091,7 +5091,9 @@ export const connectOpenAiAdsCredentials = <ThrowOnError extends boolean = false
 };
 
 /**
- * Connect an AppLovin account
+ * Connect an AppLovin account (not available yet)
+ * **Not available yet.** AppLovin has not given Zernio access to its Campaign Management API, so this call answers 403 `platform_not_available_yet` and saves nothing. The rest of this description is how it will work once AppLovin opens.
+ *
  * Connect an AppLovin account (Axon ads) with the Conversion API key and Event Key from the Keys page of AppLovin Axon Ads Manager, the Campaign Management API key with its account id, or all of them.
  *
  * Zernio checks each key set with AppLovin before saving it.

@@ -4423,7 +4423,7 @@ export type scope = 'full' | 'profiles';
 export type permission = 'read-write' | 'read';
 
 /**
- * AppLovin options in platformSpecificData. Campaign fields apply to a new campaign; assets, languages and brandInfo to the creative set (the ad).
+ * Not available yet: an AppLovin create answers 403 `platform_not_available_yet`. AppLovin options in platformSpecificData. Campaign fields apply to a new campaign; assets, languages and brandInfo to the creative set (the ad).
  */
 export type AppLovinAdsPlatformData = {
     /**
@@ -79492,6 +79492,7 @@ export type CreateStandaloneAdData = {
          *
          * **AppLovin**
          *
+         * - Not available yet: AppLovin has not given Zernio access to its Campaign Management API, so an AppLovin create or change answers 403 `platform_not_available_yet`.
          * - A new campaign needs `campaignType` (`APP` or `WEB`), the goal and, for an app, `os`, `packageName` and `tracking`. With `existingCampaignId`, only the creative set fields (`assets`, `languages`, `brandInfo`) apply.
          * - Zernio checks every documented AppLovin rule (goal value limits, ROAS day targets, US-only regions and metros, the asset combination, brand info lengths) before calling AppLovin, because 100 refused calls in five minutes lock the AppLovin account for a day. `validateOnly` runs those checks and calls nothing.
          *
