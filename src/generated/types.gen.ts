@@ -69893,6 +69893,10 @@ export type UpdateAdCampaignStatusData = {
         status: 'active' | 'paused';
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
+         * A Zernio Meta Ads or Facebook connection id (also accepted in the query). Changes the status of a campaign created in Ads Manager that Zernio has not synced, by numeric Meta id. Ignored when Zernio has the campaign. It echoes the requested status; `stage: true` answers 400.
+         */
+        accountId?: string;
+        /**
          * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta, Google, TikTok, X, Snapchat and Reddit; cannot be combined with `validateOnly` or `dryRun`.
          */
         stage?: boolean;
@@ -71775,6 +71779,10 @@ export type UpdateAdSetStatusData = {
         status: 'active' | 'paused';
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
+         * A Zernio Meta Ads or Facebook connection id (also accepted in the query). Changes the status of an ad set created in Ads Manager that Zernio has not synced, by numeric Meta id. Ignored when Zernio has the ad set. It echoes the requested status; `stage: true` answers 400.
+         */
+        accountId?: string;
+        /**
          * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta, Google, TikTok, X, Snapchat and Reddit; cannot be combined with `validateOnly` or `dryRun`.
          */
         stage?: boolean;
@@ -72501,6 +72509,10 @@ export type DeleteAdError = (ErrorResponse);
 export type UpdateAdStatusData = {
     body: {
         status: 'active' | 'paused';
+        /**
+         * A Zernio Meta Ads or Facebook connection id (also accepted in the query). Changes the status of an ad created in Ads Manager that Zernio has not synced, by numeric Meta id. Ignored when Zernio has the ad. It echoes the requested status; `stage: true` answers 400.
+         */
+        accountId?: string;
         /**
          * Send true to stage this change instead of applying it. Nothing is written to the ad network; the response is `202` with the staged change and its diff. Apply it with POST /v1/ads/changes/{changeId}/confirm. Meta, Google, TikTok, X, Snapchat and Reddit; cannot be combined with `validateOnly` or `dryRun`.
          */
