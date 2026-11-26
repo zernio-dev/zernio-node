@@ -5485,11 +5485,19 @@ export type AutomationRun = {
          */
         type?: string;
         id?: string;
+        /**
+         * The person's display name, where the run knows it. Null for a check about a post, an ad or an order.
+         */
+        name?: (string) | null;
+        /**
+         * The person's username without `@`, or their phone number in E.164 (it always starts with `+`). Null where neither is known.
+         */
+        handle?: (string) | null;
     } | null;
     startedAt: string;
     endedAt: (string) | null;
     /**
-     * Why an exited or failed run stopped, for example `replied`, `unsubscribed` or `skipped`.
+     * Why an exited or failed run stopped, for example `handoff` (a flow handed the conversation to a person), `wait_expired`, `superseded`, `replied`, `unsubscribed` or `skipped`.
      */
     exitReason: (string) | null;
     error: (string) | null;
