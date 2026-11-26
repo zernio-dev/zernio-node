@@ -5863,7 +5863,7 @@ export type AutomationTemplateAutomation = {
         [key: string]: unknown;
     };
     /**
-     * The same automation as the graph the editor opens and saves, input references kept in place. Read only: always present in responses, null only for a definition whose kind cannot be told.
+     * The same automation as the graph the editor opens and saves, input references kept in place. Read only: always present in responses, null only for an automation that cannot be read as a graph.
      */
     graph?: (AutomationGraph | null);
 };
