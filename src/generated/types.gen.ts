@@ -35146,6 +35146,10 @@ export type GetBalanceError = ({
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -35349,6 +35353,10 @@ export type ListTopupsError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -35448,6 +35456,10 @@ export type PreviewTopupError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -35554,6 +35566,10 @@ export type GetTopupReceiptError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -35650,6 +35666,10 @@ export type GetTopupInvoiceError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -35748,6 +35768,10 @@ export type GetTopupStatementError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -35822,6 +35846,10 @@ export type ConfirmTopupError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -35889,6 +35917,10 @@ export type CancelTopupError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -35951,6 +35983,10 @@ export type ListPayeesError = ({
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -36026,6 +36062,10 @@ export type CreatePayeeOnboardingLinkError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -36129,6 +36169,10 @@ export type ListTransfersError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -36200,6 +36244,10 @@ export type GetTransferError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -39122,6 +39170,10 @@ export type CreateProfileError = (unknown | ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -41275,6 +41327,10 @@ export type GetConnectUrlError = (unknown | ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -41352,6 +41408,10 @@ export type HandleOAuthCallbackError = (unknown | ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -41597,6 +41657,10 @@ export type ConnectAdsError = (unknown | ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -41699,6 +41763,10 @@ export type GetShopifyConnectUrlError = (unknown | ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -41785,6 +41853,10 @@ export type ConnectShopifyWithTokenError = (unknown | ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -41895,6 +41967,10 @@ export type GetGoogleAnalyticsConnectUrlError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -42063,6 +42139,10 @@ export type GetGoogleSearchConsoleConnectUrlError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -42199,6 +42279,10 @@ export type GetCampaignManagerConnectUrlError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -42343,6 +42427,10 @@ export type GetAmazonAdsConnectUrlError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -42427,6 +42515,10 @@ export type GetHubSpotConnectUrlError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -42547,6 +42639,10 @@ export type GetSalesforceConnectUrlError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -42631,6 +42727,10 @@ export type GetStripeConnectUrlError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -42717,6 +42817,10 @@ export type GetWordPressAuthUrlError = (unknown | ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -42802,6 +42906,10 @@ export type GetWixConnectUrlError = (unknown | ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -42886,6 +42994,10 @@ export type GetWebflowConnectUrlError = (unknown | ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -42976,6 +43088,10 @@ export type ConnectWebflowWithSiteTokenError = (unknown | ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -43103,6 +43219,10 @@ export type ConnectWordPressWithApplicationPasswordError = (unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -43489,6 +43609,10 @@ export type SelectInstagramAccountError = (unknown | ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -45805,6 +45929,10 @@ export type ConnectOpenAiAdsCredentialsError = (ErrorResponse | unknown | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -45921,6 +46049,10 @@ export type ConnectAppLovinAdsCredentialsError = (ErrorResponse | unknown | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -46014,6 +46146,10 @@ export type ConnectSnapchatAdsCredentialsError = (ErrorResponse | unknown | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -46104,6 +46240,10 @@ export type ConnectKlaviyoCredentialsError = (ErrorResponse | unknown | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -46192,6 +46332,10 @@ export type ConnectAttentiveCredentialsError = (ErrorResponse | unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -46294,6 +46438,10 @@ export type ConnectImpactCredentialsError = (ErrorResponse | unknown | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -46386,6 +46534,10 @@ export type ConnectAwinCredentialsError = (ErrorResponse | unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -46480,6 +46632,10 @@ export type ConnectTradeDeskAdsCredentialsError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -46585,6 +46741,10 @@ export type ConnectTradeDeskAdsPartnerError = (ErrorResponse | unknown | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -46674,6 +46834,10 @@ export type ConnectTaboolaAdsCredentialsError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -46762,6 +46926,10 @@ export type ConnectOutbrainAdsCredentialsError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -46853,6 +47021,10 @@ export type ConnectWhopAdsCredentialsError = (ErrorResponse | unknown | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -47170,6 +47342,10 @@ export type ConnectWhatsAppEmbeddedSignupError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -47286,6 +47462,10 @@ export type ConnectDiscordChannelError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -47441,6 +47621,10 @@ export type ConnectSlackChannelError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -51672,6 +51856,10 @@ export type SendEmailMessageError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -51895,6 +52083,10 @@ export type ReplyEmailMessageError = (ErrorResponse | {
          */
         has_payment_method?: boolean;
         /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
+        /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
         verification_amount_cents?: number;
@@ -51979,6 +52171,10 @@ export type ForwardEmailMessageError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
@@ -52188,6 +52384,10 @@ export type SendEmailDraftError = (ErrorResponse | {
          * Whether the team currently has a card on file in Stripe. Set when reason=free_tier_exceeded or reason=twitter_passthrough.
          */
         has_payment_method?: boolean;
+        /**
+         * Whether the caller can add the card themselves (the payer, or an owner, admin or billing admin of the workspace). False for a member or a viewer: the workspace owner has to add it. Set for the card reasons.
+         */
+        can_add_card?: boolean;
         /**
          * One-time card verification charge in USD cents, credited to usage. Only set when reason=card_verification_required.
          */
