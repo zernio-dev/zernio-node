@@ -22351,9 +22351,23 @@ export type StagedAdChange = {
      */
     id: string;
     /**
-     * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, the campaign targeting route, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
+     * Which write was staged: a status route, an update route (campaign, ad set, ad), the campaign targeting route or a create route. `operation` is any other ads write, staged as its request and named by `request`. It has no live read, so its diff shows the new values only.
      */
-    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create';
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create' | 'operation';
+    /**
+     * Only with type `operation`: the write that was staged as its request. Confirm sends this request through its own route.
+     */
+    request?: {
+        /**
+         * The operationId of the staged write. Every write in this list accepts `stage: true` in its body, or `?stage=true` when it has no body.
+         */
+        operation: 'addAccountCallouts' | 'addAccountSitelinks' | 'addAccountStructuredSnippets' | 'addAdKeywords' | 'applyGoogleRecommendations' | 'archiveLeadForm' | 'assignAdAccountUser' | 'assignPageUser' | 'attachAdGroupAssets' | 'attachAdLabel' | 'attachCampaignAssets' | 'boostPost' | 'bulkUpdateAdCampaignStatus' | 'createAdAudience' | 'createAdCreative' | 'createAdLabel' | 'createAdNegativeKeywordList' | 'createBidStrategy' | 'createCallAd' | 'createConversionAction' | 'createCtwaAd' | 'createCustomConversionGoal' | 'createGoogleAssetGroup' | 'createHighDemandPeriod' | 'createLeadForm' | 'createMessagingAd' | 'createSharedBudget' | 'createValueRuleSet' | 'deleteAd' | 'deleteAdAudience' | 'deleteAdCampaign' | 'deleteAdCreative' | 'deleteAdNegativeKeywordList' | 'deleteAdSet' | 'deleteAdVideo' | 'deleteValueRuleSet' | 'detachAdLabel' | 'dismissGoogleRecommendations' | 'duplicateAd' | 'duplicateAdCampaign' | 'duplicateAdSet' | 'editAdNegativeKeywordListKeywords' | 'editCampaignNegativeKeywordLists' | 'editCampaignNegativeKeywords' | 'editGoogleAssetGroupAssets' | 'inviteAdAccountToManager' | 'inviteAdAccountUser' | 'removeAccountCallout' | 'removeAccountSitelink' | 'removeAccountStructuredSnippet' | 'removeAdAccountUser' | 'removeAdGroupAssets' | 'removeAdKeyword' | 'removeAdLabel' | 'removeCampaignAssets' | 'removeCustomConversionGoal' | 'removeGoogleAssetGroup' | 'removePageUser' | 'replaceAdAudienceCompanies' | 'replaceAdNegativeKeywordListKeywords' | 'replaceCampaignNegativeKeywordLists' | 'replaceCampaignNegativeKeywords' | 'replaceGoogleListingGroupFilters' | 'revokeAdAccountUserInvitation' | 'setPartnershipAdPermission' | 'setUpAdAccountBilling' | 'updateAccountCallouts' | 'updateAccountSitelinks' | 'updateAccountStructuredSnippets' | 'updateAdAccount' | 'updateAdAccountManagerLink' | 'updateAdAudience' | 'updateAdConversionGoals' | 'updateAdCreative' | 'updateAdGroupAssets' | 'updateAdKeyword' | 'updateAdLabel' | 'updateAdNegativeKeywordList' | 'updateAdTrackingTags' | 'updateBidStrategy' | 'updateCampaignAdSchedule' | 'updateCampaignAssets' | 'updateCampaignConversionGoals' | 'updateConversionAction' | 'updateCustomConversionGoal' | 'updateGoogleAssetGroup' | 'updateValueRuleSet' | 'withdrawAdAccountUserInvitationApproval';
+        method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+        /**
+         * The path of the write, for example /v1/ads/keywords.
+         */
+        path: string;
+    };
     /**
      * The ad platform of the object, as the write route names it.
      */
@@ -22430,7 +22444,7 @@ export type StagedAdChange = {
      */
     confirmedBy?: (string) | null;
     /**
-     * Present and true on a staged change whose last confirm was refused with `change_target_changed`. `error` then says why. Discard it and stage it again from the current values.
+     * Present and true on a staged change whose last confirm was refused with `change_target_changed`. `error` then says why. Refresh it with PATCH /v1/ads/changes/{changeId} (no body), or discard it and stage it again.
      */
     stale?: boolean;
     createdAt: string;
@@ -22463,9 +22477,16 @@ export type StagedAdChange = {
 };
 
 /**
- * Which write was staged: a status route, the update route of a campaign, an ad set or an ad, the campaign targeting route, or one of the create routes (POST /v1/ads/create, POST /v1/ads/campaigns, POST /v1/ads/ad-sets).
+ * Which write was staged: a status route, an update route (campaign, ad set, ad), the campaign targeting route or a create route. `operation` is any other ads write, staged as its request and named by `request`. It has no live read, so its diff shows the new values only.
  */
-export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create';
+export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create' | 'operation';
+
+/**
+ * The operationId of the staged write. Every write in this list accepts `stage: true` in its body, or `?stage=true` when it has no body.
+ */
+export type operation = 'addAccountCallouts' | 'addAccountSitelinks' | 'addAccountStructuredSnippets' | 'addAdKeywords' | 'applyGoogleRecommendations' | 'archiveLeadForm' | 'assignAdAccountUser' | 'assignPageUser' | 'attachAdGroupAssets' | 'attachAdLabel' | 'attachCampaignAssets' | 'boostPost' | 'bulkUpdateAdCampaignStatus' | 'createAdAudience' | 'createAdCreative' | 'createAdLabel' | 'createAdNegativeKeywordList' | 'createBidStrategy' | 'createCallAd' | 'createConversionAction' | 'createCtwaAd' | 'createCustomConversionGoal' | 'createGoogleAssetGroup' | 'createHighDemandPeriod' | 'createLeadForm' | 'createMessagingAd' | 'createSharedBudget' | 'createValueRuleSet' | 'deleteAd' | 'deleteAdAudience' | 'deleteAdCampaign' | 'deleteAdCreative' | 'deleteAdNegativeKeywordList' | 'deleteAdSet' | 'deleteAdVideo' | 'deleteValueRuleSet' | 'detachAdLabel' | 'dismissGoogleRecommendations' | 'duplicateAd' | 'duplicateAdCampaign' | 'duplicateAdSet' | 'editAdNegativeKeywordListKeywords' | 'editCampaignNegativeKeywordLists' | 'editCampaignNegativeKeywords' | 'editGoogleAssetGroupAssets' | 'inviteAdAccountToManager' | 'inviteAdAccountUser' | 'removeAccountCallout' | 'removeAccountSitelink' | 'removeAccountStructuredSnippet' | 'removeAdAccountUser' | 'removeAdGroupAssets' | 'removeAdKeyword' | 'removeAdLabel' | 'removeCampaignAssets' | 'removeCustomConversionGoal' | 'removeGoogleAssetGroup' | 'removePageUser' | 'replaceAdAudienceCompanies' | 'replaceAdNegativeKeywordListKeywords' | 'replaceCampaignNegativeKeywordLists' | 'replaceCampaignNegativeKeywords' | 'replaceGoogleListingGroupFilters' | 'revokeAdAccountUserInvitation' | 'setPartnershipAdPermission' | 'setUpAdAccountBilling' | 'updateAccountCallouts' | 'updateAccountSitelinks' | 'updateAccountStructuredSnippets' | 'updateAdAccount' | 'updateAdAccountManagerLink' | 'updateAdAudience' | 'updateAdConversionGoals' | 'updateAdCreative' | 'updateAdGroupAssets' | 'updateAdKeyword' | 'updateAdLabel' | 'updateAdNegativeKeywordList' | 'updateAdTrackingTags' | 'updateBidStrategy' | 'updateCampaignAdSchedule' | 'updateCampaignAssets' | 'updateCampaignConversionGoals' | 'updateConversionAction' | 'updateCustomConversionGoal' | 'updateGoogleAssetGroup' | 'updateValueRuleSet' | 'withdrawAdAccountUserInvitationApproval';
+
+export type method5 = 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /**
  * - `staged`: waiting to be confirmed or discarded.
@@ -22477,7 +22498,7 @@ export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campai
 export type status61 = 'staged' | 'confirming' | 'confirmed' | 'failed';
 
 /**
- * A staged ad change as the list returns it: what it targets and who staged it, without the diff.
+ * A staged or failed ad change as the list returns it: what it targets and who staged it, without the diff.
  */
 export type StagedAdChangeSummary = {
     /**
@@ -22485,9 +22506,35 @@ export type StagedAdChangeSummary = {
      */
     id: string;
     /**
-     * Which write was staged.
+     * Which write was staged. `operation` is a write staged as its request, named by `request`.
      */
-    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create';
+    type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create' | 'operation';
+    /**
+     * Only with type `operation`: the staged write.
+     */
+    request?: {
+        /**
+         * The operationId of the staged write.
+         */
+        operation: string;
+        method: 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+        path: string;
+    };
+    /**
+     * The status the list was asked for.
+     */
+    status: 'staged' | 'failed';
+    /**
+     * Present and true on a staged change whose object was edited on the ad network after staging. Refresh it with PATCH /v1/ads/changes/{changeId}.
+     */
+    stale?: boolean;
+    /**
+     * Present on a failed change: why it failed.
+     */
+    error?: {
+        code?: string;
+        message?: (string) | null;
+    };
     /**
      * The ad platform of the object, as the write route names it.
      */
@@ -22518,6 +22565,11 @@ export type StagedAdChangeSummary = {
     createdBy: string;
     createdAt: string;
 };
+
+/**
+ * The status the list was asked for.
+ */
+export type status62 = 'staged' | 'failed';
 
 export type StoredEvent = {
     eventId?: string;
@@ -22693,7 +22745,7 @@ export type StorePixelInstall = {
 /**
  * WordPress only.
  */
-export type method5 = 'wordpress_widget';
+export type method6 = 'wordpress_widget';
 
 export type StripeSettings = {
     /**
@@ -22773,7 +22825,7 @@ export type SupportRun = {
 /**
  * queued and running are in progress. needs_human means the assistant handed the question to a person instead of answering; when `supportTicket` is set, a Zernio teammate has been notified and will follow up by email.
  */
-export type status62 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
+export type status63 = 'queued' | 'running' | 'completed' | 'needs_human' | 'failed';
 
 /**
  * Why the run stopped. Null while it is in progress.
@@ -23741,12 +23793,12 @@ export type TrackingSite = {
     updatedAt?: string;
 };
 
-export type status63 = 'active' | 'paused' | 'removing';
+export type status64 = 'active' | 'paused' | 'removing';
 
 /**
  * How the tag is installed. `snippet` means you paste it.
  */
-export type method6 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
+export type method7 = 'shopify' | 'wordpress' | 'wix' | 'webflow' | 'snippet';
 
 export type type33 = 'CNAME';
 
@@ -24068,7 +24120,7 @@ export type TrackingWindow = {
     } | null;
 };
 
-export type status64 = 'open' | 'completing' | 'completed' | 'cancelled';
+export type status65 = 'open' | 'completing' | 'completed' | 'cancelled';
 
 /**
  * How the window closed. Null while it is open.
@@ -24152,7 +24204,7 @@ export type TreasuryTopup = {
     bonusCents?: (number) | null;
 };
 
-export type method7 = 'card' | 'bank_transfer';
+export type method8 = 'card' | 'bank_transfer';
 
 /**
  * `balance` funds your balance; `payout_batch` is the card payment of one payout batch, which pays its creators directly.
@@ -24162,7 +24214,7 @@ export type purpose = 'balance' | 'payout_batch';
 /**
  * `pending` until the card is charged (or 3D Secure is finished) and credited. `expired` means it ended unpaid: cancelled, or 3D Secure left unfinished for 30 minutes. Only `pending` counts toward pendingTopupCents.
  */
-export type status65 = 'pending' | 'succeeded' | 'failed' | 'expired';
+export type status66 = 'pending' | 'succeeded' | 'failed' | 'expired';
 
 export type TreasuryTransfer = {
     id?: string;
@@ -24203,7 +24255,7 @@ export type TreasuryTransfer = {
 
 export type destinationType = 'creator' | 'ad_account';
 
-export type status66 = 'pending' | 'paid' | 'failed' | 'reversed';
+export type status67 = 'pending' | 'paid' | 'failed' | 'reversed';
 
 /**
  * X-specific post options. The article field creates a long-form X Article and is mutually exclusive with tweet media and tweet-only options. Geo-restriction applies at the media level: media is hidden outside the specified countries while tweet text remains visible.
@@ -24394,7 +24446,7 @@ export type UploadTokenResponse = {
     status?: 'pending' | 'completed' | 'expired';
 };
 
-export type status67 = 'pending' | 'completed' | 'expired';
+export type status68 = 'pending' | 'completed' | 'expired';
 
 export type UploadTokenStatusResponse = {
     token?: string;
@@ -24962,7 +25014,7 @@ export type Verification = {
     resend?: boolean;
 };
 
-export type status68 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
+export type status69 = 'pending' | 'approved' | 'expired' | 'max_attempts_reached' | 'canceled' | 'delivery_failed';
 
 export type channel6 = 'sms' | 'whatsapp';
 
@@ -25221,7 +25273,7 @@ export type WebhookLog = {
 /**
  * Delivery outcome
  */
-export type status69 = 'success' | 'failed';
+export type status70 = 'success' | 'failed';
 
 /**
  * Webhook payload for `account.ads.initial_sync_completed` events.
@@ -25335,7 +25387,7 @@ export type event = 'account.ads.initial_sync_completed';
 /**
  * Overall outcome of the initial sync.
  */
-export type status70 = 'success' | 'failure';
+export type status71 = 'success' | 'failure';
 
 /**
  * Stable category for UX branching. New values may be added; existing ones are stable.
@@ -26018,7 +26070,7 @@ export type WebhookPayloadAdReview = {
 
 export type event14 = 'ad.review.approved' | 'ad.review.rejected';
 
-export type status71 = 'approved' | 'rejected';
+export type status72 = 'approved' | 'rejected';
 
 /**
  * Webhook payload for the `ad_rule.triggered` event.
@@ -26589,7 +26641,7 @@ export type event20 = 'ad.video.processed';
 /**
  * `ready`: usable as `video.id` on the create endpoints. `error`: Meta could not process it; upload again.
  */
-export type status72 = 'ready' | 'error';
+export type status73 = 'ready' | 'error';
 
 /**
  * Webhook payload for `analytics.synced`. Fired once per connected account each time its analytics sync cycle completes successfully. Poll-driven (roughly hourly per account), not real-time, and never fired for a skipped or failed cycle.
@@ -26730,7 +26782,7 @@ export type WebhookPayloadAutomationAction = {
 
 export type event23 = 'automation.action.applied' | 'automation.action.failed' | 'automation.action.unknown';
 
-export type status73 = 'applied' | 'skipped' | 'failed' | 'unknown';
+export type status74 = 'applied' | 'skipped' | 'failed' | 'unknown';
 
 /**
  * Webhook payload for `automation.alert.opened`, `automation.alert.escalated` and `automation.alert.resolved`: an alert episode of an automation with a lifecycle (an ad rule's `lifecycle`).
@@ -30664,7 +30716,7 @@ export type event79 = 'post.platform.published' | 'post.platform.failed' | 'post
 /**
  * Terminal status this event fires on. Matches the event suffix.
  */
-export type status74 = 'published' | 'failed' | 'deleted';
+export type status75 = 'published' | 'failed' | 'deleted';
 
 /**
  * Webhook payload for `post.tracking_completed`. Fired once when a post's tracking window ends and its final analytics read has run.
@@ -31257,7 +31309,7 @@ export type event92 = 'whatsapp.account.name_status_updated';
 /**
  * Normalized from Meta's `decision` (REJECTED -> DECLINED, DEFERRED -> PENDING_REVIEW; the review is still open on DEFERRED, not a rejection).
  */
-export type status75 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
+export type status76 = 'APPROVED' | 'DECLINED' | 'PENDING_REVIEW';
 
 /**
  * Webhook payload for `whatsapp.account.quality_updated`. Fired when a connected
@@ -31391,7 +31443,7 @@ export type event94 = 'whatsapp.account.status_updated';
 /**
  * `active` only on a reinstatement (DISABLED_UPDATE with ban state REINSTATE).
  */
-export type status76 = 'restricted' | 'active';
+export type status77 = 'restricted' | 'active';
 
 /**
  * Webhook payload for the `whatsapp.contact.identity_changed` event. Fired when
@@ -31607,7 +31659,7 @@ export type event97 = 'whatsapp.template.status_updated';
  * request before the template is actually removed.
  *
  */
-export type status77 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
+export type status78 = 'APPROVED' | 'REJECTED' | 'PENDING' | 'PAUSED' | 'DISABLED' | 'IN_APPEAL' | 'PENDING_DELETION';
 
 export type WebhookPayloadWorkflowRun = {
     /**
@@ -31671,7 +31723,7 @@ export type event98 = 'workflow.run.started' | 'workflow.run.completed' | 'workf
 /**
  * running on workflow.run.started; completed or exited (ended on purpose before the last node, e.g. a handoff) on workflow.run.completed; failed on workflow.run.failed.
  */
-export type status78 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
+export type status79 = 'running' | 'waiting' | 'completed' | 'exited' | 'failed';
 
 /**
  * The profiles this event belongs to, each with the externalId you set on it (null when none is set). Use it to route the event to your tenant without storing Zernio profile ids.
@@ -32075,7 +32127,7 @@ export type WorkflowExecutionEvent = {
 
 export type action3 = 'execution_started' | 'execution_completed' | 'execution_exited' | 'execution_paused' | 'execution_resumed' | 'node_started' | 'node_completed' | 'node_failed' | 'node_skipped';
 
-export type status79 = 'success' | 'failed' | 'pending';
+export type status80 = 'success' | 'failed' | 'pending';
 
 /**
  * A node in a workflow graph. `config` shape depends on `type`.
@@ -69138,6 +69190,14 @@ export type UndoAdRuleActivityError = (ErrorResponse);
 export type ListAdChangesData = {
     query?: {
         /**
+         * Only the changes of this connected account.
+         */
+        accountId?: string;
+        /**
+         * Only the changes this user staged.
+         */
+        createdBy?: string;
+        /**
          * The `nextCursor` of the previous page, unchanged.
          */
         cursor?: string;
@@ -69145,6 +69205,18 @@ export type ListAdChangesData = {
          * How many changes to return.
          */
         limit?: number;
+        /**
+         * Only the changes on this ad platform, as the change names it (for example `facebook` or `google`).
+         */
+        platform?: string;
+        /**
+         * Which changes to list.
+         */
+        status?: 'staged' | 'failed';
+        /**
+         * Only the changes of this type.
+         */
+        type?: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create' | 'operation';
     };
 };
 
@@ -69175,6 +69247,26 @@ export type GetAdChangeError = (ErrorResponse | {
     error?: string;
 });
 
+export type UpdateAdChangeData = {
+    body?: {
+        [key: string]: unknown;
+    };
+    path: {
+        /**
+         * The id of the staged change.
+         */
+        changeId: string;
+    };
+};
+
+export type UpdateAdChangeResponse = ({
+    change: StagedAdChange;
+});
+
+export type UpdateAdChangeError = (ErrorResponse | {
+    error?: string;
+});
+
 export type DiscardAdChangeData = {
     path: {
         /**
@@ -69187,6 +69279,23 @@ export type DiscardAdChangeData = {
 export type DiscardAdChangeResponse = (void);
 
 export type DiscardAdChangeError = (ErrorResponse | {
+    error?: string;
+});
+
+export type RestageAdChangeData = {
+    path: {
+        /**
+         * The id of the failed change.
+         */
+        changeId: string;
+    };
+};
+
+export type RestageAdChangeResponse = ({
+    change: StagedAdChange;
+});
+
+export type RestageAdChangeError = (ErrorResponse | {
     error?: string;
 });
 

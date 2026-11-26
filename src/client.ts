@@ -1114,6 +1114,7 @@ import {
   resetBusinessAgentBusinessInformation,
   respondToPhoneNumberReviewer,
   respondToSmsRegistrationReview,
+  restageAdChange,
   restateEvent,
   restoreWorkflowVersion,
   resyncPageWebhookSubscription,
@@ -1256,6 +1257,7 @@ import {
   updateAdCampaignStatus,
   updateAdCatalogProduct,
   updateAdCatalogProductSet,
+  updateAdChange,
   updateAdConversionDestination,
   updateAdConversionGoals,
   updateAdCreative,
@@ -2944,7 +2946,9 @@ export class Zernio {
   adchanges = {
     listAdChanges: this._bind(listAdChanges),
     getAdChange: this._bind(getAdChange),
+    updateAdChange: this._bind(updateAdChange),
     discardAdChange: this._bind(discardAdChange),
+    restageAdChange: this._bind(restageAdChange),
     confirmAdChange: this._bind(confirmAdChange),
   };
 
