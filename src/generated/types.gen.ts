@@ -29919,7 +29919,13 @@ export type WebhookPayloadMessageSent = {
          * Do not read these to name or update a contact: doing so on an echo
          * relabels the customer's record with your business name. The other
          * party is `conversation.participantId` / `participantName` /
-         * `participantUsername`, which are populated in both directions.
+         * `participantUsername`.
+         *
+         * `participantId` is always set. On a thread the business started,
+         * `participantUsername` and `participantName` can be empty on the
+         * first events; Zernio fills them shortly after when Meta returns the
+         * contact (`participantName` then holds the @username until the
+         * contact writes and their profile is read).
          *
          */
         sender: {
