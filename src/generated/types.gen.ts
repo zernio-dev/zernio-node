@@ -79914,11 +79914,11 @@ export type CreateStandaloneAdData = {
          */
         keywords?: Array<KeywordEntry>;
         /**
-         * Google Search and Amazon Sponsored Products and Sponsored Brands (EXACT or PHRASE only); other platforms return 400. Ad-group-level negative keywords on the new ad group. Editable later via PUT /v1/ads/{adId} targeting.negativeKeywords.
+         * Google Search, Microsoft Ads, and Amazon Sponsored Products and Sponsored Brands (EXACT or PHRASE only on Amazon and Microsoft; on Microsoft a bare string is PHRASE); other platforms return 400. Ad-group-level negative keywords on the new ad group. Editable later via PUT /v1/ads/{adId} targeting.negativeKeywords (Google and Amazon only).
          */
         negativeKeywords?: Array<KeywordEntry>;
         /**
-         * Google Search and Amazon Sponsored Products; other platforms return 400. Campaign-level negative keywords (campaign_criterion.negative on Google), created alongside the ad group. Editable later via PUT /v1/ads/campaigns/{campaignId}/negative-keywords.
+         * Google Search, Microsoft Ads (EXACT or PHRASE, a bare string is PHRASE) and Amazon Sponsored Products; other platforms return 400. Campaign-level negative keywords (campaign_criterion.negative on Google), created alongside the ad group. Editable later via PUT /v1/ads/campaigns/{campaignId}/negative-keywords (Google and Amazon only).
          */
         campaignNegativeKeywords?: Array<KeywordEntry>;
         /**
