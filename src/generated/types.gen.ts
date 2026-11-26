@@ -22351,7 +22351,7 @@ export type StagedAdChange = {
      */
     id: string;
     /**
-     * Which write was staged: a status route, an update route (campaign, ad set, ad), the campaign targeting route or a create route. `operation` is any other ads write, staged as its request and named by `request`. It has no live read, so its diff shows the new values only.
+     * Which write was staged: a status route, an update route (campaign, ad set, ad), the campaign targeting route or a create route. `operation` is any other ads write, staged as its request and named by `request`. It has no live read, so its diff shows the sent values only.
      */
     type: 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create' | 'operation';
     /**
@@ -22367,6 +22367,18 @@ export type StagedAdChange = {
          * The path of the write, for example /v1/ads/keywords.
          */
         path: string;
+        /**
+         * The path values of the staged request, by the names in `path`.
+         */
+        params?: {
+            [key: string]: (string);
+        };
+        /**
+         * The query values of the staged request, without `stage`.
+         */
+        query?: {
+            [key: string]: (string);
+        };
     };
     /**
      * The ad platform of the object, as the write route names it.
@@ -22381,7 +22393,7 @@ export type StagedAdChange = {
      */
     adAccountId: string;
     /**
-     * The object the change applies to: the platform campaign id, the platform ad set id, or the Zernio ad id. Null for a create, whose object does not exist yet.
+     * The object the change applies to: the platform campaign id, the platform ad set id, or the Zernio ad id. A write staged as its request with no such object carries the last id of its path. Null when there is none, as for a create.
      */
     targetId: (string) | null;
     /**
@@ -22477,7 +22489,7 @@ export type StagedAdChange = {
 };
 
 /**
- * Which write was staged: a status route, an update route (campaign, ad set, ad), the campaign targeting route or a create route. `operation` is any other ads write, staged as its request and named by `request`. It has no live read, so its diff shows the new values only.
+ * Which write was staged: a status route, an update route (campaign, ad set, ad), the campaign targeting route or a create route. `operation` is any other ads write, staged as its request and named by `request`. It has no live read, so its diff shows the sent values only.
  */
 export type type32 = 'campaign_status' | 'ad_set_status' | 'ad_status' | 'campaign_update' | 'ad_set_update' | 'ad_update' | 'campaign_targeting' | 'ad_create' | 'campaign_create' | 'ad_set_create' | 'operation';
 
