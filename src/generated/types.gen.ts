@@ -30082,7 +30082,7 @@ export type WebhookPayloadMessageSent = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, WhatsApp template name, language, header and footer, Meta's reason a WhatsApp Business app echo has no renderable body, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template.
+     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, WhatsApp template name, language, header, footer and buttons, Meta's reason a WhatsApp Business app echo has no renderable body, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template.
      *
      * The key is present only when the send carried some context: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
      *
@@ -30120,6 +30120,30 @@ export type WebhookPayloadMessageSent = {
          * WhatsApp template sends only. Footer text of the template. Absent when the template has no footer, and on bulk, broadcast and automation sends.
          */
         templateFooter?: string;
+        /**
+         * WhatsApp template sends only. The approved buttons as the recipient saw them, with a dynamic URL filled with the value the send gave. Never carries a coupon code, OTP or flow value.
+         *
+         * Absent when the template has no top-level buttons (carousel card buttons are not included), and on bulk, broadcast and automation sends.
+         *
+         */
+        templateButtons?: Array<{
+            /**
+             * Lowercased button type, such as quick_reply, url, phone_number, copy_code, otp or flow. Meta adds types over time.
+             */
+            type: string;
+            /**
+             * Button label.
+             */
+            text?: string;
+            /**
+             * URL buttons only. The button URL, with its variable filled in when the send gave a value.
+             */
+            url?: string;
+            /**
+             * Phone number buttons only. The number the button dials.
+             */
+            phoneNumber?: string;
+        }>;
         /**
          * WhatsApp only. Meta's own reason this message has no renderable body. Present on Coexistence echoes of a message sent from the WhatsApp Business app that Meta could not render (for example an album, code 131051: message type currently not supported). Absent otherwise.
          *
@@ -54080,7 +54104,7 @@ export type GetInboxConversationMessagesResponse = ({
          * - `quotedMessageId`: the `id` of the message this one replies to (delivered as `message.platformMessageId` on webhooks).
          * - `waInteractive`: a compact descriptor of WhatsApp interactive content sent (buttons / list / cta_url / flow / location_request).
          * - `metaInteractive`: outgoing Instagram/Facebook buttons, quickReplies and template, as sent.
-         * - `templateName` / `templateLanguage` / `templateHeader` / `templateFooter`: on a WhatsApp template send, the template identity plus its rendered header (`{ format, text?, mediaUrl? }`) and footer; `text` is the body only.
+         * - `templateName` / `templateLanguage` / `templateHeader` / `templateFooter` / `templateButtons`: on a WhatsApp template send, the template identity plus its rendered header (`{ format, text?, mediaUrl? }`), footer and buttons (`[{ type, text?, url?, phoneNumber? }]`); `text` is the body only.
          * - `interactiveType` / `interactiveId`: for inbound interactive taps.
          * - `source`: where the message reached us from, not who produced it (read `sentVia` for that). `whatsapp_business_app` / `coexistence_history` on a WhatsApp Coexistence number, `bulk-api` on a POST /v1/whatsapp/bulk send.
          * - `deliveryChannel`: on an outgoing iMessage, the channel of the latest delivery status (`imessage`, `sms`, `rcs` or `whatsapp`). A message delivered on `imessage` turns `failed` when the provider then reports its `sms` fallback failed.
