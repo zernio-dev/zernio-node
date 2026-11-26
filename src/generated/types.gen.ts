@@ -554,7 +554,7 @@ export type Ad = {
          */
         pageId?: (string) | null;
         /**
-         * Meta `effective_instagram_media_id`, the Instagram media ID of the boosted post the ad's engagement lives on. Pass to GET /v1/ads?effectiveInstagramMediaId= to map a Business-Manager-visible IG post back to this ad.
+         * Meta `effective_instagram_media_id`, the Instagram media the ad's engagement lives on. For a boosted reel it can differ from the reel you boosted: Meta's promoted rendition, not a duplicate. Pass to GET /v1/ads?effectiveInstagramMediaId= to map a Business-Manager-visible IG post back to this ad.
          */
         effectiveInstagramMediaId?: (string) | null;
         /**
@@ -67155,7 +67155,7 @@ export type ListAdsData = {
          */
         campaignId?: string;
         /**
-         * Instagram media ID of the boosted post (Meta `effective_instagram_media_id`). Use to map a Business-Manager-visible IG post back to the Zernio ad.
+         * Instagram media ID of the boosted post (Meta `effective_instagram_media_id`). Use to map a Business-Manager-visible IG post back to the Zernio ad. For a boosted reel it can differ from the media ID you boosted (`platformPostId`), so filter by the ID shown on the ad, not the original reel ID.
          */
         effectiveInstagramMediaId?: string;
         /**
