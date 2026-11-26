@@ -5862,6 +5862,10 @@ export type AutomationTemplateAutomation = {
     definition: {
         [key: string]: unknown;
     };
+    /**
+     * The same automation as the graph the editor opens and saves, input references kept in place. Read only: always present in responses, null only for a definition whose kind cannot be told.
+     */
+    graph?: (AutomationGraph | null);
 };
 
 /**
