@@ -30009,12 +30009,34 @@ export type WebhookPayloadMessageSent = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template.
+     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, Meta's reason a WhatsApp Business app echo has no renderable body, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template.
      *
      * The key is present only when the send carried some context: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
      *
      */
     metadata?: {
+        /**
+         * WhatsApp only. Meta's own reason this message has no renderable body. Present on Coexistence echoes of a message sent from the WhatsApp Business app that Meta could not render (for example an album, code 131051: message type currently not supported). Absent otherwise.
+         *
+         */
+        unsupported?: {
+            /**
+             * Meta's numeric error code (e.g. 131051).
+             */
+            code?: number;
+            /**
+             * Meta's short error title.
+             */
+            title?: string;
+            /**
+             * Meta's human-readable error detail string.
+             */
+            details?: string;
+            /**
+             * Meta's name for the content WhatsApp could not deliver, e.g. unknown or album. Absent when Meta sends none.
+             */
+            type?: string;
+        };
         /**
          * Instagram/Facebook only. The buttons, quickReplies and/or template this outgoing message carried, as sent (tracked urls included when link tracking wrapped a button). Absent when the send carried none.
          */
