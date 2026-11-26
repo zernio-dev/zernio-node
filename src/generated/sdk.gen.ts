@@ -546,7 +546,7 @@ export const getLinkedInOrgAggregateAnalytics = <ThrowOnError extends boolean = 
  *
  * - Response shape matches /v1/analytics/instagram/account-insights.
  * - Max 89 days, defaults to last 30 days.
- * - Requires the user.info.stats scope on the account (412 if missing).
+ * - Requires the user.info.stats scope on the account, or user.insights on an account connected through Zernio's TikTok Business connection (412 if missing).
  *
  * ### Daily account metrics
  *

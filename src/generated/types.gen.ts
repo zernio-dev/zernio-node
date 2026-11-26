@@ -33884,7 +33884,7 @@ export type GetTikTokAccountInsightsData = {
          * Comma-separated list. Defaults to
          * "follower_count,likes_count,video_count,followers_gained,followers_lost".
          *
-         * Live profile counters (requires user.info.stats scope):
+         * Live profile counters (requires user.info.stats, or user.insights on a TikTok Business connection):
          * - follower_count  (cumulative; time series joined from AccountStats)
          * - following_count (cumulative; time series joined from AccountStats.metadata)
          * - likes_count     (cumulative; time series joined from AccountStats.metadata)
