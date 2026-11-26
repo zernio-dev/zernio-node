@@ -55734,7 +55734,7 @@ export type GetInboxPostCommentsResponse = ({
          */
         isHidden?: boolean;
         /**
-         * Whether the current user has liked this comment
+         * Whether the connected account has liked this comment. Read on Facebook, Bluesky, Reddit and TikTok only. On every other platform (Instagram, X, LinkedIn, Threads, YouTube and the rest) it is never true, even for comments the account liked, so treat false or a missing value there as unknown.
          */
         isLiked?: boolean;
         /**
