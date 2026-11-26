@@ -35821,13 +35821,6 @@ export type CreatePayeeOnboardingLinkError = (ErrorResponse | {
     };
 } | {
     error?: string;
-    code?: 'insufficient_permissions' | 'unclassified_resource';
-    /**
-     * The resource group the key needs for this operation. Absent on admin-plane and unclassified-path denials.
-     */
-    required_group?: 'publishing' | 'engagement' | 'messages' | 'contacts' | 'analytics' | 'ads' | 'telephony' | 'accounts' | 'billing' | 'webhooks' | 'commerce' | 'creator_campaigns' | 'money' | 'calendar' | 'files';
-} | {
-    error?: string;
 });
 
 export type CreateTransferData = {
