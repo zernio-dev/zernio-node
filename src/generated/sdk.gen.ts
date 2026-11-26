@@ -15032,6 +15032,8 @@ export const getAutomationTestSample = <ThrowOnError extends boolean = false>(op
  *
  * Event and scheduled automations cannot be previewed yet (400, `not_supported`).
  *
+ * The draft can instead be sent as `name` and an automation `graph` (`AutomationGraph`), previewed exactly as its own shape would be. A comment to DM or flow graph is refused (`not_supported`).
+ *
  */
 export const previewAutomationDraft = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<PreviewAutomationDraftData, ThrowOnError>) => {
     return (options?.client ?? client).post<PreviewAutomationDraftResponse, PreviewAutomationDraftError, ThrowOnError>({
@@ -15371,6 +15373,8 @@ export const rejectAutomationApproval = <ThrowOnError extends boolean = false>(o
  * Each day lists what it would have done. Its own changes carry into later days, but the metrics stay what really happened. `notes` says what the replay could not know.
  *
  * Only ad automations can be backtested, on at most 5,000 ads.
+ *
+ * The draft can instead be sent as `name` and an automation `graph` (`AutomationGraph`), replayed exactly as its own shape would be. A comment to DM or flow graph is refused (`not_supported`).
  *
  */
 export const backtestAutomationDraft = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<BacktestAutomationDraftData, ThrowOnError>) => {

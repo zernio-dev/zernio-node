@@ -68386,7 +68386,7 @@ export type GetAutomationTestSampleError = (ErrorResponse | {
 });
 
 export type PreviewAutomationDraftData = {
-    body: AutomationDefinition;
+    body: (AutomationDefinition | GraphAutomationDefinition);
     query?: {
         /**
          * How many subjects to list, matches first. `evaluated` and `matched` always count them all.
@@ -68916,7 +68916,7 @@ export type RejectAutomationApprovalError = (ErrorResponse | {
 });
 
 export type BacktestAutomationDraftData = {
-    body: AutomationDefinition;
+    body: (AutomationDefinition | GraphAutomationDefinition);
     query?: {
         /**
          * How many whole days before today to replay. Today is not replayed.
