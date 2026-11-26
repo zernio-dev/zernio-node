@@ -79330,7 +79330,7 @@ export type CreateStandaloneAdData = {
          */
         adSetId?: string;
         /**
-         * Create the new objects under this EXISTING campaign instead of creating a new one. Supported on Meta, Google Ads, LinkedIn, TikTok and Reddit Ads. Mutually exclusive with `adSetId`.
+         * Create the new objects under this EXISTING campaign instead of creating a new one. Supported on Meta, Google Ads, LinkedIn, TikTok, Reddit Ads and Microsoft Ads. Mutually exclusive with `adSetId`.
          *
          * - TikTok: creates the ad group and the ad under this campaign. The campaign is neither created nor activated, and its objective must fit `goal`. Not with `smartPlus`.
          * - Meta: adds the new ad set under this campaign (multi-ad-set audience testing). Its budget matches the campaign's mode: for a CBO campaign (campaign-level budget) omit `budgetAmount`/`budgetType`, since the campaign owns the budget; for an ABO campaign pass them (they go on the new ad set).

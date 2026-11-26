@@ -20160,6 +20160,13 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  *
  * Without `status`, every level is switched on and the campaign spends once Microsoft approves the ad: send `status: PAUSED` to create it paused. A failed step deletes the campaign the call created.
  *
+ * `existingCampaignId` adds a new ad group, with its ad, `keywords` and `negativeKeywords`, to an existing Microsoft Search campaign in the ad account (404 when it is not there).
+ *
+ * - The campaign keeps its own budget, locations, languages and campaign negatives: those fields return 422.
+ * - `startDate` and `endDate` set the new ad group's dates.
+ * - `status: PAUSED` pauses only the new ad group, and a failed step deletes only that ad group.
+ * - `adSetId` is not available.
+ *
  * ### Snapchat Ads
  *
  * Use the `accountId` of a `snapchatads` connection signed in through GET /v1/connect/snapchatads/ads and an ad account UUID as `adAccountId`. A connection that only holds a pasted Snap Pixel token returns 422 `ads_connection_required`. Zernio creates a campaign, an ad squad carrying the budget, schedule, bid and targeting, and a Snap Ad.
