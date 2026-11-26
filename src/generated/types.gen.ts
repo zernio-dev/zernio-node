@@ -30009,12 +30009,44 @@ export type WebhookPayloadMessageSent = {
     conversation: InboxWebhookConversation;
     account: InboxWebhookAccount;
     /**
-     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, Meta's reason a WhatsApp Business app echo has no renderable body, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template.
+     * Platform-specific context for the sent message: a quote-reply reference, a WhatsApp location pin, WhatsApp contact cards, WhatsApp template name, language, header and footer, Meta's reason a WhatsApp Business app echo has no renderable body, the TikTok message type, or outgoing Instagram/Facebook buttons, quick replies and template.
      *
      * The key is present only when the send carried some context: it is never null and never an empty object. Read it to tell a location or contact-card message from a text one without a GET on the message.
      *
      */
     metadata?: {
+        /**
+         * WhatsApp template sends only. Name of the approved template that was sent.
+         */
+        templateName?: string;
+        /**
+         * WhatsApp template sends only. Language code of the approved template that was sent.
+         */
+        templateLanguage?: string;
+        /**
+         * WhatsApp template sends only. The header as the recipient saw it: a text header filled with the values actually sent, a media header with its format and the link the send gave, or a location header with only its format.
+         *
+         * Absent when the template has no header, and on bulk, broadcast and automation sends, which carry only `templateName` and `templateLanguage`. The message text is the body only.
+         *
+         */
+        templateHeader?: {
+            /**
+             * Header format.
+             */
+            format: 'text' | 'image' | 'video' | 'document' | 'location';
+            /**
+             * Text headers only. The header text with its variables filled in.
+             */
+            text?: string;
+            /**
+             * Image, video and document headers only. The link the send carried. Absent when the media was sent by id or the link is on Meta's CDN (an expiring URL, such as the approval sample).
+             */
+            mediaUrl?: string;
+        };
+        /**
+         * WhatsApp template sends only. Footer text of the template. Absent when the template has no footer, and on bulk, broadcast and automation sends.
+         */
+        templateFooter?: string;
         /**
          * WhatsApp only. Meta's own reason this message has no renderable body. Present on Coexistence echoes of a message sent from the WhatsApp Business app that Meta could not render (for example an album, code 131051: message type currently not supported). Absent otherwise.
          *
@@ -30134,6 +30166,11 @@ export type platform26 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 't
  *
  */
 export type source10 = 'whatsapp_business_app' | 'cloud_api' | 'meta_business_agent';
+
+/**
+ * Header format.
+ */
+export type format4 = 'text' | 'image' | 'video' | 'document' | 'location';
 
 export type WebhookPayloadNotificationSent = {
     /**
@@ -31692,7 +31729,7 @@ export type WhatsAppHeaderComponent = {
     };
 };
 
-export type format4 = 'text' | 'image' | 'video' | 'gif' | 'document' | 'location';
+export type format5 = 'text' | 'image' | 'video' | 'gif' | 'document' | 'location';
 
 export type WhatsAppLimitedTimeOfferComponent = {
     type: 'limited_time_offer';
@@ -53970,6 +54007,7 @@ export type GetInboxConversationMessagesResponse = ({
          * - `quotedMessageId`: the `id` of the message this one replies to (delivered as `message.platformMessageId` on webhooks).
          * - `waInteractive`: a compact descriptor of WhatsApp interactive content sent (buttons / list / cta_url / flow / location_request).
          * - `metaInteractive`: outgoing Instagram/Facebook buttons, quickReplies and template, as sent.
+         * - `templateName` / `templateLanguage` / `templateHeader` / `templateFooter`: on a WhatsApp template send, the template identity plus its rendered header (`{ format, text?, mediaUrl? }`) and footer; `text` is the body only.
          * - `interactiveType` / `interactiveId`: for inbound interactive taps.
          * - `source`: where the message reached us from, not who produced it (read `sentVia` for that). `whatsapp_business_app` / `coexistence_history` on a WhatsApp Coexistence number, `bulk-api` on a POST /v1/whatsapp/bulk send.
          * - `deliveryChannel`: on an outgoing iMessage, the channel of the latest delivery status (`imessage`, `sms`, `rcs` or `whatsapp`). A message delivered on `imessage` turns `failed` when the provider then reports its `sms` fallback failed.
