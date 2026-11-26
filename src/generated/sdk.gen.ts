@@ -14913,6 +14913,10 @@ export const listAutomations = <ThrowOnError extends boolean = false>(options?: 
  * - **Comment to DM**: a comment door in `trigger.type`, such as `comment.keyword`, with a `graph` of the shapes `/v1/comment-automations` holds. It is on unless `status` is `paused`, and needs what `/v1/comment-automations` needs. A post that already has an active automation is a 409.
  * - **Flow** (`kind` is `workflow`): a flow trigger such as `inbound_message` (or a `graph` whose trigger node names it) on one account, with the builder's `graph`. It is a draft unless `status` is `active`, which needs a complete graph; `paused` is refused. It needs the inbox add-on and a full-access key.
  *
+ * An ad rule, event, scheduled automation or sequence can instead be sent as `name`, `status` and an automation `graph` (`AutomationGraph`, the one its response carries). The graph's trigger picks the kind, and it is saved exactly as its own shape would be.
+ *
+ * A comment to DM or flow sent as an automation graph is refused (`not_supported`).
+ *
  * Everything an automation cannot hold is refused at once: the 400 lists every problem with its JSON path in `details.problems`.
  *
  */

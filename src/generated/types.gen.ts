@@ -4610,12 +4610,16 @@ export type adPersonalization = 'granted' | 'denied' | 'unspecified';
 
 export type Automation = (AdRuleAutomationDefinition & AutomationRecord & {
     kind?: "ad_rule";
+    graph?: AutomationGraph;
 }) | (EventAutomationDefinition & AutomationRecord & {
     kind?: "event";
+    graph?: AutomationGraph;
 }) | (ScheduledAutomationDefinition & AutomationRecord & {
     kind?: "scheduled";
+    graph?: AutomationGraph;
 }) | (SequenceAutomationDefinition & AutomationRecord & {
     kind?: "sequence";
+    graph?: AutomationGraph;
     /**
      * The account's platform. On `whatsapp` every step sends a template.
      */
@@ -5209,6 +5213,56 @@ export type AutomationFactResult = {
     value?: unknown;
     actual?: unknown;
     met?: boolean;
+};
+
+/**
+ * An automation's definition as one graph: the trigger that starts it, the nodes its runs walk from `entry` along `edges`, and its guardrails. Ad rules, event and scheduled automations and sequences run their nodes in one chain, a condition first where the kind has one.
+ */
+export type AutomationGraph = {
+    /**
+     * One trigger. Its `type` is the kind's `trigger.type`; `config` holds the rest of the trigger, and `subjects` for a schedule.
+     */
+    triggers: Array<{
+        type: string;
+        config: {
+            [key: string]: unknown;
+        };
+        entry?: Array<(string)>;
+    }>;
+    nodes: Array<{
+        id: string;
+        /**
+         * A step type such as `notify.send`, `messages.send`, `delay` or `condition`.
+         */
+        type: string;
+        config: {
+            [key: string]: unknown;
+        };
+        position?: {
+            x: number;
+            y: number;
+        };
+        label?: string;
+    }>;
+    edges: Array<{
+        id: string;
+        source: string;
+        target: string;
+        /**
+         * Null when followed whatever the step's outcome; `matched` after a condition.
+         */
+        sourceHandle: (string) | null;
+    }>;
+    /**
+     * The node runs start at.
+     */
+    entry: Array<(string)>;
+    limits: {
+        cooldown?: string;
+        maxChangesPerDay?: number;
+        maxChangesPerObject?: number;
+        stopOn?: Array<('reply' | 'unsubscribe')>;
+    };
 };
 
 /**
@@ -15904,6 +15958,19 @@ export type GoogleTargetImpressionShare = {
 };
 
 export type location = 'ANYWHERE_ON_PAGE' | 'TOP_OF_PAGE' | 'ABSOLUTE_TOP_OF_PAGE';
+
+/**
+ * An ad rule, event or scheduled automation or sequence sent as an automation graph. It is saved as its own shape would be.
+ */
+export type GraphAutomationDefinition = {
+    name: string;
+    /**
+     * Sequences.
+     */
+    description?: string;
+    status?: 'draft' | 'active' | 'paused';
+    graph: AutomationGraph;
+};
 
 export type HubSpotContactProperty = {
     /**
@@ -68030,7 +68097,7 @@ export type ListAutomationsResponse = ({
 export type ListAutomationsError = (ErrorResponse);
 
 export type CreateAutomationData = {
-    body: AutomationDefinition;
+    body: (AutomationDefinition | GraphAutomationDefinition);
     headers?: {
         /**
          * Optional client-generated unique key (e.g. a UUID) that makes retries safe.
@@ -68372,7 +68439,7 @@ export type UpdateAutomationData = {
             [key: string]: unknown;
         }>;
         /**
-         * Comment to DM and flows: the whole graph, as read.
+         * Comment to DM and flows: the whole graph, as read. Ad rules, event and scheduled automations and sequences: an `AutomationGraph` that replaces the whole definition, sent without `trigger`, `subjects`, `filter`, `conditions`, `alert`, `steps` or `limits`.
          */
         graph?: {
             [key: string]: unknown;
