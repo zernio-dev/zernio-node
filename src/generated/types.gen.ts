@@ -83226,7 +83226,22 @@ export type SendConversionsResponse = ({
          */
         eventId?: string;
         message?: string;
+        /**
+         * The platform's error code. For Google Ads and Campaign Manager 360, Google's reason for this event (`EVENT_TIME_INVALID`, `REQUIRED_FIELD_MISSING`...) when Google named this event with one.
+         */
         code?: (string | number);
+        /**
+         * Google Ads and Campaign Manager 360 only: the event field Google refused (`event_timestamp`, `currency`...), without the `events.events[N].` prefix. Absent when Google named the event but no field.
+         */
+        field?: string;
+        /**
+         * Google Ads and Campaign Manager 360 only, when Google refused the request. Absent for other platforms.
+         *
+         * - `event`: Google named this event, and `message` is its own violation.
+         * - `batch`: the refusal is about the whole request (destination, account, an outage) and is copied to every event of it.
+         * - `batch_rejected`: Google did not name this event, but its resend without the named events failed too. `message` is that resend's error.
+         */
+        scope?: 'event' | 'batch' | 'batch_rejected';
         /**
          * Meta only. Meta's own error for the rejected chunk, with credentials
          * redacted: `message`, `type`, `code`, `error_subcode`, `error_user_title`,
@@ -83894,7 +83909,22 @@ export type SendEventsResponse = ({
             eventIndex?: number;
             eventId?: string;
             message?: string;
+            /**
+             * The platform's error code. For Google Ads and Campaign Manager 360, Google's reason for this event (`EVENT_TIME_INVALID`, `REQUIRED_FIELD_MISSING`...) when Google named this event with one.
+             */
             code?: (string | number);
+            /**
+             * Google Ads and Campaign Manager 360 only: the event field Google refused (`event_timestamp`, `currency`...), without the `events.events[N].` prefix. Absent when Google named the event but no field.
+             */
+            field?: string;
+            /**
+             * Google Ads and Campaign Manager 360 only, when Google refused the request. Absent for other platforms.
+             *
+             * - `event`: Google named this event, and `message` is its own violation.
+             * - `batch`: the refusal is about the whole request (destination, account, an outage) and is copied to every event of it.
+             * - `batch_rejected`: Google did not name this event, but its resend without the named events failed too. `message` is that resend's error.
+             */
+            scope?: 'event' | 'batch' | 'batch_rejected';
         }>;
         /**
          * Set when the destination could not be reached at all (account disconnected, unsupported platform, platform error).
