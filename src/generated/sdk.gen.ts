@@ -20386,7 +20386,9 @@ export const archiveLeadForm = <ThrowOnError extends boolean = false>(options: O
  * List leads for a single form
  * Lists the leads submitted through one Meta lead form.
  *
- * It serves the leads Zernio stored when the form has any, newest stored first. Otherwise it reads them live from Meta. No parameter forces a live read.
+ * It serves the leads Zernio stored when the form has at least one stored lead matching `since`, newest stored first. Otherwise it reads them live from Meta. No parameter forces a live read, but a `since` later than every stored lead reads the first page live.
+ *
+ * Stored reads are all or nothing per form: once a stored lead matches, a lead the webhook missed appears only after recovery stores it.
  *
  * ### Accounts
  *
@@ -20403,6 +20405,8 @@ export const archiveLeadForm = <ThrowOnError extends boolean = false>(options: O
  *
  * Reading this endpoint does not trigger that pass. A live read that finds leads only moves the Page's next pass forward.
  *
+ * No mode guarantees that every lead submitted in the last few minutes is on a page. To close a recovery window, read again from the start after the Page's next pass and deduplicate on `id`.
+ *
  * ### What recovery skips
  *
  * For a form with no stored lead, recovery reaches back 7 days. It reads only the first 200 forms Meta lists for a Page and skips archived or deleted forms. It stores at most 50 new leads per form per pass, leaving the rest for the next pass.
@@ -20411,13 +20415,33 @@ export const archiveLeadForm = <ThrowOnError extends boolean = false>(options: O
  *
  * ### meta.lastCheckedAt
  *
- * For stored leads, it is when the recovery pass last finished for the Page. That pass can skip forms, so the value can be recent while leads are missing, including on an empty page.
+ * For stored leads, it is when the recovery pass last ran for the Page. That includes a pass that failed, and one parked because the account or the Page token is missing, which reads no forms. A pass cut short by the recovery job's time budget is not recorded.
+ *
+ * Passes can also skip forms, so the value can be recent while leads are missing, including on an empty page. It is `null` when the account has had no pass.
  *
  * For live reads, it is when Meta was read. With content retained, that read is cached for 5 minutes. With zero content retention, every read is live and uncached.
  *
  * ### Paging
  *
  * Pass `pagination.cursor` back as `cursor` while `hasMore` is true. Pages are not a snapshot: leads stored after the first page, recovered ones included, sort first and appear only when you read from the start again. Deduplicate on `id`.
+ *
+ * Stored pages walk Zernio's own ids, so a resumed cursor neither skips nor repeats leads that were stored when the walk started. `since` filters on Meta's created time.
+ *
+ * Live pages follow Meta's cursor and each page is cached separately for up to 5 minutes, so one walk can mix moments.
+ *
+ * A live cursor stays live even once leads are stored. A stored cursor does not survive a switch to zero content retention mid-walk: start again from the first page.
+ *
+ * ### Zero content retention
+ *
+ * Every page is read live from Meta, uncached, and nothing is stored. Completeness is what Meta returns. As on every live page, leads come without `leadId` and `status`, `createdTime` is Meta's and `lastCheckedAt` is the time of that read.
+ *
+ * The 48-hour sweep in the leads docs is about `lead.received` webhook delivery, not this endpoint.
+ *
+ * ### Limits
+ *
+ * `limit` is 1 to 100 (default 25). The plan's per-minute API rate limit applies, and live reads also count against Meta's own limits.
+ *
+ * The route needs the Ads add-on and has no per-request charge. Zernio does not expire stored leads on a schedule; live reads return what Meta still holds.
  *
  */
 export const listFormLeads = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<ListFormLeadsData, ThrowOnError>) => {

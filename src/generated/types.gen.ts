@@ -80359,7 +80359,7 @@ export type ListLeadsResponse = ({
     };
     meta?: {
         /**
-         * Meta only, present when `accountId` is passed: when Zernio last re-read the Page's forms from Meta to catch leads the webhook missed. Null when no leads matched or before the first pass.
+         * Meta only, present when `accountId` is passed: when the recovery pass that catches leads the webhook missed last ran for the Page, failed or parked passes included, so not proof the forms were read. Null when no leads matched or before the first pass.
          */
         lastCheckedAt?: (string) | null;
         lastUpdated?: string;
@@ -80871,7 +80871,7 @@ export type ListFormLeadsResponse = ({
          */
         source?: 'persisted' | 'live';
         /**
-         * For persisted leads, when the recovery pass last finished for the Page (null before the first one). It does not prove every lead is stored. For live reads, when Meta was read.
+         * For persisted leads, when the recovery pass last ran for the Page, failed or parked passes included (null before the first one). It does not prove every lead is stored. For live reads, when Meta was read.
          */
         lastCheckedAt?: (string) | null;
         lastUpdated?: string;
