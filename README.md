@@ -1432,6 +1432,7 @@ try {
 | `instagram.getInstagramPublishingLimit()` | Get Instagram publishing limit |
 | `instagram.getInstagramStoryInsights()` | Get Instagram story insights |
 | `instagram.searchInstagramAudio()` | Search Instagram audio |
+| `instagram.searchInstagramHashtag()` | Search public Instagram media by hashtag |
 
 ### Lead Gen
 | Method | Description |

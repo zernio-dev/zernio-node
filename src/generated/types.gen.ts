@@ -17260,6 +17260,72 @@ export type InstagramDemographicsResponse = {
 
 export type metric3 = 'follower_demographics' | 'engaged_audience_demographics';
 
+export type InstagramHashtagMedia = {
+    /**
+     * Instagram media ID of a public post carrying the hashtag.
+     */
+    id: string;
+    caption: (string) | null;
+    /**
+     * IMAGE, VIDEO or CAROUSEL_ALBUM.
+     */
+    mediaType: (string) | null;
+    /**
+     * Always null. Meta does not serve it on hashtag media.
+     */
+    mediaProductType: (string) | null;
+    /**
+     * Temporary CDN URL. Meta omits it for videos with copyrighted audio and for carousel albums.
+     */
+    mediaUrl: (string) | null;
+    /**
+     * Always null. Meta does not serve it on hashtag media.
+     */
+    thumbnailUrl: (string) | null;
+    /**
+     * Public Instagram URL of the post.
+     */
+    permalink: (string) | null;
+    /**
+     * Publication time as Meta returns it (ISO 8601).
+     */
+    timestamp: (string) | null;
+    /**
+     * Null when the owner hides like counts.
+     */
+    likeCount: (number) | null;
+    commentsCount: (number) | null;
+};
+
+export type InstagramHashtagResearch = {
+    hashtag: {
+        /**
+         * Instagram hashtag ID that Meta resolved for the name.
+         */
+        id: string;
+        /**
+         * The hashtag as searched: lowercased, without the leading #.
+         */
+        name: string;
+    };
+    /**
+     * The most popular public media carrying the hashtag (Meta's top_media edge).
+     */
+    topMedia: Array<InstagramHashtagMedia>;
+    /**
+     * Public media carrying the hashtag published in the last 24 hours, newest first (Meta's recent_media edge).
+     */
+    recentMedia: Array<InstagramHashtagMedia>;
+    /**
+     * Unique hashtags this account searched in the rolling 7-day window, this one included. Null when Meta does not report it.
+     */
+    recentlySearchedCount: (number) | null;
+    /**
+     * Unique hashtags one Instagram account may search in a rolling 7 days.
+     */
+    weeklySearchLimit: number;
+};
+
 export type InstagramLiveMedia = {
     /**
      * Instagram media ID of the live broadcast.
@@ -48731,6 +48797,29 @@ export type GetInstagramBusinessDiscoveryData = {
 export type GetInstagramBusinessDiscoveryResponse = (InstagramBusinessDiscovery);
 
 export type GetInstagramBusinessDiscoveryError = (ErrorResponse);
+
+export type SearchInstagramHashtagData = {
+    path: {
+        /**
+         * The ID of a connected Instagram account (Facebook Login).
+         */
+        accountId: string;
+    };
+    query: {
+        /**
+         * One hashtag: letters, digits or "_", with or without the leading #. Case-insensitive.
+         */
+        hashtag: string;
+        /**
+         * How many media to return in each of topMedia and recentMedia.
+         */
+        limit?: number;
+    };
+};
+
+export type SearchInstagramHashtagResponse = (InstagramHashtagResearch);
+
+export type SearchInstagramHashtagError = (ErrorResponse);
 
 export type ListInstagramMediaCollaboratorsData = {
     path: {
