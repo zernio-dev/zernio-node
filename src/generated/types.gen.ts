@@ -85147,7 +85147,7 @@ export type GetAdConversionMetricsData = {
 };
 
 export type GetAdConversionMetricsResponse = ({
-    platform?: 'linkedinads';
+    platform?: 'linkedinads' | 'googleads';
     granularity?: 'ALL' | 'DAILY' | 'MONTHLY' | 'YEARLY';
     rows?: Array<{
         /**
@@ -85570,7 +85570,7 @@ export type GetConversionMetricsData = {
 };
 
 export type GetConversionMetricsResponse = ({
-    platform?: 'linkedinads';
+    platform?: 'linkedinads' | 'googleads';
     granularity?: 'ALL' | 'DAILY' | 'MONTHLY' | 'YEARLY';
     rows?: Array<{
         /**

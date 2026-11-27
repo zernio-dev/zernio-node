@@ -22545,14 +22545,18 @@ export const removeAdConversionAssociations = <ThrowOnError extends boolean = fa
 
 /**
  * Get attribution metrics
- * Shows a LinkedIn conversion rule's attributed conversions, value, leads and cost over time.
+ * Shows the conversions an ad network credited to a destination over time, bucketed by date.
  *
- * LinkedIn-only today. Returns conversion-attribution metrics
- * (`externalWebsiteConversions`, `externalWebsitePostClickConversions`,
- * `externalWebsitePostViewConversions`, `conversionValueInLocalCurrency`,
- * `qualifiedLeads`, `costInLocalCurrency`) bucketed by date.
+ * **LinkedIn** (a conversion rule): `externalWebsiteConversions`, `externalWebsitePostClickConversions`,
+ * `externalWebsitePostViewConversions`, `conversionValueInLocalCurrency`, `qualifiedLeads`, `costInLocalCurrency`.
  *
- * Date-range constraints (passed through from LinkedIn):
+ * **Google Ads** (a conversion action, `destinationId` as `customers/{customerId}/conversionActions/{id}` or the bare id; `adAccountId` is the customer id):
+ * `conversions`, `conversionsValue`, `allConversions`, `allConversionsValue`. Dates are in the Google Ads account's time zone,
+ * days with no conversions have no row, and month and year buckets are cut to the asked range.
+ *
+ * Other platforms answer 405.
+ *
+ * Date-range constraints on LinkedIn:
  * - `granularity=DAILY` is retained for ~6 months only
  * - `granularity=ALL` with a range > 6 months auto-rounds to month boundaries
  * - `granularity=MONTHLY`/`YEARLY` retains 24 months
