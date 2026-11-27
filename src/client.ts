@@ -1197,6 +1197,7 @@ import {
   setMessengerIceBreakers,
   setMessengerMenu,
   setPartnershipAdPermission,
+  setPostCommentsEnabled,
   setRedditPostFlair,
   setTagNewAds,
   setTelegramCommands,
@@ -1770,6 +1771,7 @@ export class Zernio {
     unpublishPost: this._bind(unpublishPost),
     pinPost: this._bind(pinPost),
     unpinPost: this._bind(unpinPost),
+    setPostCommentsEnabled: this._bind(setPostCommentsEnabled),
     editPost: this._bind(editPost),
     updatePostMetadata: this._bind(updatePostMetadata),
   };

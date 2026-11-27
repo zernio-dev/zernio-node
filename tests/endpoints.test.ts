@@ -1197,6 +1197,11 @@ describe('Endpoint Methods', () => {
       expect(client.posts.unpinPost).toBeTypeOf('function');
     });
 
+    it('should have setPostCommentsEnabled method', () => {
+      expect(client.posts.setPostCommentsEnabled).toBeDefined();
+      expect(client.posts.setPostCommentsEnabled).toBeTypeOf('function');
+    });
+
     it('should have editPost method', () => {
       expect(client.posts.editPost).toBeDefined();
       expect(client.posts.editPost).toBeTypeOf('function');

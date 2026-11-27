@@ -183,6 +183,7 @@ try {
 | `posts.pinPost()` | Pin post |
 | `posts.retryPost()` | Retry failed post |
 | `posts.reviewPost()` | Approve or reject a post |
+| `posts.setPostCommentsEnabled()` | Turn comments on or off |
 | `posts.unpinPost()` | Unpin post |
 | `posts.unpublishPost()` | Unpublish post |
 

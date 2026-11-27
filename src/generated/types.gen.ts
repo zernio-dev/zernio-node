@@ -22219,6 +22219,38 @@ export type SequenceAutomationDefinition = {
     };
 };
 
+export type SetPostCommentsEnabledRequest = {
+    /**
+     * Must be `instagram`. Any other value answers 400 `platform_not_supported`.
+     */
+    platform: string;
+    /**
+     * Which Instagram account's copy to change when the post was published to several Instagram accounts. Required in that case.
+     */
+    accountId?: string;
+    /**
+     * true turns comments on, false turns them off.
+     */
+    enabled: boolean;
+};
+
+export type SetPostCommentsEnabledResponse = {
+    success?: boolean;
+    /**
+     * Whether comments are now on for the post.
+     */
+    commentsEnabled?: boolean;
+    /**
+     * The Instagram media ID that was changed.
+     */
+    platformPostId?: string;
+    /**
+     * The Zernio account whose post was changed.
+     */
+    accountId?: string;
+    message?: string;
+};
+
 /**
  * An ad account a tracking tag is shared with (Meta `shared_accounts` edge).
  */
@@ -38977,6 +39009,19 @@ export type UnpinPostData = {
 export type UnpinPostResponse = (PinPostResponse);
 
 export type UnpinPostError = (ErrorResponse | {
+    error?: string;
+} | unknown);
+
+export type SetPostCommentsEnabledData = {
+    body: SetPostCommentsEnabledRequest;
+    path: {
+        postId: string;
+    };
+};
+
+export type SetPostCommentsEnabledResponse2 = (SetPostCommentsEnabledResponse);
+
+export type SetPostCommentsEnabledError = (ErrorResponse | {
     error?: string;
 } | unknown);
 
