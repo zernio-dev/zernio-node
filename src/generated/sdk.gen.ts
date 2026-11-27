@@ -15590,7 +15590,9 @@ export const discardAdChange = <ThrowOnError extends boolean = false>(options: O
  *
  * The new change holds the same request. It is checked for the calling user, and an edit is read against the current values of its object. The failed change stays readable until it is deleted.
  *
- * A failed create cannot be staged again (`409`): it may have made part of its objects on the ad network, which its `error.details` lists. Stage a new create instead.
+ * A failed create cannot be staged again (`409`): it may have made part of its objects on the ad network, which its `error.details` lists. Stage a new create instead. This covers every change with `creates: true`.
+ *
+ * Also refused with `409`: a change that failed as `change_outcome_unknown`, and a change whose kept uploads were deleted or moved to an earlier restage.
  *
  */
 export const restageAdChange = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RestageAdChangeData, ThrowOnError>) => {

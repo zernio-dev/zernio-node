@@ -22381,10 +22381,10 @@ export type StagedAdChange = {
             [key: string]: (string);
         };
         /**
-         * The query values of the staged request, without `stage`.
+         * The query values of the staged request, without `stage`. A key that was sent more than once holds every value, in the order sent.
          */
         query?: {
-            [key: string]: (string);
+            [key: string]: (string | Array<(string)>);
         };
     };
     /**
@@ -22413,7 +22413,7 @@ export type StagedAdChange = {
     creates?: boolean;
     /**
      * - `staged`: waiting to be confirmed or discarded.
-     * - `confirming`: a confirm is running. A change left here for 15 minutes ends as `failed` with error code `change_outcome_unknown`, and is never applied again automatically.
+     * - `confirming`: a confirm is running. A change left here for about 18 minutes ends as `failed` with error code `change_outcome_unknown`, and is never applied again automatically.
      * - `confirmed`: applied. `result` holds what the write returned.
      * - `failed`: not applied. `error` says why.
      *
@@ -22487,7 +22487,7 @@ export type StagedAdChange = {
         code?: string;
         message?: (string) | null;
         /**
-         * Creates only. What the failed create reported, such as objects it had already made on the ad network.
+         * Only on a failed change. What the write reported: the objects a failed create had already made, the fields an update had written (`appliedFields`), or the result of each item of a list write that failed in part.
          */
         details?: {
             [key: string]: unknown;
@@ -22509,7 +22509,7 @@ export type method5 = 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
 /**
  * - `staged`: waiting to be confirmed or discarded.
- * - `confirming`: a confirm is running. A change left here for 15 minutes ends as `failed` with error code `change_outcome_unknown`, and is never applied again automatically.
+ * - `confirming`: a confirm is running. A change left here for about 18 minutes ends as `failed` with error code `change_outcome_unknown`, and is never applied again automatically.
  * - `confirmed`: applied. `result` holds what the write returned.
  * - `failed`: not applied. `error` says why.
  *
