@@ -38632,7 +38632,13 @@ export type UpdatePostData = {
              */
             customMedia?: Array<MediaItem>;
             /**
-             * Optional per-platform scheduled time override. It is kept when a top-level scheduledFor is also sent, except a date sent back unchanged (same instant, or the same wall-clock time in the post's previous timezone) that matched the post scheduled time or is already past, which follows the new top-level scheduledFor.
+             * Optional per-platform scheduled time override.
+             *
+             * With a top-level scheduledFor in the same request, the override is kept. Exception: a date sent back unchanged (same instant, or same wall-clock time in the previous timezone) that matched the post time or is already past follows the new top-level scheduledFor.
+             *
+             * When omitted, the entry takes the top-level scheduledFor. Without one, it keeps its current time if still in the future, otherwise the post's scheduledFor if in the future, otherwise the earliest scheduledFor sent in this request.
+             *
+             * A past time is accepted and not published in the request. An entry due within the last 7 days is published at the next scheduler run; one more than 7 days in the past is not published and is marked failed.
              */
             scheduledFor?: string;
             /**
