@@ -78476,14 +78476,18 @@ export type BoostPostData = {
          */
         bodies?: Array<(string)>;
         /**
-         * Meta only (a 400 elsewhere). When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
+         * Meta only. `true` returns a 400 elsewhere, `false` is ignored there.
+         *
+         * When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
          *
          * `false` never sends it again: the request fails with 502 and `details.unconfirmedWrite`, so you can check the parent yourself. One object found by name is still reused.
          *
          */
         retryOnServerError?: boolean;
         /**
-         * Meta only (a 400 elsewhere). Controls the fallback when Meta refuses an existing Instagram video as the ad (subcode 1815279).
+         * Meta only. `true` returns a 400 elsewhere, `false` is ignored there.
+         *
+         * Controls the fallback when Meta refuses an existing Instagram video as the ad (subcode 1815279).
          *
          * - First, Zernio copies the video into the ad account and retries on the original post.
          * - Then it falls back to a new Facebook video in a new Page post, which does not show the original post's likes and comments.
@@ -79011,7 +79015,9 @@ export type CreateStandaloneAdData = {
          */
         websiteOnly?: boolean;
         /**
-         * Meta only (a 400 elsewhere). When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
+         * Meta only. `true` returns a 400 elsewhere, `false` is ignored there.
+         *
+         * When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
          *
          * `false` never sends it again: the request fails with 502 and `details.unconfirmedWrite`, so you can check the parent yourself. One object found by name is still reused.
          *
