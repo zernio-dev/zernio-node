@@ -78890,6 +78890,8 @@ export type CreateStandaloneAdData = {
          * - **Meta:** the ad-set `optimization_goal` (e.g. `LANDING_PAGE_VIEWS`, `LINK_CLICKS`, `REACH`, `IMPRESSIONS`, `OFFSITE_CONVERSIONS`, `THRUPLAY`, `LEAD_GENERATION`).
          *
          * On Meta it overrides the default derived from `goal` (e.g. `traffic` defaults to `LINK_CLICKS`). It is forwarded verbatim; Meta validates compatibility with the campaign objective and rejects incompatible combinations.
+         *
+         * With `goal: engagement`, `POST_ENGAGEMENT` also sets the ad set's destination to `ON_POST` (Ads Manager's Engagement, On your ad, Post engagement), as POST /v1/ads/boost does.
          */
         optimizationGoal?: string;
         /**
