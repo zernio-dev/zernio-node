@@ -41605,7 +41605,12 @@ export type ConnectAdsData = {
         /**
          * Scope ad sync to multiple platform ad accounts (same platform support and id shapes as `adAccountId`). Repeat the param (`?adAccountIds=act_1&adAccountIds=act_2`) or comma-separate (`?adAccountIds=act_1,act_2`).
          *
-         * - Persisted server-side; the latest call wins. De-scoped ad accounts have their synced ads, campaigns, ad sets and keywords removed. Where ad accounts are already split into one account each, the call only adds accounts for new ids and never removes one (disconnect that account instead).
+         * - Persisted server-side. On a connection not split into one account per ad account, the latest call wins, and de-scoped ad accounts have their synced ads, campaigns, ad sets and keywords removed.
+         * - Where ad accounts are already split into one account each, the call only adds accounts for new ids and never removes one (disconnect that account instead).
+         * - At most 25 ids per call; more returns 400 `invalid_field_value` (`param: adAccountIds`).
+         * - Meta, Google, LinkedIn, X, Reddit, Microsoft, TikTok and Snapchat: the first call with `adAccountIds` (or `adAccountId`) on a connection not split yet turns it into one account per ad account.
+         * - The connection keeps its `accountId` for the first id. Each other id gets its own account with the same token, listed in GET /v1/accounts.
+         * - If the profile already holds an account for that first ad account (an earlier connect), that account is deleted and replaced by the connection: its posts move to the connection and its old `accountId` returns 404.
          * - On Meta only the scoped ad accounts get webhook subscriptions, including when the call starts a fresh OAuth.
          * - On Meta, ad accounts left out of the scope are unsubscribed from Zernio's ad-account webhooks (unless another connection still holds them) and are no longer stored, so syncs do not add them back. `GET /v1/ads/accounts` lists them (`selected: false`) only with `live=true`; passing them again reselects them.
          * - On TikTok, advertisers left out of the scope are no longer synced or stored either, and are listed (`selected: false`) only with `live=true`.
