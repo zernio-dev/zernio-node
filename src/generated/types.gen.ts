@@ -12314,13 +12314,13 @@ export type CtwaAdRequestBody = {
      */
     specialAdCategoryCountry?: Array<(string)>;
     /**
-     * Meta's Advantage+ audience expansion. `0` (default) keeps
-     * targeting strict; `1` lets Meta expand beyond the supplied
+     * Meta's Advantage+ audience expansion. `0` or `false` (default) keeps
+     * targeting strict; `1` or `true` lets Meta expand beyond the supplied
      * targeting when its delivery system finds better matches.
-     * Always sent on CREATE (Meta requires it).
+     * Booleans are sent to Meta as 1/0. Always sent on CREATE (Meta requires it).
      *
      */
-    advantageAudience?: 0 | 1;
+    advantageAudience?: (0 | 1 | boolean);
     /**
      * Defaults to `OUTCOME_ENGAGEMENT` on POST /v1/ads/ctwa and POST /v1/ads/messaging,
      * and to `OUTCOME_LEADS` on POST /v1/ads/call and on POST /v1/ads/messaging with
@@ -12451,15 +12451,6 @@ export type gender = 'all' | 'male' | 'female';
  * Normalized household-income tier, same as POST /v1/ads/create. Incompatible with housing, employment and credit specialAdCategories.
  */
 export type incomeTier = 'top_5' | 'top_10' | 'top_10_25' | 'top_25_50';
-
-/**
- * Meta's Advantage+ audience expansion. `0` (default) keeps
- * targeting strict; `1` lets Meta expand beyond the supplied
- * targeting when its delivery system finds better matches.
- * Always sent on CREATE (Meta requires it).
- *
- */
-export type advantageAudience = 0 | 1;
 
 /**
  * Defaults to `OUTCOME_ENGAGEMENT` on POST /v1/ads/ctwa and POST /v1/ads/messaging,
@@ -15972,12 +15963,16 @@ export type GoogleTargetImpressionShare = {
 export type location = 'ANYWHERE_ON_PAGE' | 'TOP_OF_PAGE' | 'ABSOLUTE_TOP_OF_PAGE';
 
 /**
- * An ad rule, event or scheduled automation or sequence sent as an automation graph. It is saved as its own shape would be.
+ * Any automation sent as an automation graph. It is saved as its own shape would be.
+ *
+ * - A comment to DM keeps its fixed node ids (`dm`, `reply`, `like`, `hide`, `delay`, ...) and may carry its DM door as a second trigger with its own `entry`.
+ * - A flow's trigger settings go on its trigger node, added when the graph has none.
+ *
  */
 export type GraphAutomationDefinition = {
     name: string;
     /**
-     * Sequences.
+     * Sequences and flows.
      */
     description?: string;
     status?: 'draft' | 'active' | 'paused';
@@ -23718,6 +23713,9 @@ export type TrackingSite = {
     id?: string;
     profileId?: string;
     name?: string;
+    /**
+     * `paused` while the workspace is over its free website events for the month with no payment method: the site records nothing until one is added.
+     */
     status?: 'active' | 'paused' | 'removing';
     install?: {
         /**
@@ -23817,6 +23815,9 @@ export type TrackingSite = {
     updatedAt?: string;
 };
 
+/**
+ * `paused` while the workspace is over its free website events for the month with no payment method: the site records nothing until one is added.
+ */
 export type status64 = 'active' | 'paused' | 'removing';
 
 /**
@@ -68759,7 +68760,7 @@ export type UpdateAutomationData = {
             [key: string]: unknown;
         }>;
         /**
-         * Comment to DM and flows: the whole graph, as read. Ad rules, event and scheduled automations and sequences: an `AutomationGraph` that replaces the whole definition, sent without `trigger`, `subjects`, `filter`, `conditions`, `alert`, `steps` or `limits`.
+         * An `AutomationGraph` (with `triggers`) replaces the whole definition of any kind, sent without `trigger`, `orTriggers`, `subjects`, `filter`, `conditions`, `alert`, `steps` or `limits`. Comment to DM and flows also take their own graph, as read.
          */
         graph?: {
             [key: string]: unknown;
@@ -71882,6 +71883,7 @@ export type UpdateAdSetData = {
          * - Only the keys you send change. Zernio reads the ad set's live targeting, merges your keys over it and writes the full spec back, so everything else (custom audiences, geo, age, interest groups, `targeting_automation`) is kept.
          * - Setting any location replaces every location list. An empty list or `gender: all` clears that key.
          * - `incomeTier` is resolved to Meta's income segment first (422 when Meta has none).
+         * - `advantage_audience` (or `advantageAudience`) takes `0`/`1` or `false`/`true` and is written as Meta's `targeting_automation.advantage_audience` 0/1. Omit it to keep the live setting.
          * - Fields Meta cannot target (LinkedIn B2B, Google `devices`, Reddit communities and keywords) return 400 with `param: targeting.<field>`.
          * - An empty object is a 400, as is a `targeting.placements` object with no non-empty list (`param: targeting.placements`).
          * - When the live targeting cannot be read, the request returns 502 and nothing is written.
@@ -72697,9 +72699,9 @@ export type UpdateAdData = {
                 name: string;
             }>;
             /**
-             * Meta only. Omit to preserve the existing setting on update. 0 = disabled, 1 = enabled.
+             * Meta only. Omit to preserve the existing setting on update. 0 or false = disabled, 1 or true = enabled (booleans are sent to Meta as 1/0). Also accepted as `advantageAudience`.
              */
-            advantage_audience?: 0 | 1;
+            advantage_audience?: (0 | 1 | boolean);
         };
         /**
          * Replace or patch the ad's creative. Meta, TikTok, and LinkedIn.
@@ -78126,9 +78128,9 @@ export type BoostPostData = {
                 name: string;
             }>;
             /**
-             * Meta only. 0 = disabled (default), 1 = enabled.
+             * Meta only. 0 or false = disabled (default), 1 or true = enabled (booleans are sent to Meta as 1/0).
              */
-            advantage_audience?: 0 | 1;
+            advantage_audience?: (0 | 1 | boolean);
         };
         /**
          * Google only (400 elsewhere). Written on the campaign the boost creates.
@@ -78142,7 +78144,7 @@ export type BoostPostData = {
          * - The merge goes one level deep inside `geo_locations` and `excluded_geo_locations` (built sub-keys win; raw-only sub-keys such as `location_types` survive).
          * - Array values (`flexible_spec`, ...) are replaced as a whole key, never element-merged.
          *
-         * **`targeting_automation`.** When `rawTargeting` is present, Zernio no longer emits its usual `advantage_audience: 0` default, so it cannot clobber a `targeting_automation` in the raw spec. Meta requires `targeting_automation` on ad set creation: include it in the raw spec, or send `targeting.advantage_audience` (0 or 1), merged over raw as `targeting_automation`.
+         * **`targeting_automation`.** When `rawTargeting` is present, Zernio no longer emits its usual `advantage_audience: 0` default, so it cannot clobber a `targeting_automation` in the raw spec. Meta requires `targeting_automation` on ad set creation: include it in the raw spec, or send `targeting.advantage_audience` (0/1 or false/true), merged over raw as `targeting_automation`.
          *
          */
         rawTargeting?: {
@@ -80023,9 +80025,9 @@ export type CreateStandaloneAdData = {
             values: Array<(string)>;
         }>;
         /**
-         * Meta only. Controls the Advantage audience feature (targeting_automation). 0 = disabled (default), 1 = enabled. Meta Marketing API requires this field on all ad set creation requests.
+         * Meta only. Controls the Advantage audience feature (targeting_automation). 0 or false = disabled (default), 1 or true = enabled (booleans are sent to Meta as 1/0). Meta Marketing API requires this field on all ad set creation requests.
          */
-        advantageAudience?: 0 | 1;
+        advantageAudience?: (0 | 1 | boolean);
         /**
          * Meta only. Conversion attribution window for the ad set, mapping 1:1 to Meta's ad-set `attribution_spec`. Only honored for conversion goals (`conversions`, `lead_generation`, `app_promotion`); ignored for awareness/traffic/engagement. Omit to use Meta's default (`7-day click` + `1-day view`).
          *
