@@ -43746,7 +43746,7 @@ export type ListGoogleBusinessLocationsResponse = ({
     hasMore?: boolean;
 });
 
-export type ListGoogleBusinessLocationsError = (unknown | ErrorResponse | {
+export type ListGoogleBusinessLocationsError = (ErrorResponse | unknown | {
     error?: string;
 });
 
@@ -49084,10 +49084,9 @@ export type GetGmbLocationsResponse = ({
      */
     hasMore?: boolean;
     selectedLocationId?: string;
-    cached?: boolean;
 });
 
-export type GetGmbLocationsError = (unknown | ErrorResponse);
+export type GetGmbLocationsError = (ErrorResponse | unknown);
 
 export type UpdateGmbLocationData = {
     body: {
