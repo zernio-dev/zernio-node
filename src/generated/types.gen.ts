@@ -85787,6 +85787,9 @@ export type CreateMessagingAdData = {
      * - `LEAD_GENERATION` needs a single `destination: whatsapp` (a 400 with `destinations` or another destination) and runs the campaign under `OUTCOME_LEADS`.
      * - `objective`, when sent with `LEAD_GENERATION`, must be `OUTCOME_LEADS`.
      * - With `existingCampaignId` the campaign must be `OUTCOME_LEADS` (a 400 otherwise).
+     * - Meta enables `LEAD_GENERATION` for WhatsApp per ad account and has no API to check it in advance.
+     * - On an ad account without it, Meta refuses the ad set with subcode 2490408: a 400 `platform_api_error` with `param: optimizationGoal`. `validateOnly` reports it without creating anything.
+     * - Use `CONVERSATIONS` there (with `objective: OUTCOME_LEADS` for a Leads campaign).
      *
      */
     optimizationGoal?: 'CONVERSATIONS' | 'LEAD_GENERATION';
