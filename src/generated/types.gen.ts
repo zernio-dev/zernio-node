@@ -84830,6 +84830,9 @@ export type ListAdConversionDestinationsResponse = ({
          *
          */
         type?: string;
+        /**
+         * On Google Ads, `inactive` also marks an action Zernio cannot send to: one that is not enabled, or whose source is not an import of conversions from clicks (`UPLOAD_CLICKS`).
+         */
         status?: 'active' | 'inactive';
         /**
          * Set by adapters whose destinations are scoped to a
@@ -85272,6 +85275,9 @@ export type ListConversionDestinationsResponse = ({
          *
          */
         type?: string;
+        /**
+         * On Google Ads, `inactive` also marks an action Zernio cannot send to: one that is not enabled, or whose source is not an import of conversions from clicks (`UPLOAD_CLICKS`).
+         */
         status?: 'active' | 'inactive';
         /**
          * Set by adapters whose destinations are scoped to a
