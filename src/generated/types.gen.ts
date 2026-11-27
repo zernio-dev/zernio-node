@@ -17632,6 +17632,16 @@ export type LinkedInAdsPlatformData = {
      */
     connectedTelevisionOnly?: boolean;
     /**
+     * LinkedIn shape of an `imageUrl` with `linkUrl` ad on POST /v1/ads/create.
+     *
+     * - `article` (default): an article link ad (`content.article`, image as the thumbnail).
+     * - `single_image`: a Single Image Ad (the image as the post media, `linkUrl` as the landing page, `callToAction` as the button).
+     *
+     * `single_image` works only with `imageUrl`, returns 400 with `longHeadline` (LinkedIn does not show it on this format), and is rejected on boost.
+     *
+     */
+    imageLinkFormat?: 'article' | 'single_image';
+    /**
      * POST /v1/ads/create only. Carousel ad with 2-10 image cards.
      * Mutually exclusive with the other creative sources.
      *
@@ -17879,6 +17889,17 @@ export type costType = 'CPM' | 'CPC' | 'CPV';
  * How LinkedIn rotates creatives within the campaign. Defaults to `OPTIMIZED`.
  */
 export type creativeSelection = 'OPTIMIZED' | 'ROUND_ROBIN';
+
+/**
+ * LinkedIn shape of an `imageUrl` with `linkUrl` ad on POST /v1/ads/create.
+ *
+ * - `article` (default): an article link ad (`content.article`, image as the thumbnail).
+ * - `single_image`: a Single Image Ad (the image as the post media, `linkUrl` as the landing page, `callToAction` as the button).
+ *
+ * `single_image` works only with `imageUrl`, returns 400 with `longHeadline` (LinkedIn does not show it on this format), and is rejected on boost.
+ *
+ */
+export type imageLinkFormat = 'article' | 'single_image';
 
 export type callToAction = 'VISIT_ORGANIZATION_COMPANY_PAGE' | 'VISIT_ORGANIZATION_LIFE_PAGE' | 'VISIT_ORGANIZATION_JOBS_PAGE' | 'VISIT_ORGANIZATION_CAREERS_PAGE';
 

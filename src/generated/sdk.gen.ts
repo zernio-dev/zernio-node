@@ -20169,7 +20169,7 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  *
  * ### LinkedIn
  *
- * LinkedIn creates a Single Image or Single Video Ad backed by a Direct Sponsored Content "dark post" authored by a Company Page (see `organizationId`).
+ * LinkedIn creates an ad backed by a Direct Sponsored Content "dark post" authored by a Company Page (see `organizationId`). An `imageUrl` with `linkUrl` publishes an article link ad by default; set `platformSpecificData.imageLinkFormat: "single_image"` for a Single Image Ad. A `video` publishes a Single Video Ad.
  *
  * - Supported goals: engagement, traffic, awareness, and video_views.
  * - Video ads use the `video` field; video_views requires a video.
