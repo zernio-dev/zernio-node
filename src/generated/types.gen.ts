@@ -53583,6 +53583,23 @@ export type ListInboxConversationsData = {
          */
         tags?: string;
         /**
+         * `true` returns only conversations holding at least one unread incoming message.
+         *
+         * Read state is kept by Zernio, not by the platform. An incoming message stays unread until its conversation is marked read, in one of two ways:
+         *
+         * - POST /v1/inbox/conversations/{conversationId}/read.
+         * - On Telegram, Slack, SMS, RCS, iMessage, email and TikTok, reading its messages with GET /v1/inbox/conversations/{conversationId}/messages.
+         *
+         * Messages you send never count, and replayed Meta history is stored as already read.
+         *
+         * - On Bluesky and Reddit, a listed thread whose messages Zernio has not pulled yet (it pulls them when the thread is opened or when background polling reaches it) has no local read state and is not returned.
+         * - Cannot be combined with `folder=requests` or `updatedSince`.
+         *
+         * To render a badge without paging, use GET /v1/inbox/unread-count.
+         *
+         */
+        unread?: boolean;
+        /**
          * ISO 8601 date-time with a timezone (e.g. `2026-11-19T10:00:00Z`). Turns the list into a change feed: only conversations written at or after this instant, ordered by `updatedAt` ascending. Feed `sync.nextUpdatedSince` from the last page back here. See Incremental sync above.
          */
         updatedSince?: string;
@@ -53961,6 +53978,55 @@ export type CreateInboxConversationError = (({
     error?: string;
     code?: 'rate_limited' | 'new_contact_limit';
 } | WhatsAppTemplateLookupError) | WhatsAppTemplateLookupError);
+
+export type GetInboxUnreadCountData = {
+    query?: {
+        /**
+         * Count only this account
+         */
+        accountId?: string;
+        /**
+         * Count only accounts on this platform
+         */
+        platform?: 'facebook' | 'instagram' | 'twitter' | 'bluesky' | 'reddit' | 'telegram' | 'whatsapp' | 'sms' | 'rcs' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat' | 'google' | 'microsoft' | 'imap';
+        /**
+         * Count only accounts in this profile
+         */
+        profileId?: string;
+        /**
+         * Count only conversations with this status. Both are counted when omitted, as GET /v1/inbox/conversations lists both.
+         */
+        status?: 'active' | 'archived';
+    };
+};
+
+export type GetInboxUnreadCountResponse = ({
+    data?: {
+        /**
+         * Conversations with at least one unread incoming message, capped at 1000.
+         */
+        unreadConversations?: number;
+        /**
+         * true when the count reached the cap: there are at least 1000.
+         */
+        capped?: boolean;
+    };
+    meta?: {
+        /**
+         * Connected messaging accounts the count covers
+         */
+        accountsQueried?: number;
+        /**
+         * Connected accounts that were not counted: their platform does not support direct messages, or the account is not enabled for them
+         */
+        accountsSkipped?: Array<{
+            accountId?: string;
+            platform?: string;
+        }>;
+    };
+});
+
+export type GetInboxUnreadCountError = (ErrorResponse | unknown);
 
 export type SearchInboxConversationsData = {
     query: {

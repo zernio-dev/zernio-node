@@ -576,6 +576,7 @@ import {
   getInboxResponseTime,
   getInboxSourceBreakdown,
   getInboxTopAccounts,
+  getInboxUnreadCount,
   getInboxVolume,
   getInsightMetrics,
   getInstagramAccountInsights,
@@ -2355,6 +2356,7 @@ export class Zernio {
   messages = {
     listInboxConversations: this._bind(listInboxConversations),
     createInboxConversation: this._bind(createInboxConversation),
+    getInboxUnreadCount: this._bind(getInboxUnreadCount),
     searchInboxConversations: this._bind(searchInboxConversations),
     getInboxConversation: this._bind(getInboxConversation),
     updateInboxConversation: this._bind(updateInboxConversation),

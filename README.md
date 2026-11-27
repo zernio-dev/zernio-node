@@ -1470,6 +1470,7 @@ try {
 | `messages.createInboxLabel()` | Create a conversation label |
 | `messages.getInboxConversation()` | Get conversation |
 | `messages.getInboxConversationMessages()` | List messages |
+| `messages.getInboxUnreadCount()` | Count unread conversations |
 | `messages.getMessageAttachment()` | Resolve message attachment |
 | `messages.updateInboxConversation()` | Update conversation status |
 | `messages.deleteInboxConversation()` | Delete conversation |
