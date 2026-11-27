@@ -60910,6 +60910,10 @@ export type GetWhatsAppNumberInfoResponse = ({
          * Meta integer timezone-enum id
          */
         timezone_id?: string;
+        /**
+         * ISO 4217 currency of the WABA's payment method (for example USD or BRL). Null when Meta does not return it.
+         */
+        currency?: (string) | null;
         health_status?: {
             [key: string]: unknown;
         };
@@ -60971,6 +60975,10 @@ export type GetWhatsAppPricingAnalyticsResponse = ({
     granularity: 'HALF_HOUR' | 'DAILY' | 'MONTHLY';
     start: string;
     end: string;
+    /**
+     * ISO 4217 currency every `cost` is in, from the WABA's payment method (for example USD or BRL). Null when Meta does not return it.
+     */
+    currency: (string) | null;
     dataPoints: Array<{
         start: string;
         end: string;
@@ -60999,7 +61007,7 @@ export type GetWhatsAppPricingAnalyticsResponse = ({
          */
         volume: (number) | null;
         /**
-         * Approximate charge, in the currency of the WABA's payment method.
+         * Approximate charge, in the currency given by `currency`.
          */
         cost: (number) | null;
     }>;

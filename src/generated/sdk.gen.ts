@@ -11906,6 +11906,7 @@ export const getWhatsappBusinessUsernameSuggestions = <ThrowOnError extends bool
  * - name
  * - business verification
  * - timezone
+ * - billing currency
  * - health_status
  *
  * ### Why live
