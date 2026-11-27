@@ -25514,6 +25514,8 @@ export type errorCategory2 = 'token_invalid' | 'permission_denied' | 'no_ad_acco
  *
  * It does not fire again for the same ad account until `account.ads.sync_recovered`. Metrics for the ad account are stale meanwhile.
  *
+ * It does not fire while another active connection of the same user that does not need a reconnect has synced the ad account in the last 24 hours. It fires once none has, so `sync.lastSuccessfulSyncAt` can then be older than 3 days.
+ *
  */
 export type WebhookPayloadAccountAdsSyncFailed = {
     /**
