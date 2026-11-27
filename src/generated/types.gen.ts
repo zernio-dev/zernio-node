@@ -55527,6 +55527,40 @@ export type SetConversationThreadControlResponse = ({
 
 export type SetConversationThreadControlError = (ErrorResponse | unknown);
 
+export type GetMessengerContactData = {
+    path: {
+        /**
+         * The conversation ID
+         */
+        conversationId: string;
+    };
+    query: {
+        /**
+         * The Facebook social account ID
+         */
+        accountId: string;
+    };
+};
+
+export type GetMessengerContactResponse = ({
+    data?: {
+        /**
+         * Locale as Meta reports it, for example `es_ES`.
+         */
+        locale: (string) | null;
+        /**
+         * Offset from UTC in hours, fractional for half-hour zones (for example -5.5).
+         */
+        timezone: (number) | null;
+        /**
+         * Gender as Meta reports it, for example `female` or `male`.
+         */
+        gender: (string) | null;
+    };
+});
+
+export type GetMessengerContactError = (ErrorResponse | unknown);
+
 export type AcceptConversationRequestData = {
     body: {
         /**

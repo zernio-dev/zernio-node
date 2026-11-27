@@ -1473,6 +1473,7 @@ try {
 | `messages.getInboxConversationMessages()` | List messages |
 | `messages.getInboxUnreadCount()` | Count unread conversations |
 | `messages.getMessageAttachment()` | Resolve message attachment |
+| `messages.getMessengerContact()` | Get a Messenger contact's language, time zone and gender |
 | `messages.updateInboxConversation()` | Update conversation status |
 | `messages.deleteInboxConversation()` | Delete conversation |
 | `messages.deleteInboxLabel()` | Delete a conversation label |
