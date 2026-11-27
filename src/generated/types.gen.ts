@@ -68441,13 +68441,25 @@ export type GetAutomationCatalogResponse = ({
     triggers: Array<{
         kind: 'ad_rule' | 'event' | 'scheduled' | 'sequence' | 'comment' | 'workflow';
         /**
+         * Where a trigger picker files it: the same groups as the template marketplace.
+         */
+        group: 'social' | 'messaging' | 'ads';
+        /**
+         * The API key resource group its kind needs to create one.
+         */
+        resourceGroup: ('messages' | 'ads') | null;
+        /**
          * `schedule`, `enrollment`, a comment door such as `comment.keyword` (comment to DM), a flow trigger such as `inbound_message`, or the Zernio event name.
          */
         type: string;
         /**
-         * Event triggers only.
+         * Its short name, such as `Ad rule schedule`.
          */
-        label?: string;
+        label: string;
+        /**
+         * One line on when it starts and what the automation does then.
+         */
+        description: string;
         /**
          * What an event is about, such as `post` or `account`.
          */
@@ -68485,9 +68497,9 @@ export type GetAutomationCatalogResponse = ({
         };
         filterOperators?: Array<(string)>;
         /**
-         * The step types the trigger takes. For an event, only those its subject can reach.
+         * The step types allowed after the trigger. For an event, only those its subject can reach.
          */
-        steps?: Array<(string)>;
+        steps: Array<(string)>;
         /**
          * Scheduled trigger only: the platforms, goals, most days and most boosts a day of `ads.boost_post`.
          */
