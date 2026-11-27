@@ -15556,7 +15556,9 @@ export const getAdChange = <ThrowOnError extends boolean = false>(options: Optio
  *
  * Send the new body: the same kind of body as the route the change was staged on, without `stage`. It passes the checks of staging again for the calling user. The object is read again, so the diff and the changed-since check start from its current values.
  *
- * A change of type `operation` stores a whole request and cannot be edited in place (`409`): discard it and stage the request again.
+ * A change of type `operation` stores a whole request. Its new body goes through the route of that write, which checks it as a new staged request. The path and the query stay as they were staged.
+ *
+ * Such an edit answers what that route answers when it refuses the body, and the change stays as it was. A request without a body has nothing to edit (`409`).
  *
  * ### Refresh
  *
@@ -15588,11 +15590,19 @@ export const discardAdChange = <ThrowOnError extends boolean = false>(options: O
  * Stage a failed ad change again
  * Makes a new staged change from a change that failed at confirm. Nothing is written to the ad network.
  *
- * The new change holds the same request. It is checked for the calling user, and an edit is read against the current values of its object. The failed change stays readable until it is deleted.
+ * The new change holds the same request. It is checked for the calling user, and an edit is read against the current values of its object. The failed change stays readable until it is deleted, with `restaged: true`.
  *
- * A failed create cannot be staged again (`409`): it may have made part of its objects on the ad network, which its `error.details` lists. Stage a new create instead. This covers every change with `creates: true`.
+ * ### A change that may have made objects
  *
- * Also refused with `409`: a change that failed as `change_outcome_unknown`, and a change whose kept uploads were deleted or moved to an earlier restage.
+ * The new change sends the same request again at confirm. A failed create may have made part of its objects on the ad network, and they would be made a second time.
+ *
+ * Such a change answers `409` with `param: "acknowledge"`. `details.leftBehind` lists the objects the failure left, and `details.outcomeUnknown` is true when nothing tells what was made. Send `acknowledge: true` to stage it again anyway.
+ *
+ * A failed create that left nothing behind is staged again without it.
+ *
+ * ### Refused
+ *
+ * A change that did not fail, a failed change that was already staged again, and a change whose kept uploads were deleted or moved to an earlier restage answer `409`.
  *
  */
 export const restageAdChange = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<RestageAdChangeData, ThrowOnError>) => {

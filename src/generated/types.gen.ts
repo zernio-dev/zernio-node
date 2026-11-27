@@ -11787,6 +11787,10 @@ export type CrmOwner = {
  */
 export type CtwaAdRequestBody = {
     /**
+     * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+     */
+    stage?: boolean;
+    /**
      * When Meta answers a create with a 5xx and reading the parent back by name finds no such object, Zernio sends the create again (at most 3 POSTs per object, never for an object created ACTIVE) and reports it in `recoveredWrites`.
      *
      * `false` never sends it again: the request fails with 502 and `details.unconfirmedWrite`, so you can check the parent yourself. One object found by name is still reused.
@@ -14749,6 +14753,10 @@ export type status41 = 'ENABLED' | 'REMOVED' | 'UNKNOWN';
  * At least one id across the four target lists. Up to 1000 ids per list.
  */
 export type GoogleAdLabelAssignments = {
+    /**
+     * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+     */
+    stage?: boolean;
     /**
      * Zernio SocialAccount id (Google Ads)
      */
@@ -22412,6 +22420,23 @@ export type StagedAdChange = {
      */
     creates?: boolean;
     /**
+     * Only on a failed change that makes an object, when its failure recorded objects it left on the ad network. Staging the change again makes them a second time at confirm.
+     */
+    leftBehind?: Array<{
+        /**
+         * The kind of object, for example `campaign`, `adset`, `ad_set`, `ad`, `creative`, `asset_group` or `budget`.
+         */
+        type: string;
+        /**
+         * The id of the object on the ad network.
+         */
+        id: string;
+    }>;
+    /**
+     * Present and true on a failed change that a new change was already staged from. It cannot be staged again.
+     */
+    restaged?: boolean;
+    /**
      * - `staged`: waiting to be confirmed or discarded.
      * - `confirming`: a confirm is running. A change left here for about 18 minutes ends as `failed` with error code `change_outcome_unknown`, and is never applied again automatically.
      * - `confirmed`: applied. `result` holds what the write returned.
@@ -22454,6 +22479,15 @@ export type StagedAdChange = {
          */
         removed?: Array<unknown>;
     }>;
+    /**
+     * The stored request body of the change: what the confirm sends. For type `operation` it is the body of the staged request, without its path and query values, and it is empty for a write that has no body.
+     *
+     * It holds the keys that `diff` leaves out: `accountId`, `adAccountId`, `allowSharedBudgetUpdate`, and every value equal to the one on the ad network. To edit a change, send this body back to PATCH /v1/ads/changes/{changeId} with the changed values in place, because the edit replaces the whole stored body.
+     *
+     */
+    body: {
+        [key: string]: unknown;
+    };
     /**
      * The user who staged the change.
      */
@@ -67782,6 +67816,10 @@ export type ListGoogleRecommendationsError = (ErrorResponse | {
 export type ApplyGoogleRecommendationsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Google ads SocialAccount id.
          */
         accountId: string;
@@ -67815,6 +67853,10 @@ export type ApplyGoogleRecommendationsError = (ErrorResponse | {
 
 export type DismissGoogleRecommendationsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Google ads SocialAccount id.
          */
@@ -67887,6 +67929,10 @@ export type ListBidStrategiesError = (ErrorResponse | unknown);
 export type CreateBidStrategyData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Google ads SocialAccount id.
          */
         accountId: string;
@@ -67931,6 +67977,10 @@ export type CreateBidStrategyError = (unknown | ErrorResponse);
 
 export type UpdateBidStrategyData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Google ads SocialAccount id.
          */
@@ -68008,6 +68058,10 @@ export type ListSharedBudgetsError = (ErrorResponse | unknown);
 
 export type CreateSharedBudgetData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Google ads SocialAccount id.
          */
@@ -68243,6 +68297,10 @@ export type ListAdKeywordsError = (ErrorResponse | unknown);
 export type AddAdKeywordsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Account ID (Google Ads)
          */
         accountId: string;
@@ -68284,6 +68342,10 @@ export type AddAdKeywordsError = (ErrorResponse | unknown);
 
 export type UpdateAdKeywordData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         status?: 'active' | 'paused';
         /**
          * Max CPC bid for this keyword, in the ad account currency. Takes effect only under Manual CPC bidding.
@@ -68340,6 +68402,12 @@ export type RemoveAdKeywordData = {
          * Zernio keyword ID (`id`), or Google's native `{adSetId}~{platformCriterionId}` (the tail of `resourceName`, e.g. 1234567890~987654321). A bare criterion id is rejected because it is only unique within its ad group.
          */
         keywordId: string;
+    };
+    query?: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -69534,6 +69602,12 @@ export type DiscardAdChangeError = (ErrorResponse | {
 });
 
 export type RestageAdChangeData = {
+    body?: {
+        /**
+         * Send true after a `409` with `param: "acknowledge"`: the caller has seen what the failed change left on the ad network, or that nobody knows what it left.
+         */
+        acknowledge?: boolean;
+    };
     path: {
         /**
          * The id of the failed change.
@@ -70402,6 +70476,10 @@ export type GetCampaignAdScheduleError = (ErrorResponse | unknown);
 export type UpdateCampaignAdScheduleData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * The complete set of windows. Required, so clearing the schedule is always deliberate rather than an omission.
          */
         schedule: Array<{
@@ -70646,6 +70724,10 @@ export type UpdateAdCampaignError = (unknown | ErrorResponse);
 
 export type DeleteAdCampaignData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit' | 'microsoft' | 'amazon' | 'tradedesk' | 'snapchat';
         /**
          * Zernio SocialAccount id owning the ad account. Required only to delete an EMPTY campaign (zero ads), which has no local Ad documents to resolve a token from.
@@ -70710,6 +70792,10 @@ export type ListCampaignNegativeKeywordsError = (ErrorResponse | unknown);
 export type ReplaceCampaignNegativeKeywordsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Optional and NOT authoritative: the resolved campaign's own platform decides 200 vs 501, never this hint.
          */
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
@@ -70761,6 +70847,10 @@ export type ReplaceCampaignNegativeKeywordsError = (ErrorResponse | unknown);
 
 export type EditCampaignNegativeKeywordsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Optional and NOT authoritative: the resolved campaign's own platform decides 200 vs 501, never this hint.
          */
@@ -70820,6 +70910,10 @@ export type EditCampaignNegativeKeywordsError = (ErrorResponse | unknown);
 
 export type BulkUpdateAdCampaignStatusData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         status: 'active' | 'paused';
         campaigns: Array<{
             /**
@@ -70873,6 +70967,10 @@ export type BulkUpdateAdCampaignStatusError = (unknown | ErrorResponse);
 
 export type DuplicateAdCampaignData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         platform: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'google';
         /**
          * Copy child ad sets + ads + creatives + targeting
@@ -71525,6 +71623,10 @@ export type CreateAdSetError = (ErrorResponse | unknown);
 
 export type DuplicateAdSetData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         platform: 'facebook' | 'instagram' | 'tiktok';
         /**
          * Destination platform campaign id (defaults to the source's campaign)
@@ -71629,6 +71731,10 @@ export type DuplicateAdSetError = (unknown | ErrorResponse);
 
 export type DuplicateAdData = {
     body?: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Destination platform ad set id (defaults to the source's ad set)
          */
@@ -72095,6 +72201,12 @@ export type DeleteAdSetData = {
          * Platform ad set ID
          */
         adSetId: string;
+    };
+    query?: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -72865,6 +72977,12 @@ export type DeleteAdData = {
     path: {
         adId: string;
     };
+    query?: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
+    };
 };
 
 export type DeleteAdResponse = ({
@@ -72998,6 +73116,10 @@ export type ListCampaignAssetsError = (ErrorResponse | unknown);
 export type AttachCampaignAssetsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio Google Ads connection id.
          */
         accountId: string;
@@ -73038,6 +73160,10 @@ export type AttachCampaignAssetsError = (ErrorResponse | unknown);
 
 export type UpdateCampaignAssetsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio Google Ads connection id.
          */
@@ -73096,6 +73222,10 @@ export type RemoveCampaignAssetsData = {
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -73168,6 +73298,10 @@ export type ListAdGroupAssetsError = (ErrorResponse | unknown);
 export type AttachAdGroupAssetsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio Google Ads connection id.
          */
         accountId: string;
@@ -73208,6 +73342,10 @@ export type AttachAdGroupAssetsError = (ErrorResponse | unknown);
 
 export type UpdateAdGroupAssetsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio Google Ads connection id.
          */
@@ -73266,6 +73404,10 @@ export type RemoveAdGroupAssetsData = {
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -74123,6 +74265,10 @@ export type GetAdTrackingTagsError = (ErrorResponse | unknown);
 
 export type UpdateAdTrackingTagsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Meta only. Click-URL params appended to a freshly-rebuilt creative. Meta dynamic macros ({{ad.id}}, {{campaign.id}}, {{placement}}, ...) are sent through unescaped so Meta expands them; every other character is percent-encoded.
          */
@@ -75214,6 +75360,10 @@ export type ListPageUsersError = (unknown | ErrorResponse);
 export type AssignPageUserData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id used to resolve the Meta token.
          */
         accountId: string;
@@ -75254,6 +75404,10 @@ export type RemovePageUserData = {
          * Facebook Page id.
          */
         pageId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
         /**
          * Business-scoped user id.
          */
@@ -75324,6 +75478,10 @@ export type ListAdLabelsError = (ErrorResponse | unknown);
 export type CreateAdLabelData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id (Google Ads)
          */
         accountId: string;
@@ -75364,6 +75522,10 @@ export type CreateAdLabelError = (ErrorResponse | unknown);
 
 export type UpdateAdLabelData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id (Google Ads)
          */
@@ -75420,6 +75582,10 @@ export type RemoveAdLabelData = {
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -75496,6 +75662,10 @@ export type DetachAdLabelData = {
          * Google keyword criterion ids, {adGroupId}~{criterionId}. Repeat the parameter or pass a comma-separated list.
          */
         keywordIds?: Array<(string)>;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -75559,6 +75729,10 @@ export type ListHighDemandPeriodsError = (unknown | ErrorResponse);
 
 export type CreateHighDemandPeriodData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id used to resolve the Meta token.
          */
@@ -75647,6 +75821,10 @@ export type ListAdCreativesError = (unknown | ErrorResponse);
 
 export type CreateAdCreativeData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token and Page.
          */
@@ -75789,6 +75967,10 @@ export type GetAdCreativeError = (unknown | ErrorResponse);
 export type UpdateAdCreativeData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
@@ -75822,6 +76004,10 @@ export type DeleteAdCreativeData = {
          * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
          */
         accountId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -75868,6 +76054,10 @@ export type ListValueRuleSetsError = (unknown | ErrorResponse);
 
 export type CreateValueRuleSetData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
@@ -75918,6 +76108,10 @@ export type GetValueRuleSetError = (unknown | ErrorResponse);
 export type UpdateValueRuleSetData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id (posting or ads variant); its platform decides where the campaign is created.
          */
         accountId: string;
@@ -75959,6 +76153,10 @@ export type DeleteValueRuleSetData = {
          * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
          */
         accountId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -76001,6 +76199,10 @@ export type ListAdNegativeKeywordListsError = (ErrorResponse | unknown);
 
 export type CreateAdNegativeKeywordListData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id.
          */
@@ -76103,6 +76305,10 @@ export type GetAdNegativeKeywordListError = (ErrorResponse | unknown);
 export type UpdateAdNegativeKeywordListData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id.
          */
         accountId: string;
@@ -76181,6 +76387,10 @@ export type DeleteAdNegativeKeywordListData = {
          */
         customerId?: string;
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -76196,6 +76406,10 @@ export type DeleteAdNegativeKeywordListError = (ErrorResponse | unknown);
 
 export type ReplaceAdNegativeKeywordListKeywordsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id.
          */
@@ -76257,6 +76471,10 @@ export type ReplaceAdNegativeKeywordListKeywordsError = (ErrorResponse | unknown
 
 export type EditAdNegativeKeywordListKeywordsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id.
          */
@@ -76350,6 +76568,10 @@ export type ListCampaignNegativeKeywordListsError = (ErrorResponse | unknown);
 export type ReplaceCampaignNegativeKeywordListsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Optional courtesy field. The resolved account or campaign determines support; other platforms return 501.
          */
         platform?: 'facebook' | 'instagram' | 'tiktok' | 'linkedin' | 'pinterest' | 'google' | 'twitter' | 'openai' | 'reddit';
@@ -76394,6 +76616,10 @@ export type ReplaceCampaignNegativeKeywordListsError = (ErrorResponse | unknown)
 
 export type EditCampaignNegativeKeywordListsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Optional courtesy field. The resolved account or campaign determines support; other platforms return 501.
          */
@@ -76477,6 +76703,10 @@ export type ListAccountCalloutsError = (ErrorResponse | unknown);
 export type AddAccountCalloutsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio Google Ads connection id.
          */
         accountId: string;
@@ -76505,6 +76735,10 @@ export type AddAccountCalloutsError = (ErrorResponse | unknown);
 
 export type UpdateAccountCalloutsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio Google Ads connection id.
          */
@@ -76556,6 +76790,10 @@ export type RemoveAccountCalloutData = {
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -76604,6 +76842,10 @@ export type ListAccountSitelinksError = (ErrorResponse | unknown);
 export type AddAccountSitelinksData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio Google Ads connection id.
          */
         accountId: string;
@@ -76635,6 +76877,10 @@ export type AddAccountSitelinksError = (ErrorResponse | unknown);
 
 export type UpdateAccountSitelinksData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio Google Ads connection id.
          */
@@ -76693,6 +76939,10 @@ export type RemoveAccountSitelinkData = {
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -76739,6 +76989,10 @@ export type ListAccountStructuredSnippetsError = (ErrorResponse | unknown);
 export type AddAccountStructuredSnippetsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio Google Ads connection id.
          */
         accountId: string;
@@ -76768,6 +77022,10 @@ export type AddAccountStructuredSnippetsError = (ErrorResponse | unknown);
 
 export type UpdateAccountStructuredSnippetsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio Google Ads connection id.
          */
@@ -76817,6 +77075,10 @@ export type RemoveAccountStructuredSnippetData = {
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -76917,6 +77179,10 @@ export type GetAdAccountHierarchyError = (ErrorResponse | unknown);
 export type InviteAdAccountToManagerData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Google ads SocialAccount id.
          */
         accountId: string;
@@ -76938,6 +77204,10 @@ export type InviteAdAccountToManagerError = (ErrorResponse | unknown);
 
 export type UpdateAdAccountManagerLinkData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Google ads SocialAccount id.
          */
@@ -77040,6 +77310,10 @@ export type GetAdAccountBillingError = (ErrorResponse | unknown);
 export type SetUpAdAccountBillingData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Google ads SocialAccount id.
          */
         accountId: string;
@@ -77122,6 +77396,10 @@ export type ListAdAccountUserInvitationsError = (ErrorResponse | unknown);
 export type InviteAdAccountUserData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Google ads SocialAccount id.
          */
         accountId: string;
@@ -77153,6 +77431,10 @@ export type RevokeAdAccountUserInvitationData = {
          * Numeric invitation id from GET /v1/ads/accounts/user-invitations.
          */
         invitationId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -77209,6 +77491,10 @@ export type WithdrawAdAccountUserInvitationApprovalData = {
          * Numeric review id from POST /v1/ads/accounts/user-invitations or GET /v1/ads/accounts/user-invitations/pending-approvals.
          */
         multiPartyAuthReviewId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -77248,6 +77534,10 @@ export type ListAdAccountUsersError = (unknown | ErrorResponse);
 export type AssignAdAccountUserData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id used to resolve the Meta token.
          */
         accountId: string;
@@ -77283,6 +77573,10 @@ export type RemoveAdAccountUserData = {
          * Meta ad account id (act_<n>).
          */
         adAccountId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
         /**
          * Business-scoped user id.
          */
@@ -77806,6 +78100,10 @@ export type ListAdAccountsError = (ErrorResponse | unknown);
 export type UpdateAdAccountData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Account ID (metaads, or a facebook/instagram posting account)
          */
         accountId: string;
@@ -77923,6 +78221,10 @@ export type GetDsaRecommendationsError = (unknown | ErrorResponse);
 
 export type BoostPostData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         creativeFeatures?: MetaCreativeFeatures;
         /**
          * The Zernio post id (24 hex characters) returned when the post was created through Zernio. Send this or platformPostId. A value that is not a Zernio id is boosted as the platform post id, the same as platformPostId; a Zernio id that matches no post is a 404 on postId.
@@ -78642,6 +78944,10 @@ export type ListGoogleAssetGroupsError = (ErrorResponse | {
 export type CreateGoogleAssetGroupData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Unique within the campaign.
          */
         name: string;
@@ -78705,6 +79011,10 @@ export type GetGoogleAssetGroupError = (ErrorResponse | {
 
 export type UpdateGoogleAssetGroupData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         name?: string;
         status?: 'ENABLED' | 'PAUSED';
         finalUrls?: Array<(string)>;
@@ -78741,6 +79051,10 @@ export type RemoveGoogleAssetGroupData = {
         campaignId: string;
     };
     query?: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
         validateOnly?: boolean;
     };
 };
@@ -78757,6 +79071,10 @@ export type RemoveGoogleAssetGroupError = (ErrorResponse | {
 
 export type EditGoogleAssetGroupAssetsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         link?: Array<GoogleAssetGroupAssetLink>;
         unlink?: Array<GoogleAssetGroupAssetUnlink>;
         validateOnly?: boolean;
@@ -78786,6 +79104,10 @@ export type EditGoogleAssetGroupAssetsError = (ErrorResponse | {
 
 export type ReplaceGoogleListingGroupFiltersData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         tree: GoogleListingGroupTree;
         validateOnly?: boolean;
     };
@@ -80562,6 +80884,10 @@ export type ListLeadFormsError = (ErrorResponse | unknown);
 
 export type CreateLeadFormData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         accountId: string;
         name: string;
         /**
@@ -80826,6 +81152,10 @@ export type ArchiveLeadFormData = {
          * - An Instagram account uses the Page its ads run under: its own linked Page, else the Facebook or business-login Meta ads account on the same profile.
          */
         accountId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -81195,6 +81525,10 @@ export type DeleteAdVideoData = {
          * Meta ad account id (act_<n>) that owns the video.
          */
         adAccountId: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -82327,6 +82661,10 @@ export type ListAdAudiencesError = (ErrorResponse | unknown);
 
 export type CreateAdAudienceData = {
     body: ({
+    /**
+     * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+     */
+    stage?: boolean;
     accountId: string;
     /**
      * Platform ad account ID. Must start with act_ for Meta; bare platform id for others (Google customer id, X/TikTok/LinkedIn/Pinterest account id).
@@ -82525,6 +82863,10 @@ export type CreateAdAudienceData = {
      */
     customerFileSource?: string;
 } | {
+    /**
+     * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+     */
+    stage?: boolean;
     type: 'saved_targeting';
     /**
      * Account ID on the target ad platform.
@@ -82575,6 +82917,10 @@ export type GetAdAudienceError = (ErrorResponse | unknown | {
 
 export type UpdateAdAudienceData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         name?: string;
         description?: string;
         /**
@@ -82601,6 +82947,12 @@ export type UpdateAdAudienceError = (unknown | ErrorResponse | {
 export type DeleteAdAudienceData = {
     path: {
         audienceId: string;
+    };
+    query?: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -82673,6 +83025,10 @@ export type RemoveUsersFromAdAudienceError = (ErrorResponse | unknown | {
 
 export type ReplaceAdAudienceCompaniesData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * The complete company list. Each row needs at least one of name, domain, website or linkedinPageUrl.
          */
@@ -82957,6 +83313,10 @@ export type ListConversionActionsError = (ErrorResponse | unknown);
 export type CreateConversionActionData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * SocialAccount ID. Must be a `googleads` account.
          */
         accountId: string;
@@ -83045,6 +83405,10 @@ export type ListAdConversionGoalsError = (ErrorResponse | unknown);
 export type UpdateAdConversionGoalsData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id (Google Ads)
          */
         accountId: string;
@@ -83070,6 +83434,10 @@ export type UpdateAdConversionGoalsError = (ErrorResponse | unknown);
 
 export type UpdateConversionActionData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id (Google Ads)
          */
@@ -83175,6 +83543,10 @@ export type ListCustomConversionGoalsError = (ErrorResponse | unknown);
 export type CreateCustomConversionGoalData = {
     body: {
         /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
+        /**
          * Zernio SocialAccount id (Google Ads)
          */
         accountId: string;
@@ -83202,6 +83574,10 @@ export type CreateCustomConversionGoalError = (ErrorResponse | unknown);
 
 export type UpdateCustomConversionGoalData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         /**
          * Zernio SocialAccount id (Google Ads)
          */
@@ -83257,6 +83633,10 @@ export type RemoveCustomConversionGoalData = {
          * @deprecated
          */
         customerId?: string;
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later.
+         */
+        stage?: boolean;
     };
 };
 
@@ -84791,6 +85171,10 @@ export type GetCampaignConversionGoalsError = (ErrorResponse | unknown);
 
 export type UpdateCampaignConversionGoalsData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         goals?: Array<GoogleBiddableGoalInput>;
         goalConfigLevel?: 'CUSTOMER' | 'CAMPAIGN';
         /**
@@ -90224,6 +90608,10 @@ export type ListPartnershipAdPermissionsError = (ErrorResponse | unknown);
 
 export type SetPartnershipAdPermissionData = {
     body: {
+        /**
+         * Send true to store this write as a staged change instead of applying it. The response is `202` with the change, and POST /v1/ads/changes/{changeId}/confirm applies it later. Cannot be combined with `validateOnly`.
+         */
+        stage?: boolean;
         accountId: string;
         creatorUsername: string;
         revoke?: boolean;
