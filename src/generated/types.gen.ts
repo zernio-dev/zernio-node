@@ -83409,6 +83409,13 @@ export type SendEventsResponse = ({
      * The test code forwarded to every destination, or `null` when the request carried none.
      */
     testCode?: (string) | null;
+    /**
+     * Left out when there is nothing to warn about. `no_destination`: no forwarding rule took the events, so they were stored but sent to no platform.
+     */
+    warnings?: Array<{
+        code?: 'no_destination';
+        message?: string;
+    }>;
     destinations?: Array<{
         accountId?: string;
         destinationId?: string;
