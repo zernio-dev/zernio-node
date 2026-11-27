@@ -20199,6 +20199,16 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  *
  * Media is fetched at confirm. An upload in Zernio's temporary storage is copied to permanent storage at staging, and the staged change points at the copy. A presigned URL returns 400 with `stage`.
  *
+ * ### Default changes
+ *
+ * Defaults this endpoint changed, with the version they took effect in, so a request can pin the previous behaviour by sending the field.
+ *
+ * | Version (date) | Field | Before | After |
+ * |---|---|---|---|
+ * | 1.516.0 (2026-11-06) | `campaignType` with `existingCampaignId` (Google) | `display` | The existing campaign's own type (Search, Display or Demand Gen; any other type returns 422) |
+ *
+ * The 1.516.0 changelog also listed `budgetLevel` and `retryOnServerError` for this endpoint; their defaults did not change in that version.
+ *
  * ### Idempotency
  *
  * This endpoint is not idempotent at the platform level: a blind retry creates a second campaign/ad set/ad. Send an `Idempotency-Key` header to make retries safe.
