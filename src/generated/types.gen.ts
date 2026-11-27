@@ -71843,6 +71843,12 @@ export type UpdateAdSetData = {
          */
         endDate?: (string) | null;
         /**
+         * Meta only. Meta-native targeting keys (snake_case, as GET /v1/ads/{adId} returns them) layered over the ad set's live targeting before `targeting` is applied. Each key replaces its live counterpart and `null` removes it.
+         */
+        rawTargeting?: {
+            [key: string]: unknown;
+        };
+        /**
          * Targeting fields to change. Meta and Reddit (400 elsewhere).
          *
          * **Reddit** (see the description above):

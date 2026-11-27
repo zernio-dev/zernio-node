@@ -16791,6 +16791,14 @@ export const getAdSetDetails = <ThrowOnError extends boolean = false>(options: O
  *
  * Other platforms return 400 for either field before anything in the request is written (use PUT /v1/ads/{adId} with `targeting` where that platform supports it).
  *
+ * `rawTargeting` (Meta only) takes Meta's own snake_case keys, as on create, for what `targeting` cannot express: one `flexible_spec` group ORing several kinds, `exclusions`, and similar.
+ *
+ * - Each raw key replaces the live key of the same name; `null` removes it. Keys you don't send are kept.
+ * - A raw `geo_locations` that sends any location list replaces every live location list, as above.
+ * - `targeting` and `placements` in the same request are applied on top and win on the same key.
+ * - Raw `flexible_spec` with a structured detailed-targeting field (interests, behaviors, work fields, incomeTier), or raw `excluded_geo_locations` with `excludedLocations`, returns 400: send that targeting in one of them.
+ * - Other networks, an empty object and the retired `video_feeds` Facebook position return 400.
+ *
  * The live read and the `incomeTier` lookup run before any other field is written, so a 502 or 422 from them leaves the ad set unchanged.
  *
  * ### Reddit Ads: budget, name and bidding
