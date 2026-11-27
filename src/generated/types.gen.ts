@@ -13843,11 +13843,18 @@ export type ExternalPostSummary = {
      */
     isOwner?: (boolean) | null;
     /**
-     * Engagement + insights for the post. `likes` and `comments` are
-     * available immediately after an on-demand sync (they come from the
-     * platform listing). `reach`, `impressions`, `views` depend on the
-     * platform's insights, which carry their own delay (e.g. ~24h on
-     * Instagram) and read 0 until the platform makes them available.
+     * Not a source of metrics: read a post's metrics from GET /v1/analytics.
+     *
+     * - A post read from Zernio's records (the recent posts list, or a
+     * matched post that was already stored): usually `null` or only
+     * `lastUpdated`.
+     * - Archived Instagram stories and posts first synced before metrics
+     * moved to GET /v1/analytics: metric fields that are final or no
+     * longer refreshed. Do not use them.
+     * - A post imported by this call (a LinkedIn personal profile post, a
+     * TikTok Business post or a Pinterest Pin fetched by `url`/`postId`):
+     * the values just fetched. A LinkedIn re-import of the same post
+     * within about 15 seconds returns the stored record without metrics.
      *
      */
     analytics?: {
@@ -13868,7 +13875,7 @@ export type ExternalPostSummary = {
          * When these metrics were last refreshed
          */
         lastUpdated?: string;
-    };
+    } | null;
 };
 
 /**
@@ -38657,7 +38664,7 @@ export type SyncExternalPostsResponse = ({
          */
         postsFound?: number;
         /**
-         * Posts inserted or updated in Zernio
+         * Stored records this call wrote: new posts and posts whose metadata changed. On LinkedIn personal profiles and the X fallback sync, posts whose metrics were refreshed are counted too.
          */
         postsSynced?: number;
         /**

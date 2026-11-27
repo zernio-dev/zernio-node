@@ -2433,7 +2433,13 @@ export const createPost = <ThrowOnError extends boolean = false>(options: Option
  *
  * ### Analytics delay
  *
- * Post-level analytics (reach, impressions) still carry the platform's own delay (e.g. ~24h on Instagram). This endpoint confirms the post exists and returns its metadata plus basic engagement (likes, comments), not delayed insights.
+ * This endpoint confirms the post exists and returns its metadata, not its metrics: read those from `GET /v1/analytics`, where post-level insights (reach, impressions) still carry the platform's own delay (e.g. ~24h on Instagram). Only a post imported by this call returns the metrics it fetched.
+ *
+ * `synced.postsSynced` counts the stored records this call wrote:
+ *
+ * - Most platforms: new posts and posts whose metadata changed. `postsFound: 10` with `postsSynced: 0` means the live fetch ran and every post was already up to date.
+ * - LinkedIn personal profiles, and X when the timeline read falls back to Zernio-published posts: a post whose metrics were refreshed is counted too.
+ * - A post imported by `url`/`postId` is reported through `found` and `post`. Do not rely on `postsSynced` for it.
  *
  */
 export const syncExternalPosts = <ThrowOnError extends boolean = false>(options: OptionsLegacyParser<SyncExternalPostsData, ThrowOnError>) => {
