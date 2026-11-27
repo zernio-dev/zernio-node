@@ -20098,6 +20098,8 @@ export const replaceGoogleListingGroupFilters = <ThrowOnError extends boolean = 
  * - Every shape that builds a new ad set (no `adSetId`, `existingCampaignId` or `buyingType: "RESERVED"`): `budgetAmount`. `budgetType` defaults to daily, and a lifetime budget without `endDate` ends 7 days after it starts (see `appliedDefaults`).
  * - Single image or video (the default), also with `adSetId`: `headline` (max 255), `body`, `callToAction`, and exactly one of `imageUrl` / `video`. A catalog template creative takes none, and ignores and does not upload any sent.
  * - Single image or video also needs `linkUrl`, unless the goal is `lead_generation` or `page_visits` or `leadGenFormId` is set.
+ * - Goal `engagement` with `optimizationGoal: POST_ENGAGEMENT` and no `linkUrl` builds a post with no link and no button: `body` and one image or video only. `headline` is the video title.
+ * - On that post ad, `callToAction`, `callToActionLink`, `description` and `caption` return 400. It does not apply with `adSetId`, `translations` or `leadGenFormId`.
  * - `bodies[]` / `headlines[]` text variations: `body`, one list with 2+ items, `callToAction`, `imageUrl` or `video`, and `linkUrl` unless the goal is `lead_generation` or `leadGenFormId` is set. `headline` is not required.
  * - `placementAssets`: `headline`, `body`, `callToAction`, and `linkUrl` with the same exemptions as the single shape; the media comes from `placementAssets`.
  * - `carouselCards`, also with `adSetId`: `body`, `callToAction`, and `linkUrl` unless the goal is `lead_generation` or `leadGenFormId` is set. `headline` is not required. Each card takes `imageUrl` or `video`.
