@@ -80499,6 +80499,13 @@ export type CreateStandaloneAdData = {
          */
         savedTargetingId?: string;
         /**
+         * Meta only. The id of a Meta saved audience on `adAccountId` (made in Ads Manager, listed by `GET /v1/ads/saved-audiences`). Its targeting is read live from Meta and used as `rawTargeting` for the new ad set, so camelCase targeting fields merge on top of it exactly as they do on `rawTargeting`.
+         *
+         * Returns 404 when the id is not on the ad account, 400 `mutually_exclusive_fields` with `rawTargeting` or `savedTargetingId`, and 400 on another network or with `adSetId` (an existing ad set keeps its targeting). Meta requires `targeting_automation` on create: send `advantageAudience` when the saved audience does not carry it.
+         *
+         */
+        metaSavedAudienceId?: string;
+        /**
          * Meta only. A raw Meta-native targeting spec (snake_case: `geo_locations`, `age_min`, `excluded_custom_audiences`, `flexible_spec`, `targeting_automation`, `user_os`, `wireless_carrier`, business places, etc.), the exact shape `GET /v1/ads/{adId}` returns for external ads.
          *
          * Sent alone, it reaches the ad set VERBATIM (the path for cloning a campaign's targeting exactly). Meta validates it and surfaces any errors.
