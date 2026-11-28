@@ -19221,6 +19221,48 @@ export type MetaRecoveredWrites = Array<{
     repostedAfter?: 'server_error';
 }>;
 
+/**
+ * A Meta saved audience (Meta's SavedAudience node), read live from Meta.
+ */
+export type MetaSavedAudience = {
+    /**
+     * Meta saved audience id.
+     */
+    id?: string;
+    name?: (string) | null;
+    description?: (string) | null;
+    /**
+     * Meta's estimated lower bound on reach.
+     */
+    approximateCountLowerBound?: (number) | null;
+    /**
+     * Meta's estimated upper bound on reach.
+     */
+    approximateCountUpperBound?: (number) | null;
+    /**
+     * Meta's run_status: whether the saved audience is active or deleted.
+     */
+    runStatus?: (string) | null;
+    /**
+     * Meta's human-readable targeting summary lines, passed through as Meta returns them.
+     */
+    sentenceLines?: Array<unknown>;
+    /**
+     * The Meta targeting spec saved in the audience, in Meta's own snake_case shape. Send it as `rawTargeting` on `POST /v1/ads/create` to target an ad set at this audience.
+     */
+    targeting?: {
+        [key: string]: unknown;
+    } | null;
+    /**
+     * Meta's time_created.
+     */
+    createdAt?: (string) | null;
+    /**
+     * Meta's time_updated.
+     */
+    updatedAt?: (string) | null;
+};
+
 export type MetricDefinition = {
     name: string;
     description: string;
@@ -76484,6 +76526,66 @@ export type DeleteAdCreativeResponse = ({
 });
 
 export type DeleteAdCreativeError = (unknown | ErrorResponse);
+
+export type ListMetaSavedAudiencesData = {
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>).
+         */
+        adAccountId: string;
+        /**
+         * Cursor from paging.after of the previous page.
+         */
+        after?: string;
+        /**
+         * Rows per page
+         */
+        limit?: number;
+    };
+};
+
+export type ListMetaSavedAudiencesResponse = ({
+    adAccountId?: string;
+    data?: Array<MetaSavedAudience>;
+    paging?: {
+        /**
+         * Cursor for the next page; null on the last page.
+         */
+        after?: (string) | null;
+    };
+});
+
+export type ListMetaSavedAudiencesError = (ErrorResponse | unknown);
+
+export type GetMetaSavedAudienceData = {
+    path: {
+        /**
+         * Meta saved audience id.
+         */
+        savedAudienceId: string;
+    };
+    query: {
+        /**
+         * Zernio SocialAccount id (posting or ads variant) used to resolve the Meta token.
+         */
+        accountId: string;
+        /**
+         * Meta ad account id (act_<n>) that holds the saved audience.
+         */
+        adAccountId: string;
+    };
+};
+
+export type GetMetaSavedAudienceResponse = ({
+    adAccountId?: string;
+    savedAudience?: MetaSavedAudience;
+});
+
+export type GetMetaSavedAudienceError = (ErrorResponse | unknown);
 
 export type ListValueRuleSetsData = {
     query: {

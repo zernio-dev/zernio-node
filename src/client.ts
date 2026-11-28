@@ -614,6 +614,7 @@ import {
   getMessengerIceBreakers,
   getMessengerMenu,
   getMetaConversionAudit,
+  getMetaSavedAudience,
   getMetricsCatalog,
   getNextQueueSlot,
   getOAuthApp,
@@ -942,6 +943,7 @@ import {
   listLogs,
   listMetaBusinessUsers,
   listMetaBusinesses,
+  listMetaSavedAudiences,
   listOAuthApps,
   listOrgConnectionUsers,
   listOrgConnections,
@@ -3125,6 +3127,22 @@ export class Zernio {
   };
 
   /**
+   * adaudiences API
+   */
+  adaudiences = {
+    listMetaSavedAudiences: this._bind(listMetaSavedAudiences),
+    getMetaSavedAudience: this._bind(getMetaSavedAudience),
+    listAdAudiences: this._bind(listAdAudiences),
+    createAdAudience: this._bind(createAdAudience),
+    getAdAudience: this._bind(getAdAudience),
+    updateAdAudience: this._bind(updateAdAudience),
+    deleteAdAudience: this._bind(deleteAdAudience),
+    addUsersToAdAudience: this._bind(addUsersToAdAudience),
+    removeUsersFromAdAudience: this._bind(removeUsersFromAdAudience),
+    replaceAdAudienceCompanies: this._bind(replaceAdAudienceCompanies),
+  };
+
+  /**
    * leadgen API
    */
   leadgen = {
@@ -3183,20 +3201,6 @@ export class Zernio {
     createAdCatalogProductSet: this._bind(createAdCatalogProductSet),
     updateAdCatalogProductSet: this._bind(updateAdCatalogProductSet),
     deleteAdCatalogProductSet: this._bind(deleteAdCatalogProductSet),
-  };
-
-  /**
-   * adaudiences API
-   */
-  adaudiences = {
-    listAdAudiences: this._bind(listAdAudiences),
-    createAdAudience: this._bind(createAdAudience),
-    getAdAudience: this._bind(getAdAudience),
-    updateAdAudience: this._bind(updateAdAudience),
-    deleteAdAudience: this._bind(deleteAdAudience),
-    addUsersToAdAudience: this._bind(addUsersToAdAudience),
-    removeUsersFromAdAudience: this._bind(removeUsersFromAdAudience),
-    replaceAdAudienceCompanies: this._bind(replaceAdAudienceCompanies),
   };
 
   /**
@@ -3870,6 +3874,10 @@ export class Zernio {
     listPartnershipAdPermissions: this._bind(listPartnershipAdPermissions),
     /** @deprecated Use `zernio.adcreatives.setPartnershipAdPermission` instead. */
     setPartnershipAdPermission: this._bind(setPartnershipAdPermission),
+    /** @deprecated Use `zernio.adaudiences.listMetaSavedAudiences` instead. */
+    listMetaSavedAudiences: this._bind(listMetaSavedAudiences),
+    /** @deprecated Use `zernio.adaudiences.getMetaSavedAudience` instead. */
+    getMetaSavedAudience: this._bind(getMetaSavedAudience),
     /** @deprecated Use `zernio.adaudiences.listAdAudiences` instead. */
     listAdAudiences: this._bind(listAdAudiences),
     /** @deprecated Use `zernio.adaudiences.createAdAudience` instead. */

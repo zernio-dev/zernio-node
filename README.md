@@ -595,8 +595,10 @@ try {
 | Method | Description |
 |--------|-------------|
 | `adAudiences.listAdAudiences()` | List custom audiences |
+| `adAudiences.listMetaSavedAudiences()` | List Meta saved audiences |
 | `adAudiences.createAdAudience()` | Create custom audience |
 | `adAudiences.getAdAudience()` | Get audience details |
+| `adAudiences.getMetaSavedAudience()` | Read a Meta saved audience |
 | `adAudiences.updateAdAudience()` | Update an audience |
 | `adAudiences.deleteAdAudience()` | Delete custom audience |
 | `adAudiences.addUsersToAdAudience()` | Add users to audience |
