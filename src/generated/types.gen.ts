@@ -13944,6 +13944,31 @@ export type ExternalPostWebhookPost = {
  */
 export type source3 = 'external';
 
+export type FacebookBlockedUser = {
+    /**
+     * The id Meta lists the blocked person under.
+     */
+    id: string;
+    /**
+     * The person's name, null when Meta leaves it out.
+     */
+    name: (string) | null;
+};
+
+/**
+ * Exactly one of `psid` or `userId`.
+ */
+export type FacebookBlockedUserRef = {
+    /**
+     * Page-scoped id of a Messenger contact, the `platformUserId` of a Facebook inbox conversation participant.
+     */
+    psid?: string;
+    /**
+     * A page-scoped Facebook user id or a Page id.
+     */
+    userId?: string;
+};
+
 export type FacebookPageInfo = {
     /**
      * Short description, shown as Description in the Page's Edit Page Info.
@@ -49630,6 +49655,90 @@ export type ListFacebookTaggedPostsResponse = ({
 });
 
 export type ListFacebookTaggedPostsError = (ErrorResponse);
+
+export type ListFacebookBlockedUsersData = {
+    path: {
+        /**
+         * The ID of a connected Facebook account.
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * The `nextCursor` of the previous page.
+         */
+        cursor?: string;
+        /**
+         * Page size.
+         */
+        limit?: number;
+    };
+};
+
+export type ListFacebookBlockedUsersResponse = ({
+    data: Array<FacebookBlockedUser>;
+    /**
+     * Pass as `cursor` to read the next page. Null when there are no more pages.
+     */
+    nextCursor: (string) | null;
+});
+
+export type ListFacebookBlockedUsersError = (ErrorResponse);
+
+export type BlockFacebookUserData = {
+    body: FacebookBlockedUserRef;
+    path: {
+        /**
+         * The ID of a connected Facebook account.
+         */
+        accountId: string;
+    };
+};
+
+export type BlockFacebookUserResponse = ({
+    /**
+     * The id that was sent.
+     */
+    id: string;
+    /**
+     * True when Meta blocked the person.
+     */
+    blocked: boolean;
+});
+
+export type BlockFacebookUserError = (ErrorResponse);
+
+export type UnblockFacebookUserData = {
+    path: {
+        /**
+         * The ID of a connected Facebook account.
+         */
+        accountId: string;
+    };
+    query?: {
+        /**
+         * Page-scoped id of a Messenger contact. Set this or `userId`.
+         */
+        psid?: string;
+        /**
+         * A page-scoped Facebook user id or a Page id. Set this or `psid`.
+         */
+        userId?: string;
+    };
+};
+
+export type UnblockFacebookUserResponse = ({
+    /**
+     * The id that was sent.
+     */
+    id: string;
+    /**
+     * True when Meta unblocked the person.
+     */
+    unblocked: boolean;
+});
+
+export type UnblockFacebookUserError = (ErrorResponse);
 
 export type GetRedditSubredditsData = {
     path: {

@@ -490,6 +490,7 @@ try {
 ### Account Settings
 | Method | Description |
 |--------|-------------|
+| `accountSettings.listFacebookBlockedUsers()` | List the people blocked on a Facebook Page |
 | `accountSettings.getFacebookPageInfo()` | Get a Facebook Page's public info |
 | `accountSettings.getInstagramIceBreakers()` | Get IG ice breakers |
 | `accountSettings.getMessengerGetStarted()` | Get FB Get Started button |
@@ -505,12 +506,14 @@ try {
 | `accountSettings.deleteMessengerIceBreakers()` | Delete FB ice breakers |
 | `accountSettings.deleteMessengerMenu()` | Delete persistent menu |
 | `accountSettings.deleteTelegramCommands()` | Delete TG bot commands |
+| `accountSettings.blockFacebookUser()` | Block a person on a Facebook Page |
 | `accountSettings.setInstagramIceBreakers()` | Set IG ice breakers |
 | `accountSettings.setMessengerGetStarted()` | Set FB Get Started button |
 | `accountSettings.setMessengerGreeting()` | Set FB greeting text |
 | `accountSettings.setMessengerIceBreakers()` | Set FB ice breakers |
 | `accountSettings.setMessengerMenu()` | Set persistent menu |
 | `accountSettings.setTelegramCommands()` | Set TG bot commands |
+| `accountSettings.unblockFacebookUser()` | Unblock a person on a Facebook Page |
 
 ### Ad Accounts
 | Method | Description |
