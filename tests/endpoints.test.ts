@@ -220,6 +220,16 @@ describe('Endpoint Methods', () => {
       expect(client.accounts.updateStripeSettings).toBeTypeOf('function');
     });
 
+    it('should have getStoreSettings method', () => {
+      expect(client.accounts.getStoreSettings).toBeDefined();
+      expect(client.accounts.getStoreSettings).toBeTypeOf('function');
+    });
+
+    it('should have updateStoreSettings method', () => {
+      expect(client.accounts.updateStoreSettings).toBeDefined();
+      expect(client.accounts.updateStoreSettings).toBeTypeOf('function');
+    });
+
     it('should have getSlackSettings method', () => {
       expect(client.accounts.getSlackSettings).toBeDefined();
       expect(client.accounts.getSlackSettings).toBeTypeOf('function');

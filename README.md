@@ -210,6 +210,7 @@ try {
 | `accounts.getLinkedInMentions()` | Resolve LinkedIn mention |
 | `accounts.getSalesforceSettings()` | Get Salesforce account settings |
 | `accounts.getSlackSettings()` | Get Slack account settings |
+| `accounts.getStoreSettings()` | Get Shopify or WooCommerce store settings |
 | `accounts.getStripeSettings()` | Get Stripe account settings |
 | `accounts.getTikTokCreatorInfo()` | Get TikTok creator info |
 | `accounts.updateAccount()` | Update account |
@@ -218,6 +219,7 @@ try {
 | `accounts.updateHubSpotSettings()` | Update HubSpot account settings |
 | `accounts.updateSalesforceSettings()` | Update Salesforce account settings |
 | `accounts.updateSlackSettings()` | Update Slack account settings |
+| `accounts.updateStoreSettings()` | Update Shopify or WooCommerce store settings |
 | `accounts.updateStripeSettings()` | Update Stripe account settings |
 | `accounts.deleteAccount()` | Disconnect account |
 | `accounts.deleteGoogleBusinessReviewReply()` | Delete a review reply |

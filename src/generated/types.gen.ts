@@ -23027,6 +23027,20 @@ export type StorePixelInstall = {
  */
 export type method6 = 'wordpress_widget';
 
+export type StoreSettings = {
+    /**
+     * Zernio account ID of the store connection.
+     */
+    _id: string;
+    platform: 'shopify' | 'wordpress';
+    /**
+     * Whether the store's paid orders go to the profile's forwarding rules.
+     */
+    forwardOrders: boolean;
+};
+
+export type platform20 = 'shopify' | 'wordpress';
+
 export type StripeSettings = {
     /**
      * Zernio account ID of the Stripe connection.
@@ -23047,7 +23061,7 @@ export type StripeSettings = {
     forwardSales: boolean;
 };
 
-export type platform20 = 'stripe';
+export type platform21 = 'stripe';
 
 export type SupportRun = {
     /**
@@ -24135,7 +24149,7 @@ export type TrackingSitePixel = {
     id: string;
 };
 
-export type platform21 = 'meta' | 'google' | 'tiktok' | 'linkedin' | 'pinterest' | 'snapchat' | 'reddit' | 'x' | 'microsoft';
+export type platform22 = 'meta' | 'google' | 'tiktok' | 'linkedin' | 'pinterest' | 'snapchat' | 'reddit' | 'x' | 'microsoft';
 
 /**
  * A platform measurement tag: the thing you create, install on a website, send events to, and target ads against. On Meta this is a Pixel (`kind: pixel`).
@@ -24214,7 +24228,7 @@ export type TrackingTag = {
     autoTagging?: boolean;
 };
 
-export type platform22 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
+export type platform23 = 'metaads' | 'openaiads' | 'tiktokads' | 'googleads' | 'xads' | 'linkedinads' | 'pinterestads' | 'whopads' | 'applovinads';
 
 /**
  * Platform-native flavor of the tag (Meta: `pixel`).
@@ -28436,7 +28450,7 @@ export type WebhookPayloadComment = {
 
 export type event47 = 'comment.received';
 
-export type platform23 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
+export type platform24 = 'instagram' | 'facebook' | 'threads' | 'youtube' | 'linkedin' | 'bluesky' | 'reddit' | 'tiktok';
 
 export type WebhookPayloadCommerceOrder = {
     /**
@@ -29408,7 +29422,7 @@ export type event68 = 'lead.received';
 /**
  * The ad network the lead came from.
  */
-export type platform24 = 'meta' | 'google' | 'linkedin' | 'tiktok';
+export type platform25 = 'meta' | 'google' | 'linkedin' | 'tiktok';
 
 /**
  * Webhook payload for mention received events (Instagram, Facebook, LinkedIn).
@@ -29475,7 +29489,7 @@ export type WebhookPayloadMention = {
 
 export type event69 = 'mention.received';
 
-export type platform25 = 'instagram' | 'facebook' | 'linkedin';
+export type platform26 = 'instagram' | 'facebook' | 'linkedin';
 
 /**
  * Null on LinkedIn.
@@ -30590,7 +30604,7 @@ export type event74 = 'message.sent';
 /**
  * Every platform whose outgoing messages Zernio observes. sms is absent on purpose: its carrier receipts update delivery status and never raise message.sent.
  */
-export type platform26 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
+export type platform27 = 'instagram' | 'facebook' | 'telegram' | 'whatsapp' | 'twitter' | 'reddit' | 'bluesky' | 'slack' | 'tiktok' | 'imessage' | 'line' | 'wechat';
 
 /**
  * WhatsApp send origin. Absent on non-WhatsApp platforms.
@@ -31542,7 +31556,7 @@ export type WebhookPayloadWhatsAppAccountAlertReceived = {
 
 export type event91 = 'whatsapp.account.alert_received';
 
-export type platform27 = 'whatsapp';
+export type platform28 = 'whatsapp';
 
 /**
  * Webhook payload for the `whatsapp.account.name_status_updated` event, fired when Meta finishes reviewing a WhatsApp display-name change on a connected number. Maps Meta's `phone_number_name_update` WABA webhook field onto our event envelope.
@@ -50624,6 +50638,37 @@ export type UpdateStripeSettingsResponse = ({
 });
 
 export type UpdateStripeSettingsError = (ErrorResponse | unknown);
+
+export type GetStoreSettingsData = {
+    path: {
+        accountId: string;
+    };
+};
+
+export type GetStoreSettingsResponse = ({
+    account?: StoreSettings;
+});
+
+export type GetStoreSettingsError = (ErrorResponse | unknown);
+
+export type UpdateStoreSettingsData = {
+    body: {
+        /**
+         * Send each paid order as `Purchase` through the profile's forwarding rules that take the store's source. A Shopify order goes with the event id the Zernio Shopify pixel uses for it, so a platform counts the pair once.
+         */
+        forwardOrders: boolean;
+    };
+    path: {
+        accountId: string;
+    };
+};
+
+export type UpdateStoreSettingsResponse = ({
+    message?: string;
+    account?: StoreSettings;
+});
+
+export type UpdateStoreSettingsError = (ErrorResponse | unknown);
 
 export type GetSlackSettingsData = {
     path: {
